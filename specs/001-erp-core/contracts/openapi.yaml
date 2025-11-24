@@ -1,0 +1,1986 @@
+openapi: 3.0.3
+info:
+  title: WellKorea ERP API
+  description: |
+    REST API for WellKorea Integrated Work System.
+    Manages JobCodes, quotations, production tracking, deliveries, invoicing, and payments.
+  version: 1.0.0
+  contact:
+    name: WellKorea Development Team
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+  - url: https://erp.wellkorea.local/api/v1
+    description: Production (on-premise)
+
+tags:
+  - name: JobCode
+    description: Project/job management
+  - name: Quotation
+    description: Sales quotations and approval workflow
+  - name: Production
+    description: Work progress tracking per product
+  - name: Delivery
+    description: Shipment recording
+  - name: Invoice
+    description: Tax invoice generation and status
+  - name: Payment
+    description: Customer payment recording
+  - name: Document
+    description: File upload/download (quotations, invoices, work photos, CAD files)
+  - name: Purchasing
+    description: RFQ and purchase order management
+  - name: Admin
+    description: System administration (users, roles, products)
+  - name: Reporting
+    description: Dashboards and export APIs
+
+paths:
+  # ============================================================================
+  # JobCode Endpoints
+  # ============================================================================
+
+  /jobcodes:
+    post:
+      tags:
+        - JobCode
+      summary: Create new JobCode
+      operationId: createJobCode
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobCodeRequest'
+      responses:
+        '201':
+          description: JobCode created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobCodeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    get:
+      tags:
+        - JobCode
+      summary: List all JobCodes (paginated, filtered)
+      operationId: listJobCodes
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ Draft, Active, Completed, Archived ]
+        - name: customer_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          description: Search by JobCode string or project name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of JobCodes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JobCodeResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /jobcodes/{id}:
+    get:
+      tags:
+        - JobCode
+      summary: Get JobCode details
+      operationId: getJobCode
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: JobCode details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobCodeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - JobCode
+      summary: Update JobCode
+      operationId: updateJobCode
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateJobCodeRequest'
+      responses:
+        '200':
+          description: JobCode updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobCodeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # Quotation Endpoints
+  # ============================================================================
+
+  /quotations:
+    post:
+      tags:
+        - Quotation
+      summary: Create quotation from JobCode
+      operationId: createQuotation
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateQuotationRequest'
+      responses:
+        '201':
+          description: Quotation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    get:
+      tags:
+        - Quotation
+      summary: List quotations (paginated, filtered)
+      operationId: listQuotations
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: jobcode_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ Draft, Pending, Approved, Sent, Rejected, Accepted ]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of quotations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QuotationResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /quotations/{id}:
+    get:
+      tags:
+        - Quotation
+      summary: Get quotation details
+      operationId: getQuotation
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Quotation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not have permission to view this quotation
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Quotation
+      summary: Update quotation (Draft only)
+      operationId: updateQuotation
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateQuotationRequest'
+      responses:
+        '200':
+          description: Quotation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only creator can edit Draft quotation; or Admin/Finance can edit
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /quotations/{id}/submit:
+    post:
+      tags:
+        - Quotation
+      summary: Submit quotation for approval (Draft → Pending)
+      operationId: submitQuotation
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Quotation submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationResponse'
+        '400':
+          description: Cannot submit quotation with validation errors
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /quotations/{id}/approve:
+    post:
+      tags:
+        - Quotation
+      summary: Approve quotation (Pending → Approved)
+      operationId: approveQuotation
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comments:
+                  type: string
+                  description: Optional approval comments
+      responses:
+        '200':
+          description: Quotation approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin/Finance can approve
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /quotations/{id}/reject:
+    post:
+      tags:
+        - Quotation
+      summary: Reject quotation (Pending → Draft with comments)
+      operationId: rejectQuotation
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Mandatory rejection reason for creator
+              required:
+                - reason
+      responses:
+        '200':
+          description: Quotation rejected, returned to Draft
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin/Finance can reject
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /quotations/{id}/pdf:
+    get:
+      tags:
+        - Quotation
+      summary: Generate PDF quotation
+      operationId: getQuotationPdf
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: PDF quotation
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not have permission to view this quotation
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # Work Progress Endpoints
+  # ============================================================================
+
+  /jobcodes/{jobcodeId}/work-progress:
+    get:
+      tags:
+        - Production
+      summary: Get work progress sheets for JobCode
+      operationId: getWorkProgress
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: jobcodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Work progress sheets (one per product)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkProgressSheetResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /work-progress-sheets/{id}/steps:
+    get:
+      tags:
+        - Production
+      summary: Get work steps for a product in JobCode
+      operationId: getWorkProgressSteps
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Work progress steps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkProgressStepResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /work-progress-steps/{id}/complete:
+    post:
+      tags:
+        - Production
+      summary: Mark work step as completed
+      operationId: completeWorkStep
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+                  description: Work notes/observations
+      responses:
+        '200':
+          description: Work step completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkProgressStepResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only assigned production staff can update work progress
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # Delivery Endpoints
+  # ============================================================================
+
+  /jobcodes/{jobcodeId}/deliveries:
+    post:
+      tags:
+        - Delivery
+      summary: Record product delivery
+      operationId: createDelivery
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: jobcodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeliveryRequest'
+      responses:
+        '201':
+          description: Delivery recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin/Finance can record deliveries
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    get:
+      tags:
+        - Delivery
+      summary: List deliveries for JobCode
+      operationId: listDeliveries
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: jobcodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of deliveries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeliveryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # Invoice Endpoints
+  # ============================================================================
+
+  /invoices:
+    post:
+      tags:
+        - Invoice
+      summary: Create tax invoice from delivery
+      operationId: createInvoice
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceRequest'
+      responses:
+        '201':
+          description: Tax invoice created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Finance can create invoices
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    get:
+      tags:
+        - Invoice
+      summary: List invoices (paginated, filtered)
+      operationId: listInvoices
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: jobcode_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ Draft, Issued, Paid, Partially Paid, Overdue, Cancelled ]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of invoices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InvoiceResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /invoices/{id}:
+    get:
+      tags:
+        - Invoice
+      summary: Get invoice details
+      operationId: getInvoice
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Invoice details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Finance or related customer can view invoice
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /invoices/{id}/pdf:
+    get:
+      tags:
+        - Invoice
+      summary: Generate PDF tax invoice
+      operationId: getInvoicePdf
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: PDF invoice
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not have permission to view this invoice
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # Payment Endpoints
+  # ============================================================================
+
+  /invoices/{invoiceId}/payments:
+    post:
+      tags:
+        - Payment
+      summary: Record payment toward invoice
+      operationId: recordPayment
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordPaymentRequest'
+      responses:
+        '201':
+          description: Payment recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Finance can record payments
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    get:
+      tags:
+        - Payment
+      summary: List payments for invoice
+      operationId: listPayments
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # Document Endpoints
+  # ============================================================================
+
+  /documents:
+    post:
+      tags:
+        - Document
+      summary: Upload document (quotation PDF, work photo, drawing, etc.)
+      operationId: uploadDocument
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                owner_type:
+                  type: string
+                  enum: [ JobCode, Quotation, TaxInvoice, Delivery, RFQ ]
+                owner_id:
+                  type: string
+                  format: uuid
+                document_type:
+                  type: string
+                  enum: [ Quotation PDF, Invoice PDF, Work Photo, Drawing, RFQ Attachment, PO PDF ]
+                file:
+                  type: string
+                  format: binary
+              required:
+                - owner_type
+                - owner_id
+                - document_type
+                - file
+      responses:
+        '201':
+          description: Document uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not have permission to upload to this entity
+        '413':
+          description: File too large (max 500 MB)
+
+  /documents/{id}:
+    get:
+      tags:
+        - Document
+      summary: Get document metadata
+      operationId: getDocument
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not have permission to view this document
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/{id}/download:
+    get:
+      tags:
+        - Document
+      summary: Download document file
+      operationId: downloadDocument
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not have permission to download this document
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # Admin Endpoints
+  # ============================================================================
+
+  /admin/products:
+    post:
+      tags:
+        - Admin
+      summary: Create product in catalog
+      operationId: createProduct
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin can manage product catalog
+
+    get:
+      tags:
+        - Admin
+      summary: List products in catalog
+      operationId: listProducts
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: product_type_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          description: Search by product name or SKU
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: List users
+      operationId: listUsers
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin can manage users
+
+    post:
+      tags:
+        - Admin
+      summary: Create user
+      operationId: createUser
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin can create users
+
+  /admin/audit-logs:
+    get:
+      tags:
+        - Admin
+      summary: List audit logs (Admin only)
+      operationId: listAuditLogs
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: entity_type
+          in: query
+          schema:
+            type: string
+        - name: entity_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of audit logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditLogResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin can view audit logs
+
+  # ============================================================================
+  # Reporting Endpoints
+  # ============================================================================
+
+  /reports/ar-aging:
+    get:
+      tags:
+        - Reporting
+      summary: AR aging report (30/60/90 day buckets)
+      operationId: getArAgingReport
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: as_of_date
+          in: query
+          schema:
+            type: string
+            format: date
+            description: If not provided, uses today
+      responses:
+        '200':
+          description: AR aging data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current:
+                    type: number
+                    format: double
+                  days_30:
+                    type: number
+                    format: double
+                  days_60:
+                    type: number
+                    format: double
+                  days_90_plus:
+                    type: number
+                    format: double
+                  total:
+                    type: number
+                    format: double
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Finance/Admin can view reports
+
+  /reports/sales-summary:
+    get:
+      tags:
+        - Reporting
+      summary: Sales summary by customer/month
+      operationId: getSalesSummary
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: customer_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sales summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    period:
+                      type: string
+                    customer_name:
+                      type: string
+                    total_amount:
+                      type: number
+                      format: double
+                    invoice_count:
+                      type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    # ========================================================================
+    # JobCode Schemas
+    # ========================================================================
+
+    JobCodeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobcode_string:
+          type: string
+          description: Human-readable code (WK2{year}-{sequence}-{date})
+        customer_id:
+          type: string
+          format: uuid
+        customer_name:
+          type: string
+        project_name:
+          type: string
+        due_date:
+          type: string
+          format: date
+        internal_owner_id:
+          type: string
+          format: uuid
+        internal_owner_name:
+          type: string
+        status:
+          type: string
+          enum: [ Draft, Active, Completed, Archived ]
+        created_by_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateJobCodeRequest:
+      type: object
+      required:
+        - customer_id
+        - project_name
+        - due_date
+        - internal_owner_id
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+        project_name:
+          type: string
+          maxLength: 255
+        due_date:
+          type: string
+          format: date
+        internal_owner_id:
+          type: string
+          format: uuid
+
+    UpdateJobCodeRequest:
+      type: object
+      properties:
+        project_name:
+          type: string
+          maxLength: 255
+        due_date:
+          type: string
+          format: date
+        internal_owner_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [ Draft, Active, Completed, Archived ]
+
+    # ========================================================================
+    # Quotation Schemas
+    # ========================================================================
+
+    QuotationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobcode_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        status:
+          type: string
+          enum: [ Draft, Pending, Approved, Sent, Rejected, Accepted ]
+        quotation_date:
+          type: string
+          format: date
+        created_by_id:
+          type: string
+          format: uuid
+        created_by_name:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+        approved_at:
+          type: string
+          format: date-time
+        approved_by_name:
+          type: string
+        rejection_reason:
+          type: string
+        total_amount:
+          type: number
+          format: double
+        line_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuotationLineItemResponse'
+        approval_history:
+          type: array
+          items:
+            type: object
+            properties:
+              approver_name:
+                type: string
+              decision:
+                type: string
+                enum: [ Approved, Rejected ]
+              comments:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+
+    QuotationLineItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        product_name:
+          type: string
+        quantity:
+          type: number
+          format: double
+        unit_price:
+          type: number
+          format: double
+        line_total:
+          type: number
+          format: double
+
+    CreateQuotationRequest:
+      type: object
+      required:
+        - jobcode_id
+        - line_items
+      properties:
+        jobcode_id:
+          type: string
+          format: uuid
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              quantity:
+                type: number
+                format: double
+              unit_price:
+                type: number
+                format: double
+            required:
+              - product_id
+              - quantity
+              - unit_price
+
+    UpdateQuotationRequest:
+      type: object
+      properties:
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              quantity:
+                type: number
+                format: double
+              unit_price:
+                type: number
+                format: double
+
+    # ========================================================================
+    # Work Progress Schemas
+    # ========================================================================
+
+    WorkProgressSheetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobcode_id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        product_name:
+          type: string
+        sequence:
+          type: integer
+        status:
+          type: string
+          enum: [ Not Started, In Progress, Completed ]
+        created_at:
+          type: string
+          format: date-time
+
+    WorkProgressStepResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sheet_id:
+          type: string
+          format: uuid
+        step_number:
+          type: integer
+        step_name:
+          type: string
+        status:
+          type: string
+          enum: [ Not Started, In Progress, Completed ]
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        completed_by_name:
+          type: string
+        notes:
+          type: string
+
+    # ========================================================================
+    # Delivery Schemas
+    # ========================================================================
+
+    DeliveryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobcode_id:
+          type: string
+          format: uuid
+        delivery_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [ Pending, Delivered, Returned ]
+        delivered_by_name:
+          type: string
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              product_name:
+                type: string
+              quantity_delivered:
+                type: number
+                format: double
+
+    CreateDeliveryRequest:
+      type: object
+      required:
+        - delivery_date
+        - line_items
+      properties:
+        delivery_date:
+          type: string
+          format: date
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              quantity_delivered:
+                type: number
+                format: double
+            required:
+              - product_id
+              - quantity_delivered
+
+    # ========================================================================
+    # Invoice Schemas
+    # ========================================================================
+
+    InvoiceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobcode_id:
+          type: string
+          format: uuid
+        invoice_number:
+          type: string
+        issue_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [ Draft, Issued, Paid, Partially Paid, Overdue, Cancelled ]
+        total_before_tax:
+          type: number
+          format: double
+        tax_rate:
+          type: number
+          format: double
+        total_tax:
+          type: number
+          format: double
+        total_amount:
+          type: number
+          format: double
+        due_date:
+          type: string
+          format: date
+        created_by_name:
+          type: string
+        line_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItemResponse'
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentResponse'
+
+    InvoiceLineItemResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        product_name:
+          type: string
+        quantity_invoiced:
+          type: number
+          format: double
+        unit_price:
+          type: number
+          format: double
+        line_total:
+          type: number
+          format: double
+
+    CreateInvoiceRequest:
+      type: object
+      required:
+        - jobcode_id
+        - quotation_version
+        - issue_date
+        - due_date
+        - tax_rate
+        - line_items
+      properties:
+        jobcode_id:
+          type: string
+          format: uuid
+        quotation_version:
+          type: integer
+        issue_date:
+          type: string
+          format: date
+        due_date:
+          type: string
+          format: date
+        tax_rate:
+          type: number
+          format: double
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              product_id:
+                type: string
+                format: uuid
+              quantity_invoiced:
+                type: number
+                format: double
+              unit_price:
+                type: number
+                format: double
+
+    # ========================================================================
+    # Payment Schemas
+    # ========================================================================
+
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        invoice_id:
+          type: string
+          format: uuid
+        payment_date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: double
+        payment_method:
+          type: string
+          enum: [ Bank Transfer, Credit Card, Check, Cash ]
+        reference_number:
+          type: string
+        recorded_by_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    RecordPaymentRequest:
+      type: object
+      required:
+        - payment_date
+        - amount
+        - payment_method
+      properties:
+        payment_date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: double
+        payment_method:
+          type: string
+          enum: [ Bank Transfer, Credit Card, Check, Cash ]
+        reference_number:
+          type: string
+        notes:
+          type: string
+
+    # ========================================================================
+    # Document Schemas
+    # ========================================================================
+
+    DocumentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_type:
+          type: string
+        owner_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+        filename:
+          type: string
+        mime_type:
+          type: string
+        file_size:
+          type: integer
+        version:
+          type: integer
+        uploaded_by_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    # ========================================================================
+    # Product Schemas
+    # ========================================================================
+
+    ProductResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sku:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        product_type_id:
+          type: string
+          format: uuid
+        base_unit_price:
+          type: number
+          format: double
+        unit:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    CreateProductRequest:
+      type: object
+      required:
+        - sku
+        - name
+        - product_type_id
+      properties:
+        sku:
+          type: string
+          maxLength: 50
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        product_type_id:
+          type: string
+          format: uuid
+        base_unit_price:
+          type: number
+          format: double
+        unit:
+          type: string
+
+    # ========================================================================
+    # User Schemas
+    # ========================================================================
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        department:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    CreateUserRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+        - roles
+      properties:
+        username:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        first_name:
+          type: string
+        last_name:
+          type: string
+        department:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [ Admin, Finance, Sales, Production ]
+
+    # ========================================================================
+    # Audit Log Schemas
+    # ========================================================================
+
+    AuditLogResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        entity_type:
+          type: string
+        entity_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          enum: [ Create, Update, Delete ]
+        user_id:
+          type: string
+          format: uuid
+        user_name:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        old_values:
+          type: object
+          additionalProperties: true
+        new_values:
+          type: object
+          additionalProperties: true
+        ip_address:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                    message:
+                      type: string
+
+    Unauthorized:
+      description: Missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Unauthorized
+
+    Forbidden:
+      description: Authenticated user does not have permission
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Forbidden
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Resource not found
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: [ ]
