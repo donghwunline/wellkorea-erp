@@ -1,0 +1,532 @@
+# Feature Specification: WellKorea Integrated Work System (ERP)
+
+**Feature Branch**: `001-erp-core`
+**Created**: 2025-11-24
+**Status**: Draft
+
+## Overview
+
+The WellKorea Integrated Work System consolidates fragmented job lifecycle data (currently spread across handwritten ledgers, multiple Excel files, legacy order software, and folder trees) into a unified web application. The system manages the complete workflow from customer request through JobCode creation, quotation & approval (with products from catalog), production tracking per product, granular delivery/invoicing (by product and quantity), payments, and financial reporting.
+
+**Key Design Principle**: Quotations list customer-requested products from a pre-defined catalog with quantities and unit prices. Work progress is tracked per product (not per JobCode as a whole). Invoicing is granular—allowing any combination of products and quantities to be invoiced independently, with the system preventing double-billing by tracking what's been invoiced.
+
+---
+
+## User Scenarios & Testing *(mandatory)*
+
+### User Story 1 - JobCode Creation & Request Intake (Priority: P1)
+
+**Description**: Operations staff receives a customer request (via email, phone, or system) and creates a new JobCode in a single place, recording all essential information (customer, project name, requester, due date, internal owner) once. This single entry powers order status, work progress, quotations, and AR/AP records without re-entry.
+
+**Why this priority**: This is the foundational data entry point. Without a reliable JobCode creation workflow, the entire system falls apart. All downstream features depend on this core entity existing in one place.
+
+**Independent Test**: Can be fully tested by:
+1. Creating a new request (customer, project name, due date, internal owner)
+2. Verifying JobCode is auto-generated per rule (WK2{year}-{sequence}-{date})
+3. Confirming no data re-entry is needed for subsequent quotation, production, or AR/AP processes
+4. Validating that JobCode is editable and unique
+5. Checking that order status view pulls from this single source
+
+This story delivers the MVP for job intake and centralized project identity.
+
+**Acceptance Scenarios**:
+
+1. **Given** a customer request arrives, **When** staff creates a new job in the system with customer name, project name, due date, and internal owner, **Then** a unique JobCode is generated automatically (format: WK2{year}-{sequence}-{date}) and the job record is created in one place.
+
+2. **Given** a JobCode has been created, **When** an admin views the job details, **Then** all fields (customer, project name, JobCode, due date, internal owner) are editable to correct data entry or reflect late-arriving information.
+
+3. **Given** multiple users attempt to create jobs simultaneously, **When** both request sequential JobCodes, **Then** the system assigns unique sequence numbers and prevents duplicate JobCodes.
+
+4. **Given** a JobCode exists, **When** a user navigates to quotation, production, or AR/AP sections, **Then** the customer, project name, and JobCode are pre-populated (no re-entry needed).
+
+---
+
+### User Story 2 - Quotation Creation from Product Catalog & Approval Workflow (Priority: P1)
+
+**Description**: Sales/finance staff creates a quotation from a JobCode by selecting products from a pre-defined product catalog (e.g., "Aluminum bracket," "Steel frame," "Custom enclosure"). For each product, staff manually enter the quantity and unit price for that specific quotation (prices vary per quote, not fixed from catalog). An internal approval workflow (승인/결재) records who approved and when. Quotation line items and totals automatically flow into downstream delivery/invoicing without manual re-entry.
+
+**Why this priority**: Quotations are the commercial contract; automating their creation with a product catalog, approval tracking, and cascade to invoicing removes manual re-keying, prevents pricing errors, and enables real-time AR tracking. The approval trail is a compliance requirement.
+
+**Independent Test**: Can be fully tested by:
+1. Creating a quotation from an existing JobCode by selecting 3–5 products from the catalog
+2. Entering quantities and unit prices for each product (different prices than catalog if needed)
+3. Submitting quotation for internal approval
+4. Approving the quotation and verifying approval history is logged (approver name, date, time)
+5. Generating a PDF quotation for customer delivery
+6. Editing a line item's unit price/quantity and confirming subsequent invoices reference the updated version
+7. Verifying quotation history is preserved (showing all versions)
+8. Confirming partial invoicing works (e.g., 50% of Product A, 100% of Product B can be invoiced separately)
+
+This story delivers the MVP for commercial document generation and granular invoicing control.
+
+**Acceptance Scenarios**:
+
+1. **Given** a JobCode with a customer, **When** staff creates a quotation and selects products from the catalog (e.g., "Aluminum bracket," "Steel frame"), **Then** each product appears as a line item where staff can enter quantity and unit price specific to this quotation.
+
+2. **Given** a quotation with multiple products, **When** staff save the quotation, **Then** the system calculates the total per product (quantity × unit price) and the grand total, and stores all line items with their prices for later invoicing.
+
+3. **Given** a quotation is ready for approval, **When** a manager submits it for internal approval, **Then** the quotation status changes to "Pending Approval" and an approval record is created with manager name, date, and time.
+
+4. **Given** a quotation pending approval, **When** an approver reviews and approves it, **Then** the quotation status changes to "Approved", the approver name and timestamp are recorded, and the quotation can be sent to the customer.
+
+5. **Given** an approved quotation, **When** staff edits a line item's unit price or quantity (e.g., customer negotiates a discount), **Then** the change is saved as a new quotation version, and subsequent invoices reference this new version without manual re-entry.
+
+6. **Given** a quotation with multiple products, **When** staff request a PDF, **Then** a professional quotation document is generated listing products, quantities, unit prices, line totals, and grand total, ready for download/email.
+
+---
+
+### User Story 3 - Product Catalog Management (Priority: P2)
+
+**Description**: Admin staff create and maintain a pre-defined product catalog used for quotations. Each product has a name, description, and optionally a base unit price (which can be overridden per quotation). Products are searchable and categorized (e.g., "Brackets," "Frames," "Enclosures").
+
+**Why this priority**: A product catalog standardizes what customers can order and speeds quotation creation. However, it's P2 because the MVP can launch with manual product entry first, and add a catalog later.
+
+**Independent Test**: Can be fully tested by:
+1. Creating 10–20 products in the catalog with names, descriptions, and optional base prices
+2. Categorizing products (e.g., "Sheet Metal," "Custom Components")
+3. Searching for a product by name and confirming results are returned
+4. Selecting a product in a quotation and confirming base price (if set) is suggested but can be overridden
+5. Editing a product's description and confirming new quotations see the updated description
+6. Retiring a product and confirming old quotations still reference it, but new ones don't offer it
+
+This story delivers the MVP for product standardization.
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin user, **When** they access the product catalog, **Then** they can create a new product with name, description, category, and optional base unit price.
+
+2. **Given** a product catalog with 20+ products, **When** staff create a quotation and begin selecting products, **Then** they can search by product name and the system returns matching products quickly.
+
+3. **Given** a product with a base unit price in the catalog, **When** staff select it for a quotation, **Then** the base price is suggested but staff can override it with a different unit price for that specific quotation.
+
+4. **Given** a product in the catalog, **When** an admin edits the product description, **Then** new quotations see the updated description, but existing quotations remain unchanged.
+
+---
+
+### User Story 4 - Production Tracking: Work Progress Sheet Per Product (Priority: P2)
+
+**Description**: Production staff view and update a work progress sheet per product (not per JobCode). For each product in a JobCode, a separate progress sheet shows all manufacturing steps (Management, Design, Laser, Sheet metal, Machining, Assembly, Welding, Painting/Finishing, etc.). For each step, staff record status (not started / in progress / completed), date, remarks, and whether the work is internal or outsourced (with vendor name and ETA if outsourced). Unused steps can be hidden per product type.
+
+**Why this priority**: This replaces the Excel work progress sheet and provides real-time visibility into per-product production status. It supports parallel processes (e.g., fabrication and machining simultaneously for different products) and tracks outsourcing ETAs. However, it's P2 because the MVP can initially launch with basic status tracking before sophisticated visibility/filtering is added.
+
+**Independent Test**: Can be fully tested by:
+1. Creating work progress sheets for 2–3 products in a JobCode (e.g., Bracket, Frame, Enclosure)
+2. For each product, marking manufacturing steps as "in progress" with dates and remarks
+3. Recording an outsourced step for one product (vendor name, ETA)
+4. Hiding unused steps for a specific product type (e.g., hiding "Welding" for a "Sheet Metal Only" product)
+5. Supporting parallel processes (marking both "Fabrication" and "Machining" as in progress for the same product with different dates)
+6. Viewing production status from the main job detail view aggregated across all products
+7. Editing remarks and status without losing historical data
+
+This story delivers the MVP for per-product production visibility, replacing Excel sheets.
+
+**Acceptance Scenarios**:
+
+1. **Given** a JobCode with 3 quoted products (Bracket, Frame, Enclosure), **When** staff access the production section, **Then** they see 3 separate work progress sheets, one per product.
+
+2. **Given** a work progress sheet for a product, **When** a user selects a product type (e.g., "Sheet Metal"), **Then** the system suggests standard manufacturing steps for that type (Design → Laser → Assembly → Painting → Packaging), but allows adding/removing steps.
+
+3. **Given** a manufacturing step on a product's progress sheet, **When** production staff update the status to "In Progress", **Then** the current date and time are recorded, and remarks (e.g., "Started machining part A") can be added.
+
+4. **Given** a step marked as outsourced, **When** staff record the vendor name and ETA, **Then** the system stores this information and displays the ETA prominently on the product's status view.
+
+5. **Given** multiple products in a JobCode at different production stages, **When** management views the job detail, **Then** they see an aggregated production status (e.g., "Bracket 80% complete, Frame 50% complete, Enclosure not started").
+
+---
+
+### User Story 5 - Delivery Tracking & Granular Invoicing by Product & Quantity (Priority: P2)
+
+**Description**: Staff record delivery events per product in a JobCode. For each delivery, they specify which products and quantities are being shipped. The system tracks what's been invoiced to prevent double-billing. Transaction statements (거래명세서) and tax invoices are generated with only the shipped products/quantities, reflecting the quotation prices. A "final delivery date" is recorded for reporting compatibility.
+
+**Why this priority**: Granular delivery/invoicing is core to financial accuracy. It enables partial deliveries, split shipments, and staggered invoicing per product. However, it's P2 because the MVP can defer sophisticated split-shipment UI until after basic delivery tracking is proven.
+
+**Independent Test**: Can be fully tested by:
+1. Recording a single delivery (all 3 products, full quantities)
+2. Recording a split delivery (1st shipment: Product A 100%, Product B 50%, Product C 0%; 2nd shipment: Product B 50%)
+3. For each delivery, confirming transaction statements are generated with only shipped products/quantities
+4. Attempting to invoice the same product/quantity twice and confirming the system prevents double-billing
+5. Updating quotation unit price after 1st delivery and confirming 2nd delivery uses the new price
+6. Marking final delivery and confirming it appears in reporting
+7. Generating PDF transaction statements for customer delivery
+
+This story delivers the MVP for granular delivery tracking and invoice automation.
+
+**Acceptance Scenarios**:
+
+1. **Given** a JobCode with 3 quoted products (Bracket @ qty 10, Frame @ qty 5, Enclosure @ qty 2), **When** staff record a delivery, **Then** they specify which products and quantities are shipped (e.g., Bracket 10, Frame 0, Enclosure 2 for 1st shipment).
+
+2. **Given** a delivery recorded, **When** staff request a transaction statement, **Then** the document includes only the shipped products/quantities with their unit prices from the quotation, and totals are calculated automatically.
+
+3. **Given** products shipped in 1st delivery, **When** staff attempt to invoice the same products/quantities again in a 2nd delivery, **Then** the system shows a warning that Bracket qty 10 has already been shipped and prompts confirmation.
+
+4. **Given** multiple deliveries for different products in a JobCode, **When** staff view the job detail, **Then** they see a delivery status (e.g., "Bracket delivered 10/10, Frame delivered 0/5, Enclosure delivered 2/2").
+
+5. **Given** the final delivery is recorded, **When** staff mark it as "Final Delivery", **Then** the final delivery date is recorded and appears in reporting dashboards.
+
+---
+
+### User Story 6 - Tax Invoices & Payments with Granular Product/Quantity Tracking (Priority: P2)
+
+**Description**: Finance staff create tax invoices (sales and purchase) tied to deliveries. Each sales tax invoice lists the products and quantities delivered (auto-populated from the delivery), with unit prices from the quotation. Staff record one or more payments (deposits or disbursements) per invoice. The system calculates remaining receivable/payable automatically. Outstanding AR/AP is tracked per product-quantity delivered to prevent discrepancies. Views aggregate sales/purchases and outstanding AR/AP by customer, supplier, date range, and internal owner.
+
+**Why this priority**: AR/AP management is core to financial visibility and compliance. However, it's P2 because quotation and delivery tracking can launch first, with detailed invoicing added once the commercial document flow is proven.
+
+**Independent Test**: Can be fully tested by:
+1. Creating a sales tax invoice for a delivery (auto-populated with shipped products/quantities)
+2. Recording a partial payment (deposit) and confirming remaining receivable is calculated
+3. Recording additional payments until invoice is fully paid
+4. Viewing outstanding AR by customer, with aging (30/60/90+ days)
+5. Creating a purchase tax invoice and recording partial vendor payments
+6. Generating an AR/AP report by customer/supplier showing total and outstanding amounts
+7. Filtering AR/AP by internal owner to see workload distribution
+8. Confirming that invoiced product/quantities are marked as such to prevent re-invoicing
+
+This story delivers the MVP for financial tracking and reporting.
+
+**Acceptance Scenarios**:
+
+1. **Given** a delivery is recorded with specific products/quantities, **When** finance staff create a sales tax invoice, **Then** the invoice auto-populates with the delivered products, quantities, and unit prices from the quotation.
+
+2. **Given** a sales tax invoice, **When** a customer payment is received, **Then** staff record a deposit (date, amount, payment method) and the system calculates remaining receivable automatically.
+
+3. **Given** a sales tax invoice with multiple partial payments, **When** all payments total the invoice amount, **Then** the invoice status changes to "Paid" and is removed from the outstanding AR view.
+
+4. **Given** multiple sales invoices across different customers, **When** finance staff request an AR report, **Then** the system shows total AR by customer, days overdue (30/60/90+), and internal owner for follow-up.
+
+5. **Given** outstanding AR/AP records, **When** staff request a cash flow view, **Then** the system shows total receivable and payable by month for the next 3 months, supporting cash planning.
+
+6. **Given** a delivery with 3 products partially shipped, **When** an invoice is created for only the shipped portion, **Then** the remaining unshipped products are noted separately for future invoicing.
+
+---
+
+### User Story 7 - Document Management & Central Storage (Priority: P3)
+
+**Description**: Users upload and tag documents (drawings, quotations, work photos, purchase docs, BOMs, 3D files, etc.) by JobCode, project, customer, product, and document type. A powerful search finds documents by JobCode, project name, customer, product, or document type. A "virtual tree" view recreates the familiar folder structure (company → project → JobCode → product → document) without physical folder management. CAD file editing is not supported; files are managed and opened with local CAD tools.
+
+**Why this priority**: Document centralization eliminates time hunting through folder trees and enables cross-cutting searches. However, it's P3 because the MVP can initially work with basic JobCode/project/customer tagging before adding sophisticated virtual tree views.
+
+**Independent Test**: Can be fully tested by:
+1. Uploading 20 mixed files (PDF, DXF, JPG, XLSX, DOCX) and tagging by JobCode, product, document type
+2. Searching by JobCode and finding all related documents
+3. Searching by product name (e.g., "Bracket") and finding all documents for that product across JobCodes
+4. Searching by document type (e.g., "drawing") and finding all drawings across all JobCodes/products
+5. Using a virtual tree view to navigate company → project → JobCode → product → document
+6. Downloading a file and confirming it opens correctly in local CAD tools
+7. Replacing a document version and confirming old version is archived with version history preserved
+
+This story delivers the MVP for centralized document storage and search.
+
+**Acceptance Scenarios**:
+
+1. **Given** a JobCode or product detail page, **When** staff upload a file and tag it with document type (drawing, photo, BOM, quotation, etc.), **Then** the file is stored centrally with metadata (JobCode, product, customer, document type, upload date).
+
+2. **Given** multiple documents tagged by JobCode and product, **When** a user searches for a JobCode, **Then** all documents for that JobCode (across all products) are returned in a list with download links.
+
+3. **Given** documents tagged by product name (e.g., "Bracket"), **When** a user filters by product, **Then** all documents for that product across all JobCodes are shown.
+
+4. **Given** documents tagged by document type (e.g., "drawing"), **When** a user filters by document type, **Then** all drawings across all JobCodes and products are shown.
+
+5. **Given** a large number of documents, **When** a user navigates a virtual tree (Company → Project → JobCode → Product → Document Type), **Then** files are organized hierarchically without physical folder structures.
+
+---
+
+### User Story 8 - Purchasing & Automated RFQ (Priority: P3)
+
+**Description**: Staff create a purchase request for a JobCode (or general purchase not tied to a JobCode), specifying a material/service category (e.g., "CNC machining," "etching," "painting"). The system suggests suitable vendors based on stored "who sells what" mappings. RFQ emails are auto-generated and sent with JobCode, product info, drawings (if attached), and delivery deadline. Vendor responses, selected vendor, and final purchase price are tracked. Purchase costs are linked to the JobCode for profitability analysis.
+
+**Why this priority**: Automated RFQ reduces manual email creation and ensures consistent vendor communication. However, it's P3 because the MVP can initially support manual purchase order entry before RFQ automation is added.
+
+**Independent Test**: Can be fully tested by:
+1. Creating a purchase request for a JobCode with category (e.g., "CNC machining")
+2. System suggests 3–5 suitable vendors based on stored mappings
+3. Selecting vendors and auto-generating RFQ email with attachments
+4. Sending RFQ to vendors and tracking response status
+5. Recording vendor quotes and selecting the best vendor
+6. Linking the final purchase to the JobCode for cost tracking
+7. Viewing all purchases by JobCode with total purchased costs
+
+This story delivers the MVP for vendor management and RFQ tracking.
+
+**Acceptance Scenarios**:
+
+1. **Given** a JobCode with a manufacturing need (e.g., "outsource CNC machining"), **When** staff create a purchase request and specify the service needed, **Then** the system suggests vendors who provide that service based on stored mappings.
+
+2. **Given** a list of suggested vendors, **When** staff select vendors to request quotes from, **Then** an RFQ email is auto-generated with JobCode, product description, drawings (if attached), required quantity, and delivery deadline.
+
+3. **Given** an RFQ sent to multiple vendors, **When** staff track responses, **Then** vendor names, quote prices, and response dates are recorded.
+
+4. **Given** multiple vendor quotes, **When** staff select the winning vendor and final price, **Then** a purchase order is created and the selected vendor and price are recorded.
+
+5. **Given** a completed purchase, **When** staff link it to a JobCode, **Then** the purchase cost is aggregated with other JobCode costs for profitability analysis (sales vs. total cost).
+
+---
+
+### User Story 9 - Role-Based Access Control & Quotation Protection (Priority: P1)
+
+**Description**: The system enforces role-based access control with roles: Admin, Finance, Production, Sales. Only Admin and Finance roles can view all quotations and financial data (invoices, AR/AP). Production staff see only production-relevant data (work progress, deliveries, documents tagged for production). Sales staff see quotations and customer data but not financial/payables data. Admin accounts manage users and permissions. Access to sensitive documents (quotations, financial reports) is logged for audit.
+
+**Why this priority**: This is critical for security and compliance. A previous data leak of quotations necessitates strict access control from day one. This must ship with P1.
+
+**Independent Test**: Can be fully tested by:
+1. Creating 4 user roles with appropriate permissions
+2. Logging in as Production user and verifying quotations are not visible
+3. Logging in as Finance user and verifying all quotations and AR/AP are visible
+4. Logging in as Sales user and verifying quotations are visible, but AR/AP/invoice details are not
+5. Logging in as Admin and verifying user management is accessible
+6. Attempting to access a quotation as a Production user and confirming access denied with error message
+7. Checking audit log showing who accessed which quotations and when
+8. Changing a user's role from Production to Finance and confirming access immediately updates
+
+This story delivers security MVP and must ship with P1.
+
+**Acceptance Scenarios**:
+
+1. **Given** a system with multiple users in different roles, **When** a Production staff member logs in, **Then** they see only production-relevant data (work progress sheets, deliveries for their JobCodes, documents tagged for production view) and NOT quotations, pricing, or financial data.
+
+2. **Given** a Sales staff member logged in, **When** they access the quotation list, **Then** they see quotations for customers they manage, along with approval status and PDF download option.
+
+3. **Given** a Finance staff member logged in, **When** they access the quotation list, **Then** they see all quotations for all customers, along with approval history and cost breakdown.
+
+4. **Given** an Admin user, **When** they access the user management page, **Then** they can create, edit, delete users, and assign roles (Admin, Finance, Production, Sales).
+
+5. **Given** a sensitive document like a quotation, **When** any user accesses it, **Then** an audit log entry is created recording user name, date, time, action (view, download, edit), and document ID.
+
+6. **Given** a user's role is changed (e.g., Production → Finance), **When** the change is saved, **Then** the user's access immediately reflects the new role on their next session or page refresh.
+
+---
+
+### Edge Cases
+
+- What happens when a quotation unit price is updated after a partial delivery? (Answer: subsequent deliveries use the new price; past deliveries retain their original prices)
+- How does the system handle a product with no work progress steps defined? (Answer: system allows creating a work progress sheet but doesn't suggest steps; user must manually add them)
+- What if a vendor RFQ is sent but no responses are received by the deadline? (Answer: system shows "no response" status; user can manually close or extend the deadline)
+- How does the system handle editing a JobCode that is already in production? (Answer: JobCode is always editable, but changes are logged; work progress, vendor commitments, and delivery status are separate from JobCode data)
+- What happens if a user uploads a duplicate filename to the same JobCode/product? (Answer: system appends a version suffix and archives the old file, with version history preserved)
+- How does the system handle refunds or negative payments? (Answer: system accepts negative amounts as refunds, reducing the receivable/payable balance and adjusting the invoice status)
+- What if a delivery is recorded but not yet invoiced? (Answer: delivery is marked as "pending invoice"; the system calculates what remains to be invoiced and prevents double-invoicing)
+
+---
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+**Core JobCode & Project Management**:
+
+- **FR-001**: System MUST auto-generate a unique JobCode per rule WK2{year}-{sequence}-{date} (e.g., WK2K25-0600-1017)
+- **FR-002**: System MUST allow JobCode editing after creation while maintaining uniqueness
+- **FR-003**: System MUST store customer, project name, requester, internal owner, requested due date in the JobCode record
+- **FR-004**: System MUST prevent duplication of JobCode values across all records
+- **FR-005**: System MUST maintain a complete JobCode history with creation date, last modified date, and modifier name
+
+**Product Catalog**:
+
+- **FR-006**: System MUST support a pre-defined product catalog with product name, description, and optional base unit price
+- **FR-007**: System MUST allow product search by name and category
+- **FR-008**: System MUST allow categorizing products (e.g., "Sheet Metal," "Custom Components")
+- **FR-009**: System MUST allow retiring/deactivating products while preserving them in past quotations
+- **FR-010**: System MUST allow editing product descriptions; new quotations see updated descriptions, old quotations remain unchanged
+
+**Quotation & Approval Workflow**:
+
+- **FR-011**: System MUST support quotation creation by selecting products from the catalog
+- **FR-012**: System MUST allow staff to enter quotation-specific quantity and unit price per line item (independent of catalog base price)
+- **FR-013**: System MUST calculate line totals (quantity × unit price) and grand total per quotation
+- **FR-014**: System MUST support internal approval workflow (승인/결재) with approver name, date, and time recording
+- **FR-015**: System MUST preserve all quotation versions and show version history
+- **FR-016**: System MUST generate PDF quotations with professional formatting ready for customer delivery
+- **FR-017**: System MUST track quotation status (Draft, Pending Approval, Approved, Sent, Accepted, Rejected)
+
+**Production Tracking Per Product**:
+
+- **FR-018**: System MUST provide a separate work progress sheet per product (not per JobCode)
+- **FR-019**: System MUST allow defining product types (e.g., "Sheet Metal," "Custom Components") with standard manufacturing step templates
+- **FR-020**: System MUST suggest manufacturing steps based on product type (Design, Laser, Machining, Assembly, Welding, Painting/Finishing, etc.) but allow customization
+- **FR-021**: System MUST allow recording status (not started / in progress / completed), date, and remarks per step
+- **FR-022**: System MUST support marking steps as internal or outsourced (with vendor name and ETA if outsourced)
+- **FR-023**: System MUST allow hiding unused steps per product
+- **FR-024**: System MUST support parallel processes (multiple steps in progress simultaneously with different dates)
+- **FR-025**: System MUST show aggregated production status on job detail view (e.g., "Bracket 80% complete, Frame 50% complete")
+- **FR-026**: System MUST preserve step history and allow editing remarks without losing historical data
+
+**Delivery Tracking & Granular Invoicing**:
+
+- **FR-027**: System MUST support recording deliveries specifying which products and quantities are shipped per JobCode
+- **FR-028**: System MUST track what has been invoiced per product-quantity to prevent double-billing
+- **FR-029**: System MUST auto-generate transaction statements (거래명세서) with only shipped products/quantities, reflecting quotation unit prices
+- **FR-030**: System MUST support single and split deliveries (1st, 2nd, … shipments)
+- **FR-031**: System MUST allow recording a final delivery date for reporting compatibility
+- **FR-032**: System MUST generate PDF transaction statements ready for customer delivery
+- **FR-033**: System MUST show delivery status on job detail (e.g., "Product A 10/10 shipped, Product B 2/5 shipped")
+
+**Tax Invoices & Payments**:
+
+- **FR-034**: System MUST support creating sales tax invoices tied to deliveries (auto-populated with delivered products/quantities)
+- **FR-035**: System MUST support creating purchase tax invoices (vendor, amount, JobCode reference if applicable)
+- **FR-036**: System MUST support recording one or more payments (deposits/disbursements) per invoice with date, amount, payment method
+- **FR-037**: System MUST auto-calculate remaining receivable/payable after each payment
+- **FR-038**: System MUST support negative payments (refunds) for AR/AP records
+- **FR-039**: System MUST track invoice status (draft, issued, partially paid, paid, overdue)
+- **FR-040**: System MUST provide AR/AP reports by customer, supplier, date range, and internal owner
+- **FR-041**: System MUST provide cash flow forecasting (receivable/payable by month for next 3 months)
+- **FR-042**: System MUST aggregate sales and purchases by period (monthly, quarterly, yearly)
+
+**Document Management**:
+
+- **FR-043**: System MUST support uploading and storing documents (PDF, DXF, JPG, XLSX, DOCX, etc.) with central storage
+- **FR-044**: System MUST tag documents by JobCode, product, project, customer, and document type (drawing, quotation, photo, BOM, etc.)
+- **FR-045**: System MUST support powerful search by JobCode, project name, customer, product name, and document type
+- **FR-046**: System MUST support filtering documents by multiple attributes simultaneously (e.g., JobCode AND product AND document type)
+- **FR-047**: System MUST provide a virtual tree view (Company → Project → JobCode → Product → Document) without physical folder structures
+- **FR-048**: System MUST preserve document version history when files are replaced
+- **FR-049**: System MUST allow direct file download and opening in local CAD tools (no web-based CAD editing)
+- **FR-050**: System MUST support file size limits (e.g., max 100MB per file)
+
+**Purchasing & RFQ**:
+
+- **FR-051**: System MUST support creating purchase requests from a JobCode or as general (non-JobCode) purchases
+- **FR-052**: System MUST store a "who sells what" mapping of vendors to service categories (machining, etching, painting, etc.)
+- **FR-053**: System MUST suggest suitable vendors based on the purchase request category
+- **FR-054**: System MUST auto-generate RFQ emails with JobCode, product description, drawings (if attached), and delivery deadline
+- **FR-055**: System MUST track RFQ status (draft, sent, responded, no response, closed) per vendor
+- **FR-056**: System MUST allow recording vendor quotes and selecting final vendor/price
+- **FR-057**: System MUST link purchases to JobCodes for cost aggregation and profitability analysis
+- **FR-058**: System MUST show all purchases per JobCode with total purchase costs
+
+**Role-Based Access Control**:
+
+- **FR-059**: System MUST enforce role-based access control with roles: Admin, Finance, Production, Sales
+- **FR-060**: System MUST restrict quotation viewing to Admin and Finance roles only
+- **FR-061**: System MUST restrict financial data (AR/AP, invoices, purchase prices) to Admin and Finance roles
+- **FR-062**: System MUST restrict production data (work progress, deliveries, tagged documents) to Production, Admin, and Sales roles
+- **FR-063**: System MUST allow Admin to manage users and assign roles
+- **FR-064**: System MUST maintain an audit log of access to sensitive documents (quotations, financial reports) with user name, date, time, and action
+- **FR-065**: System MUST apply role changes immediately on the user's next session refresh
+
+---
+
+### Key Entities
+
+- **JobCode**: Unique human-readable identifier (WK2{year}-{sequence}-{date}), customer reference, project name, internal owner, requested due date, status, created date, last updated date. Primary key is a database ID (not the JobCode string).
+
+- **Product**: Name, description, category, optional base unit price, active flag, created date. Used in quotations and work progress sheets.
+
+- **Product Type**: Name (e.g., "Sheet Metal", "Custom Component"), standard manufacturing step template (Design, Laser, Machining, etc.). Used to suggest steps for work progress sheets.
+
+- **Quotation**: JobCode reference, line items (product reference, quantity, unit price, total per line), total amount, approval status, approver name, approval date/time, version number, created date, last updated date, status (Draft/Pending/Approved/Sent/Accepted/Rejected).
+
+- **Quotation Line Item**: Quotation reference, product reference, quantity, unit price (quotation-specific, may differ from catalog base price), line total.
+
+- **Work Progress Sheet**: JobCode reference, product reference, product type reference, created date, last updated date.
+
+- **Work Progress Step**: Work progress sheet reference, step name (Design, Laser, Machining, etc.), status (not started / in progress / completed), date started, date completed, remarks, internal/outsourced flag, vendor name (if outsourced), ETA (if outsourced), created date, last updated date.
+
+- **Delivery**: JobCode reference, delivery date, delivery number (1st, 2nd, etc.), final delivery flag, created date.
+
+- **Delivery Line Item**: Delivery reference, product reference, quantity shipped, unit price (from quotation at time of delivery), line total.
+
+- **Transaction Statement**: JobCode reference, delivery reference, customer info (from JobCode), items (product, quantity, unit price), total amount, document type (거래명세서), created date.
+
+- **Tax Invoice**: Type (sales/purchase), JobCode reference (if applicable), customer/supplier reference, invoice date, amount, status (draft/issued/partially paid/paid/overdue), created date, last updated date.
+
+- **Invoice Line Item**: Tax invoice reference, product reference (if applicable), quantity, unit price (from quotation at time of invoice), line total. Tracks what's been invoiced to prevent double-billing.
+
+- **Payment**: Tax invoice reference, payment date, amount, payment method, remarks, created date.
+
+- **Document**: File name, file type, file size, storage path, JobCode reference (if applicable), product reference (if applicable), project reference (if applicable), customer reference (if applicable), document type tag, upload date, version number, uploader name, archive flag.
+
+- **Customer/Company**: Company name, site/location, department, contact person, phone, email, billing address, payment terms.
+
+- **Supplier/Vendor**: Company name, site/location, contact person, phone, email, service categories (machining, etching, painting, etc.), billing address, payment terms.
+
+- **Purchase Request**: JobCode reference (if applicable), category/service needed, status (draft, RFQ sent, responded, vendor selected, closed), created date, last updated date.
+
+- **RFQ**: Purchase request reference, vendor reference, RFQ email sent date, response status (sent, responded, no response, closed), vendor quote amount (if responded), notes, created date, last updated date.
+
+- **Purchase Order**: RFQ reference (if applicable), vendor reference, JobCode reference (if applicable), item description, quantity, unit price, total, delivery date, status (ordered, received, partial, invoiced), created date, last updated date.
+
+- **User**: User name, email, password (hashed), role (Admin, Finance, Production, Sales), active flag, created date, last login date.
+
+- **Audit Log**: User reference, document/entity accessed (e.g., "Quotation-ID-123"), action (view, download, edit, approve, delete), timestamp, IP address (optional), notes.
+
+---
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can create a JobCode and enter project data in under 2 minutes, with automatic JobCode generation and no re-entry needed in quotations or production workflows.
+
+- **SC-002**: Quotations are created from a JobCode by selecting catalog products and entering quantities/prices in under 5 minutes. Quotation PDFs are generated and downloadable within 10 seconds.
+
+- **SC-003**: Production staff can update work progress (status, date, remarks) for any product step in under 1 minute per update. The updated status is visible on the job detail view within 5 seconds.
+
+- **SC-004**: A delivery is recorded with shipped products/quantities in under 3 minutes. Transaction statements are generated automatically within 10 seconds without manual re-entry of customer, product, or price data.
+
+- **SC-005**: Document uploads complete in under 30 seconds for files up to 100MB. Document search by JobCode/product/customer/document type returns results in under 3 seconds across 10,000+ documents.
+
+- **SC-006**: Sales/purchases can be aggregated and AR/AP reports can be generated (by customer, date range, internal owner, aging) in under 5 seconds. Cash flow forecasting is available with a single button click.
+
+- **SC-007**: Role-based access control prevents unauthorized access to quotations and financial data. Audit logs record 100% of sensitive document accesses within 1 second of access.
+
+- **SC-008**: The system handles concurrent access by 10+ users without data loss or corruption. JobCode uniqueness is maintained even with simultaneous creation attempts.
+
+- **SC-009**: Vendor RFQ emails are auto-generated and sent within 30 seconds. Vendor response tracking and purchase order creation complete in under 3 minutes.
+
+- **SC-010**: Management sees real-time visibility: project status (per-product work progress %), on-time delivery %, sales by month, outstanding AR/AP aging (30/60/90+ days), and project profitability (quotation vs. cost) all within 5 seconds of opening the dashboard.
+
+- **SC-011**: Partial/split deliveries and granular invoicing work correctly—the system prevents double-invoicing of the same product-quantity combination and allows invoicing any subset of products independently.
+
+- **SC-012**: 90% of users successfully create and approve a quotation on their first attempt without support; production staff successfully record delivery and generate transaction statements independently.
+
+---
+
+## Assumptions
+
+- **Database**: System uses a relational database (SQL-based) with foreign key relationships between JobCode, products, quotations, deliveries, invoices, and payments.
+
+- **Product Catalog**: Products are created and maintained by admin users. Initial product data is manually entered or bulk-imported from existing systems.
+
+- **Document Storage**: Files are stored on a centralized server (S3, local file system, or cloud storage) with metadata in the database. No web-based CAD editing is implemented.
+
+- **Email Integration**: Automated RFQ emails are sent via SMTP or external email service (SendGrid, AWS SES). Customer and vendor email addresses are stored in the system.
+
+- **PDF Generation**: Quotations and transaction statements use server-side or cloud PDF generation with professional templates.
+
+- **Authentication**: Session-based login (username/password). Passwords are hashed using industry-standard algorithms (bcrypt, Argon2).
+
+- **Audit Logging**: All access to sensitive documents is logged. Audit logs are immutable and retained for at least 1 year.
+
+- **Localization**: System supports Korean language for customer-facing documents (quotations, transaction statements, tax invoices). English UI is acceptable initially.
+
+- **Time Zone**: All timestamps stored in UTC, displayed in user's local time (Korea Standard Time - KST).
+
+- **Reporting**: Management dashboards are read-only for non-admin users. Excel export of financial data available to Finance and Admin roles.
+
+- **Integration with Hometax/Bizform**: Manual entry and reconciliation expected in MVP. Data import/export to Excel files is out of scope for phase 1.
+
+- **Mobile Support**: MVP focuses on web application (desktop/tablet). Mobile app is out of scope.
+
+- **CAD Support**: No web-based CAD editing or viewing. Files are managed and opened with local CAD tools.
+
+---
+
+## Dependencies & Constraints
+
+- **Customer data must pre-exist**: Customers and suppliers should be pre-loaded or manually entered before creating quotations. Bulk import is out of scope for MVP.
+
+- **JobCode uniqueness**: JobCode values must be unique across all records. Sequence number generation must be atomic to prevent duplicates in high-concurrency scenarios.
+
+- **Product-to-step mapping**: Work progress step templates per product type must be defined by admin before production staff can use them. System should allow manual customization per JobCode.
+
+- **Quotation-to-invoice traceability**: All invoices must link to a quotation line item to prevent discrepancies. System must prevent invoicing products/quantities not in the quotation.
+
+- **Double-billing prevention**: System must track what has been invoiced and prevent invoicing the same product-quantity combination twice.
+
+- **File storage capacity**: Central document storage must support at least 100GB and be scalable to 1TB+.
+
+- **Audit log retention**: Audit logs must be immutable and retained for at least 1 year.
+
+- **Concurrent access**: System must support 10+ concurrent users without data loss or performance degradation.
+
+---
