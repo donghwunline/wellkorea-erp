@@ -12,6 +12,18 @@ The WellKorea Integrated Work System consolidates fragmented job lifecycle data 
 
 ---
 
+## Clarifications
+
+### Session 2025-11-24
+
+- Q: Sales role quotation access scope? → A: Sales role has READ-ONLY access to quotations they created and approved quotations for assigned customers.
+- Q: Quotation rejection workflow? → A: Quotation rejection returns to DRAFT with mandatory approver comments; creator must address comments before resubmitting.
+- Q: Expected JobCode volume for capacity planning? → A: Medium volume (500–1000 JobCodes/month) for capacity planning baseline.
+- Q: Production staff visibility scope? → A: Flexible per-user assignment by Admin (to JobCodes, departments, or full plant visibility).
+- Q: Quotation revision after "Sent" status? → A: New version created with automatic versioning AND optional email notification to customer (Admin chooses whether to notify).
+
+---
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - JobCode Creation & Request Intake (Priority: P1)
@@ -68,6 +80,8 @@ This story delivers the MVP for commercial document generation and granular invo
 3. **Given** a quotation is ready for approval, **When** a manager submits it for internal approval, **Then** the quotation status changes to "Pending Approval" and an approval record is created with manager name, date, and time.
 
 4. **Given** a quotation pending approval, **When** an approver reviews and approves it, **Then** the quotation status changes to "Approved", the approver name and timestamp are recorded, and the quotation can be sent to the customer.
+
+4a. **Given** a quotation pending approval, **When** an approver rejects it with mandatory comments, **Then** the quotation status returns to "Draft", the approver's rejection comments are attached and visible to the creator, and the creator must resubmit after addressing the comments.
 
 5. **Given** an approved quotation, **When** staff edits a line item's unit price or quantity (e.g., customer negotiates a discount), **Then** the change is saved as a new quotation version, and subsequent invoices reference this new version without manual re-entry.
 
@@ -335,73 +349,79 @@ This story delivers security MVP and must ship with P1.
 - **FR-014**: System MUST support internal approval workflow (승인/결재) with approver name, date, and time recording
 - **FR-015**: System MUST preserve all quotation versions and show version history
 - **FR-016**: System MUST generate PDF quotations with professional formatting ready for customer delivery
-- **FR-017**: System MUST track quotation status (Draft, Pending Approval, Approved, Sent, Accepted, Rejected)
+- **FR-017**: System MUST track quotation status (Draft, Pending Approval, Approved, Sent, Accepted, Rejected) and allow rejection with mandatory approver comments that return quotation to Draft
+- **FR-018**: System MUST store and display approver rejection comments visibly to the quotation creator for reference when revising
+- **FR-018a**: System MUST track which quotation version was sent to the customer with send date/time
+- **FR-018b**: System MUST allow Admin to revise a "Sent" quotation, creating a new version automatically while preserving previous versions in history
+- **FR-018c**: System MUST provide Admin with option to email customer notification of quotation revision (Admin chooses whether to send automatic notification or manual follow-up required)
 
 **Production Tracking Per Product**:
 
-- **FR-018**: System MUST provide a separate work progress sheet per product (not per JobCode)
-- **FR-019**: System MUST allow defining product types (e.g., "Sheet Metal," "Custom Components") with standard manufacturing step templates
-- **FR-020**: System MUST suggest manufacturing steps based on product type (Design, Laser, Machining, Assembly, Welding, Painting/Finishing, etc.) but allow customization
-- **FR-021**: System MUST allow recording status (not started / in progress / completed), date, and remarks per step
-- **FR-022**: System MUST support marking steps as internal or outsourced (with vendor name and ETA if outsourced)
-- **FR-023**: System MUST allow hiding unused steps per product
-- **FR-024**: System MUST support parallel processes (multiple steps in progress simultaneously with different dates)
-- **FR-025**: System MUST show aggregated production status on job detail view (e.g., "Bracket 80% complete, Frame 50% complete")
-- **FR-026**: System MUST preserve step history and allow editing remarks without losing historical data
+- **FR-019**: System MUST provide a separate work progress sheet per product (not per JobCode)
+- **FR-020**: System MUST allow defining product types (e.g., "Sheet Metal," "Custom Components") with standard manufacturing step templates
+- **FR-021**: System MUST suggest manufacturing steps based on product type (Design, Laser, Machining, Assembly, Welding, Painting/Finishing, etc.) but allow customization
+- **FR-022**: System MUST allow recording status (not started / in progress / completed), date, and remarks per step
+- **FR-023**: System MUST support marking steps as internal or outsourced (with vendor name and ETA if outsourced)
+- **FR-024**: System MUST allow hiding unused steps per product
+- **FR-025**: System MUST support parallel processes (multiple steps in progress simultaneously with different dates)
+- **FR-026**: System MUST show aggregated production status on job detail view (e.g., "Bracket 80% complete, Frame 50% complete")
+- **FR-027**: System MUST preserve step history and allow editing remarks without losing historical data
 
 **Delivery Tracking & Granular Invoicing**:
 
-- **FR-027**: System MUST support recording deliveries specifying which products and quantities are shipped per JobCode
-- **FR-028**: System MUST track what has been invoiced per product-quantity to prevent double-billing
-- **FR-029**: System MUST auto-generate transaction statements (거래명세서) with only shipped products/quantities, reflecting quotation unit prices
-- **FR-030**: System MUST support single and split deliveries (1st, 2nd, … shipments)
-- **FR-031**: System MUST allow recording a final delivery date for reporting compatibility
-- **FR-032**: System MUST generate PDF transaction statements ready for customer delivery
-- **FR-033**: System MUST show delivery status on job detail (e.g., "Product A 10/10 shipped, Product B 2/5 shipped")
+- **FR-028**: System MUST support recording deliveries specifying which products and quantities are shipped per JobCode
+- **FR-029**: System MUST track what has been invoiced per product-quantity to prevent double-billing
+- **FR-030**: System MUST auto-generate transaction statements (거래명세서) with only shipped products/quantities, reflecting quotation unit prices
+- **FR-031**: System MUST support single and split deliveries (1st, 2nd, … shipments)
+- **FR-032**: System MUST allow recording a final delivery date for reporting compatibility
+- **FR-033**: System MUST generate PDF transaction statements ready for customer delivery
+- **FR-034**: System MUST show delivery status on job detail (e.g., "Product A 10/10 shipped, Product B 2/5 shipped")
 
 **Tax Invoices & Payments**:
 
-- **FR-034**: System MUST support creating sales tax invoices tied to deliveries (auto-populated with delivered products/quantities)
-- **FR-035**: System MUST support creating purchase tax invoices (vendor, amount, JobCode reference if applicable)
-- **FR-036**: System MUST support recording one or more payments (deposits/disbursements) per invoice with date, amount, payment method
-- **FR-037**: System MUST auto-calculate remaining receivable/payable after each payment
-- **FR-038**: System MUST support negative payments (refunds) for AR/AP records
-- **FR-039**: System MUST track invoice status (draft, issued, partially paid, paid, overdue)
-- **FR-040**: System MUST provide AR/AP reports by customer, supplier, date range, and internal owner
-- **FR-041**: System MUST provide cash flow forecasting (receivable/payable by month for next 3 months)
-- **FR-042**: System MUST aggregate sales and purchases by period (monthly, quarterly, yearly)
+- **FR-035**: System MUST support creating sales tax invoices tied to deliveries (auto-populated with delivered products/quantities)
+- **FR-036**: System MUST support creating purchase tax invoices (vendor, amount, JobCode reference if applicable)
+- **FR-037**: System MUST support recording one or more payments (deposits/disbursements) per invoice with date, amount, payment method
+- **FR-038**: System MUST auto-calculate remaining receivable/payable after each payment
+- **FR-039**: System MUST support negative payments (refunds) for AR/AP records
+- **FR-040**: System MUST track invoice status (draft, issued, partially paid, paid, overdue)
+- **FR-041**: System MUST provide AR/AP reports by customer, supplier, date range, and internal owner
+- **FR-042**: System MUST provide cash flow forecasting (receivable/payable by month for next 3 months)
+- **FR-043**: System MUST aggregate sales and purchases by period (monthly, quarterly, yearly)
 
 **Document Management**:
 
-- **FR-043**: System MUST support uploading and storing documents (PDF, DXF, JPG, XLSX, DOCX, etc.) with central storage
-- **FR-044**: System MUST tag documents by JobCode, product, project, customer, and document type (drawing, quotation, photo, BOM, etc.)
-- **FR-045**: System MUST support powerful search by JobCode, project name, customer, product name, and document type
-- **FR-046**: System MUST support filtering documents by multiple attributes simultaneously (e.g., JobCode AND product AND document type)
-- **FR-047**: System MUST provide a virtual tree view (Company → Project → JobCode → Product → Document) without physical folder structures
-- **FR-048**: System MUST preserve document version history when files are replaced
-- **FR-049**: System MUST allow direct file download and opening in local CAD tools (no web-based CAD editing)
-- **FR-050**: System MUST support file size limits (e.g., max 100MB per file)
+- **FR-044**: System MUST support uploading and storing documents (PDF, DXF, JPG, XLSX, DOCX, etc.) with central storage
+- **FR-045**: System MUST tag documents by JobCode, product, project, customer, and document type (drawing, quotation, photo, BOM, etc.)
+- **FR-046**: System MUST support powerful search by JobCode, project name, customer, product name, and document type
+- **FR-047**: System MUST support filtering documents by multiple attributes simultaneously (e.g., JobCode AND product AND document type)
+- **FR-048**: System MUST provide a virtual tree view (Company → Project → JobCode → Product → Document) without physical folder structures
+- **FR-049**: System MUST preserve document version history when files are replaced
+- **FR-050**: System MUST allow direct file download and opening in local CAD tools (no web-based CAD editing)
+- **FR-051**: System MUST support file size limits (e.g., max 100MB per file)
 
 **Purchasing & RFQ**:
 
-- **FR-051**: System MUST support creating purchase requests from a JobCode or as general (non-JobCode) purchases
-- **FR-052**: System MUST store a "who sells what" mapping of vendors to service categories (machining, etching, painting, etc.)
-- **FR-053**: System MUST suggest suitable vendors based on the purchase request category
-- **FR-054**: System MUST auto-generate RFQ emails with JobCode, product description, drawings (if attached), and delivery deadline
-- **FR-055**: System MUST track RFQ status (draft, sent, responded, no response, closed) per vendor
-- **FR-056**: System MUST allow recording vendor quotes and selecting final vendor/price
-- **FR-057**: System MUST link purchases to JobCodes for cost aggregation and profitability analysis
-- **FR-058**: System MUST show all purchases per JobCode with total purchase costs
+- **FR-052**: System MUST support creating purchase requests from a JobCode or as general (non-JobCode) purchases
+- **FR-053**: System MUST store a "who sells what" mapping of vendors to service categories (machining, etching, painting, etc.)
+- **FR-054**: System MUST suggest suitable vendors based on the purchase request category
+- **FR-055**: System MUST auto-generate RFQ emails with JobCode, product description, drawings (if attached), and delivery deadline
+- **FR-056**: System MUST track RFQ status (draft, sent, responded, no response, closed) per vendor
+- **FR-057**: System MUST allow recording vendor quotes and selecting final vendor/price
+- **FR-058**: System MUST link purchases to JobCodes for cost aggregation and profitability analysis
+- **FR-059**: System MUST show all purchases per JobCode with total purchase costs
 
 **Role-Based Access Control**:
 
-- **FR-059**: System MUST enforce role-based access control with roles: Admin, Finance, Production, Sales
-- **FR-060**: System MUST restrict quotation viewing to Admin and Finance roles only
-- **FR-061**: System MUST restrict financial data (AR/AP, invoices, purchase prices) to Admin and Finance roles
-- **FR-062**: System MUST restrict production data (work progress, deliveries, tagged documents) to Production, Admin, and Sales roles
-- **FR-063**: System MUST allow Admin to manage users and assign roles
-- **FR-064**: System MUST maintain an audit log of access to sensitive documents (quotations, financial reports) with user name, date, time, and action
-- **FR-065**: System MUST apply role changes immediately on the user's next session refresh
+- **FR-060**: System MUST enforce role-based access control with roles: Admin, Finance, Production, Sales
+- **FR-061**: System MUST restrict quotation EDITING to Admin and Finance roles only
+- **FR-062**: System MUST allow Sales role READ-ONLY access to quotations they created and approved quotations for their assigned customers
+- **FR-063**: System MUST restrict financial data (AR/AP, invoices, purchase prices) to Admin and Finance roles
+- **FR-064**: System MUST allow Admin to assign Production staff visibility scope: by JobCode, by manufacturing department/step, or full plant visibility
+- **FR-065**: System MUST restrict production data (work progress, deliveries, tagged documents) visibility per assigned scope for Production staff
+- **FR-066**: System MUST allow Admin to manage users and assign roles and visibility scopes
+- **FR-067**: System MUST maintain an audit log of access to sensitive documents (quotations, financial reports) with user name, date, time, and action
+- **FR-068**: System MUST apply role and visibility scope changes immediately on the user's next session refresh
 
 ---
 
@@ -483,9 +503,11 @@ This story delivers security MVP and must ship with P1.
 
 ## Assumptions
 
-- **Database**: System uses a relational database (SQL-based) with foreign key relationships between JobCode, products, quotations, deliveries, invoices, and payments.
+- **Data Volume**: Expected medium volume of 500–1000 JobCodes created per month. System should support at least 12 months of operational data (6,000–12,000 JobCodes) at launch with scalability to 24+ months. Each JobCode may have 1–5 quoted products; 3–10 work progress steps per product; 1–4 deliveries per JobCode; multiple quotation versions per JobCode.
 
-- **Product Catalog**: Products are created and maintained by admin users. Initial product data is manually entered or bulk-imported from existing systems.
+- **Database**: System uses a relational database (SQL-based) with foreign key relationships between JobCode, products, quotations, deliveries, invoices, and payments. Database should support ACID transactions for quotation approval and payment recording.
+
+- **Product Catalog**: Products are created and maintained by admin users. Initial product data is manually entered or bulk-imported from existing systems. Catalog expected to contain 50–200 products at launch.
 
 - **Document Storage**: Files are stored on a centralized server (S3, local file system, or cloud storage) with metadata in the database. No web-based CAD editing is implemented.
 
