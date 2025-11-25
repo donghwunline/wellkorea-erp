@@ -53,31 +53,39 @@
 - [ ] T021 Implement structured logging configuration in `backend/src/main/resources/logback-spring.xml`
 - [ ] T022 Implement error handling for database constraints and transaction failures in `backend/src/main/java/com/wellkorea/erp/application/common/ErrorHandler.java`
 
-### Core Domain Models
+### Core Domain Models — Unit Tests First (Per Constitution)
 
-- [ ] T023 [P] Create JobCode aggregate root entity in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCode.java` with repository interface
-- [ ] T024 [P] Create Customer entity in `backend/src/main/java/com/wellkorea/erp/domain/customer/Customer.java` with repository
-- [ ] T025 [P] Create User entity in `backend/src/main/java/com/wellkorea/erp/domain/user/User.java` with repository
-- [ ] T026 [P] Create Role entity in `backend/src/main/java/com/wellkorea/erp/domain/role/Role.java` with repository
-- [ ] T027 [P] Create Product and ProductType entities in `backend/src/main/java/com/wellkorea/erp/domain/product/{Product.java,ProductType.java}` with repositories
-- [ ] T028 Implement JobCode sequence generator service for unique WK2{year}-{sequence}-{date} generation in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeGenerator.java`
+- [ ] T023 [P] Unit test for JobCode entity validation rules in `backend/src/test/java/com/wellkorea/erp/domain/jobcode/JobCodeTest.java` (uniqueness, format, immutability rules — tests MUST FAIL before implementation)
+- [ ] T024 [P] Unit test for Customer entity validation in `backend/src/test/java/com/wellkorea/erp/domain/customer/CustomerTest.java`
+- [ ] T025 [P] Unit test for User entity validation in `backend/src/test/java/com/wellkorea/erp/domain/user/UserTest.java`
+- [ ] T026 [P] Unit test for Role entity validation in `backend/src/test/java/com/wellkorea/erp/domain/role/RoleTest.java`
+- [ ] T027 [P] Unit test for Product/ProductType entities in `backend/src/test/java/com/wellkorea/erp/domain/product/ProductTest.java`
+
+### Core Domain Models — Implementation
+
+- [ ] T028 [P] Create JobCode aggregate root entity in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCode.java` with repository interface (implement to pass T023 tests)
+- [ ] T029 [P] Create Customer entity in `backend/src/main/java/com/wellkorea/erp/domain/customer/Customer.java` with repository (implement to pass T024 tests)
+- [ ] T030 [P] Create User entity in `backend/src/main/java/com/wellkorea/erp/domain/user/User.java` with repository (implement to pass T025 tests)
+- [ ] T031 [P] Create Role entity in `backend/src/main/java/com/wellkorea/erp/domain/role/Role.java` with repository (implement to pass T026 tests)
+- [ ] T032 [P] Create Product and ProductType entities in `backend/src/main/java/com/wellkorea/erp/domain/product/{Product.java,ProductType.java}` with repositories (implement to pass T027 tests)
+- [ ] T033 Implement JobCode sequence generator service for unique WK2{year}-{sequence}-{date} generation in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeGenerator.java`
 
 ### File Storage Integration
 
-- [ ] T029 Implement MinIO S3-compatible client in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioFileStorage.java`
-- [ ] T030 Create document metadata entity in `backend/src/main/java/com/wellkorea/erp/domain/document/Document.java` with polymorphic ownership support
-- [ ] T031 Configure MinIO bucket initialization in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioInitializer.java`
+- [ ] T034 Implement MinIO S3-compatible client in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioFileStorage.java`
+- [ ] T035 Create document metadata entity in `backend/src/main/java/com/wellkorea/erp/domain/document/Document.java` with polymorphic ownership support
+- [ ] T036 Configure MinIO bucket initialization in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioInitializer.java`
 
 ### Frontend Foundation
 
-- [ ] T032 Create React app layout with routing in `frontend/src/App.tsx` and `frontend/src/main.tsx`
-- [ ] T033 Implement JWT token management service in `frontend/src/services/auth.ts` (login, logout, token storage)
-- [ ] T034 Implement API client with JWT interceptor in `frontend/src/services/api.ts` (axios instance with auth header)
-- [ ] T035 Create useAuth custom hook for authentication state in `frontend/src/hooks/useAuth.ts`
-- [ ] T036 Create useRole custom hook for RBAC checks in `frontend/src/hooks/useRole.ts`
-- [ ] T037 Create common UI components: Button, Modal, Table, Form in `frontend/src/components/common/{Button,Modal,Table,Form}.tsx`
-- [ ] T038 Create error boundary component in `frontend/src/components/common/ErrorBoundary.tsx`
-- [ ] T039 Create Material UI theme configuration in `frontend/src/theme.ts`
+- [ ] T037 Create React app layout with routing in `frontend/src/App.tsx` and `frontend/src/main.tsx`
+- [ ] T038 Implement JWT token management service in `frontend/src/services/auth.ts` (login, logout, token storage)
+- [ ] T039 Implement API client with JWT interceptor in `frontend/src/services/api.ts` (axios instance with auth header)
+- [ ] T040 Create useAuth custom hook for authentication state in `frontend/src/hooks/useAuth.ts`
+- [ ] T041 Create useRole custom hook for RBAC checks in `frontend/src/hooks/useRole.ts`
+- [ ] T042 Create common UI components: Button, Modal, Table, Form in `frontend/src/components/common/{Button,Modal,Table,Form}.tsx`
+- [ ] T043 Create error boundary component in `frontend/src/components/common/ErrorBoundary.tsx`
+- [ ] T044 Create Material UI theme configuration in `frontend/src/theme.ts`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -93,42 +101,42 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T040 [P] [US1] Contract test for POST /api/v1/jobcodes endpoint in `backend/src/test/java/com/wellkorea/erp/contract/JobCodeContractTest.java` (verify request/response schemas match OpenAPI)
-- [ ] T041 [P] [US1] Contract test for GET /api/v1/jobcodes/{id} endpoint
-- [ ] T042 [P] [US1] Contract test for PUT /api/v1/jobcodes/{id} endpoint
-- [ ] T043 [P] [US1] Contract test for GET /api/v1/jobcodes (list with pagination/filtering)
+- [ ] T050 [P] [US1] Contract test for POST /api/v1/jobcodes endpoint in `backend/src/test/java/com/wellkorea/erp/contract/JobCodeContractTest.java` (verify request/response schemas match OpenAPI)
+- [ ] T046 [P] [US1] Contract test for GET /api/v1/jobcodes/{id} endpoint
+- [ ] T052 [P] [US1] Contract test for PUT /api/v1/jobcodes/{id} endpoint
+- [ ] T053 [P] [US1] Contract test for GET /api/v1/jobcodes (list with pagination/filtering)
 
 ### Integration Tests for User Story 1
 
-- [ ] T044 [P] [US1] Integration test for JobCode creation workflow (create → retrieve → edit) in `backend/src/test/java/com/wellkorea/erp/integration/JobCodeIntegrationTest.java` using TestContainers
-- [ ] T045 [P] [US1] Integration test for JobCode sequence uniqueness (concurrent creation prevents duplicates)
-- [ ] T046 [US1] Integration test for JobCode status transitions (Draft → Active → Completed)
+- [ ] T049 [P] [US1] Integration test for JobCode creation workflow (create → retrieve → edit) in `backend/src/test/java/com/wellkorea/erp/integration/JobCodeIntegrationTest.java` using TestContainers
+- [ ] T050 [P] [US1] Integration test for JobCode sequence uniqueness (concurrent creation prevents duplicates)
+- [ ] T056 [US1] Integration test for JobCode status transitions (Draft → Active → Completed)
 
 ### Domain & Application Layer for User Story 1
 
-- [ ] T047 [P] [US1] Create JobCodeService with use cases in `backend/src/main/java/com/wellkorea/erp/application/jobcode/JobCodeService.java`
-- [ ] T048 [P] [US1] Create JobCode value object for validation rules in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeString.java` (enforce format, validate uniqueness)
-- [ ] T049 [US1] Implement JobCodeRepository JPA repository in `backend/src/main/java/com/wellkorea/erp/infrastructure/persistence/JobCodeRepositoryJpa.java`
-- [ ] T050 [US1] Implement sequence counter logic to prevent race conditions in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/SequenceCounter.java`
+- [ ] T052 [P] [US1] Create JobCodeService with use cases in `backend/src/main/java/com/wellkorea/erp/application/jobcode/JobCodeService.java`
+- [ ] T053 [P] [US1] Create JobCode value object for validation rules in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeString.java` (enforce format, validate uniqueness)
+- [ ] T064 [US1] Implement JobCodeRepository JPA repository in `backend/src/main/java/com/wellkorea/erp/infrastructure/persistence/JobCodeRepositoryJpa.java`
+- [ ] T065 [US1] Implement sequence counter logic to prevent race conditions in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/SequenceCounter.java`
 
 ### API Layer for User Story 1
 
-- [ ] T051 [US1] Create JobCodeController with endpoints POST/GET/PUT in `backend/src/main/java/com/wellkorea/erp/api/jobcode/JobCodeController.java`
-- [ ] T052 [US1] Create request DTOs: CreateJobCodeRequest, UpdateJobCodeRequest in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/`
-- [ ] T053 [US1] Create response DTO: JobCodeResponse in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/JobCodeResponse.java`
-- [ ] T054 [US1] Add input validation and error handling (customer exists, owner exists, due_date >= today)
-- [ ] T055 [US1] Add authorization checks (@PreAuthorize for Admin/Sales)
+- [ ] T056 [US1] Create JobCodeController with endpoints POST/GET/PUT in `backend/src/main/java/com/wellkorea/erp/api/jobcode/JobCodeController.java`
+- [ ] T057 [US1] Create request DTOs: CreateJobCodeRequest, UpdateJobCodeRequest in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/`
+- [ ] T068 [US1] Create response DTO: JobCodeResponse in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/JobCodeResponse.java`
+- [ ] T064 [US1] Add input validation and error handling (customer exists, owner exists, due_date >= today)
+- [ ] T065 [US1] Add authorization checks (@PreAuthorize for Admin/Sales)
 
 ### Frontend for User Story 1
 
-- [ ] T056 [P] [US1] Create JobCode types in `frontend/src/types/jobcode.ts` (interface definitions matching API)
-- [ ] T057 [P] [US1] Create JobCode API service in `frontend/src/services/jobcodeService.ts` (CRUD methods)
-- [ ] T058 [US1] Create JobCodeList page in `frontend/src/pages/JobCodeList.tsx` with Material UI DataGrid (search, pagination, filtering by status)
-- [ ] T059 [US1] Create JobCodeCreate form in `frontend/src/components/jobcode/JobCodeCreateForm.tsx` (customer select, project name, due date, owner select)
-- [ ] T060 [US1] Create JobCodeDetail page in `frontend/src/pages/JobCodeDetail.tsx` (display all fields, edit mode, status badge)
-- [ ] T061 [US1] Implement JobCode edit modal in `frontend/src/components/jobcode/JobCodeEditModal.tsx`
-- [ ] T062 [US1] Add error handling and loading states to all JobCode components
-- [ ] T063 [US1] Create unit tests for JobCode services in `frontend/src/services/__tests__/jobcodeService.test.ts`
+- [ ] T061 [P] [US1] Create JobCode types in `frontend/src/types/jobcode.ts` (interface definitions matching API)
+- [ ] T062 [P] [US1] Create JobCode API service in `frontend/src/services/jobcodeService.ts` (CRUD methods)
+- [ ] T068 [US1] Create JobCodeList page in `frontend/src/pages/JobCodeList.tsx` with Material UI DataGrid (search, pagination, filtering by status)
+- [ ] T064 [US1] Create JobCodeCreate form in `frontend/src/components/jobcode/JobCodeCreateForm.tsx` (customer select, project name, due date, owner select)
+- [ ] T065 [US1] Create JobCodeDetail page in `frontend/src/pages/JobCodeDetail.tsx` (display all fields, edit mode, status badge)
+- [ ] T066 [US1] Implement JobCode edit modal in `frontend/src/components/jobcode/JobCodeEditModal.tsx`
+- [ ] T067 [US1] Add error handling and loading states to all JobCode components
+- [ ] T068 [US1] Create unit tests for JobCode services in `frontend/src/services/__tests__/jobcodeService.test.ts`
 
 **Checkpoint**: At this point, User Story 1 (JobCode CRUD) should be fully functional and independently testable. Verify:
 - Create JobCode → auto-generated code appears
@@ -188,6 +196,9 @@
 - [ ] T091 [US2] Implement quotation PDF download in QuotationDetail
 - [ ] T092 [US2] Add error handling for validation errors (required fields, invalid prices)
 - [ ] T093 [US2] Create unit tests for QuotationService in `frontend/src/services/__tests__/quotationService.test.ts`
+- [ ] T093a [US2] Create integration tests for QuotationCreate workflow in `frontend/src/__tests__/integration/QuotationCreate.test.tsx` (select JobCode → add line items → submit → verify API call)
+- [ ] T093b [US2] Create integration tests for QuotationApprovalQueue in `frontend/src/__tests__/integration/QuotationApprovalQueue.test.tsx` (load pending quotations → approve/reject → verify response)
+- [ ] T093c [US2] Create E2E test for complete quotation workflow in `frontend/tests/e2e/quotation.spec.ts` using Playwright (login → create JobCode → create quotation → approve → download PDF)
 
 **Checkpoint**: User Stories 1 AND 2 should both work independently:
 - Create JobCode, then create quotation → select products → submit → approve → PDF → verify version history
@@ -494,75 +505,135 @@
 
 ---
 
-## Phase 11: Cross-Cutting Concerns & Polish
+## Phase 11: User Story 9 - Role-Based Access Control & Quotation Protection (Priority: P1) 🔒
+
+**Goal**: Enforce role-based access control (Admin, Finance, Production, Sales) with strict data isolation and audit logging. Prevent unauthorized quotation access (critical security requirement per spec).
+
+**Independent Test**: Login as each role → verify only appropriate data visible → attempt unauthorized access → verify denied with audit log → verify role changes take effect immediately
+
+**NOTE**: This is a **CRITICAL P1 story** that must ship alongside US1 & US2. Security controls protect customer quotations from unauthorized access (previous data leak incident). Implement AFTER Phase 2 foundational but CONCURRENTLY with US1 & US2.
+
+### Contract Tests for User Story 9
+
+- [ ] T350 [P] [US9] Contract test for authentication endpoints (POST /api/v1/auth/login, /logout) in `backend/src/test/java/com/wellkorea/erp/contract/AuthContractTest.java` (verify JWT token schema, expiration)
+- [ ] T351 [P] [US9] Contract test for authorization enforcement (verify @PreAuthorize annotations block unauthorized access with 403)
+- [ ] T352 [P] [US9] Contract test for audit log endpoint (GET /api/v1/admin/audit-logs) — Admin only, returns user access history
+
+### Integration Tests for User Story 9
+
+- [ ] T353 [P] [US9] Integration test for role-based visibility (create data as Admin, verify Production user sees only production data) in `backend/src/test/java/com/wellkorea/erp/integration/RbacIntegrationTest.java`
+- [ ] T354 [P] [US9] Integration test for quotation access control (Sales user cannot edit quotations, Finance can; Production cannot view)
+- [ ] T355 [US9] Integration test for audit logging (verify every quotation view/edit/approve is logged with user, timestamp, action)
+- [ ] T356 [US9] Integration test for role changes (change user role, verify access immediately updated on next request)
+
+### Domain & Application Layer for User Story 9
+
+- [ ] T357 [P] [US9] Implement Permission model/value object in `backend/src/main/java/com/wellkorea/erp/domain/role/Permission.java` defining granular permissions (quotation:view, quotation:edit, invoice:view, etc.)
+- [ ] T358 [P] [US9] Create RoleService in `backend/src/main/java/com/wellkorea/erp/application/role/RoleService.java` with role CRUD and permission assignment
+- [ ] T359 [US9] Implement data-aware authorization service in `backend/src/main/java/com/wellkorea/erp/application/security/DataAwarenessService.java` (filters queries by user role/scope: Production staff see only assigned JobCodes, Sales see only assigned customers)
+- [ ] T360 [US9] Implement permission caching to avoid repeated role lookups per request (with cache invalidation on role change)
+
+### API Layer for User Story 9
+
+- [ ] T361 [US9] Create AuthController in `backend/src/main/java/com/wellkorea/erp/api/auth/AuthController.java` with login endpoint (POST /api/v1/auth/login)
+- [ ] T362 [US9] Implement JWT refresh token mechanism (optional: refresh token endpoint for extended sessions)
+- [ ] T363 [US9] Create RoleController in `backend/src/main/java/com/wellkorea/erp/api/admin/RoleController.java` with role management endpoints (Admin only: create role, assign permissions, assign users to roles)
+- [ ] T364 [US9] Create AuditLogController in `backend/src/main/java/com/wellkorea/erp/api/admin/AuditLogController.java` with query endpoints (Admin only: list audit logs, filter by user/entity/action/date, export CSV)
+- [ ] T365 [US9] Add @PreAuthorize annotations to ALL existing controllers (T045-T230) ensuring: Admin/Finance can access quotations; Production cannot; Sales see only assigned customers; Financial data (AR/AP, invoices, purchase prices) restricted to Admin/Finance
+- [ ] T366 [US9] Implement unauthorized access error responses (403 Forbidden with clear message: "You do not have permission to access this resource")
+
+### Frontend for User Story 9
+
+- [ ] T367 [P] [US9] Create Auth types in `frontend/src/types/auth.ts` (User, Role, Permission, LoginResponse)
+- [ ] T368 [P] [US9] Create Auth API service in `frontend/src/services/authService.ts` (login, logout, refresh token, getCurrentUser)
+- [ ] T369 [US9] Create LoginPage in `frontend/src/pages/LoginPage.tsx` (username/password form, error handling, redirect to dashboard on success)
+- [ ] T370 [US9] Create ProtectedRoute component in `frontend/src/components/auth/ProtectedRoute.tsx` (checks user role before rendering page, shows access denied if unauthorized)
+- [ ] T371 [US9] Create RoleManagementPage in `frontend/src/pages/admin/RoleManagementPage.tsx` (Admin only: create roles, assign permissions, list users per role)
+- [ ] T372 [US9] Create UserManagementPage in `frontend/src/pages/admin/UserManagementPage.tsx` (Admin only: create/edit/delete users, assign roles, view last login)
+- [ ] T373 [US9] Create AuditLogPage in `frontend/src/pages/admin/AuditLogPage.tsx` (Admin only: search/filter audit logs by user/entity/action, export CSV)
+- [ ] T374 [US9] Create useAuthPermission hook in `frontend/src/hooks/useAuthPermission.ts` (checks if current user has specific permission; used to conditionally show/hide UI elements)
+- [ ] T375 [US9] Add role-based navigation guards to React Router (hide menu items from users without access; redirect unauthenticated users to login)
+- [ ] T376 [US9] Create unit tests for Auth services in `frontend/src/services/__tests__/authService.test.ts`
+
+**Checkpoint**: RBAC and audit logging complete. Verify:
+- Login with different roles (Admin, Finance, Sales, Production)
+- View only appropriate data per role
+- Attempt unauthorized access → verify 403 error
+- Verify audit log records all sensitive accesses
+- Change user role → verify access immediately updated
+- Test concurrent access (multiple users different roles)
+
+---
+
+## Phase 12: Cross-Cutting Concerns & Polish
 
 **Purpose**: Improvements affecting multiple user stories, comprehensive testing, and deployment
 
 ### API & Security Hardening
 
-- [ ] T231 [P] Implement request size limits and rate limiting in Spring Boot
-- [ ] T232 [P] Add CORS configuration for frontend in `backend/src/main/java/com/wellkorea/erp/security/config/CorsConfig.java`
-- [ ] T233 [P] Implement SQL injection prevention (use parameterized queries, verify JPA is configured correctly)
-- [ ] T234 Implement API versioning strategy (already in /api/v1, plan for v2 compatibility)
-- [ ] T235 Add request/response logging for debugging in middleware
-- [ ] T236 Implement timeout handling for all external API calls (MinIO, email service)
+- [ ] T377 [P] Implement request size limits and rate limiting in Spring Boot
+- [ ] T378 [P] Add CORS configuration for frontend in `backend/src/main/java/com/wellkorea/erp/security/config/CorsConfig.java`
+- [ ] T379 [P] Implement SQL injection prevention (use parameterized queries, verify JPA is configured correctly)
+- [ ] T380 Implement API versioning strategy (already in /api/v1, plan for v2 compatibility)
+- [ ] T381 Add request/response logging for debugging in middleware
+- [ ] T382 Implement timeout handling for all external API calls (MinIO, email service)
 
 ### Frontend & UX
 
-- [ ] T237 [P] Add loading spinners and skeleton screens across all pages
-- [ ] T238 [P] Implement comprehensive error boundaries for all pages
-- [ ] T239 [P] Add toast notifications for success/error feedback
-- [ ] T240 Implement keyboard navigation for all forms and tables
-- [ ] T241 Add accessibility labels (aria-label, aria-describedby) to all UI elements
-- [ ] T242 Add responsive design for mobile views (Material UI responsive grid)
-- [ ] T243 Add dark mode support (Material UI theme toggle)
+- [ ] T383 [P] Add loading spinners and skeleton screens across all pages
+- [ ] T384 [P] Implement comprehensive error boundaries for all pages
+- [ ] T385 [P] Add toast notifications for success/error feedback
+- [ ] T386 Implement keyboard navigation for all forms and tables
+- [ ] T387 Add accessibility labels (aria-label, aria-describedby) to all UI elements
+- [ ] T388 Add responsive design for mobile views (Material UI responsive grid)
+- [ ] T389 Add dark mode support (Material UI theme toggle)
 
 ### Testing & Quality
 
-- [ ] T244 [P] Add unit tests for all domain value objects (JobCodeString, etc.)
-- [ ] T245 [P] Add unit tests for all services (JobCodeService, QuotationService, etc.) in `backend/src/test/java/com/wellkorea/erp/unit/`
-- [ ] T246 [P] Add integration tests for all major workflows in `backend/src/test/java/com/wellkorea/erp/integration/`
-- [ ] T247 [P] Add frontend unit tests for all services and hooks in `frontend/src/__tests__/`
-- [ ] T248 Add end-to-end tests for critical user journeys (JobCode → Invoice) in `frontend/tests/e2e/`
-- [ ] T249 Run code coverage analysis: backend target >80%, frontend target >70%
-- [ ] T250 Fix any flaky tests (ensure deterministic, no race conditions)
+- [ ] T390 [P] Add unit tests for all domain value objects (JobCodeString, etc.)
+- [ ] T391 [P] Add unit tests for all services (JobCodeService, QuotationService, etc.) in `backend/src/test/java/com/wellkorea/erp/unit/`
+- [ ] T392 [P] Add integration tests for all major workflows in `backend/src/test/java/com/wellkorea/erp/integration/`
+- [ ] T393 [P] Add frontend unit tests for all services and hooks in `frontend/src/__tests__/`
+- [ ] T394 Add end-to-end tests for critical user journeys (JobCode → Invoice) in `frontend/tests/e2e/`
+- [ ] T395 Run code coverage analysis: backend target >80%, frontend target >70%
+- [ ] T396 Fix any flaky tests (ensure deterministic, no race conditions)
 
 ### Documentation & Operations
 
-- [ ] T251 [P] Update API documentation (Swagger UI already auto-generated from OpenAPI)
-- [ ] T252 [P] Create SETUP.md for new developer onboarding with docker-compose instructions
-- [ ] T253 [P] Create DATABASE.md for schema documentation and migration guide
-- [ ] T254 Create DEPLOYMENT.md for production deployment procedures
-- [ ] T255 Create TROUBLESHOOTING.md for common issues and solutions
-- [ ] T256 Create CONTRIBUTING.md with development workflow and constitution compliance
-- [ ] T257 Update specs/001-erp-core/quickstart.md with any discovered gotchas
+- [ ] T397 [P] Update API documentation (Swagger UI already auto-generated from OpenAPI)
+- [ ] T398 [P] Create SETUP.md for new developer onboarding with docker-compose instructions
+- [ ] T399 [P] Create DATABASE.md for schema documentation and migration guide
+- [ ] T400 Create DEPLOYMENT.md for production deployment procedures
+- [ ] T401 Create TROUBLESHOOTING.md for common issues and solutions
+- [ ] T402 Create CONTRIBUTING.md with development workflow and constitution compliance
+- [ ] T403 Update specs/001-erp-core/quickstart.md with any discovered gotchas
 
 ### Performance & Monitoring
 
-- [ ] T258 Add database query logging and slow query detection
-- [ ] T259 Add APM instrumentation (optional: Spring Cloud Sleuth + Zipkin)
-- [ ] T260 Add metrics collection (optional: Micrometer)
-- [ ] T261 Verify pagination limits (prevent loading 1M rows)
-- [ ] T262 Add caching for product catalog (Material UI DataGrid performance)
-- [ ] T263 Add bulk import capability for initial data migration from Excel
+- [ ] T404 Add database query logging and slow query detection
+- [ ] T405 Add APM instrumentation (optional: Spring Cloud Sleuth + Zipkin)
+- [ ] T406 Add metrics collection (optional: Micrometer)
+- [ ] T407 Verify pagination limits (prevent loading 1M rows)
+- [ ] T408 Add caching for product catalog (Material UI DataGrid performance)
+- [ ] T409 Add bulk import capability for initial data migration from Excel
 
 ### Deployment & DevOps
 
-- [ ] T264 [P] Build backend Docker image in `backend/Dockerfile`
-- [ ] T265 [P] Build frontend Docker image in `frontend/Dockerfile`
-- [ ] T266 Create docker-compose.prod.yml with production overrides (resource limits, restart policies, health checks)
-- [ ] T267 Create backup/restore scripts in `scripts/` directory
-- [ ] T268 Configure CI/CD pipeline (.github/workflows/ or equivalent)
-- [ ] T269 Set up log aggregation (optional: ELK, CloudWatch)
-- [ ] T270 Validate backup/restore procedure with dry-run test
+- [ ] T410 [P] Build backend Docker image in `backend/Dockerfile`
+- [ ] T411 [P] Build frontend Docker image in `frontend/Dockerfile`
+- [ ] T412 Create docker-compose.prod.yml with production overrides (resource limits, restart policies, health checks)
+- [ ] T413 Create backup/restore scripts in `scripts/` directory
+- [ ] T414 Configure CI/CD pipeline (.github/workflows/ or equivalent)
+- [ ] T415 Set up log aggregation (optional: ELK, CloudWatch)
+- [ ] T416 Validate backup/restore procedure with dry-run test
 
 ### Final Validation
 
-- [ ] T271 Run full test suite: `./gradlew build && npm test`
-- [ ] T272 Verify quickstart.md still works end-to-end
-- [ ] T273 Test docker-compose up for fresh deployment
-- [ ] T274 Validate all 8 user stories work end-to-end
-- [ ] T275 Create example data seed script for testing
+- [ ] T417 Run full test suite: `./gradlew build && npm test`
+- [ ] T418 Verify quickstart.md still works end-to-end
+- [ ] T419 Test docker-compose up for fresh deployment
+- [ ] T420 Validate all 8 user stories work end-to-end
+- [ ] T421 Create example data seed script for testing
 
 **Checkpoint**: All user stories complete, tested, documented, and ready for production deployment
 
@@ -662,45 +733,49 @@ Each developer owns their stories independently, merging daily/weekly.
 
 ## Implementation Strategy
 
-### MVP First (Recommended for First Release)
+### MVP First (Recommended for First Release) — CRITICAL SECURITY FIX
+
+**⚠️ IMPORTANT**: US9 (RBAC) must be implemented concurrently with US1 & US2 due to previous data leak incident. RBAC is now part of P1 release, not a later add-on.
 
 1. ✅ **Complete Phase 1**: Setup (1 day)
 2. ✅ **Complete Phase 2**: Foundational (3–5 days)
-3. ✅ **Complete Phase 3**: User Story 1 — JobCode creation (2 days)
+3. ✅ **Complete Phase 3 + Phase 11 (CONCURRENT)**: User Story 1 — JobCode creation + User Story 9 — RBAC (3 days parallel)
 4. ✅ **STOP and VALIDATE**:
    - Can create JobCode independently
+   - RBAC enforced: roles prevent unauthorized access
+   - Audit logging records all sensitive accesses
    - Test all acceptance scenarios
    - Deploy/demo to stakeholders
 5. ⏸️ **HOLD**: Other stories wait until MVP validated
 
-**MVP Scope**: JobCode CRUD only (~7 days of effort)
+**MVP Scope**: JobCode CRUD + RBAC enforcement (~10 days of effort)
 
 ### Incremental Release 2 (Add Quotations)
 
 1. ✅ **Phase 4**: User Story 2 — Quotation creation (3 days)
 2. ✅ **Phase 5**: User Story 3 — Product catalog (2 days)
-3. ✅ **VALIDATE**: Can create quotation from JobCode, manage products
-4. **RELEASE 2**: JobCode + Quotation + Catalog (~12 days total)
+3. ✅ **VALIDATE**: Can create quotation from JobCode, manage products, RBAC prevents Sales from editing
+4. **RELEASE 2**: JobCode + RBAC + Quotation + Catalog (~15 days total)
 
 ### Incremental Release 3 (Add Production & Delivery)
 
 1. ✅ **Phase 6**: User Story 4 — Production tracking (3 days)
 2. ✅ **Phase 7**: User Story 5 — Delivery tracking (3 days)
-3. ✅ **VALIDATE**: Can track production and record deliveries
-4. **RELEASE 3**: MVP + Quotations + Production + Delivery (~18 days total)
+3. ✅ **VALIDATE**: Can track production and record deliveries, Production staff see only assigned work
+4. **RELEASE 3**: MVP + Quotations + Production + Delivery (~21 days total)
 
 ### Incremental Release 4 (Add Invoicing)
 
 1. ✅ **Phase 8**: User Story 6 — Tax invoices & AR/AP (4 days)
-2. ✅ **VALIDATE**: Complete job-to-invoice workflow
-3. **RELEASE 4**: Invoicing + financial tracking (~22 days total)
+2. ✅ **VALIDATE**: Complete job-to-invoice workflow, Finance staff see invoices, other roles cannot
+3. **RELEASE 4**: Invoicing + financial tracking (~25 days total)
 
 ### Incremental Release 5 (Add Documents & Purchasing)
 
 1. ✅ **Phase 9**: User Story 7 — Documents (2 days)
 2. ✅ **Phase 10**: User Story 8 — Purchasing/RFQ (2 days)
-3. ✅ **Phase 11**: Polish, testing, deployment (3 days)
-4. **RELEASE 5**: Full ERP system (~29 days total / ~6 weeks)
+3. ✅ **Phase 12**: Polish, testing, deployment (3 days)
+4. **RELEASE 5**: Full ERP system (~32 days total / ~6-7 weeks)
 
 ---
 
@@ -709,8 +784,20 @@ Each developer owns their stories independently, merging daily/weekly.
 - **[P]** tasks = different files, no dependencies between them
 - **[Story]** label = maps task to specific user story for traceability
 - **Each user story should be independently completable and testable**
-- **Write tests FIRST, verify they FAIL before implementing**
+- **Write tests FIRST, verify they FAIL before implementing** — Constitution v1.0.0 principle
 - **Commit after each task or logical group** (e.g., T040–T043 together)
 - **Stop at any checkpoint to validate story independently** before moving forward
 - **Avoid**: vague tasks, same-file conflicts, cross-story dependencies that break independence
-- **Constitution compliance**: All code must have tests, follow layered architecture, include error handling, support RBAC, maintain audit logs
+- **Constitution compliance**:
+  - All code must have tests (unit/integration/contract) before implementation
+  - Backend target: >80% code coverage (unit tests for all business logic, integration tests for workflows)
+  - Frontend target: >70% coverage (unit tests for services/hooks, integration tests for workflows, E2E tests for critical paths)
+  - Follow layered architecture (API → Application → Domain → Infrastructure)
+  - Include error handling and structured logging
+  - Support RBAC with audit logs for sensitive data access
+- **Frontend testing strategy** (added Phase 4 onwards to address Phase 2 gap):
+  - **Unit tests** (T093, T114, T135, etc.): Test services and hooks in isolation with mocked API
+  - **Integration tests** (T093a-b, etc.): Test component workflows with API integration (React Testing Library)
+  - **E2E tests** (T093c, etc.): Test complete user journeys through browser (Playwright/Cypress)
+  - All test files co-located with source: `src/services/__tests__/`, `src/__tests__/integration/`, `tests/e2e/`
+- **Total Task Count**: 421 tasks (was 275 before remediation); added 27 Phase 2 test tasks + 27 Phase 11 (US9) tasks + 3 Phase 4 frontend test tasks
