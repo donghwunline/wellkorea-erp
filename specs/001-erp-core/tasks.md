@@ -40,11 +40,11 @@
 
 ### Security & Authentication
 
-- [ ] T014 Implement JWT token generation and validation in `backend/src/main/java/com/wellkorea/erp/security/jwt/JwtTokenProvider.java`
-- [ ] T015 Implement Spring Security configuration with JWT filter in `backend/src/main/java/com/wellkorea/erp/security/config/SecurityConfig.java`
-- [ ] T016 Implement RBAC (Role-Based Access Control) with @PreAuthorize annotations in `backend/src/main/java/com/wellkorea/erp/security/rbac/RoleAuthorityResolver.java`
-- [ ] T017 Implement audit logging infrastructure: `backend/src/main/java/com/wellkorea/erp/infrastructure/audit/AuditLog.java` and `AuditAspect.java`
-- [ ] T018 Implement AuditingEntityListener for automatic created_by/updated_by timestamps in `backend/src/main/java/com/wellkorea/erp/infrastructure/audit/AuditingEntityListener.java`
+- [X] T014 Implement JWT token generation and validation in `backend/src/main/java/com/wellkorea/erp/security/jwt/JwtTokenProvider.java`
+- [X] T015 Implement Spring Security configuration with JWT filter in `backend/src/main/java/com/wellkorea/erp/security/config/SecurityConfig.java`
+- [X] T016 Implement RBAC (Role-Based Access Control) with @PreAuthorize annotations in `backend/src/main/java/com/wellkorea/erp/security/rbac/RoleAuthorityResolver.java`
+- [X] T017 Implement audit logging infrastructure: `backend/src/main/java/com/wellkorea/erp/infrastructure/audit/AuditLog.java` and `AuditAspect.java`
+- [X] T018 Implement AuditingEntityListener for automatic created_by/updated_by timestamps in `backend/src/main/java/com/wellkorea/erp/infrastructure/audit/AuditingEntityListener.java`
 
 ### API & Error Handling
 
