@@ -72,20 +72,20 @@
 
 ### File Storage Integration
 
-- [ ] T034 Implement MinIO S3-compatible client in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioFileStorage.java`
-- [ ] T035 Create document metadata entity in `backend/src/main/java/com/wellkorea/erp/domain/document/Document.java` with polymorphic ownership support
-- [ ] T036 Configure MinIO bucket initialization in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioInitializer.java`
+- [X] T034 Implement MinIO S3-compatible client in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioFileStorage.java`
+- [X] T035 Create document metadata entity in `backend/src/main/java/com/wellkorea/erp/domain/document/Document.java` with polymorphic ownership support
+- [X] T036 Configure MinIO bucket initialization in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioInitializer.java`
 
 ### Frontend Foundation
 
-- [ ] T037 Create React app layout with routing in `frontend/src/App.tsx` and `frontend/src/main.tsx`
-- [ ] T038 Implement JWT token management service in `frontend/src/services/auth.ts` (login, logout, token storage)
-- [ ] T039 Implement API client with JWT interceptor in `frontend/src/services/api.ts` (axios instance with auth header)
-- [ ] T040 Create useAuth custom hook for authentication state in `frontend/src/hooks/useAuth.ts`
-- [ ] T041 Create useRole custom hook for RBAC checks in `frontend/src/hooks/useRole.ts`
-- [ ] T042 Create common UI components: Button, Modal, Table, Form in `frontend/src/components/common/{Button,Modal,Table,Form}.tsx`
-- [ ] T043 Create error boundary component in `frontend/src/components/common/ErrorBoundary.tsx`
-- [ ] T044 Create Material UI theme configuration in `frontend/src/theme.ts`
+- [X] T037 Create React app layout with routing in `frontend/src/App.tsx` and `frontend/src/main.tsx`
+- [X] T038 Implement JWT token management service in `frontend/src/services/auth.ts` (login, logout, token storage)
+- [X] T039 Implement API client with JWT interceptor in `frontend/src/services/api.ts` (axios instance with auth header)
+- [X] T040 Create useAuth custom hook for authentication state in `frontend/src/hooks/useAuth.ts`
+- [X] T041 Create useRole custom hook for RBAC checks in `frontend/src/hooks/useRole.ts`
+- [X] T042 Create common UI components: Button, Modal, Table, Form in `frontend/src/components/common/{Button,Modal,Table,Form}.tsx`
+- [X] T043 Create error boundary component in `frontend/src/components/common/ErrorBoundary.tsx`
+- [X] T044 Create Material UI theme configuration in `frontend/src/theme.ts`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
