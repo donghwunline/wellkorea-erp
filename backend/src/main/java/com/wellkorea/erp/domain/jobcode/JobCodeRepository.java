@@ -1,5 +1,7 @@
 package com.wellkorea.erp.domain.jobcode;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,11 +24,14 @@ public interface JobCodeRepository extends JpaRepository<JobCode, UUID> {
     @Query("SELECT j FROM JobCode j WHERE j.deletedAt IS NULL ORDER BY j.createdAt DESC")
     List<JobCode> findAllActive();
 
-    @Query("SELECT j FROM JobCode j WHERE j.deletedAt IS NULL AND j.status = :status ORDER BY j.createdAt DESC")
-    List<JobCode> findByStatus(@Param("status") JobCodeStatus status);
+    @Query("SELECT j FROM JobCode j WHERE j.deletedAt IS NULL AND j.status = :status")
+    Page<JobCode> findByStatus(@Param("status") JobCodeStatus status, Pageable pageable);
 
-    @Query("SELECT j FROM JobCode j WHERE j.deletedAt IS NULL AND j.customer.id = :customerId ORDER BY j.createdAt DESC")
-    List<JobCode> findByCustomerId(@Param("customerId") UUID customerId);
+    @Query("SELECT j FROM JobCode j WHERE j.deletedAt IS NULL AND j.customer.id = :customerId")
+    Page<JobCode> findByCustomerId(@Param("customerId") UUID customerId, Pageable pageable);
+
+    @Query("SELECT j FROM JobCode j WHERE j.deletedAt IS NULL AND j.status = :status AND j.customer.id = :customerId")
+    Page<JobCode> findByStatusAndCustomerId(@Param("status") JobCodeStatus status, @Param("customerId") UUID customerId, Pageable pageable);
 
     @Query("SELECT j FROM JobCode j WHERE j.deletedAt IS NULL AND j.internalOwner.id = :ownerId ORDER BY j.createdAt DESC")
     List<JobCode> findByInternalOwnerId(@Param("ownerId") UUID ownerId);

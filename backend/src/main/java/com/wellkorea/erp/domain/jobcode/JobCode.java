@@ -51,6 +51,9 @@ public class JobCode extends AuditableEntity {
     @Column(name = "status", length = 50)
     private JobCodeStatus status = JobCodeStatus.DRAFT;
 
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
@@ -152,7 +155,19 @@ public class JobCode extends AuditableEntity {
         this.status = status;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public Instant getDeletedAt() {
         return deletedAt;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 }
