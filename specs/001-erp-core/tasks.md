@@ -48,10 +48,10 @@
 
 ### API & Error Handling
 
-- [ ] T019 Create Spring Boot REST controller base class with exception handling in `backend/src/main/java/com/wellkorea/erp/api/common/GlobalExceptionHandler.java`
-- [ ] T020 Create standardized API response wrapper in `backend/src/main/java/com/wellkorea/erp/api/common/ApiResponse.java`
-- [ ] T021 Implement structured logging configuration in `backend/src/main/resources/logback-spring.xml`
-- [ ] T022 Implement error handling for database constraints and transaction failures in `backend/src/main/java/com/wellkorea/erp/application/common/ErrorHandler.java`
+- [X] T019 Create Spring Boot REST controller base class with exception handling in `backend/src/main/java/com/wellkorea/erp/api/common/GlobalExceptionHandler.java`
+- [X] T020 Create standardized API response wrapper in `backend/src/main/java/com/wellkorea/erp/api/common/ApiResponse.java`
+- [X] T021 Implement structured logging configuration in `backend/src/main/resources/logback-spring.xml`
+- [X] T022 Implement error handling for database constraints and transaction failures in `backend/src/main/java/com/wellkorea/erp/application/common/ErrorHandler.java`
 
 ### Core Domain Models — Unit Tests First (Per Constitution)
 
@@ -63,12 +63,12 @@
 
 ### Core Domain Models — Implementation
 
-- [ ] T028 [P] Create JobCode aggregate root entity in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCode.java` with repository interface (implement to pass T023 tests)
-- [ ] T029 [P] Create Customer entity in `backend/src/main/java/com/wellkorea/erp/domain/customer/Customer.java` with repository (implement to pass T024 tests)
-- [ ] T030 [P] Create User entity in `backend/src/main/java/com/wellkorea/erp/domain/user/User.java` with repository (implement to pass T025 tests)
-- [ ] T031 [P] Create Role entity in `backend/src/main/java/com/wellkorea/erp/domain/role/Role.java` with repository (implement to pass T026 tests)
-- [ ] T032 [P] Create Product and ProductType entities in `backend/src/main/java/com/wellkorea/erp/domain/product/{Product.java,ProductType.java}` with repositories (implement to pass T027 tests)
-- [ ] T033 Implement JobCode sequence generator service for unique WK2{year}-{sequence}-{date} generation in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeGenerator.java`
+- [X] T028 [P] Create JobCode aggregate root entity in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCode.java` with repository interface (implement to pass T023 tests)
+- [X] T029 [P] Create Customer entity in `backend/src/main/java/com/wellkorea/erp/domain/customer/Customer.java` with repository (implement to pass T024 tests)
+- [X] T030 [P] Create User entity in `backend/src/main/java/com/wellkorea/erp/domain/user/User.java` with repository (implement to pass T025 tests)
+- [X] T031 [P] Create Role entity in `backend/src/main/java/com/wellkorea/erp/domain/role/Role.java` with repository (implement to pass T026 tests)
+- [X] T032 [P] Create Product and ProductType entities in `backend/src/main/java/com/wellkorea/erp/domain/product/{Product.java,ProductType.java}` with repositories (implement to pass T027 tests)
+- [X] T033 Implement JobCode sequence generator service for unique WK2{year}-{sequence}-{date} generation in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeGenerator.java`
 
 ### File Storage Integration
 
