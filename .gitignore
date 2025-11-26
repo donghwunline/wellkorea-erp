@@ -1,0 +1,52 @@
+.claude/
+.idea/
+.specify/
+
+# Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+out/
+*.log
+.settings/
+.project
+.classpath
+bin/
+
+# Node.js / JavaScript / TypeScript
+node_modules/
+dist/
+build/
+*.log
+.env*
+coverage/
+.vscode/
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# MinIO / S3
+.minio.sys/
+
+# Test coverage
+coverage/
+*.lcov

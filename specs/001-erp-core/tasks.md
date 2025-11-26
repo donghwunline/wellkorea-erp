@@ -13,13 +13,13 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create backend project structure per implementation plan: `backend/src/main/java/com/wellkorea/erp/{api,application,domain,infrastructure,security}` with corresponding test directories
-- [ ] T002 Create frontend project structure per implementation plan: `frontend/src/{components,pages,services,hooks,types}` with test directories
-- [ ] T003 [P] Initialize Spring Boot 3.x project with Gradle and dependencies in `backend/build.gradle` (Spring Data JPA, Spring Security, iText, Apache POI, TestContainers)
-- [ ] T004 [P] Initialize React 18 project with TypeScript in `frontend/package.json` (Vite, Material UI, React Router, React Query, Axios)
-- [ ] T005 [P] Configure Java linting (Checkstyle, SpotBugs) and formatting (Google Java Format) in `backend/build.gradle`
-- [ ] T006 [P] Configure TypeScript linting (ESLint) and formatting (Prettier) in `frontend/package.json`
-- [ ] T007 [P] Create docker-compose.yml with PostgreSQL 14, MinIO, backend service, frontend service, optional Keycloak
+- [X] T001 Create backend project structure per implementation plan: `backend/src/main/java/com/wellkorea/erp/{api,application,domain,infrastructure,security}` with corresponding test directories
+- [X] T002 Create frontend project structure per implementation plan: `frontend/src/{components,pages,services,hooks,types}` with test directories
+- [X] T003 [P] Initialize Spring Boot 3.x project with Gradle and dependencies in `backend/build.gradle` (Spring Data JPA, Spring Security, iText, Apache POI, TestContainers)
+- [X] T004 [P] Initialize React 18 project with TypeScript in `frontend/package.json` (Vite, Material UI, React Router, React Query, Axios)
+- [X] T005 [P] Configure Java linting (Checkstyle, SpotBugs) and formatting (Google Java Format) in `backend/build.gradle`
+- [X] T006 [P] Configure TypeScript linting (ESLint) and formatting (Prettier) in `frontend/package.json`
+- [X] T007 [P] Create docker-compose.yml with PostgreSQL 14, MinIO, backend service, frontend service, optional Keycloak
 
 ---
 
@@ -31,12 +31,12 @@
 
 ### Database & Migrations
 
-- [ ] T008 Create Flyway migration framework: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
-- [ ] T009 Create database schema for core entities (JobCode, Customer, Product, ProductType, User, Role, AuditLog) in V1 migration
-- [ ] T010 [P] Create Flyway migrations for quotation entities (Quotation, QuotationLineItem, Approval) in `V2__quotation_schema.sql`
-- [ ] T011 [P] Create Flyway migrations for production entities (WorkProgressSheet, WorkProgressStepTemplate, WorkProgressStep) in `V3__production_schema.sql`
-- [ ] T012 [P] Create Flyway migrations for delivery/invoice entities (Delivery, DeliveryLineItem, TaxInvoice, InvoiceLineItem, Payment) in `V4__invoice_schema.sql`
-- [ ] T013 [P] Create Flyway migrations for cross-cutting entities (Document, RFQ, PurchaseOrder, Supplier, AuditLog) in `V5__crosscutting_schema.sql`
+- [X] T008 Create Flyway migration framework: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
+- [X] T009 Create database schema for core entities (JobCode, Customer, Product, ProductType, User, Role, AuditLog) in V1 migration
+- [X] T010 [P] Create Flyway migrations for quotation entities (Quotation, QuotationLineItem, Approval) in `V2__quotation_schema.sql`
+- [X] T011 [P] Create Flyway migrations for production entities (WorkProgressSheet, WorkProgressStepTemplate, WorkProgressStep) in `V3__production_schema.sql`
+- [X] T012 [P] Create Flyway migrations for delivery/invoice entities (Delivery, DeliveryLineItem, TaxInvoice, InvoiceLineItem, Payment) in `V4__invoice_schema.sql`
+- [X] T013 [P] Create Flyway migrations for cross-cutting entities (Document, RFQ, PurchaseOrder, Supplier, AuditLog) in `V5__crosscutting_schema.sql`
 
 ### Security & Authentication
 
