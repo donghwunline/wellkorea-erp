@@ -101,42 +101,42 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T050 [P] [US1] Contract test for POST /api/v1/jobcodes endpoint in `backend/src/test/java/com/wellkorea/erp/contract/JobCodeContractTest.java` (verify request/response schemas match OpenAPI)
-- [ ] T046 [P] [US1] Contract test for GET /api/v1/jobcodes/{id} endpoint
-- [ ] T052 [P] [US1] Contract test for PUT /api/v1/jobcodes/{id} endpoint
-- [ ] T053 [P] [US1] Contract test for GET /api/v1/jobcodes (list with pagination/filtering)
+- [X] T050 [P] [US1] Contract test for POST /api/v1/jobcodes endpoint in `backend/src/test/java/com/wellkorea/erp/contract/JobCodeContractTest.java` (verify request/response schemas match OpenAPI)
+- [X] T046 [P] [US1] Contract test for GET /api/v1/jobcodes/{id} endpoint
+- [X] T052 [P] [US1] Contract test for PUT /api/v1/jobcodes/{id} endpoint
+- [X] T053 [P] [US1] Contract test for GET /api/v1/jobcodes (list with pagination/filtering)
 
 ### Integration Tests for User Story 1
 
-- [ ] T049 [P] [US1] Integration test for JobCode creation workflow (create → retrieve → edit) in `backend/src/test/java/com/wellkorea/erp/integration/JobCodeIntegrationTest.java` using TestContainers
-- [ ] T050 [P] [US1] Integration test for JobCode sequence uniqueness (concurrent creation prevents duplicates)
-- [ ] T056 [US1] Integration test for JobCode status transitions (Draft → Active → Completed)
+- [X] T049 [P] [US1] Integration test for JobCode creation workflow (create → retrieve → edit) in `backend/src/test/java/com/wellkorea/erp/integration/JobCodeIntegrationTest.java` using TestContainers
+- [X] T050 [P] [US1] Integration test for JobCode sequence uniqueness (concurrent creation prevents duplicates)
+- [X] T056 [US1] Integration test for JobCode status transitions (Draft → Active → Completed)
 
 ### Domain & Application Layer for User Story 1
 
-- [ ] T052 [P] [US1] Create JobCodeService with use cases in `backend/src/main/java/com/wellkorea/erp/application/jobcode/JobCodeService.java`
-- [ ] T053 [P] [US1] Create JobCode value object for validation rules in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeString.java` (enforce format, validate uniqueness)
-- [ ] T064 [US1] Implement JobCodeRepository JPA repository in `backend/src/main/java/com/wellkorea/erp/infrastructure/persistence/JobCodeRepositoryJpa.java`
-- [ ] T065 [US1] Implement sequence counter logic to prevent race conditions in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/SequenceCounter.java`
+- [X] T052 [P] [US1] Create JobCodeService with use cases in `backend/src/main/java/com/wellkorea/erp/application/jobcode/JobCodeService.java`
+- [X] T053 [P] [US1] Create JobCode value object for validation rules in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeString.java` (enforce format, validate uniqueness)
+- [X] T064 [US1] Implement JobCodeRepository JPA repository in `backend/src/main/java/com/wellkorea/erp/infrastructure/persistence/JobCodeRepositoryJpa.java`
+- [X] T065 [US1] Implement sequence counter logic to prevent race conditions in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/SequenceCounter.java`
 
 ### API Layer for User Story 1
 
-- [ ] T056 [US1] Create JobCodeController with endpoints POST/GET/PUT in `backend/src/main/java/com/wellkorea/erp/api/jobcode/JobCodeController.java`
-- [ ] T057 [US1] Create request DTOs: CreateJobCodeRequest, UpdateJobCodeRequest in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/`
-- [ ] T068 [US1] Create response DTO: JobCodeResponse in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/JobCodeResponse.java`
-- [ ] T064 [US1] Add input validation and error handling (customer exists, owner exists, due_date >= today)
-- [ ] T065 [US1] Add authorization checks (@PreAuthorize for Admin/Sales)
+- [X] T056 [US1] Create JobCodeController with endpoints POST/GET/PUT in `backend/src/main/java/com/wellkorea/erp/api/jobcode/JobCodeController.java`
+- [X] T057 [US1] Create request DTOs: CreateJobCodeRequest, UpdateJobCodeRequest in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/`
+- [X] T068 [US1] Create response DTO: JobCodeResponse in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/JobCodeResponse.java`
+- [X] T064 [US1] Add input validation and error handling (customer exists, owner exists, due_date >= today)
+- [X] T065 [US1] Add authorization checks (@PreAuthorize for Admin/Sales)
 
 ### Frontend for User Story 1
 
-- [ ] T061 [P] [US1] Create JobCode types in `frontend/src/types/jobcode.ts` (interface definitions matching API)
-- [ ] T062 [P] [US1] Create JobCode API service in `frontend/src/services/jobcodeService.ts` (CRUD methods)
-- [ ] T068 [US1] Create JobCodeList page in `frontend/src/pages/JobCodeList.tsx` with Material UI DataGrid (search, pagination, filtering by status)
-- [ ] T064 [US1] Create JobCodeCreate form in `frontend/src/components/jobcode/JobCodeCreateForm.tsx` (customer select, project name, due date, owner select)
-- [ ] T065 [US1] Create JobCodeDetail page in `frontend/src/pages/JobCodeDetail.tsx` (display all fields, edit mode, status badge)
-- [ ] T066 [US1] Implement JobCode edit modal in `frontend/src/components/jobcode/JobCodeEditModal.tsx`
-- [ ] T067 [US1] Add error handling and loading states to all JobCode components
-- [ ] T068 [US1] Create unit tests for JobCode services in `frontend/src/services/__tests__/jobcodeService.test.ts`
+- [X] T061 [P] [US1] Create JobCode types in `frontend/src/types/jobcode.ts` (interface definitions matching API)
+- [X] T062 [P] [US1] Create JobCode API service in `frontend/src/services/jobcodeService.ts` (CRUD methods)
+- [X] T068 [US1] Create JobCodeList page in `frontend/src/pages/JobCodeList.tsx` with Material UI DataGrid (search, pagination, filtering by status)
+- [X] T064 [US1] Create JobCodeCreate form in `frontend/src/components/jobcode/JobCodeCreateForm.tsx` (customer select, project name, due date, owner select)
+- [X] T065 [US1] Create JobCodeDetail page in `frontend/src/pages/JobCodeDetail.tsx` (display all fields, edit mode, status badge)
+- [X] T066 [US1] Implement JobCode edit modal in `frontend/src/components/jobcode/JobCodeEditModal.tsx`
+- [X] T067 [US1] Add error handling and loading states to all JobCode components
+- [X] T068 [US1] Create unit tests for JobCode services in `frontend/src/services/__tests__/jobcodeService.test.ts`
 
 **Checkpoint**: At this point, User Story 1 (JobCode CRUD) should be fully functional and independently testable. Verify:
 - Create JobCode → auto-generated code appears
