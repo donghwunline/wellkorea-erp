@@ -78,12 +78,15 @@ public class ErrorHandler {
      */
     public String handleTransactionFailure(TransactionException ex) {
         logger.error("Transaction failure", ex);
-
-        if (ex instanceof OptimisticLockingFailureException) {
-            return "The record was modified by another user. Please refresh and try again.";
-        }
-
         return "Transaction failed. Please try again.";
+    }
+
+    /**
+     * Handle optimistic locking failures
+     */
+    public String handleOptimisticLockingFailure(OptimisticLockingFailureException ex) {
+        logger.error("Optimistic locking failure", ex);
+        return "The record was modified by another user. Please refresh and try again.";
     }
 
     /**
