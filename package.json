@@ -1,0 +1,15 @@
+{
+  "name": "well-korea-erp",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "frontend:test": "cd frontend && npm test"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
