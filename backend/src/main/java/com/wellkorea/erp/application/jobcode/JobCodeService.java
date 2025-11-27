@@ -55,15 +55,11 @@ public class JobCodeService {
         // Generate unique JobCode
         String code = jobCodeGenerator.generateJobCode();
 
-        // Create JobCode entity
-        JobCode jobCode = new JobCode();
-        jobCode.setJobcode(code);
-        jobCode.setProjectName(request.getProjectName());
-        jobCode.setCustomer(customer);
+        // Create JobCode entity using public constructor
+        JobCode jobCode = new JobCode(code, customer, request.getProjectName());
         jobCode.setInternalOwner(owner);
         jobCode.setRequestedDueDate(request.getDueDate());
         jobCode.setDescription(request.getDescription());
-        jobCode.setStatus(JobCodeStatus.DRAFT);
 
         JobCode savedJobCode = jobCodeRepository.save(jobCode);
         log.info("JobCode created successfully: {}", savedJobCode.getJobcode());

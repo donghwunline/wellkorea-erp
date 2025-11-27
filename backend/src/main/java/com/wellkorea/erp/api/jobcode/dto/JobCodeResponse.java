@@ -7,8 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -25,8 +25,8 @@ public class JobCodeResponse {
     private LocalDate dueDate;
     private JobCodeStatus status;
     private String description;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     @Data
     @Builder
@@ -55,8 +55,8 @@ public class JobCodeResponse {
                 .projectName(jobCode.getProjectName())
                 .customer(CustomerInfo.builder()
                         .id(jobCode.getCustomer().getId())
-                        .name(jobCode.getCustomer().getName())
-                        .companyRegistrationNumber(jobCode.getCustomer().getCompanyRegistrationNumber())
+                        .name(jobCode.getCustomer().getCompanyName())
+                        .companyRegistrationNumber(null)  // TODO: Add this field to Customer entity if needed
                         .build())
                 .owner(UserInfo.builder()
                         .id(jobCode.getInternalOwner().getId())
