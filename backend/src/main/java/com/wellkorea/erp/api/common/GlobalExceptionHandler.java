@@ -1,5 +1,7 @@
 package com.wellkorea.erp.api.common;
 
+import com.wellkorea.erp.api.common.exception.BadRequestException;
+import com.wellkorea.erp.api.common.exception.ResourceNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
