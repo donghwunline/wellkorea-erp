@@ -1,0 +1,150 @@
+# CD - Staging Environment Deployment
+#
+# This workflow is commented out and ready to be enabled when you're ready to deploy to staging.
+# To enable: uncomment the entire workflow below and configure your deployment secrets.
+#
+# Required secrets:
+# - STAGING_SSH_HOST: SSH host for staging server
+# - STAGING_SSH_USER: SSH user for staging server
+# - STAGING_SSH_KEY: SSH private key for staging server
+
+# name: CD - Staging Environment
+#
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch:
+#
+# # Prevent concurrent deployments
+# concurrency:
+#   group: staging-deployment
+#   cancel-in-progress: false
+#
+# jobs:
+#   # Build and push Docker images (reuse dev images or rebuild)
+#   build-backend:
+#     name: Build Backend
+#     uses: ./.github/workflows/_shared/docker-build.yml
+#     with:
+#       component: backend
+#       environment: staging
+#       push: true
+#     permissions:
+#       contents: read
+#       packages: write
+#
+#   build-frontend:
+#     name: Build Frontend
+#     uses: ./.github/workflows/_shared/docker-build.yml
+#     with:
+#       component: frontend
+#       environment: staging
+#       push: true
+#     permissions:
+#       contents: read
+#       packages: write
+#
+#   # Deploy to staging environment
+#   deploy-staging:
+#     name: Deploy to Staging
+#     runs-on: ubuntu-latest
+#     needs: [build-backend, build-frontend]
+#     environment:
+#       name: staging
+#       url: https://staging.wellkorea-erp.com  # Update with your staging URL
+#
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+#
+#       - name: Create deployment directory
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.STAGING_SSH_HOST }}
+#           username: ${{ secrets.STAGING_SSH_USER }}
+#           key: ${{ secrets.STAGING_SSH_KEY }}
+#           script: |
+#             mkdir -p ~/wellkorea-erp
+#             cd ~/wellkorea-erp
+#
+#       - name: Copy docker-compose.yml to server
+#         uses: appleboy/scp-action@v0.1.7
+#         with:
+#           host: ${{ secrets.STAGING_SSH_HOST }}
+#           username: ${{ secrets.STAGING_SSH_USER }}
+#           key: ${{ secrets.STAGING_SSH_KEY }}
+#           source: "docker-compose.yml,.env.example"
+#           target: "~/wellkorea-erp"
+#
+#       - name: Deploy with Docker Compose
+#         uses: appleboy/ssh-action@v1.0.3
+#         env:
+#           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           host: ${{ secrets.STAGING_SSH_HOST }}
+#           username: ${{ secrets.STAGING_SSH_USER }}
+#           key: ${{ secrets.STAGING_SSH_KEY }}
+#           envs: GHCR_TOKEN
+#           script: |
+#             cd ~/wellkorea-erp
+#
+#             # Login to GitHub Container Registry
+#             echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+#
+#             # Pull latest images
+#             docker compose pull
+#
+#             # Deploy
+#             docker compose up -d
+#
+#             # Clean up old images
+#             docker image prune -af
+#
+#       - name: Wait for services to be healthy
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.STAGING_SSH_HOST }}
+#           username: ${{ secrets.STAGING_SSH_USER }}
+#           key: ${{ secrets.STAGING_SSH_KEY }}
+#           script: |
+#             cd ~/wellkorea-erp
+#             timeout 120 bash -c 'until docker compose ps | grep -q healthy; do sleep 5; done'
+#
+#   # Run E2E tests against staging environment
+#   e2e-tests:
+#     name: E2E Tests
+#     needs: deploy-staging
+#     uses: ./.github/workflows/_shared/e2e-tests.yml
+#     with:
+#       environment: staging
+#       base-url: https://staging.wellkorea-erp.com  # Update with your staging URL
+#
+#   # Deployment summary
+#   deployment-summary:
+#     name: Deployment Summary
+#     runs-on: ubuntu-latest
+#     needs: [deploy-staging, e2e-tests]
+#     if: always()
+#
+#     steps:
+#       - name: Create deployment summary
+#         run: |
+#           echo "## Staging Deployment Summary" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#           echo "**Environment:** Staging" >> $GITHUB_STEP_SUMMARY
+#           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+#           echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#
+#           if [ "${{ needs.deploy-staging.result }}" == "success" ]; then
+#             echo "✅ Deployment: Success" >> $GITHUB_STEP_SUMMARY
+#           else
+#             echo "❌ Deployment: Failed" >> $GITHUB_STEP_SUMMARY
+#           fi
+#
+#           if [ "${{ needs.e2e-tests.result }}" == "success" ]; then
+#             echo "✅ E2E Tests: Passed" >> $GITHUB_STEP_SUMMARY
+#           else
+#             echo "❌ E2E Tests: Failed" >> $GITHUB_STEP_SUMMARY
+#           fi

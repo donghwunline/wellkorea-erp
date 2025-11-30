@@ -1,0 +1,197 @@
+# CD - Production Environment Deployment
+#
+# This workflow is commented out and ready to be enabled when you're ready to deploy to production.
+# To enable: uncomment the entire workflow below and configure your deployment secrets and environment protection rules.
+#
+# Required GitHub Settings:
+# 1. Create a "production" environment in Settings > Environments
+# 2. Enable "Required reviewers" for manual approval
+# 3. Add deployment secrets:
+#    - PROD_SSH_HOST: SSH host for production server
+#    - PROD_SSH_USER: SSH user for production server
+#    - PROD_SSH_KEY: SSH private key for production server
+
+# name: CD - Production Environment
+#
+# on:
+#   push:
+#     tags:
+#       - 'v*'  # Trigger on version tags (e.g., v1.0.0, v1.2.3)
+#   workflow_dispatch:
+#
+# # Prevent concurrent deployments
+# concurrency:
+#   group: prod-deployment
+#   cancel-in-progress: false
+#
+# jobs:
+#   # Build and push Docker images
+#   build-backend:
+#     name: Build Backend
+#     uses: ./.github/workflows/_shared/docker-build.yml
+#     with:
+#       component: backend
+#       environment: prod
+#       push: true
+#     permissions:
+#       contents: read
+#       packages: write
+#
+#   build-frontend:
+#     name: Build Frontend
+#     uses: ./.github/workflows/_shared/docker-build.yml
+#     with:
+#       component: frontend
+#       environment: prod
+#       push: true
+#     permissions:
+#       contents: read
+#       packages: write
+#
+#   # Deploy to production (requires manual approval via GitHub Environment)
+#   deploy-prod:
+#     name: Deploy to Production
+#     runs-on: ubuntu-latest
+#     needs: [build-backend, build-frontend]
+#     environment:
+#       name: production
+#       url: https://wellkorea-erp.com  # Update with your production URL
+#
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+#
+#       - name: Create deployment directory
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.PROD_SSH_HOST }}
+#           username: ${{ secrets.PROD_SSH_USER }}
+#           key: ${{ secrets.PROD_SSH_KEY }}
+#           script: |
+#             mkdir -p ~/wellkorea-erp
+#             cd ~/wellkorea-erp
+#
+#       - name: Backup current deployment
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.PROD_SSH_HOST }}
+#           username: ${{ secrets.PROD_SSH_USER }}
+#           key: ${{ secrets.PROD_SSH_KEY }}
+#           script: |
+#             cd ~/wellkorea-erp
+#             if [ -f docker-compose.yml ]; then
+#               BACKUP_DIR="backups/$(date +%Y%m%d-%H%M%S)"
+#               mkdir -p $BACKUP_DIR
+#               cp docker-compose.yml .env $BACKUP_DIR/ || true
+#               docker compose ps > $BACKUP_DIR/services.txt || true
+#               echo "Backup created in $BACKUP_DIR"
+#             fi
+#
+#       - name: Copy docker-compose.yml to server
+#         uses: appleboy/scp-action@v0.1.7
+#         with:
+#           host: ${{ secrets.PROD_SSH_HOST }}
+#           username: ${{ secrets.PROD_SSH_USER }}
+#           key: ${{ secrets.PROD_SSH_KEY }}
+#           source: "docker-compose.yml,.env.example"
+#           target: "~/wellkorea-erp"
+#
+#       - name: Deploy with Docker Compose
+#         uses: appleboy/ssh-action@v1.0.3
+#         env:
+#           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           host: ${{ secrets.PROD_SSH_HOST }}
+#           username: ${{ secrets.PROD_SSH_USER }}
+#           key: ${{ secrets.PROD_SSH_KEY }}
+#           envs: GHCR_TOKEN
+#           script: |
+#             cd ~/wellkorea-erp
+#
+#             # Login to GitHub Container Registry
+#             echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+#
+#             # Pull latest images
+#             docker compose pull
+#
+#             # Deploy with rolling update
+#             docker compose up -d --no-deps --build
+#
+#       - name: Wait for services to be healthy
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.PROD_SSH_HOST }}
+#           username: ${{ secrets.PROD_SSH_USER }}
+#           key: ${{ secrets.PROD_SSH_KEY }}
+#           script: |
+#             cd ~/wellkorea-erp
+#             timeout 180 bash -c 'until docker compose ps | grep -q healthy; do sleep 5; done'
+#
+#       - name: Verify deployment
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.PROD_SSH_HOST }}
+#           username: ${{ secrets.PROD_SSH_USER }}
+#           key: ${{ secrets.PROD_SSH_KEY }}
+#           script: |
+#             cd ~/wellkorea-erp
+#             docker compose ps
+#
+#   # Smoke tests in production
+#   smoke-tests:
+#     name: Smoke Tests
+#     needs: deploy-prod
+#     uses: ./.github/workflows/_shared/e2e-tests.yml
+#     with:
+#       environment: prod
+#       base-url: https://wellkorea-erp.com  # Update with your production URL
+#
+#   # Monitoring & Rollback Strategy
+#   post-deployment:
+#     name: Post Deployment
+#     runs-on: ubuntu-latest
+#     needs: [deploy-prod, smoke-tests]
+#     if: always()
+#
+#     steps:
+#       - name: Create deployment summary
+#         run: |
+#           echo "## Production Deployment Summary" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#           echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+#           echo "**Version:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+#           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+#           echo "**Deployed by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#
+#           if [ "${{ needs.deploy-prod.result }}" == "success" ]; then
+#             echo "✅ Deployment: Success" >> $GITHUB_STEP_SUMMARY
+#           else
+#             echo "❌ Deployment: Failed" >> $GITHUB_STEP_SUMMARY
+#           fi
+#
+#           if [ "${{ needs.smoke-tests.result }}" == "success" ]; then
+#             echo "✅ Smoke Tests: Passed" >> $GITHUB_STEP_SUMMARY
+#           else
+#             echo "⚠️ Smoke Tests: Failed - Consider rollback" >> $GITHUB_STEP_SUMMARY
+#           fi
+#
+#       - name: Rollback instructions
+#         if: needs.smoke-tests.result != 'success'
+#         run: |
+#           echo "## Rollback Instructions" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#           echo "To rollback, SSH to production server and run:" >> $GITHUB_STEP_SUMMARY
+#           echo '```bash' >> $GITHUB_STEP_SUMMARY
+#           echo "cd ~/wellkorea-erp" >> $GITHUB_STEP_SUMMARY
+#           echo "# Find the backup directory" >> $GITHUB_STEP_SUMMARY
+#           echo "ls -la backups/" >> $GITHUB_STEP_SUMMARY
+#           echo "# Restore from backup" >> $GITHUB_STEP_SUMMARY
+#           echo "cp backups/YYYYMMDD-HHMMSS/docker-compose.yml ." >> $GITHUB_STEP_SUMMARY
+#           echo "cp backups/YYYYMMDD-HHMMSS/.env ." >> $GITHUB_STEP_SUMMARY
+#           echo "docker compose up -d" >> $GITHUB_STEP_SUMMARY
+#           echo '```' >> $GITHUB_STEP_SUMMARY
+#
+#       # Optional: Notify team on Slack/Discord
+#       # - name: Notify deployment status
+#       #   uses: ...
