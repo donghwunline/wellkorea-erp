@@ -16,7 +16,7 @@ COPY src ./src
 RUN gradle clean build -x test --no-daemon
 
 # Runtime stage
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
 # Create non-root user
