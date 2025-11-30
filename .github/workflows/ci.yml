@@ -1,0 +1,102 @@
+name: CI - Code Quality & Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+# Cancel in-progress runs for the same workflow and PR/branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Backend quality checks
+  backend-ci:
+    name: Backend CI
+    uses: ./.github/workflows/_shared/backend-quality.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Frontend quality checks
+  frontend-ci:
+    name: Frontend CI
+    uses: ./.github/workflows/_shared/frontend-quality.yml
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Security checks
+  security-checks:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check for secrets with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Quality gate summary
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci, security-checks]
+    if: always()
+
+    steps:
+      - name: Check quality gate
+        run: |
+          echo "## Quality Gate Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.backend-ci.result }}" == "success" ]; then
+            echo "✅ Backend CI: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Backend CI: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.frontend-ci.result }}" == "success" ]; then
+            echo "✅ Frontend CI: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Frontend CI: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.security-checks.result }}" == "success" ]; then
+            echo "✅ Security Checks: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Security Checks: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail if any job failed
+        if: |
+          needs.backend-ci.result != 'success' ||
+          needs.frontend-ci.result != 'success' ||
+          needs.security-checks.result != 'success'
+        run: |
+          echo "Quality gate failed - one or more checks did not pass"
+          exit 1
