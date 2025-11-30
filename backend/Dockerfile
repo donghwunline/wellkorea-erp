@@ -1,5 +1,5 @@
 # Build stage
-FROM gradle:8.11-jdk21 AS build
+FROM gradle:9.2-jdk21 AS build
 WORKDIR /app
 
 # Copy gradle wrapper and configuration files for dependency caching
