@@ -15,7 +15,7 @@ COPY . .
 RUN npm run build
 
 # Runtime stage
-FROM nginx:1.27-alpine
+FROM nginx:1.29-alpine
 WORKDIR /usr/share/nginx/html
 
 # Remove default nginx static assets
