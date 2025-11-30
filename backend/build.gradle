@@ -1,0 +1,79 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.8'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
+    id 'org.sonarqube' version '6.0.1.5171'
+}
+
+group = 'com.wellkorea'
+version = '0.0.1-SNAPSHOT'
+description = 'backend'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+// JaCoCo Configuration
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.70
+            }
+        }
+    }
+}
+
+check {
+    dependsOn jacocoTestCoverageVerification
+}
+
+// SonarQube Configuration
+sonar {
+    properties {
+        property 'sonar.projectKey', 'wellkorea-erp-backend'
+        property 'sonar.organization', 'donghwunline'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+        property 'sonar.coverage.jacoco.xmlReportPaths', "${layout.buildDirectory.get().asFile}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
