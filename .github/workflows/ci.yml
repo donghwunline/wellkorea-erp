@@ -18,14 +18,14 @@ jobs:
   # Backend quality checks
   backend-ci:
     name: Backend CI
-    uses: ./.github/workflows/_shared/backend-quality.yml
+    uses: ./.github/workflows/backend-quality.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   # Frontend quality checks
   frontend-ci:
     name: Frontend CI
-    uses: ./.github/workflows/_shared/frontend-quality.yml
+    uses: ./.github/workflows/frontend-quality.yml
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 

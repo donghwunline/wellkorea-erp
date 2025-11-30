@@ -25,7 +25,7 @@
 #   # Build and push Docker images (reuse dev images or rebuild)
 #   build-backend:
 #     name: Build Backend
-#     uses: ./.github/workflows/_shared/docker-build.yml
+#     uses: ./.github/workflows/docker-build.yml
 #     with:
 #       component: backend
 #       environment: staging
@@ -36,7 +36,7 @@
 #
 #   build-frontend:
 #     name: Build Frontend
-#     uses: ./.github/workflows/_shared/docker-build.yml
+#     uses: ./.github/workflows/docker-build.yml
 #     with:
 #       component: frontend
 #       environment: staging
@@ -115,7 +115,7 @@
 #   e2e-tests:
 #     name: E2E Tests
 #     needs: deploy-staging
-#     uses: ./.github/workflows/_shared/e2e-tests.yml
+#     uses: ./.github/workflows/e2e-tests.yml
 #     with:
 #       environment: staging
 #       base-url: https://staging.wellkorea-erp.com  # Update with your staging URL

@@ -28,7 +28,7 @@
 #   # Build and push Docker images
 #   build-backend:
 #     name: Build Backend
-#     uses: ./.github/workflows/_shared/docker-build.yml
+#     uses: ./.github/workflows/docker-build.yml
 #     with:
 #       component: backend
 #       environment: prod
@@ -39,7 +39,7 @@
 #
 #   build-frontend:
 #     name: Build Frontend
-#     uses: ./.github/workflows/_shared/docker-build.yml
+#     uses: ./.github/workflows/docker-build.yml
 #     with:
 #       component: frontend
 #       environment: prod
@@ -141,7 +141,7 @@
 #   smoke-tests:
 #     name: Smoke Tests
 #     needs: deploy-prod
-#     uses: ./.github/workflows/_shared/e2e-tests.yml
+#     uses: ./.github/workflows/e2e-tests.yml
 #     with:
 #       environment: prod
 #       base-url: https://wellkorea-erp.com  # Update with your production URL
