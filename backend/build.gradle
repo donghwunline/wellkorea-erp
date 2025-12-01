@@ -47,6 +47,13 @@ jacoco {
 
 jacocoTestReport {
     dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/BackendApplication.class'
+            ])
+        }))
+    }
     reports {
         xml.required = true
         html.required = true
@@ -55,6 +62,13 @@ jacocoTestReport {
 }
 
 jacocoTestCoverageVerification {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                '**/BackendApplication.class'
+            ])
+        }))
+    }
     violationRules {
         rule {
             limit {
