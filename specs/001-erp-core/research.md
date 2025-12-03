@@ -1,14 +1,121 @@
 # Phase 0: Research & Clarifications
 
-**Date**: 2025-11-24
+**Date**: 2025-11-24 (Updated: 2025-12-01)
 **Branch**: `001-erp-core`
 **Status**: Complete
+
+**Key Architectural Clarifications (2025-12-01)**:
+- **Project is core domain**: JobCode is a unique business identifier for Project, not the domain itself
+- **Domain-oriented backend**: Code organized by business domain (Project, Quotation, Approval, etc.) rather than technical layer
+- **Approval as separate domain**: Approval workflows extracted from Quotation domain for reusability
+
+---
+
+## Architectural Decisions (Updated 2025-12-01)
+
+### Domain-Oriented Backend Structure
+
+**Decision**: Organize backend code by business domain (vertical slices) rather than technical layer (horizontal slices).
+
+**Structure**:
+```
+backend/src/main/java/com/wellkorea/backend/
+├── project/        # Project domain (core aggregate)
+├── quotation/      # Quotation domain
+├── approval/       # Approval workflow domain (cross-cutting)
+├── product/        # Product catalog domain
+├── production/     # Production tracking domain
+├── delivery/       # Delivery tracking domain
+├── invoice/        # Invoicing & payments domain
+├── purchasing/     # Purchasing & RFQ domain
+├── document/       # Document management domain
+├── security/       # Security & RBAC (cross-cutting)
+└── shared/         # Shared infrastructure
+```
+
+Each domain contains: `domain/` (entities), `repository/`, `service/`, `controller/`, `dto/`
+
+**Rationale**:
+- **Business alignment**: Domain directories mirror actual business capabilities
+- **Team scalability**: Different teams can own different domains independently
+- **Bounded contexts**: Clear boundaries reduce coupling, increase cohesion
+- **Evolution path**: Domains can be extracted into microservices if needed
+- **Cognitive load**: Developers can focus on one domain without knowing entire system
+- **Single Responsibility**: Changes to one feature stay within one domain directory
+
+**Alternatives Considered**:
+- **Layered architecture** (controller/service/repository at top level): Rejected because changes to one feature touch multiple directories; violates Single Responsibility
+- **Monolithic domain package**: Rejected due to poor scalability as codebase grows
+
+---
+
+### Project as Core Domain (not JobCode)
+
+**Decision**: **Project** is the core domain entity. **JobCode** (format: WK2{year}-{sequence}-{date}) is a unique business identifier (natural key) on the Project entity.
+
+**Rationale**:
+- **Domain clarity**: "Project" is the business concept; "JobCode" is how humans refer to it
+- **Database design**: Use surrogate key (ID) as primary key; JobCode as unique index
+- **Flexibility**: JobCode format can evolve without breaking foreign key relationships
+- **Consistency**: Other domains reference Project by ID, display JobCode to users
+
+**Implementation**:
+```java
+@Entity
+@Table(name = "projects")
+public class Project {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;  // Surrogate primary key
+
+    @Column(unique = true, nullable = false)
+    private String jobCode;  // WK2{year}-{sequence}-{date}
+
+    private String customer;
+    private String projectName;
+    // ...
+}
+```
+
+**Alternatives Considered**:
+- **JobCode as entity name**: Rejected; confuses identifier with domain concept
+- **JobCode as primary key**: Rejected; composite keys complicate JPA mapping
+
+---
+
+### Approval as Separate Domain
+
+**Decision**: Extract approval workflows (승인/결재) into dedicated `approval/` domain.
+
+**Rationale**:
+- **Reusability**: Approval logic shared across quotations, purchase orders, etc.
+- **Single Responsibility**: Approval rules separate from quotation business logic
+- **Audit compliance**: Centralized approval history meets FR-067
+- **Workflow flexibility**: Approval rules evolve independently
+
+**Implementation**:
+- `ApprovalRequest` entity links to quotation (or other approvable entity) via `entity_type` and `entity_id`
+- `ApprovalHistory` tracks all approval/rejection events with timestamps
+- `ApprovalComment` stores rejection comments (mandatory per FR-017)
+- Quotation domain has NO approval endpoints; all approval handled via Approval domain
+- API Design:
+  - `POST /approvals` - Create approval request for any entity (Quotation, PurchaseOrder, etc.)
+  - `POST /approvals/{id}/approve` - Approve request
+  - `POST /approvals/{id}/reject` - Reject request with mandatory comments
+  - `POST /quotations/{id}/submit-for-approval` - Convenience endpoint (delegates to Approval domain)
+
+**Alternatives Considered**:
+- **Approval endpoints on Quotation**: Rejected; creates duplication, violates Single Responsibility
+  - Would have `/quotations/{id}/submit`, `/quotations/{id}/approve`, `/quotations/{id}/reject`
+  - Problem: Same approval logic duplicated for every approvable entity type
+  - Solution: Centralize in Approval domain
+- **Generic workflow engine**: Deferred; over-engineering for current simple approve/reject workflow
 
 ---
 
 ## Technology Stack Decisions
 
-### Backend Framework: Java 17 + Spring Boot 3.x
+### Backend Framework: Java 21 + Spring Boot 3.5.8
 
 **Decision**: Java 17 with Spring Boot 3.x (latest LTS release)
 

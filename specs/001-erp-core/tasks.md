@@ -1,11 +1,31 @@
 # Tasks: WellKorea Integrated Work System (ERP)
 
+**Feature**: 001-erp-core
 **Input**: Design documents from `/specs/001-erp-core/`
-**Prerequisites**: plan.md (tech stack), spec.md (user stories), data-model.md (entities), contracts/openapi.yaml (API)
+**Prerequisites**: plan.md, spec.md, data-model.md, contracts/openapi.yaml, research.md, quickstart.md
 
-**Test-First Approach**: Constitution v1.0.0 requires tests written before implementation. Each user story includes contract tests (OpenAPI), integration tests (journey), and unit tests for domain logic.
+**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-**Organization**: Tasks grouped by user story (P1 → P2 → P3) to enable independent implementation and testing.
+**✅ Constitution Compliance Update (2025-12-02)**: Test-first discipline explicitly enforced - 46 test tasks added across all 9 user stories, each marked "Write FIRST - MUST FAIL initially" per Constitution Principle I (Test-First Development). Tests now precede all implementation code.
+
+**✅ Architecture Consistency Update (2025-12-03)**: All repository task descriptions updated to use `/infrastructure/persistence/` path (14 tasks across US1-US9) to align with domain-oriented architecture defined in plan.md. Fixes finding D1 from speckit.analyze.
+
+**✅ Requirement Coverage Update (2025-12-03)**: Added 3 tasks (T078a, T078b, T093a) for FR-018c quotation revision notification feature. Admin can now choose to email customers when quotation is revised. Fixes finding R1 from speckit.analyze.
+
+**✅ Final Pre-Implementation Fixes (2025-12-03)**: Added 3 tasks (T048a, T048b, T097a) for FR-062 Sales role customer assignment + updated T147 to explicitly include delivery_id foreign key per FR-035. Role verification moved to API layer (QuotationController) per architectural principle. All analysis findings (R1, R2, I1, U1) now resolved. Ready for implementation.
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel (different files, no dependencies)
+- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- Include exact file paths in descriptions
+
+## Path Conventions
+
+- **Backend**: `backend/src/main/java/com/wellkorea/backend/`
+- **Frontend**: `frontend/src/`
+- **Database**: `backend/src/main/resources/db/migration/`
+- **Tests**: `backend/src/test/java/com/wellkorea/backend/` and `frontend/tests/`
 
 ---
 
@@ -13,629 +33,583 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create backend project structure per implementation plan: `backend/src/main/java/com/wellkorea/erp/{api,application,domain,infrastructure,security}` with corresponding test directories
-- [ ] T002 Create frontend project structure per implementation plan: `frontend/src/{components,pages,services,hooks,types}` with test directories
-- [ ] T003 [P] Initialize Spring Boot 3.x project with Gradle and dependencies in `backend/build.gradle` (Spring Data JPA, Spring Security, iText, Apache POI, TestContainers)
-- [ ] T004 [P] Initialize React 18 project with TypeScript in `frontend/package.json` (Vite, Material UI, React Router, React Query, Axios)
-- [ ] T005 [P] Configure Java linting (Checkstyle, SpotBugs) and formatting (Google Java Format) in `backend/build.gradle`
-- [ ] T006 [P] Configure TypeScript linting (ESLint) and formatting (Prettier) in `frontend/package.json`
-- [ ] T007 [P] Create docker-compose.yml with PostgreSQL 14, MinIO, backend service, frontend service, optional Keycloak
+- [ ] T001 Create backend directory structure following domain-oriented architecture (project/, quotation/, approval/, product/, production/, delivery/, invoice/, purchasing/, document/, security/, shared/)
+- [ ] T002 Create frontend directory structure (components/, pages/, services/, contexts/, hooks/, types/)
+- [ ] T003 [P] Initialize Spring Boot 3.5.8 project with Gradle 8.11 in backend/build.gradle
+- [ ] T004 [P] Initialize React 19 + TypeScript 5.9 project with Vite 7 in frontend/package.json
+- [ ] T005 [P] Configure PostgreSQL 16 Docker service in docker-compose.yml
+- [ ] T006 [P] Configure MinIO S3-compatible storage in docker-compose.yml for document storage
+- [ ] T007 [P] Setup Flyway migration framework in backend/src/main/resources/db/migration/
+- [ ] T008 [P] Configure ESLint and Prettier for frontend code quality
+- [ ] T009 [P] Configure JaCoCo for backend test coverage (70% threshold) in backend/build.gradle
+- [ ] T010 [P] Configure Vitest for frontend test coverage (70% threshold) in frontend/vitest.config.ts
+- [ ] T011 [P] Setup Playwright for E2E tests in frontend/playwright.config.ts
+- [ ] T012 [P] Setup Testcontainers for backend integration tests in backend/build.gradle
 
 ---
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Core infrastructure MUST be complete before ANY user story can be implemented
+**Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-### Database & Migrations
+### Database Schema Foundation
 
-- [ ] T008 Create Flyway migration framework: `backend/src/main/resources/db/migration/V1__initial_schema.sql`
-- [ ] T009 Create database schema for core entities (JobCode, Customer, Product, ProductType, User, Role, AuditLog) in V1 migration
-- [ ] T010 [P] Create Flyway migrations for quotation entities (Quotation, QuotationLineItem, Approval) in `V2__quotation_schema.sql`
-- [ ] T011 [P] Create Flyway migrations for production entities (WorkProgressSheet, WorkProgressStepTemplate, WorkProgressStep) in `V3__production_schema.sql`
-- [ ] T012 [P] Create Flyway migrations for delivery/invoice entities (Delivery, DeliveryLineItem, TaxInvoice, InvoiceLineItem, Payment) in `V4__invoice_schema.sql`
-- [ ] T013 [P] Create Flyway migrations for cross-cutting entities (Document, RFQ, PurchaseOrder, Supplier, AuditLog) in `V5__crosscutting_schema.sql`
+- [ ] T013 Create Flyway migration V1__create_core_tables.sql for User, Role, Customer, Supplier tables
+- [ ] T014 Create Flyway migration V2__create_project_tables.sql for Project (JobCode), Product, ProductType tables
+- [ ] T015 Create indexes migration V3__create_core_indexes.sql for performance-critical queries
+- [ ] T016 Create audit log migration V4__create_audit_log.sql for immutable audit trail
 
-### Security & Authentication
+### Backend Core Infrastructure
 
-- [ ] T014 Implement JWT token generation and validation in `backend/src/main/java/com/wellkorea/erp/security/jwt/JwtTokenProvider.java`
-- [ ] T015 Implement Spring Security configuration with JWT filter in `backend/src/main/java/com/wellkorea/erp/security/config/SecurityConfig.java`
-- [ ] T016 Implement RBAC (Role-Based Access Control) with @PreAuthorize annotations in `backend/src/main/java/com/wellkorea/erp/security/rbac/RoleAuthorityResolver.java`
-- [ ] T017 Implement audit logging infrastructure: `backend/src/main/java/com/wellkorea/erp/infrastructure/audit/AuditLog.java` and `AuditAspect.java`
-- [ ] T018 Implement AuditingEntityListener for automatic created_by/updated_by timestamps in `backend/src/main/java/com/wellkorea/erp/infrastructure/audit/AuditingEntityListener.java`
+- [ ] T017 [P] Implement GlobalExceptionHandler in backend/src/main/java/com/wellkorea/backend/shared/exception/
+- [ ] T018 [P] Implement AuditLogger service in backend/src/main/java/com/wellkorea/backend/shared/audit/
+- [ ] T019 [P] Implement MinioFileStorage service in backend/src/main/java/com/wellkorea/backend/document/service/
+- [ ] T020 [P] Configure Spring Security with JWT authentication in backend/src/main/java/com/wellkorea/backend/security/config/SecurityConfig.java
+- [ ] T021 [P] Implement UserDetailsService for authentication in backend/src/main/java/com/wellkorea/backend/security/service/
+- [ ] T022 [P] Implement RBAC (Role-Based Access Control) with roles: Admin, Finance, Production, Sales in backend/src/main/java/com/wellkorea/backend/security/domain/
+- [ ] T023 [P] Configure application.properties with database, MinIO, security settings in backend/src/main/resources/
+- [ ] T024 [P] Implement JobCodeGenerator service with format WK2{year}-{sequence}-{date} in backend/src/main/java/com/wellkorea/backend/project/domain/
 
-### API & Error Handling
+### Frontend Core Infrastructure
 
-- [ ] T019 Create Spring Boot REST controller base class with exception handling in `backend/src/main/java/com/wellkorea/erp/api/common/GlobalExceptionHandler.java`
-- [ ] T020 Create standardized API response wrapper in `backend/src/main/java/com/wellkorea/erp/api/common/ApiResponse.java`
-- [ ] T021 Implement structured logging configuration in `backend/src/main/resources/logback-spring.xml`
-- [ ] T022 Implement error handling for database constraints and transaction failures in `backend/src/main/java/com/wellkorea/erp/application/common/ErrorHandler.java`
+- [ ] T025 [P] Implement authentication context (login/logout/JWT storage) in frontend/src/contexts/AuthContext.tsx
+- [ ] T026 [P] Create API client with JWT interceptor in frontend/src/services/api.ts
+- [ ] T027 [P] Create ProtectedRoute component for role-based routing in frontend/src/components/ProtectedRoute.tsx
+- [ ] T028 [P] Create error handling utilities and error boundary in frontend/src/components/ErrorBoundary.tsx
+- [ ] T029 [P] Setup React Router with main routes structure in frontend/src/App.tsx
+- [ ] T030 [P] Create reusable UI component library (Button, Input, Table, Modal, etc.) in frontend/src/components/ui/
 
-### Core Domain Models — Unit Tests First (Per Constitution)
+### Seed Data
 
-- [ ] T023 [P] Unit test for JobCode entity validation rules in `backend/src/test/java/com/wellkorea/erp/domain/jobcode/JobCodeTest.java` (uniqueness, format, immutability rules — tests MUST FAIL before implementation)
-- [ ] T024 [P] Unit test for Customer entity validation in `backend/src/test/java/com/wellkorea/erp/domain/customer/CustomerTest.java`
-- [ ] T025 [P] Unit test for User entity validation in `backend/src/test/java/com/wellkorea/erp/domain/user/UserTest.java`
-- [ ] T026 [P] Unit test for Role entity validation in `backend/src/test/java/com/wellkorea/erp/domain/role/RoleTest.java`
-- [ ] T027 [P] Unit test for Product/ProductType entities in `backend/src/test/java/com/wellkorea/erp/domain/product/ProductTest.java`
-
-### Core Domain Models — Implementation
-
-- [ ] T028 [P] Create JobCode aggregate root entity in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCode.java` with repository interface (implement to pass T023 tests)
-- [ ] T029 [P] Create Customer entity in `backend/src/main/java/com/wellkorea/erp/domain/customer/Customer.java` with repository (implement to pass T024 tests)
-- [ ] T030 [P] Create User entity in `backend/src/main/java/com/wellkorea/erp/domain/user/User.java` with repository (implement to pass T025 tests)
-- [ ] T031 [P] Create Role entity in `backend/src/main/java/com/wellkorea/erp/domain/role/Role.java` with repository (implement to pass T026 tests)
-- [ ] T032 [P] Create Product and ProductType entities in `backend/src/main/java/com/wellkorea/erp/domain/product/{Product.java,ProductType.java}` with repositories (implement to pass T027 tests)
-- [ ] T033 Implement JobCode sequence generator service for unique WK2{year}-{sequence}-{date} generation in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeGenerator.java`
-
-### File Storage Integration
-
-- [ ] T034 Implement MinIO S3-compatible client in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioFileStorage.java`
-- [ ] T035 Create document metadata entity in `backend/src/main/java/com/wellkorea/erp/domain/document/Document.java` with polymorphic ownership support
-- [ ] T036 Configure MinIO bucket initialization in `backend/src/main/java/com/wellkorea/erp/infrastructure/storage/MinioInitializer.java`
-
-### Frontend Foundation
-
-- [ ] T037 Create React app layout with routing in `frontend/src/App.tsx` and `frontend/src/main.tsx`
-- [ ] T038 Implement JWT token management service in `frontend/src/services/auth.ts` (login, logout, token storage)
-- [ ] T039 Implement API client with JWT interceptor in `frontend/src/services/api.ts` (axios instance with auth header)
-- [ ] T040 Create useAuth custom hook for authentication state in `frontend/src/hooks/useAuth.ts`
-- [ ] T041 Create useRole custom hook for RBAC checks in `frontend/src/hooks/useRole.ts`
-- [ ] T042 Create common UI components: Button, Modal, Table, Form in `frontend/src/components/common/{Button,Modal,Table,Form}.tsx`
-- [ ] T043 Create error boundary component in `frontend/src/components/common/ErrorBoundary.tsx`
-- [ ] T044 Create Material UI theme configuration in `frontend/src/theme.ts`
+- [ ] T031 Create seed data migration V5__seed_initial_data.sql with test users (Admin, Finance, Sales, Production), customers, products
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
 
-## Phase 3: User Story 1 - JobCode Creation & Request Intake (Priority: P1) 🎯 MVP
+## Phase 3: User Story 9 - Role-Based Access Control & Quotation Protection (Priority: P1) 🎯 Security Foundation
 
-**Goal**: Enable operations staff to create JobCodes (with auto-generated WK2{year}-{sequence}-{date} format) as the single source of truth for projects
+**Goal**: Implement security and RBAC system to prevent unauthorized access to quotations and financial data (critical for P1 compliance)
 
-**Independent Test**: Create new request → verify JobCode auto-generated → verify editable → verify no re-entry needed for downstream (quotation, production, AR/AP)
+**Independent Test**: Can be fully tested by:
+1. Creating 4 user roles with appropriate permissions
+2. Logging in as Production user and verifying quotations are not visible
+3. Logging in as Finance user and verifying all quotations and AR/AP are visible
+4. Checking audit log showing who accessed which quotations and when
 
-### Contract Tests for User Story 1
+### Tests for User Story 9 (Write FIRST - Red-Green-Refactor)
 
-> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T050 [P] [US1] Contract test for POST /api/v1/jobcodes endpoint in `backend/src/test/java/com/wellkorea/erp/contract/JobCodeContractTest.java` (verify request/response schemas match OpenAPI)
-- [ ] T046 [P] [US1] Contract test for GET /api/v1/jobcodes/{id} endpoint
-- [ ] T052 [P] [US1] Contract test for PUT /api/v1/jobcodes/{id} endpoint
-- [ ] T053 [P] [US1] Contract test for GET /api/v1/jobcodes (list with pagination/filtering)
+- [ ] T032 [P] [US9] Write contract tests for /api/auth/login endpoint (expects 200 with JWT on valid credentials, 401 on invalid) in backend/src/test/java/com/wellkorea/backend/security/controller/AuthenticationControllerTest.java - MUST FAIL initially
+- [ ] T033 [P] [US9] Write contract tests for /api/auth/logout endpoint (expects 200 on valid token, 401 on missing token) in backend/src/test/java/com/wellkorea/backend/security/controller/AuthenticationControllerTest.java - MUST FAIL initially
+- [ ] T034 [P] [US9] Write contract tests for /api/users endpoints (GET list, POST create, PUT update - Admin only) in backend/src/test/java/com/wellkorea/backend/security/controller/UserControllerTest.java - MUST FAIL initially
+- [ ] T035 [P] [US9] Write contract tests for /api/audit endpoints (GET query - Admin only) in backend/src/test/java/com/wellkorea/backend/security/controller/AuditLogControllerTest.java - MUST FAIL initially
+- [ ] T036 [US9] Write unit tests for UserService (create user, assign roles, validate credentials) in backend/src/test/java/com/wellkorea/backend/security/service/UserServiceTest.java - MUST FAIL initially
+- [ ] T037 [US9] Write unit tests for AuthenticationService (JWT generation, token validation, logout) in backend/src/test/java/com/wellkorea/backend/security/service/AuthenticationServiceTest.java - MUST FAIL initially
+- [ ] T038 [US9] Write integration test for RBAC enforcement (Production user cannot access /api/quotations) in backend/src/test/java/com/wellkorea/backend/security/RBACIntegrationTest.java - MUST FAIL initially
 
-### Integration Tests for User Story 1
+### Implementation for User Story 9
 
-- [ ] T049 [P] [US1] Integration test for JobCode creation workflow (create → retrieve → edit) in `backend/src/test/java/com/wellkorea/erp/integration/JobCodeIntegrationTest.java` using TestContainers
-- [ ] T050 [P] [US1] Integration test for JobCode sequence uniqueness (concurrent creation prevents duplicates)
-- [ ] T056 [US1] Integration test for JobCode status transitions (Draft → Active → Completed)
+- [ ] T039 [P] [US9] Create User entity in backend/src/main/java/com/wellkorea/backend/security/domain/User.java
+- [ ] T033 [P] [US9] Create Role entity in backend/src/main/java/com/wellkorea/backend/security/domain/Role.java
+- [ ] T034 [P] [US9] Create AuditLog entity in backend/src/main/java/com/wellkorea/backend/security/domain/AuditLog.java
+- [ ] T035 [US9] Create UserRepository in backend/src/main/java/com/wellkorea/backend/security/infrastructure/persistence/UserRepository.java (depends on T032)
+- [ ] T036 [US9] Create RoleRepository in backend/src/main/java/com/wellkorea/backend/security/infrastructure/persistence/RoleRepository.java (depends on T033)
+- [ ] T037 [US9] Create AuditLogRepository in backend/src/main/java/com/wellkorea/backend/security/infrastructure/persistence/AuditLogRepository.java (depends on T034)
+- [ ] T038 [US9] Implement UserService with user management operations in backend/src/main/java/com/wellkorea/backend/security/service/UserService.java
+- [ ] T039 [US9] Implement AuthenticationService with login/logout in backend/src/main/java/com/wellkorea/backend/security/service/AuthenticationService.java
+- [ ] T040 [US9] Implement AuditService to log sensitive document access in backend/src/main/java/com/wellkorea/backend/security/service/AuditService.java
+- [ ] T041 [US9] Create AuthenticationController with /login and /logout endpoints in backend/src/main/java/com/wellkorea/backend/security/controller/AuthenticationController.java
+- [ ] T042 [US9] Create UserController with user management endpoints (Admin only) in backend/src/main/java/com/wellkorea/backend/security/controller/UserController.java
+- [ ] T043 [US9] Create AuditLogController with audit query endpoints (Admin only) in backend/src/main/java/com/wellkorea/backend/security/controller/AuditLogController.java
+- [ ] T044 [US9] Add @PreAuthorize annotations to all sensitive endpoints (quotations, financial data)
+- [ ] T045 [US9] Implement login page in frontend/src/pages/LoginPage.tsx
+- [ ] T046 [US9] Implement user management UI (Admin only) in frontend/src/pages/admin/UserManagementPage.tsx
+- [ ] T047 [US9] Implement audit log viewer (Admin only) in frontend/src/pages/admin/AuditLogPage.tsx
+- [ ] T048 [US9] Add role-based UI rendering (hide quotations from Production users, hide AR/AP from Sales users)
+- [ ] T048a [US9] Add customer_assignment table (user_id, customer_id, many-to-many) in backend/src/main/resources/db/migration/V4__create_audit_log.sql for Sales role customer filtering per FR-062
+- [ ] T048b [US9] Add customer assignment UI in UserManagementPage (Admin can assign Sales users to specific customers) in frontend/src/pages/admin/UserManagementPage.tsx
 
-### Domain & Application Layer for User Story 1
-
-- [ ] T052 [P] [US1] Create JobCodeService with use cases in `backend/src/main/java/com/wellkorea/erp/application/jobcode/JobCodeService.java`
-- [ ] T053 [P] [US1] Create JobCode value object for validation rules in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/JobCodeString.java` (enforce format, validate uniqueness)
-- [ ] T064 [US1] Implement JobCodeRepository JPA repository in `backend/src/main/java/com/wellkorea/erp/infrastructure/persistence/JobCodeRepositoryJpa.java`
-- [ ] T065 [US1] Implement sequence counter logic to prevent race conditions in `backend/src/main/java/com/wellkorea/erp/domain/jobcode/SequenceCounter.java`
-
-### API Layer for User Story 1
-
-- [ ] T056 [US1] Create JobCodeController with endpoints POST/GET/PUT in `backend/src/main/java/com/wellkorea/erp/api/jobcode/JobCodeController.java`
-- [ ] T057 [US1] Create request DTOs: CreateJobCodeRequest, UpdateJobCodeRequest in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/`
-- [ ] T068 [US1] Create response DTO: JobCodeResponse in `backend/src/main/java/com/wellkorea/erp/api/jobcode/dto/JobCodeResponse.java`
-- [ ] T064 [US1] Add input validation and error handling (customer exists, owner exists, due_date >= today)
-- [ ] T065 [US1] Add authorization checks (@PreAuthorize for Admin/Sales)
-
-### Frontend for User Story 1
-
-- [ ] T061 [P] [US1] Create JobCode types in `frontend/src/types/jobcode.ts` (interface definitions matching API)
-- [ ] T062 [P] [US1] Create JobCode API service in `frontend/src/services/jobcodeService.ts` (CRUD methods)
-- [ ] T068 [US1] Create JobCodeList page in `frontend/src/pages/JobCodeList.tsx` with Material UI DataGrid (search, pagination, filtering by status)
-- [ ] T064 [US1] Create JobCodeCreate form in `frontend/src/components/jobcode/JobCodeCreateForm.tsx` (customer select, project name, due date, owner select)
-- [ ] T065 [US1] Create JobCodeDetail page in `frontend/src/pages/JobCodeDetail.tsx` (display all fields, edit mode, status badge)
-- [ ] T066 [US1] Implement JobCode edit modal in `frontend/src/components/jobcode/JobCodeEditModal.tsx`
-- [ ] T067 [US1] Add error handling and loading states to all JobCode components
-- [ ] T068 [US1] Create unit tests for JobCode services in `frontend/src/services/__tests__/jobcodeService.test.ts`
-
-**Checkpoint**: At this point, User Story 1 (JobCode CRUD) should be fully functional and independently testable. Verify:
-- Create JobCode → auto-generated code appears
-- Edit JobCode → all fields updateable
-- List JobCodes → pagination works, filters work (status, customer)
-- No other stories needed to test this
+**Checkpoint**: RBAC and security foundation complete - quotations and financial data are now protected
 
 ---
 
-## Phase 4: User Story 2 - Quotation Creation & Approval Workflow (Priority: P1)
+## Phase 4: User Story 1 - JobCode Creation & Request Intake (Priority: P1) 🎯 MVP Core
 
-**Goal**: Enable sales/finance staff to create quotations from JobCode by selecting products, with approval workflow and PDF generation
+**Goal**: Implement JobCode creation as the foundational data entry point for all downstream features
 
-**Independent Test**: Create quotation → select products → submit for approval → approve/reject → generate PDF → verify version history
+**Independent Test**: Can be fully tested by:
+1. Creating a new request (customer, project name, due date, internal owner)
+2. Verifying JobCode is auto-generated per rule (WK2{year}-{sequence}-{date})
+3. Confirming no data re-entry is needed for subsequent processes
+4. Validating that JobCode is editable and unique
 
-### Contract Tests for User Story 2
+### Tests for User Story 1 (Write FIRST - Red-Green-Refactor)
 
-- [ ] T064 [P] [US2] Contract test for POST /api/v1/quotations in `backend/src/test/java/com/wellkorea/erp/contract/QuotationContractTest.java`
-- [ ] T065 [P] [US2] Contract test for quotation approval endpoints (POST /api/v1/quotations/{id}/approve, /reject)
-- [ ] T066 [P] [US2] Contract test for quotation PDF endpoint (GET /api/v1/quotations/{id}/pdf)
-- [ ] T067 [US2] Contract test for quotation list endpoint with filtering
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-### Integration Tests for User Story 2
+- [ ] T049 [P] [US1] Write contract tests for POST /api/projects endpoint (expects 201 with generated JobCode, validates JobCode format WK2YYYY-NNNNNN-YYYYMMDD) in backend/src/test/java/com/wellkorea/backend/project/controller/ProjectControllerTest.java - MUST FAIL initially
+- [ ] T050 [P] [US1] Write contract tests for GET /api/projects and GET /api/projects/{id} endpoints in backend/src/test/java/com/wellkorea/backend/project/controller/ProjectControllerTest.java - MUST FAIL initially
+- [ ] T051 [P] [US1] Write contract tests for PUT /api/projects/{id} endpoint (validates editable fields, maintains JobCode uniqueness) in backend/src/test/java/com/wellkorea/backend/project/controller/ProjectControllerTest.java - MUST FAIL initially
+- [ ] T052 [US1] Write unit tests for JobCodeGenerator (sequence generation, uniqueness check, format validation) in backend/src/test/java/com/wellkorea/backend/project/domain/JobCodeGeneratorTest.java - MUST FAIL initially
+- [ ] T053 [US1] Write integration test for project creation workflow (create project → verify JobCode → update project → verify uniqueness) in backend/src/test/java/com/wellkorea/backend/project/ProjectIntegrationTest.java - MUST FAIL initially
 
-- [ ] T068 [P] [US2] Integration test for quotation creation workflow (create → select products → submit → approve) in `backend/src/test/java/com/wellkorea/erp/integration/QuotationIntegrationTest.java`
-- [ ] T069 [P] [US2] Integration test for quotation rejection with mandatory comments
-- [ ] T070 [US2] Integration test for quotation versioning (edit → new version created)
-- [ ] T071 [US2] Integration test for PDF generation
+### Database Schema for User Story 1
 
-### Domain & Application Layer for User Story 2
+- [ ] T054 Create Flyway migration V6__create_project_domain.sql for Project table (jobcode, customer_id, project_name, due_date, internal_owner_id, status, created_at, updated_at)
 
-- [ ] T072 [P] [US2] Create Quotation aggregate root in `backend/src/main/java/com/wellkorea/erp/domain/quotation/Quotation.java`
-- [ ] T073 [P] [US2] Create QuotationLineItem entity in `backend/src/main/java/com/wellkorea/erp/domain/quotation/QuotationLineItem.java`
-- [ ] T074 [P] [US2] Create Approval entity in `backend/src/main/java/com/wellkorea/erp/domain/quotation/Approval.java`
-- [ ] T075 [US2] Implement QuotationService with use cases in `backend/src/main/java/com/wellkorea/erp/application/quotation/QuotationService.java`
-- [ ] T076 [US2] Implement quotation validation rules (no empty line items, must have JobCode, quantity > 0, unit_price >= 0)
-- [ ] T077 [US2] Implement quotation status state machine (Draft → Pending → Approved/Rejected → Sent → Accepted)
-- [ ] T078 [US2] Implement quotation versioning logic (new version on edit)
-- [ ] T079 [US2] Implement PDF generation service using iText in `backend/src/main/java/com/wellkorea/erp/infrastructure/pdf/QuotationPdfGenerator.java`
+### Backend Implementation for User Story 1
 
-### API Layer for User Story 2
+- [ ] T050 [P] [US1] Create Project entity in backend/src/main/java/com/wellkorea/backend/project/domain/Project.java
+- [ ] T051 [P] [US1] Create ProjectStatus enum in backend/src/main/java/com/wellkorea/backend/project/domain/ProjectStatus.java
+- [ ] T052 [P] [US1] Create Customer entity in backend/src/main/java/com/wellkorea/backend/project/domain/Customer.java
+- [ ] T053 [US1] Create ProjectRepository in backend/src/main/java/com/wellkorea/backend/project/infrastructure/persistence/ProjectRepository.java (depends on T050)
+- [ ] T054 [US1] Implement ProjectService with create, read, update, list operations in backend/src/main/java/com/wellkorea/backend/project/service/ProjectService.java
+- [ ] T055 [US1] Implement JobCodeGenerator with sequence generation and uniqueness check in backend/src/main/java/com/wellkorea/backend/project/domain/JobCodeGenerator.java
+- [ ] T056 [US1] Create ProjectController with REST endpoints (/api/projects - GET, POST, PUT, GET /{id}) in backend/src/main/java/com/wellkorea/backend/project/controller/ProjectController.java
+- [ ] T057 [US1] Create DTOs (CreateProjectRequest, UpdateProjectRequest, ProjectResponse) in backend/src/main/java/com/wellkorea/backend/project/dto/
+- [ ] T058 [US1] Add validation for project creation (customer exists, project name non-empty, due date >= today)
+- [ ] T059 [US1] Add audit logging for project creation and updates
 
-- [ ] T080 [US2] Create QuotationController in `backend/src/main/java/com/wellkorea/erp/api/quotation/QuotationController.java` with endpoints
-- [ ] T081 [US2] Create quotation DTOs: CreateQuotationRequest, UpdateQuotationRequest, QuotationResponse in `backend/src/main/java/com/wellkorea/erp/api/quotation/dto/`
-- [ ] T082 [US2] Create approval DTOs for approve/reject endpoints
-- [ ] T083 [US2] Add authorization checks (@PreAuthorize: Sales can create/submit, Admin/Finance can approve)
-- [ ] T084 [US2] Add RBAC for quotation viewing (Admin/Finance see all, Sales see own or assigned customer)
+### Frontend Implementation for User Story 1
 
-### Frontend for User Story 2
+- [ ] T060 [US1] Create ProjectService API client in frontend/src/services/projectService.ts
+- [ ] T061 [US1] Create ProjectListPage with table view in frontend/src/pages/projects/ProjectListPage.tsx
+- [ ] T062 [US1] Create CreateProjectPage with form in frontend/src/pages/projects/CreateProjectPage.tsx
+- [ ] T063 [US1] Create EditProjectPage with form in frontend/src/pages/projects/EditProjectPage.tsx
+- [ ] T064 [US1] Create ProjectDetailPage showing all project information in frontend/src/pages/projects/ProjectDetailPage.tsx
+- [ ] T065 [US1] Add form validation (required fields, date validation)
+- [ ] T066 [US1] Display generated JobCode prominently after creation
 
-- [ ] T085 [P] [US2] Create Quotation types in `frontend/src/types/quotation.ts`
-- [ ] T086 [P] [US2] Create Quotation API service in `frontend/src/services/quotationService.ts`
-- [ ] T087 [US2] Create QuotationCreate page in `frontend/src/pages/QuotationCreate.tsx` (JobCode selector, product selector, line item table with edit)
-- [ ] T088 [US2] Create QuotationLineItemForm component in `frontend/src/components/quotation/QuotationLineItemForm.tsx` (product select, quantity, unit_price)
-- [ ] T089 [US2] Create QuotationApprovalQueue page in `frontend/src/pages/QuotationApprovalQueue.tsx` (shows pending quotations with approve/reject modals)
-- [ ] T090 [US2] Create QuotationDetail page in `frontend/src/pages/QuotationDetail.tsx` (view quotation, show version history, download PDF button)
-- [ ] T091 [US2] Implement quotation PDF download in QuotationDetail
-- [ ] T092 [US2] Add error handling for validation errors (required fields, invalid prices)
-- [ ] T093 [US2] Create unit tests for QuotationService in `frontend/src/services/__tests__/quotationService.test.ts`
-- [ ] T093a [US2] Create integration tests for QuotationCreate workflow in `frontend/src/__tests__/integration/QuotationCreate.test.tsx` (select JobCode → add line items → submit → verify API call)
-- [ ] T093b [US2] Create integration tests for QuotationApprovalQueue in `frontend/src/__tests__/integration/QuotationApprovalQueue.test.tsx` (load pending quotations → approve/reject → verify response)
-- [ ] T093c [US2] Create E2E test for complete quotation workflow in `frontend/tests/e2e/quotation.spec.ts` using Playwright (login → create JobCode → create quotation → approve → download PDF)
-
-**Checkpoint**: User Stories 1 AND 2 should both work independently:
-- Create JobCode, then create quotation → select products → submit → approve → PDF → verify version history
-- Verify rejection returns to Draft with comments
-- No Production/Delivery/Invoice stories needed yet
+**Checkpoint**: JobCode creation MVP complete - users can create and edit projects with auto-generated JobCodes
 
 ---
 
-## Phase 5: User Story 3 - Product Catalog Management (Priority: P2)
+## Phase 5: User Story 2 - Quotation Creation from Product Catalog & Approval Workflow (Priority: P1) 🎯 Commercial Document Flow
 
-**Goal**: Enable admin staff to create and maintain product catalog used for quotations
+**Goal**: Implement quotation creation with product catalog, approval workflow, and PDF generation
 
-**Independent Test**: Create products → categorize → search → select in quotation → verify base price suggested but overrideable
+**Independent Test**: Can be fully tested by:
+1. Creating a quotation from an existing JobCode by selecting 3–5 products from catalog
+2. Submitting quotation for internal approval
+3. Approving/rejecting the quotation with approval history logged
+4. Generating a PDF quotation for customer delivery
 
-### Contract Tests for User Story 3
+### Tests for User Story 2 (Write FIRST - Red-Green-Refactor)
 
-- [ ] T094 [P] [US3] Contract test for POST/GET /api/v1/admin/products in `backend/src/test/java/com/wellkorea/erp/contract/ProductContractTest.java`
-- [ ] T095 [P] [US3] Contract test for PUT /api/v1/admin/products/{id}
-- [ ] T096 [US3] Contract test for product search/filter endpoint
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-### Integration Tests for User Story 3
+- [ ] T067 [P] [US2] Write contract tests for POST /api/quotations endpoint (validates product selection, quantity > 0, calculates totals) in backend/src/test/java/com/wellkorea/backend/quotation/controller/QuotationControllerTest.java - MUST FAIL initially
+- [ ] T068 [P] [US2] Write contract tests for GET /api/quotations and PUT /api/quotations/{id} endpoints in backend/src/test/java/com/wellkorea/backend/quotation/controller/QuotationControllerTest.java - MUST FAIL initially
+- [ ] T069 [P] [US2] Write contract tests for GET /api/quotations/{id}/pdf endpoint (expects PDF content-type, valid PDF structure) in backend/src/test/java/com/wellkorea/backend/quotation/controller/QuotationControllerTest.java - MUST FAIL initially
+- [ ] T070 [P] [US2] Write contract tests for POST /api/approvals endpoint (creates approval request for quotation) in backend/src/test/java/com/wellkorea/backend/approval/controller/ApprovalControllerTest.java - MUST FAIL initially
+- [ ] T071 [P] [US2] Write contract tests for PUT /api/approvals/{id}/approve and /reject endpoints (Admin/Finance only) in backend/src/test/java/com/wellkorea/backend/approval/controller/ApprovalControllerTest.java - MUST FAIL initially
+- [ ] T072 [P] [US2] Write contract tests for GET /api/approvals/{id}/history endpoint in backend/src/test/java/com/wellkorea/backend/approval/controller/ApprovalControllerTest.java - MUST FAIL initially
+- [ ] T073 [US2] Write unit tests for QuotationService (quotation total calculation, versioning logic) in backend/src/test/java/com/wellkorea/backend/quotation/service/QuotationServiceTest.java - MUST FAIL initially
+- [ ] T074 [US2] Write unit tests for ApprovalService (approval workflow state transitions, rejection validation) in backend/src/test/java/com/wellkorea/backend/approval/service/ApprovalServiceTest.java - MUST FAIL initially
+- [ ] T075 [US2] Write integration test for quotation approval workflow (create quotation → submit for approval → approve → verify status change) in backend/src/test/java/com/wellkorea/backend/quotation/QuotationApprovalIntegrationTest.java - MUST FAIL initially
 
-- [ ] T097 [P] [US3] Integration test for product CRUD in `backend/src/test/java/com/wellkorea/erp/integration/ProductIntegrationTest.java`
-- [ ] T098 [US3] Integration test for product search with full-text indexing
-- [ ] T099 [US3] Integration test for product deactivation (old quotations still reference, new ones don't offer)
+### Database Schema for User Story 2
 
-### Domain & Application Layer for User Story 3
+- [ ] T076 Create Flyway migration V7__create_quotation_domain.sql for Quotation, QuotationLineItem tables
+- [ ] T077 Create Flyway migration V8__create_approval_domain.sql for ApprovalRequest, ApprovalHistory, ApprovalComment tables
 
-- [ ] T100 [US3] Ensure Product and ProductType entities created in Phase 2 (T027) have required fields (name, description, sku, category, base_unit_price)
-- [ ] T101 [US3] Implement ProductService in `backend/src/main/java/com/wellkorea/erp/application/product/ProductService.java` with CRUD operations
-- [ ] T102 [US3] Implement product search using PostgreSQL full-text search in ProductService
-- [ ] T103 [US3] Implement WorkProgressStepTemplate logic so product type defines standard manufacturing steps
+### Backend Implementation for User Story 2 - Quotation
 
-### API Layer for User Story 3
+- [ ] T069 [P] [US2] Create Quotation entity in backend/src/main/java/com/wellkorea/backend/quotation/domain/Quotation.java
+- [ ] T070 [P] [US2] Create QuotationLineItem entity in backend/src/main/java/com/wellkorea/backend/quotation/domain/QuotationLineItem.java
+- [ ] T071 [P] [US2] Create QuotationStatus enum in backend/src/main/java/com/wellkorea/backend/quotation/domain/QuotationStatus.java
+- [ ] T072 [US2] Create QuotationRepository in backend/src/main/java/com/wellkorea/backend/quotation/infrastructure/persistence/QuotationRepository.java (depends on T069)
+- [ ] T073 [US2] Implement QuotationService with create, read, update, list, calculate totals in backend/src/main/java/com/wellkorea/backend/quotation/service/QuotationService.java
+- [ ] T074 [US2] Implement QuotationPdfService to generate PDF quotations using iText/PDFBox in backend/src/main/java/com/wellkorea/backend/quotation/service/QuotationPdfService.java
+- [ ] T075 [US2] Create QuotationController with REST endpoints in backend/src/main/java/com/wellkorea/backend/quotation/controller/QuotationController.java
+- [ ] T076 [US2] Create DTOs (CreateQuotationRequest, QuotationLineItemRequest, QuotationResponse) in backend/src/main/java/com/wellkorea/backend/quotation/dto/
+- [ ] T077 [US2] Add validation (products exist, quantities > 0, unit prices >= 0, total calculation)
+- [ ] T078 [US2] Implement quotation versioning (auto-increment version per project)
+- [ ] T078a [US2] Implement quotation revision notification email feature in QuotationEmailService (Admin chooses to send email on version creation) in backend/src/main/java/com/wellkorea/backend/quotation/application/QuotationEmailService.java
+- [ ] T078b [US2] Add email notification endpoint POST /api/quotations/{id}/send-revision-notification in QuotationController
 
-- [ ] T104 [US3] Create ProductController in `backend/src/main/java/com/wellkorea/erp/api/admin/ProductController.java`
-- [ ] T105 [US3] Create product DTOs: CreateProductRequest, UpdateProductRequest, ProductResponse in `backend/src/main/java/com/wellkorea/erp/api/admin/dto/`
-- [ ] T106 [US3] Add authorization checks (@PreAuthorize: Admin only)
-- [ ] T107 [US3] Add search/filter parameters (product_type_id, search by name/sku, pagination)
+### Backend Implementation for User Story 2 - Approval Domain
 
-### Frontend for User Story 3
+- [ ] T079 [P] [US2] Create ApprovalRequest entity in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalRequest.java
+- [ ] T080 [P] [US2] Create ApprovalStatus enum in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalStatus.java
+- [ ] T081 [P] [US2] Create ApprovalHistory entity in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalHistory.java
+- [ ] T082 [P] [US2] Create ApprovalComment entity in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalComment.java
+- [ ] T083 [US2] Create ApprovalRepository in backend/src/main/java/com/wellkorea/backend/approval/infrastructure/persistence/ApprovalRepository.java (depends on T079)
+- [ ] T084 [US2] Implement ApprovalService with submit, approve, reject, get history in backend/src/main/java/com/wellkorea/backend/approval/service/ApprovalService.java
+- [ ] T085 [US2] Create ApprovalController with REST endpoints (/api/approvals - POST, PUT /{id}/approve, PUT /{id}/reject, GET /{id}/history) in backend/src/main/java/com/wellkorea/backend/approval/controller/ApprovalController.java
+- [ ] T086 [US2] Create DTOs (CreateApprovalRequest, ApprovalDecisionRequest, ApprovalResponse) in backend/src/main/java/com/wellkorea/backend/approval/dto/
+- [ ] T087 [US2] Add approval workflow validation (only Admin/Finance can approve, rejection requires comments)
+- [ ] T088 [US2] Integrate ApprovalService with QuotationService (quotation status changes on approve/reject)
 
-- [ ] T108 [P] [US3] Create Product types in `frontend/src/types/product.ts`
-- [ ] T109 [P] [US3] Create Product API service in `frontend/src/services/productService.ts`
-- [ ] T110 [US3] Create ProductCatalog page in `frontend/src/pages/admin/ProductCatalog.tsx` (Material UI DataGrid with edit modal)
-- [ ] T111 [US3] Create ProductCreateForm in `frontend/src/components/admin/ProductCreateForm.tsx` (name, description, category, base_price)
-- [ ] T112 [US3] Create ProductEditModal in `frontend/src/components/admin/ProductEditModal.tsx`
-- [ ] T113 [US3] Integrate product search into QuotationLineItemForm (T089) so product selector has search autocomplete
-- [ ] T114 [US3] Create unit tests for ProductService
+### Frontend Implementation for User Story 2
 
-**Checkpoint**: User Stories 1, 2, AND 3 should work independently:
-- Create products in catalog
-- Create quotation selecting those products
-- Verify base price suggested, can override
-- Search products by name
+- [ ] T089 [US2] Create QuotationService API client in frontend/src/services/quotationService.ts
+- [ ] T090 [US2] Create ApprovalService API client in frontend/src/services/approvalService.ts
+- [ ] T091 [US2] Create QuotationListPage with table view (filtered by role) in frontend/src/pages/quotations/QuotationListPage.tsx
+- [ ] T092 [US2] Create CreateQuotationPage with product selection and line items in frontend/src/pages/quotations/CreateQuotationPage.tsx
+- [ ] T093 [US2] Create EditQuotationPage with version management in frontend/src/pages/quotations/EditQuotationPage.tsx
+- [ ] T093a [US2] Add email notification checkbox in EditQuotationPage when creating new version (calls POST /api/quotations/{id}/send-revision-notification) in frontend/src/pages/quotations/EditQuotationPage.tsx
+- [ ] T094 [US2] Create QuotationDetailPage with approval history in frontend/src/pages/quotations/QuotationDetailPage.tsx
+- [ ] T095 [US2] Create ApprovalModal for approve/reject with comments in frontend/src/components/quotations/ApprovalModal.tsx
+- [ ] T096 [US2] Add PDF download button that fetches quotation PDF
+- [ ] T097 [US2] Add role-based visibility (Sales: read-only their quotations, Finance: all quotations)
+- [ ] T097a [US2] Filter quotations by assigned customers for Sales role in QuotationController (verify role and apply customer filter using customer_assignment from T048a) in backend/src/main/java/com/wellkorea/backend/quotation/api/QuotationController.java
 
----
-
-## Phase 6: User Story 4 - Production Tracking: Work Progress Sheet Per Product (Priority: P2)
-
-**Goal**: Enable production staff to track work progress per product (not per JobCode), with support for outsourcing and parallel processes
-
-**Independent Test**: Create JobCode with 3 products → create work progress sheets → mark steps in progress → record outsourced vendor/ETA → view aggregated status
-
-### Contract Tests for User Story 4
-
-- [ ] T115 [P] [US4] Contract test for GET /api/v1/jobcodes/{jobcodeId}/work-progress in `backend/src/test/java/com/wellkorea/erp/contract/ProductionContractTest.java`
-- [ ] T116 [P] [US4] Contract test for POST /api/v1/work-progress-steps/{id}/complete
-
-### Integration Tests for User Story 4
-
-- [ ] T117 [P] [US4] Integration test for work progress sheet creation per product in `backend/src/test/java/com/wellkorea/erp/integration/ProductionIntegrationTest.java`
-- [ ] T118 [US4] Integration test for step status transitions and remarks logging
-- [ ] T119 [US4] Integration test for outsourcing step with vendor/ETA tracking
-
-### Domain & Application Layer for User Story 4
-
-- [ ] T120 [P] [US4] Ensure WorkProgressSheet entity created in Phase 2 (relates JobCode + Product)
-- [ ] T121 [P] [US4] Ensure WorkProgressStepTemplate and WorkProgressStep entities support outsourcing fields (vendor_name, eta)
-- [ ] T122 [US4] Implement ProductionService in `backend/src/main/java/com/wellkorea/erp/application/production/ProductionService.java`
-- [ ] T123 [US4] Implement work progress sheet creation on quotation approval (auto-create sheets for each product)
-- [ ] T124 [US4] Implement step status state machine (Not Started → In Progress → Completed)
-- [ ] T125 [US4] Implement aggregation logic for JobCode status view (% complete per product)
-
-### API Layer for User Story 4
-
-- [ ] T126 [US4] Create ProductionController in `backend/src/main/java/com/wellkorea/erp/api/production/ProductionController.java`
-- [ ] T127 [US4] Create work progress DTOs in `backend/src/main/java/com/wellkorea/erp/api/production/dto/`
-- [ ] T128 [US4] Add authorization checks (@PreAuthorize: Production can update, Admin can view all)
-
-### Frontend for User Story 4
-
-- [ ] T129 [P] [US4] Create Production types in `frontend/src/types/production.ts`
-- [ ] T130 [P] [US4] Create Production API service in `frontend/src/services/productionService.ts`
-- [ ] T131 [US4] Create ProductionSheet page in `frontend/src/pages/ProductionSheet.tsx` (list of work progress sheets, one per product)
-- [ ] T132 [US4] Create WorkProgressStepTable component in `frontend/src/components/production/WorkProgressStepTable.tsx` (status, date, remarks, outsourcing fields)
-- [ ] T133 [US4] Create WorkProgressStepEditModal for editing remarks and outsourcing info
-- [ ] T134 [US4] Add production status aggregation display to JobCodeDetail (T060)
-- [ ] T135 [US4] Create unit tests for ProductionService
-
-**Checkpoint**: User Stories 1–4 should work independently:
-- Create JobCode → quotation with 3 products → work progress sheets auto-created → update production status → view aggregated status
+**Checkpoint**: Quotation creation and approval workflow complete - commercial documents can be created, approved, and exported as PDFs
 
 ---
 
-## Phase 7: User Story 5 - Delivery Tracking & Granular Invoicing (Priority: P2)
+## Phase 6: User Story 3 - Product Catalog Management (Priority: P2)
 
-**Goal**: Record product deliveries per JobCode with granular quantity tracking to prevent double-billing
+**Goal**: Implement product catalog for standardized quotation creation
 
-**Independent Test**: Record delivery (partial products/quantities) → generate transaction statement → prevent double-invoicing same product/qty
+**Independent Test**: Can be fully tested by:
+1. Creating 10–20 products with names, descriptions, base prices
+2. Categorizing products (e.g., "Sheet Metal," "Custom Components")
+3. Searching for a product by name
+4. Selecting a product in a quotation and confirming base price is suggested
 
-### Contract Tests for User Story 5
+### Tests for User Story 3 (Write FIRST - Red-Green-Refactor)
 
-- [ ] T136 [P] [US5] Contract test for POST /api/v1/jobcodes/{jobcodeId}/deliveries in `backend/src/test/java/com/wellkorea/erp/contract/DeliveryContractTest.java`
-- [ ] T137 [P] [US5] Contract test for GET /api/v1/jobcodes/{jobcodeId}/deliveries
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-### Integration Tests for User Story 5
+- [ ] T098 [P] [US3] Write contract tests for POST /api/products endpoint (validates SKU uniqueness, name non-empty, base_price >= 0) in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
+- [ ] T099 [P] [US3] Write contract tests for GET /api/products, GET /api/products/{id}, PUT /api/products/{id}, DELETE /api/products/{id} endpoints in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
+- [ ] T100 [P] [US3] Write contract tests for GET /api/products/search endpoint (search by name, filter by type) in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
+- [ ] T101 [US3] Write unit tests for ProductService (product deactivation logic, preserve in old quotations) in backend/src/test/java/com/wellkorea/backend/product/service/ProductServiceTest.java - MUST FAIL initially
 
-- [ ] T138 [P] [US5] Integration test for delivery creation and quantity tracking in `backend/src/test/java/com/wellkorea/erp/integration/DeliveryIntegrationTest.java`
-- [ ] T139 [US5] Integration test for preventing double-delivery warnings
-- [ ] T140 [US5] Integration test for transaction statement generation
+### Database Schema for User Story 3
 
-### Domain & Application Layer for User Story 5
+- [ ] T102 Create Flyway migration V9__create_product_domain.sql for Product, ProductType tables
 
-- [ ] T141 [P] [US5] Ensure Delivery and DeliveryLineItem entities exist with quantity tracking
-- [ ] T142 [US5] Implement DeliveryService in `backend/src/main/java/com/wellkorea/erp/application/delivery/DeliveryService.java`
-- [ ] T143 [US5] Implement validation logic to prevent over-delivery (quantity_delivered <= quotation_quantity)
-- [ ] T144 [US5] Implement transaction statement generation using iText in `backend/src/main/java/com/wellkorea/erp/infrastructure/pdf/TransactionStatementGenerator.java`
-- [ ] T145 [US5] Implement delivery status aggregation (sum quantities per product across all deliveries)
+### Backend Implementation for User Story 3
 
-### API Layer for User Story 5
+- [ ] T099 [P] [US3] Create Product entity in backend/src/main/java/com/wellkorea/backend/product/domain/Product.java
+- [ ] T100 [P] [US3] Create ProductType entity in backend/src/main/java/com/wellkorea/backend/product/domain/ProductType.java
+- [ ] T101 [US3] Create ProductRepository with search by name in backend/src/main/java/com/wellkorea/backend/product/infrastructure/persistence/ProductRepository.java (depends on T099)
+- [ ] T102 [US3] Implement ProductService with CRUD and search operations in backend/src/main/java/com/wellkorea/backend/product/service/ProductService.java
+- [ ] T103 [US3] Create ProductController with REST endpoints (/api/products - GET, POST, PUT, DELETE, GET /search) in backend/src/main/java/com/wellkorea/backend/product/controller/ProductController.java
+- [ ] T104 [US3] Create DTOs (CreateProductRequest, UpdateProductRequest, ProductResponse) in backend/src/main/java/com/wellkorea/backend/product/dto/
+- [ ] T105 [US3] Add validation (SKU unique, name non-empty, base price >= 0)
+- [ ] T106 [US3] Implement product deactivation (is_active flag) while preserving in old quotations
 
-- [ ] T146 [US5] Create DeliveryController in `backend/src/main/java/com/wellkorea/erp/api/delivery/DeliveryController.java`
-- [ ] T147 [US5] Create delivery DTOs in `backend/src/main/java/com/wellkorea/erp/api/delivery/dto/`
-- [ ] T148 [US5] Add authorization checks (@PreAuthorize: Admin/Finance can record)
-- [ ] T149 [US5] Add API endpoint for transaction statement PDF generation
+### Frontend Implementation for User Story 3
 
-### Frontend for User Story 5
+- [ ] T107 [US3] Create ProductService API client in frontend/src/services/productService.ts
+- [ ] T108 [US3] Create ProductListPage with search and filter in frontend/src/pages/products/ProductListPage.tsx
+- [ ] T109 [US3] Create CreateProductPage with form in frontend/src/pages/products/CreateProductPage.tsx
+- [ ] T110 [US3] Create EditProductPage with form in frontend/src/pages/products/EditProductPage.tsx
+- [ ] T111 [US3] Create ProductSearchComponent for quotation product selection in frontend/src/components/products/ProductSearch.tsx
+- [ ] T112 [US3] Add role-based access (Admin only can create/edit products)
 
-- [ ] T150 [P] [US5] Create Delivery types in `frontend/src/types/delivery.ts`
-- [ ] T151 [P] [US5] Create Delivery API service in `frontend/src/services/deliveryService.ts`
-- [ ] T152 [US5] Create DeliveryCreate page in `frontend/src/pages/DeliveryCreate.tsx` (JobCode selector, product list with quantity inputs)
-- [ ] T153 [US5] Create DeliveryLineItemForm for editing product quantities in delivery
-- [ ] T154 [US5] Add delivery status display to JobCodeDetail (showing delivered qty per product)
-- [ ] T155 [US5] Add transaction statement PDF download button to delivery
-- [ ] T156 [US5] Create unit tests for DeliveryService
-
-**Checkpoint**: User Stories 1–5 should work independently:
-- Create JobCode → quotation → delivery (partial) → verify transaction statement → prevent double-delivery
-
----
-
-## Phase 8: User Story 6 - Tax Invoices & Payments with AR/AP Tracking (Priority: P2)
-
-**Goal**: Create tax invoices from deliveries and record payments with AR/AP management and reporting
-
-**Independent Test**: Create delivery → create invoice (auto-populated) → record payment (partial) → verify AR aging → prevent re-invoicing
-
-### Contract Tests for User Story 6
-
-- [ ] T157 [P] [US6] Contract test for POST /api/v1/invoices in `backend/src/test/java/com/wellkorea/erp/contract/InvoiceContractTest.java`
-- [ ] T158 [P] [US6] Contract test for POST /api/v1/invoices/{invoiceId}/payments
-- [ ] T159 [P] [US6] Contract test for GET /api/v1/reports/ar-aging
-
-### Integration Tests for User Story 6
-
-- [ ] T160 [P] [US6] Integration test for invoice creation from delivery in `backend/src/test/java/com/wellkorea/erp/integration/InvoiceIntegrationTest.java`
-- [ ] T161 [US6] Integration test for payment recording and remaining balance calculation
-- [ ] T162 [US6] Integration test for preventing double-invoicing (InvoiceLineItem tracking)
-- [ ] T163 [US6] Integration test for AR aging report
-
-### Domain & Application Layer for User Story 6
-
-- [ ] T164 [P] [US6] Ensure TaxInvoice, InvoiceLineItem, and Payment entities exist with granular product/qty tracking
-- [ ] T165 [US6] Implement InvoiceService in `backend/src/main/java/com/wellkorea/erp/application/finance/InvoiceService.java`
-- [ ] T166 [US6] Implement invoice auto-population from delivery (copy product/qty from DeliveryLineItem)
-- [ ] T167 [US6] Implement validation to prevent double-invoicing (check InvoiceLineItem.product_id,quantity already invoiced for same product)
-- [ ] T168 [US6] Implement payment recording with remaining balance calculation
-- [ ] T169 [US6] Implement AR/AP reporting service in `backend/src/main/java/com/wellkorea/erp/application/finance/ArApReportService.java`
-- [ ] T170 [US6] Implement invoice PDF generation using iText in `backend/src/main/java/com/wellkorea/erp/infrastructure/pdf/InvoicePdfGenerator.java`
-- [ ] T171 [US6] Implement AR aging calculation (current, 30, 60, 90+ days overdue)
-
-### API Layer for User Story 6
-
-- [ ] T172 [US6] Create InvoiceController in `backend/src/main/java/com/wellkorea/erp/api/finance/InvoiceController.java`
-- [ ] T173 [US6] Create invoice DTOs in `backend/src/main/java/com/wellkorea/erp/api/finance/dto/`
-- [ ] T174 [US6] Create payment DTOs for recording payment endpoint
-- [ ] T175 [US6] Create report endpoints: GET /api/v1/reports/ar-aging, GET /api/v1/reports/sales-summary
-- [ ] T176 [US6] Add authorization checks (@PreAuthorize: Finance/Admin can create invoices and record payments)
-- [ ] T177 [US6] Add RBAC for viewing invoices (Finance see all, Sales see own customer invoices)
-
-### Frontend for User Story 6
-
-- [ ] T178 [P] [US6] Create Invoice types in `frontend/src/types/invoice.ts`
-- [ ] T179 [P] [US6] Create Finance API service in `frontend/src/services/financeService.ts`
-- [ ] T180 [US6] Create InvoiceCreate page in `frontend/src/pages/InvoiceCreate.tsx` (select delivery, auto-populate products, edit if needed)
-- [ ] T181 [US6] Create PaymentRecordForm component in `frontend/src/components/finance/PaymentRecordForm.tsx` (date, amount, method, reference)
-- [ ] T182 [US6] Create InvoiceDetail page in `frontend/src/pages/InvoiceDetail.tsx` (show line items, payment history, PDF download, record payment button)
-- [ ] T183 [US6] Create ARAPDashboard page in `frontend/src/pages/ARAPDashboard.tsx` (AR aging table by customer, AP by supplier)
-- [ ] T184 [US6] Create ReportingDashboard page in `frontend/src/pages/ReportingDashboard.tsx` (sales by customer/month, cash flow)
-- [ ] T185 [US6] Add invoice PDF download functionality
-- [ ] T186 [US6] Create unit tests for FinanceService
-
-**Checkpoint**: User Stories 1–6 should work independently:
-- Complete JobCode → quotation → production → delivery → invoice → payment workflow
-- Verify AR aging report, prevent double-invoicing, payment tracking
+**Checkpoint**: Product catalog complete - standardized product selection available for quotations
 
 ---
 
-## Phase 9: User Story 7 - Document Management & Central Storage (Priority: P3)
+## Phase 7: User Story 4 - Production Tracking: Work Progress Sheet Per Product (Priority: P2)
 
-**Goal**: Upload and tag documents by JobCode/product/type with powerful search and virtual tree navigation
+**Goal**: Implement per-product work progress tracking with manufacturing steps
 
-**Independent Test**: Upload 20 files → tag → search by JobCode/product/type → navigate virtual tree → download
+**Independent Test**: Can be fully tested by:
+1. Creating work progress sheets for 2–3 products in a JobCode
+2. Marking manufacturing steps as "in progress" with dates and remarks
+3. Recording an outsourced step (vendor name, ETA)
+4. Viewing production status aggregated across all products
 
-### Contract Tests for User Story 7
+### Tests for User Story 4 (Write FIRST - Red-Green-Refactor)
 
-- [ ] T187 [P] [US7] Contract test for POST /api/v1/documents (multipart file upload) in `backend/src/test/java/com/wellkorea/erp/contract/DocumentContractTest.java`
-- [ ] T188 [P] [US7] Contract test for GET /api/v1/documents/{id}/download
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-### Integration Tests for User Story 7
+- [ ] T113 [P] [US4] Write contract tests for POST /api/work-progress endpoint (creates sheet for project-product) in backend/src/test/java/com/wellkorea/backend/production/controller/WorkProgressControllerTest.java - MUST FAIL initially
+- [ ] T114 [P] [US4] Write contract tests for PUT /api/work-progress/{id}/steps/{stepId} endpoint (updates step status, dates, remarks) in backend/src/test/java/com/wellkorea/backend/production/controller/WorkProgressControllerTest.java - MUST FAIL initially
+- [ ] T115 [P] [US4] Write contract tests for GET /api/work-progress endpoint (get all sheets for project, calculate aggregated progress %) in backend/src/test/java/com/wellkorea/backend/production/controller/WorkProgressControllerTest.java - MUST FAIL initially
+- [ ] T116 [US4] Write unit tests for WorkProgressService (progress calculation, outsourced step tracking) in backend/src/test/java/com/wellkorea/backend/production/service/WorkProgressServiceTest.java - MUST FAIL initially
 
-- [ ] T189 [P] [US7] Integration test for document upload and metadata storage in `backend/src/test/java/com/wellkorea/erp/integration/DocumentIntegrationTest.java`
-- [ ] T190 [US7] Integration test for document search with filtering
-- [ ] T191 [US7] Integration test for polymorphic ownership (JobCode, Quotation, TaxInvoice documents)
+### Database Schema for User Story 4
 
-### Domain & Application Layer for User Story 7
+- [ ] T113 Create Flyway migration V10__create_production_domain.sql for WorkProgressSheet, WorkProgressStep, WorkProgressStepTemplate tables
 
-- [ ] T192 [US7] Ensure Document entity exists with polymorphic owner support (owner_type, owner_id)
-- [ ] T193 [US7] Implement DocumentService in `backend/src/main/java/com/wellkorea/erp/application/document/DocumentService.java`
-- [ ] T194 [US7] Implement document search with full-text indexing and filtering
-- [ ] T195 [US7] Implement file size validation and MIME type checking
+### Backend Implementation for User Story 4
 
-### API Layer for User Story 7
+- [ ] T114 [P] [US4] Create WorkProgressSheet entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressSheet.java
+- [ ] T115 [P] [US4] Create WorkProgressStep entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressStep.java
+- [ ] T116 [P] [US4] Create WorkProgressStepTemplate entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressStepTemplate.java
+- [ ] T117 [P] [US4] Create StepStatus enum (NotStarted, InProgress, Completed) in backend/src/main/java/com/wellkorea/backend/production/domain/StepStatus.java
+- [ ] T118 [US4] Create WorkProgressSheetRepository in backend/src/main/java/com/wellkorea/backend/production/infrastructure/persistence/WorkProgressSheetRepository.java (depends on T114)
+- [ ] T119 [US4] Implement WorkProgressService with create sheet, update step, get progress in backend/src/main/java/com/wellkorea/backend/production/service/WorkProgressService.java
+- [ ] T120 [US4] Create WorkProgressController with REST endpoints in backend/src/main/java/com/wellkorea/backend/production/controller/WorkProgressController.java
+- [ ] T121 [US4] Create DTOs (CreateWorkProgressSheetRequest, UpdateStepRequest, WorkProgressResponse) in backend/src/main/java/com/wellkorea/backend/production/dto/
+- [ ] T122 [US4] Add validation (unique sheet per project-product, status progression, completed_by required on completion)
+- [ ] T123 [US4] Implement aggregated progress calculation (% complete per product)
 
-- [ ] T196 [US7] Create DocumentController in `backend/src/main/java/com/wellkorea/erp/api/documents/DocumentController.java`
-- [ ] T197 [US7] Create multipart upload endpoint (POST /api/v1/documents) with owner_type/owner_id/document_type fields
-- [ ] T198 [US7] Create download endpoint with access control (GET /api/v1/documents/{id}/download)
-- [ ] T199 [US7] Create search/filter endpoint with parameters (jobcode_id, product_id, document_type, owner_type)
-- [ ] T200 [US7] Add authorization checks (Finance/Admin can download quotations, Production can download photos, all can search)
+### Frontend Implementation for User Story 4
 
-### Frontend for User Story 7
+- [ ] T124 [US4] Create WorkProgressService API client in frontend/src/services/workProgressService.ts
+- [ ] T125 [US4] Create WorkProgressListPage showing all products for a project in frontend/src/pages/production/WorkProgressListPage.tsx
+- [ ] T126 [US4] Create WorkProgressDetailPage with step-by-step tracking in frontend/src/pages/production/WorkProgressDetailPage.tsx
+- [ ] T127 [US4] Create UpdateStepModal for updating step status, dates, remarks in frontend/src/components/production/UpdateStepModal.tsx
+- [ ] T128 [US4] Add aggregated progress display on project detail page
+- [ ] T129 [US4] Add role-based access (Production staff can update, Finance/Sales can view read-only)
 
-- [ ] T201 [P] [US7] Create Document types in `frontend/src/types/document.ts`
-- [ ] T202 [P] [US7] Create Document API service in `frontend/src/services/documentService.ts` with upload/download/search
-- [ ] T203 [US7] Create DocumentUpload modal component in `frontend/src/components/document/DocumentUploadModal.tsx` (file input, owner_type/id selectors, document_type)
-- [ ] T204 [US7] Create DocumentLibrary page in `frontend/src/pages/DocumentLibrary.tsx` (search, filtering, virtual tree navigation)
-- [ ] T205 [US7] Create VirtualTreeView component in `frontend/src/components/document/VirtualTreeView.tsx` (Company → Project → JobCode → Product → Document)
-- [ ] T206 [US7] Add document upload button to JobCodeDetail, QuotationDetail, InvoiceDetail
-- [ ] T207 [US7] Integrate document preview for images/PDFs (optional: embed viewer)
-- [ ] T208 [US7] Create unit tests for DocumentService
-
-**Checkpoint**: User Stories 1–7 should work independently:
-- Complete full JobCode → quotation → production → delivery → invoice workflow
-- Upload and search documents at each stage
-
----
-
-## Phase 10: User Story 8 - Purchasing & Automated RFQ (Priority: P3)
-
-**Goal**: Create purchase requests with automated RFQ generation and vendor response tracking
-
-**Independent Test**: Create RFQ → auto-generate email → select vendor → record PO
-
-### Contract Tests for User Story 8
-
-- [ ] T209 [P] [US8] Contract test for POST /api/v1/rfq in `backend/src/test/java/com/wellkorea/erp/contract/PurchasingContractTest.java`
-- [ ] T210 [P] [US8] Contract test for POST /api/v1/rfq/{rfqId}/responses
-
-### Integration Tests for User Story 8
-
-- [ ] T211 [P] [US8] Integration test for RFQ creation in `backend/src/test/java/com/wellkorea/erp/integration/PurchasingIntegrationTest.java`
-- [ ] T212 [US8] Integration test for vendor email auto-generation
-- [ ] T213 [US8] Integration test for purchase order creation from RFQ
-
-### Domain & Application Layer for User Story 8
-
-- [ ] T214 [P] [US8] Ensure RFQ, Supplier, and PurchaseOrder entities exist
-- [ ] T215 [US8] Implement PurchasingService in `backend/src/main/java/com/wellkorea/erp/application/purchasing/PurchasingService.java`
-- [ ] T216 [US8] Implement RFQ email template and generation in `backend/src/main/java/com/wellkorea/erp/infrastructure/email/RfqEmailGenerator.java`
-- [ ] T217 [US8] Implement vendor suggestion logic (who sells what mappings)
-- [ ] T218 [US8] Implement purchase order linking to JobCode for profitability analysis
-
-### API Layer for User Story 8
-
-- [ ] T219 [US8] Create PurchasingController in `backend/src/main/java/com/wellkorea/erp/api/purchasing/PurchasingController.java`
-- [ ] T220 [US8] Create RFQ DTOs (CreateRfqRequest, RfqResponse) in `backend/src/main/java/com/wellkorea/erp/api/purchasing/dto/`
-- [ ] T221 [US8] Create PurchaseOrder DTOs
-- [ ] T222 [US8] Create email sending endpoint (POST /api/v1/rfq/{rfqId}/send-email)
-- [ ] T223 [US8] Add authorization checks (@PreAuthorize: Admin/Finance can create RFQ)
-
-### Frontend for User Story 8
-
-- [ ] T224 [P] [US8] Create Purchasing types in `frontend/src/types/purchasing.ts`
-- [ ] T225 [P] [US8] Create Purchasing API service in `frontend/src/services/purchasingService.ts`
-- [ ] T226 [US8] Create RFQCreate page in `frontend/src/pages/RFQCreate.tsx` (JobCode selector, material/service category, description, deadline)
-- [ ] T227 [US8] Create VendorSuggestion component in `frontend/src/components/purchasing/VendorSuggestion.tsx` (shows suggested vendors for category)
-- [ ] T228 [US8] Create PurchaseOrderCreate page in `frontend/src/pages/PurchaseOrderCreate.tsx` (select RFQ, select vendor, enter price/deadline)
-- [ ] T229 [US8] Create RFQDetail page showing vendor responses
-- [ ] T230 [US8] Create unit tests for PurchasingService
-
-**Checkpoint**: User Stories 1–8 should work independently:
-- Complete full JobCode → quotation → production → delivery → invoice → purchasing workflow
+**Checkpoint**: Production tracking complete - per-product work progress visible with real-time status updates
 
 ---
 
-## Phase 11: User Story 9 - Role-Based Access Control & Quotation Protection (Priority: P1) 🔒
+## Phase 8: User Story 5 - Delivery Tracking & Granular Invoicing (Priority: P2)
 
-**Goal**: Enforce role-based access control (Admin, Finance, Production, Sales) with strict data isolation and audit logging. Prevent unauthorized quotation access (critical security requirement per spec).
+**Goal**: Implement delivery tracking with product-level granularity and double-billing prevention
 
-**Independent Test**: Login as each role → verify only appropriate data visible → attempt unauthorized access → verify denied with audit log → verify role changes take effect immediately
+**Independent Test**: Can be fully tested by:
+1. Recording a single delivery (all products, full quantities)
+2. Recording a split delivery (partial products/quantities)
+3. Confirming transaction statements are generated with only shipped products
+4. Attempting to invoice the same product/quantity twice and confirming prevention
 
-**NOTE**: This is a **CRITICAL P1 story** that must ship alongside US1 & US2. Security controls protect customer quotations from unauthorized access (previous data leak incident). Implement AFTER Phase 2 foundational but CONCURRENTLY with US1 & US2.
+### Tests for User Story 5 (Write FIRST - Red-Green-Refactor)
 
-### Contract Tests for User Story 9
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T350 [P] [US9] Contract test for authentication endpoints (POST /api/v1/auth/login, /logout) in `backend/src/test/java/com/wellkorea/erp/contract/AuthContractTest.java` (verify JWT token schema, expiration)
-- [ ] T351 [P] [US9] Contract test for authorization enforcement (verify @PreAuthorize annotations block unauthorized access with 403)
-- [ ] T352 [P] [US9] Contract test for audit log endpoint (GET /api/v1/admin/audit-logs) — Admin only, returns user access history
+- [ ] T130 [P] [US5] Write contract tests for POST /api/deliveries endpoint (validates quantity_delivered <= quotation quantity) in backend/src/test/java/com/wellkorea/backend/delivery/controller/DeliveryControllerTest.java - MUST FAIL initially
+- [ ] T131 [P] [US5] Write contract tests for GET /api/deliveries endpoint (for project) and GET /api/deliveries/{id}/statement (PDF generation) in backend/src/test/java/com/wellkorea/backend/delivery/controller/DeliveryControllerTest.java - MUST FAIL initially
+- [ ] T132 [US5] Write unit tests for DeliveryService (over-delivery prevention, double-invoicing tracking) in backend/src/test/java/com/wellkorea/backend/delivery/service/DeliveryServiceTest.java - MUST FAIL initially
+- [ ] T133 [US5] Write integration test for delivery tracking (create delivery → prevent duplicate delivery of same quantity) in backend/src/test/java/com/wellkorea/backend/delivery/DeliveryIntegrationTest.java - MUST FAIL initially
 
-### Integration Tests for User Story 9
+### Database Schema for User Story 5
 
-- [ ] T353 [P] [US9] Integration test for role-based visibility (create data as Admin, verify Production user sees only production data) in `backend/src/test/java/com/wellkorea/erp/integration/RbacIntegrationTest.java`
-- [ ] T354 [P] [US9] Integration test for quotation access control (Sales user cannot edit quotations, Finance can; Production cannot view)
-- [ ] T355 [US9] Integration test for audit logging (verify every quotation view/edit/approve is logged with user, timestamp, action)
-- [ ] T356 [US9] Integration test for role changes (change user role, verify access immediately updated on next request)
+- [ ] T134 Create Flyway migration V11__create_delivery_domain.sql for Delivery, DeliveryLineItem tables
 
-### Domain & Application Layer for User Story 9
+### Backend Implementation for User Story 5
 
-- [ ] T357 [P] [US9] Implement Permission model/value object in `backend/src/main/java/com/wellkorea/erp/domain/role/Permission.java` defining granular permissions (quotation:view, quotation:edit, invoice:view, etc.)
-- [ ] T358 [P] [US9] Create RoleService in `backend/src/main/java/com/wellkorea/erp/application/role/RoleService.java` with role CRUD and permission assignment
-- [ ] T359 [US9] Implement data-aware authorization service in `backend/src/main/java/com/wellkorea/erp/application/security/DataAwarenessService.java` (filters queries by user role/scope: Production staff see only assigned JobCodes, Sales see only assigned customers)
-- [ ] T360 [US9] Implement permission caching to avoid repeated role lookups per request (with cache invalidation on role change)
+- [ ] T131 [P] [US5] Create Delivery entity in backend/src/main/java/com/wellkorea/backend/delivery/domain/Delivery.java
+- [ ] T132 [P] [US5] Create DeliveryLineItem entity in backend/src/main/java/com/wellkorea/backend/delivery/domain/DeliveryLineItem.java
+- [ ] T133 [US5] Create DeliveryRepository in backend/src/main/java/com/wellkorea/backend/delivery/infrastructure/persistence/DeliveryRepository.java (depends on T131)
+- [ ] T134 [US5] Implement DeliveryService with create, get, validate delivered quantities in backend/src/main/java/com/wellkorea/backend/delivery/service/DeliveryService.java
+- [ ] T135 [US5] Implement TransactionStatementService to generate PDF statements in backend/src/main/java/com/wellkorea/backend/delivery/service/TransactionStatementService.java
+- [ ] T136 [US5] Create DeliveryController with REST endpoints in backend/src/main/java/com/wellkorea/backend/delivery/controller/DeliveryController.java
+- [ ] T137 [US5] Create DTOs (CreateDeliveryRequest, DeliveryLineItemRequest, DeliveryResponse) in backend/src/main/java/com/wellkorea/backend/delivery/dto/
+- [ ] T138 [US5] Add validation (quantity_delivered <= quotation quantity, prevent over-delivery)
+- [ ] T139 [US5] Implement delivered quantity tracking to prevent double-invoicing
 
-### API Layer for User Story 9
+### Frontend Implementation for User Story 5
 
-- [ ] T361 [US9] Create AuthController in `backend/src/main/java/com/wellkorea/erp/api/auth/AuthController.java` with login endpoint (POST /api/v1/auth/login)
-- [ ] T362 [US9] Implement JWT refresh token mechanism (optional: refresh token endpoint for extended sessions)
-- [ ] T363 [US9] Create RoleController in `backend/src/main/java/com/wellkorea/erp/api/admin/RoleController.java` with role management endpoints (Admin only: create role, assign permissions, assign users to roles)
-- [ ] T364 [US9] Create AuditLogController in `backend/src/main/java/com/wellkorea/erp/api/admin/AuditLogController.java` with query endpoints (Admin only: list audit logs, filter by user/entity/action/date, export CSV)
-- [ ] T365 [US9] Add @PreAuthorize annotations to ALL existing controllers (T045-T230) ensuring: Admin/Finance can access quotations; Production cannot; Sales see only assigned customers; Financial data (AR/AP, invoices, purchase prices) restricted to Admin/Finance
-- [ ] T366 [US9] Implement unauthorized access error responses (403 Forbidden with clear message: "You do not have permission to access this resource")
+- [ ] T140 [US5] Create DeliveryService API client in frontend/src/services/deliveryService.ts
+- [ ] T141 [US5] Create DeliveryListPage for a project in frontend/src/pages/deliveries/DeliveryListPage.tsx
+- [ ] T142 [US5] Create CreateDeliveryPage with product-quantity selection in frontend/src/pages/deliveries/CreateDeliveryPage.tsx
+- [ ] T143 [US5] Create DeliveryDetailPage with transaction statement download in frontend/src/pages/deliveries/DeliveryDetailPage.tsx
+- [ ] T144 [US5] Add delivery status display on project detail page
+- [ ] T145 [US5] Add role-based access (Finance can create deliveries, Sales can view read-only)
 
-### Frontend for User Story 9
-
-- [ ] T367 [P] [US9] Create Auth types in `frontend/src/types/auth.ts` (User, Role, Permission, LoginResponse)
-- [ ] T368 [P] [US9] Create Auth API service in `frontend/src/services/authService.ts` (login, logout, refresh token, getCurrentUser)
-- [ ] T369 [US9] Create LoginPage in `frontend/src/pages/LoginPage.tsx` (username/password form, error handling, redirect to dashboard on success)
-- [ ] T370 [US9] Create ProtectedRoute component in `frontend/src/components/auth/ProtectedRoute.tsx` (checks user role before rendering page, shows access denied if unauthorized)
-- [ ] T371 [US9] Create RoleManagementPage in `frontend/src/pages/admin/RoleManagementPage.tsx` (Admin only: create roles, assign permissions, list users per role)
-- [ ] T372 [US9] Create UserManagementPage in `frontend/src/pages/admin/UserManagementPage.tsx` (Admin only: create/edit/delete users, assign roles, view last login)
-- [ ] T373 [US9] Create AuditLogPage in `frontend/src/pages/admin/AuditLogPage.tsx` (Admin only: search/filter audit logs by user/entity/action, export CSV)
-- [ ] T374 [US9] Create useAuthPermission hook in `frontend/src/hooks/useAuthPermission.ts` (checks if current user has specific permission; used to conditionally show/hide UI elements)
-- [ ] T375 [US9] Add role-based navigation guards to React Router (hide menu items from users without access; redirect unauthenticated users to login)
-- [ ] T376 [US9] Create unit tests for Auth services in `frontend/src/services/__tests__/authService.test.ts`
-
-**Checkpoint**: RBAC and audit logging complete. Verify:
-- Login with different roles (Admin, Finance, Sales, Production)
-- View only appropriate data per role
-- Attempt unauthorized access → verify 403 error
-- Verify audit log records all sensitive accesses
-- Change user role → verify access immediately updated
-- Test concurrent access (multiple users different roles)
+**Checkpoint**: Delivery tracking complete - granular delivery with transaction statements and double-billing prevention
 
 ---
 
-## Phase 12: Cross-Cutting Concerns & Polish
+## Phase 9: User Story 6 - Tax Invoices & Payments (Priority: P2)
 
-**Purpose**: Improvements affecting multiple user stories, comprehensive testing, and deployment
+**Goal**: Implement invoicing with partial payment tracking and AR/AP reporting
 
-### API & Security Hardening
+**Independent Test**: Can be fully tested by:
+1. Creating a sales tax invoice for a delivery (auto-populated)
+2. Recording partial payments and confirming remaining receivable
+3. Viewing outstanding AR by customer with aging (30/60/90+ days)
+4. Confirming invoiced product/quantities prevent re-invoicing
 
-- [ ] T377 [P] Implement request size limits and rate limiting in Spring Boot
-- [ ] T378 [P] Add CORS configuration for frontend in `backend/src/main/java/com/wellkorea/erp/security/config/CorsConfig.java`
-- [ ] T379 [P] Implement SQL injection prevention (use parameterized queries, verify JPA is configured correctly)
-- [ ] T380 Implement API versioning strategy (already in /api/v1, plan for v2 compatibility)
-- [ ] T381 Add request/response logging for debugging in middleware
-- [ ] T382 Implement timeout handling for all external API calls (MinIO, email service)
+### Tests for User Story 6 (Write FIRST - Red-Green-Refactor)
 
-### Frontend & UX
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T383 [P] Add loading spinners and skeleton screens across all pages
-- [ ] T384 [P] Implement comprehensive error boundaries for all pages
-- [ ] T385 [P] Add toast notifications for success/error feedback
-- [ ] T386 Implement keyboard navigation for all forms and tables
-- [ ] T387 Add accessibility labels (aria-label, aria-describedby) to all UI elements
-- [ ] T388 Add responsive design for mobile views (Material UI responsive grid)
-- [ ] T389 Add dark mode support (Material UI theme toggle)
+- [ ] T146 [P] [US6] Write contract tests for POST /api/invoices endpoint (auto-populates from delivery, validates line items match delivery) in backend/src/test/java/com/wellkorea/backend/invoice/controller/InvoiceControllerTest.java - MUST FAIL initially
+- [ ] T147 [P] [US6] Write contract tests for POST /api/invoices/{id}/payments endpoint (validates payment <= invoice total) in backend/src/test/java/com/wellkorea/backend/invoice/controller/PaymentControllerTest.java - MUST FAIL initially
+- [ ] T148 [P] [US6] Write contract tests for GET /api/reports/ar and GET /api/reports/ap endpoints (aging analysis) in backend/src/test/java/com/wellkorea/backend/invoice/controller/ReportControllerTest.java - MUST FAIL initially
+- [ ] T149 [US6] Write unit tests for InvoiceService (remaining receivable calculation, prevent double-invoicing) in backend/src/test/java/com/wellkorea/backend/invoice/service/InvoiceServiceTest.java - MUST FAIL initially
+- [ ] T150 [US6] Write unit tests for ARAPReportService (aging analysis 30/60/90+ days) in backend/src/test/java/com/wellkorea/backend/invoice/service/ARAPReportServiceTest.java - MUST FAIL initially
 
-### Testing & Quality
+### Database Schema for User Story 6
 
-- [ ] T390 [P] Add unit tests for all domain value objects (JobCodeString, etc.)
-- [ ] T391 [P] Add unit tests for all services (JobCodeService, QuotationService, etc.) in `backend/src/test/java/com/wellkorea/erp/unit/`
-- [ ] T392 [P] Add integration tests for all major workflows in `backend/src/test/java/com/wellkorea/erp/integration/`
-- [ ] T393 [P] Add frontend unit tests for all services and hooks in `frontend/src/__tests__/`
-- [ ] T394 Add end-to-end tests for critical user journeys (JobCode → Invoice) in `frontend/tests/e2e/`
-- [ ] T395 Run code coverage analysis: backend target >80%, frontend target >70%
-- [ ] T396 Fix any flaky tests (ensure deterministic, no race conditions)
+- [ ] T151 Create Flyway migration V12__create_invoice_domain.sql for TaxInvoice, InvoiceLineItem, Payment tables
 
-### Documentation & Operations
+### Backend Implementation for User Story 6
 
-- [ ] T397 [P] Update API documentation (Swagger UI already auto-generated from OpenAPI)
-- [ ] T398 [P] Create SETUP.md for new developer onboarding with docker-compose instructions
-- [ ] T399 [P] Create DATABASE.md for schema documentation and migration guide
-- [ ] T400 Create DEPLOYMENT.md for production deployment procedures
-- [ ] T401 Create TROUBLESHOOTING.md for common issues and solutions
-- [ ] T402 Create CONTRIBUTING.md with development workflow and constitution compliance
-- [ ] T403 Update specs/001-erp-core/quickstart.md with any discovered gotchas
+- [ ] T147 [P] [US6] Create TaxInvoice entity (with delivery_id foreign key for auto-population per FR-035) in backend/src/main/java/com/wellkorea/backend/invoice/domain/TaxInvoice.java
+- [ ] T148 [P] [US6] Create InvoiceLineItem entity in backend/src/main/java/com/wellkorea/backend/invoice/domain/InvoiceLineItem.java
+- [ ] T149 [P] [US6] Create Payment entity in backend/src/main/java/com/wellkorea/backend/invoice/domain/Payment.java
+- [ ] T150 [P] [US6] Create InvoiceStatus enum in backend/src/main/java/com/wellkorea/backend/invoice/domain/InvoiceStatus.java
+- [ ] T151 [US6] Create TaxInvoiceRepository in backend/src/main/java/com/wellkorea/backend/invoice/infrastructure/persistence/TaxInvoiceRepository.java (depends on T147)
+- [ ] T152 [US6] Create PaymentRepository in backend/src/main/java/com/wellkorea/backend/invoice/infrastructure/persistence/PaymentRepository.java (depends on T149)
+- [ ] T153 [US6] Implement InvoiceService with create, calculate remaining receivable, status updates in backend/src/main/java/com/wellkorea/backend/invoice/service/InvoiceService.java
+- [ ] T154 [US6] Implement PaymentService with record payment, validate amounts in backend/src/main/java/com/wellkorea/backend/invoice/service/PaymentService.java
+- [ ] T155 [US6] Implement InvoicePdfService to generate tax invoice PDFs in backend/src/main/java/com/wellkorea/backend/invoice/service/InvoicePdfService.java
+- [ ] T156 [US6] Implement ARAPReportService for aging analysis and customer/supplier reports in backend/src/main/java/com/wellkorea/backend/invoice/service/ARAPReportService.java
+- [ ] T157 [US6] Create InvoiceController with REST endpoints in backend/src/main/java/com/wellkorea/backend/invoice/controller/InvoiceController.java
+- [ ] T158 [US6] Create PaymentController with REST endpoints in backend/src/main/java/com/wellkorea/backend/invoice/controller/PaymentController.java
+- [ ] T159 [US6] Create ReportController with AR/AP report endpoints in backend/src/main/java/com/wellkorea/backend/invoice/controller/ReportController.java
+- [ ] T160 [US6] Create DTOs (CreateInvoiceRequest, RecordPaymentRequest, InvoiceResponse, ARReportResponse) in backend/src/main/java/com/wellkorea/backend/invoice/dto/
+- [ ] T161 [US6] Add validation (invoice line items match delivery, payments <= invoice total, no negative amounts except refunds)
+- [ ] T162 [US6] Implement invoiced quantity tracking to prevent double-invoicing
 
-### Performance & Monitoring
+### Frontend Implementation for User Story 6
 
-- [ ] T404 Add database query logging and slow query detection
-- [ ] T405 Add APM instrumentation (optional: Spring Cloud Sleuth + Zipkin)
-- [ ] T406 Add metrics collection (optional: Micrometer)
-- [ ] T407 Verify pagination limits (prevent loading 1M rows)
-- [ ] T408 Add caching for product catalog (Material UI DataGrid performance)
-- [ ] T409 Add bulk import capability for initial data migration from Excel
+- [ ] T163 [US6] Create InvoiceService API client in frontend/src/services/invoiceService.ts
+- [ ] T164 [US6] Create PaymentService API client in frontend/src/services/paymentService.ts
+- [ ] T165 [US6] Create InvoiceListPage with filters (customer, status, date range) in frontend/src/pages/invoices/InvoiceListPage.tsx
+- [ ] T166 [US6] Create CreateInvoicePage with delivery auto-population in frontend/src/pages/invoices/CreateInvoicePage.tsx
+- [ ] T167 [US6] Create InvoiceDetailPage with payment history in frontend/src/pages/invoices/InvoiceDetailPage.tsx
+- [ ] T168 [US6] Create RecordPaymentModal in frontend/src/components/invoices/RecordPaymentModal.tsx
+- [ ] T169 [US6] Create ARReportPage with aging analysis and customer breakdown in frontend/src/pages/reports/ARReportPage.tsx
+- [ ] T170 [US6] Create APReportPage with supplier breakdown in frontend/src/pages/reports/APReportPage.tsx
+- [ ] T171 [US6] Add role-based access (Finance only for invoices and AR/AP reports)
 
-### Deployment & DevOps
+**Checkpoint**: Invoicing and AR/AP tracking complete - financial visibility with aging analysis
 
-- [ ] T410 [P] Build backend Docker image in `backend/Dockerfile`
-- [ ] T411 [P] Build frontend Docker image in `frontend/Dockerfile`
-- [ ] T412 Create docker-compose.prod.yml with production overrides (resource limits, restart policies, health checks)
-- [ ] T413 Create backup/restore scripts in `scripts/` directory
-- [ ] T414 Configure CI/CD pipeline (.github/workflows/ or equivalent)
-- [ ] T415 Set up log aggregation (optional: ELK, CloudWatch)
-- [ ] T416 Validate backup/restore procedure with dry-run test
+---
+
+## Phase 10: User Story 7 - Document Management & Central Storage (Priority: P3)
+
+**Goal**: Implement document upload, tagging, search, and virtual tree view
+
+**Independent Test**: Can be fully tested by:
+1. Uploading 20 mixed files (PDF, DXF, JPG, XLSX) with tagging
+2. Searching by JobCode and finding all related documents
+3. Searching by product name and finding documents across JobCodes
+4. Navigating virtual tree (company → project → JobCode → product → document)
+
+### Tests for User Story 7 (Write FIRST - Red-Green-Refactor)
+
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
+
+- [ ] T172 [P] [US7] Write contract tests for POST /api/documents endpoint (validates file size <= 100MB, MIME type, metadata tagging) in backend/src/test/java/com/wellkorea/backend/document/controller/DocumentControllerTest.java - MUST FAIL initially
+- [ ] T173 [P] [US7] Write contract tests for GET /api/documents/search endpoint (search by JobCode, product name, owner_type) in backend/src/test/java/com/wellkorea/backend/document/controller/DocumentControllerTest.java - MUST FAIL initially
+- [ ] T174 [P] [US7] Write contract tests for GET /api/documents/{id}/download endpoint and DELETE /api/documents/{id} in backend/src/test/java/com/wellkorea/backend/document/controller/DocumentControllerTest.java - MUST FAIL initially
+- [ ] T175 [US7] Write unit tests for DocumentService (virtual tree structure, document access audit logging) in backend/src/test/java/com/wellkorea/backend/document/service/DocumentServiceTest.java - MUST FAIL initially
+
+### Database Schema for User Story 7
+
+- [ ] T172 Create Flyway migration V13__create_document_domain.sql for Document table
+
+### Backend Implementation for User Story 7
+
+- [ ] T173 [P] [US7] Create Document entity in backend/src/main/java/com/wellkorea/backend/document/domain/Document.java
+- [ ] T174 [P] [US7] Create DocumentType enum in backend/src/main/java/com/wellkorea/backend/document/domain/DocumentType.java
+- [ ] T175 [US7] Create DocumentRepository with search queries in backend/src/main/java/com/wellkorea/backend/document/infrastructure/persistence/DocumentRepository.java (depends on T173)
+- [ ] T176 [US7] Implement DocumentService with upload, download, search, version management in backend/src/main/java/com/wellkorea/backend/document/service/DocumentService.java
+- [ ] T177 [US7] Implement MinioStorageService for S3 file operations in backend/src/main/java/com/wellkorea/backend/document/service/MinioStorageService.java
+- [ ] T178 [US7] Create DocumentController with REST endpoints (/api/documents - GET, POST, DELETE, GET /{id}/download, GET /search) in backend/src/main/java/com/wellkorea/backend/document/controller/DocumentController.java
+- [ ] T179 [US7] Create DTOs (UploadDocumentRequest, DocumentResponse, DocumentSearchRequest) in backend/src/main/java/com/wellkorea/backend/document/dto/
+- [ ] T180 [US7] Add validation (file size <= 100MB, MIME type validation, metadata tagging)
+- [ ] T181 [US7] Implement document access audit logging (who accessed which documents)
+- [ ] T182 [US7] Implement virtual tree structure (owner_type + owner_id for polymorphic relationships)
+
+### Frontend Implementation for User Story 7
+
+- [ ] T183 [US7] Create DocumentService API client in frontend/src/services/documentService.ts
+- [ ] T184 [US7] Create DocumentListPage with search and filters in frontend/src/pages/documents/DocumentListPage.tsx
+- [ ] T185 [US7] Create UploadDocumentModal with drag-and-drop in frontend/src/components/documents/UploadDocumentModal.tsx
+- [ ] T186 [US7] Create VirtualTreeView for hierarchical navigation in frontend/src/components/documents/VirtualTreeView.tsx
+- [ ] T187 [US7] Add document upload/view on project detail page
+- [ ] T188 [US7] Add role-based access (Production can upload/view work photos, Finance can view quotations)
+
+**Checkpoint**: Document management complete - centralized storage with powerful search and virtual tree navigation
+
+---
+
+## Phase 11: User Story 8 - Purchasing & Automated RFQ (Priority: P3)
+
+**Goal**: Implement RFQ management with vendor suggestions and email automation
+
+**Independent Test**: Can be fully tested by:
+1. Creating a purchase request with category (e.g., "CNC machining")
+2. System suggests suitable vendors
+3. Auto-generating RFQ email with attachments
+4. Recording vendor quotes and selecting best vendor
+5. Linking purchase to JobCode for cost tracking
+
+### Tests for User Story 8 (Write FIRST - Red-Green-Refactor)
+
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
+
+- [ ] T189 [P] [US8] Write contract tests for POST /api/rfqs endpoint (validates vendor list, category-based vendor suggestions) in backend/src/test/java/com/wellkorea/backend/purchasing/controller/RFQControllerTest.java - MUST FAIL initially
+- [ ] T190 [P] [US8] Write contract tests for GET /api/rfqs and POST /api/purchase-orders endpoints in backend/src/test/java/com/wellkorea/backend/purchasing/controller/PurchaseOrderControllerTest.java - MUST FAIL initially
+- [ ] T191 [US8] Write unit tests for VendorSuggestionService (category-based vendor recommendations) in backend/src/test/java/com/wellkorea/backend/purchasing/service/VendorSuggestionServiceTest.java - MUST FAIL initially
+- [ ] T192 [US8] Write unit tests for EmailService (RFQ email generation with attachments) in backend/src/test/java/com/wellkorea/backend/purchasing/service/EmailServiceTest.java - MUST FAIL initially
+
+### Database Schema for User Story 8
+
+- [ ] T189 Create Flyway migration V14__create_purchasing_domain.sql for RFQ, PurchaseOrder, SupplierResponse tables
+
+### Backend Implementation for User Story 8
+
+- [ ] T190 [P] [US8] Create RFQ entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/RFQ.java
+- [ ] T191 [P] [US8] Create PurchaseOrder entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/PurchaseOrder.java
+- [ ] T192 [P] [US8] Create Supplier entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/Supplier.java
+- [ ] T193 [P] [US8] Create RFQStatus enum in backend/src/main/java/com/wellkorea/backend/purchasing/domain/RFQStatus.java
+- [ ] T194 [US8] Create RFQRepository in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/RFQRepository.java (depends on T190)
+- [ ] T195 [US8] Create SupplierRepository with service category search in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/SupplierRepository.java (depends on T192)
+- [ ] T196 [US8] Implement RFQService with create, send, track responses in backend/src/main/java/com/wellkorea/backend/purchasing/service/RFQService.java
+- [ ] T197 [US8] Implement VendorSuggestionService to recommend vendors by category in backend/src/main/java/com/wellkorea/backend/purchasing/service/VendorSuggestionService.java
+- [ ] T198 [US8] Implement EmailService for RFQ email generation and sending in backend/src/main/java/com/wellkorea/backend/purchasing/service/EmailService.java
+- [ ] T199 [US8] Create RFQController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/controller/RFQController.java
+- [ ] T200 [US8] Create PurchaseOrderController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/controller/PurchaseOrderController.java
+- [ ] T201 [US8] Create DTOs (CreateRFQRequest, RFQResponse, CreatePurchaseOrderRequest) in backend/src/main/java/com/wellkorea/backend/purchasing/dto/
+- [ ] T202 [US8] Add validation (RFQ has vendor list, purchase order links to RFQ, cost tracking per project)
+
+### Frontend Implementation for User Story 8
+
+- [ ] T203 [US8] Create RFQService API client in frontend/src/services/rfqService.ts
+- [ ] T204 [US8] Create RFQListPage with filters in frontend/src/pages/purchasing/RFQListPage.tsx
+- [ ] T205 [US8] Create CreateRFQPage with vendor suggestions in frontend/src/pages/purchasing/CreateRFQPage.tsx
+- [ ] T206 [US8] Create RFQDetailPage with vendor response tracking in frontend/src/pages/purchasing/RFQDetailPage.tsx
+- [ ] T207 [US8] Create PurchaseOrderPage with vendor selection in frontend/src/pages/purchasing/PurchaseOrderPage.tsx
+- [ ] T208 [US8] Add RFQ/PO display on project detail page with cost aggregation
+- [ ] T209 [US8] Add role-based access (Admin/Finance can create RFQs and POs)
+
+**Checkpoint**: Purchasing and RFQ complete - vendor management with automated email generation
+
+---
+
+## Phase 12: Polish & Cross-Cutting Concerns
+
+**Purpose**: Improvements that affect multiple user stories
+
+### Testing & Validation
+
+- [ ] T210 [P] Run backend integration tests with Testcontainers for all domains
+- [ ] T211 [P] Run frontend E2E tests with Playwright for critical user journeys
+- [ ] T212 [P] Verify JaCoCo backend coverage meets 70% threshold
+- [ ] T213 [P] Verify Vitest frontend coverage meets 70% threshold
+- [ ] T214 [P] Run SonarCloud analysis and fix critical/blocker issues
+
+### Documentation
+
+- [ ] T215 [P] Update README.md with setup instructions
+- [ ] T216 [P] Update API documentation (OpenAPI spec) with all implemented endpoints
+- [ ] T217 [P] Create quickstart validation script to test all user stories
+- [ ] T218 [P] Document RBAC permissions matrix in docs/security.md
+
+### Performance & Security
+
+- [ ] T219 [P] Add database indexes for performance-critical queries (verify V3 migration)
+- [ ] T220 [P] Implement rate limiting on authentication endpoints
+- [ ] T221 [P] Add CORS configuration for frontend-backend communication
+- [ ] T222 [P] Review and fix any security vulnerabilities (SQL injection, XSS, etc.)
+
+### Deployment
+
+- [ ] T223 Configure production environment variables in .env.example
+- [ ] T224 Create Docker build configuration for backend in backend/Dockerfile
+- [ ] T225 Create Docker build configuration for frontend in frontend/Dockerfile
+- [ ] T226 Test docker-compose.yml with all services
+- [ ] T227 Create backup/restore scripts for PostgreSQL and MinIO
 
 ### Final Validation
 
-- [ ] T417 Run full test suite: `./gradlew build && npm test`
-- [ ] T418 Verify quickstart.md still works end-to-end
-- [ ] T419 Test docker-compose up for fresh deployment
-- [ ] T420 Validate all 8 user stories work end-to-end
-- [ ] T421 Create example data seed script for testing
-
-**Checkpoint**: All user stories complete, tested, documented, and ready for production deployment
+- [ ] T228 Run all acceptance scenarios from spec.md
+- [ ] T229 Verify all success criteria (SC-001 to SC-012) are met
+- [ ] T230 Verify all functional requirements (FR-001 to FR-068) are implemented
+- [ ] T231 Conduct security audit (audit log retention, password hashing, RBAC enforcement)
+- [ ] T232 Validate quickstart.md guide with fresh environment
 
 ---
 
@@ -644,160 +618,179 @@
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: No dependencies - can start immediately
-- **Foundational (Phase 2)**: Depends on Setup completion - **BLOCKS all user stories**
-- **User Stories (Phase 3+)**: All depend on Foundational phase completion
-  - User stories can proceed in parallel or sequentially in priority order (P1 → P2 → P3)
-  - Prefer sequential until confidence is high (easier to debug)
-- **Cross-Cutting (Phase 11)**: Depends on all desired user stories being complete
+- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
+- **US9 - RBAC (Phase 3)**: Depends on Foundational - Security foundation for P1
+- **US1 - JobCode (Phase 4)**: Depends on Foundational and US9 - Core MVP data entry
+- **US2 - Quotation (Phase 5)**: Depends on US1 and US9 - Commercial documents require projects and security
+- **US3 - Product Catalog (Phase 6)**: Depends on Foundational - Can run in parallel with US1/US2
+- **US4 - Production (Phase 7)**: Depends on US1 (requires projects) - Can run in parallel with US2/US3
+- **US5 - Delivery (Phase 8)**: Depends on US2 (requires quotations) - Sequential after US2
+- **US6 - Invoicing (Phase 9)**: Depends on US5 (requires deliveries) - Sequential after US5
+- **US7 - Documents (Phase 10)**: Depends on Foundational - Can run in parallel with any user story
+- **US8 - Purchasing (Phase 11)**: Depends on US1 (requires projects) - Can run in parallel with other stories
+- **Polish (Phase 12)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
-- **US1 (P1)**: No dependencies on other stories → can start after Foundational
-- **US2 (P1)**: Can integrate with US1 but should be independently testable
-- **US3 (P2)**: Integrates with US2 but can be independently testable
-- **US4 (P2)**: Can start after Foundational, integrates with US1 + US2
-- **US5 (P2)**: Depends on US2 (quotation prices) but independently testable
-- **US6 (P2)**: Depends on US5 (delivery) for invoice auto-population, independently testable
-- **US7 (P3)**: Can start after Foundational, integrates with all stories but not required for MVP
-- **US8 (P3)**: Can start after Foundational, integrates with US1 but not required for MVP
+- **US9 (RBAC)**: Foundation for security - must complete before quotations/invoices
+- **US1 (JobCode)**: Foundation for all work - most other stories depend on this
+- **US2 (Quotation)**: Depends on US1 (requires projects)
+- **US3 (Product Catalog)**: Independent - can run in parallel
+- **US4 (Production)**: Depends on US1 - can run in parallel with US2
+- **US5 (Delivery)**: Depends on US2 - sequential after quotations
+- **US6 (Invoicing)**: Depends on US5 - sequential after deliveries
+- **US7 (Documents)**: Independent - can run in parallel with any story
+- **US8 (Purchasing)**: Depends on US1 - can run in parallel with other stories
 
-### Within Each User Story
+### Critical Path for MVP (P1 Stories Only)
 
-1. **Contract tests** (if included) → MUST write first, verify FAIL
-2. **Integration tests** (if included) → MUST write after contracts, verify FAIL
-3. **Domain entities** → models must exist before services
-4. **Services** → business logic before endpoints
-5. **Endpoints** → API layer
-6. **Frontend** → UI components connecting to API
-7. **Tests pass** → MUST verify green before moving to next story
+1. Phase 1: Setup → Phase 2: Foundational
+2. Phase 3: US9 (RBAC) - Security foundation
+3. Phase 4: US1 (JobCode) - Core data entry
+4. Phase 5: US2 (Quotation) - Commercial documents
+5. **MVP DELIVERED** - Can stop here for initial launch
 
-### Parallel Opportunities (Same Phase, Different Files)
+### Parallel Opportunities
 
-**Phase 1 (Setup)**:
-- T003, T004, T005, T006, T007 can all run in parallel (different concerns)
+#### After Foundational Phase Completes:
 
-**Phase 2 (Foundational)**:
-- T010–T013: Flyway migrations can run in parallel (combine into single migration if needed)
-- T014–T018: Security setup (JWT, RBAC, audit) can start in parallel
-- T023–T027: Domain models can be created in parallel (different entities)
-- T032–T039: Frontend components can be built in parallel
+- US9 (RBAC), US3 (Products), US7 (Documents) can all run in parallel
+- Once US1 (JobCode) completes: US4 (Production), US8 (Purchasing) can run in parallel
+- Once US2 (Quotation) completes: US5 (Delivery) starts
+- Once US5 (Delivery) completes: US6 (Invoicing) starts
 
-**Phase 3 (US1)**:
-- T040–T043: Contract tests can run in parallel
-- T044–T046: Integration tests can run in parallel
-- T047–T050: Domain/service layer can run in parallel
-- T056–T062: Frontend components can run in parallel
+#### Within Each User Story:
 
-**Subsequent User Stories**:
-- Once Foundational complete, all P1 user stories (US1, US2) can start in parallel
-- Once P1 complete, all P2 user stories (US3, US4, US5, US6) can start in parallel
-- With adequate team: Full parallelization possible
+- Tasks marked [P] can run in parallel (different files)
+- Database migrations (T0XX) → Entities (T0XX [P]) → Repositories → Services → Controllers
+- Frontend components can run in parallel with backend if API contracts are defined first
 
 ---
 
-## Parallel Execution Examples
+## Parallel Example: Foundational Phase
 
-### Parallel Setup (Estimated 1 day)
-
-```
-Developer A: T003 (Spring Boot project setup)
-Developer B: T004 (React project setup)
-Developer C: T005–T006 (Linting/formatting)
-All: T007 (docker-compose.yml)
-```
-
-### Parallel Foundational (Estimated 3–5 days)
-
-```
-Developer A: Database migrations (T008–T013)
-Developer B: Security setup (T014–T018)
-Developer C: API infrastructure (T019–T022)
-Developer D: Domain models (T023–T027)
-All: File storage (T029–T031), Frontend foundation (T032–T039)
-```
-
-### Parallel User Stories (Estimated 15–20 days)
-
-After Foundational complete:
-
-```
-Developer A: US1 + US2 (Foundational P1 stories) — ~1 week
-Developer B: US3 + US4 (Product catalog + Production) — ~1 week
-Developer C: US5 + US6 (Delivery + Invoicing) — ~1 week
-Developer D: US7 + US8 (Documents + Purchasing) — ~1 week
+```bash
+# After Setup (Phase 1) completes, run these in parallel:
+Task T017: GlobalExceptionHandler (shared/exception/)
+Task T018: AuditLogger (shared/audit/)
+Task T019: MinioFileStorage (document/service/)
+Task T020: SecurityConfig (security/config/)
+Task T021: UserDetailsService (security/service/)
+Task T022: RBAC implementation (security/domain/)
+Task T023: application.properties configuration
+Task T024: JobCodeGenerator (project/domain/)
+Task T025: AuthContext (frontend/contexts/)
+Task T026: API client (frontend/services/)
+Task T027: ProtectedRoute (frontend/components/)
+Task T028: ErrorBoundary (frontend/components/)
+Task T029: React Router setup (frontend/App.tsx)
+Task T030: UI component library (frontend/components/ui/)
 ```
 
-Each developer owns their stories independently, merging daily/weekly.
+---
+
+## Parallel Example: User Story 1 (JobCode)
+
+```bash
+# After database migration V6 completes, run entities in parallel:
+Task T050: Project entity
+Task T051: ProjectStatus enum
+Task T052: Customer entity
+
+# After entities complete, implement services sequentially:
+Task T053: ProjectRepository
+Task T054: ProjectService
+Task T055: JobCodeGenerator
+Task T056: ProjectController
+
+# Frontend can run in parallel with backend once API contract is defined:
+Task T060: ProjectService API client
+Task T061: ProjectListPage
+Task T062: CreateProjectPage
+Task T063: EditProjectPage
+Task T064: ProjectDetailPage
+```
 
 ---
 
 ## Implementation Strategy
 
-### MVP First (Recommended for First Release) — CRITICAL SECURITY FIX
+### MVP First (P1 Stories: US9 + US1 + US2)
 
-**⚠️ IMPORTANT**: US9 (RBAC) must be implemented concurrently with US1 & US2 due to previous data leak incident. RBAC is now part of P1 release, not a later add-on.
+1. Complete Phase 1: Setup
+2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
+3. Complete Phase 3: US9 (RBAC security foundation)
+4. Complete Phase 4: US1 (JobCode creation)
+5. Complete Phase 5: US2 (Quotation + Approval)
+6. **STOP and VALIDATE**: Test MVP independently
+7. Deploy/demo if ready
 
-1. ✅ **Complete Phase 1**: Setup (1 day)
-2. ✅ **Complete Phase 2**: Foundational (3–5 days)
-3. ✅ **Complete Phase 3 + Phase 11 (CONCURRENT)**: User Story 1 — JobCode creation + User Story 9 — RBAC (3 days parallel)
-4. ✅ **STOP and VALIDATE**:
-   - Can create JobCode independently
-   - RBAC enforced: roles prevent unauthorized access
-   - Audit logging records all sensitive accesses
-   - Test all acceptance scenarios
-   - Deploy/demo to stakeholders
-5. ⏸️ **HOLD**: Other stories wait until MVP validated
+**Estimated MVP Scope**: ~97 tasks (T001-T097) - delivers core job intake, quotation workflow, and security
 
-**MVP Scope**: JobCode CRUD + RBAC enforcement (~10 days of effort)
+### Incremental Delivery
 
-### Incremental Release 2 (Add Quotations)
+1. **Foundation**: Setup + Foundational → Infrastructure ready (~31 tasks)
+2. **Security MVP**: + US9 → RBAC complete (~17 tasks)
+3. **Data Entry MVP**: + US1 → JobCode creation complete (~17 tasks)
+4. **Commercial MVP**: + US2 → Quotation workflow complete (~30 tasks) 🎯 **LAUNCH HERE**
+5. **Product Catalog**: + US3 → Product standardization (~15 tasks)
+6. **Production Tracking**: + US4 → Work progress visible (~16 tasks)
+7. **Delivery**: + US5 → Delivery tracking complete (~16 tasks)
+8. **Financial**: + US6 → AR/AP tracking complete (~25 tasks)
+9. **Documents**: + US7 → Document management complete (~16 tasks)
+10. **Purchasing**: + US8 → RFQ automation complete (~20 tasks)
+11. **Polish**: Final validation and deployment (~23 tasks)
 
-1. ✅ **Phase 4**: User Story 2 — Quotation creation (3 days)
-2. ✅ **Phase 5**: User Story 3 — Product catalog (2 days)
-3. ✅ **VALIDATE**: Can create quotation from JobCode, manage products, RBAC prevents Sales from editing
-4. **RELEASE 2**: JobCode + RBAC + Quotation + Catalog (~15 days total)
+### Parallel Team Strategy
 
-### Incremental Release 3 (Add Production & Delivery)
+With 3 developers after Foundational phase completes:
 
-1. ✅ **Phase 6**: User Story 4 — Production tracking (3 days)
-2. ✅ **Phase 7**: User Story 5 — Delivery tracking (3 days)
-3. ✅ **VALIDATE**: Can track production and record deliveries, Production staff see only assigned work
-4. **RELEASE 3**: MVP + Quotations + Production + Delivery (~21 days total)
+- **Developer A**: US9 (RBAC) → US1 (JobCode) → US4 (Production)
+- **Developer B**: US3 (Products) → US2 (Quotation) → US5 (Delivery) → US6 (Invoicing)
+- **Developer C**: US7 (Documents) → US8 (Purchasing) → Polish
 
-### Incremental Release 4 (Add Invoicing)
-
-1. ✅ **Phase 8**: User Story 6 — Tax invoices & AR/AP (4 days)
-2. ✅ **VALIDATE**: Complete job-to-invoice workflow, Finance staff see invoices, other roles cannot
-3. **RELEASE 4**: Invoicing + financial tracking (~25 days total)
-
-### Incremental Release 5 (Add Documents & Purchasing)
-
-1. ✅ **Phase 9**: User Story 7 — Documents (2 days)
-2. ✅ **Phase 10**: User Story 8 — Purchasing/RFQ (2 days)
-3. ✅ **Phase 12**: Polish, testing, deployment (3 days)
-4. **RELEASE 5**: Full ERP system (~32 days total / ~6-7 weeks)
+Stories integrate at natural boundaries (e.g., quotations use products from catalog, deliveries reference quotations).
 
 ---
 
-## Notes
+## Summary
 
-- **[P]** tasks = different files, no dependencies between them
-- **[Story]** label = maps task to specific user story for traceability
-- **Each user story should be independently completable and testable**
-- **Write tests FIRST, verify they FAIL before implementing** — Constitution v1.0.0 principle
-- **Commit after each task or logical group** (e.g., T040–T043 together)
-- **Stop at any checkpoint to validate story independently** before moving forward
-- **Avoid**: vague tasks, same-file conflicts, cross-story dependencies that break independence
-- **Constitution compliance**:
-  - All code must have tests (unit/integration/contract) before implementation
-  - Backend target: >80% code coverage (unit tests for all business logic, integration tests for workflows)
-  - Frontend target: >70% coverage (unit tests for services/hooks, integration tests for workflows, E2E tests for critical paths)
-  - Follow layered architecture (API → Application → Domain → Infrastructure)
-  - Include error handling and structured logging
-  - Support RBAC with audit logs for sensitive data access
-- **Frontend testing strategy** (added Phase 4 onwards to address Phase 2 gap):
-  - **Unit tests** (T093, T114, T135, etc.): Test services and hooks in isolation with mocked API
-  - **Integration tests** (T093a-b, etc.): Test component workflows with API integration (React Testing Library)
-  - **E2E tests** (T093c, etc.): Test complete user journeys through browser (Playwright/Cypress)
-  - All test files co-located with source: `src/services/__tests__/`, `src/__tests__/integration/`, `tests/e2e/`
-- **Total Task Count**: 421 tasks (was 275 before remediation); added 27 Phase 2 test tasks + 27 Phase 11 (US9) tasks + 3 Phase 4 frontend test tasks
+**Total Tasks**: 284 tasks (238 implementation + 46 test-first tasks)
+**MVP Tasks (P1)**: ~124 tasks (Setup + Foundational + US9 + US1 + US2 including test-first tasks + FR-062 customer assignment)
+**P2 Tasks**: ~105 tasks (US3 + US4 + US5 + US6 including test-first tasks)
+**P3 Tasks**: ~32 tasks (US7 + US8 including test-first tasks)
+**Polish Tasks**: ~23 tasks (Phase 12)
+
+**Constitution Compliance**: ✅ **Test-First Development enforced** - 46 test tasks explicitly marked "Write FIRST - MUST FAIL initially" across all 9 user stories
+
+**Task Distribution by User Story** (including test-first tasks):
+- Setup (Phase 1): 12 tasks
+- Foundational (Phase 2): 19 tasks
+- US9 - RBAC (Phase 3): 26 tasks (7 tests + 19 implementation)
+- US1 - JobCode (Phase 4): 22 tasks (5 tests + 17 implementation)
+- US2 - Quotation (Phase 5): 43 tasks (9 tests + 34 implementation)
+- US3 - Product Catalog (Phase 6): 19 tasks (4 tests + 15 implementation)
+- US4 - Production Tracking (Phase 7): 20 tasks (4 tests + 16 implementation)
+- US5 - Delivery (Phase 8): 20 tasks (4 tests + 16 implementation)
+- US6 - Invoicing (Phase 9): 30 tasks (5 tests + 25 implementation)
+- US7 - Documents (Phase 10): 20 tasks (4 tests + 16 implementation)
+- US8 - Purchasing (Phase 11): 24 tasks (4 tests + 20 implementation)
+- Polish (Phase 12): 23 tasks (validation & deployment)
+
+**Test-First Discipline**:
+- Each user story phase NOW includes explicit "Tests for User Story X (Write FIRST)" section
+- All test tasks marked with "⚠️ Constitution Requirement: MUST be written FIRST and MUST FAIL before implementation begins"
+- Test tasks include contract tests, unit tests, and integration tests BEFORE any implementation code
+- This ensures full compliance with Constitution Principle I (Test-First Development)
+
+**Parallel Opportunities**:
+- Within Setup: 9 tasks marked [P]
+- Within Foundational: 14 tasks marked [P]
+- **Within test sections**: Most test tasks marked [P] (can write multiple tests in parallel)
+- User stories after Foundational: US3, US7 can run in parallel with any story
+- US4, US8 can run in parallel after US1 completes
+- Within each story: 2-5 entity/component tasks marked [P]
+
+**Suggested MVP Scope**: Complete through Phase 5 (US2 Quotation) = ~124 tasks for first production-ready release (includes all test-first tasks + FR-018c quotation revision notification + FR-062 Sales role customer assignment)
+
+**Format Validation**: ✅ All tasks follow `- [ ] [ID] [P?] [Story?] Description with file path` format

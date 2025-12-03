@@ -1,22 +1,24 @@
 # Phase 1: Data Model Design
 
-**Date**: 2025-11-24
+**Date**: 2025-11-24 (Updated: 2025-12-01)
 **Branch**: `001-erp-core`
 **Status**: Complete
+
+**Key Update (2025-12-01)**: **Project** is the core domain entity. **JobCode** is a unique business identifier (natural key) on the Project entity. Approval workflows extracted into separate Approval domain.
 
 ---
 
 ## Entity-Relationship Overview
 
-The WellKorea ERP data model centers on **JobCode** as the primary aggregate. All other entities relate directly or transitively to a specific JobCode:
+The WellKorea ERP data model centers on **Project** as the primary aggregate. JobCode (format: WK2{year}-{sequence}-{date}) is the unique business identifier for each Project. All other entities relate directly or transitively to a specific Project:
 
 ```
-JobCode (root aggregate)
+Project (root aggregate)
 ├── Customer (many-to-one)
 ├── Quotation (one-to-many)
 │   ├── QuotationLineItem (one-to-many)
 │   │   └── Product (many-to-one)
-│   └── Approval (one-to-many)
+│   └── ApprovalRequest (one-to-one, via Approval domain)
 ├── WorkProgressSheet (one-to-many, per-product)
 │   ├── Product (many-to-one)
 │   └── WorkProgressStep (one-to-many)
@@ -33,6 +35,11 @@ JobCode (root aggregate)
 └── RFQ (one-to-many, purchase requests)
     └── PurchaseOrder (one-to-many)
 
+ApprovalRequest (cross-cutting domain)
+├── ApprovalHistory (one-to-many, tracks approve/reject events)
+├── ApprovalComment (one-to-many, rejection comments)
+└── Quotation (many-to-one, approvable entity)
+
 User (cross-cutting)
 ├── Role (many-to-many)
 └── AuditLog (records all data changes)
@@ -41,45 +48,48 @@ Supplier (cross-cutting, used by RFQ/PO)
 └── SupplierResponse (to RFQ)
 
 Product (catalog, referenced by quotations and invoices)
-├── ProductType (category)
-└── WorkProgressStepTemplate (defines steps for this product type)
+└── ProductType (category)
+    └── WorkProgressStepTemplate (one-to-many: multiple step templates per product type)
 ```
 
 ---
 
 ## Core Entities
 
-### 1. JobCode (Aggregate Root)
+### 1. Project (Aggregate Root)
 
-**Purpose**: Unique identifier for a project/job from request intake through invoicing.
+**Purpose**: Core domain entity representing a customer work request. JobCode is the unique business identifier for the Project.
+
+**Table Name**: `projects`
 
 **Fields**:
 
 | Field | Type | Required | Unique | Notes |
 |-------|------|----------|--------|-------|
-| id | UUID/BigInt | Yes | Yes (PK) | Database ID, not JobCode string |
-| jobcode_string | String(20) | Yes | Yes | Human-readable: WK2{year}-{sequence}-{date} |
+| id | BigInt | Yes | Yes (PK) | Surrogate primary key |
+| job_code | String(20) | Yes | Yes | Unique business identifier: WK2{year}-{sequence}-{date} |
 | customer_id | FK | Yes | No | References Customer |
 | project_name | String(255) | Yes | No | Customer's project description |
+| requester_name | String(100) | No | No | Customer contact who requested |
 | due_date | Date | Yes | No | Delivery deadline |
 | internal_owner_id | FK | Yes | No | References User (staff responsible) |
-| status | Enum | Yes | No | Draft, Active, Completed, Archived |
+| status | Enum | Yes | No | DRAFT, ACTIVE, COMPLETED, ARCHIVED |
 | created_by_id | FK | Yes | No | References User (who created) |
 | created_at | Timestamp | Yes | No | UTC |
 | updated_at | Timestamp | Yes | No | UTC, auto-updated |
 | is_deleted | Boolean | No | No | Soft delete; default false |
 
 **Validation Rules**:
-- `jobcode_string` matches pattern: `WK2\d{4}-\d{6}-\d{8}` (year, sequence, date YYYYMMDD)
-- `jobcode_string` must be unique across all time (prevent reuse)
+- `job_code` matches pattern: `WK2\d{4}-\d{6}-\d{8}` (year-sequence-date YYYYMMDD)
+- `job_code` must be unique across all time (prevent reuse)
 - `project_name` non-empty, max 255 chars
-- `due_date` must be >= today
-- `customer_id` must exist in Customers table
-- `internal_owner_id` must exist in Users table
+- `due_date` must be >= today (at creation)
+- `customer_id` must exist in customers table
+- `internal_owner_id` must exist in users table
 
 **Indices**:
 - Primary: (id)
-- Unique: (jobcode_string)
+- Unique: (job_code)
 - Search: (customer_id, created_at)
 - Search: (internal_owner_id)
 - Search: (status)
@@ -187,7 +197,7 @@ Product (catalog, referenced by quotations and invoices)
 
 **Relationships**:
 - 1:N → Product
-- 1:1 → WorkProgressStepTemplate (defines steps for this type)
+- 1:N → WorkProgressStepTemplate (one ProductType has multiple step templates defining the manufacturing process)
 
 ---
 

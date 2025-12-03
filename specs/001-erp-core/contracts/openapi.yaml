@@ -3,7 +3,12 @@ info:
   title: WellKorea ERP API
   description: |
     REST API for WellKorea Integrated Work System.
-    Manages JobCodes, quotations, production tracking, deliveries, invoicing, and payments.
+    Manages Projects (identified by JobCode), quotations, approvals, production tracking, deliveries, invoicing, and payments.
+
+    **Key Concepts**:
+    - **Project**: Core domain entity representing a customer work request
+    - **JobCode**: Unique business identifier for each Project (format: WK2{year}-{sequence}-{date})
+    - **Approval**: Separate domain handling approval workflows for quotations and other entities
   version: 1.0.0
   contact:
     name: WellKorea Development Team
@@ -15,10 +20,12 @@ servers:
     description: Production (on-premise)
 
 tags:
-  - name: JobCode
-    description: Project/job management
+  - name: Project
+    description: Project/job management (JobCode is the unique business identifier)
   - name: Quotation
-    description: Sales quotations and approval workflow
+    description: Sales quotations
+  - name: Approval
+    description: Approval workflow management (승인/결재)
   - name: Production
     description: Work progress tracking per product
   - name: Delivery
@@ -38,15 +45,15 @@ tags:
 
 paths:
   # ============================================================================
-  # JobCode Endpoints
+  # Project Endpoints
   # ============================================================================
 
-  /jobcodes:
+  /projects:
     post:
       tags:
-        - JobCode
-      summary: Create new JobCode
-      operationId: createJobCode
+        - Project
+      summary: Create new Project (JobCode auto-generated)
+      operationId: createProject
       security:
         - BearerAuth: [ ]
       requestBody:
@@ -54,14 +61,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateJobCodeRequest'
+              $ref: '#/components/schemas/CreateProjectRequest'
       responses:
         '201':
-          description: JobCode created successfully
+          description: Project created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobCodeResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -71,9 +78,9 @@ paths:
 
     get:
       tags:
-        - JobCode
-      summary: List all JobCodes (paginated, filtered)
-      operationId: listJobCodes
+        - Project
+      summary: List all Projects (paginated, filtered)
+      operationId: listProjects
       security:
         - BearerAuth: [ ]
       parameters:
@@ -104,7 +111,7 @@ paths:
             type: string
       responses:
         '200':
-          description: List of JobCodes
+          description: List of Projects
           content:
             application/json:
               schema:
@@ -113,7 +120,7 @@ paths:
                   content:
                     type: array
                     items:
-                      $ref: '#/components/schemas/JobCodeResponse'
+                      $ref: '#/components/schemas/ProjectResponse'
                   totalElements:
                     type: integer
                   totalPages:
@@ -123,12 +130,12 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /jobcodes/{id}:
+  /projects/{id}:
     get:
       tags:
-        - JobCode
-      summary: Get JobCode details
-      operationId: getJobCode
+        - Project
+      summary: Get Project by ID
+      operationId: getProject
       security:
         - BearerAuth: [ ]
       parameters:
@@ -140,11 +147,11 @@ paths:
             format: uuid
       responses:
         '200':
-          description: JobCode details
+          description: Project details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobCodeResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -152,9 +159,9 @@ paths:
 
     put:
       tags:
-        - JobCode
+        - Project
       summary: Update JobCode
-      operationId: updateJobCode
+      operationId: updateProject
       security:
         - BearerAuth: [ ]
       parameters:
@@ -169,14 +176,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateJobCodeRequest'
+              $ref: '#/components/schemas/UpdateProjectRequest'
       responses:
         '200':
-          description: JobCode updated
+          description: Project updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobCodeResponse'
+                $ref: '#/components/schemas/ProjectResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -226,7 +233,7 @@ paths:
       security:
         - BearerAuth: [ ]
       parameters:
-        - name: jobcode_id
+        - name: project_id
           in: query
           schema:
             type: string
@@ -332,12 +339,20 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /quotations/{id}/submit:
+
+  # NOTE: Quotation approval workflow is handled via /approvals endpoints.
+  # To submit a quotation for approval, create an ApprovalRequest with entity_type=Quotation.
+  # Example: POST /approvals with { "entity_type": "Quotation", "entity_id": "{quotation_id}" }
+
+  /quotations/{id}/submit-for-approval:
     post:
       tags:
         - Quotation
-      summary: Submit quotation for approval (Draft → Pending)
-      operationId: submitQuotation
+      summary: Submit quotation for approval (creates ApprovalRequest)
+      description: |
+        Convenience endpoint that creates an ApprovalRequest for this quotation.
+        Equivalent to: POST /approvals with entity_type=Quotation and entity_id={id}
+      operationId: submitQuotationForApproval
       security:
         - BearerAuth: [ ]
       parameters:
@@ -348,96 +363,16 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
-          description: Quotation submitted
+        '201':
+          description: Approval request created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuotationResponse'
+                $ref: '#/components/schemas/ApprovalRequestResponse'
         '400':
-          description: Cannot submit quotation with validation errors
+          description: Quotation cannot be submitted (validation errors)
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /quotations/{id}/approve:
-    post:
-      tags:
-        - Quotation
-      summary: Approve quotation (Pending → Approved)
-      operationId: approveQuotation
-      security:
-        - BearerAuth: [ ]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                comments:
-                  type: string
-                  description: Optional approval comments
-      responses:
-        '200':
-          description: Quotation approved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QuotationResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          description: Only Admin/Finance can approve
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /quotations/{id}/reject:
-    post:
-      tags:
-        - Quotation
-      summary: Reject quotation (Pending → Draft with comments)
-      operationId: rejectQuotation
-      security:
-        - BearerAuth: [ ]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                reason:
-                  type: string
-                  description: Mandatory rejection reason for creator
-              required:
-                - reason
-      responses:
-        '200':
-          description: Quotation rejected, returned to Draft
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QuotationResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          description: Only Admin/Finance can reject
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -472,19 +407,223 @@ paths:
           $ref: '#/components/responses/NotFound'
 
   # ============================================================================
+  # ============================================================================
+  # Approval Endpoints
+  # ============================================================================
+
+  /approvals:
+    get:
+      tags:
+        - Approval
+      summary: List approval requests (filtered by status, entity type)
+      operationId: listApprovals
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: entity_type
+          in: query
+          schema:
+            type: string
+            enum: [ Quotation, PurchaseOrder ]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ Pending, Approved, Rejected ]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of approval requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApprovalRequestResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+
+    post:
+      tags:
+        - Approval
+      summary: Create approval request for an entity
+      description: |
+        Submit an entity (Quotation, PurchaseOrder, etc.) for approval.
+        Creates an ApprovalRequest with status=Pending.
+      operationId: createApprovalRequest
+      security:
+        - BearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - entity_type
+                - entity_id
+              properties:
+                entity_type:
+                  type: string
+                  enum: [ Quotation, PurchaseOrder ]
+                entity_id:
+                  type: string
+                  format: uuid
+                comments:
+                  type: string
+                  description: Optional submission comments
+      responses:
+        '201':
+          description: Approval request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequestResponse'
+        '400':
+          description: Entity cannot be submitted for approval (validation errors)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Entity not found
+  /approvals/{id}:
+    get:
+      tags:
+        - Approval
+      summary: Get approval request details
+      operationId: getApprovalRequest
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Approval request details with history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequestResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /approvals/{id}/approve:
+    post:
+      tags:
+        - Approval
+      summary: Approve request
+      operationId: approveRequest
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comments:
+                  type: string
+                  description: Optional approval comments
+      responses:
+        '200':
+          description: Request approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequestResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only authorized approvers can approve
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /approvals/{id}/reject:
+    post:
+      tags:
+        - Approval
+      summary: Reject request with mandatory comments
+      operationId: rejectRequest
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comments:
+                  type: string
+                  description: Mandatory rejection reason
+              required:
+                - comments
+      responses:
+        '200':
+          description: Request rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequestResponse'
+        '400':
+          description: Rejection comments are mandatory
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only authorized approvers can reject
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   # Work Progress Endpoints
   # ============================================================================
 
-  /jobcodes/{jobcodeId}/work-progress:
+  /projects/{projectId}/work-progress:
     get:
       tags:
         - Production
-      summary: Get work progress sheets for JobCode
+      summary: Get work progress sheets for Project
       operationId: getWorkProgress
       security:
         - BearerAuth: [ ]
       parameters:
-        - name: jobcodeId
+        - name: projectId
           in: path
           required: true
           schema:
@@ -578,7 +717,7 @@ paths:
   # Delivery Endpoints
   # ============================================================================
 
-  /jobcodes/{jobcodeId}/deliveries:
+  /projects/{projectId}/deliveries:
     post:
       tags:
         - Delivery
@@ -587,7 +726,7 @@ paths:
       security:
         - BearerAuth: [ ]
       parameters:
-        - name: jobcodeId
+        - name: projectId
           in: path
           required: true
           schema:
@@ -623,7 +762,7 @@ paths:
       security:
         - BearerAuth: [ ]
       parameters:
-        - name: jobcodeId
+        - name: projectId
           in: path
           required: true
           schema:
@@ -685,7 +824,7 @@ paths:
       security:
         - BearerAuth: [ ]
       parameters:
-        - name: jobcode_id
+        - name: project_id
           in: query
           schema:
             type: string
@@ -1269,16 +1408,16 @@ paths:
 components:
   schemas:
     # ========================================================================
-    # JobCode Schemas
+    # Project Schemas
     # ========================================================================
 
-    JobCodeResponse:
+    ProjectResponse:
       type: object
       properties:
         id:
           type: string
           format: uuid
-        jobcode_string:
+        job_code:
           type: string
           description: Human-readable code (WK2{year}-{sequence}-{date})
         customer_id:
@@ -1309,7 +1448,7 @@ components:
           type: string
           format: date-time
 
-    CreateJobCodeRequest:
+    CreateProjectRequest:
       type: object
       required:
         - customer_id
@@ -1330,7 +1469,7 @@ components:
           type: string
           format: uuid
 
-    UpdateJobCodeRequest:
+    UpdateProjectRequest:
       type: object
       properties:
         project_name:
@@ -1356,7 +1495,7 @@ components:
         id:
           type: string
           format: uuid
-        jobcode_id:
+        project_id:
           type: string
           format: uuid
         version:
@@ -1429,10 +1568,10 @@ components:
     CreateQuotationRequest:
       type: object
       required:
-        - jobcode_id
+        - project_id
         - line_items
       properties:
-        jobcode_id:
+        project_id:
           type: string
           format: uuid
         line_items:
@@ -1473,6 +1612,96 @@ components:
                 format: double
 
     # ========================================================================
+
+    # ========================================================================
+    # Approval Schemas
+    # ========================================================================
+
+    ApprovalRequestResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        entity_type:
+          type: string
+          enum: [ Quotation, PurchaseOrder ]
+        entity_id:
+          type: string
+          format: uuid
+        entity_description:
+          type: string
+          description: Human-readable description of what's being approved
+        status:
+          type: string
+          enum: [ Pending, Approved, Rejected ]
+        submitted_by_id:
+          type: string
+          format: uuid
+        submitted_by_name:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+        approved_by_id:
+          type: string
+          format: uuid
+        approved_by_name:
+          type: string
+        approved_at:
+          type: string
+          format: date-time
+        rejected_by_id:
+          type: string
+          format: uuid
+        rejected_by_name:
+          type: string
+        rejected_at:
+          type: string
+          format: date-time
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalHistoryResponse'
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalCommentResponse'
+
+    ApprovalHistoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          enum: [ Submitted, Approved, Rejected ]
+        actor_name:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        comments:
+          type: string
+
+    ApprovalCommentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        commenter_name:
+          type: string
+        comment_text:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        is_rejection_reason:
+          type: boolean
+          description: True if this comment is a mandatory rejection reason
+
     # Work Progress Schemas
     # ========================================================================
 
@@ -1482,7 +1711,7 @@ components:
         id:
           type: string
           format: uuid
-        jobcode_id:
+        project_id:
           type: string
           format: uuid
         product_id:
@@ -1536,7 +1765,7 @@ components:
         id:
           type: string
           format: uuid
-        jobcode_id:
+        project_id:
           type: string
           format: uuid
         delivery_date:
@@ -1595,7 +1824,7 @@ components:
         id:
           type: string
           format: uuid
-        jobcode_id:
+        project_id:
           type: string
           format: uuid
         invoice_number:
@@ -1656,14 +1885,14 @@ components:
     CreateInvoiceRequest:
       type: object
       required:
-        - jobcode_id
+        - project_id
         - quotation_version
         - issue_date
         - due_date
         - tax_rate
         - line_items
       properties:
-        jobcode_id:
+        project_id:
           type: string
           format: uuid
         quotation_version:

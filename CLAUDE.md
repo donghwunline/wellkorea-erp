@@ -307,6 +307,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ## Active Technologies
+- Java 21 (Spring Boot 3.5.8) + Spring Boot (Web, Data JPA, Security, Actuator), PostgreSQL driver, Apache POI (Excel), iText/PDFBox (PDF generation) (001-erp-core)
+- PostgreSQL 16 (relational database with ACID transactions) (001-erp-core)
 
 From feature spec `001-erp-core`:
 - Spring Boot (REST API, transaction management)
@@ -315,3 +317,6 @@ From feature spec `001-erp-core`:
 - Apache POI (Excel import/export)
 - iText/PDFBox (PDF generation)
 - Keycloak (optional SSO)
+
+## Recent Changes
+- 001-erp-core: Added Java 21 (Spring Boot 3.5.8) + Spring Boot (Web, Data JPA, Security, Actuator), PostgreSQL driver, Apache POI (Excel), iText/PDFBox (PDF generation)

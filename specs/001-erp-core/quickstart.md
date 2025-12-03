@@ -10,9 +10,9 @@
 
 ### Prerequisites
 
-- Java 17+ (JDK)
+- Java 21+ (JDK)
 - Docker & Docker Compose
-- Node.js 18+ (for frontend development)
+- Node.js 22+ (for frontend development)
 - Git
 - IDE: IntelliJ IDEA (recommended for Java) or VS Code
 
