@@ -1,0 +1,31 @@
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+build/
+target/
+.gradle/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env*
+*.env
+
+# Tests
+src/test/
+
+# Documentation
+README.md
+docs/
