@@ -225,7 +225,7 @@ backend/                                       # Spring Boot application
 │   │       └── storage/                      # MinIO/S3 integration
 │   │           └── MinioAdapter.java
 │   │
-│   ├── security/                             # Security & RBAC (cross-cutting module)
+│   ├── auth/                             # Security & RBAC (cross-cutting module)
 │   │   ├── domain/
 │   │   │   ├── User.java
 │   │   │   ├── Role.java
