@@ -20,14 +20,14 @@
  * ```
  */
 
-import type { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import type {AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
 import axios from 'axios';
 
 // Base URL from environment variable or default to localhost
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 // SSR / test environment consideration
-const isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof globalThis !== 'undefined';
 
 const getAccessToken = () => (isBrowser ? localStorage.getItem('accessToken') : null);
 
@@ -49,7 +49,7 @@ const clearAuth = () => {
 
 const redirectToLogin = () => {
   if (!isBrowser) return;
-  window.location.href = '/login';
+  globalThis.location.href = '/login';
 };
 
 /**
@@ -85,7 +85,7 @@ api.interceptors.request.use(
 let isRefreshing = false;
 let failedQueue: {
   resolve: (value?: unknown) => void;
-  reject: (reason?: any) => void;
+  reject: (reason?: unknown) => void;
 }[] = [];
 
 const processQueue = (error: unknown, token: string | null = null) => {
@@ -155,14 +155,14 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         clearAuth();
         redirectToLogin();
-        return Promise.reject(refreshError);
+        throw refreshError;
       } finally {
         isRefreshing = false;
       }
     }
 
     // Other errors pass through
-    return Promise.reject(error);
+    throw error;
   }
 );
 
