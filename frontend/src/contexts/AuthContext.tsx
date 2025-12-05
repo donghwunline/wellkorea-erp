@@ -24,10 +24,12 @@
  * ```
  */
 
-import type { ReactNode } from 'react';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+
+import type {ReactNode} from 'react';
+import React, {createContext, useCallback, useContext, useMemo, useState} from 'react';
 import api from '@/services/api';
-import type { AuthState, LoginRequest, LoginResponse, RoleName, User } from '@/types/auth';
+import type {AuthState, LoginRequest, LoginResponse, RoleName, User} from '@/types/auth';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
@@ -49,9 +51,9 @@ interface AuthProviderProps {
  * AuthProvider component to wrap the application.
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // Use lazy initialization to avoid setState in effect
+  // Initialize state from localStorage synchronously (no useEffect needed)
   const [authState, setAuthState] = useState<AuthState>(() => {
-    // For non-browser environments (SSR/test), start with isLoading: false
+    // For non-browser environments (SSR/test), return unauthenticated state
     if (!isBrowser) {
       return {
         user: null,
@@ -61,44 +63,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       };
     }
 
-    // For browser, start with isLoading: true (will check localStorage in effect)
-    return {
-      user: null,
-      accessToken: null,
-      isAuthenticated: false,
-      isLoading: true,
-    };
-  });
-
-  /**
-   * Initialize authentication state from localStorage on mount.
-   */
-  useEffect(() => {
-    if (!isBrowser) return; // Early return, no setState needed
-
+    // For browser, read from localStorage during initialization
     const token = localStorage.getItem('accessToken');
     const userStr = localStorage.getItem('user');
 
     if (token && userStr) {
       try {
         const user: User = JSON.parse(userStr);
-        setAuthState({
+        return {
           user,
           accessToken: token,
           isAuthenticated: true,
           isLoading: false,
-        });
+        };
       } catch (error) {
         console.error('Failed to parse stored user:', error);
         // Clear invalid data
         localStorage.removeItem('accessToken');
         localStorage.removeItem('user');
-        setAuthState(prev => ({ ...prev, isLoading: false }));
       }
-    } else {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
-  }, []);
+
+    // No valid auth found - return unauthenticated state
+    return {
+      user: null,
+      accessToken: null,
+      isAuthenticated: false,
+      isLoading: false,
+    };
+  });
 
   /**
    * Login method: Authenticate user and store tokens.
@@ -205,4 +198,5 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export default AuthContext;
