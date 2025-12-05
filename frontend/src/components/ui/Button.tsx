@@ -77,6 +77,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         disabled={isDisabled}
+        aria-disabled={isDisabled || undefined}
         aria-busy={isLoading || undefined}
         className={cn(
           'inline-flex items-center justify-center rounded-md font-medium',
