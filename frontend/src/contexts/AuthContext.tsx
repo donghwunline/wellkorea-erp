@@ -24,16 +24,10 @@
  * ```
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import api from '@/services/api';
-import type {
-  User,
-  LoginRequest,
-  LoginResponse,
-  AuthState,
-  RoleName,
-} from '@/types/auth';
+import type { AuthState, LoginRequest, LoginResponse, RoleName, User } from '@/types/auth';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
@@ -47,10 +41,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // SSR/test safe
 const isBrowser = typeof window !== 'undefined';
 
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
 /**
  * AuthProvider component to wrap the application.
  */
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     accessToken: null,
@@ -63,7 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
    */
   useEffect(() => {
     if (!isBrowser) {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      setAuthState(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
@@ -84,10 +82,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Clear invalid data
         localStorage.removeItem('accessToken');
         localStorage.removeItem('user');
-        setAuthState((prev) => ({ ...prev, isLoading: false }));
+        setAuthState(prev => ({ ...prev, isLoading: false }));
       }
     } else {
-      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
   }, []);
 
@@ -121,54 +119,61 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   /**
    * Logout method: Clear authentication state and tokens.
+   * (서버 logout 먼저 시도한 뒤 클라이언트 정리)
    */
   const logout = (): void => {
-    if (isBrowser) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-    }
+    const performCleanup = () => {
+      if (isBrowser) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+      }
 
-    setAuthState({
-      user: null,
-      accessToken: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
+      setAuthState({
+        user: null,
+        accessToken: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+    };
 
-    // Optional: Call backend logout endpoint to invalidate token
-    api.post('/auth/logout').catch((err) => {
-      console.error('Logout API call failed:', err);
-    });
+    api
+      .post('/auth/logout')
+      .catch(err => {
+        console.error('Logout API call failed:', err);
+      })
+      .finally(() => {
+        performCleanup();
+      });
   };
 
   /**
    * Check if user has a specific role.
    */
   const hasRole = (role: RoleName): boolean => {
-    return authState.user?.roles.some((r) => r.name === role) ?? false;
+    if (!authState.user) return false;
+    return authState.user.roles.some(r => r.name === role);
   };
 
   /**
    * Check if user has any of the specified roles.
    */
   const hasAnyRole = (roles: RoleName[]): boolean => {
-    return roles.some((role) => hasRole(role));
+    return roles.some(role => hasRole(role));
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        ...authState,
-        login,
-        logout,
-        hasRole,
-        hasAnyRole,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      ...authState,
+      login,
+      logout,
+      hasRole,
+      hasAnyRole,
+    }),
+    [authState]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 /**
