@@ -22,11 +22,8 @@
  * ```
  */
 
-import React, {
-  ButtonHTMLAttributes,
-  ForwardedRef,
-  forwardRef,
-} from 'react';
+import type { ButtonHTMLAttributes, ForwardedRef } from 'react';
+import { forwardRef } from 'react';
 
 // Simple className utility
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -36,8 +33,7 @@ function cn(...classes: Array<string | false | null | undefined>) {
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
-export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   /** Loading state (automatically disables button) */
@@ -46,14 +42,10 @@ export interface ButtonProps
 
 // Variant styles
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-600',
-  secondary:
-    'bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-400',
-  ghost:
-    'bg-transparent text-gray-900 hover:bg-gray-100 focus-visible:ring-gray-300',
-  danger:
-    'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',
+  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-600',
+  secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-400',
+  ghost: 'bg-transparent text-gray-900 hover:bg-gray-100 focus-visible:ring-gray-300',
+  danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',
 };
 
 // Size styles
@@ -102,11 +94,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {/* Loading spinner */}
         {isLoading && (
           <span className="inline-flex">
-            <svg
-              className="animate-spin h-4 w-4"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <circle
                 className="opacity-25"
                 cx="12"

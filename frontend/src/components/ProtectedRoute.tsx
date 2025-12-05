@@ -36,10 +36,11 @@
  * If both are provided, `requiredRole` takes precedence.
  */
 
-import React, { ReactNode } from 'react';
+import React from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { RoleName } from '@/types/auth';
+import type { RoleName } from '@/types/auth';
 
 interface ProtectedRouteProps {
   children: ReactNode;
