@@ -22,11 +22,11 @@ CREATE TABLE audit_logs
     created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT chk_audit_action CHECK (action IN (
-        'CREATE', 'UPDATE', 'DELETE', 'VIEW', 'DOWNLOAD',
-        'APPROVE', 'REJECT', 'LOGIN', 'LOGOUT', 'ACCESS_DENIED'
+                                                  'CREATE', 'UPDATE', 'DELETE', 'VIEW', 'DOWNLOAD',
+                                                  'APPROVE', 'REJECT', 'LOGIN', 'LOGOUT', 'ACCESS_DENIED'
         )
-)
-    );
+        )
+);
 
 -- =====================================================================
 -- INDEXES FOR AUDIT QUERIES
@@ -48,8 +48,8 @@ CREATE INDEX idx_audit_logs_created_at ON audit_logs (created_at DESC);
 CREATE INDEX idx_audit_logs_user_entity_type ON audit_logs (user_id, entity_type, created_at DESC);
 
 -- GIN index for JSONB changes and metadata (advanced filtering)
-CREATE INDEX idx_audit_logs_changes ON audit_logs USING GIN(changes);
-CREATE INDEX idx_audit_logs_metadata ON audit_logs USING GIN(metadata);
+CREATE INDEX idx_audit_logs_changes ON audit_logs USING GIN (changes);
+CREATE INDEX idx_audit_logs_metadata ON audit_logs USING GIN (metadata);
 
 -- =====================================================================
 -- PREVENT MODIFICATIONS (IMMUTABLE AUDIT TRAIL)
@@ -57,28 +57,29 @@ CREATE INDEX idx_audit_logs_metadata ON audit_logs USING GIN(metadata);
 
 -- Create function to prevent UPDATE and DELETE on audit_logs
 CREATE
-OR REPLACE FUNCTION prevent_audit_log_modification()
-RETURNS TRIGGER AS $$
+    OR REPLACE FUNCTION prevent_audit_log_modification()
+    RETURNS TRIGGER AS
+$$
 BEGIN
     RAISE
-EXCEPTION 'Audit log is immutable. Cannot modify or delete audit records.';
-RETURN NULL;
+        EXCEPTION 'Audit log is immutable. Cannot modify or delete audit records.';
+    RETURN NULL;
 END;
 $$
-LANGUAGE plpgsql;
+    LANGUAGE plpgsql;
 
 -- Trigger to enforce immutability
 CREATE TRIGGER trg_prevent_audit_log_update
     BEFORE UPDATE
     ON audit_logs
     FOR EACH ROW
-    EXECUTE FUNCTION prevent_audit_log_modification();
+EXECUTE FUNCTION prevent_audit_log_modification();
 
 CREATE TRIGGER trg_prevent_audit_log_delete
     BEFORE DELETE
     ON audit_logs
     FOR EACH ROW
-    EXECUTE FUNCTION prevent_audit_log_modification();
+EXECUTE FUNCTION prevent_audit_log_modification();
 
 -- =====================================================================
 -- AUTO-AUDIT TRIGGERS FOR SENSITIVE TABLES
@@ -86,101 +87,102 @@ CREATE TRIGGER trg_prevent_audit_log_delete
 
 -- Generic audit trigger function (captures before/after state)
 CREATE
-OR REPLACE FUNCTION audit_trigger_function()
-RETURNS TRIGGER AS $$
+    OR REPLACE FUNCTION audit_trigger_function()
+    RETURNS TRIGGER AS
+$$
 DECLARE
-changes_json JSONB;
+    changes_json JSONB;
     old_data
-JSONB;
+                 JSONB;
     new_data
-JSONB;
+                 JSONB;
     action_type
-VARCHAR(50);
+                 VARCHAR(50);
 BEGIN
     -- Determine action type
     IF
-TG_OP = 'INSERT' THEN
+        TG_OP = 'INSERT' THEN
         action_type := 'CREATE';
         new_data
-:= to_jsonb(NEW);
+            := to_jsonb(NEW);
         changes_json
-:= jsonb_build_object('new', new_data);
+            := jsonb_build_object('new', new_data);
     ELSIF
-TG_OP = 'UPDATE' THEN
+        TG_OP = 'UPDATE' THEN
         action_type := 'UPDATE';
         old_data
-:= to_jsonb(OLD);
+            := to_jsonb(OLD);
         new_data
-:= to_jsonb(NEW);
+            := to_jsonb(NEW);
         -- Only log fields that changed
         changes_json
-:= jsonb_build_object('old', old_data, 'new', new_data);
+            := jsonb_build_object('old', old_data, 'new', new_data);
     ELSIF
-TG_OP = 'DELETE' THEN
+        TG_OP = 'DELETE' THEN
         action_type := 'DELETE';
         old_data
-:= to_jsonb(OLD);
+            := to_jsonb(OLD);
         changes_json
-:= jsonb_build_object('old', old_data);
-END IF;
+            := jsonb_build_object('old', old_data);
+    END IF;
 
     -- Insert audit log entry
-INSERT INTO audit_logs (entity_type, entity_id, action, changes)
-VALUES (TG_TABLE_NAME,
-        COALESCE(NEW.id, OLD.id),
-        action_type,
-        changes_json);
+    INSERT INTO audit_logs (entity_type, entity_id, action, changes)
+    VALUES (TG_TABLE_NAME,
+            COALESCE(NEW.id, OLD.id),
+            action_type,
+            changes_json);
 
-RETURN COALESCE(NEW, OLD);
+    RETURN COALESCE(NEW, OLD);
 END;
 $$
-LANGUAGE plpgsql;
+    LANGUAGE plpgsql;
 
 -- Apply audit triggers to sensitive tables (will be extended in future migrations)
 -- Projects
 CREATE TRIGGER trg_audit_projects
     AFTER INSERT OR
-UPDATE OR
-DELETE
-ON projects
+        UPDATE OR
+        DELETE
+    ON projects
     FOR EACH ROW
-    EXECUTE FUNCTION audit_trigger_function();
+EXECUTE FUNCTION audit_trigger_function();
 
 -- Users (track user account changes)
 CREATE TRIGGER trg_audit_users
     AFTER INSERT OR
-UPDATE OR
-DELETE
-ON users
+        UPDATE OR
+        DELETE
+    ON users
     FOR EACH ROW
-    EXECUTE FUNCTION audit_trigger_function();
+EXECUTE FUNCTION audit_trigger_function();
 
 -- Customers
 CREATE TRIGGER trg_audit_customers
     AFTER INSERT OR
-UPDATE OR
-DELETE
-ON customers
+        UPDATE OR
+        DELETE
+    ON customers
     FOR EACH ROW
-    EXECUTE FUNCTION audit_trigger_function();
+EXECUTE FUNCTION audit_trigger_function();
 
 -- =====================================================================
 -- COMMENTS
 -- =====================================================================
 
 COMMENT
-ON TABLE audit_logs IS 'Immutable audit trail for all data changes and sensitive access (US9 requirement)';
+    ON TABLE audit_logs IS 'Immutable audit trail for all data changes and sensitive access (US9 requirement)';
 COMMENT
-ON COLUMN audit_logs.entity_type IS 'Table name of the affected entity';
+    ON COLUMN audit_logs.entity_type IS 'Table name of the affected entity';
 COMMENT
-ON COLUMN audit_logs.entity_id IS 'Primary key of the affected record';
+    ON COLUMN audit_logs.entity_id IS 'Primary key of the affected record';
 COMMENT
-ON COLUMN audit_logs.action IS 'Type of action: CREATE, UPDATE, DELETE, VIEW, DOWNLOAD, APPROVE, REJECT, etc.';
+    ON COLUMN audit_logs.action IS 'Type of action: CREATE, UPDATE, DELETE, VIEW, DOWNLOAD, APPROVE, REJECT, etc.';
 COMMENT
-ON COLUMN audit_logs.changes IS 'JSONB field containing before/after state of changed fields';
+    ON COLUMN audit_logs.changes IS 'JSONB field containing before/after state of changed fields';
 COMMENT
-ON COLUMN audit_logs.metadata IS 'Additional context like approval comments, deletion reasons, etc.';
+    ON COLUMN audit_logs.metadata IS 'Additional context like approval comments, deletion reasons, etc.';
 COMMENT
-ON FUNCTION prevent_audit_log_modification() IS 'Enforces immutability of audit log';
+    ON FUNCTION prevent_audit_log_modification() IS 'Enforces immutability of audit log';
 COMMENT
-ON FUNCTION audit_trigger_function() IS 'Generic trigger function to automatically log all changes to sensitive tables';
+    ON FUNCTION audit_trigger_function() IS 'Generic trigger function to automatically log all changes to sensitive tables';

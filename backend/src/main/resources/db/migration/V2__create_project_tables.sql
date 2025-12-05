@@ -10,11 +10,12 @@
 CREATE TABLE job_code_sequences
 (
     id            BIGSERIAL PRIMARY KEY,
-    year          VARCHAR(2)  NOT NULL UNIQUE, -- 2-digit year (e.g., "25" for 2025)
-    last_sequence INT         NOT NULL DEFAULT 0,
-    updated_at    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    year          VARCHAR(2) NOT NULL UNIQUE, -- 2-digit year (e.g., "25" for 2025)
+    last_sequence INT        NOT NULL DEFAULT 0,
+    updated_at    TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_year_format CHECK (year ~ '^\d{2}$'),
+    CONSTRAINT chk_year_format CHECK (year ~ '^\d{2}$'
+        ),
     CONSTRAINT chk_last_sequence_positive CHECK (last_sequence >= 0)
 );
 
@@ -35,8 +36,9 @@ CREATE TABLE projects
     is_deleted        BOOLEAN      NOT NULL DEFAULT false,
 
     CONSTRAINT chk_project_status CHECK (status IN ('DRAFT', 'ACTIVE', 'COMPLETED', 'ARCHIVED')),
-    CONSTRAINT chk_job_code_format CHECK (job_code ~ '^WK2K\d{2}-\d{4}-\d{4}$')
-    );
+    CONSTRAINT chk_job_code_format CHECK (job_code ~ '^WK2K\d{2}-\d{4}-\d{4}$'
+        )
+);
 
 -- =====================================================================
 -- PRODUCT CATALOG DOMAIN
@@ -117,27 +119,27 @@ CREATE INDEX idx_work_progress_step_templates_step_order ON work_progress_step_t
 -- =====================================================================
 
 COMMENT
-ON TABLE job_code_sequences IS 'Stores last used sequence number per year for thread-safe JobCode generation';
+    ON TABLE job_code_sequences IS 'Stores last used sequence number per year for thread-safe JobCode generation';
 COMMENT
-ON COLUMN job_code_sequences.year IS '2-digit year (e.g., "25" for 2025)';
+    ON COLUMN job_code_sequences.year IS '2-digit year (e.g., "25" for 2025)';
 COMMENT
-ON COLUMN job_code_sequences.last_sequence IS 'Last sequence number used for this year (0-based, actual JobCodes start at 1)';
+    ON COLUMN job_code_sequences.last_sequence IS 'Last sequence number used for this year (0-based, actual JobCodes start at 1)';
 
 COMMENT
-ON TABLE projects IS 'Core domain entity representing customer work requests. JobCode is the unique business identifier.';
+    ON TABLE projects IS 'Core domain entity representing customer work requests. JobCode is the unique business identifier.';
 COMMENT
-ON COLUMN projects.job_code IS 'Unique business identifier: WK2K{YY}-{SSSS}-{MMDD} (e.g. WK2K25-0001-0104)';
+    ON COLUMN projects.job_code IS 'Unique business identifier: WK2K{YY}-{SSSS}-{MMDD} (e.g. WK2K25-0001-0104)';
 COMMENT
-ON COLUMN projects.status IS 'Project lifecycle status: DRAFT, ACTIVE, COMPLETED, ARCHIVED';
+    ON COLUMN projects.status IS 'Project lifecycle status: DRAFT, ACTIVE, COMPLETED, ARCHIVED';
 
 COMMENT
-ON TABLE products IS 'Product catalog for quotations, production, and invoicing';
+    ON TABLE products IS 'Product catalog for quotations, production, and invoicing';
 COMMENT
-ON COLUMN products.sku IS 'Product code (unique when active)';
+    ON COLUMN products.sku IS 'Product code (unique when active)';
 COMMENT
-ON COLUMN products.base_unit_price IS 'Optional catalog price - can be overridden per quotation';
+    ON COLUMN products.base_unit_price IS 'Optional catalog price - can be overridden per quotation';
 
 COMMENT
-ON TABLE product_types IS 'Product categories with manufacturing step templates';
+    ON TABLE product_types IS 'Product categories with manufacturing step templates';
 COMMENT
-ON TABLE work_progress_step_templates IS 'Manufacturing step templates per product type (e.g., Design → Laser → Sheet Metal → Assembly)';
+    ON TABLE work_progress_step_templates IS 'Manufacturing step templates per product type (e.g., Design → Laser → Sheet Metal → Assembly)';

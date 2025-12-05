@@ -59,14 +59,14 @@ CREATE INDEX idx_projects_by_due_date ON projects (due_date) WHERE status IN ('D
 -- =====================================================================
 
 COMMENT
-ON INDEX idx_projects_customer_status IS 'Optimize queries filtering by customer and status';
+    ON INDEX idx_projects_customer_status IS 'Optimize queries filtering by customer and status';
 COMMENT
-ON INDEX idx_projects_owner_status IS 'Optimize queries filtering by internal owner and status';
+    ON INDEX idx_projects_owner_status IS 'Optimize queries filtering by internal owner and status';
 COMMENT
-ON INDEX idx_projects_name_search IS 'Text pattern search for project names (LIKE queries)';
+    ON INDEX idx_projects_name_search IS 'Text pattern search for project names (LIKE queries)';
 COMMENT
-ON INDEX idx_products_name_search IS 'Text pattern search for product catalog (LIKE queries)';
+    ON INDEX idx_products_name_search IS 'Text pattern search for product catalog (LIKE queries)';
 COMMENT
-ON INDEX idx_customers_name_search IS 'Text pattern search for customer names (LIKE queries)';
+    ON INDEX idx_customers_name_search IS 'Text pattern search for customer names (LIKE queries)';
 COMMENT
-ON INDEX idx_projects_by_due_date IS 'Quick lookup for projects by due date (overdue check done in application layer)';
+    ON INDEX idx_projects_by_due_date IS 'Quick lookup for projects by due date (overdue check done in application layer)';

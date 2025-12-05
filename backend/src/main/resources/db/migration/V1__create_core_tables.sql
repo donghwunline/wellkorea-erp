@@ -3,8 +3,7 @@
 -- Purpose: Foundation tables for authentication, authorization, and business entities
 
 -- Enable UUID extension
-CREATE
-EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- =====================================================================
 -- USERS AND ROLES
@@ -110,7 +109,7 @@ CREATE INDEX idx_customers_is_deleted ON customers (is_deleted);
 
 -- Suppliers indexes
 CREATE INDEX idx_suppliers_name ON suppliers (name);
-CREATE INDEX idx_suppliers_service_categories ON suppliers USING GIN(service_categories);
+CREATE INDEX idx_suppliers_service_categories ON suppliers USING GIN (service_categories);
 CREATE INDEX idx_suppliers_is_active ON suppliers (is_active);
 
 -- Customer assignments indexes
@@ -122,14 +121,14 @@ CREATE INDEX idx_customer_assignments_customer_id ON customer_assignments (custo
 -- =====================================================================
 
 COMMENT
-ON TABLE users IS 'User accounts for authentication and authorization';
+    ON TABLE users IS 'User accounts for authentication and authorization';
 COMMENT
-ON TABLE roles IS 'RBAC roles: ADMIN, FINANCE, PRODUCTION, SALES';
+    ON TABLE roles IS 'RBAC roles: ADMIN, FINANCE, PRODUCTION, SALES';
 COMMENT
-ON TABLE user_roles IS 'Many-to-many mapping between users and roles';
+    ON TABLE user_roles IS 'Many-to-many mapping between users and roles';
 COMMENT
-ON TABLE customer_assignments IS 'Sales role customer filtering per FR-062';
+    ON TABLE customer_assignments IS 'Sales role customer filtering per FR-062';
 COMMENT
-ON TABLE customers IS 'External parties receiving quotations and invoices';
+    ON TABLE customers IS 'External parties receiving quotations and invoices';
 COMMENT
-ON TABLE suppliers IS 'Vendors for purchasing and RFQ workflows';
+    ON TABLE suppliers IS 'Vendors for purchasing and RFQ workflows';
