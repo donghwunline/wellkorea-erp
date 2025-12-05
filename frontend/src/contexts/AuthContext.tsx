@@ -25,7 +25,7 @@
  */
 
 import type { ReactNode } from 'react';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api from '@/services/api';
 import type { AuthState, LoginRequest, LoginResponse, RoleName, User } from '@/types/auth';
 
@@ -49,21 +49,32 @@ interface AuthProviderProps {
  * AuthProvider component to wrap the application.
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    accessToken: null,
-    isAuthenticated: false,
-    isLoading: true,
+  // Use lazy initialization to avoid setState in effect
+  const [authState, setAuthState] = useState<AuthState>(() => {
+    // For non-browser environments (SSR/test), start with isLoading: false
+    if (!isBrowser) {
+      return {
+        user: null,
+        accessToken: null,
+        isAuthenticated: false,
+        isLoading: false,
+      };
+    }
+
+    // For browser, start with isLoading: true (will check localStorage in effect)
+    return {
+      user: null,
+      accessToken: null,
+      isAuthenticated: false,
+      isLoading: true,
+    };
   });
 
   /**
    * Initialize authentication state from localStorage on mount.
    */
   useEffect(() => {
-    if (!isBrowser) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-      return;
-    }
+    if (!isBrowser) return; // Early return, no setState needed
 
     const token = localStorage.getItem('accessToken');
     const userStr = localStorage.getItem('user');
@@ -92,7 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   /**
    * Login method: Authenticate user and store tokens.
    */
-  const login = async (credentials: LoginRequest): Promise<void> => {
+  const login = useCallback(async (credentials: LoginRequest): Promise<void> => {
     try {
       const response = await api.post<LoginResponse>('/auth/login', credentials);
       const { accessToken, refreshToken, user } = response.data;
@@ -115,13 +126,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Login failed:', error);
       throw error;
     }
-  };
+  }, []);
 
   /**
    * Logout method: Clear authentication state and tokens.
    * (서버 logout 먼저 시도한 뒤 클라이언트 정리)
    */
-  const logout = (): void => {
+  const logout = useCallback((): void => {
     const performCleanup = () => {
       if (isBrowser) {
         localStorage.removeItem('accessToken');
@@ -145,22 +156,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       .finally(() => {
         performCleanup();
       });
-  };
+  }, []);
 
   /**
    * Check if user has a specific role.
    */
-  const hasRole = (role: RoleName): boolean => {
-    if (!authState.user) return false;
-    return authState.user.roles.some(r => r.name === role);
-  };
+  const hasRole = useCallback(
+    (role: RoleName): boolean => {
+      if (!authState.user) return false;
+      return authState.user.roles.some(r => r.name === role);
+    },
+    [authState.user]
+  );
 
   /**
    * Check if user has any of the specified roles.
    */
-  const hasAnyRole = (roles: RoleName[]): boolean => {
-    return roles.some(role => hasRole(role));
-  };
+  const hasAnyRole = useCallback(
+    (roles: RoleName[]): boolean => {
+      return roles.some(role => hasRole(role));
+    },
+    [hasRole]
+  );
 
   const value = useMemo(
     () => ({
@@ -170,7 +187,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       hasRole,
       hasAnyRole,
     }),
-    [authState]
+    [authState, login, logout, hasRole, hasAnyRole]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
