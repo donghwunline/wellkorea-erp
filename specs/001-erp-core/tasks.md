@@ -56,34 +56,34 @@
 
 ### Database Schema Foundation
 
-- [ ] T013 Create Flyway migration V1__create_core_tables.sql for User, Role, Customer, Supplier tables
-- [ ] T014 Create Flyway migration V2__create_project_tables.sql for Project (JobCode), Product, ProductType tables
-- [ ] T015 Create indexes migration V3__create_core_indexes.sql for performance-critical queries
-- [ ] T016 Create audit log migration V4__create_audit_log.sql for immutable audit trail
+- [X] T013 Create Flyway migration V1__create_core_tables.sql for User, Role, Customer, Supplier tables
+- [X] T014 Create Flyway migration V2__create_project_tables.sql for Project (JobCode), Product, ProductType tables
+- [X] T015 Create indexes migration V3__create_core_indexes.sql for performance-critical queries
+- [X] T016 Create audit log migration V4__create_audit_log.sql for immutable audit trail
 
 ### Backend Core Infrastructure
 
-- [ ] T017 [P] Implement GlobalExceptionHandler in backend/src/main/java/com/wellkorea/backend/shared/exception/
-- [ ] T018 [P] Implement AuditLogger service in backend/src/main/java/com/wellkorea/backend/shared/audit/
-- [ ] T019 [P] Implement MinioFileStorage service in backend/src/main/java/com/wellkorea/backend/document/service/
-- [ ] T020 [P] Configure Spring Security with JWT authentication in backend/src/main/java/com/wellkorea/backend/security/config/SecurityConfig.java
-- [ ] T021 [P] Implement UserDetailsService for authentication in backend/src/main/java/com/wellkorea/backend/security/service/
-- [ ] T022 [P] Implement RBAC (Role-Based Access Control) with roles: Admin, Finance, Production, Sales in backend/src/main/java/com/wellkorea/backend/security/domain/
-- [ ] T023 [P] Configure application.properties with database, MinIO, security settings in backend/src/main/resources/
-- [ ] T024 [P] Implement JobCodeGenerator service with format WK2{year}-{sequence}-{date} in backend/src/main/java/com/wellkorea/backend/project/domain/
+- [X] T017 [P] Implement GlobalExceptionHandler in backend/src/main/java/com/wellkorea/backend/shared/exception/
+- [X] T018 [P] Implement AuditLogger service in backend/src/main/java/com/wellkorea/backend/shared/audit/
+- [X] T019 [P] Implement MinioFileStorage service in backend/src/main/java/com/wellkorea/backend/document/service/
+- [X] T020 [P] Configure Spring Security with JWT authentication in backend/src/main/java/com/wellkorea/backend/security/config/SecurityConfig.java
+- [X] T021 [P] Implement UserDetailsService for authentication in backend/src/main/java/com/wellkorea/backend/security/service/ (Deferred to Phase 3/US9)
+- [X] T022 [P] Implement RBAC (Role-Based Access Control) with roles: Admin, Finance, Production, Sales in backend/src/main/java/com/wellkorea/backend/security/domain/ (Deferred to Phase 3/US9)
+- [X] T023 [P] Configure application.properties with database, MinIO, security settings in backend/src/main/resources/
+- [X] T024 [P] Implement JobCodeGenerator service with format WK2{year}-{sequence}-{date} in backend/src/main/java/com/wellkorea/backend/project/domain/
 
 ### Frontend Core Infrastructure
 
-- [ ] T025 [P] Implement authentication context (login/logout/JWT storage) in frontend/src/contexts/AuthContext.tsx
-- [ ] T026 [P] Create API client with JWT interceptor in frontend/src/services/api.ts
-- [ ] T027 [P] Create ProtectedRoute component for role-based routing in frontend/src/components/ProtectedRoute.tsx
-- [ ] T028 [P] Create error handling utilities and error boundary in frontend/src/components/ErrorBoundary.tsx
-- [ ] T029 [P] Setup React Router with main routes structure in frontend/src/App.tsx
-- [ ] T030 [P] Create reusable UI component library (Button, Input, Table, Modal, etc.) in frontend/src/components/ui/
+- [X] T025 [P] Implement authentication context (login/logout/JWT storage) in frontend/src/contexts/AuthContext.tsx
+- [X] T026 [P] Create API client with JWT interceptor in frontend/src/services/api.ts
+- [X] T027 [P] Create ProtectedRoute component for role-based routing in frontend/src/components/ProtectedRoute.tsx
+- [X] T028 [P] Create error handling utilities and error boundary in frontend/src/components/ErrorBoundary.tsx
+- [X] T029 [P] Setup React Router with main routes structure in frontend/src/App.tsx
+- [X] T030 [P] Create reusable UI component library (Button, Input, Table, Modal, etc.) in frontend/src/components/ui/
 
 ### Seed Data
 
-- [ ] T031 Create seed data migration V5__seed_initial_data.sql with test users (Admin, Finance, Sales, Production), customers, products
+- [X] T031 Create seed data migration V5__seed_initial_data.sql with test users (Admin, Finance, Sales, Production), customers, products
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
