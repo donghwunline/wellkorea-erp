@@ -20,23 +20,16 @@
  * ```
  */
 
+import type { AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
-import type {
-  AxiosInstance,
-  AxiosError,
-  InternalAxiosRequestConfig,
-  AxiosResponse,
-} from 'axios';
 
 // Base URL from environment variable or default to localhost
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 // SSR / test environment consideration
 const isBrowser = typeof window !== 'undefined';
 
-const getAccessToken = () =>
-  isBrowser ? localStorage.getItem('accessToken') : null;
+const getAccessToken = () => (isBrowser ? localStorage.getItem('accessToken') : null);
 
 const setAccessToken = (token: string | null) => {
   if (!isBrowser) return;
@@ -96,7 +89,7 @@ let failedQueue: {
 }[] = [];
 
 const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
+  failedQueue.forEach(prom => {
     if (error) {
       prom.reject(error);
     } else {

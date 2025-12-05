@@ -2,7 +2,7 @@
  * Input component with consistent styling.
  */
 
-import React, { InputHTMLAttributes, forwardRef } from 'react';
+import { forwardRef, type InputHTMLAttributes } from 'react';
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
@@ -15,15 +15,12 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, error, label, id, ...props }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const inputId = id || label?.toLowerCase().replaceAll(/\s+/g, '-');
 
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-sm font-medium text-gray-700"
-          >
+          <label htmlFor={inputId} className="text-sm font-medium text-gray-700">
             {label}
           </label>
         )}

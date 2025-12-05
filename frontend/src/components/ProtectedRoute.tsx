@@ -36,8 +36,8 @@
  * If both are provided, `requiredRole` takes precedence.
  */
 
-import React from 'react';
 import type { ReactNode } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RoleName } from '@/types/auth';
@@ -59,11 +59,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const location = useLocation();
 
   // Warn if both role props are provided (use only one)
-  if (process.env.NODE_ENV === 'development' && requiredRole && requiredRoles) {
-    console.warn(
-      'ProtectedRoute: Both requiredRole and requiredRoles provided. Using requiredRole.'
-    );
-  }
+  // if (process.env.NODE_ENV === 'development' && requiredRole && requiredRoles) {
+  //   console.warn(
+  //     'ProtectedRoute: Both requiredRole and requiredRoles provided. Using requiredRole.'
+  //   );
+  // }
 
   // 1) Loading state - checking authentication
   if (isLoading) {
@@ -88,9 +88,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white shadow rounded-lg p-8 max-w-md w-full text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600 mb-4">
-            You do not have permission to access this page.
-          </p>
+          <p className="text-gray-600 mb-4">You do not have permission to access this page.</p>
           <p className="text-sm text-gray-500">
             Required role: <span className="font-mono">{requiredRole}</span>
           </p>
@@ -105,9 +103,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white shadow rounded-lg p-8 max-w-md w-full text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600 mb-4">
-            You do not have permission to access this page.
-          </p>
+          <p className="text-gray-600 mb-4">You do not have permission to access this page.</p>
           <p className="text-sm text-gray-500">
             Required roles: <span className="font-mono">{requiredRoles.join(', ')}</span>
           </p>

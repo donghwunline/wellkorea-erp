@@ -15,8 +15,8 @@
  * ```
  */
 
-import React, { Component } from 'react';
 import type { ReactNode } from 'react';
+import React, { Component } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -76,14 +76,13 @@ export class ErrorBoundary extends Component<Props, State> {
         >
           <h1 style={{ color: '#d32f2f' }}>Something went wrong</h1>
           <p style={{ marginBottom: '2rem' }}>
-            An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
+            An unexpected error occurred. Please try refreshing the page or contact support if the
+            problem persists.
           </p>
 
           {this.state.error && (
             <details style={{ marginBottom: '2rem', textAlign: 'left' }}>
-              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>
-                Error Details
-              </summary>
+              <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>Error Details</summary>
               <pre
                 style={{
                   backgroundColor: '#f5f5f5',
@@ -127,7 +126,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Try Again
             </button>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => globalThis.location.reload()}
               style={{
                 padding: '0.5rem 1rem',
                 backgroundColor: '#757575',

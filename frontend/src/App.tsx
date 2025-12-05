@@ -2,10 +2,10 @@
  * Main Application Component with React Router
  */
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import {AuthProvider} from './contexts/AuthContext';
+import {ErrorBoundary} from './components/ErrorBoundary';
+import {ProtectedRoute} from './components/ProtectedRoute'; // Placeholder components for Phase 2
 
 // Placeholder components for Phase 2
 const LoginPage = () => (
