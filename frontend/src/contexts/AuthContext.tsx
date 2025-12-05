@@ -29,6 +29,7 @@
 import type {ReactNode} from 'react';
 import React, {createContext, useCallback, useContext, useMemo, useState} from 'react';
 import api from '@/services/api';
+import {authStorage} from '@/utils/storage';
 import type {AuthState, LoginRequest, LoginResponse, RoleName, User} from '@/types/auth';
 
 interface AuthContextType extends AuthState {
@@ -40,9 +41,6 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// SSR/test safe
-const isBrowser = typeof window !== 'undefined';
-
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -51,40 +49,20 @@ interface AuthProviderProps {
  * AuthProvider component to wrap the application.
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  // Initialize state from localStorage synchronously (no useEffect needed)
+  // Initialize state from storage synchronously
   const [authState, setAuthState] = useState<AuthState>(() => {
-    // For non-browser environments (SSR/test), return unauthenticated state
-    if (!isBrowser) {
+    const token = authStorage.getAccessToken();
+    const user = authStorage.getUser<User>();
+
+    if (token && user) {
       return {
-        user: null,
-        accessToken: null,
-        isAuthenticated: false,
+        user,
+        accessToken: token,
+        isAuthenticated: true,
         isLoading: false,
       };
     }
 
-    // For browser, read from localStorage during initialization
-    const token = localStorage.getItem('accessToken');
-    const userStr = localStorage.getItem('user');
-
-    if (token && userStr) {
-      try {
-        const user: User = JSON.parse(userStr);
-        return {
-          user,
-          accessToken: token,
-          isAuthenticated: true,
-          isLoading: false,
-        };
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        // Clear invalid data
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-      }
-    }
-
-    // No valid auth found - return unauthenticated state
     return {
       user: null,
       accessToken: null,
@@ -101,13 +79,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await api.post<LoginResponse>('/auth/login', credentials);
       const { accessToken, refreshToken, user } = response.data;
 
-      if (isBrowser) {
-        localStorage.setItem('accessToken', accessToken);
-        if (refreshToken) {
-          localStorage.setItem('refreshToken', refreshToken);
-        }
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+      authStorage.setAccessToken(accessToken);
+      authStorage.setRefreshToken(refreshToken ?? null);
+      authStorage.setUser(user);
 
       setAuthState({
         user,
@@ -127,11 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const logout = useCallback((): void => {
     const performCleanup = () => {
-      if (isBrowser) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-      }
+      authStorage.clearAuth();
 
       setAuthState({
         user: null,
@@ -198,5 +168,4 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export default AuthContext;

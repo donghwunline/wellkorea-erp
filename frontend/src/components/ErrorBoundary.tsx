@@ -15,8 +15,9 @@
  * ```
  */
 
-import type { ReactNode } from 'react';
-import React, { Component } from 'react';
+import type {ReactNode} from 'react';
+import React, {Component} from 'react';
+import {navigation} from '@/utils/navigation';
 
 interface Props {
   children: ReactNode;
@@ -126,7 +127,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Try Again
             </button>
             <button
-              onClick={() => globalThis.location.reload()}
+              onClick={() => navigation.reloadPage()}
               style={{
                 padding: '0.5rem 1rem',
                 backgroundColor: '#757575',

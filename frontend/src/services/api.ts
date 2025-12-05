@@ -22,35 +22,11 @@
 
 import type {AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
 import axios from 'axios';
+import {authStorage} from '@/utils/storage';
+import {navigation} from '@/utils/navigation';
 
 // Base URL from environment variable or default to localhost
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-
-// SSR / test environment consideration
-const isBrowser = typeof globalThis !== 'undefined';
-
-const getAccessToken = () => (isBrowser ? localStorage.getItem('accessToken') : null);
-
-const setAccessToken = (token: string | null) => {
-  if (!isBrowser) return;
-  if (token) {
-    localStorage.setItem('accessToken', token);
-  } else {
-    localStorage.removeItem('accessToken');
-  }
-};
-
-const clearAuth = () => {
-  if (!isBrowser) return;
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken'); // for future use
-  localStorage.removeItem('user');
-};
-
-const redirectToLogin = () => {
-  if (!isBrowser) return;
-  globalThis.location.href = '/login';
-};
 
 /**
  * Axios instance configured for backend API communication.
@@ -64,11 +40,11 @@ const api: AxiosInstance = axios.create({
 });
 
 /**
- * Request interceptor: Inject JWT token from localStorage.
+ * Request interceptor: Inject JWT token from storage.
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = getAccessToken();
+    const token = authStorage.getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -101,7 +77,12 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 const refreshAccessToken = async (): Promise<string> => {
   // TODO: Replace with actual refresh API when implemented
-  // Example: const res = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
+  // Example:
+  // const refreshToken = authStorage.getRefreshToken();
+  // const res = await axios.post<LoginResponse>(`${BASE_URL}/auth/refresh`, { refreshToken });
+  // const { accessToken } = res.data;
+  // authStorage.setAccessToken(accessToken);
+  // return accessToken;
   throw new Error('Refresh token API is not implemented yet');
 };
 
@@ -143,7 +124,7 @@ api.interceptors.response.use(
       try {
         const newToken = await refreshAccessToken();
 
-        setAccessToken(newToken);
+        authStorage.setAccessToken(newToken);
         processQueue(null, newToken);
 
         if (originalRequest.headers) {
@@ -153,8 +134,8 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        clearAuth();
-        redirectToLogin();
+        authStorage.clearAuth();
+        navigation.redirectToLogin();
         throw refreshError;
       } finally {
         isRefreshing = false;
