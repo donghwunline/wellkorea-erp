@@ -24,9 +24,21 @@ import type {AxiosError, AxiosInstance, AxiosResponse, InternalAxiosRequestConfi
 import axios from 'axios';
 import {authStorage} from '@/utils/storage';
 import {navigation} from '@/utils/navigation';
+import {enhanceError} from '@/utils/errorMessages';
+import type {ErrorResponse} from '@/types/api';
 
 // Base URL from environment variable or default to localhost
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
+/**
+ * Enhanced AxiosError with user-friendly error information.
+ * Extends standard AxiosError with additional fields for display strategy.
+ */
+export interface EnhancedAxiosError extends AxiosError<ErrorResponse> {
+  errorCode?: string;
+  userMessage?: string;
+  displayStrategy?: 'inline' | 'toast' | 'banner' | 'modal';
+}
 
 /**
  * Axios instance configured for backend API communication.
@@ -93,15 +105,36 @@ api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  async (error: AxiosError) => {
+  async (error: EnhancedAxiosError) => {
+    // Enhance error with user-friendly information
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      const enhanced = enhanceError(errorData);
+
+      // Attach enhanced error information to the error object for components to use
+      error.errorCode = enhanced.errorCode;
+      error.userMessage = enhanced.userMessage;
+      error.displayStrategy = enhanced.displayStrategy;
+
+      // Log for debugging (with both user message and original backend message)
+      console.error(
+        `[${errorData.errorCode}] ${enhanced.userMessage}`,
+        {
+          backendMessage: errorData.message,
+          path: errorData.path,
+          timestamp: errorData.timestamp,
+          status: errorData.status,
+        }
+      );
+    }
+
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
 
     // 401 Unauthorized (token expired)
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-      originalRequest._retry = true;
-
+      // Check isRefreshing flag first to prevent race condition
       if (isRefreshing) {
         // If refresh is already in progress, queue the request and retry after refresh
         return new Promise((resolve, reject) => {
@@ -119,6 +152,7 @@ api.interceptors.response.use(
         });
       }
 
+      originalRequest._retry = true;
       isRefreshing = true;
 
       try {
