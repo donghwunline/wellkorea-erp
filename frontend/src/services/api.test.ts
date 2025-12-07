@@ -3,9 +3,10 @@
  */
 
 import {describe, it, expect, beforeEach, vi} from 'vitest';
-import type {InternalAxiosRequestConfig, AxiosError} from 'axios';
+import type {InternalAxiosRequestConfig, AxiosError, AxiosInstance} from 'axios';
+import {AxiosHeaders} from 'axios';
 
-// 1) api.ts가 import 하는 경로 그대로 mock
+// Mock dependencies before importing api module
 vi.mock('@/utils/storage', () => ({
   authStorage: {
     getAccessToken: vi.fn(),
@@ -20,26 +21,66 @@ vi.mock('@/utils/navigation', () => ({
   },
 }));
 
-// 2) mock 이후에 import
+// Import mocked modules
 const {authStorage} = await import('@/utils/storage');
 const {navigation} = await import('@/utils/navigation');
 
-// 3) api 인스턴스를 가져오는 헬퍼 (중복 방지)
+// Helper to import api instance
 const importApi = async () => (await import('./api')).default;
 
-// 4) 인터셉터 핸들러를 안전하게 꺼내는 헬퍼
-const getRequestInterceptor = (api: any) => {
-  const handlers = api.interceptors.request.handlers;
-  const handler = handlers[handlers.length - 1]; // 현재는 하나지만, 나중 확장 대비
+// Type definitions for interceptor handlers
+interface InterceptorHandler {
+  fulfilled?: (value: InternalAxiosRequestConfig) => InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig>;
+  rejected?: (error: unknown) => unknown;
+}
+
+interface ResponseInterceptorHandler {
+  fulfilled?: (value: unknown) => unknown;
+  rejected?: (error: unknown) => unknown;
+}
+
+// Helper to extract request interceptor from api instance
+const getRequestInterceptor = (api: AxiosInstance): InterceptorHandler => {
+  const handlers = (api.interceptors.request as unknown as {handlers: InterceptorHandler[]}).handlers;
+  const handler = handlers[handlers.length - 1];
   expect(handler).toBeTruthy();
   return handler;
 };
 
-const getResponseInterceptor = (api: any) => {
-  const handlers = api.interceptors.response.handlers;
+// Helper to extract response interceptor from api instance
+const getResponseInterceptor = (api: AxiosInstance): ResponseInterceptorHandler => {
+  const handlers = (api.interceptors.response as unknown as {handlers: ResponseInterceptorHandler[]}).handlers;
   const handler = handlers[handlers.length - 1];
   expect(handler).toBeTruthy();
   return handler;
+};
+
+// Helper to create mock Axios config object
+const createMockConfig = (overrides?: Partial<InternalAxiosRequestConfig>): InternalAxiosRequestConfig => {
+  return {
+    headers: new AxiosHeaders(),
+    ...overrides,
+  } as InternalAxiosRequestConfig;
+};
+
+// Helper to create mock AxiosError object
+const createMockAxiosError = (
+  status: number,
+  config?: Partial<InternalAxiosRequestConfig> & {_retry?: boolean}
+): AxiosError => {
+  const finalConfig = {
+    headers: new AxiosHeaders(),
+    ...config,
+  };
+
+  return {
+    response: {status},
+    config: finalConfig as InternalAxiosRequestConfig,
+    isAxiosError: true,
+    toJSON: () => ({}),
+    name: 'AxiosError',
+    message: `Request failed with status code ${status}`,
+  } as AxiosError;
 };
 
 describe('API client', () => {
@@ -59,8 +100,8 @@ describe('API client', () => {
       const api = await importApi();
 
       // axios 버전에 따라 위치가 다를 수 있음
-      const headers = api.defaults.headers as any;
-      const contentType = headers['Content-Type'] ?? headers.common?.['Content-Type'];
+      const headers = api.defaults.headers as Record<string, unknown>;
+      const contentType = headers['Content-Type'] ?? (headers.common as Record<string, unknown>)?.['Content-Type'];
 
       expect(contentType).toBe('application/json');
     });
@@ -72,16 +113,11 @@ describe('API client', () => {
 
       const api = await importApi();
       const requestInterceptor = getRequestInterceptor(api);
+      const config = createMockConfig();
 
-      if (requestInterceptor.fulfilled) {
-        const config: InternalAxiosRequestConfig = {
-          headers: {} as any,
-        } as InternalAxiosRequestConfig;
+      const result = await requestInterceptor.fulfilled!(config);
 
-        const result = await requestInterceptor.fulfilled(config);
-
-        expect(result.headers?.Authorization).toBe('Bearer test-token');
-      }
+      expect(result.headers?.Authorization).toBe('Bearer test-token');
     });
 
     it('should not add Authorization header when token is null', async () => {
@@ -89,16 +125,11 @@ describe('API client', () => {
 
       const api = await importApi();
       const requestInterceptor = getRequestInterceptor(api);
+      const config = createMockConfig();
 
-      if (requestInterceptor.fulfilled) {
-        const config: InternalAxiosRequestConfig = {
-          headers: {} as any,
-        } as InternalAxiosRequestConfig;
+      const result = await requestInterceptor.fulfilled!(config);
 
-        const result = await requestInterceptor.fulfilled(config);
-
-        expect(result.headers?.Authorization).toBeUndefined();
-      }
+      expect(result.headers?.Authorization).toBeUndefined();
     });
   });
 
@@ -106,15 +137,9 @@ describe('API client', () => {
     it('should pass through non-401 errors', async () => {
       const api = await importApi();
       const responseInterceptor = getResponseInterceptor(api);
+      const error = createMockAxiosError(500);
 
-      if (responseInterceptor.rejected) {
-        const error = {
-          response: {status: 500},
-          config: {} as InternalAxiosRequestConfig,
-        } as AxiosError;
-
-        await expect(responseInterceptor.rejected(error)).rejects.toBe(error);
-      }
+      await expect(responseInterceptor.rejected!(error)).rejects.toBe(error);
     });
   });
 
@@ -122,20 +147,12 @@ describe('API client', () => {
     it('should not retry if _retry is already true (just rethrow)', async () => {
       const api = await importApi();
       const responseInterceptor = getResponseInterceptor(api);
+      const error = createMockAxiosError(401, {_retry: true});
 
-      if (responseInterceptor.rejected) {
-        const error = {
-          response: {status: 401},
-          config: {
-            _retry: true,
-          } as InternalAxiosRequestConfig & {_retry: boolean},
-        } as AxiosError;
+      await expect(responseInterceptor.rejected!(error)).rejects.toBe(error);
 
-        await expect(responseInterceptor.rejected(error)).rejects.toBe(error);
-
-        expect(authStorage.clearAuth).not.toHaveBeenCalled();
-        expect(navigation.redirectToLogin).not.toHaveBeenCalled();
-      }
+      expect(authStorage.clearAuth).not.toHaveBeenCalled();
+      expect(navigation.redirectToLogin).not.toHaveBeenCalled();
     });
   });
 
@@ -143,24 +160,16 @@ describe('API client', () => {
     it('should clear auth and redirect to login when refresh fails', async () => {
       const api = await importApi();
       const responseInterceptor = getResponseInterceptor(api);
+      const error = createMockAxiosError(401);
 
-      if (responseInterceptor.rejected) {
-        const error = {
-          response: {status: 401},
-          config: {
-            headers: {} as any,
-          } as InternalAxiosRequestConfig,
-        } as AxiosError;
+      // refreshAccessToken currently always throws, so expect that error
+      // clearAuth and redirectToLogin should be called before the error is re-thrown
+      await expect(responseInterceptor.rejected!(error)).rejects.toThrow(
+        'Refresh token API is not implemented yet',
+      );
 
-        // refreshAccessToken 이 현재는 항상 throw 하기 때문에,
-        // 그 에러가 그대로 위로 올라오고, 그 전에 clearAuth + redirectToLogin 이 호출되어야 한다.
-        await expect(responseInterceptor.rejected(error)).rejects.toThrow(
-          'Refresh token API is not implemented yet',
-        );
-
-        expect(authStorage.clearAuth).toHaveBeenCalledTimes(1);
-        expect(navigation.redirectToLogin).toHaveBeenCalledTimes(1);
-      }
+      expect(authStorage.clearAuth).toHaveBeenCalledTimes(1);
+      expect(navigation.redirectToLogin).toHaveBeenCalledTimes(1);
     });
   });
 
