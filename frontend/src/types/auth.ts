@@ -7,13 +7,7 @@ export interface User {
   username: string;
   email: string;
   fullName: string;
-  roles: Role[];
-}
-
-export interface Role {
-  id: number;
-  name: RoleName;
-  description?: string;
+  roles: RoleName[];
 }
 
 export type RoleName = 'ADMIN' | 'FINANCE' | 'PRODUCTION' | 'SALES';

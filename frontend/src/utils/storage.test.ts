@@ -136,7 +136,8 @@ describe('authStorage utility', () => {
         id: 1,
         username: 'alice',
         email: 'alice@example.com',
-        roles: [{name: 'ADMIN'}],
+        fullName: 'Alice User',
+        roles: ['ADMIN'],
       };
 
       authStorage.setUser(user);

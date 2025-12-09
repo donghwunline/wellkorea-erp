@@ -6,7 +6,7 @@ import React from 'react';
 import {describe, it, expect, beforeEach, vi} from 'vitest';
 import {renderHook, act} from '@testing-library/react';
 import {AuthProvider, useAuth} from './AuthContext';
-import type {User} from '@/types/auth';
+import {createMockUser, mockUsers} from '@/test/fixtures';
 
 // Mock dependencies
 vi.mock('@/services/api', () => ({
@@ -53,20 +53,13 @@ describe('AuthContext', () => {
     });
 
     it('should initialize with authenticated state when stored auth exists', () => {
-      const mockUser: User = {
-        id: 1,
-        username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'ADMIN'}],
-      };
-
       vi.mocked(authStorage.getAccessToken).mockReturnValue('stored-token');
-      vi.mocked(authStorage.getUser).mockReturnValue(mockUser);
+      vi.mocked(authStorage.getUser).mockReturnValue(mockUsers.admin);
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
       expect(result.current.isAuthenticated).toBe(true);
-      expect(result.current.user).toEqual(mockUser);
+      expect(result.current.user).toEqual(mockUsers.admin);
       expect(result.current.accessToken).toBe('stored-token');
       expect(result.current.isLoading).toBe(false);
     });
@@ -77,18 +70,11 @@ describe('AuthContext', () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue(null);
       vi.mocked(authStorage.getUser).mockReturnValue(null);
 
-      const mockUser: User = {
-        id: 1,
-        username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'ADMIN'}],
-      };
-
       vi.mocked(api.post).mockResolvedValue({
         data: {
           accessToken: 'new-access-token',
           refreshToken: 'new-refresh-token',
-          user: mockUser,
+          user: mockUsers.admin,
         },
       });
 
@@ -104,29 +90,22 @@ describe('AuthContext', () => {
       });
       expect(authStorage.setAccessToken).toHaveBeenCalledWith('new-access-token');
       expect(authStorage.setRefreshToken).toHaveBeenCalledWith('new-refresh-token');
-      expect(authStorage.setUser).toHaveBeenCalledWith(mockUser);
+      expect(authStorage.setUser).toHaveBeenCalledWith(mockUsers.admin);
 
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.accessToken).toBe('new-access-token');
-      expect(result.current.user).toEqual(mockUser);
+      expect(result.current.user).toEqual(mockUsers.admin);
     });
 
     it('should handle login with null refreshToken', async () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue(null);
       vi.mocked(authStorage.getUser).mockReturnValue(null);
 
-      const mockUser: User = {
-        id: 1,
-        username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'USER'}],
-      };
-
       vi.mocked(api.post).mockResolvedValue({
         data: {
           accessToken: 'access-token',
           refreshToken: null,
-          user: mockUser,
+          user: mockUsers.sales,
         },
       });
 
@@ -162,15 +141,8 @@ describe('AuthContext', () => {
 
   describe('logout', () => {
     it('should logout successfully and clear state', async () => {
-      const mockUser: User = {
-        id: 1,
-        username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'ADMIN'}],
-      };
-
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
-      vi.mocked(authStorage.getUser).mockReturnValue(mockUser);
+      vi.mocked(authStorage.getUser).mockReturnValue(mockUsers.admin);
       vi.mocked(api.post).mockResolvedValue({});
 
       const {result} = renderHook(() => useAuth(), {wrapper});
@@ -192,15 +164,8 @@ describe('AuthContext', () => {
     });
 
     it('should clear state even if logout API fails', async () => {
-      const mockUser: User = {
-        id: 1,
-        username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'ADMIN'}],
-      };
-
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
-      vi.mocked(authStorage.getUser).mockReturnValue(mockUser);
+      vi.mocked(authStorage.getUser).mockReturnValue(mockUsers.admin);
       vi.mocked(api.post).mockRejectedValue(new Error('Network error'));
 
       const {result} = renderHook(() => useAuth(), {wrapper});
@@ -220,12 +185,10 @@ describe('AuthContext', () => {
 
   describe('hasRole', () => {
     it('should return true when user has the specified role', () => {
-      const mockUser: User = {
-        id: 1,
+      const mockUser = createMockUser({
         username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'ADMIN'}, {name: 'USER'}],
-      };
+        roles: ['ADMIN', 'SALES'],
+      });
 
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
       vi.mocked(authStorage.getUser).mockReturnValue(mockUser);
@@ -233,24 +196,17 @@ describe('AuthContext', () => {
       const {result} = renderHook(() => useAuth(), {wrapper});
 
       expect(result.current.hasRole('ADMIN')).toBe(true);
-      expect(result.current.hasRole('USER')).toBe(true);
+      expect(result.current.hasRole('SALES')).toBe(true);
     });
 
     it('should return false when user does not have the specified role', () => {
-      const mockUser: User = {
-        id: 1,
-        username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'USER'}],
-      };
-
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
-      vi.mocked(authStorage.getUser).mockReturnValue(mockUser);
+      vi.mocked(authStorage.getUser).mockReturnValue(mockUsers.sales);
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
       expect(result.current.hasRole('ADMIN')).toBe(false);
-      expect(result.current.hasRole('MANAGER')).toBe(false);
+      expect(result.current.hasRole('FINANCE')).toBe(false);
     });
 
     it('should return false when user is not authenticated', () => {
@@ -265,36 +221,22 @@ describe('AuthContext', () => {
 
   describe('hasAnyRole', () => {
     it('should return true when user has at least one of the specified roles', () => {
-      const mockUser: User = {
-        id: 1,
-        username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'USER'}],
-      };
-
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
-      vi.mocked(authStorage.getUser).mockReturnValue(mockUser);
+      vi.mocked(authStorage.getUser).mockReturnValue(mockUsers.sales);
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasAnyRole(['ADMIN', 'USER'])).toBe(true);
-      expect(result.current.hasAnyRole(['MANAGER', 'USER'])).toBe(true);
+      expect(result.current.hasAnyRole(['ADMIN', 'SALES'])).toBe(true);
+      expect(result.current.hasAnyRole(['FINANCE', 'SALES'])).toBe(true);
     });
 
     it('should return false when user has none of the specified roles', () => {
-      const mockUser: User = {
-        id: 1,
-        username: 'alice',
-        email: 'alice@example.com',
-        roles: [{name: 'USER'}],
-      };
-
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
-      vi.mocked(authStorage.getUser).mockReturnValue(mockUser);
+      vi.mocked(authStorage.getUser).mockReturnValue(mockUsers.sales);
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasAnyRole(['ADMIN', 'MANAGER'])).toBe(false);
+      expect(result.current.hasAnyRole(['ADMIN', 'FINANCE'])).toBe(false);
     });
 
     it('should return false when user is not authenticated', () => {
@@ -303,7 +245,7 @@ describe('AuthContext', () => {
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasAnyRole(['ADMIN', 'USER'])).toBe(false);
+      expect(result.current.hasAnyRole(['ADMIN', 'SALES'])).toBe(false);
     });
   });
 

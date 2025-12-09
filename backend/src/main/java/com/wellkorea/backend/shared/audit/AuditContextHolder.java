@@ -12,6 +12,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Component
 public class AuditContextHolder {
 
+    private static final String UNKNOWN = "unknown";
+
+    private AuditContextHolder() {
+    }
+
     /**
      * Get the client IP address from the current HTTP request.
      * Handles proxies and load balancers by checking X-Forwarded-For header.
@@ -21,12 +26,12 @@ public class AuditContextHolder {
     public static String getClientIp() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
-            return "unknown";
+            return UNKNOWN;
         }
 
         // Check X-Forwarded-For header (proxy/load balancer)
         String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+        if (ip != null && !ip.isEmpty() && !UNKNOWN.equalsIgnoreCase(ip)) {
             // X-Forwarded-For can contain multiple IPs - take the first one
             int index = ip.indexOf(',');
             return index != -1 ? ip.substring(0, index).trim() : ip.trim();
@@ -34,13 +39,13 @@ public class AuditContextHolder {
 
         // Check X-Real-IP header (nginx proxy)
         ip = request.getHeader("X-Real-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+        if (ip != null && !ip.isEmpty() && !UNKNOWN.equalsIgnoreCase(ip)) {
             return ip.trim();
         }
 
         // Fallback to remote address
         ip = request.getRemoteAddr();
-        return ip != null ? ip : "unknown";
+        return ip != null ? ip : UNKNOWN;
     }
 
     /**
@@ -51,11 +56,11 @@ public class AuditContextHolder {
     public static String getUserAgent() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
-            return "unknown";
+            return UNKNOWN;
         }
 
         String userAgent = request.getHeader("User-Agent");
-        return userAgent != null ? userAgent : "unknown";
+        return userAgent != null ? userAgent : UNKNOWN;
     }
 
     /**
@@ -66,7 +71,7 @@ public class AuditContextHolder {
     public static String getRequestUri() {
         HttpServletRequest request = getCurrentRequest();
         if (request == null) {
-            return "unknown";
+            return UNKNOWN;
         }
 
         return request.getRequestURI();

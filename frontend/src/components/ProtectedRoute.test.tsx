@@ -7,19 +7,12 @@ import {describe, it, expect, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import {MemoryRouter, Route, Routes} from 'react-router-dom';
 import {ProtectedRoute} from './ProtectedRoute';
-import AuthContext from '@/contexts/AuthContext';
-import type {AuthState, RoleName} from '@/types/auth';
-
-interface AuthContextValue extends AuthState {
-  login: () => Promise<void>;
-  logout: () => void;
-  hasRole: (role: RoleName) => boolean;
-  hasAnyRole: (roles: RoleName[]) => boolean;
-}
+import AuthContext, {type AuthContextType} from '@/contexts/AuthContext';
+import {createMockUser, mockUsers} from '@/test/fixtures';
 
 const renderWithAuth = (
   ui: React.ReactElement,
-  authValue: AuthContextValue,
+  authValue: AuthContextType,
   initialEntries = ['/'],
 ) => {
   return render(
@@ -35,7 +28,7 @@ const renderWithAuth = (
   );
 };
 
-const createAuthValue = (overrides?: Partial<AuthContextValue>): AuthContextValue => ({
+const createAuthValue = (overrides?: Partial<AuthContextType>): AuthContextType => ({
   user: null,
   accessToken: null,
   isAuthenticated: false,
@@ -71,7 +64,7 @@ describe('ProtectedRoute', () => {
     it('should render children when user is authenticated and no role required', () => {
       const authValue = createAuthValue({
         isAuthenticated: true,
-        user: {id: 1, username: 'alice', email: 'alice@example.com', roles: []},
+        user: createMockUser({roles: []}),
         accessToken: 'token',
       });
 
@@ -92,12 +85,7 @@ describe('ProtectedRoute', () => {
     it('should render children when user has required role', () => {
       const authValue = createAuthValue({
         isAuthenticated: true,
-        user: {
-          id: 1,
-          username: 'alice',
-          email: 'alice@example.com',
-          roles: [{name: 'ADMIN'}],
-        },
+        user: mockUsers.admin,
         accessToken: 'token',
         hasRole: vi.fn().mockReturnValue(true),
       });
@@ -117,12 +105,7 @@ describe('ProtectedRoute', () => {
     it('should show Access Denied when user lacks required role', () => {
       const authValue = createAuthValue({
         isAuthenticated: true,
-        user: {
-          id: 1,
-          username: 'alice',
-          email: 'alice@example.com',
-          roles: [{name: 'USER'}],
-        },
+        user: mockUsers.sales,
         accessToken: 'token',
         hasRole: vi.fn().mockReturnValue(false),
       });
@@ -145,52 +128,42 @@ describe('ProtectedRoute', () => {
     it('should render children when user has at least one of required roles', () => {
       const authValue = createAuthValue({
         isAuthenticated: true,
-        user: {
-          id: 1,
-          username: 'alice',
-          email: 'alice@example.com',
-          roles: [{name: 'USER'}],
-        },
+        user: mockUsers.sales,
         accessToken: 'token',
         hasAnyRole: vi.fn().mockReturnValue(true),
       });
 
       renderWithAuth(
-        <ProtectedRoute requiredRoles={['ADMIN', 'USER']}>
+        <ProtectedRoute requiredRoles={['ADMIN', 'SALES']}>
           <div>Multi-Role Content</div>
         </ProtectedRoute>,
         authValue,
         ['/protected'],
       );
 
-      expect(authValue.hasAnyRole).toHaveBeenCalledWith(['ADMIN', 'USER']);
+      expect(authValue.hasAnyRole).toHaveBeenCalledWith(['ADMIN', 'SALES']);
       expect(screen.getByText('Multi-Role Content')).toBeInTheDocument();
     });
 
     it('should show Access Denied when user has none of required roles', () => {
       const authValue = createAuthValue({
         isAuthenticated: true,
-        user: {
-          id: 1,
-          username: 'alice',
-          email: 'alice@example.com',
-          roles: [{name: 'USER'}],
-        },
+        user: mockUsers.sales,
         accessToken: 'token',
         hasAnyRole: vi.fn().mockReturnValue(false),
       });
 
       renderWithAuth(
-        <ProtectedRoute requiredRoles={['ADMIN', 'MANAGER']}>
-          <div>Admin/Manager Content</div>
+        <ProtectedRoute requiredRoles={['ADMIN', 'FINANCE']}>
+          <div>Admin/Finance Content</div>
         </ProtectedRoute>,
         authValue,
         ['/protected'],
       );
 
-      expect(authValue.hasAnyRole).toHaveBeenCalledWith(['ADMIN', 'MANAGER']);
+      expect(authValue.hasAnyRole).toHaveBeenCalledWith(['ADMIN', 'FINANCE']);
       expect(screen.getByText(/Access Denied/i)).toBeInTheDocument();
-      expect(screen.queryByText('Admin/Manager Content')).not.toBeInTheDocument();
+      expect(screen.queryByText('Admin/Finance Content')).not.toBeInTheDocument();
     });
   });
 
@@ -218,12 +191,7 @@ describe('ProtectedRoute', () => {
     it('should render Access Denied page with required role information', () => {
       const authValue = createAuthValue({
         isAuthenticated: true,
-        user: {
-          id: 1,
-          username: 'alice',
-          email: 'alice@example.com',
-          roles: [{name: 'USER'}],
-        },
+        user: mockUsers.sales,
         accessToken: 'token',
         hasRole: vi.fn().mockReturnValue(false),
       });

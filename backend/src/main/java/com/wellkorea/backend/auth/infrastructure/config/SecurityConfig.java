@@ -2,7 +2,6 @@ package com.wellkorea.backend.auth.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -42,7 +41,7 @@ import java.util.List;
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true) // Enable @PreAuthorize
+@EnableMethodSecurity // Enable @PreAuthorize
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -89,7 +88,7 @@ public class SecurityConfig {
 
     /**
      * CORS configuration for frontend access.
-     * Allows frontend (http://localhost:5173) to access backend API.
+     * Allows frontend (`http://localhost:5173`) to access backend API.
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

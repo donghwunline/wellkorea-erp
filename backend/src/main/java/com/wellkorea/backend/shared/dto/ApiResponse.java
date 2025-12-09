@@ -73,23 +73,23 @@ public record ApiResponse<T>(
      * @param metadata Additional metadata (e.g., pagination info, audit trails)
      * @param <T>      Type of the response data
      * @return ApiResponse with success=true, custom message, current timestamp, metadata
-     * @example
-     * <pre>
+     * <pre>{@code
      * // Paginated response example
-     * Page&lt;ProjectDTO&gt; page = projectService.findAll(pageable);
-     * Map&lt;String, Object&gt; metadata = Map.of(
-     *     "page", page.getNumber(),
-     *     "size", page.getSize(),
-     *     "totalElements", page.getTotalElements(),
-     *     "totalPages", page.getTotalPages(),
-     *     "first", page.isFirst(),
-     *     "last", page.isLast()
+     * Page<ProjectDTO>; page = projectService.findAll(pageable);
+     * Map<String, Object> metadata = Map.of(
+     * "page", page.getNumber(),
+     * "size", page.getSize(),
+     * "totalElements", page.getTotalElements(),
+     * "totalPages", page.getTotalPages(),
+     * "first", page.isFirst(),
+     * "last", page.isLast()
      * );
      * return ResponseEntity.ok(ApiResponse.successWithMetadata(
-     *     page.getContent(),
-     *     "Projects retrieved successfully",
-     *     metadata
+     * page.getContent(),
+     * "Projects retrieved successfully",
+     * metadata
      * ));
+     * }
      * </pre>
      */
     public static <T> ApiResponse<T> successWithMetadata(T data, String message, Map<String, Object> metadata) {

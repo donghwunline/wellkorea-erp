@@ -4,6 +4,7 @@ import com.wellkorea.backend.shared.audit.AuditContextHolder;
 import com.wellkorea.backend.shared.audit.AuditLogger;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +23,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Global exception handler for REST API error responses.
@@ -53,15 +53,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
+            @NotNull HttpHeaders headers,
+            @NotNull HttpStatusCode status,
             WebRequest request) {
 
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.toList());
+                .toList();
 
         String message = errors.isEmpty() ? "Invalid request parameters" : String.join(", ", errors);
         ErrorResponse errorResponse = ErrorResponse.of(
@@ -85,7 +85,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         List<String> errors = ex.getConstraintViolations()
                 .stream()
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
-                .collect(Collectors.toList());
+                .toList();
 
         String message = errors.isEmpty() ? "Invalid parameters" : String.join(", ", errors);
         ErrorResponse errorResponse = ErrorResponse.of(

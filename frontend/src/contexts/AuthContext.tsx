@@ -32,7 +32,7 @@ import api from '@/services/api';
 import {authStorage} from '@/utils/storage';
 import type {AuthState, LoginRequest, LoginResponse, RoleName, User} from '@/types/auth';
 
-interface AuthContextType extends AuthState {
+export interface AuthContextType extends AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
   hasRole: (role: RoleName) => boolean;
@@ -127,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const hasRole = useCallback(
     (role: RoleName): boolean => {
       if (!authState.user) return false;
-      return authState.user.roles.some(r => r.name === role);
+      return authState.user.roles.includes(role);
     },
     [authState.user]
   );
