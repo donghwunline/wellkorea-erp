@@ -51,11 +51,9 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
 
-  # Security (default user for development)
-  security:
-    user:
-      name: admin
-      password: admin
+  # Security - No defaults. Use profile-specific configuration.
+  # For development: activate 'dev' profile (contains admin/admin)
+  # For production: provide credentials via environment variables
 
 # Server Configuration
 server:
@@ -65,9 +63,14 @@ server:
     include-stacktrace: on_param
 
 # JWT Configuration (MVP - will be replaced by Keycloak OAuth2)
+# SECURITY: jwt.secret MUST be provided via:
+#   - dev profile: application-dev.yml (contains safe default for development)
+#   - test profile: application-test.yml (contains test secret)
+#   - prod profile: JWT_SECRET environment variable
+# NOT defining jwt.secret here forces profile/environment configuration
 jwt:
-  secret: ${JWT_SECRET:default-secret-key-please-change-in-production-minimum-256-bits-required}
-  expiration: ${JWT_EXPIRATION:86400000}
+  # secret: NOT DEFINED - must come from profile or environment
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 hours default
 
 # MinIO Configuration
 minio:

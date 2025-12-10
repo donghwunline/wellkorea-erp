@@ -24,12 +24,18 @@ spring:
     hibernate:
       ddl-auto: validate  # Use Flyway migrations in tests
 
-  # Email - Dummy config for tests
+  # Email - Dummy config for tests (disabled for health check)
   mail:
     host: smtp.test.com
     port: 587
     username: test@wellkorea.com
     password: test-password
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
 
 # Server Configuration
 server:
@@ -56,10 +62,16 @@ minio:
 
 # Actuator Configuration
 management:
+  endpoint:
+    health:
+      show-details: always  # Show health details in tests
   endpoints:
     web:
       exposure:
         include: health,info
+  health:
+    mail:
+      enabled: false  # Disable mail health check in tests
 
 # Logging Configuration - Minimal logging in tests
 logging:
