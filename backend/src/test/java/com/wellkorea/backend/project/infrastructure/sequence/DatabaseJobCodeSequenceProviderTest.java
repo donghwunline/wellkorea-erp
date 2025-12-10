@@ -2,6 +2,7 @@ package com.wellkorea.backend.project.infrastructure.sequence;
 
 import com.wellkorea.backend.BaseIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,6 +18,11 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Integration tests for DatabaseJobCodeSequenceProvider.
+ * Tests database sequence generation with concurrency scenarios.
+ */
+@Tag("integration")
 class DatabaseJobCodeSequenceProviderTest extends BaseIntegrationTest {
 
     @Autowired

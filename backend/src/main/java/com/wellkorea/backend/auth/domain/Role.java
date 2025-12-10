@@ -3,7 +3,7 @@ package com.wellkorea.backend.auth.domain;
 /**
  * User roles for role-based access control (RBAC).
  * Defines all available roles in the WellKorea ERP system.
- *
+ * <p>
  * Each role has a Spring Security authority string and description.
  * Roles are stored in JWT tokens and used for authorization decisions.
  */
@@ -73,7 +73,7 @@ public enum Role {
         }
 
         for (Role role : values()) {
-            if (role.authority.equals(authority)) {
+            if (authority.equals(role.authority)) {
                 return role;
             }
         }

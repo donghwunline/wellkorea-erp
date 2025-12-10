@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.*;
  * Unit tests for JwtAuthenticationFilter.
  * Tests JWT token extraction, validation, and SecurityContext population.
  */
+@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
 

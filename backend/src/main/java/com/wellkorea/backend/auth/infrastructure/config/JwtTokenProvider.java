@@ -1,7 +1,6 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -92,6 +91,8 @@ public class JwtTokenProvider {
     public String getUsername(String token) {
         return getClaims(token).getSubject();
     }
+
+    // TODO Consider changing it return List<String>
 
     /**
      * Extract roles from JWT token.

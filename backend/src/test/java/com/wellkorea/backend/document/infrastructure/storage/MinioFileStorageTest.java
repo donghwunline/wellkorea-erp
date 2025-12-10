@@ -3,6 +3,7 @@ package com.wellkorea.backend.document.infrastructure.storage;
 import com.wellkorea.backend.BaseIntegrationTest;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.*;
  * Integration tests for MinioFileStorage.
  * Tests file upload, download, deletion, existence checks, presigned URLs, and metadata retrieval.
  */
+@Tag("integration")
 class MinioFileStorageTest extends BaseIntegrationTest {
 
     @Autowired

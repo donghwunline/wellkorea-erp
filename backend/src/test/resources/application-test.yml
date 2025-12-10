@@ -2,18 +2,19 @@
 # WellKorea ERP - Test Profile Configuration
 # =====================================================================
 # This profile is for INTEGRATION TESTS with Testcontainers.
-# Properties are primarily overridden by @DynamicPropertySource in tests.
 #
 # Usage:
 #   @SpringBootTest automatically activates 'test' profile
-#   @Testcontainers provides PostgreSQL and MinIO containers
+#   @ServiceConnection provides PostgreSQL container (auto-configured)
+#   @DynamicPropertySource provides MinIO container properties
 #
-# Note: Most properties are set dynamically by Testcontainers.
+# Note: PostgreSQL properties are auto-configured by @ServiceConnection.
+#       MinIO properties come from @DynamicPropertySource in BaseIntegrationTest.
 # =====================================================================
 
 spring:
-  # Database - Configured by @DynamicPropertySource in BaseIntegrationTest
-  # No default datasource URL - must come from Testcontainers
+  # Database - Auto-configured by @ServiceConnection in BaseIntegrationTest
+  # No datasource URL/credentials needed here
   datasource:
     driver-class-name: org.postgresql.Driver
     hikari:
@@ -54,9 +55,11 @@ security:
   swagger:
     enabled: false  # Swagger disabled in tests
 
-# JWT Configuration - Test secret
+# JWT Configuration - SINGLE SOURCE OF TRUTH
+# Used by all integration tests via @Value injection in Spring beans
+# Matches TestConstants.JWT_SECRET for consistency
 jwt:
-  secret: test-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256-algorithm
+  secret: test-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256
   expiration: 3600000  # 1 hour
 
 # MinIO - Configured by @DynamicPropertySource in BaseIntegrationTest
@@ -83,4 +86,3 @@ logging:
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
     org.testcontainers: INFO  # Show container startup logs
-    org.springframework.test.context.cache: DEBUG  # Show Spring context cache hits/misses

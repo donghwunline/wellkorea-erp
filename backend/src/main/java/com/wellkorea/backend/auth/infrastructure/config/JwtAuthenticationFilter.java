@@ -28,6 +28,8 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final String PREFIX = "Bearer ";
+
     private final JwtTokenProvider jwtTokenProvider;
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
@@ -50,9 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Handle null/empty roles gracefully
                 List<SimpleGrantedAuthority> authorities = (rolesString != null && !rolesString.isEmpty())
                         ? Arrays.stream(rolesString.split(","))
-                                .filter(StringUtils::hasText)  // Filter out empty strings
-                                .map(SimpleGrantedAuthority::new)
-                                .toList()
+                        .filter(StringUtils::hasText)  // Filter out empty strings
+                        .map(SimpleGrantedAuthority::new)
+                        .toList()
                         : Collections.emptyList();
 
                 // Create authentication token
@@ -79,8 +81,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        if (bearerToken != null && bearerToken.startsWith(PREFIX)) {
+            return bearerToken.substring(PREFIX.length());
         }
         return null;
     }

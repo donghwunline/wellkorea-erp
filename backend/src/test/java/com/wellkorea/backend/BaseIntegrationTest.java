@@ -1,6 +1,8 @@
 package com.wellkorea.backend;
 
+import com.wellkorea.backend.shared.test.TestConstants;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -10,7 +12,10 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 /**
  * Base class for integration tests with Testcontainers.
- * Provides singleton PostgreSQL and MinIO containers for all integration tests.
+ * Provides singleton PostgreSQL and MinIO containers using modern Spring Boot 3.1+ patterns.
+ * <p>
+ * PostgreSQL uses {@link ServiceConnection} for automatic Spring Boot datasource configuration.
+ * MinIO requires manual {@link DynamicPropertySource} until Spring Boot adds native support.
  * <p>
  * Containers are started once per JVM in a static initializer block and reused
  * across all test classes, ensuring stable port mappings and reliable test execution.
@@ -18,12 +23,13 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
  * This pattern solves issues where tests pass individually but fail when run together
  * by guaranteeing containers are fully started before Spring context initialization.
  * <p>
- * Usage: Extend this class in your integration tests instead of duplicating container configuration.
+ * Usage: Extend this class in your integration tests.
  * <p>
  * Example:
  * <pre>
  * {@code
- * @AutoConfigureMockMvc  // Add this annotation if you need MockMvc
+ * @Tag("integration")  // Add JUnit tag for test categorization
+ * @AutoConfigureMockMvc  // Add if you need MockMvc for HTTP testing
  * class MyIntegrationTest extends BaseIntegrationTest {
  *     // Test methods
  * }
@@ -37,13 +43,21 @@ public abstract class BaseIntegrationTest {
     /**
      * PostgreSQL 16 container for database integration tests.
      * Singleton container started once per JVM, reused across all tests.
+     * <p>
+     * {@link ServiceConnection} automatically configures Spring Boot's DataSource
+     * properties (spring.datasource.url, username, password) from this container.
+     * No manual {@link DynamicPropertySource} configuration needed for PostgreSQL.
      */
+    @ServiceConnection
     private static final PostgreSQLContainer<?> postgres;
 
     /**
      * MinIO container for S3-compatible storage integration tests.
      * Singleton container started once per JVM, reused across all tests.
      * Pinned to specific release for deterministic builds.
+     * <p>
+     * MinIO requires manual {@link DynamicPropertySource} configuration as Spring Boot
+     * does not provide native {@link ServiceConnection} support for MinIO yet.
      */
     private static final GenericContainer<?> minio;
 
@@ -54,18 +68,19 @@ public abstract class BaseIntegrationTest {
      */
     static {
         // Initialize and start PostgreSQL container
-        postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-                .withDatabaseName("wellkorea_test")
-                .withUsername("test")
-                .withPassword("test")
+        // @ServiceConnection will auto-configure datasource properties
+        postgres = new PostgreSQLContainer<>(TestConstants.POSTGRES_VERSION)
+                .withDatabaseName(TestConstants.TEST_DB_NAME)
+                .withUsername(TestConstants.TEST_DB_USERNAME)
+                .withPassword(TestConstants.TEST_DB_PASSWORD)
                 .withReuse(true);  // Reuse containers for faster local development
         postgres.start();
 
         // Initialize and start MinIO container
-        minio = new GenericContainer<>("minio/minio:RELEASE.2024-12-13T22-19-12Z")
+        minio = new GenericContainer<>(TestConstants.MINIO_VERSION)
                 .withExposedPorts(9000)
-                .withEnv("MINIO_ROOT_USER", "minioadmin")
-                .withEnv("MINIO_ROOT_PASSWORD", "minioadmin")
+                .withEnv("MINIO_ROOT_USER", TestConstants.MINIO_ROOT_USER)
+                .withEnv("MINIO_ROOT_PASSWORD", TestConstants.MINIO_ROOT_PASSWORD)
                 .withCommand("server /data")
                 .waitingFor(new HttpWaitStrategy()
                         .forPath("/minio/health/live")
@@ -75,26 +90,22 @@ public abstract class BaseIntegrationTest {
     }
 
     /**
-     * Configure Spring Boot properties dynamically from Testcontainers.
-     * Sets database URL, credentials, MinIO configuration, and test JWT secret.
+     * Configure non-standard Spring Boot properties dynamically from Testcontainers.
+     * <p>
+     * PostgreSQL configuration is now handled automatically by {@link ServiceConnection}.
+     * Only MinIO and JWT configuration require manual {@link DynamicPropertySource}.
      */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        // PostgreSQL configuration
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-
-        // MinIO configuration
+        // MinIO configuration (manual - no @ServiceConnection support yet)
         registry.add("minio.url", () ->
                 "http://" + minio.getHost() + ":" + minio.getMappedPort(9000));
-        registry.add("minio.access-key", () -> "minioadmin");
-        registry.add("minio.secret-key", () -> "minioadmin");
-        registry.add("minio.bucket-name", () -> "wellkorea-test");
+        registry.add("minio.access-key", () -> TestConstants.MINIO_ROOT_USER);
+        registry.add("minio.secret-key", () -> TestConstants.MINIO_ROOT_PASSWORD);
+        registry.add("minio.bucket-name", () -> TestConstants.MINIO_BUCKET);
 
-        // JWT configuration (test secret - 256 bits minimum)
-        registry.add("jwt.secret", () ->
-                "test-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256");
-        registry.add("jwt.expiration", () -> "3600000");  // 1 hour
+        // JWT configuration (test secret from TestConstants)
+        registry.add("jwt.secret", () -> TestConstants.JWT_SECRET);
+        registry.add("jwt.expiration", () -> String.valueOf(TestConstants.JWT_EXPIRATION_MS));
     }
 }

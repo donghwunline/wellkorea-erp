@@ -70,6 +70,46 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+
+    // Test output configuration
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = false
+    }
+}
+
+// Convenience task: Run unit tests only (fast)
+tasks.register('unitTest', Test) {
+    description = 'Runs unit tests only (no Spring context, no containers)'
+    group = 'verification'
+
+    useJUnitPlatform {
+        includeTags 'unit'
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+// Convenience task: Run integration tests only (with Testcontainers)
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests only (with Spring context and Testcontainers)'
+    group = 'verification'
+
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+
+    // Integration tests may need more memory
+    maxHeapSize = '1g'
 }
 
 // JaCoCo Configuration
