@@ -1,0 +1,71 @@
+# =====================================================================
+# WellKorea ERP - Test Profile Configuration
+# =====================================================================
+# This profile is for INTEGRATION TESTS with Testcontainers.
+# Properties are primarily overridden by @DynamicPropertySource in tests.
+#
+# Usage:
+#   @SpringBootTest automatically activates 'test' profile
+#   @Testcontainers provides PostgreSQL and MinIO containers
+#
+# Note: Most properties are set dynamically by Testcontainers.
+# =====================================================================
+
+spring:
+  # Database - Overridden by @DynamicPropertySource in tests
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test
+    username: test
+    password: test
+
+  # JPA Configuration - Test-specific
+  jpa:
+    show-sql: false  # Reduce test log noise
+    hibernate:
+      ddl-auto: validate  # Use Flyway migrations in tests
+
+  # Email - Dummy config for tests
+  mail:
+    host: smtp.test.com
+    port: 587
+    username: test@wellkorea.com
+    password: test-password
+
+# Server Configuration
+server:
+  port: 0  # Random port for parallel test execution
+
+# Security Configuration
+security:
+  cors:
+    allowed-origins: http://localhost:5173
+  swagger:
+    enabled: false  # Swagger disabled in tests
+
+# JWT Configuration - Test secret
+jwt:
+  secret: test-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256-algorithm
+  expiration: 3600000  # 1 hour
+
+# MinIO - Overridden by @DynamicPropertySource in tests
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket-name: wellkorea-test
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# Logging Configuration - Minimal logging in tests
+logging:
+  level:
+    root: WARN
+    com.wellkorea.backend: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.testcontainers: INFO  # Show container startup logs
