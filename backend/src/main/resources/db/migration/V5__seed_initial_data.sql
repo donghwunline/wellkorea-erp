@@ -63,23 +63,23 @@ ON CONFLICT (user_id, role_id) DO NOTHING;
 -- CUSTOMERS
 -- =====================================================================
 
-INSERT INTO customers (id, name, contact_person, phone, email, address, is_active)
+INSERT INTO customers (id, name, contact_person, phone, email, address, is_deleted)
 VALUES (1, 'Samsung Electronics', 'Kim Min-jun', '02-1234-5678', 'procurement@samsung.com',
-        'Seoul, Gangnam-gu, Teheran-ro 123', true),
+        'Seoul, Gangnam-gu, Teheran-ro 123', false),
        (2, 'Hyundai Motor Company', 'Lee Soo-jin', '02-2345-6789', 'purchasing@hyundai.com',
-        'Seoul, Gangnam-gu, Yeoksam-ro 234', true),
+        'Seoul, Gangnam-gu, Yeoksam-ro 234', false),
        (3, 'LG Display', 'Park Ji-hoon', '02-3456-7890', 'supply@lgdisplay.com',
-        'Seoul, Yeongdeungpo-gu, Yeoui-daero 456', true),
+        'Seoul, Yeongdeungpo-gu, Yeoui-daero 456', false),
        (4, 'SK Hynix', 'Choi Yuna', '02-4567-8901', 'vendor@skhynix.com', 'Gyeonggi-do, Seongnam-si, Bundang-gu',
-        true),
+        false),
        (5, 'Doosan Heavy Industries', 'Jung Tae-yang', '02-5678-9012', 'procurement@doosan.com',
-        'Seoul, Jung-gu, Sejong-daero 789', true),
+        'Seoul, Jung-gu, Sejong-daero 789', false),
        (6, 'POSCO', 'Kang Hye-won', '02-6789-0123', 'purchasing@posco.com',
-        'Gyeongbuk, Pohang-si, Jigok-dong 234', true),
+        'Gyeongbuk, Pohang-si, Jigok-dong 234', false),
        (7, 'Hanwha Aerospace', 'Yoon Dong-hyun', '02-7890-1234', 'supply@hanwha.com',
-        'Gyeongnam, Changwon-si, Seongsan-gu', true),
+        'Gyeongnam, Changwon-si, Seongsan-gu', false),
        (8, 'Korea Aerospace Industries', 'Lim Eun-ji', '055-851-1234', 'vendor@koreaaero.com',
-        'Gyeongnam, Sacheon-si, Sanam-ro 78', true)
+        'Gyeongnam, Sacheon-si, Sanam-ro 78', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Reset sequence for customers table
