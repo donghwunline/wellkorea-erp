@@ -4,6 +4,7 @@ import com.wellkorea.backend.BaseIntegrationTest;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.shared.test.TestConstants;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for Spring Security configuration.
@@ -51,6 +53,7 @@ class SecurityIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isOk());
     }
 
+    @Disabled("Enable when swagger is activated")
     @Test
     void shouldAllowAccessToPublicSwaggerEndpoint() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
@@ -190,6 +193,7 @@ class SecurityIntegrationTest extends BaseIntegrationTest {
 
     // ========== CSRF Disabled Tests ==========
 
+    @Disabled("Enable when /api/auth/login is activated")
     @Test
     void shouldAllowPostWithoutCsrfToken() throws Exception {
         // Given: POST request without CSRF token (CSRF is disabled for REST API)

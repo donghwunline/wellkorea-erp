@@ -2,7 +2,7 @@
  * Tests for Input component
  */
 
-import {describe, it, expect} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
@@ -174,7 +174,7 @@ describe('Input', () => {
 
   describe('input types', () => {
     it('should support different input types', () => {
-      const {rerender} = render(<Input type="text" />);
+      const { rerender } = render(<Input type="text" />);
       expect(screen.getByRole('textbox')).toHaveAttribute('type', 'text');
 
       rerender(<Input type="email" />);
@@ -189,13 +189,7 @@ describe('Input', () => {
   describe('additional attributes', () => {
     it('should pass through standard input attributes', () => {
       render(
-        <Input
-          label="Email"
-          required
-          maxLength={50}
-          autoComplete="email"
-          name="user-email"
-        />,
+        <Input label="Email" required maxLength={50} autoComplete="email" name="user-email" />
       );
 
       const input = screen.getByLabelText('Email');
