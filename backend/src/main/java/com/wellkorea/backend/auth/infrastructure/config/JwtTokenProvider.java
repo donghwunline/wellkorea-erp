@@ -1,10 +1,12 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,16 +60,7 @@ public class JwtTokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
-
-        return Jwts.builder()
-                .subject(username)
-                .claim("roles", roles)
-                .issuedAt(now)
-                .expiration(validity)
-                .signWith(secretKey, Jwts.SIG.HS256)
-                .compact();
+        return generateToken(username, roles);
     }
 
     /**
@@ -97,12 +90,7 @@ public class JwtTokenProvider {
      * @return Username (subject)
      */
     public String getUsername(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+        return getClaims(token).getSubject();
     }
 
     /**
@@ -112,12 +100,22 @@ public class JwtTokenProvider {
      * @return Comma-separated roles string
      */
     public String getRoles(String token) {
+        return getClaims(token).get("roles", String.class);
+    }
+
+    /**
+     * Extract claims from JWT token.
+     * Private helper method to avoid duplicating parser chain.
+     *
+     * @param token JWT token
+     * @return Claims payload
+     */
+    private io.jsonwebtoken.Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .get("roles", String.class);
+                .getPayload();
     }
 
     /**

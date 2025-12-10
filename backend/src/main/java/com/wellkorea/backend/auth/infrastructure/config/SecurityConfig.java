@@ -1,5 +1,6 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,6 +47,12 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${security.cors.allowed-origins:http://localhost:5173,http://localhost:4173,http://localhost:3000}")
+    private String[] allowedOrigins;
+
+    @Value("${security.swagger.enabled:true}")
+    private boolean swaggerEnabled;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -67,18 +74,22 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // Authorization rules
-                .authorizeHttpRequests(auth -> auth
-                        // Public endpoints (no authentication required)
-                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                        .requestMatchers("/error").permitAll()
+                .authorizeHttpRequests(auth -> {
+                    // Public endpoints (no authentication required)
+                    auth.requestMatchers("/api/auth/login", "/api/auth/register").permitAll();
+                    auth.requestMatchers("/actuator/health", "/actuator/info").permitAll();
+                    auth.requestMatchers("/error").permitAll();
 
-                        // Swagger/OpenAPI (development only - should be secured in production)
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                    // Swagger/OpenAPI (profile-conditional)
+                    if (swaggerEnabled) {
+                        auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                    } else {
+                        auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").denyAll();
+                    }
 
-                        // All other requests require authentication
-                        .anyRequest().authenticated()
-                )
+                    // All other requests require authentication
+                    auth.anyRequest().authenticated();
+                })
 
                 // Add JWT filter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -88,18 +99,14 @@ public class SecurityConfig {
 
     /**
      * CORS configuration for frontend access.
-     * Allows frontend (`http://localhost:5173`) to access backend API.
+     * Allowed origins configured via property: security.cors.allowed-origins
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow specific origins (frontend development server)
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173",  // Vite dev server
-                "http://localhost:4173",  // Vite preview server
-                "http://localhost:3000"   // Alternative frontend port
-        ));
+        // Allow specific origins from configuration
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
 
         // Allow all HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));

@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,9 +47,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String rolesString = jwtTokenProvider.getRoles(jwt);
 
                 // Convert comma-separated roles to GrantedAuthority list
-                List<SimpleGrantedAuthority> authorities = Arrays.stream(rolesString.split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .toList();
+                // Handle null/empty roles gracefully
+                List<SimpleGrantedAuthority> authorities = (rolesString != null && !rolesString.isEmpty())
+                        ? Arrays.stream(rolesString.split(","))
+                                .filter(StringUtils::hasText)  // Filter out empty strings
+                                .map(SimpleGrantedAuthority::new)
+                                .toList()
+                        : Collections.emptyList();
 
                 // Create authentication token
                 UsernamePasswordAuthenticationToken authentication =
@@ -74,6 +79,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        return jwtTokenProvider.extractTokenFromHeader(bearerToken);
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
