@@ -12,11 +12,17 @@
 # =====================================================================
 
 spring:
-  # Database - Overridden by @DynamicPropertySource in tests
+  # Database - Configured by @DynamicPropertySource in BaseIntegrationTest
+  # No default datasource URL - must come from Testcontainers
   datasource:
-    url: jdbc:postgresql://localhost:5432/test
-    username: test
-    password: test
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10          # Max connections in pool
+      minimum-idle: 2                # Min idle connections
+      connection-timeout: 30000      # 30 seconds
+      idle-timeout: 600000           # 10 minutes
+      max-lifetime: 1800000          # 30 minutes
+      pool-name: WellKoreaTestPool
 
   # JPA Configuration - Test-specific
   jpa:
@@ -53,12 +59,8 @@ jwt:
   secret: test-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256-algorithm
   expiration: 3600000  # 1 hour
 
-# MinIO - Overridden by @DynamicPropertySource in tests
-minio:
-  url: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin
-  bucket-name: wellkorea-test
+# MinIO - Configured by @DynamicPropertySource in BaseIntegrationTest
+# No default MinIO URL - must come from Testcontainers
 
 # Actuator Configuration
 management:
@@ -81,3 +83,4 @@ logging:
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
     org.testcontainers: INFO  # Show container startup logs
+    org.springframework.test.context.cache: DEBUG  # Show Spring context cache hits/misses

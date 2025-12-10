@@ -7,19 +7,23 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * Base class for integration tests with Testcontainers.
- * Provides shared PostgreSQL and MinIO containers for all integration tests.
+ * Provides singleton PostgreSQL and MinIO containers for all integration tests.
+ * <p>
+ * Containers are started once per JVM in a static initializer block and reused
+ * across all test classes, ensuring stable port mappings and reliable test execution.
+ * <p>
+ * This pattern solves issues where tests pass individually but fail when run together
+ * by guaranteeing containers are fully started before Spring context initialization.
  * <p>
  * Usage: Extend this class in your integration tests instead of duplicating container configuration.
  * <p>
  * Example:
  * <pre>
  * {@code
- * @AutoConfigureMockMvc
+ * @AutoConfigureMockMvc  // Add this annotation if you need MockMvc
  * class MyIntegrationTest extends BaseIntegrationTest {
  *     // Test methods
  * }
@@ -28,32 +32,47 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  */
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers
 public abstract class BaseIntegrationTest {
 
     /**
      * PostgreSQL 16 container for database integration tests.
-     * Shared across all tests in the same JVM (static container).
+     * Singleton container started once per JVM, reused across all tests.
      */
-    @Container
-    protected static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-            .withDatabaseName("wellkorea_test")
-            .withUsername("test")
-            .withPassword("test");
+    private static final PostgreSQLContainer<?> postgres;
 
     /**
      * MinIO container for S3-compatible storage integration tests.
-     * Shared across all tests in the same JVM (static container).
+     * Singleton container started once per JVM, reused across all tests.
+     * Pinned to specific release for deterministic builds.
      */
-    @Container
-    protected static final GenericContainer<?> minio = new GenericContainer<>("minio/minio:latest")
-            .withExposedPorts(9000)
-            .withEnv("MINIO_ROOT_USER", "minioadmin")
-            .withEnv("MINIO_ROOT_PASSWORD", "minioadmin")
-            .withCommand("server /data")
-            .waitingFor(new HttpWaitStrategy()
-                    .forPath("/minio/health/live")
-                    .forPort(9000));
+    private static final GenericContainer<?> minio;
+
+    /*
+     * Static initializer block - containers start before any test class loads.
+     * This ensures containers are fully running before Spring context initialization,
+     * preventing race conditions and port mapping issues.
+     */
+    static {
+        // Initialize and start PostgreSQL container
+        postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+                .withDatabaseName("wellkorea_test")
+                .withUsername("test")
+                .withPassword("test")
+                .withReuse(true);  // Reuse containers for faster local development
+        postgres.start();
+
+        // Initialize and start MinIO container
+        minio = new GenericContainer<>("minio/minio:RELEASE.2024-12-13T22-19-12Z")
+                .withExposedPorts(9000)
+                .withEnv("MINIO_ROOT_USER", "minioadmin")
+                .withEnv("MINIO_ROOT_PASSWORD", "minioadmin")
+                .withCommand("server /data")
+                .waitingFor(new HttpWaitStrategy()
+                        .forPath("/minio/health/live")
+                        .forPort(9000))
+                .withReuse(true);  // Reuse containers for faster local development
+        minio.start();
+    }
 
     /**
      * Configure Spring Boot properties dynamically from Testcontainers.

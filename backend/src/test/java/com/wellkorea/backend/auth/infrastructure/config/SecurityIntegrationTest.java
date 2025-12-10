@@ -15,6 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Integration tests for Spring Security configuration.
  * Tests end-to-end authentication flow with real Spring Security filter chain.
+ * <p>
+ * Uses @AutoConfigureMockMvc to enable HTTP layer testing with MockMvc.
  */
 @AutoConfigureMockMvc
 class SecurityIntegrationTest extends BaseIntegrationTest {
