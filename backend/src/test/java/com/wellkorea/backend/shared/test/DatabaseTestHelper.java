@@ -34,7 +34,7 @@ public final class DatabaseTestHelper {
                 "INSERT INTO users (id, username, email, password_hash, full_name) " +
                         "VALUES (?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                TestConstants.TEST_USER_ID,
+                TestFixtures.TEST_USER_ID,
                 "testuser",
                 "test@example.com",
                 "$2a$10$dummyHashForTestingPurposes",  // BCrypt hash
@@ -53,7 +53,7 @@ public final class DatabaseTestHelper {
                 "INSERT INTO customers (id, name, contact_person, phone, email) " +
                         "VALUES (?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                TestConstants.TEST_CUSTOMER_ID,
+                TestFixtures.TEST_CUSTOMER_ID,
                 "Test Customer",
                 "John Doe",
                 "123-456-7890",

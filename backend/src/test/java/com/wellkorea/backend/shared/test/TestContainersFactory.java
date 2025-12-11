@@ -30,10 +30,10 @@ public final class TestContainersFactory {
      * @return PostgreSQL 16 container ready to start
      */
     public static PostgreSQLContainer<?> createPostgresContainer() {
-        return new PostgreSQLContainer<>(TestConstants.POSTGRES_VERSION)
-                .withDatabaseName(TestConstants.TEST_DB_NAME)
-                .withUsername(TestConstants.TEST_DB_USERNAME)
-                .withPassword(TestConstants.TEST_DB_PASSWORD)
+        return new PostgreSQLContainer<>(TestFixtures.POSTGRES_VERSION)
+                .withDatabaseName(TestFixtures.TEST_DB_NAME)
+                .withUsername(TestFixtures.TEST_DB_USERNAME)
+                .withPassword(TestFixtures.TEST_DB_PASSWORD)
                 .withReuse(true);  // Reuse containers for faster local development
     }
 
@@ -44,10 +44,10 @@ public final class TestContainersFactory {
      * @return MinIO container ready to start
      */
     public static GenericContainer<?> createMinioContainer() {
-        return new GenericContainer<>(TestConstants.MINIO_VERSION)
+        return new GenericContainer<>(TestFixtures.MINIO_VERSION)
                 .withExposedPorts(9000)
-                .withEnv("MINIO_ROOT_USER", TestConstants.MINIO_ROOT_USER)
-                .withEnv("MINIO_ROOT_PASSWORD", TestConstants.MINIO_ROOT_PASSWORD)
+                .withEnv("MINIO_ROOT_USER", TestFixtures.MINIO_ROOT_USER)
+                .withEnv("MINIO_ROOT_PASSWORD", TestFixtures.MINIO_ROOT_PASSWORD)
                 .withCommand("server /data")
                 .waitingFor(new HttpWaitStrategy()
                         .forPath("/minio/health/live")

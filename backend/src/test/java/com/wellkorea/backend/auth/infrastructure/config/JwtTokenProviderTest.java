@@ -1,6 +1,6 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
-import com.wellkorea.backend.shared.test.TestConstants;
+import com.wellkorea.backend.shared.test.TestFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ class JwtTokenProviderTest {
 
     @BeforeEach
     void setUp() {
-        jwtTokenProvider = new JwtTokenProvider(TestConstants.JWT_SECRET, TestConstants.JWT_EXPIRATION_MS);
+        jwtTokenProvider = new JwtTokenProvider(TestFixtures.JWT_SECRET, TestFixtures.JWT_EXPIRATION_MS);
     }
 
     // ========== Constructor Tests ==========
@@ -38,7 +38,7 @@ class JwtTokenProviderTest {
         String validSecret = "this-is-a-valid-secret-key-with-256-bits-minimum";
 
         // When: Create provider
-        JwtTokenProvider provider = new JwtTokenProvider(validSecret, TestConstants.JWT_EXPIRATION_MS);
+        JwtTokenProvider provider = new JwtTokenProvider(validSecret, TestFixtures.JWT_EXPIRATION_MS);
 
         // Then: Provider created successfully
         assertThat(provider).isNotNull();
@@ -50,7 +50,7 @@ class JwtTokenProviderTest {
         String shortSecret = "short-key";
 
         // When/Then: Constructor throws exception
-        assertThatThrownBy(() -> new JwtTokenProvider(shortSecret, TestConstants.JWT_EXPIRATION_MS))
+        assertThatThrownBy(() -> new JwtTokenProvider(shortSecret, TestFixtures.JWT_EXPIRATION_MS))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("JWT secret must be at least 256 bits");
     }
@@ -131,7 +131,7 @@ class JwtTokenProviderTest {
     @Test
     void shouldRejectExpiredToken() {
         // Given: Token with immediate expiration
-        JwtTokenProvider shortLivedProvider = new JwtTokenProvider(TestConstants.JWT_SECRET, 1L);
+        JwtTokenProvider shortLivedProvider = new JwtTokenProvider(TestFixtures.JWT_SECRET, 1L);
         String token = shortLivedProvider.generateToken("user", "ROLE_USER");
 
         // Wait for expiration
@@ -177,7 +177,7 @@ class JwtTokenProviderTest {
     void shouldRejectTokenSignedWithDifferentSecret() {
         // Given: Token signed with different secret
         String differentSecret = "different-secret-key-with-256-bits-minimum-required";
-        JwtTokenProvider otherProvider = new JwtTokenProvider(differentSecret, TestConstants.JWT_EXPIRATION_MS);
+        JwtTokenProvider otherProvider = new JwtTokenProvider(differentSecret, TestFixtures.JWT_EXPIRATION_MS);
         String token = otherProvider.generateToken("user", "ROLE_USER");
 
         // When: Validate with original provider

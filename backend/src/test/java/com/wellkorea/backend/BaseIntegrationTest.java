@@ -1,6 +1,6 @@
 package com.wellkorea.backend;
 
-import com.wellkorea.backend.shared.test.TestConstants;
+import com.wellkorea.backend.shared.test.TestFixtures;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
@@ -69,18 +69,18 @@ public abstract class BaseIntegrationTest {
     static {
         // Initialize and start PostgreSQL container
         // @ServiceConnection will auto-configure datasource properties
-        postgres = new PostgreSQLContainer<>(TestConstants.POSTGRES_VERSION)
-                .withDatabaseName(TestConstants.TEST_DB_NAME)
-                .withUsername(TestConstants.TEST_DB_USERNAME)
-                .withPassword(TestConstants.TEST_DB_PASSWORD)
+        postgres = new PostgreSQLContainer<>(TestFixtures.POSTGRES_VERSION)
+                .withDatabaseName(TestFixtures.TEST_DB_NAME)
+                .withUsername(TestFixtures.TEST_DB_USERNAME)
+                .withPassword(TestFixtures.TEST_DB_PASSWORD)
                 .withReuse(true);  // Reuse containers for faster local development
         postgres.start();
 
         // Initialize and start MinIO container
-        minio = new GenericContainer<>(TestConstants.MINIO_VERSION)
+        minio = new GenericContainer<>(TestFixtures.MINIO_VERSION)
                 .withExposedPorts(9000)
-                .withEnv("MINIO_ROOT_USER", TestConstants.MINIO_ROOT_USER)
-                .withEnv("MINIO_ROOT_PASSWORD", TestConstants.MINIO_ROOT_PASSWORD)
+                .withEnv("MINIO_ROOT_USER", TestFixtures.MINIO_ROOT_USER)
+                .withEnv("MINIO_ROOT_PASSWORD", TestFixtures.MINIO_ROOT_PASSWORD)
                 .withCommand("server /data")
                 .waitingFor(new HttpWaitStrategy()
                         .forPath("/minio/health/live")
@@ -100,12 +100,12 @@ public abstract class BaseIntegrationTest {
         // MinIO configuration (manual - no @ServiceConnection support yet)
         registry.add("minio.url", () ->
                 "http://" + minio.getHost() + ":" + minio.getMappedPort(9000));
-        registry.add("minio.access-key", () -> TestConstants.MINIO_ROOT_USER);
-        registry.add("minio.secret-key", () -> TestConstants.MINIO_ROOT_PASSWORD);
-        registry.add("minio.bucket-name", () -> TestConstants.MINIO_BUCKET);
+        registry.add("minio.access-key", () -> TestFixtures.MINIO_ROOT_USER);
+        registry.add("minio.secret-key", () -> TestFixtures.MINIO_ROOT_PASSWORD);
+        registry.add("minio.bucket-name", () -> TestFixtures.MINIO_BUCKET);
 
-        // JWT configuration (test secret from TestConstants)
-        registry.add("jwt.secret", () -> TestConstants.JWT_SECRET);
-        registry.add("jwt.expiration", () -> String.valueOf(TestConstants.JWT_EXPIRATION_MS));
+        // JWT configuration (test secret from TestFixtures)
+        registry.add("jwt.secret", () -> TestFixtures.JWT_SECRET);
+        registry.add("jwt.expiration", () -> String.valueOf(TestFixtures.JWT_EXPIRATION_MS));
     }
 }

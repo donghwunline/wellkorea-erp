@@ -2,7 +2,7 @@ package com.wellkorea.backend.auth.infrastructure.config;
 
 import com.wellkorea.backend.BaseIntegrationTest;
 import com.wellkorea.backend.auth.domain.Role;
-import com.wellkorea.backend.shared.test.TestConstants;
+import com.wellkorea.backend.shared.test.TestFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -36,10 +36,10 @@ class SecurityIntegrationTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Generate test tokens for different roles using TestConstants and Role enum
-        validAdminToken = jwtTokenProvider.generateToken(TestConstants.ADMIN_USERNAME, Role.ADMIN.getAuthority());
-        validFinanceToken = jwtTokenProvider.generateToken(TestConstants.FINANCE_USERNAME, Role.FINANCE.getAuthority());
-        validSalesToken = jwtTokenProvider.generateToken(TestConstants.SALES_USERNAME, Role.SALES.getAuthority());
+        // Generate test tokens for different roles using TestFixtures and Role enum
+        validAdminToken = jwtTokenProvider.generateToken(TestFixtures.ADMIN_USERNAME, Role.ADMIN.getAuthority());
+        validFinanceToken = jwtTokenProvider.generateToken(TestFixtures.FINANCE_USERNAME, Role.FINANCE.getAuthority());
+        validSalesToken = jwtTokenProvider.generateToken(TestFixtures.SALES_USERNAME, Role.SALES.getAuthority());
     }
 
     // ========== Public Endpoint Tests ==========
@@ -141,10 +141,10 @@ class SecurityIntegrationTest extends BaseIntegrationTest {
     void shouldRejectExpiredToken() throws Exception {
         // Given: Token with immediate expiration (1ms validity)
         JwtTokenProvider shortLivedProvider = new JwtTokenProvider(
-                TestConstants.JWT_SECRET,
+                TestFixtures.JWT_SECRET,
                 1L
         );
-        String expiredToken = shortLivedProvider.generateToken(TestConstants.TEST_USERNAME, Role.ADMIN.getAuthority());
+        String expiredToken = shortLivedProvider.generateToken(TestFixtures.TEST_USERNAME, Role.ADMIN.getAuthority());
 
         // Wait for expiration
         Thread.sleep(10);

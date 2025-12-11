@@ -11,7 +11,7 @@ src/test/java/
 ├── com/wellkorea/backend/
 │   ├── BaseIntegrationTest.java          # Base class for integration tests
 │   ├── shared/test/
-│   │   └── TestConstants.java            # Centralized test configuration
+│   │   └── TestFixtures.java             # Centralized test fixtures and configuration
 │   ├── auth/                             # Authentication tests
 │   ├── document/                         # Document storage tests
 │   └── project/                          # Project domain tests
@@ -62,7 +62,7 @@ class MyServiceTest {
 
 ```java
 import com.wellkorea.backend.BaseIntegrationTest;
-import com.wellkorea.backend.shared.test.TestConstants;
+import com.wellkorea.backend.shared.test.TestFixtures;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,16 +82,17 @@ class MyIntegrationTest extends BaseIntegrationTest {
 
 ## Test Configuration
 
-### TestConstants
+### TestFixtures
 
-All test configuration values are centralized in `TestConstants.java`:
+All test configuration values and fixtures are centralized in `TestFixtures.java`:
 
 - JWT secrets and expiration
 - Database credentials
 - MinIO configuration
 - Test entity IDs
+- Sample API request/response payloads
 
-**Always use TestConstants instead of hardcoding values.**
+**Always use TestFixtures instead of hardcoding values.**
 
 ### BaseIntegrationTest
 
@@ -134,7 +135,7 @@ Static configuration for test profile:
 
 1. **Use `@Tag` annotations** for all tests (`"unit"` or `"integration"`)
 2. **Extend `BaseIntegrationTest`** for database/MinIO tests
-3. **Import `TestConstants`** instead of duplicating config values
+3. **Import `TestFixtures`** instead of duplicating config values
 4. **Use Role enum** for role authorities: `Role.ADMIN.getAuthority()`
 5. **Follow Given-When-Then** structure in test methods
 6. **Use descriptive test names** starting with "should"

@@ -58,7 +58,7 @@ security:
 
 # JWT Configuration - SINGLE SOURCE OF TRUTH
 # Used by all integration tests via @Value injection in Spring beans
-# Matches TestConstants.JWT_SECRET for consistency
+# Matches TestFixtures.JWT_SECRET for consistency
 jwt:
   secret: test-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256
   expiration: 3600000  # 1 hour
