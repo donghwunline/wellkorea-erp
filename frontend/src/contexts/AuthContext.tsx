@@ -18,7 +18,7 @@
  * // Use in components
  * const { user, login, logout, hasRole } = useAuth();
  *
- * if (hasRole('ADMIN')) {
+ * if (hasRole('ROLE_ADMIN')) {
  *   // Admin-only UI
  * }
  * ```
@@ -29,6 +29,7 @@
 import type {ReactNode} from 'react';
 import React, {createContext, useCallback, useContext, useMemo, useState} from 'react';
 import api from '@/services/api';
+import apiService from '@/services/apiService';
 import {authStorage} from '@/utils/storage';
 import type {AuthState, LoginRequest, LoginResponse, RoleName, User} from '@/types/auth';
 
@@ -76,8 +77,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const login = useCallback(async (credentials: LoginRequest): Promise<void> => {
     try {
-      const response = await api.post<LoginResponse>('/auth/login', credentials);
-      const { accessToken, refreshToken, user } = response.data;
+      const { accessToken, refreshToken, user } = await apiService.post<LoginResponse>(
+        '/auth/login',
+        credentials
+      );
 
       authStorage.setAccessToken(accessToken);
       authStorage.setRefreshToken(refreshToken ?? null);

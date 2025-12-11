@@ -91,14 +91,14 @@ describe('ProtectedRoute', () => {
       });
 
       renderWithAuth(
-        <ProtectedRoute requiredRole="ADMIN">
+        <ProtectedRoute requiredRole="ROLE_ADMIN">
           <div>Admin Content</div>
         </ProtectedRoute>,
         authValue,
         ['/protected'],
       );
 
-      expect(authValue.hasRole).toHaveBeenCalledWith('ADMIN');
+      expect(authValue.hasRole).toHaveBeenCalledWith('ROLE_ADMIN');
       expect(screen.getByText('Admin Content')).toBeInTheDocument();
     });
 
@@ -111,14 +111,14 @@ describe('ProtectedRoute', () => {
       });
 
       renderWithAuth(
-        <ProtectedRoute requiredRole="ADMIN">
+        <ProtectedRoute requiredRole="ROLE_ADMIN">
           <div>Admin Content</div>
         </ProtectedRoute>,
         authValue,
         ['/protected'],
       );
 
-      expect(authValue.hasRole).toHaveBeenCalledWith('ADMIN');
+      expect(authValue.hasRole).toHaveBeenCalledWith('ROLE_ADMIN');
       expect(screen.getByText(/Access Denied/i)).toBeInTheDocument();
       expect(screen.queryByText('Admin Content')).not.toBeInTheDocument();
     });
@@ -134,14 +134,14 @@ describe('ProtectedRoute', () => {
       });
 
       renderWithAuth(
-        <ProtectedRoute requiredRoles={['ADMIN', 'SALES']}>
+        <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_SALES']}>
           <div>Multi-Role Content</div>
         </ProtectedRoute>,
         authValue,
         ['/protected'],
       );
 
-      expect(authValue.hasAnyRole).toHaveBeenCalledWith(['ADMIN', 'SALES']);
+      expect(authValue.hasAnyRole).toHaveBeenCalledWith(['ROLE_ADMIN', 'ROLE_SALES']);
       expect(screen.getByText('Multi-Role Content')).toBeInTheDocument();
     });
 
@@ -154,14 +154,14 @@ describe('ProtectedRoute', () => {
       });
 
       renderWithAuth(
-        <ProtectedRoute requiredRoles={['ADMIN', 'FINANCE']}>
+        <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
           <div>Admin/Finance Content</div>
         </ProtectedRoute>,
         authValue,
         ['/protected'],
       );
 
-      expect(authValue.hasAnyRole).toHaveBeenCalledWith(['ADMIN', 'FINANCE']);
+      expect(authValue.hasAnyRole).toHaveBeenCalledWith(['ROLE_ADMIN', 'ROLE_FINANCE']);
       expect(screen.getByText(/Access Denied/i)).toBeInTheDocument();
       expect(screen.queryByText('Admin/Finance Content')).not.toBeInTheDocument();
     });
@@ -197,7 +197,7 @@ describe('ProtectedRoute', () => {
       });
 
       renderWithAuth(
-        <ProtectedRoute requiredRole="ADMIN">
+        <ProtectedRoute requiredRole="ROLE_ADMIN">
           <div>Admin Content</div>
         </ProtectedRoute>,
         authValue,
@@ -207,7 +207,7 @@ describe('ProtectedRoute', () => {
       expect(screen.getByText('Access Denied')).toBeInTheDocument();
       expect(screen.getByText(/You do not have permission/i)).toBeInTheDocument();
       expect(screen.getByText(/Required role:/i)).toBeInTheDocument();
-      expect(screen.getByText('ADMIN')).toBeInTheDocument();
+      expect(screen.getByText('ROLE_ADMIN')).toBeInTheDocument();
     });
   });
 });

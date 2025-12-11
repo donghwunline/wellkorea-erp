@@ -15,6 +15,12 @@ vi.mock('@/services/api', () => ({
   },
 }));
 
+vi.mock('@/services/apiService', () => ({
+  default: {
+    post: vi.fn(),
+  },
+}));
+
 vi.mock('@/utils/storage', () => ({
   authStorage: {
     getAccessToken: vi.fn(),
@@ -28,6 +34,7 @@ vi.mock('@/utils/storage', () => ({
 }));
 
 const api = (await import('@/services/api')).default;
+const apiService = (await import('@/services/apiService')).default;
 const {authStorage} = await import('@/utils/storage');
 
 const wrapper: React.FC<{children: React.ReactNode}> = ({children}) => (
@@ -70,12 +77,10 @@ describe('AuthContext', () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue(null);
       vi.mocked(authStorage.getUser).mockReturnValue(null);
 
-      vi.mocked(api.post).mockResolvedValue({
-        data: {
-          accessToken: 'new-access-token',
-          refreshToken: 'new-refresh-token',
-          user: mockUsers.admin,
-        },
+      vi.mocked(apiService.post).mockResolvedValue({
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
+        user: mockUsers.admin,
       });
 
       const {result} = renderHook(() => useAuth(), {wrapper});
@@ -84,7 +89,7 @@ describe('AuthContext', () => {
         await result.current.login({username: 'alice', password: 'password'});
       });
 
-      expect(api.post).toHaveBeenCalledWith('/auth/login', {
+      expect(apiService.post).toHaveBeenCalledWith('/auth/login', {
         username: 'alice',
         password: 'password',
       });
@@ -101,12 +106,10 @@ describe('AuthContext', () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue(null);
       vi.mocked(authStorage.getUser).mockReturnValue(null);
 
-      vi.mocked(api.post).mockResolvedValue({
-        data: {
-          accessToken: 'access-token',
-          refreshToken: null,
-          user: mockUsers.sales,
-        },
+      vi.mocked(apiService.post).mockResolvedValue({
+        accessToken: 'access-token',
+        refreshToken: null,
+        user: mockUsers.sales,
       });
 
       const {result} = renderHook(() => useAuth(), {wrapper});
@@ -122,7 +125,7 @@ describe('AuthContext', () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue(null);
       vi.mocked(authStorage.getUser).mockReturnValue(null);
 
-      vi.mocked(api.post).mockRejectedValue(new Error('Invalid credentials'));
+      vi.mocked(apiService.post).mockRejectedValue(new Error('Invalid credentials'));
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
@@ -187,7 +190,7 @@ describe('AuthContext', () => {
     it('should return true when user has the specified role', () => {
       const mockUser = createMockUser({
         username: 'alice',
-        roles: ['ADMIN', 'SALES'],
+        roles: ['ROLE_ADMIN', 'ROLE_SALES'],
       });
 
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
@@ -195,8 +198,8 @@ describe('AuthContext', () => {
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasRole('ADMIN')).toBe(true);
-      expect(result.current.hasRole('SALES')).toBe(true);
+      expect(result.current.hasRole('ROLE_ADMIN')).toBe(true);
+      expect(result.current.hasRole('ROLE_SALES')).toBe(true);
     });
 
     it('should return false when user does not have the specified role', () => {
@@ -205,8 +208,8 @@ describe('AuthContext', () => {
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasRole('ADMIN')).toBe(false);
-      expect(result.current.hasRole('FINANCE')).toBe(false);
+      expect(result.current.hasRole('ROLE_ADMIN')).toBe(false);
+      expect(result.current.hasRole('ROLE_FINANCE')).toBe(false);
     });
 
     it('should return false when user is not authenticated', () => {
@@ -215,7 +218,7 @@ describe('AuthContext', () => {
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasRole('ADMIN')).toBe(false);
+      expect(result.current.hasRole('ROLE_ADMIN')).toBe(false);
     });
   });
 
@@ -226,8 +229,8 @@ describe('AuthContext', () => {
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasAnyRole(['ADMIN', 'SALES'])).toBe(true);
-      expect(result.current.hasAnyRole(['FINANCE', 'SALES'])).toBe(true);
+      expect(result.current.hasAnyRole(['ROLE_ADMIN', 'ROLE_SALES'])).toBe(true);
+      expect(result.current.hasAnyRole(['ROLE_FINANCE', 'ROLE_SALES'])).toBe(true);
     });
 
     it('should return false when user has none of the specified roles', () => {
@@ -236,7 +239,7 @@ describe('AuthContext', () => {
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasAnyRole(['ADMIN', 'FINANCE'])).toBe(false);
+      expect(result.current.hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE'])).toBe(false);
     });
 
     it('should return false when user is not authenticated', () => {
@@ -245,7 +248,7 @@ describe('AuthContext', () => {
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
-      expect(result.current.hasAnyRole(['ADMIN', 'SALES'])).toBe(false);
+      expect(result.current.hasAnyRole(['ROLE_ADMIN', 'ROLE_SALES'])).toBe(false);
     });
   });
 
