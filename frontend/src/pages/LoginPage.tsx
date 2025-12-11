@@ -1,0 +1,251 @@
+/**
+ * Login Page - WellKorea ERP
+ *
+ * Design: Industrial Precision meets Korean Elegance
+ * - Geometric grid background suggesting engineering blueprints
+ * - Deep navy steel color palette with warm copper accents
+ * - Clean, precise form layout with subtle depth
+ */
+
+import { useState, type FormEvent, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import type { AxiosError } from 'axios';
+import type { ErrorResponse } from '@/types/api';
+
+interface LocationState {
+  from?: { pathname: string };
+}
+
+export function LoginPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated } = useAuth();
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const remembered = localStorage.getItem('rememberedUsername');
+    if (remembered) {
+      setUsername(remembered);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const from = (location.state as LocationState)?.from?.pathname || '/';
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!username.trim()) {
+      setError('Username is required');
+      return;
+    }
+    if (!password) {
+      setError('Password is required');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await login({ username: username.trim(), password });
+
+      if (rememberMe) {
+        localStorage.setItem('rememberedUsername', username.trim());
+      } else {
+        localStorage.removeItem('rememberedUsername');
+      }
+
+      navigate(from, { replace: true });
+    } catch (err) {
+      const axiosError = err as AxiosError<ErrorResponse>;
+      if (axiosError.response?.status === 401) {
+        setError('Invalid username or password');
+      } else if (axiosError.response?.data?.message) {
+        setError(axiosError.response.data.message);
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Input field common styles
+  const inputClasses =
+    'block w-full rounded-lg border border-steel-700/50 bg-steel-800/50 px-4 py-3 text-sm text-white placeholder-steel-500 transition-all duration-200 focus:border-copper-500/50 focus:bg-steel-800 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50';
+
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-steel-950">
+      {/* Geometric Grid Background */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, #829ab1 1px, transparent 1px),
+            linear-gradient(to bottom, #829ab1 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+        }}
+      />
+
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-steel-900/50 via-transparent to-steel-950/80" />
+
+      {/* Decorative Blurs */}
+      <div className="absolute top-0 right-0 h-[600px] w-[600px] -translate-y-1/2 translate-x-1/2 rounded-full bg-copper-500/5 blur-3xl" />
+      <div className="absolute bottom-0 left-0 h-[400px] w-[400px] translate-y-1/2 -translate-x-1/2 rounded-full bg-steel-600/10 blur-3xl" />
+
+      {/* Main Content */}
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-12">
+        <div
+          className={`w-full max-w-[420px] transition-all duration-700 ease-out ${
+            mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}
+        >
+          {/* Logo & Brand */}
+          <div className="mb-10 text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center">
+              <div className="relative">
+                <div className="h-12 w-12 rotate-45 border-2 border-copper-500" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="font-mono text-lg font-semibold tracking-tight text-copper-500">
+                    WK
+                  </span>
+                </div>
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">WellKorea</h1>
+            <p className="mt-1 font-mono text-xs uppercase tracking-[0.2em] text-steel-400">
+              Integrated Work System
+            </p>
+          </div>
+
+          {/* Login Card */}
+          <div className="rounded-xl border border-steel-800/50 bg-steel-900/60 p-8 shadow-elevated backdrop-blur-xl">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div
+                  className="flex items-start gap-3 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400"
+                  role="alert"
+                >
+                  <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Username */}
+              <div className="space-y-2">
+                <label htmlFor="username" className="block text-sm font-medium text-steel-300">
+                  Username
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  autoComplete="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={isLoading}
+                  placeholder="Enter your username"
+                  className={inputClasses}
+                />
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-steel-300">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  placeholder="Enter your password"
+                  className={inputClasses}
+                />
+              </div>
+
+              {/* Remember Me */}
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  disabled={isLoading}
+                  className="h-4 w-4 rounded border-steel-600 bg-steel-800 text-copper-500 focus:ring-2 focus:ring-copper-500/20 focus:ring-offset-0"
+                />
+                <label htmlFor="remember-me" className="ml-2.5 text-sm text-steel-400">
+                  Remember me
+                </label>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-copper-500 px-4 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-copper-600 focus:outline-none focus:ring-2 focus:ring-copper-500/50 focus:ring-offset-2 focus:ring-offset-steel-900 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                {isLoading ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Sign in</span>
+                    <svg className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-xs text-steel-500">WellKorea Integrated Work System</p>
+            <p className="mt-1 font-mono text-[10px] tracking-wider text-steel-600">v1.0.0</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Corner Accents */}
+      <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-32">
+        <div className="absolute bottom-4 left-4 h-px w-16 bg-gradient-to-r from-copper-500/40 to-transparent" />
+        <div className="absolute bottom-4 left-4 h-16 w-px bg-gradient-to-t from-copper-500/40 to-transparent" />
+      </div>
+      <div className="pointer-events-none absolute top-0 right-0 h-32 w-32">
+        <div className="absolute top-4 right-4 h-px w-16 bg-gradient-to-l from-steel-500/30 to-transparent" />
+        <div className="absolute top-4 right-4 h-16 w-px bg-gradient-to-b from-steel-500/30 to-transparent" />
+      </div>
+    </div>
+  );
+}
+
+export default LoginPage;
