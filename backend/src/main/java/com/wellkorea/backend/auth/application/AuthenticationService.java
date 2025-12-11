@@ -80,11 +80,7 @@ public class AuthenticationService {
         // Update last login (fire-and-forget, don't block login)
         updateLastLogin(userWithRoles);
 
-        return LoginResponse.bearer(
-                token,
-                3600L, // TODO: Get from configuration
-                toUserInfo(userWithRoles)
-        );
+        return LoginResponse.of(token, toUserInfo(userWithRoles));
     }
 
     /**
@@ -139,11 +135,7 @@ public class AuthenticationService {
         // Blacklist old token
         tokenBlacklist.add(token);
 
-        return LoginResponse.bearer(
-                newToken,
-                3600L,
-                toUserInfo(userWithRoles)
-        );
+        return LoginResponse.of(newToken, toUserInfo(userWithRoles));
     }
 
     /**

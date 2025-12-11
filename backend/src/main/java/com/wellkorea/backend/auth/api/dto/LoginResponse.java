@@ -4,29 +4,27 @@ import java.util.List;
 
 /**
  * Response body for successful /api/auth/login.
- * Contains JWT token and user information.
+ * Contains JWT tokens and user information.
  *
- * @param token     JWT access token
- * @param tokenType Token type (always "Bearer")
- * @param expiresIn Token expiration time in seconds
- * @param user      Authenticated user information
+ * @param accessToken  JWT access token
+ * @param refreshToken JWT refresh token (null until refresh token feature is implemented)
+ * @param user         Authenticated user information
  */
 public record LoginResponse(
-        String token,
-        String tokenType,
-        long expiresIn,
+        String accessToken,
+        String refreshToken,
         UserInfo user
 ) {
     /**
-     * Creates a LoginResponse with Bearer token type.
+     * Creates a LoginResponse with access token and user info.
+     * Refresh token is set to null (to be implemented later).
      *
-     * @param token     JWT access token
-     * @param expiresIn Token expiration time in seconds
-     * @param user      Authenticated user information
-     * @return LoginResponse with Bearer token type
+     * @param accessToken JWT access token
+     * @param user        Authenticated user information
+     * @return LoginResponse with null refresh token
      */
-    public static LoginResponse bearer(String token, long expiresIn, UserInfo user) {
-        return new LoginResponse(token, "Bearer", expiresIn, user);
+    public static LoginResponse of(String accessToken, UserInfo user) {
+        return new LoginResponse(accessToken, null, user);
     }
 
     /**
