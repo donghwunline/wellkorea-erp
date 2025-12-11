@@ -1,5 +1,8 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wellkorea.backend.shared.dto.ErrorResponse;
+import com.wellkorea.backend.shared.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -47,15 +50,20 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ObjectMapper objectMapper;
 
-    @Value("${security.cors.allowed-origins:http://localhost:5173,http://localhost:4173,http://localhost:3000}")
+    @Value("${security.cors.allowed-origins}")
     private String[] allowedOrigins;
 
-    @Value("${security.swagger.enabled:true}")
+    @Value("${security.cors.allowed-headers}")
+    private String[] allowedHeaders;
+
+    @Value("${security.swagger.enabled}")
     private boolean swaggerEnabled;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -97,8 +105,15 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
-                            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"" +
-                                    authException.getMessage() + "\"}");
+                            response.setCharacterEncoding("UTF-8");
+
+                            ErrorResponse errorResponse = ErrorResponse.of(
+                                    ErrorCode.AUTHENTICATION_FAILED,
+                                    "Authentication required",
+                                    request.getRequestURI()
+                            );
+
+                            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
                         })
                 )
 
@@ -122,8 +137,8 @@ public class SecurityConfig {
         // Allow all HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-        // Allow all headers
-        configuration.setAllowedHeaders(List.of("*"));
+        // Allow configured headers (explicit list for security)
+        configuration.setAllowedHeaders(Arrays.asList(allowedHeaders));
 
         // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true);
