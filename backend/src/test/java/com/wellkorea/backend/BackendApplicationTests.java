@@ -1,12 +1,13 @@
 package com.wellkorea.backend;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
-@Import(TestcontainersConfiguration.class)
-@SpringBootTest
-class BackendApplicationTests {
+/**
+ * Smoke test to verify Spring Boot application context loads successfully.
+ */
+@Tag("integration")
+class BackendApplicationTests extends BaseIntegrationTest {
 
     @Test
     void contextLoads() {

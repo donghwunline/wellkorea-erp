@@ -1,9 +1,10 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'node:path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   test: {
     globals: true,
     environment: 'jsdom',
@@ -23,6 +24,8 @@ export default defineConfig({
         '**/*.config.ts',
         '**/*.d.ts',
         '**/dist/**',
+        '**/*.test.{ts,tsx}',
+        '**/*.spec.{ts,tsx}',
       ],
       thresholds: {
         lines: 70,

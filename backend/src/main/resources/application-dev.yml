@@ -1,0 +1,85 @@
+# =====================================================================
+# WellKorea ERP - Development Profile Configuration
+# =====================================================================
+# This profile is for LOCAL DEVELOPMENT ONLY.
+# Safe defaults are provided for rapid development iteration.
+#
+# Usage:
+#   SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+#   or in IDE: set Active Profile to 'dev'
+#
+# WARNING: Never use this profile in production!
+# =====================================================================
+
+spring:
+  # Database Configuration - Local PostgreSQL defaults
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wellkorea_erp}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+
+  # JPA Configuration - Show SQL for debugging
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # Email Configuration - Console output for development
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:dev@wellkorea.com}
+    password: ${MAIL_PASSWORD:dev-password-not-real}
+
+  # Default admin user for development (bypasses JWT for quick testing)
+  security:
+    user:
+      name: admin
+      password: admin
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-stacktrace: on_param  # Include stack traces when ?trace=true
+
+# Security Configuration
+security:
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:4173,http://localhost:3000
+    allowed-headers: Authorization,Content-Type,Accept,X-Requested-With
+  swagger:
+    enabled: true  # Swagger/OpenAPI enabled in dev
+
+# JWT Configuration - Safe default for development
+jwt:
+  secret: ${JWT_SECRET:dev-secret-key-minimum-256-bits-required-for-hs256-algorithm-do-not-use-in-production}
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 hours
+
+# MinIO Configuration - Local MinIO defaults
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket-name: ${MINIO_BUCKET_NAME:wellkorea-erp-dev}
+
+# Actuator Configuration - Full access in dev
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # Expose all endpoints in dev
+  endpoint:
+    health:
+      show-details: always  # Always show health details
+
+# Logging Configuration - Detailed logging for development
+logging:
+  level:
+    root: INFO
+    com.wellkorea.backend: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web: DEBUG

@@ -1,0 +1,89 @@
+# =====================================================================
+# WellKorea ERP - Test Profile Configuration
+# =====================================================================
+# This profile is for INTEGRATION TESTS with Testcontainers.
+#
+# Usage:
+#   @SpringBootTest automatically activates 'test' profile
+#   @ServiceConnection provides PostgreSQL container (auto-configured)
+#   @DynamicPropertySource provides MinIO container properties
+#
+# Note: PostgreSQL properties are auto-configured by @ServiceConnection.
+#       MinIO properties come from @DynamicPropertySource in BaseIntegrationTest.
+# =====================================================================
+
+spring:
+  # Database - Auto-configured by @ServiceConnection in BaseIntegrationTest
+  # No datasource URL/credentials needed here
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10          # Max connections in pool
+      minimum-idle: 2                # Min idle connections
+      connection-timeout: 30000      # 30 seconds
+      idle-timeout: 600000           # 10 minutes
+      max-lifetime: 1800000          # 30 minutes
+      pool-name: WellKoreaTestPool
+
+  # JPA Configuration - Test-specific
+  jpa:
+    show-sql: false  # Reduce test log noise
+    hibernate:
+      ddl-auto: validate  # Use Flyway migrations in tests
+
+  # Email - Dummy config for tests (disabled for health check)
+  mail:
+    host: smtp.test.com
+    port: 587
+    username: test@wellkorea.com
+    password: test-password
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+# Server Configuration
+server:
+  port: 0  # Random port for parallel test execution
+
+# Security Configuration
+security:
+  cors:
+    allowed-origins: http://localhost:5173
+    allowed-headers: Authorization,Content-Type,Accept,X-Requested-With
+  swagger:
+    enabled: false  # Swagger disabled in tests
+
+# JWT Configuration - SINGLE SOURCE OF TRUTH
+# Used by all integration tests via @Value injection in Spring beans
+# Matches TestConstants.JWT_SECRET for consistency
+jwt:
+  secret: test-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256
+  expiration: 3600000  # 1 hour
+
+# MinIO - Configured by @DynamicPropertySource in BaseIntegrationTest
+# No default MinIO URL - must come from Testcontainers
+
+# Actuator Configuration
+management:
+  endpoint:
+    health:
+      show-details: always  # Show health details in tests
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    mail:
+      enabled: false  # Disable mail health check in tests
+
+# Logging Configuration - Minimal logging in tests
+logging:
+  level:
+    root: WARN
+    com.wellkorea.backend: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.testcontainers: INFO  # Show container startup logs

@@ -21,23 +21,95 @@ repositories {
 }
 
 dependencies {
+    // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // OAuth2 Resource Server (for future Keycloak migration)
+    // Currently inactive, will be enabled when migrating to Keycloak
+    // implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+    // Database & Migrations
     runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // Security & JWT (MVP implementation - will be replaced by Keycloak tokens)
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+    // MinIO (S3-compatible storage for documents)
+    implementation 'io.minio:minio:8.5.7'
+
+    // PDF Generation (quotations, invoices, transaction statements)
+    implementation 'com.itextpdf:itext7-core:8.0.2'
+
+    // Excel Generation (catalog import/export)
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+
+    // Utilities
+    implementation 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:minio:1.19.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+
+    // Test output configuration
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showStandardStreams = false
+    }
+}
+
+// Convenience task: Run unit tests only (fast)
+tasks.register('unitTest', Test) {
+    description = 'Runs unit tests only (no Spring context, no containers)'
+    group = 'verification'
+
+    useJUnitPlatform {
+        includeTags 'unit'
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+// Convenience task: Run integration tests only (with Testcontainers)
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests only (with Spring context and Testcontainers)'
+    group = 'verification'
+
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+
+    // Integration tests may need more memory
+    maxHeapSize = '1g'
 }
 
 // JaCoCo Configuration
@@ -50,7 +122,7 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                '**/BackendApplication.class'
+                    '**/BackendApplication.class'
             ])
         }))
     }
@@ -65,7 +137,7 @@ jacocoTestCoverageVerification {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                '**/BackendApplication.class'
+                    '**/BackendApplication.class'
             ])
         }))
     }

@@ -1,0 +1,101 @@
+# Application Configuration
+spring:
+  application:
+    name: wellkorea-erp-backend
+
+  # Database Configuration
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wellkorea_erp}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  # Flyway Migration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+
+  # Email Configuration (for quotation revision notifications)
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# Server Configuration
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-stacktrace: on_param
+
+# Security Configuration
+# NO DEFAULTS - Must be explicitly configured per environment
+# Use profile-specific configuration files:
+#   - application-dev.yml for local development
+#   - application-prod.yml for production (requires environment variables)
+
+# JWT Configuration (MVP - will be replaced by Keycloak OAuth2)
+# SECURITY: jwt.secret MUST be provided via:
+#   - dev profile: application-dev.yml (contains safe default for development)
+#   - test profile: application-test.yml (contains test secret)
+#   - prod profile: JWT_SECRET environment variable
+# NOT defining jwt.secret here forces profile/environment configuration
+jwt:
+  # secret: NOT DEFINED - must come from profile or environment
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 hours default
+
+# MinIO Configuration
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket-name: ${MINIO_BUCKET_NAME:wellkorea-erp-documents}
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.wellkorea.backend: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
