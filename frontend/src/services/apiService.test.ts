@@ -310,7 +310,7 @@ describe('ApiService', () => {
       const pagination = createPaginationMetadata();
       const apiResponse = createMockApiResponse(sampleProjects, {
         message: 'Projects retrieved successfully',
-        metadata: pagination,
+        metadata: pagination as unknown as Record<string, unknown>,
       });
       (api.get as Mock).mockResolvedValue(createMockAxiosResponse(apiResponse));
 
@@ -353,7 +353,7 @@ describe('ApiService', () => {
           totalPages: 5,
           first: true,
           last: false,
-        } as unknown as PaginationMetadata,
+        } as unknown as Record<string, unknown>,
       });
       (api.get as Mock).mockResolvedValue(createMockAxiosResponse(apiResponse));
 
@@ -370,7 +370,7 @@ describe('ApiService', () => {
         last: true,
       });
       const apiResponse = createMockApiResponse<Project[]>([], {
-        metadata: pagination,
+        metadata: pagination as unknown as Record<string, unknown>,
       });
       (api.get as Mock).mockResolvedValue(createMockAxiosResponse(apiResponse));
 
@@ -387,7 +387,7 @@ describe('ApiService', () => {
         last: true,
       });
       const apiResponse = createMockApiResponse(sampleProjects, {
-        metadata: pagination,
+        metadata: pagination as unknown as Record<string, unknown>,
       });
       (api.get as Mock).mockResolvedValue(createMockAxiosResponse(apiResponse));
 
