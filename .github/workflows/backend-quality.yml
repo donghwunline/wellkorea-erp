@@ -83,4 +83,4 @@ jobs:
         if: inputs.run-sonar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew sonar --info --no-daemon
+        run: ./gradlew build sonar --info
