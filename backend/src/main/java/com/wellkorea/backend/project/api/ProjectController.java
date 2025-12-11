@@ -1,6 +1,7 @@
 package com.wellkorea.backend.project.api;
 
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import lombok.Generated;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import java.util.List;
  * This is a stub implementation to support integration tests.
  * Full implementation will be added as part of feature development.
  */
+@Generated // Exclude from JaCoCo coverage - stub implementation
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
