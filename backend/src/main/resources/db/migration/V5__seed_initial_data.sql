@@ -16,48 +16,9 @@ ON CONFLICT (name) DO NOTHING;
 -- =====================================================================
 -- USERS
 -- =====================================================================
--- Password for all test users: "password123" (BCrypt hash)
--- Generated using: BCryptPasswordEncoder().encode("password123")
--- In production, users should change their passwords immediately
-
-INSERT INTO users (id, username, email, password_hash, full_name, is_active)
-VALUES (1, 'admin', 'admin@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO',
-        'Admin User', true),
-       (2, 'finance', 'finance@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO',
-        'Finance Manager', true),
-       (3, 'production', 'production@wellkorea.com',
-        '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Production Lead', true),
-       (4, 'sales', 'sales@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO',
-        'Sales Representative', true),
-       (5, 'sales2', 'sales2@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO',
-        'Sales Representative 2', true)
-ON CONFLICT (id) DO NOTHING;
-
--- Reset sequence for users table
-SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
-
--- =====================================================================
--- USER-ROLE ASSIGNMENTS
--- =====================================================================
-
-INSERT INTO user_roles (user_id, role_id)
-VALUES
-    -- Admin user: all roles (for testing)
-    (1, (SELECT id FROM roles WHERE name = 'ADMIN')),
-    (1, (SELECT id FROM roles WHERE name = 'FINANCE')),
-    (1, (SELECT id FROM roles WHERE name = 'PRODUCTION')),
-    (1, (SELECT id FROM roles WHERE name = 'SALES')),
-
-    -- Finance user
-    (2, (SELECT id FROM roles WHERE name = 'FINANCE')),
-
-    -- Production user
-    (3, (SELECT id FROM roles WHERE name = 'PRODUCTION')),
-
-    -- Sales users
-    (4, (SELECT id FROM roles WHERE name = 'SALES')),
-    (5, (SELECT id FROM roles WHERE name = 'SALES'))
-ON CONFLICT (user_id, role_id) DO NOTHING;
+-- Test users have been moved to DatabaseTestHelper for test-only usage.
+-- In production environments, users should be created through the application UI
+-- or via separate administrative scripts with secure password management.
 
 -- =====================================================================
 -- CUSTOMERS
@@ -88,18 +49,8 @@ SELECT setval('customers_id_seq', (SELECT MAX(id) FROM customers));
 -- =====================================================================
 -- CUSTOMER ASSIGNMENTS (FR-062: Sales role customer filtering)
 -- =====================================================================
--- sales user (id=4) assigned to Samsung, Hyundai, LG
--- sales2 user (id=5) assigned to SK Hynix, Doosan, POSCO
-
-INSERT INTO customer_assignments (user_id, customer_id)
-VALUES (4, 1), -- sales -> Samsung
-       (4, 2), -- sales -> Hyundai
-       (4, 3), -- sales -> LG Display
-       (5, 4), -- sales2 -> SK Hynix
-       (5, 5), -- sales2 -> Doosan
-       (5, 6)
--- sales2 -> POSCO
-ON CONFLICT DO NOTHING;
+-- Customer assignments have been moved to DatabaseTestHelper for test-only usage.
+-- In production, customer assignments should be managed through the application UI.
 
 -- =====================================================================
 -- SUPPLIERS

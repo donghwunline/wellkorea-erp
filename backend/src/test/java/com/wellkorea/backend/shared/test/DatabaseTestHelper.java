@@ -62,6 +62,61 @@ public final class DatabaseTestHelper {
     }
 
     /**
+     * Inserts all test users with their role assignments.
+     * Password for all test users: "password123" (BCrypt hash: $2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO)
+     * <p>
+     * Users created:
+     * - admin (ID: 1) - All roles (ADMIN, FINANCE, PRODUCTION, SALES)
+     * - finance (ID: 2) - FINANCE role
+     * - production (ID: 3) - PRODUCTION role
+     * - sales (ID: 4) - SALES role
+     * - sales2 (ID: 5) - SALES role
+     * <p>
+     * Prerequisites: Roles table must be populated (automatically done by V5 migration).
+     *
+     * @param jdbcTemplate Spring JDBC template
+     */
+    public static void insertTestUsersWithRoles(JdbcTemplate jdbcTemplate) {
+        // Insert users
+        jdbcTemplate.update(
+                "INSERT INTO users (id, username, email, password_hash, full_name, is_active) " +
+                        "VALUES (1, 'admin', 'admin@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Admin User', true), " +
+                        "       (2, 'finance', 'finance@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Finance Manager', true), " +
+                        "       (3, 'production', 'production@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Production Lead', true), " +
+                        "       (4, 'sales', 'sales@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Sales Representative', true), " +
+                        "       (5, 'sales2', 'sales2@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Sales Representative 2', true) " +
+                        "ON CONFLICT (id) DO NOTHING"
+        );
+
+        // Reset sequence for users table
+        jdbcTemplate.execute("SELECT setval('users_id_seq', (SELECT COALESCE(MAX(id), 0) FROM users))");
+
+        // Insert user-role assignments
+        jdbcTemplate.update(
+                "INSERT INTO user_roles (user_id, role_id) " +
+                        "VALUES " +
+                        "    (1, (SELECT id FROM roles WHERE name = 'ADMIN')), " +
+                        "    (1, (SELECT id FROM roles WHERE name = 'FINANCE')), " +
+                        "    (1, (SELECT id FROM roles WHERE name = 'PRODUCTION')), " +
+                        "    (1, (SELECT id FROM roles WHERE name = 'SALES')), " +
+                        "    (2, (SELECT id FROM roles WHERE name = 'FINANCE')), " +
+                        "    (3, (SELECT id FROM roles WHERE name = 'PRODUCTION')), " +
+                        "    (4, (SELECT id FROM roles WHERE name = 'SALES')), " +
+                        "    (5, (SELECT id FROM roles WHERE name = 'SALES')) " +
+                        "ON CONFLICT (user_id, role_id) DO NOTHING"
+        );
+
+        // Insert customer assignments (FR-062: Sales role customer filtering)
+        // sales user (id=4) -> Samsung, Hyundai, LG
+        // sales2 user (id=5) -> SK Hynix, Doosan, POSCO
+        jdbcTemplate.update(
+                "INSERT INTO customer_assignments (user_id, customer_id) " +
+                        "VALUES (4, 1), (4, 2), (4, 3), (5, 4), (5, 5), (5, 6) " +
+                        "ON CONFLICT DO NOTHING"
+        );
+    }
+
+    /**
      * Inserts both test user and customer (common setup).
      * Convenience method for tests that need both entities.
      *
@@ -69,6 +124,18 @@ public final class DatabaseTestHelper {
      */
     public static void insertStandardTestData(JdbcTemplate jdbcTemplate) {
         insertTestUser(jdbcTemplate);
+        insertTestCustomer(jdbcTemplate);
+    }
+
+    /**
+     * Inserts complete test dataset including users with roles and customer.
+     * Convenience method for integration tests requiring full test data.
+     * Prerequisites: Roles table must be populated (automatically done by V5 migration).
+     *
+     * @param jdbcTemplate Spring JDBC template
+     */
+    public static void insertCompleteTestData(JdbcTemplate jdbcTemplate) {
+        insertTestUsersWithRoles(jdbcTemplate);
         insertTestCustomer(jdbcTemplate);
     }
 
