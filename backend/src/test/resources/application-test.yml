@@ -52,6 +52,7 @@ server:
 security:
   cors:
     allowed-origins: http://localhost:5173
+    allowed-headers: Authorization,Content-Type,Accept,X-Requested-With
   swagger:
     enabled: false  # Swagger disabled in tests
 

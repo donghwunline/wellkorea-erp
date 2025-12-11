@@ -65,6 +65,7 @@ server:
 security:
   cors:
     allowed-origins: ${SECURITY_CORS_ALLOWED_ORIGINS}
+    allowed-headers: ${SECURITY_CORS_ALLOWED_HEADERS:Authorization,Content-Type,Accept,X-Requested-With}
   swagger:
     enabled: false  # Swagger DISABLED in production
 

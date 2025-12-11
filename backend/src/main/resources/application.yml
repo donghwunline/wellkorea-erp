@@ -51,16 +51,18 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
 
-  # Security - No defaults. Use profile-specific configuration.
-  # For development: activate 'dev' profile (contains admin/admin)
-  # For production: provide credentials via environment variables
-
 # Server Configuration
 server:
   port: 8080
   error:
     include-message: always
     include-stacktrace: on_param
+
+# Security Configuration
+# NO DEFAULTS - Must be explicitly configured per environment
+# Use profile-specific configuration files:
+#   - application-dev.yml for local development
+#   - application-prod.yml for production (requires environment variables)
 
 # JWT Configuration (MVP - will be replaced by Keycloak OAuth2)
 # SECURITY: jwt.secret MUST be provided via:
