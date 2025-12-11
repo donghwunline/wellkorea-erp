@@ -179,14 +179,14 @@ SELECT setval('products_id_seq', (SELECT MAX(id) FROM products));
 -- =====================================================================
 
 COMMENT
-ON TABLE users IS 'Test users for development (password: password123)';
+    ON TABLE users IS 'Test users for development (password: password123)';
 COMMENT
-ON TABLE roles IS 'RBAC roles: ADMIN, FINANCE, PRODUCTION, SALES';
+    ON TABLE roles IS 'RBAC roles: ADMIN, FINANCE, PRODUCTION, SALES';
 COMMENT
-ON TABLE customers IS 'Test customers representing major Korean industrial companies';
+    ON TABLE customers IS 'Test customers representing major Korean industrial companies';
 COMMENT
-ON TABLE suppliers IS 'Test suppliers for outsourced manufacturing processes';
+    ON TABLE suppliers IS 'Test suppliers for outsourced manufacturing processes';
 COMMENT
-ON TABLE products IS 'Product catalog with realistic pricing and specifications';
+    ON TABLE products IS 'Product catalog with realistic pricing and specifications';
 COMMENT
-ON TABLE work_progress_step_templates IS 'Manufacturing workflow templates per product type';
+    ON TABLE work_progress_step_templates IS 'Manufacturing workflow templates per product type';

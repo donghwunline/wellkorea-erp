@@ -33,18 +33,18 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create backend directory structure following domain-oriented architecture (project/, quotation/, approval/, product/, production/, delivery/, invoice/, purchasing/, document/, security/, shared/)
-- [ ] T002 Create frontend directory structure (components/, pages/, services/, contexts/, hooks/, types/)
-- [ ] T003 [P] Initialize Spring Boot 3.5.8 project with Gradle 8.11 in backend/build.gradle
-- [ ] T004 [P] Initialize React 19 + TypeScript 5.9 project with Vite 7 in frontend/package.json
-- [ ] T005 [P] Configure PostgreSQL 16 Docker service in docker-compose.yml
-- [ ] T006 [P] Configure MinIO S3-compatible storage in docker-compose.yml for document storage
-- [ ] T007 [P] Setup Flyway migration framework in backend/src/main/resources/db/migration/
-- [ ] T008 [P] Configure ESLint and Prettier for frontend code quality
-- [ ] T009 [P] Configure JaCoCo for backend test coverage (70% threshold) in backend/build.gradle
-- [ ] T010 [P] Configure Vitest for frontend test coverage (70% threshold) in frontend/vitest.config.ts
-- [ ] T011 [P] Setup Playwright for E2E tests in frontend/playwright.config.ts
-- [ ] T012 [P] Setup Testcontainers for backend integration tests in backend/build.gradle
+- [X] T001 Create backend directory structure following domain-oriented architecture (project/, quotation/, approval/, product/, production/, delivery/, invoice/, purchasing/, document/, security/, shared/)
+- [X] T002 Create frontend directory structure (components/, pages/, services/, contexts/, hooks/, types/)
+- [X] T003 [P] Initialize Spring Boot 3.5.8 project with Gradle 8.11 in backend/build.gradle
+- [X] T004 [P] Initialize React 19 + TypeScript 5.9 project with Vite 7 in frontend/package.json
+- [X] T005 [P] Configure PostgreSQL 16 Docker service in docker-compose.yml
+- [X] T006 [P] Configure MinIO S3-compatible storage in docker-compose.yml for document storage
+- [X] T007 [P] Setup Flyway migration framework in backend/src/main/resources/db/migration/
+- [X] T008 [P] Configure ESLint and Prettier for frontend code quality
+- [X] T009 [P] Configure JaCoCo for backend test coverage (70% threshold) in backend/build.gradle
+- [X] T010 [P] Configure Vitest for frontend test coverage (70% threshold) in frontend/vitest.config.ts
+- [X] T011 [P] Setup Playwright for E2E tests in frontend/playwright.config.ts
+- [X] T012 [P] Setup Testcontainers for backend integration tests in backend/build.gradle
 
 ---
 

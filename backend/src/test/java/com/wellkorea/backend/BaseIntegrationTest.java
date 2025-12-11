@@ -28,8 +28,8 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
  * Example:
  * <pre>
  * {@code
- * @Tag("integration")  // Add JUnit tag for test categorization
- * @AutoConfigureMockMvc  // Add if you need MockMvc for HTTP testing
+ * @Tag("integration") // Add JUnit tag for test categorization
+ * @AutoConfigureMockMvc // Add if you need MockMvc for HTTP testing
  * class MyIntegrationTest extends BaseIntegrationTest {
  *     // Test methods
  * }

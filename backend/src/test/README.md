@@ -22,11 +22,13 @@ src/test/java/
 ## Test Categories
 
 ### Unit Tests (`@Tag("unit")`)
+
 - **Fast**: No Spring context, no external dependencies
 - **Examples**: `JwtTokenProviderTest`, `JobCodeGeneratorTest`
 - **Run**: `./gradlew test -Dgroups=unit`
 
 ### Integration Tests (`@Tag("integration")`)
+
 - **Comprehensive**: Full Spring context + Testcontainers
 - **Base Class**: Extend `BaseIntegrationTest`
 - **Examples**: `SecurityIntegrationTest`, `MinioFileStorageTest`
@@ -83,6 +85,7 @@ class MyIntegrationTest extends BaseIntegrationTest {
 ### TestConstants
 
 All test configuration values are centralized in `TestConstants.java`:
+
 - JWT secrets and expiration
 - Database credentials
 - MinIO configuration
@@ -93,6 +96,7 @@ All test configuration values are centralized in `TestConstants.java`:
 ### BaseIntegrationTest
 
 Provides singleton Testcontainers for all integration tests:
+
 - **PostgreSQL 16**: Auto-configured via `@ServiceConnection`
 - **MinIO**: Manually configured for S3-compatible storage
 
@@ -101,6 +105,7 @@ Containers start once per JVM and are reused across all tests for performance.
 ### application-test.yml
 
 Static configuration for test profile:
+
 - Connection pool settings (HikariCP)
 - Logging levels
 - Actuator endpoints
@@ -138,6 +143,7 @@ Static configuration for test profile:
 ## CI/CD Integration
 
 GitHub Actions runs:
+
 ```bash
 ./gradlew test jacocoTestReport jacocoTestCoverageVerification
 ```
@@ -149,16 +155,19 @@ GitHub Actions runs:
 ## Troubleshooting
 
 ### Tests fail with "Container not started"
+
 - Ensure Docker is running
 - Check `docker ps` for zombie containers
 - Clear Testcontainers cache: `rm -rf ~/.testcontainers`
 
 ### Tests pass individually but fail when run together
+
 - Likely a test isolation issue
 - Check for shared static state
 - Verify cleanup in `@AfterEach`
 
 ### Slow integration tests
+
 - Testcontainers reuse enabled (`.withReuse(true)`)
 - Run unit tests separately: `./gradlew test -Dgroups=unit`
 - Container startup is one-time cost per JVM
