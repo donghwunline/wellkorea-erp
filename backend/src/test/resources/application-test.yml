@@ -54,7 +54,7 @@ security:
     allowed-origins: http://localhost:5173
     allowed-headers: Authorization,Content-Type,Accept,X-Requested-With
   swagger:
-    enabled: false  # Swagger disabled in tests
+    enabled: true  # Swagger enabled for SecurityIntegrationTest
 
 # JWT Configuration - SINGLE SOURCE OF TRUTH
 # Used by all integration tests via @Value injection in Spring beans
