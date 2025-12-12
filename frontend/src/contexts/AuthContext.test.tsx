@@ -9,15 +9,10 @@ import {AuthProvider, useAuth} from './AuthContext';
 import {createMockUser, mockUsers} from '@/test/fixtures';
 
 // Mock dependencies
-vi.mock('@/services/api', () => ({
-  default: {
-    post: vi.fn(),
-  },
-}));
-
-vi.mock('@/services/apiService', () => ({
-  default: {
-    post: vi.fn(),
+vi.mock('@/services', () => ({
+  authApi: {
+    login: vi.fn(),
+    logout: vi.fn(),
   },
 }));
 
@@ -33,8 +28,7 @@ vi.mock('@/utils/storage', () => ({
   },
 }));
 
-const api = (await import('@/services/api')).default;
-const apiService = (await import('@/services/apiService')).default;
+const {authApi} = await import('@/services');
 const {authStorage} = await import('@/utils/storage');
 
 const wrapper: React.FC<{children: React.ReactNode}> = ({children}) => (
@@ -77,7 +71,7 @@ describe('AuthContext', () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue(null);
       vi.mocked(authStorage.getUser).mockReturnValue(null);
 
-      vi.mocked(apiService.post).mockResolvedValue({
+      vi.mocked(authApi.login).mockResolvedValue({
         accessToken: 'new-access-token',
         refreshToken: 'new-refresh-token',
         user: mockUsers.admin,
@@ -89,7 +83,7 @@ describe('AuthContext', () => {
         await result.current.login({username: 'alice', password: 'password'});
       });
 
-      expect(apiService.post).toHaveBeenCalledWith('/auth/login', {
+      expect(authApi.login).toHaveBeenCalledWith({
         username: 'alice',
         password: 'password',
       });
@@ -106,9 +100,9 @@ describe('AuthContext', () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue(null);
       vi.mocked(authStorage.getUser).mockReturnValue(null);
 
-      vi.mocked(apiService.post).mockResolvedValue({
+      vi.mocked(authApi.login).mockResolvedValue({
         accessToken: 'access-token',
-        refreshToken: null,
+        refreshToken: undefined,
         user: mockUsers.sales,
       });
 
@@ -125,7 +119,7 @@ describe('AuthContext', () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue(null);
       vi.mocked(authStorage.getUser).mockReturnValue(null);
 
-      vi.mocked(apiService.post).mockRejectedValue(new Error('Invalid credentials'));
+      vi.mocked(authApi.login).mockRejectedValue(new Error('Invalid credentials'));
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
@@ -146,7 +140,7 @@ describe('AuthContext', () => {
     it('should logout successfully and clear state', async () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
       vi.mocked(authStorage.getUser).mockReturnValue(mockUsers.admin);
-      vi.mocked(api.post).mockResolvedValue({});
+      vi.mocked(authApi.logout).mockResolvedValue(undefined);
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 
@@ -159,7 +153,7 @@ describe('AuthContext', () => {
         await new Promise(resolve => setTimeout(resolve, 10));
       });
 
-      expect(api.post).toHaveBeenCalledWith('/auth/logout');
+      expect(authApi.logout).toHaveBeenCalled();
       expect(authStorage.clearAuth).toHaveBeenCalled();
       expect(result.current.isAuthenticated).toBe(false);
       expect(result.current.user).toBeNull();
@@ -169,7 +163,7 @@ describe('AuthContext', () => {
     it('should clear state even if logout API fails', async () => {
       vi.mocked(authStorage.getAccessToken).mockReturnValue('token');
       vi.mocked(authStorage.getUser).mockReturnValue(mockUsers.admin);
-      vi.mocked(api.post).mockRejectedValue(new Error('Network error'));
+      vi.mocked(authApi.logout).mockRejectedValue(new Error('Network error'));
 
       const {result} = renderHook(() => useAuth(), {wrapper});
 

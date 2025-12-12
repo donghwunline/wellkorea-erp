@@ -28,10 +28,9 @@
 
 import type {ReactNode} from 'react';
 import React, {createContext, useCallback, useContext, useMemo, useState} from 'react';
-import api from '@/services/api';
-import apiService from '@/services/apiService';
+import {authApi} from '@/services';
 import {authStorage} from '@/utils/storage';
-import type {AuthState, LoginRequest, LoginResponse, RoleName, User} from '@/types/auth';
+import type {AuthState, LoginRequest, RoleName, User} from '@/types/auth';
 
 export interface AuthContextType extends AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
@@ -77,10 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const login = useCallback(async (credentials: LoginRequest): Promise<void> => {
     try {
-      const { accessToken, refreshToken, user } = await apiService.post<LoginResponse>(
-        '/auth/login',
-        credentials
-      );
+      const {accessToken, refreshToken, user} = await authApi.login(credentials);
 
       authStorage.setAccessToken(accessToken);
       authStorage.setRefreshToken(refreshToken ?? null);
@@ -114,8 +110,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
     };
 
-    api
-      .post('/auth/logout')
+    authApi
+      .logout()
       .catch(err => {
         console.error('Logout API call failed:', err);
       })
