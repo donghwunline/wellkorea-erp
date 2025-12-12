@@ -73,9 +73,7 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.token").isNotEmpty())
-                    .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
-                    .andExpect(jsonPath("$.data.expiresIn").isNumber())
+                    .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
                     .andExpect(jsonPath("$.data.user.username").value(ADMIN_USERNAME))
                     .andExpect(jsonPath("$.data.user.roles", hasItem("ROLE_ADMIN")));
         }

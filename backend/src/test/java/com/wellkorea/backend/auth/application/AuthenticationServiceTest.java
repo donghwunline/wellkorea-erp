@@ -90,8 +90,7 @@ class AuthenticationServiceTest implements TestFixtures {
             LoginResponse result = authenticationService.login(ADMIN_USERNAME, TEST_PASSWORD);
 
             assertThat(result).isNotNull();
-            assertThat(result.token()).isEqualTo("generated.jwt.token");
-            assertThat(result.tokenType()).isEqualTo("Bearer");
+            assertThat(result.accessToken()).isEqualTo("generated.jwt.token");
             assertThat(result.user()).isNotNull();
             assertThat(result.user().username()).isEqualTo(ADMIN_USERNAME);
             assertThat(result.user().roles()).contains(Role.ADMIN.getAuthority());
@@ -260,8 +259,7 @@ class AuthenticationServiceTest implements TestFixtures {
             LoginResponse result = authenticationService.refreshToken(oldToken);
 
             assertThat(result).isNotNull();
-            assertThat(result.token()).isEqualTo(newToken);
-            assertThat(result.tokenType()).isEqualTo("Bearer");
+            assertThat(result.accessToken()).isEqualTo(newToken);
             // Old token should be blacklisted
             assertThat(authenticationService.isTokenBlacklisted(oldToken)).isTrue();
         }
