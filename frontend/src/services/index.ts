@@ -51,8 +51,8 @@ export {
   isNotFoundError,
 } from './errorMessage';
 
-// DEPRECATED: Old API layer exports (for backward compatibility during migration)
-// TODO: Remove these once all components are migrated to new services
-export { authApi } from './authApi';
-export { userApi } from './userApi';
-export { auditApi } from './auditApi';
+// Re-export common types from API layer for convenience
+export type { PaginationMetadata, Paginated, ApiError, ErrorResponse } from '@/api/types';
+
+// Re-export auth constants for component use
+export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/types/auth';
