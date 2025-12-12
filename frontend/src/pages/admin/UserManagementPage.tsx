@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import apiService from '@/services/apiService';
+import { userApi } from '@/services';
 import type { PaginationMetadata } from '@/types/api';
 import type {
   UserDetails,
@@ -66,10 +66,11 @@ export function UserManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const params: Record<string, unknown> = { page, size: 10 };
-      if (search) params.search = search;
-
-      const result = await apiService.getPaginated<UserDetails>('/users', { params });
+      const result = await userApi.getUsers({
+        page,
+        size: 10,
+        search: search || undefined,
+      });
       setUsers(result.data);
       setPagination(result.pagination);
     } catch {
@@ -167,7 +168,7 @@ export function UserManagementPage() {
         fullName: formData.fullName.trim(),
         roles: formData.roles,
       };
-      await apiService.post('/users', request);
+      await userApi.createUser(request);
       closeModal();
       fetchUsers();
     } catch {
@@ -190,7 +191,7 @@ export function UserManagementPage() {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
       };
-      await apiService.put(`/users/${selectedUser.id}`, request);
+      await userApi.updateUser(selectedUser.id, request);
       closeModal();
       fetchUsers();
     } catch {
@@ -209,7 +210,7 @@ export function UserManagementPage() {
     setModalError(null);
 
     try {
-      await apiService.put(`/users/${selectedUser.id}/roles`, { roles: formData.roles });
+      await userApi.assignRoles(selectedUser.id, {roles: formData.roles});
       closeModal();
       fetchUsers();
     } catch {
@@ -228,7 +229,7 @@ export function UserManagementPage() {
     setModalError(null);
 
     try {
-      await apiService.put(`/users/${selectedUser.id}/password`, { newPassword: formData.password });
+      await userApi.changePassword(selectedUser.id, {newPassword: formData.password});
       closeModal();
     } catch {
       setModalError('Failed to change password');
@@ -245,7 +246,7 @@ export function UserManagementPage() {
     setModalError(null);
 
     try {
-      await apiService.delete(`/users/${selectedUser.id}`);
+      await userApi.deleteUser(selectedUser.id);
       closeModal();
       fetchUsers();
     } catch {
@@ -258,7 +259,7 @@ export function UserManagementPage() {
   // Activate user
   const handleActivate = async (user: UserDetails) => {
     try {
-      await apiService.post(`/users/${user.id}/activate`);
+      await userApi.activateUser(user.id);
       fetchUsers();
     } catch {
       setError('Failed to activate user');
