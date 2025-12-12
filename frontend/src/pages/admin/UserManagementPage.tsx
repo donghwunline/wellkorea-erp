@@ -9,30 +9,9 @@
  */
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import { userApi } from '@/services';
-import type { PaginationMetadata } from '@/types/api';
-import type {
-  UserDetails,
-  RoleName,
-  CreateUserRequest,
-  UpdateUserRequest,
-} from '@/types/auth';
-
-const ALL_ROLES: RoleName[] = ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_PRODUCTION', 'ROLE_SALES'];
-
-const ROLE_LABEL_MAP: Record<RoleName, string> = {
-  ROLE_ADMIN: 'Administrator',
-  ROLE_FINANCE: 'Finance',
-  ROLE_PRODUCTION: 'Production',
-  ROLE_SALES: 'Sales',
-};
-
-const ROLE_DESCRIPTION_MAP: Record<RoleName, string> = {
-  ROLE_ADMIN: 'Full system access',
-  ROLE_FINANCE: 'Quotations, invoices, AR/AP',
-  ROLE_PRODUCTION: 'Work progress tracking',
-  ROLE_SALES: 'Assigned customer quotations',
-};
+import { userService, type UserDetails, type CreateUserRequest, type UpdateUserRequest } from '@/services';
+import { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS, type RoleName } from '@/types/auth';
+import type { PaginationMetadata } from '@/api/types';
 
 type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | null;
 
@@ -66,7 +45,7 @@ export function UserManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await userApi.getUsers({
+      const result = await userService.getUsers({
         page,
         size: 10,
         search: search || undefined,
@@ -168,7 +147,7 @@ export function UserManagementPage() {
         fullName: formData.fullName.trim(),
         roles: formData.roles,
       };
-      await userApi.createUser(request);
+      await userService.createUser(request);
       closeModal();
       fetchUsers();
     } catch {
@@ -191,7 +170,7 @@ export function UserManagementPage() {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
       };
-      await userApi.updateUser(selectedUser.id, request);
+      await userService.updateUser(selectedUser.id, request);
       closeModal();
       fetchUsers();
     } catch {
@@ -210,7 +189,7 @@ export function UserManagementPage() {
     setModalError(null);
 
     try {
-      await userApi.assignRoles(selectedUser.id, {roles: formData.roles});
+      await userService.assignRoles(selectedUser.id, {roles: formData.roles});
       closeModal();
       fetchUsers();
     } catch {
@@ -229,7 +208,7 @@ export function UserManagementPage() {
     setModalError(null);
 
     try {
-      await userApi.changePassword(selectedUser.id, {newPassword: formData.password});
+      await userService.changePassword(selectedUser.id, {newPassword: formData.password});
       closeModal();
     } catch {
       setModalError('Failed to change password');
@@ -246,7 +225,7 @@ export function UserManagementPage() {
     setModalError(null);
 
     try {
-      await userApi.deleteUser(selectedUser.id);
+      await userService.deleteUser(selectedUser.id);
       closeModal();
       fetchUsers();
     } catch {
@@ -259,7 +238,7 @@ export function UserManagementPage() {
   // Activate user
   const handleActivate = async (user: UserDetails) => {
     try {
-      await userApi.activateUser(user.id);
+      await userService.activateUser(user.id);
       fetchUsers();
     } catch {
       setError('Failed to activate user');
@@ -438,7 +417,7 @@ export function UserManagementPage() {
                                   : 'bg-purple-500/20 text-purple-400'
                           }`}
                         >
-                          {ROLE_LABEL_MAP[role]}
+                          {ROLE_LABELS[role]}
                         </span>
                       ))}
                     </div>
@@ -654,9 +633,9 @@ export function UserManagementPage() {
                           <span
                             className={`text-sm font-medium ${formData.roles.includes(role) ? 'text-copper-400' : 'text-white'}`}
                           >
-                            {ROLE_LABEL_MAP[role]}
+                            {ROLE_LABELS[role]}
                           </span>
-                          <span className="text-xs text-steel-500">{ROLE_DESCRIPTION_MAP[role]}</span>
+                          <span className="text-xs text-steel-500">{ROLE_DESCRIPTIONS[role]}</span>
                         </button>
                       ))}
                     </div>
@@ -813,9 +792,9 @@ export function UserManagementPage() {
                       <span
                         className={`text-sm font-medium ${formData.roles.includes(role) ? 'text-copper-400' : 'text-white'}`}
                       >
-                        {ROLE_LABEL_MAP[role]}
+                        {ROLE_LABELS[role]}
                       </span>
-                      <span className="text-xs text-steel-500">{ROLE_DESCRIPTION_MAP[role]}</span>
+                      <span className="text-xs text-steel-500">{ROLE_DESCRIPTIONS[role]}</span>
                     </button>
                   ))}
                 </div>

@@ -4,8 +4,8 @@
  * Shows overview of modules with role-based visibility
  */
 
-import { useAuth } from '@/contexts/AuthContext';
-import type { RoleName } from '@/types/auth';
+import { useAuth } from '@/hooks';
+import type { RoleName } from '@/services';
 
 interface ModuleCard {
   title: string;

@@ -9,9 +9,9 @@
 
 import { useState, type FormEvent, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks';
 import type { AxiosError } from 'axios';
-import type { ErrorResponse } from '@/types/api';
+import type { ErrorResponse } from '@/api/types';
 
 interface LocationState {
   from?: { pathname: string };

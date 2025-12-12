@@ -68,7 +68,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   /**
    * Login action: Authenticate user and store tokens.
-   * Uses authService which emits events that update this store.
+   *
+   * Simplified: Calls service, stores tokens, and updates state directly.
+   * No event emission - login is an intentional user action.
    */
   login: async (credentials: LoginRequest) => {
     try {
@@ -79,7 +81,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       authStorage.setRefreshToken(refreshToken ?? null);
       authStorage.setUser(user);
 
-      // State is updated via event listener below
+      // Update state directly (no event needed)
+      set({
+        user,
+        accessToken,
+        isAuthenticated: true,
+        isLoading: false,
+      });
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -88,17 +96,19 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   /**
    * Logout action: Clear authentication state and tokens.
-   * Uses authService which emits events that update this store.
+   *
+   * Security/UX: Clears local state IMMEDIATELY, then calls server as best-effort.
+   * This ensures user is logged out instantly even if server is unreachable.
    */
   logout: () => {
-    authService
-      .logout()
-      .catch(err => {
-        console.error('Logout API call failed:', err);
-      })
-      .finally(() => {
-        // State is updated via event listener below
-      });
+    // 1) Immediately clear local state and storage
+    get().clearAuth();
+
+    // 2) Server call is best-effort (fire-and-forget)
+    authService.logout().catch(err => {
+      console.error('Logout API call failed:', err);
+      // User is already logged out locally, so this is non-critical
+    });
   },
 
   /**
@@ -144,8 +154,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 }));
 
 /**
- * Subscribe to auth events from authService.
- * This creates a reactive connection between the service layer and state management.
+ * Subscribe to global auth events from httpClient.
+ *
+ * Events are used ONLY for unintentional/global session changes:
+ * - 'unauthorized': Token refresh failed, session expired (clear auth immediately)
+ * - 'refresh': Token successfully refreshed (update accessToken only)
+ *
+ * Intentional user actions (login/logout) are handled directly by the store actions above.
  *
  * NOTE: This subscription is created at module initialization and never unsubscribed.
  * This is intentional for a SPA that runs for the application lifetime.
@@ -153,21 +168,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
  */
 authEvents.subscribe(event => {
   switch (event.type) {
-    case 'login':
-      useAuthStore.setState({
-        user: event.payload.user,
-        accessToken: event.payload.accessToken,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      break;
-
-    case 'logout':
     case 'unauthorized':
+      // Global session expiry - clear everything immediately
       useAuthStore.getState().clearAuth();
       break;
 
     case 'refresh':
+      // Token refreshed - update accessToken only
       useAuthStore.setState({
         accessToken: event.payload.accessToken,
       });

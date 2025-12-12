@@ -39,8 +39,8 @@
 import type { ReactNode } from 'react';
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import type { RoleName } from '@/types/auth';
+import { useAuth } from '@/hooks';
+import type { RoleName } from '@/services';
 
 interface ProtectedRouteProps {
   children: ReactNode;

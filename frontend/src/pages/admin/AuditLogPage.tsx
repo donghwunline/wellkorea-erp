@@ -8,8 +8,8 @@
  */
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import { auditApi, type AuditLogEntry as ApiAuditLogEntry } from '@/services';
-import type { PaginationMetadata } from '@/types/api';
+import { auditService, type AuditLogEntry as ApiAuditLogEntry } from '@/services';
+import type { PaginationMetadata } from '@/api/types';
 
 interface AuditLogEntry extends Omit<ApiAuditLogEntry, 'action' | 'entityId'> {
   entityId: number | null;
@@ -80,7 +80,7 @@ export function AuditLogPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await auditApi.getAuditLogs({
+      const result = await auditService.getAuditLogs({
         page,
         size: 20,
         sort: 'createdAt,desc',
