@@ -469,23 +469,33 @@ async requestWithMeta<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
 
 ---
 
-## Event-Driven Design
+## Event-Driven Design (Simplified)
 
-### Why Events?
+### Design Philosophy
 
-**Problem**: Direct coupling between services and stores creates circular dependencies and tight coupling.
+**Events are used ONLY for global/unintentional session changes**, not for user-initiated actions.
 
-**Solution**: Services emit events, stores subscribe. Clean separation, no circular dependencies.
+### Why This Approach?
 
-### Event Types
+**Problem**: Fully event-driven architecture (store → service → events → store) creates unnecessary complexity for intentional user actions like login/logout.
+
+**Solution**: Hybrid approach:
+- **User actions** (login/logout): Store calls service directly, updates state synchronously
+- **Global events** (unauthorized/refresh): httpClient emits events, store subscribes reactively
+
+This eliminates circular event flows while maintaining reactivity for critical system events.
+
+### Event Types (Simplified)
 
 ```typescript
 type AuthEvent =
-  | { type: 'login'; payload: { user: User; accessToken: string } }
-  | { type: 'logout' }
   | { type: 'refresh'; payload: { accessToken: string } }
   | { type: 'unauthorized' };
 ```
+
+**Removed**: `login` and `logout` events - these are handled directly by store actions.
+
+**Kept**: `unauthorized` and `refresh` - these are emitted by httpClient during token refresh flow.
 
 ### AuthEventEmitter
 
@@ -516,14 +526,48 @@ class AuthEventEmitter {
 export const authEvents = new AuthEventEmitter();
 ```
 
-### Event Flow Example
+### Flow Examples
+
+#### Login Flow (Direct, No Events)
 
 ```
-1. authService.login() → API call succeeds
-2. authService emits: { type: 'login', payload: { user, accessToken } }
-3. authStore receives event (via subscription)
-4. authStore updates state
-5. Components using useAuth() re-render
+1. Component calls useAuth().login(credentials)
+2. authStore.login() calls authService.login()
+3. authService returns normalized user data
+4. authStore stores tokens in localStorage
+5. authStore updates state directly with set()
+6. Components re-render with new auth state
+```
+
+#### Logout Flow (Direct, No Events)
+
+```
+1. Component calls useAuth().logout()
+2. authStore.logout() immediately calls clearAuth()
+3. clearAuth() clears localStorage and resets state
+4. authStore calls authService.logout() as best-effort
+5. Components re-render with logged-out state
+```
+
+#### Token Refresh Flow (Event-Driven)
+
+```
+1. API request returns 401
+2. httpClient response interceptor catches it
+3. httpClient calls refreshToken()
+4. On success: httpClient emits 'refresh' event
+5. authStore receives event and updates accessToken
+6. Original request retries with new token
+```
+
+#### Session Expiry Flow (Event-Driven)
+
+```
+1. Token refresh fails (401 on /auth/refresh)
+2. httpClient response interceptor detects failure
+3. httpClient emits 'unauthorized' event
+4. authStore receives event and calls clearAuth()
+5. User redirected to login page
 ```
 
 ### Subscription Lifecycle
@@ -533,12 +577,19 @@ export const authEvents = new AuthEventEmitter();
 **Where**: Bottom of `src/stores/authStore.ts`
 
 ```typescript
-authEvents.subscribe((event) => {
+authEvents.subscribe(event => {
   switch (event.type) {
-    case 'login':
-      useAuthStore.setState({ /* ... */ });
+    case 'unauthorized':
+      // Global session expiry - clear everything
+      useAuthStore.getState().clearAuth();
       break;
-    // ... other cases
+
+    case 'refresh':
+      // Token refreshed - update accessToken only
+      useAuthStore.setState({
+        accessToken: event.payload.accessToken,
+      });
+      break;
   }
 });
 ```
