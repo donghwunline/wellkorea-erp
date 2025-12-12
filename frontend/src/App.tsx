@@ -3,7 +3,6 @@
  */
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/AppLayout';
@@ -56,9 +55,8 @@ const PlaceholderPage = ({ title }: { title: string }) => (
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
+      <BrowserRouter>
+        <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
 
@@ -172,7 +170,6 @@ function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
     </ErrorBoundary>
   );
 }

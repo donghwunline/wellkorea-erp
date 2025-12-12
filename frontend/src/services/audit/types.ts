@@ -2,6 +2,8 @@
  * Audit service types (domain models).
  */
 
+import type { Paginated } from '@/api/types';
+
 export interface AuditLogEntry {
   id: number;
   username: string;
@@ -24,12 +26,8 @@ export interface AuditLogListParams {
   endDate?: string;
 }
 
-export interface PaginatedAuditLogs {
-  data: AuditLogEntry[];
-  pagination: {
-    page: number;
-    size: number;
-    totalElements: number;
-    totalPages: number;
-  };
-}
+/**
+ * Paginated audit log list response.
+ * Uses generic Paginated<T> instead of custom interface.
+ */
+export type PaginatedAuditLogs = Paginated<AuditLogEntry>;

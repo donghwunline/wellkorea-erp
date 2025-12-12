@@ -9,7 +9,7 @@
  */
 
 import { httpClient } from '@/api';
-import type { PaginationMetadata } from '@/types/api';
+import type { PaginationMetadata } from '@/api/types';
 import type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './types';
 
 const BASE_PATH = '/audit-logs';
@@ -68,6 +68,8 @@ export const auditService = {
         size: pagination.size,
         totalElements: pagination.totalElements,
         totalPages: pagination.totalPages,
+        first: pagination.first,
+        last: pagination.last,
       },
     };
   },

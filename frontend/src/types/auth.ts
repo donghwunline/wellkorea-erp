@@ -26,6 +26,17 @@ export interface UserDetails {
 
 export type RoleName = 'ROLE_ADMIN' | 'ROLE_FINANCE' | 'ROLE_PRODUCTION' | 'ROLE_SALES';
 
+/**
+ * Array of all role names for iteration.
+ * Use this instead of manually listing roles.
+ */
+export const ALL_ROLES: readonly RoleName[] = [
+  'ROLE_ADMIN',
+  'ROLE_FINANCE',
+  'ROLE_PRODUCTION',
+  'ROLE_SALES',
+] as const;
+
 export const ROLE_LABELS: Record<RoleName, string> = {
   ROLE_ADMIN: 'Administrator',
   ROLE_FINANCE: 'Finance',

@@ -2,6 +2,9 @@
  * User service types (domain models).
  */
 
+import type { Paginated } from '@/api/types';
+import type { UserDetails } from '@/types/auth';
+
 export type {
   UserDetails,
   CreateUserRequest,
@@ -17,15 +20,8 @@ export interface UserListParams {
   search?: string;
 }
 
-export interface PaginatedUsers {
-  data: UserDetails[];
-  pagination: {
-    page: number;
-    size: number;
-    totalElements: number;
-    totalPages: number;
-  };
-}
-
-// Re-export for convenience
-import type { UserDetails } from '@/types/auth';
+/**
+ * Paginated user list response.
+ * Uses generic Paginated<T> instead of custom interface.
+ */
+export type PaginatedUsers = Paginated<UserDetails>;

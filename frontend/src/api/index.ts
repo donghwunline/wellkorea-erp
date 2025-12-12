@@ -20,11 +20,13 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api
  */
 const onUnauthorized = () => {
   // Emit unauthorized event (dynamic import prevents circular dependency)
-  import('@/services/auth/authService').then(({ authEvents }) => {
-    authEvents.emit({ type: 'unauthorized' });
-  }).catch(err => {
-    console.error('Failed to emit unauthorized event:', err);
-  });
+  import('@/services/auth/authService')
+    .then(({ authEvents }) => {
+      authEvents.emit({ type: 'unauthorized' });
+    })
+    .catch(err => {
+      console.error('Failed to emit unauthorized event:', err);
+    });
 
   // Redirect to login (happens immediately, doesn't wait for event)
   navigation.redirectToLogin();
@@ -37,6 +39,6 @@ const onUnauthorized = () => {
 export const httpClient = new HttpClient(BASE_URL, tokenStore, onUnauthorized);
 
 // Re-export types
-export type { Tokens, TokenStore, ApiError } from './types';
+export type { Tokens, ApiError } from './types';
 export { HttpClient } from './httpClient';
 export { tokenStore } from './tokenStore';

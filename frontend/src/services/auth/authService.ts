@@ -13,11 +13,16 @@ import { httpClient } from '@/api';
 import type { LoginRequest, LoginResponse, User } from './types';
 
 /**
- * Auth events that can be subscribed to.
+ * Auth events for global/unintentional session changes.
+ *
+ * Events are used ONLY for:
+ * - 'unauthorized': Token refresh failed, session expired (emitted by httpClient)
+ * - 'refresh': Token successfully refreshed (emitted by httpClient)
+ *
+ * Note: 'login' and 'logout' events removed - these are intentional user actions
+ * handled directly by the store for simpler flow.
  */
 export type AuthEvent =
-  | { type: 'login'; payload: { user: User; accessToken: string } }
-  | { type: 'logout' }
   | { type: 'refresh'; payload: { accessToken: string } }
   | { type: 'unauthorized' };
 
@@ -56,12 +61,15 @@ export const authEvents = new AuthEventEmitter();
 export const authService = {
   /**
    * Authenticate user with credentials.
+   *
+   * Returns normalized user data. Store handles state updates directly.
+   * No event emitted - login is an intentional user action.
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await httpClient.post<LoginResponse>('/auth/login', credentials);
 
     // DTO → Domain transformation (normalize data)
-    const normalized = {
+    return {
       ...response,
       user: {
         ...response.user,
@@ -69,27 +77,16 @@ export const authService = {
         fullName: response.user.fullName.trim(), // Trim whitespace
       },
     };
-
-    // Emit login event
-    authEvents.emit({
-      type: 'login',
-      payload: {
-        user: normalized.user,
-        accessToken: normalized.accessToken,
-      },
-    });
-
-    return normalized;
   },
 
   /**
    * Logout current user.
+   *
+   * Notifies backend to invalidate token. Store already cleared state before calling this.
+   * No event emitted - logout is an intentional user action handled by store.
    */
   async logout(): Promise<void> {
     await httpClient.post<void>('/auth/logout');
-
-    // Emit logout event
-    authEvents.emit({ type: 'logout' });
   },
 
   /**

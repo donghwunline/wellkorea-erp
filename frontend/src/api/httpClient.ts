@@ -10,8 +10,7 @@
  */
 
 import axios, {AxiosError, type AxiosInstance, type AxiosRequestConfig} from 'axios';
-import type {ApiResponse} from '@/types/api';
-import type {ApiError, Tokens, TokenStore} from './types';
+import type {ApiResponse, ApiError, Tokens, TokenStore} from './types';
 
 /**
  * Pending request during token refresh.
