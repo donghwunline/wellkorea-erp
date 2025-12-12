@@ -8,17 +8,13 @@
  */
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import apiService from '@/services/apiService';
+import { auditApi, type AuditLogEntry as ApiAuditLogEntry } from '@/services';
 import type { PaginationMetadata } from '@/types/api';
 
-interface AuditLogEntry {
-  id: number;
-  entityType: string;
+interface AuditLogEntry extends Omit<ApiAuditLogEntry, 'action' | 'entityId'> {
   entityId: number | null;
   action: AuditAction;
   userId: number | null;
-  username: string | null;
-  ipAddress: string | null;
   changes: string | null;
   metadata: string | null;
   createdAt: string;
@@ -84,12 +80,15 @@ export function AuditLogPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const params: Record<string, unknown> = { page, size: 20, sort: 'createdAt,desc' };
-      if (filterEntityType) params.entityType = filterEntityType;
-      if (filterAction) params.action = filterAction;
-
-      const result = await apiService.getPaginated<AuditLogEntry>('/audit', { params });
-      setLogs(result.data);
+      const result = await auditApi.getAuditLogs({
+        page,
+        size: 20,
+        sort: 'createdAt,desc',
+        entityType: filterEntityType || undefined,
+        action: filterAction || undefined,
+      });
+      // Cast the result to our local type which has additional fields
+      setLogs(result.data as unknown as AuditLogEntry[]);
       setPagination(result.pagination);
     } catch {
       setError('Failed to load audit logs');
