@@ -81,7 +81,7 @@ export const authStorage = {
     return storage.getJson<T>('user');
   },
 
-  setUser(value: unknown): void {
+  setUser<T>(value: T): void {
     storage.setJson('user', value);
   },
 

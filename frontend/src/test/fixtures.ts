@@ -12,7 +12,7 @@
  * const adminUser = mockUsers.admin;
  *
  * // Or create custom users
- * const customUser = createMockUser({ roles: ['ADMIN', 'FINANCE'] });
+ * const customUser = createMockUser({ roles: ['ROLE_ADMIN', 'ROLE_FINANCE'] });
  * ```
  */
 
@@ -29,7 +29,7 @@ import type {User, RoleName, AuthState} from '@/types/auth';
  * ```typescript
  * const customUser = createMockUser({
  *   username: 'john',
- *   roles: ['ADMIN', 'SALES']
+ *   roles: ['ROLE_ADMIN', 'ROLE_SALES']
  * });
  * ```
  */
@@ -38,7 +38,7 @@ export const createMockUser = (overrides?: Partial<User>): User => ({
   username: 'testuser',
   email: 'testuser@example.com',
   fullName: 'Test User',
-  roles: ['SALES'],
+  roles: ['ROLE_SALES'],
   ...overrides,
 });
 
@@ -62,7 +62,7 @@ export const mockUsers = {
     username: 'admin',
     email: 'admin@example.com',
     fullName: 'Admin User',
-    roles: ['ADMIN'],
+    roles: ['ROLE_ADMIN'],
   }),
 
   /**
@@ -73,7 +73,7 @@ export const mockUsers = {
     username: 'finance',
     email: 'finance@example.com',
     fullName: 'Finance User',
-    roles: ['FINANCE'],
+    roles: ['ROLE_FINANCE'],
   }),
 
   /**
@@ -84,7 +84,7 @@ export const mockUsers = {
     username: 'alice',
     email: 'alice@example.com',
     fullName: 'Alice Sales',
-    roles: ['SALES'],
+    roles: ['ROLE_SALES'],
   }),
 
   /**
@@ -95,7 +95,7 @@ export const mockUsers = {
     username: 'production',
     email: 'production@example.com',
     fullName: 'Production User',
-    roles: ['PRODUCTION'],
+    roles: ['ROLE_PRODUCTION'],
   }),
 
   /**
@@ -106,7 +106,7 @@ export const mockUsers = {
     username: 'charlie',
     email: 'charlie@example.com',
     fullName: 'Charlie Multi',
-    roles: ['ADMIN', 'SALES'],
+    roles: ['ROLE_ADMIN', 'ROLE_SALES'],
   }),
 };
 

@@ -14,11 +14,45 @@ VALUES ('ADMIN', 'System administrator with full access to all features'),
 ON CONFLICT (name) DO NOTHING;
 
 -- =====================================================================
--- USERS
+-- USERS (Development seed data)
 -- =====================================================================
--- Test users have been moved to DatabaseTestHelper for test-only usage.
--- In production environments, users should be created through the application UI
--- or via separate administrative scripts with secure password management.
+-- Password for all test users: "password123"
+-- BCrypt hash: $2a$10$iILF.Jz64XwbA5epmf3cg.BjFigBnCSq6kNZMFyksQTCn7dCqhMs6
+--
+-- WARNING: These are development users only. In production:
+-- - Users should be created through the application UI
+-- - Use secure password management practices
+
+INSERT INTO users (id, username, email, password_hash, full_name, is_active)
+VALUES (1, 'admin', 'admin@wellkorea.com', '$2a$10$iILF.Jz64XwbA5epmf3cg.BjFigBnCSq6kNZMFyksQTCn7dCqhMs6', 'Admin User', true),
+       (2, 'finance', 'finance@wellkorea.com', '$2a$10$iILF.Jz64XwbA5epmf3cg.BjFigBnCSq6kNZMFyksQTCn7dCqhMs6', 'Finance Manager', true),
+       (3, 'production', 'production@wellkorea.com', '$2a$10$iILF.Jz64XwbA5epmf3cg.BjFigBnCSq6kNZMFyksQTCn7dCqhMs6', 'Production Lead', true),
+       (4, 'sales', 'sales@wellkorea.com', '$2a$10$iILF.Jz64XwbA5epmf3cg.BjFigBnCSq6kNZMFyksQTCn7dCqhMs6', 'Sales Representative', true),
+       (5, 'sales2', 'sales2@wellkorea.com', '$2a$10$iILF.Jz64XwbA5epmf3cg.BjFigBnCSq6kNZMFyksQTCn7dCqhMs6', 'Sales Representative 2', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Reset sequence for users table
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+
+-- =====================================================================
+-- USER-ROLE ASSIGNMENTS
+-- =====================================================================
+-- admin (ID: 1) - All roles (ADMIN, FINANCE, PRODUCTION, SALES)
+-- finance (ID: 2) - FINANCE role
+-- production (ID: 3) - PRODUCTION role
+-- sales (ID: 4) - SALES role
+-- sales2 (ID: 5) - SALES role
+
+INSERT INTO user_roles (user_id, role_id)
+VALUES (1, (SELECT id FROM roles WHERE name = 'ADMIN')),
+       (1, (SELECT id FROM roles WHERE name = 'FINANCE')),
+       (1, (SELECT id FROM roles WHERE name = 'PRODUCTION')),
+       (1, (SELECT id FROM roles WHERE name = 'SALES')),
+       (2, (SELECT id FROM roles WHERE name = 'FINANCE')),
+       (3, (SELECT id FROM roles WHERE name = 'PRODUCTION')),
+       (4, (SELECT id FROM roles WHERE name = 'SALES')),
+       (5, (SELECT id FROM roles WHERE name = 'SALES'))
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
 -- =====================================================================
 -- CUSTOMERS
@@ -179,14 +213,14 @@ SELECT setval('products_id_seq', (SELECT MAX(id) FROM products));
 -- =====================================================================
 
 COMMENT
-ON TABLE users IS 'Test users for development (password: password123)';
+    ON TABLE users IS 'Test users for development (password: password123)';
 COMMENT
-ON TABLE roles IS 'RBAC roles: ADMIN, FINANCE, PRODUCTION, SALES';
+    ON TABLE roles IS 'RBAC roles: ADMIN, FINANCE, PRODUCTION, SALES';
 COMMENT
-ON TABLE customers IS 'Test customers representing major Korean industrial companies';
+    ON TABLE customers IS 'Test customers representing major Korean industrial companies';
 COMMENT
-ON TABLE suppliers IS 'Test suppliers for outsourced manufacturing processes';
+    ON TABLE suppliers IS 'Test suppliers for outsourced manufacturing processes';
 COMMENT
-ON TABLE products IS 'Product catalog with realistic pricing and specifications';
+    ON TABLE products IS 'Product catalog with realistic pricing and specifications';
 COMMENT
-ON TABLE work_progress_step_templates IS 'Manufacturing workflow templates per product type';
+    ON TABLE work_progress_step_templates IS 'Manufacturing workflow templates per product type';

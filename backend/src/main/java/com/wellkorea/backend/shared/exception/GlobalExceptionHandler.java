@@ -1,5 +1,6 @@
 package com.wellkorea.backend.shared.exception;
 
+import com.wellkorea.backend.auth.application.AuthenticationException;
 import com.wellkorea.backend.shared.audit.AuditContextHolder;
 import com.wellkorea.backend.shared.audit.AuditLogger;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
@@ -157,6 +158,34 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         auditLogger.logAccessDenied("User", null, null, username, ipAddress, userAgent,
                 Map.of("reason", "Invalid credentials", "path", request.getDescription(false)));
+
+        log.warn("Authentication failed: {} from {} (IP: {})", ex.getMessage(), request.getDescription(false), ipAddress);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Handle custom authentication failures (401).
+     * Logs failed authentication attempts to audit trail.
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(
+            AuthenticationException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.AUTHENTICATION_FAILED,
+                "Authentication failed",
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        // Log failed authentication attempt
+        String ipAddress = AuditContextHolder.getClientIp();
+        String userAgent = AuditContextHolder.getUserAgent();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth != null ? auth.getName() : "anonymous";
+
+        auditLogger.logAccessDenied("User", null, null, username, ipAddress, userAgent,
+                Map.of("reason", ex.getMessage(), "path", request.getDescription(false)));
 
         log.warn("Authentication failed: {} from {} (IP: {})", ex.getMessage(), request.getDescription(false), ipAddress);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);

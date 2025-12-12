@@ -37,7 +37,7 @@ describe('storage utility', () => {
 
   describe('JSON operations', () => {
     it('should store and retrieve JSON objects', () => {
-      const testObj = {name: 'Alice', age: 30, roles: ['ADMIN']};
+      const testObj = {name: 'Alice', age: 30, roles: ['ROLE_ADMIN']};
       storage.setJson('user', testObj);
 
       const retrieved = storage.getJson<typeof testObj>('user');
@@ -137,7 +137,7 @@ describe('authStorage utility', () => {
         username: 'alice',
         email: 'alice@example.com',
         fullName: 'Alice User',
-        roles: ['ADMIN'],
+        roles: ['ROLE_ADMIN'],
       };
 
       authStorage.setUser(user);
