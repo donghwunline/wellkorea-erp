@@ -25,6 +25,9 @@ import type {AxiosRequestConfig, AxiosResponse} from 'axios';
 import type {ApiResponse, PaginationMetadata} from '@/types/api';
 import {hasPaginationMetadata} from '@/types/api';
 
+// Re-export PaginationMetadata for convenience
+export type {PaginationMetadata} from '@/types/api';
+
 /**
  * Result type when accessing both data and metadata from response.
  */
@@ -33,6 +36,14 @@ export interface ApiResponseWithMeta<T> {
   message: string;
   timestamp: string;
   metadata?: Record<string, unknown>;
+}
+
+/**
+ * Result type for paginated responses.
+ */
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMetadata;
 }
 
 class ApiService {
@@ -186,7 +197,7 @@ class ApiService {
   async getPaginated<T>(
     url: string,
     config?: AxiosRequestConfig
-  ): Promise<{data: T[]; pagination: PaginationMetadata}> {
+  ): Promise<PaginatedResponse<T>> {
     const response = await api.get<ApiResponse<T[]>>(url, config);
 
     if (!hasPaginationMetadata(response.data)) {
