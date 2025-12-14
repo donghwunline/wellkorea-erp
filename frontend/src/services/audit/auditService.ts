@@ -9,10 +9,10 @@
  */
 
 import { httpClient } from '@/api';
-import type { PaginationMetadata } from '@/api/types';
+import type { PaginationMetadata, PagedResponse } from '@/api/types';
 import type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './types';
 
-const BASE_PATH = '/audit-logs';
+const BASE_PATH = '/audit';
 
 /**
  * DTO type from backend (entityId is string | null).
@@ -51,25 +51,27 @@ function transformAuditLogEntry(dto: AuditLogEntryDto): AuditLogEntry {
 export const auditService = {
   /**
    * Get paginated list of audit logs.
+   * Backend returns Page<AuditLogResponse> structure.
    */
   async getAuditLogs(params?: AuditLogListParams): Promise<PaginatedAuditLogs> {
-    const response = await httpClient.requestWithMeta<AuditLogEntryDto[]>({
+    const response = await httpClient.requestWithMeta<PagedResponse<AuditLogEntryDto>>({
       method: 'GET',
       url: BASE_PATH,
       params,
     });
 
+    const pagedData = response.data;
     const pagination = response.metadata as unknown as PaginationMetadata;
 
     return {
-      data: response.data.map(transformAuditLogEntry),
+      data: pagedData.content.map(transformAuditLogEntry),
       pagination: {
-        page: pagination.page,
-        size: pagination.size,
-        totalElements: pagination.totalElements,
-        totalPages: pagination.totalPages,
-        first: pagination.first,
-        last: pagination.last,
+        page: pagination.page ?? pagedData.number, // Use metadata if available, fallback to page number
+        size: pagination.size ?? pagedData.size,
+        totalElements: pagination.totalElements ?? pagedData.totalElements,
+        totalPages: pagination.totalPages ?? pagedData.totalPages,
+        first: pagination.first ?? pagedData.first,
+        last: pagination.last ?? pagedData.last,
       },
     };
   },

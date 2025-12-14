@@ -9,7 +9,7 @@
  */
 
 import { httpClient } from '@/api';
-import type { PaginationMetadata } from '@/api/types';
+import type { PaginationMetadata, PagedResponse } from '@/api/types';
 import type {
   UserDetails,
   CreateUserRequest,
@@ -42,25 +42,27 @@ function transformUserDetails(dto: UserDetails): UserDetails {
 export const userService = {
   /**
    * Get paginated list of users.
+   * Backend returns Page<UserResponse> structure.
    */
   async getUsers(params?: UserListParams): Promise<PaginatedUsers> {
-    const response = await httpClient.requestWithMeta<UserDetails[]>({
+    const response = await httpClient.requestWithMeta<PagedResponse<UserDetails>>({
       method: 'GET',
       url: BASE_PATH,
       params,
     });
 
+    const pagedData = response.data;
     const pagination = response.metadata as unknown as PaginationMetadata;
 
     return {
-      data: response.data.map(transformUserDetails),
+      data: pagedData.content.map(transformUserDetails),
       pagination: {
-        page: pagination.page,
-        size: pagination.size,
-        totalElements: pagination.totalElements,
-        totalPages: pagination.totalPages,
-        first: pagination.first,
-        last: pagination.last,
+        page: pagination.page ?? pagedData.number, // Use metadata if available, fallback to page number
+        size: pagination.size ?? pagedData.size,
+        totalElements: pagination.totalElements ?? pagedData.totalElements,
+        totalPages: pagination.totalPages ?? pagedData.totalPages,
+        first: pagination.first ?? pagedData.first,
+        last: pagination.last ?? pagedData.last,
       },
     };
   },
@@ -117,5 +119,20 @@ export const userService = {
    */
   async deleteUser(id: number): Promise<void> {
     await httpClient.delete<void>(`${BASE_PATH}/${id}`);
+  },
+
+  /**
+   * Get customer assignments for a user (Sales role filtering per FR-062).
+   */
+  async getUserCustomers(id: number): Promise<number[]> {
+    const response = await httpClient.get<{ customerIds: number[] }>(`${BASE_PATH}/${id}/customers`);
+    return response.customerIds;
+  },
+
+  /**
+   * Assign customers to a user (Sales role filtering per FR-062).
+   */
+  async assignCustomers(id: number, customerIds: number[]): Promise<void> {
+    await httpClient.put<void>(`${BASE_PATH}/${id}/customers`, { customerIds });
   },
 };
