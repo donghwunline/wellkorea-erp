@@ -13,7 +13,7 @@ import { userService, type UserDetails, type CreateUserRequest, type UpdateUserR
 import { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS, type RoleName } from '@/types/auth';
 import type { PaginationMetadata } from '@/api/types';
 
-type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | null;
+type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | 'customers' | null;
 
 export function UserManagementPage() {
   // List state
@@ -39,6 +39,19 @@ export function UserManagementPage() {
     fullName: '',
     roles: [] as RoleName[],
   });
+
+  // Customer assignment state
+  const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
+
+  // Mock customer data (TODO: Replace with real customer service when implemented)
+  const mockCustomers = [
+    { id: 1, name: 'Samsung Electronics', code: 'SAMSUNG' },
+    { id: 2, name: 'LG Display', code: 'LG' },
+    { id: 3, name: 'Hyundai Motor', code: 'HYUNDAI' },
+    { id: 4, name: 'SK Hynix', code: 'SKHYNIX' },
+    { id: 5, name: 'POSCO', code: 'POSCO' },
+  ];
 
   // Fetch users
   const fetchUsers = useCallback(async () => {
@@ -117,10 +130,28 @@ export function UserManagementPage() {
     setModalType('delete');
   };
 
+  const openCustomersModal = async (user: UserDetails) => {
+    setSelectedUser(user);
+    setModalError(null);
+    setIsLoadingCustomers(true);
+    setModalType('customers');
+
+    try {
+      const customerIds = await userService.getUserCustomers(user.id);
+      setSelectedCustomers(customerIds);
+    } catch {
+      setModalError('Failed to load customer assignments');
+      setSelectedCustomers([]);
+    } finally {
+      setIsLoadingCustomers(false);
+    }
+  };
+
   const closeModal = () => {
     setModalType(null);
     setSelectedUser(null);
     setModalError(null);
+    setSelectedCustomers([]);
   };
 
   // Toggle role selection
@@ -243,6 +274,31 @@ export function UserManagementPage() {
     } catch {
       setError('Failed to activate user');
     }
+  };
+
+  // Assign customers
+  const handleAssignCustomers = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+
+    setIsSubmitting(true);
+    setModalError(null);
+
+    try {
+      await userService.assignCustomers(selectedUser.id, selectedCustomers);
+      closeModal();
+    } catch {
+      setModalError('Failed to assign customers');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Toggle customer selection
+  const toggleCustomer = (customerId: number) => {
+    setSelectedCustomers(prev =>
+      prev.includes(customerId) ? prev.filter(id => id !== customerId) : [...prev, customerId]
+    );
   };
 
   // Format date
@@ -483,6 +539,22 @@ export function UserManagementPage() {
                           />
                         </svg>
                       </button>
+                      {user.roles.includes('ROLE_SALES') && (
+                        <button
+                          onClick={() => openCustomersModal(user)}
+                          className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
+                          title="Assign customers"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                            />
+                          </svg>
+                        </button>
+                      )}
                       {user.isActive ? (
                         <button
                           onClick={() => openDeleteModal(user)}
@@ -963,6 +1035,126 @@ export function UserManagementPage() {
                   </button>
                 </div>
               </div>
+            )}
+
+            {/* Customer Assignment Modal */}
+            {modalType === 'customers' && selectedUser && (
+              <form onSubmit={handleAssignCustomers}>
+                <h2 className="mb-2 text-xl font-semibold text-white">Assign Customers</h2>
+                <p className="mb-6 text-sm text-steel-400">
+                  Select customers that <span className="text-white">{selectedUser.fullName}</span> can access
+                </p>
+
+                {modalError && (
+                  <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                    {modalError}
+                  </div>
+                )}
+
+                {isLoadingCustomers ? (
+                  <div className="flex items-center justify-center py-12">
+                    <svg className="h-8 w-8 animate-spin text-copper-500" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="max-h-96 space-y-2 overflow-y-auto">
+                    {mockCustomers.map(customer => (
+                      <button
+                        key={customer.id}
+                        type="button"
+                        onClick={() => toggleCustomer(customer.id)}
+                        className={`group relative w-full overflow-hidden rounded-lg border p-4 text-left transition-all ${
+                          selectedCustomers.includes(customer.id)
+                            ? 'border-copper-500/50 bg-copper-500/10'
+                            : 'border-steel-700/50 bg-steel-800/30 hover:border-steel-600 hover:bg-steel-800/50'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className={`font-medium ${selectedCustomers.includes(customer.id) ? 'text-copper-300' : 'text-white'}`}>
+                              {customer.name}
+                            </div>
+                            <div className="mt-0.5 text-xs text-steel-500">
+                              Code: {customer.code}
+                            </div>
+                          </div>
+                          <div
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all ${
+                              selectedCustomers.includes(customer.id)
+                                ? 'border-copper-500 bg-copper-500'
+                                : 'border-steel-600 bg-steel-800 group-hover:border-steel-500'
+                            }`}
+                          >
+                            {selectedCustomers.includes(customer.id) && (
+                              <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Decorative gradient overlay */}
+                        <div
+                          className={`pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 transition-opacity ${
+                            selectedCustomers.includes(customer.id) ? 'opacity-100' : 'group-hover:opacity-50'
+                          }`}
+                          style={{
+                            transform: 'translateX(-100%)',
+                            animation: selectedCustomers.includes(customer.id) ? 'shimmer 2s infinite' : 'none'
+                          }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-sm text-steel-400">
+                    {selectedCustomers.length} of {mockCustomers.length} selected
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      disabled={isSubmitting}
+                      className="rounded-lg border border-steel-700/50 px-4 py-2 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || isLoadingCustomers}
+                      className="flex items-center gap-2 rounded-lg bg-copper-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-copper-600 disabled:opacity-50"
+                    >
+                      {isSubmitting && (
+                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                      )}
+                      Save Assignments
+                    </button>
+                  </div>
+                </div>
+
+                {/* Add shimmer animation keyframe */}
+                <style>{`
+                  @keyframes shimmer {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(100%); }
+                  }
+                `}</style>
+              </form>
             )}
           </div>
         </div>

@@ -1,6 +1,7 @@
 package com.wellkorea.backend.auth.api;
 
 import com.wellkorea.backend.auth.api.dto.UserResponse;
+import com.wellkorea.backend.auth.application.CustomerAssignmentService;
 import com.wellkorea.backend.auth.application.UserCommand;
 import com.wellkorea.backend.auth.application.UserQuery;
 import com.wellkorea.backend.auth.domain.Role;
@@ -15,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,10 +32,12 @@ public class UserController {
 
     private final UserQuery userQuery;
     private final UserCommand userCommand;
+    private final CustomerAssignmentService customerAssignmentService;
 
-    public UserController(UserQuery userQuery, UserCommand userCommand) {
+    public UserController(UserQuery userQuery, UserCommand userCommand, CustomerAssignmentService customerAssignmentService) {
         this.userQuery = userQuery;
         this.userCommand = userCommand;
+        this.customerAssignmentService = customerAssignmentService;
     }
 
     /**
@@ -189,6 +193,29 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(null, "Password changed successfully"));
     }
 
+    /**
+     * GET /api/users/{id}/customers
+     * Get customer assignments for a user.
+     */
+    @GetMapping("/{id}/customers")
+    public ResponseEntity<ApiResponse<CustomerAssignmentsResponse>> getUserCustomers(@PathVariable Long id) {
+        List<Long> customerIds = customerAssignmentService.getAssignedCustomerIds(id);
+        return ResponseEntity.ok(ApiResponse.success(new CustomerAssignmentsResponse(customerIds)));
+    }
+
+    /**
+     * PUT /api/users/{id}/customers
+     * Replace all customer assignments for a user.
+     */
+    @PutMapping("/{id}/customers")
+    public ResponseEntity<ApiResponse<Void>> assignCustomers(
+            @PathVariable Long id,
+            @RequestBody AssignCustomersRequest request) {
+
+        customerAssignmentService.replaceUserAssignments(id, request.customerIds());
+        return ResponseEntity.ok(ApiResponse.success(null, "Customer assignments updated successfully"));
+    }
+
     // ==================== Request DTOs ====================
 
     public record CreateUserRequest(
@@ -213,6 +240,16 @@ public class UserController {
 
     public record ChangePasswordRequest(
             String newPassword
+    ) {
+    }
+
+    public record AssignCustomersRequest(
+            List<Long> customerIds
+    ) {
+    }
+
+    public record CustomerAssignmentsResponse(
+            List<Long> customerIds
     ) {
     }
 }
