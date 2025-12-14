@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -124,20 +125,59 @@ public class SecurityConfig {
     }
 
     /**
-     * CORS configuration for frontend access.
+     * CORS configuration for production environment.
+     * Uses exact origin matching from environment variable.
      * Allowed origins configured via property: security.cors.allowed-origins
      */
-    @Bean
+    @Bean("corsConfigurationSource")
+    @Profile("prod")
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow specific origins from configuration
+        // Allow specific origins from configuration (exact match)
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
 
         // Allow all HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
         // Allow configured headers (explicit list for security)
+        configuration.setAllowedHeaders(Arrays.asList(allowedHeaders));
+
+        // Allow credentials (cookies, authorization headers)
+        configuration.setAllowCredentials(true);
+
+        // Expose Authorization header
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        // Max age for preflight requests
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    /**
+     * CORS configuration for development and test environments.
+     * Uses pattern matching to allow any localhost port (e.g., http://localhost:18185).
+     * This enables flexible frontend development without hardcoding ports.
+     */
+    @Bean("corsConfigurationSource")
+    @Profile({"dev", "test"})
+    public CorsConfigurationSource corsConfigurationSourceDev() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Allow localhost with any port using pattern matching
+        // Includes both http://localhost (no port) and http://localhost:* (any explicit port)
+        configuration.setAllowedOriginPatterns(List.of(
+            "http://localhost",
+            "http://localhost:*"
+        ));
+
+        // Allow all HTTP methods
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+
+        // Allow configured headers from YAML
         configuration.setAllowedHeaders(Arrays.asList(allowedHeaders));
 
         // Allow credentials (cookies, authorization headers)
