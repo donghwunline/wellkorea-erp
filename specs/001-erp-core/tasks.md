@@ -130,8 +130,8 @@
 - [X] T046 [US9] Implement user management UI (Admin only) in frontend/src/pages/admin/UserManagementPage.tsx
 - [X] T047 [US9] Implement audit log viewer (Admin only) in frontend/src/pages/admin/AuditLogPage.tsx
 - [X] T048 [US9] Add role-based UI rendering (hide quotations from Production users, hide AR/AP from Sales users) in frontend/src/components/AppLayout.tsx and frontend/src/pages/DashboardPage.tsx
-- [ ] T048a [US9] Implement Sales role customer filtering: Add CustomerAssignment entity, repository, and project filtering service (table exists in V1__create_core_tables.sql) per FR-062
-- [ ] T048b [US9] Add customer assignment UI in UserManagementPage (Admin can assign Sales users to specific customers) in frontend/src/pages/admin/UserManagementPage.tsx
+- [X] T048a [US9] Implement Sales role customer filtering: Add CustomerAssignment entity, repository, and project filtering service (table exists in V1__create_core_tables.sql) per FR-062
+- [X] T048b [US9] Add customer assignment UI in UserManagementPage (Admin can assign Sales users to specific customers) in frontend/src/pages/admin/UserManagementPage.tsx
 
 **Checkpoint**: RBAC and security foundation complete - quotations and financial data are now protected
 

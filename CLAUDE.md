@@ -39,6 +39,15 @@ WellKorea Integrated Work System (ERP) - A full-stack web application consolidat
 # Build without tests
 ./gradlew build -x test
 
+# Run all tests
+./gradlew test
+
+# Run specific test class
+./gradlew test --tests "com.wellkorea.backend.auth.application.AuthenticationServiceTest"
+
+# Run specific test method
+./gradlew test --tests "com.wellkorea.backend.auth.application.AuthenticationServiceTest.testLogin"
+
 # Run tests with coverage
 ./gradlew test jacocoTestReport
 
@@ -76,11 +85,20 @@ npm run lint
 # Run unit tests
 npm test
 
+# Run unit tests in watch mode
+npm test -- --watch
+
+# Run specific test file
+npm test -- src/components/Button.test.tsx
+
 # Run unit tests with coverage
 npm run test:coverage
 
 # Run E2E tests
 npm run e2e
+
+# Run specific E2E test
+npx playwright test smoke.spec.ts
 
 # Run E2E tests in UI mode
 npm run e2e:ui
@@ -171,6 +189,95 @@ wellkorea-erp/
 
 **Delivery & Invoicing**: Product-level granularity. Track what's been delivered/invoiced to prevent double-billing. Supports partial deliveries and invoices.
 
+## Architecture Patterns
+
+### Backend Architecture (Layered DDD)
+
+Backend follows a layered Domain-Driven Design approach:
+
+```
+com/wellkorea/backend/
+├── shared/               # Cross-cutting concerns
+│   ├── audit/           # AuditLogger, AuditContextHolder
+│   ├── dto/             # ApiResponse, ErrorResponse
+│   └── exception/       # GlobalExceptionHandler, ErrorCode
+│
+├── {domain}/            # Feature-specific packages (auth, project, document)
+│   ├── api/            # REST controllers, DTOs (presentation layer)
+│   ├── application/    # Use cases, services (application layer)
+│   ├── domain/         # Entities, value objects, domain logic
+│   └── infrastructure/ # Persistence, external services
+```
+
+**Key Patterns**:
+- **Constructor Injection**: All Spring beans use constructor injection (no `@Autowired` fields)
+- **ApiResponse<T> Wrapper**: All REST endpoints return `ApiResponse<T>` for consistent response format
+- **Global Exception Handling**: `@RestControllerAdvice` with `GlobalExceptionHandler` for centralized error handling
+- **JWT Authentication**: Custom `JwtAuthenticationFilter` with token refresh support (temporary, will migrate to Keycloak OAuth2)
+- **Audit Logging**: `AuditLogger` with `AuditContextHolder` for request context tracking
+
+### Frontend Architecture (Service Layer Pattern)
+
+Frontend uses a service layer pattern with feature-based organization:
+
+```
+frontend/src/
+├── api/                 # HTTP client infrastructure
+│   ├── httpClient.ts   # HttpClient class with auto token refresh
+│   ├── tokenStore.ts   # Local storage token management
+│   └── types.ts        # ApiResponse, ApiError types
+│
+├── services/            # Business logic services (by feature)
+│   ├── auth/           # authService.ts, types.ts
+│   ├── users/          # userService.ts, types.ts
+│   └── audit/          # auditService.ts, types.ts
+│
+├── stores/              # Zustand global state
+│   └── authStore.ts    # Authentication state (user, isAuthenticated)
+│
+├── components/          # Reusable React components
+│   ├── ui/             # Design system components (Button, Input)
+│   ├── ProtectedRoute.tsx
+│   └── ErrorBoundary.tsx
+│
+├── pages/               # Route-level components
+│   ├── LoginPage.tsx
+│   └── admin/          # Admin-specific pages
+│
+├── hooks/               # Custom React hooks
+│   └── useAuth.ts      # Authentication hook
+│
+└── utils/               # Pure utility functions
+    ├── storage.ts      # localStorage wrapper
+    └── errorMessages.ts # Error message mapping
+```
+
+**Key Patterns**:
+- **Service Layer**: All API calls go through feature services (never call `httpClient` directly from components)
+- **HttpClient Auto-Refresh**: Token refresh with request queueing (prevents race conditions during concurrent 401s)
+- **Type Imports**: Use `import type` for TypeScript types to reduce bundle size
+- **Barrel Exports**: Each feature exports through `index.ts` for clean imports
+- **Zustand State**: Minimal global state (auth only), prefer component state + React Query for server state
+- **Protected Routes**: RBAC with `ProtectedRoute` wrapper checking user roles
+
+**HTTP Client Example**:
+```typescript
+// DON'T: Call httpClient directly from components
+const users = await httpClient.get('/users');
+
+// DO: Use feature services
+import { userService } from '@/services';
+const users = await userService.getUsers();
+```
+
+**Authentication Flow**:
+1. User logs in → `authService.login()` stores tokens in localStorage
+2. HttpClient auto-injects token in `Authorization: Bearer {token}` header
+3. On 401 response → HttpClient automatically refreshes token using refresh endpoint
+4. Concurrent 401s are queued (prevents multiple refresh calls)
+5. If refresh fails → Clear tokens, redirect to login via `onUnauthorized` callback
+6. Zustand `authStore` syncs authentication state across components
+
 ## CI/CD Pipeline
 
 **Trunk-Based Development**: Direct commits to `main` branch. CI runs on all PRs.
@@ -181,10 +288,14 @@ wellkorea-erp/
 - Security: Trivy vulnerability scan, Gitleaks secret detection, CodeQL analysis
 
 **Workflow Files**:
-- `.github/workflows/ci.yml` - Main CI (active)
+- `.github/workflows/ci.yml` - Main CI pipeline (orchestrates quality checks)
 - `.github/workflows/codeql.yml` - Security analysis (active)
-- `.github/workflows/_shared/` - Reusable components (backend-quality, frontend-quality, docker-build, e2e-tests)
-- `.github/workflows/cd-*.yml` - Deployment workflows (commented out, ready to enable)
+- `.github/workflows/backend-quality.yml` - Backend tests, coverage, SonarCloud
+- `.github/workflows/frontend-quality.yml` - Frontend linting, tests, coverage, SonarCloud
+- `.github/workflows/docker-build.yml` - Docker image builds
+- `.github/workflows/e2e-tests.yml` - End-to-end tests
+- `.github/workflows/cd-dev.yml`, `cd-staging.yml`, `cd-prod.yml` - Deployment workflows
+- `.github/workflows/claude.yml`, `claude-code-review.yml` - AI-assisted code review
 
 **To Enable CD**: Uncomment CD workflows and add secrets:
 - Dev: `DEV_SSH_HOST`, `DEV_SSH_USER`, `DEV_SSH_KEY`
@@ -201,15 +312,18 @@ wellkorea-erp/
 
 **Backend**:
 - Follow Spring Boot conventions
-- Use constructor injection for dependencies
+- Use constructor injection for dependencies (no `@Autowired` fields)
+- All controllers return `ApiResponse<T>` wrapper
 - Write tests with Testcontainers for integration tests
 - Gradle buildDir updated to `layout.buildDirectory.get().asFile` (modern API)
 
 **Frontend**:
-- TypeScript strict mode
+- TypeScript strict mode with explicit type imports (`import type`)
 - ESLint enforced
+- All API calls through service layer (never call `httpClient` directly)
 - Component tests using React Testing Library
 - E2E tests for critical user flows
+- Zustand for minimal global state (auth only)
 
 **Docker**:
 - Multi-stage builds for optimal image size
@@ -231,7 +345,7 @@ wellkorea-erp/
 - `specs/001-erp-core/spec.md` - Feature specification with user stories
 
 **CI/CD**:
-- `.github/workflows/_shared/` - Reusable workflows (DRY principle)
+- `.github/workflows/` - All workflow files (modular design: separate workflows for backend, frontend, docker, e2e, deployments)
 - `.github/dependabot.yml` - Weekly dependency updates (Mondays 09:00)
 
 ## Testing Strategy
