@@ -47,7 +47,7 @@ dependencies {
     implementation 'io.minio:minio:8.5.7'
 
     // PDF Generation (quotations, invoices, transaction statements)
-    implementation 'com.itextpdf:itext7-core:8.0.2'
+    implementation 'com.itextpdf:itext7-core:9.4.0'
 
     // Excel Generation (catalog import/export)
     implementation 'org.apache.poi:poi:5.2.5'
