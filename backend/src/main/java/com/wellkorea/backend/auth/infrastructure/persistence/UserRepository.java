@@ -27,21 +27,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
 
     /**
-     * Get role names for a user.
-     * Used to populate the transient roles field after loading a user.
-     *
-     * @param userId User ID
-     * @return List of role names (e.g., ["ADMIN", "FINANCE"])
-     */
-    @Query(value = """
-            SELECT r.name
-            FROM roles r
-            JOIN user_roles ur ON r.id = ur.role_id
-            WHERE ur.user_id = :userId
-            """, nativeQuery = true)
-    List<String> findRoleNamesByUserId(@Param("userId") Long userId);
-
-    /**
      * Find user by email.
      *
      * @param email Email address
@@ -115,8 +100,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = """
             SELECT u.* FROM users u
             JOIN user_roles ur ON u.id = ur.user_id
-            JOIN roles r ON ur.role_id = r.id
-            WHERE r.name = :roleName AND u.is_active = true
+            WHERE ur.role_name = :roleName AND u.is_active = true
             """, nativeQuery = true)
     List<User> findByRoleName(@Param("roleName") String roleName);
 }

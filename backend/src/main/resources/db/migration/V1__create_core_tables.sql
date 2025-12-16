@@ -33,13 +33,17 @@ CREATE TABLE roles
 );
 
 -- User-Role mapping (many-to-many)
+-- Stores role names directly for @ElementCollection JPA mapping
 CREATE TABLE user_roles
 (
-    user_id     BIGINT    NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    role_id     BIGINT    NOT NULL REFERENCES roles (id) ON DELETE CASCADE,
-    assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, role_id)
+    user_id     BIGINT      NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    role_name   VARCHAR(50) NOT NULL REFERENCES roles (name) ON DELETE CASCADE,
+    assigned_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, role_name)
 );
+
+-- Index for efficient role-based queries
+CREATE INDEX idx_user_roles_role_name ON user_roles (role_name);
 
 -- Customer assignment for Sales role (FR-062)
 CREATE TABLE customer_assignments

@@ -43,16 +43,16 @@ SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
 -- sales (ID: 4) - SALES role
 -- sales2 (ID: 5) - SALES role
 
-INSERT INTO user_roles (user_id, role_id)
-VALUES (1, (SELECT id FROM roles WHERE name = 'ADMIN')),
-       (1, (SELECT id FROM roles WHERE name = 'FINANCE')),
-       (1, (SELECT id FROM roles WHERE name = 'PRODUCTION')),
-       (1, (SELECT id FROM roles WHERE name = 'SALES')),
-       (2, (SELECT id FROM roles WHERE name = 'FINANCE')),
-       (3, (SELECT id FROM roles WHERE name = 'PRODUCTION')),
-       (4, (SELECT id FROM roles WHERE name = 'SALES')),
-       (5, (SELECT id FROM roles WHERE name = 'SALES'))
-ON CONFLICT (user_id, role_id) DO NOTHING;
+INSERT INTO user_roles (user_id, role_name)
+VALUES (1, 'ADMIN'),
+       (1, 'FINANCE'),
+       (1, 'PRODUCTION'),
+       (1, 'SALES'),
+       (2, 'FINANCE'),
+       (3, 'PRODUCTION'),
+       (4, 'SALES'),
+       (5, 'SALES')
+ON CONFLICT (user_id, role_name) DO NOTHING;
 
 -- =====================================================================
 -- CUSTOMERS

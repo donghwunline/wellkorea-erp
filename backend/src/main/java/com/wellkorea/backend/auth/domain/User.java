@@ -1,9 +1,11 @@
 package com.wellkorea.backend.auth.domain;
 
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,13 +50,17 @@ public class User {
     private Instant lastLoginAt;
 
     /**
-     * User roles stored as comma-separated string in a transient field.
-     * Actual persistence is handled via user_roles junction table.
-     * For simpler mapping in this implementation, roles are stored as CSV string
-     * and loaded via repository queries.
+     * User role assignments with timestamps.
+     * Persisted to user_roles junction table via @ElementCollection.
+     * JPA automatically manages the junction table for CRUD operations.
+     * EAGER fetch ensures roles are always loaded to prevent LazyInitializationException.
      */
-    @Transient
-    private Set<Role> roles = Collections.emptySet();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<AssignedRole> roles = new HashSet<>();
 
     protected User() {
         // JPA requires default constructor
@@ -67,7 +73,7 @@ public class User {
         this.passwordHash = builder.passwordHash;
         this.fullName = builder.fullName;
         this.isActive = builder.isActive;
-        this.roles = builder.roles != null ? Set.copyOf(builder.roles) : Collections.emptySet();
+        this.roles = builder.roles.stream().map(AssignedRole::new).collect(Collectors.toSet());
         this.createdAt = builder.createdAt != null ? builder.createdAt : Instant.now();
         this.updatedAt = builder.updatedAt != null ? builder.updatedAt : Instant.now();
         this.lastLoginAt = builder.lastLoginAt;
@@ -101,8 +107,16 @@ public class User {
         return isActive;
     }
 
+    /**
+     * Get user roles as Set<Role> for business logic.
+     * Extracts roles from AssignedRole collection.
+     *
+     * @return Unmodifiable set of roles
+     */
     public Set<Role> getRoles() {
-        return roles != null ? Collections.unmodifiableSet(roles) : Collections.emptySet();
+        return roles.stream()
+                .map(AssignedRole::getRole)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     public Instant getCreatedAt() {
@@ -124,6 +138,7 @@ public class User {
      */
     public String getRolesAsString() {
         return roles.stream()
+                .map(AssignedRole::getRole)
                 .map(Role::getAuthority)
                 .sorted()
                 .collect(Collectors.joining(","));
@@ -136,7 +151,8 @@ public class User {
      * @return true if user has the role
      */
     public boolean hasRole(Role role) {
-        return roles.contains(role);
+        return roles.stream()
+                .anyMatch(assignedRole -> assignedRole.getRole() == role);
     }
 
     /**
@@ -146,6 +162,17 @@ public class User {
      */
     public boolean isAdmin() {
         return hasRole(Role.ADMIN);
+    }
+
+    /**
+     * Helper method to convert assigned roles to role set for builder.
+     *
+     * @return Set of roles extracted from assigned roles
+     */
+    private Set<Role> extractRoles() {
+        return roles.stream()
+                .map(AssignedRole::getRole)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -163,7 +190,7 @@ public class User {
                 .passwordHash(this.passwordHash)
                 .fullName(this.fullName)
                 .isActive(this.isActive)
-                .roles(this.roles)
+                .roles(extractRoles())
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt)
                 .lastLoginAt(this.lastLoginAt)
@@ -185,7 +212,7 @@ public class User {
                 .passwordHash(this.passwordHash)
                 .fullName(newFullName)
                 .isActive(this.isActive)
-                .roles(this.roles)
+                .roles(extractRoles())
                 .createdAt(this.createdAt)
                 .updatedAt(Instant.now())
                 .lastLoginAt(this.lastLoginAt)
@@ -198,7 +225,7 @@ public class User {
      * @param newRoles New role set
      * @return New User instance with updated roles
      */
-    public User withRoles(Set<Role> newRoles) {
+    public User withRoles(@Nonnull Set<Role> newRoles) {
         return builder()
                 .id(this.id)
                 .username(this.username)
@@ -227,7 +254,7 @@ public class User {
                 .passwordHash(newPasswordHash)
                 .fullName(this.fullName)
                 .isActive(this.isActive)
-                .roles(this.roles)
+                .roles(extractRoles())
                 .createdAt(this.createdAt)
                 .updatedAt(Instant.now())
                 .lastLoginAt(this.lastLoginAt)
@@ -247,7 +274,7 @@ public class User {
                 .passwordHash(this.passwordHash)
                 .fullName(this.fullName)
                 .isActive(false)
-                .roles(this.roles)
+                .roles(extractRoles())
                 .createdAt(this.createdAt)
                 .updatedAt(Instant.now())
                 .lastLoginAt(this.lastLoginAt)
@@ -267,7 +294,7 @@ public class User {
                 .passwordHash(this.passwordHash)
                 .fullName(this.fullName)
                 .isActive(true)
-                .roles(this.roles)
+                .roles(extractRoles())
                 .createdAt(this.createdAt)
                 .updatedAt(Instant.now())
                 .lastLoginAt(this.lastLoginAt)
@@ -287,7 +314,7 @@ public class User {
                 .passwordHash(this.passwordHash)
                 .fullName(this.fullName)
                 .isActive(this.isActive)
-                .roles(this.roles)
+                .roles(extractRoles())
                 .createdAt(this.createdAt)
                 .updatedAt(Instant.now())
                 .lastLoginAt(Instant.now())
@@ -327,7 +354,7 @@ public class User {
         private String passwordHash;
         private String fullName;
         private boolean isActive = true;
-        private Set<Role> roles;
+        private Set<Role> roles = Collections.emptySet();
         private Instant createdAt;
         private Instant updatedAt;
         private Instant lastLoginAt;
@@ -362,8 +389,8 @@ public class User {
             return this;
         }
 
-        public Builder roles(Set<Role> roles) {
-            this.roles = roles;
+        public Builder roles(@Nonnull Set<Role> roles) {
+            this.roles = Objects.requireNonNull(roles, "Roles cannot be null");
             return this;
         }
 
