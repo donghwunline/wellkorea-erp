@@ -11,10 +11,10 @@
  * - Event-driven updates from authService
  */
 
-import {create} from 'zustand';
-import {authStorage} from '@/utils/storage';
-import type {LoginRequest, RoleName, User} from '@/types/auth';
-import {authEvents, authService} from '@/services/auth/authService';
+import { create } from 'zustand';
+import { authStorage } from '@/utils/storage';
+import type { LoginRequest, RoleName, User } from '@/types/auth';
+import { authEvents, authService } from '@/services/auth/authService';
 
 interface AuthState {
   user: User | null;

@@ -9,7 +9,7 @@
  * - Business errors (BUS_*): Context-dependent (inline or toast)
  */
 
-import type {ErrorResponse} from '@/api/types';
+import type { ErrorResponse } from '@/api/types';
 
 /**
  * Mapping of backend error codes to user-friendly messages.
@@ -134,7 +134,7 @@ export function isNotFoundError(errorCode: string): boolean {
  * @returns Display strategy: 'inline', 'toast', 'banner', or 'modal'
  */
 export function getErrorDisplayStrategy(
-  errorCode: string
+  errorCode: string,
 ): 'inline' | 'toast' | 'banner' | 'modal' {
   if (isValidationError(errorCode)) {
     return 'inline';

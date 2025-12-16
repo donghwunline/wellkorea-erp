@@ -2,8 +2,8 @@
  * Tests for navigation utility (window.location wrapper)
  */
 
-import {describe, it, expect} from 'vitest';
-import {navigation} from './navigation';
+import { describe, expect, it } from 'vitest';
+import { navigation } from './navigation';
 
 describe('navigation utility', () => {
   describe('API surface', () => {

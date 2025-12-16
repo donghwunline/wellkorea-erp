@@ -9,8 +9,8 @@
  * - Error normalization
  */
 
-import axios, {AxiosError, type AxiosInstance, type AxiosRequestConfig} from 'axios';
-import type {ApiResponse, ApiError, Tokens, TokenStore} from './types';
+import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import type { ApiError, ApiResponse, Tokens, TokenStore } from './types';
 
 /**
  * Pending request during token refresh.
@@ -144,7 +144,7 @@ export class HttpClient {
         } finally {
           this.isRefreshing = false;
         }
-      }
+      },
     );
   }
 
@@ -165,7 +165,7 @@ export class HttpClient {
         headers: {
           Authorization: `Bearer ${currentAccessToken}`,
         },
-      }
+      },
     );
 
     const { accessToken, refreshToken } = response.data.data;

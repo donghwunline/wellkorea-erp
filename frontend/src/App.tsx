@@ -34,7 +34,12 @@ const NotFoundPage = () => (
         className="mt-6 inline-flex items-center gap-2 rounded-lg bg-copper-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-copper-600"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+          />
         </svg>
         Return to Dashboard
       </a>
@@ -57,119 +62,119 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
 
-            {/* Protected routes with AppLayout */}
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <DashboardPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
+          {/* Protected routes with AppLayout */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <DashboardPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Main module routes (placeholders) */}
-            <Route
-              path="/projects"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <PlaceholderPage title="Projects" />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/quotations"
-              element={
-                <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
-                  <AppLayout>
-                    <PlaceholderPage title="Quotations" />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/products"
-              element={
-                <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
-                  <AppLayout>
-                    <PlaceholderPage title="Products" />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/production"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <PlaceholderPage title="Production" />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/delivery"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <PlaceholderPage title="Delivery" />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/invoices"
-              element={
-                <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
-                  <AppLayout>
-                    <PlaceholderPage title="Invoices" />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/reports"
-              element={
-                <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
-                  <AppLayout>
-                    <PlaceholderPage title="AR/AP Reports" />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
+          {/* Main module routes (placeholders) */}
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <PlaceholderPage title="Projects" />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quotations"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <PlaceholderPage title="Quotations" />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/products"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <PlaceholderPage title="Products" />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/production"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <PlaceholderPage title="Production" />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/delivery"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <PlaceholderPage title="Delivery" />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/invoices"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <PlaceholderPage title="Invoices" />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <PlaceholderPage title="AR/AP Reports" />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Admin routes */}
-            <Route
-              path="/admin/users"
-              element={
-                <ProtectedRoute requiredRole="ROLE_ADMIN">
-                  <AppLayout>
-                    <UserManagementPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/audit"
-              element={
-                <ProtectedRoute requiredRole="ROLE_ADMIN">
-                  <AppLayout>
-                    <AuditLogPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
+          {/* Admin routes */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <AppLayout>
+                  <UserManagementPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/audit"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <AppLayout>
+                  <AuditLogPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </BrowserRouter>
+          {/* Catch-all route */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </BrowserRouter>
     </ErrorBoundary>
   );
 }

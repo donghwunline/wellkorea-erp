@@ -1,5 +1,5 @@
-import {render, screen} from '@testing-library/react';
-import {describe, expect, it} from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import App from './App';
 
 describe('App', () => {
@@ -9,11 +9,11 @@ describe('App', () => {
     expect(screen.getByText('WellKorea')).toBeInTheDocument();
     expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', {name: /sign in/i})).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
   it('renders without crashing', () => {
-    const {container} = render(<App />);
+    const { container } = render(<App />);
     expect(container).toBeInTheDocument();
   });
 });

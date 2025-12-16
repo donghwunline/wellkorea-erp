@@ -2,8 +2,8 @@
  * Tests for storage utility (localStorage wrapper)
  */
 
-import {describe, it, expect, beforeEach, vi} from 'vitest';
-import {storage, authStorage} from './storage';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { authStorage, storage } from './storage';
 
 describe('storage utility', () => {
   beforeEach(() => {
@@ -37,7 +37,7 @@ describe('storage utility', () => {
 
   describe('JSON operations', () => {
     it('should store and retrieve JSON objects', () => {
-      const testObj = {name: 'Alice', age: 30, roles: ['ROLE_ADMIN']};
+      const testObj = { name: 'Alice', age: 30, roles: ['ROLE_ADMIN'] };
       storage.setJson('user', testObj);
 
       const retrieved = storage.getJson<typeof testObj>('user');
@@ -52,7 +52,8 @@ describe('storage utility', () => {
       // Manually set invalid JSON
       localStorage.setItem('invalid', '{invalid json');
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+      });
 
       const result = storage.getJson('invalid');
 
@@ -67,7 +68,8 @@ describe('storage utility', () => {
       const circular: Record<string, unknown> = {};
       circular.self = circular; // Create circular reference
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+      });
 
       storage.setJson('circular', circular);
 
@@ -156,7 +158,7 @@ describe('authStorage utility', () => {
         name: string;
       }
 
-      const user: TestUser = {id: 1, name: 'Alice'};
+      const user: TestUser = { id: 1, name: 'Alice' };
       authStorage.setUser(user);
 
       const retrieved = authStorage.getUser<TestUser>();
@@ -170,7 +172,7 @@ describe('authStorage utility', () => {
     it('should clear all auth-related data', () => {
       authStorage.setAccessToken('access-token');
       authStorage.setRefreshToken('refresh-token');
-      authStorage.setUser({id: 1, name: 'Alice'});
+      authStorage.setUser({ id: 1, name: 'Alice' });
 
       authStorage.clearAuth();
 

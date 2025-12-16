@@ -9,15 +9,15 @@
  */
 
 import { httpClient } from '@/api';
-import type { PaginationMetadata, PagedResponse } from '@/api/types';
+import type { PagedResponse, PaginationMetadata } from '@/api/types';
 import type {
-  UserDetails,
-  CreateUserRequest,
-  UpdateUserRequest,
   AssignRolesRequest,
   ChangePasswordRequest,
-  UserListParams,
+  CreateUserRequest,
   PaginatedUsers,
+  UpdateUserRequest,
+  UserDetails,
+  UserListParams,
 } from './types';
 
 const BASE_PATH = '/users';

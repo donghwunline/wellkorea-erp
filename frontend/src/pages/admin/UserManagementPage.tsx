@@ -1,57 +1,69 @@
 /**
  * User Management Page - Admin Only
  *
- * Features:
- * - Paginated user list with search
- * - Create, update, and deactivate users
- * - Role assignment
- * - Password reset
+ * Refactored following Constitution Principle VI:
+ * - Pure composition layer (no inline markup complexity)
+ * - No business logic (delegated to services and form components)
+ * - 4-Tier State Separation:
+ *   Tier 1 (Local UI State): Modal open/close, form inputs → In form components
+ *   Tier 2 (Page UI State): Search/pagination → useUserManagementPage hook
+ *   Tier 3 (Server State): User list data → Direct service calls (TODO: migrate to React Query)
+ *   Tier 4 (App Global State): Auth → authStore (already implemented)
  */
 
-import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import { userService, type UserDetails, type CreateUserRequest, type UpdateUserRequest } from '@/services';
-import { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS, type RoleName } from '@/types/auth';
+import { useCallback, useEffect, useState } from 'react';
+import { type CreateUserRequest, type UpdateUserRequest, type UserDetails, userService, } from '@/services';
+import { ROLE_LABELS, type RoleName } from '@/types/auth';
 import type { PaginationMetadata } from '@/api/types';
+import {
+  Alert,
+  Badge,
+  type BadgeVariant,
+  Button,
+  Card,
+  ConfirmationModal,
+  EmptyState,
+  IconButton,
+  LoadingState,
+  PageHeader,
+  Pagination,
+  SearchBar,
+  Table,
+} from '@/components/ui';
+import { UserCreateForm, UserCustomersForm, UserEditForm, UserPasswordForm, UserRolesForm, } from '@/components/forms';
+import { useUserManagementPage } from './_hooks/useUserManagementPage';
 
 type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | 'customers' | null;
 
+// Role badge variant mapping (follows pattern from AuditLogPage.tsx)
+const ROLE_BADGE_VARIANTS: Record<RoleName, BadgeVariant> = {
+  ROLE_ADMIN: 'copper',
+  ROLE_FINANCE: 'success',
+  ROLE_PRODUCTION: 'info',
+  ROLE_SALES: 'purple',
+};
+
 export function UserManagementPage() {
-  // List state
+  // Page UI State (Tier 2) - from page hook
+  const {
+    page,
+    setPage,
+    search,
+    searchInput,
+    handleSearchChange,
+    handleSearchSubmit,
+    handleClearSearch,
+  } = useUserManagementPage();
+
+  // Server State (Tier 3) - TODO: Move to React Query
   const [users, setUsers] = useState<UserDetails[]>([]);
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
-  const [page, setPage] = useState(0);
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Modal state
+  // Local UI State (Tier 1) - Modal type and selected user
   const [modalType, setModalType] = useState<ModalType>(null);
   const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [modalError, setModalError] = useState<string | null>(null);
-
-  // Form state for create/edit
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    fullName: '',
-    roles: [] as RoleName[],
-  });
-
-  // Customer assignment state
-  const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
-  const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
-
-  // Mock customer data (TODO: Replace with real customer service when implemented)
-  const mockCustomers = [
-    { id: 1, name: 'Samsung Electronics', code: 'SAMSUNG' },
-    { id: 2, name: 'LG Display', code: 'LG' },
-    { id: 3, name: 'Hyundai Motor', code: 'HYUNDAI' },
-    { id: 4, name: 'SK Hynix', code: 'SKHYNIX' },
-    { id: 5, name: 'POSCO', code: 'POSCO' },
-  ];
 
   // Fetch users
   const fetchUsers = useCallback(async () => {
@@ -76,232 +88,7 @@ export function UserManagementPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Search handler
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
-    setSearch(searchInput);
-    setPage(0);
-  };
-
-  // Clear search
-  const handleClearSearch = () => {
-    setSearchInput('');
-    setSearch('');
-    setPage(0);
-  };
-
-  // Open modals
-  const openCreateModal = () => {
-    setFormData({ username: '', email: '', password: '', fullName: '', roles: [] });
-    setModalError(null);
-    setModalType('create');
-  };
-
-  const openEditModal = (user: UserDetails) => {
-    setSelectedUser(user);
-    setFormData({
-      username: user.username,
-      email: user.email,
-      password: '',
-      fullName: user.fullName,
-      roles: user.roles,
-    });
-    setModalError(null);
-    setModalType('edit');
-  };
-
-  const openRolesModal = (user: UserDetails) => {
-    setSelectedUser(user);
-    setFormData(prev => ({ ...prev, roles: [...user.roles] }));
-    setModalError(null);
-    setModalType('roles');
-  };
-
-  const openPasswordModal = (user: UserDetails) => {
-    setSelectedUser(user);
-    setFormData(prev => ({ ...prev, password: '' }));
-    setModalError(null);
-    setModalType('password');
-  };
-
-  const openDeleteModal = (user: UserDetails) => {
-    setSelectedUser(user);
-    setModalError(null);
-    setModalType('delete');
-  };
-
-  const openCustomersModal = async (user: UserDetails) => {
-    setSelectedUser(user);
-    setModalError(null);
-    setIsLoadingCustomers(true);
-    setModalType('customers');
-
-    try {
-      const customerIds = await userService.getUserCustomers(user.id);
-      setSelectedCustomers(customerIds);
-    } catch {
-      setModalError('Failed to load customer assignments');
-      setSelectedCustomers([]);
-    } finally {
-      setIsLoadingCustomers(false);
-    }
-  };
-
-  const closeModal = () => {
-    setModalType(null);
-    setSelectedUser(null);
-    setModalError(null);
-    setSelectedCustomers([]);
-  };
-
-  // Toggle role selection
-  const toggleRole = (role: RoleName) => {
-    setFormData(prev => ({
-      ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter(r => r !== role)
-        : [...prev.roles, role],
-    }));
-  };
-
-  // Create user
-  const handleCreate = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setModalError(null);
-
-    try {
-      const request: CreateUserRequest = {
-        username: formData.username.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
-        fullName: formData.fullName.trim(),
-        roles: formData.roles,
-      };
-      await userService.createUser(request);
-      closeModal();
-      fetchUsers();
-    } catch {
-      setModalError('Failed to create user');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Update user
-  const handleUpdate = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!selectedUser) return;
-
-    setIsSubmitting(true);
-    setModalError(null);
-
-    try {
-      const request: UpdateUserRequest = {
-        fullName: formData.fullName.trim(),
-        email: formData.email.trim(),
-      };
-      await userService.updateUser(selectedUser.id, request);
-      closeModal();
-      fetchUsers();
-    } catch {
-      setModalError('Failed to update user');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Assign roles
-  const handleAssignRoles = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!selectedUser) return;
-
-    setIsSubmitting(true);
-    setModalError(null);
-
-    try {
-      await userService.assignRoles(selectedUser.id, {roles: formData.roles});
-      closeModal();
-      fetchUsers();
-    } catch {
-      setModalError('Failed to assign roles');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Change password
-  const handleChangePassword = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!selectedUser) return;
-
-    setIsSubmitting(true);
-    setModalError(null);
-
-    try {
-      await userService.changePassword(selectedUser.id, {newPassword: formData.password});
-      closeModal();
-    } catch {
-      setModalError('Failed to change password');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Deactivate user
-  const handleDeactivate = async () => {
-    if (!selectedUser) return;
-
-    setIsSubmitting(true);
-    setModalError(null);
-
-    try {
-      await userService.deleteUser(selectedUser.id);
-      closeModal();
-      fetchUsers();
-    } catch {
-      setModalError('Failed to deactivate user');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Activate user
-  const handleActivate = async (user: UserDetails) => {
-    try {
-      await userService.activateUser(user.id);
-      fetchUsers();
-    } catch {
-      setError('Failed to activate user');
-    }
-  };
-
-  // Assign customers
-  const handleAssignCustomers = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!selectedUser) return;
-
-    setIsSubmitting(true);
-    setModalError(null);
-
-    try {
-      await userService.assignCustomers(selectedUser.id, selectedCustomers);
-      closeModal();
-    } catch {
-      setModalError('Failed to assign customers');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Toggle customer selection
-  const toggleCustomer = (customerId: number) => {
-    setSelectedCustomers(prev =>
-      prev.includes(customerId) ? prev.filter(id => id !== customerId) : [...prev, customerId]
-    );
-  };
-
-  // Format date
+  // Format date utility
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString('ko-KR', {
@@ -313,854 +100,350 @@ export function UserManagementPage() {
     });
   };
 
-  // Common input classes
-  const inputClasses =
-    'block w-full rounded-lg border border-steel-700/50 bg-steel-800/50 px-4 py-2.5 text-sm text-white placeholder-steel-500 transition-all duration-200 focus:border-copper-500/50 focus:bg-steel-800 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50';
+  // Modal handlers
+  const openModal = (type: ModalType, user?: UserDetails) => {
+    setModalType(type);
+    setSelectedUser(user || null);
+  };
+
+  const closeModal = () => {
+    setModalType(null);
+    setSelectedUser(null);
+  };
+
+  // CRUD operations (delegate to service, refresh on success)
+  const handleCreateUser = async (data: CreateUserRequest) => {
+    await userService.createUser(data);
+    fetchUsers();
+  };
+
+  const handleUpdateUser = async (id: number, data: UpdateUserRequest) => {
+    await userService.updateUser(id, data);
+    fetchUsers();
+  };
+
+  const handleAssignRoles = async (id: number, roles: RoleName[]) => {
+    await userService.assignRoles(id, { roles });
+    fetchUsers();
+  };
+
+  const handleChangePassword = async (id: number, password: string) => {
+    await userService.changePassword(id, { newPassword: password });
+  };
+
+  const handleDeactivateUser = async () => {
+    if (!selectedUser) return;
+    await userService.deleteUser(selectedUser.id);
+    closeModal();
+    fetchUsers();
+  };
+
+  const handleActivateUser = async (user: UserDetails) => {
+    try {
+      await userService.activateUser(user.id);
+      fetchUsers();
+    } catch {
+      setError('Failed to activate user');
+    }
+  };
+
+  const handleAssignCustomers = async (id: number, customerIds: number[]) => {
+    await userService.assignCustomers(id, customerIds);
+  };
+
+  // Render table body based on loading/empty/data state
+  const renderTableBody = () => {
+    if (isLoading) {
+      return <LoadingState variant="table" colspan={5} message="Loading users..." />;
+    }
+
+    if (users.length === 0) {
+      return (
+        <EmptyState
+          variant="table"
+          colspan={5}
+          message={search ? 'No users found matching your search.' : 'No users found.'}
+        />
+      );
+    }
+
+    return users.map(user => (
+      <Table.Row key={user.id}>
+        <Table.Cell>
+          <div>
+            <div className="font-medium text-white">{user.fullName}</div>
+            <div className="text-sm text-steel-400">{user.username}</div>
+            <div className="text-xs text-steel-500">{user.email}</div>
+          </div>
+        </Table.Cell>
+        <Table.Cell>
+          <div className="flex flex-wrap gap-1">
+            {user.roles.map(role => (
+              <Badge key={role} variant={ROLE_BADGE_VARIANTS[role] || 'purple'}>
+                {ROLE_LABELS[role]}
+              </Badge>
+            ))}
+          </div>
+        </Table.Cell>
+        <Table.Cell>
+          <Badge variant={user.isActive ? 'success' : 'danger'} dot>
+            {user.isActive ? 'Active' : 'Inactive'}
+          </Badge>
+        </Table.Cell>
+        <Table.Cell className="text-steel-400">{formatDate(user.lastLoginAt)}</Table.Cell>
+        <Table.Cell>
+          <div className="flex justify-end gap-2">
+            <IconButton
+              onClick={() => openModal('edit', user)}
+              aria-label="Edit user"
+              title="Edit user"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </IconButton>
+            <IconButton
+              onClick={() => openModal('roles', user)}
+              aria-label="Manage roles"
+              title="Manage roles"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
+            </IconButton>
+            <IconButton
+              onClick={() => openModal('password', user)}
+              aria-label="Change password"
+              title="Change password"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                />
+              </svg>
+            </IconButton>
+            {user.roles.includes('ROLE_SALES') && (
+              <IconButton
+                onClick={() => openModal('customers', user)}
+                aria-label="Assign customers"
+                title="Assign customers"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </IconButton>
+            )}
+            {user.isActive ? (
+              <IconButton
+                onClick={() => openModal('delete', user)}
+                variant="danger"
+                aria-label="Deactivate user"
+                title="Deactivate user"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                  />
+                </svg>
+              </IconButton>
+            ) : (
+              <IconButton
+                onClick={() => handleActivateUser(user)}
+                variant="primary"
+                aria-label="Activate user"
+                title="Activate user"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </IconButton>
+            )}
+          </div>
+        </Table.Cell>
+      </Table.Row>
+    ));
+  };
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">User Management</h1>
-          <p className="mt-1 text-steel-400">Manage system users and their roles</p>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 rounded-lg bg-copper-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-copper-600"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add User
-        </button>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-6">
-        <form onSubmit={handleSearch} className="flex gap-3">
-          <div className="relative flex-1">
-            <svg
-              className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-steel-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+      <PageHeader>
+        <PageHeader.Title
+          title="User Management"
+          description="Manage system users and their roles"
+        />
+        <PageHeader.Actions>
+          <Button onClick={() => openModal('create')}>
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                d="M12 4v16m8-8H4"
               />
             </svg>
-            <input
-              type="text"
-              placeholder="Search by username, email, or name..."
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 py-2.5 pl-10 pr-4 text-sm text-white placeholder-steel-500 focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20"
-            />
-          </div>
-          <button
-            type="submit"
-            className="rounded-lg bg-steel-800 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-steel-700"
-          >
-            Search
-          </button>
-          {search && (
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              className="rounded-lg border border-steel-700/50 px-4 py-2.5 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-            >
-              Clear
-            </button>
-          )}
-        </form>
+            Add User
+          </Button>
+        </PageHeader.Actions>
+      </PageHeader>
+
+      {/* Search Bar */}
+      <div className="mb-6 flex gap-3">
+        <SearchBar
+          value={searchInput}
+          onValueChange={handleSearchChange}
+          onClear={handleClearSearch}
+          placeholder="Search by username, email, or name..."
+          className="flex-1"
+          onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
+        />
+        <Button variant="secondary" onClick={handleSearchSubmit}>
+          Search
+        </Button>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 flex items-center gap-3 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-          <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>{error}</span>
-        </div>
+        <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
+          {error}
+        </Alert>
       )}
 
       {/* Users Table */}
-      <div className="overflow-hidden rounded-xl border border-steel-800/50 bg-steel-900/60 backdrop-blur-sm">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-steel-800/50 bg-steel-900/80">
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-steel-400">
-                User
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-steel-400">
-                Roles
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-steel-400">
-                Status
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-steel-400">
-                Last Login
-              </th>
-              <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-steel-400">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-steel-800/30">
-            {isLoading ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-12 text-center">
-                  <svg
-                    className="mx-auto h-8 w-8 animate-spin text-copper-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <p className="mt-2 text-sm text-steel-400">Loading users...</p>
-                </td>
-              </tr>
-            ) : users.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-steel-400">
-                  {search ? 'No users found matching your search.' : 'No users found.'}
-                </td>
-              </tr>
-            ) : (
-              users.map(user => (
-                <tr key={user.id} className="transition-colors hover:bg-steel-800/30">
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-white">{user.fullName}</div>
-                      <div className="text-sm text-steel-400">{user.username}</div>
-                      <div className="text-xs text-steel-500">{user.email}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles.map(role => (
-                        <span
-                          key={role}
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                            role === 'ROLE_ADMIN'
-                              ? 'bg-copper-500/20 text-copper-400'
-                              : role === 'ROLE_FINANCE'
-                                ? 'bg-green-500/20 text-green-400'
-                                : role === 'ROLE_PRODUCTION'
-                                  ? 'bg-blue-500/20 text-blue-400'
-                                  : 'bg-purple-500/20 text-purple-400'
-                          }`}
-                        >
-                          {ROLE_LABELS[role]}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                        user.isActive
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-red-500/20 text-red-400'
-                      }`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-green-400' : 'bg-red-400'}`}
-                      />
-                      {user.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-steel-400">
-                    {formatDate(user.lastLoginAt)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => openEditModal(user)}
-                        className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                        title="Edit user"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => openRolesModal(user)}
-                        className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                        title="Manage roles"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => openPasswordModal(user)}
-                        className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                        title="Change password"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                          />
-                        </svg>
-                      </button>
-                      {user.roles.includes('ROLE_SALES') && (
-                        <button
-                          onClick={() => openCustomersModal(user)}
-                          className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                          title="Assign customers"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                      {user.isActive ? (
-                        <button
-                          onClick={() => openDeleteModal(user)}
-                          className="rounded-lg p-2 text-red-400/70 transition-colors hover:bg-red-500/10 hover:text-red-400"
-                          title="Deactivate user"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                            />
-                          </svg>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleActivate(user)}
-                          className="rounded-lg p-2 text-green-400/70 transition-colors hover:bg-green-500/10 hover:text-green-400"
-                          title="Activate user"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <Card variant="table">
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>User</Table.HeaderCell>
+              <Table.HeaderCell>Roles</Table.HeaderCell>
+              <Table.HeaderCell>Status</Table.HeaderCell>
+              <Table.HeaderCell>Last Login</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>{renderTableBody()}</Table.Body>
+        </Table>
+      </Card>
 
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-steel-800/50 bg-steel-900/80 px-6 py-3">
-            <div className="text-sm text-steel-400">
-              Showing {page * pagination.size + 1} -{' '}
-              {Math.min((page + 1) * pagination.size, pagination.totalElements)} of{' '}
-              {pagination.totalElements} users
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-                disabled={pagination.first}
-                className="rounded-lg border border-steel-700/50 px-3 py-1.5 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={pagination.last}
-                className="rounded-lg border border-steel-700/50 px-3 py-1.5 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Modal Backdrop */}
-      {modalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-steel-800/50 bg-steel-900 p-6 shadow-elevated">
-            {/* Create User Modal */}
-            {modalType === 'create' && (
-              <form onSubmit={handleCreate}>
-                <h2 className="mb-6 text-xl font-semibold text-white">Create User</h2>
-
-                {modalError && (
-                  <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                    {modalError}
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-steel-300">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.username}
-                      onChange={e => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                      className={inputClasses}
-                      placeholder="Enter username"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-steel-300">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.fullName}
-                      onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                      className={inputClasses}
-                      placeholder="Enter full name"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-steel-300">Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className={inputClasses}
-                      placeholder="Enter email"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-steel-300">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      value={formData.password}
-                      onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      className={inputClasses}
-                      placeholder="Enter password"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-steel-300">Roles</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {ALL_ROLES.map(role => (
-                        <button
-                          key={role}
-                          type="button"
-                          onClick={() => toggleRole(role)}
-                          className={`flex flex-col items-start rounded-lg border p-3 text-left transition-all ${
-                            formData.roles.includes(role)
-                              ? 'border-copper-500/50 bg-copper-500/10'
-                              : 'border-steel-700/50 bg-steel-800/30 hover:border-steel-600'
-                          }`}
-                        >
-                          <span
-                            className={`text-sm font-medium ${formData.roles.includes(role) ? 'text-copper-400' : 'text-white'}`}
-                          >
-                            {ROLE_LABELS[role]}
-                          </span>
-                          <span className="text-xs text-steel-500">{ROLE_DESCRIPTIONS[role]}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    disabled={isSubmitting}
-                    className="rounded-lg border border-steel-700/50 px-4 py-2 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 rounded-lg bg-copper-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-copper-600 disabled:opacity-50"
-                  >
-                    {isSubmitting && (
-                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    )}
-                    Create User
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Edit User Modal */}
-            {modalType === 'edit' && selectedUser && (
-              <form onSubmit={handleUpdate}>
-                <h2 className="mb-6 text-xl font-semibold text-white">Edit User</h2>
-
-                {modalError && (
-                  <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                    {modalError}
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-steel-300">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.username}
-                      disabled
-                      className={`${inputClasses} cursor-not-allowed opacity-50`}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-steel-300">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.fullName}
-                      onChange={e => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                      className={inputClasses}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-medium text-steel-300">Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className={inputClasses}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    disabled={isSubmitting}
-                    className="rounded-lg border border-steel-700/50 px-4 py-2 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 rounded-lg bg-copper-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-copper-600 disabled:opacity-50"
-                  >
-                    {isSubmitting && (
-                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    )}
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Roles Modal */}
-            {modalType === 'roles' && selectedUser && (
-              <form onSubmit={handleAssignRoles}>
-                <h2 className="mb-2 text-xl font-semibold text-white">Manage Roles</h2>
-                <p className="mb-6 text-sm text-steel-400">
-                  Assign roles for <span className="text-white">{selectedUser.fullName}</span>
-                </p>
-
-                {modalError && (
-                  <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                    {modalError}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-2">
-                  {ALL_ROLES.map(role => (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => toggleRole(role)}
-                      className={`flex flex-col items-start rounded-lg border p-3 text-left transition-all ${
-                        formData.roles.includes(role)
-                          ? 'border-copper-500/50 bg-copper-500/10'
-                          : 'border-steel-700/50 bg-steel-800/30 hover:border-steel-600'
-                      }`}
-                    >
-                      <span
-                        className={`text-sm font-medium ${formData.roles.includes(role) ? 'text-copper-400' : 'text-white'}`}
-                      >
-                        {ROLE_LABELS[role]}
-                      </span>
-                      <span className="text-xs text-steel-500">{ROLE_DESCRIPTIONS[role]}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    disabled={isSubmitting}
-                    className="rounded-lg border border-steel-700/50 px-4 py-2 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 rounded-lg bg-copper-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-copper-600 disabled:opacity-50"
-                  >
-                    {isSubmitting && (
-                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    )}
-                    Update Roles
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Password Modal */}
-            {modalType === 'password' && selectedUser && (
-              <form onSubmit={handleChangePassword}>
-                <h2 className="mb-2 text-xl font-semibold text-white">Change Password</h2>
-                <p className="mb-6 text-sm text-steel-400">
-                  Set a new password for <span className="text-white">{selectedUser.fullName}</span>
-                </p>
-
-                {modalError && (
-                  <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                    {modalError}
-                  </div>
-                )}
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-steel-300">
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={e => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    className={inputClasses}
-                    placeholder="Enter new password"
-                  />
-                </div>
-
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    disabled={isSubmitting}
-                    className="rounded-lg border border-steel-700/50 px-4 py-2 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 rounded-lg bg-copper-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-copper-600 disabled:opacity-50"
-                  >
-                    {isSubmitting && (
-                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    )}
-                    Change Password
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Delete Confirmation Modal */}
-            {modalType === 'delete' && selectedUser && (
-              <div>
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
-                  <svg className="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                </div>
-                <h2 className="mb-2 text-xl font-semibold text-white">Deactivate User</h2>
-                <p className="mb-6 text-sm text-steel-400">
-                  Are you sure you want to deactivate{' '}
-                  <span className="text-white">{selectedUser.fullName}</span>? This user will no
-                  longer be able to log in.
-                </p>
-
-                {modalError && (
-                  <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                    {modalError}
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    disabled={isSubmitting}
-                    className="rounded-lg border border-steel-700/50 px-4 py-2 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeactivate}
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-50"
-                  >
-                    {isSubmitting && (
-                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    )}
-                    Deactivate
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Customer Assignment Modal */}
-            {modalType === 'customers' && selectedUser && (
-              <form onSubmit={handleAssignCustomers}>
-                <h2 className="mb-2 text-xl font-semibold text-white">Assign Customers</h2>
-                <p className="mb-6 text-sm text-steel-400">
-                  Select customers that <span className="text-white">{selectedUser.fullName}</span> can access
-                </p>
-
-                {modalError && (
-                  <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                    {modalError}
-                  </div>
-                )}
-
-                {isLoadingCustomers ? (
-                  <div className="flex items-center justify-center py-12">
-                    <svg className="h-8 w-8 animate-spin text-copper-500" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                  </div>
-                ) : (
-                  <div className="max-h-96 space-y-2 overflow-y-auto">
-                    {mockCustomers.map(customer => (
-                      <button
-                        key={customer.id}
-                        type="button"
-                        onClick={() => toggleCustomer(customer.id)}
-                        className={`group relative w-full overflow-hidden rounded-lg border p-4 text-left transition-all ${
-                          selectedCustomers.includes(customer.id)
-                            ? 'border-copper-500/50 bg-copper-500/10'
-                            : 'border-steel-700/50 bg-steel-800/30 hover:border-steel-600 hover:bg-steel-800/50'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className={`font-medium ${selectedCustomers.includes(customer.id) ? 'text-copper-300' : 'text-white'}`}>
-                              {customer.name}
-                            </div>
-                            <div className="mt-0.5 text-xs text-steel-500">
-                              Code: {customer.code}
-                            </div>
-                          </div>
-                          <div
-                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all ${
-                              selectedCustomers.includes(customer.id)
-                                ? 'border-copper-500 bg-copper-500'
-                                : 'border-steel-600 bg-steel-800 group-hover:border-steel-500'
-                            }`}
-                          >
-                            {selectedCustomers.includes(customer.id) && (
-                              <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Decorative gradient overlay */}
-                        <div
-                          className={`pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 transition-opacity ${
-                            selectedCustomers.includes(customer.id) ? 'opacity-100' : 'group-hover:opacity-50'
-                          }`}
-                          style={{
-                            transform: 'translateX(-100%)',
-                            animation: selectedCustomers.includes(customer.id) ? 'shimmer 2s infinite' : 'none'
-                          }}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                <div className="mt-6 flex items-center justify-between">
-                  <div className="text-sm text-steel-400">
-                    {selectedCustomers.length} of {mockCustomers.length} selected
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      disabled={isSubmitting}
-                      className="rounded-lg border border-steel-700/50 px-4 py-2 text-sm font-medium text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || isLoadingCustomers}
-                      className="flex items-center gap-2 rounded-lg bg-copper-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-copper-600 disabled:opacity-50"
-                    >
-                      {isSubmitting && (
-                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                      )}
-                      Save Assignments
-                    </button>
-                  </div>
-                </div>
-
-                {/* Add shimmer animation keyframe */}
-                <style>{`
-                  @keyframes shimmer {
-                    0% { transform: translateX(-100%); }
-                    100% { transform: translateX(100%); }
-                  }
-                `}</style>
-              </form>
-            )}
-          </div>
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={page}
+            totalItems={pagination.totalElements}
+            itemsPerPage={pagination.size}
+            onPageChange={setPage}
+            isFirst={pagination.first}
+            isLast={pagination.last}
+            itemLabel="users"
+          />
         </div>
       )}
+
+      {/* Modals - Each is self-contained with local UI state */}
+      <UserCreateForm
+        isOpen={modalType === 'create'}
+        onClose={closeModal}
+        onSubmit={handleCreateUser}
+      />
+
+      <UserEditForm
+        isOpen={modalType === 'edit'}
+        user={selectedUser}
+        onClose={closeModal}
+        onSubmit={handleUpdateUser}
+      />
+
+      <UserRolesForm
+        isOpen={modalType === 'roles'}
+        user={selectedUser}
+        onClose={closeModal}
+        onSubmit={handleAssignRoles}
+      />
+
+      <UserPasswordForm
+        isOpen={modalType === 'password'}
+        user={selectedUser}
+        onClose={closeModal}
+        onSubmit={handleChangePassword}
+      />
+
+      <UserCustomersForm
+        isOpen={modalType === 'customers'}
+        user={selectedUser}
+        onClose={closeModal}
+        onSubmit={handleAssignCustomers}
+      />
+
+      <ConfirmationModal
+        isOpen={modalType === 'delete'}
+        onClose={closeModal}
+        onConfirm={handleDeactivateUser}
+        title="Deactivate User"
+        message={
+          selectedUser
+            ? `Are you sure you want to deactivate ${selectedUser.fullName}? This user will no longer be able to log in.`
+            : ''
+        }
+        confirmLabel="Deactivate"
+        variant="danger"
+      />
     </div>
   );
 }
-
-export default UserManagementPage;

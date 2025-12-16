@@ -9,7 +9,7 @@
  */
 
 import { httpClient } from '@/api';
-import type { PaginationMetadata, PagedResponse } from '@/api/types';
+import type { PagedResponse, PaginationMetadata } from '@/api/types';
 import type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './types';
 
 const BASE_PATH = '/audit';

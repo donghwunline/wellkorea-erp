@@ -16,7 +16,7 @@
  * ```
  */
 
-import type {User, RoleName, AuthState} from '@/types/auth';
+import type { AuthState, RoleName, User } from '@/types/auth';
 
 /**
  * Factory function to create a mock User with sensible defaults.
@@ -186,4 +186,4 @@ export const mockAuthStates = {
 /**
  * Re-export types for convenience in test files
  */
-export type {User, RoleName, AuthState};
+export type { User, RoleName, AuthState };

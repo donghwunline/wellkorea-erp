@@ -110,7 +110,7 @@ export function isNotFoundError(errorCode: string): boolean {
  * Determine the appropriate display strategy for an error.
  */
 export function getErrorDisplayStrategy(
-  errorCode?: string
+  errorCode?: string,
 ): 'inline' | 'toast' | 'banner' | 'modal' {
   if (!errorCode) return 'toast';
 

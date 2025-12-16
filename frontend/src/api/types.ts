@@ -26,7 +26,9 @@ export interface Tokens {
  */
 export interface TokenStore {
   getTokens(): Tokens | null;
+
   setTokens(tokens: Tokens): void;
+
   clear(): void;
 }
 
@@ -189,7 +191,7 @@ export interface Paginated<T> {
  * @returns true if response has valid pagination metadata with correct types
  */
 export function hasPaginationMetadata(
-  response: ApiResponse<unknown>
+  response: ApiResponse<unknown>,
 ): response is ApiResponse<unknown> & { metadata: PaginationMetadata } {
   const meta = response.metadata;
   return (

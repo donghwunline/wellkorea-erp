@@ -9,7 +9,7 @@
  */
 
 import { authStorage } from '@/utils/storage';
-import type { TokenStore, Tokens } from './types';
+import type { Tokens, TokenStore } from './types';
 
 /**
  * Default token store implementation using authStorage.

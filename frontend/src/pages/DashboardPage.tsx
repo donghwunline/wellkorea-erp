@@ -4,6 +4,7 @@
  * Shows overview of modules with role-based visibility
  */
 
+import { Card, StatCard } from '@/components/ui';
 import { useAuth } from '@/hooks';
 import type { RoleName } from '@/services';
 
@@ -18,6 +19,21 @@ interface ModuleCard {
   /** Roles that should NOT see this module */
   hideFromRoles?: RoleName[];
 }
+
+const QUICK_STATS = [
+  {
+    label: 'Active Projects',
+    value: '-',
+    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2',
+  },
+  {
+    label: 'Pending Quotes',
+    value: '-',
+    icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+  },
+  { label: 'In Production', value: '-', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0' },
+  { label: 'Pending Delivery', value: '-', icon: 'M8 7v8a2 2 0 002 2h6' },
+];
 
 const MODULES: ModuleCard[] = [
   {
@@ -101,33 +117,22 @@ export function DashboardPage() {
 
       {/* Quick Stats Row (placeholder for future stats) */}
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-        {[
-          { label: 'Active Projects', value: '-', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2' },
-          { label: 'Pending Quotes', value: '-', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-          { label: 'In Production', value: '-', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0' },
-          { label: 'Pending Delivery', value: '-', icon: 'M8 7v8a2 2 0 002 2h6' },
-        ].map((stat) => (
-          <div
+        {QUICK_STATS.map(stat => (
+          <StatCard
             key={stat.label}
-            className="rounded-xl border border-steel-800/50 bg-steel-900/60 p-4 backdrop-blur-sm"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-steel-400">{stat.label}</p>
-                <p className="mt-1 text-2xl font-bold text-white">{stat.value}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-steel-800/50 text-copper-500">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d={stat.icon}
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
+            label={stat.label}
+            value={stat.value}
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d={stat.icon}
+                />
+              </svg>
+            }
+          />
         ))}
       </div>
 
@@ -136,12 +141,14 @@ export function DashboardPage() {
         <h2 className="mb-4 text-lg font-semibold text-white">Modules</h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visibleModules.map(module => (
-            <a
+            <Card
               key={module.title}
-              href={module.path}
-              className="group rounded-xl border border-steel-800/50 bg-steel-900/60 p-6 backdrop-blur-sm transition-all duration-300 hover:border-copper-500/30 hover:bg-steel-900/80"
+              variant="interactive"
+              className="group transition-all duration-300 hover:border-copper-500/30"
+              onClick={() => globalThis.location.href = module.path}
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-steel-800/50 text-copper-500 transition-colors group-hover:bg-copper-500/10">
+              <div
+                className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-steel-800/50 text-copper-500 transition-colors group-hover:bg-copper-500/10">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
@@ -153,10 +160,11 @@ export function DashboardPage() {
               </div>
               <h3 className="text-lg font-semibold text-white">{module.title}</h3>
               <p className="mt-1 text-sm text-steel-400">{module.description}</p>
-              <span className="mt-4 inline-block rounded-full bg-steel-800/50 px-3 py-1 font-mono text-xs text-steel-500">
+              <span
+                className="mt-4 inline-block rounded-full bg-steel-800/50 px-3 py-1 font-mono text-xs text-steel-500">
                 {module.phase}
               </span>
-            </a>
+            </Card>
           ))}
         </div>
       </div>
