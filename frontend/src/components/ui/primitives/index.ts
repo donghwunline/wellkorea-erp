@@ -11,6 +11,9 @@ export type { BadgeProps, BadgeVariant } from './Badge';
 export { Button } from './Button';
 export type { ButtonProps } from './Button';
 
+export { Icon } from './Icon';
+export type { IconName } from './Icon';
+
 export { IconButton } from './IconButton';
 export type { IconButtonProps, IconButtonVariant } from './IconButton';
 
