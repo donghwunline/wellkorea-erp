@@ -88,7 +88,7 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const { user, logout, hasAnyRole } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -260,10 +260,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             {/* User Dropdown */}
             {userMenuOpen && (
               <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setUserMenuOpen(false)}
-                />
+                <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
                 <div className="absolute bottom-full left-0 right-0 z-50 mb-2 rounded-lg border border-steel-700/50 bg-steel-800 py-1 shadow-lg">
                   <button
                     onClick={handleLogout}
