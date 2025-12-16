@@ -3,10 +3,7 @@
  */
 
 import { forwardRef, type InputHTMLAttributes } from 'react';
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
+import { cn } from '../utils/cn';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
@@ -20,7 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-gray-700">
+          <label htmlFor={inputId} className="text-sm font-medium text-steel-300">
             {label}
           </label>
         )}
@@ -28,12 +25,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           ref={ref}
           className={cn(
-            'flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2',
-            'text-sm placeholder:text-gray-400',
-            'focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2',
+            'flex h-10 w-full rounded-lg border bg-steel-800/50 px-4 py-2.5',
+            'text-sm text-white placeholder-steel-500',
+            'border-steel-700/50 focus:border-copper-500/50',
+            'focus:outline-none focus:ring-2 focus:ring-copper-500/20',
             'disabled:cursor-not-allowed disabled:opacity-50',
             error && 'border-red-500 focus:ring-red-600',
-            className
+            className,
           )}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${inputId}-error` : undefined}
@@ -46,7 +44,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = 'Input';

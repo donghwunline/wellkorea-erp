@@ -2,11 +2,11 @@
  * Tests for Input component
  */
 
-import {describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import {Input} from './Input';
+import { Input } from './Input';
 
 describe('Input', () => {
   describe('rendering', () => {
@@ -189,7 +189,7 @@ describe('Input', () => {
   describe('additional attributes', () => {
     it('should pass through standard input attributes', () => {
       render(
-        <Input label="Email" required maxLength={50} autoComplete="email" name="user-email" />
+        <Input label="Email" required maxLength={50} autoComplete="email" name="user-email" />,
       );
 
       const input = screen.getByLabelText('Email');

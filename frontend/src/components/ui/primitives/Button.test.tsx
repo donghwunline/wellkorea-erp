@@ -2,28 +2,28 @@
  * Tests for Button component
  */
 
-import {describe, it, expect, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {Button} from './Button';
+import { Button } from './Button';
 
 describe('Button', () => {
   describe('rendering', () => {
     it('should render with text children', () => {
       render(<Button>Click me</Button>);
-      expect(screen.getByRole('button', {name: 'Click me'})).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument();
     });
 
     it('should apply primary variant classes by default', () => {
       render(<Button>Primary</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-blue-600');
+      expect(button).toHaveClass('bg-copper-500');
     });
 
     it('should apply secondary variant classes', () => {
       render(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-gray-100');
+      expect(button).toHaveClass('bg-steel-800');
     });
 
     it('should apply ghost variant classes', () => {
@@ -35,7 +35,7 @@ describe('Button', () => {
     it('should apply danger variant classes', () => {
       render(<Button variant="danger">Danger</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-red-600');
+      expect(button).toHaveClass('bg-red-500');
     });
 
     it('should apply medium size classes by default', () => {
@@ -90,7 +90,7 @@ describe('Button', () => {
 
       render(<Button onClick={handleClick}>Click me</Button>);
 
-      await user.click(screen.getByRole('button', {name: 'Click me'}));
+      await user.click(screen.getByRole('button', { name: 'Click me' }));
 
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
@@ -105,7 +105,7 @@ describe('Button', () => {
         </Button>,
       );
 
-      await user.click(screen.getByRole('button', {name: 'Disabled'}));
+      await user.click(screen.getByRole('button', { name: 'Disabled' }));
 
       expect(handleClick).not.toHaveBeenCalled();
     });
@@ -120,7 +120,8 @@ describe('Button', () => {
         </Button>,
       );
 
-      await user.click(screen.getByRole('button', {name: 'Loading'}));
+      const button = screen.getByRole('button');
+      await user.click(button);
 
       expect(handleClick).not.toHaveBeenCalled();
     });
@@ -131,8 +132,8 @@ describe('Button', () => {
       render(<Button isLoading>Loading</Button>);
       const button = screen.getByRole('button');
 
-      // Spinner should be present (aria-hidden SVG)
-      const spinner = button.querySelector('svg[aria-hidden="true"]');
+      // Spinner should be present (has role="status")
+      const spinner = button.querySelector('svg[role="status"]');
       expect(spinner).toBeInTheDocument();
     });
 
@@ -185,7 +186,7 @@ describe('Button', () => {
 
     it('should support aria-label for icon buttons', () => {
       render(<Button size="icon" aria-label="Delete item" />);
-      const button = screen.getByRole('button', {name: 'Delete item'});
+      const button = screen.getByRole('button', { name: 'Delete item' });
 
       expect(button).toBeInTheDocument();
     });
@@ -193,7 +194,7 @@ describe('Button', () => {
 
   describe('ref forwarding', () => {
     it('should forward ref to button element', () => {
-      const ref = {current: null as HTMLButtonElement | null};
+      const ref = { current: null as HTMLButtonElement | null };
 
       render(<Button ref={ref}>With Ref</Button>);
 

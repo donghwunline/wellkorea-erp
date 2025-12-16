@@ -25,10 +25,8 @@
 import type { ButtonHTMLAttributes, ForwardedRef } from 'react';
 import { forwardRef } from 'react';
 
-// Simple className utility
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
+import { Spinner } from './Spinner';
+import { cn } from '../utils/cn';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
@@ -40,12 +38,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
 }
 
-// Variant styles
+// Variant styles - Steel/Copper theme
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-600',
-  secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-400',
-  ghost: 'bg-transparent text-gray-900 hover:bg-gray-100 focus-visible:ring-gray-300',
-  danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',
+  primary: 'bg-copper-500 text-white hover:bg-copper-600 focus-visible:ring-copper-500/50',
+  secondary:
+    'bg-steel-800 text-white hover:bg-steel-700 border border-steel-700/50 focus-visible:ring-steel-500/50',
+  ghost: 'bg-transparent text-steel-400 hover:bg-steel-800/30 focus-visible:ring-steel-500/20',
+  danger: 'bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-500/50',
 };
 
 // Size styles
@@ -93,26 +92,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {/* Loading spinner */}
-        {isLoading && (
-          <span className="inline-flex">
-            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-                fill="none"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              />
-            </svg>
-          </span>
-        )}
+        {isLoading && <Spinner size="sm" variant="white" label="Loading" />}
 
         {/* Button content */}
         {children}
