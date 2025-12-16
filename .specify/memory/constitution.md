@@ -1,23 +1,28 @@
 <!--
 ╔════════════════════════════════════════════════════════════════════════════╗
-║                       SYNC IMPACT REPORT v1.0.0                            ║
+║                       SYNC IMPACT REPORT v1.1.0                            ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
-Version Change: None → 1.0.0 (MAJOR - inaugural constitution)
+Version Change: 1.0.0 → 1.1.0 (MINOR - new principle added)
+
+Modified Principles:
+- None (existing principles unchanged)
 
 Added Sections:
-- 5 Core Principles (Code Quality, Testing Standards, User Experience)
-- Development Workflow section
-- Governance section with amendment procedures
+- VI. Pages Composition & Architecture (new principle for frontend architecture)
 
-Templates Updated:
-✅ .specify/templates/plan-template.md — Constitution Check aligned
-✅ .specify/templates/spec-template.md — Requirements scope validated
-✅ .specify/templates/tasks-template.md — Test-first discipline reflected
-✅ .specify/templates/checklist-template.md — Consistency validation enabled
+Removed Sections:
+- None
 
-No Removed Sections (inaugural document)
-No Deferred Items
+Templates Requiring Updates:
+✅ .specify/templates/plan-template.md — Constitution Check automatically includes all principles
+✅ .specify/templates/spec-template.md — No changes required (principle is implementation-focused)
+✅ .specify/templates/tasks-template.md — Generic task structure accommodates frontend architecture
+✅ .specify/templates/checklist-template.md — Generic template; Pages validation added dynamically
+
+Follow-up TODOs:
+- Consider adding ESLint rules to enforce Pages principle (no inline styles, business logic detection)
+- Update CLAUDE.md frontend architecture section to reference Principle VI
 
 -->
 
@@ -103,6 +108,22 @@ All data and API contracts MUST be explicitly tested and versioned.
 
 ---
 
+### VI. Pages Composition & Architecture
+
+Page components MUST be pure composition layers with no business logic or styling complexity.
+
+**Non-Negotiable Rules**:
+- Pages MUST render only prebuilt components and sections (no large inline markup blocks)
+- Pages MUST NOT contain Tailwind classes or inline styles (maximum 1 wrapper div with layout classes)
+- Business logic MUST live in custom hooks, services, or domain modules (never in Page components)
+- UI complexity MUST be extracted to Section components when a Page exceeds reasonable JSX size
+- Section components encapsulate complex UI patterns and can contain styling and local state
+- Pages act as composition roots: they wire together Sections, pass data, and handle routing
+
+**Rationale**: Separating composition from implementation keeps Pages readable and maintainable. Business logic in services enables testing and reuse. Section components encapsulate complexity while Pages remain simple orchestrators. This architectural boundary prevents Pages from becoming monolithic and difficult to refactor.
+
+---
+
 ## Development Workflow
 
 ### Code Review Standards
@@ -158,4 +179,4 @@ This constitution supersedes all other project guidance. In case of conflict:
 - Consistent violations indicate need for better tooling/templates
 - Violations ignored more than twice indicate principle may need revision
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-24 | **Last Amended**: 2025-11-24
+**Version**: 1.1.0 | **Ratified**: 2025-11-24 | **Last Amended**: 2025-12-15
