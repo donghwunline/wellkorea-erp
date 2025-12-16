@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -82,7 +81,6 @@ class AuthenticationServiceTest implements TestFixtures {
         @DisplayName("should return LoginResponse with token for valid credentials")
         void login_ValidCredentials_ReturnsLoginResponse() {
             when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(activeUser));
-            when(userRepository.findRoleNamesByUserId(1L)).thenReturn(List.of("ADMIN"));
             when(passwordEncoder.matches(TEST_PASSWORD, TEST_PASSWORD_HASH)).thenReturn(true);
             when(jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority()))
                     .thenReturn("generated.jwt.token");
@@ -111,7 +109,6 @@ class AuthenticationServiceTest implements TestFixtures {
                     .build();
 
             when(userRepository.findByUsername("multirole")).thenReturn(Optional.of(multiRoleUser));
-            when(userRepository.findRoleNamesByUserId(3L)).thenReturn(List.of("ADMIN", "FINANCE"));
             when(passwordEncoder.matches(TEST_PASSWORD, TEST_PASSWORD_HASH)).thenReturn(true);
             when(jwtTokenProvider.generateToken(anyString(), anyString()))
                     .thenReturn("generated.jwt.token");
@@ -252,7 +249,6 @@ class AuthenticationServiceTest implements TestFixtures {
             when(jwtTokenProvider.validateToken(oldToken)).thenReturn(true);
             when(jwtTokenProvider.getUsername(oldToken)).thenReturn(ADMIN_USERNAME);
             when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(activeUser));
-            when(userRepository.findRoleNamesByUserId(1L)).thenReturn(List.of("ADMIN"));
             when(jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority()))
                     .thenReturn(newToken);
 
@@ -323,7 +319,6 @@ class AuthenticationServiceTest implements TestFixtures {
             when(jwtTokenProvider.validateToken(validToken)).thenReturn(true);
             when(jwtTokenProvider.getUsername(validToken)).thenReturn(ADMIN_USERNAME);
             when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(activeUser));
-            when(userRepository.findRoleNamesByUserId(1L)).thenReturn(List.of("ADMIN"));
 
             LoginResponse.UserInfo result = authenticationService.getCurrentUser(validToken);
 

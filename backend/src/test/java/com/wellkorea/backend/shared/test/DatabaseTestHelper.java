@@ -96,17 +96,17 @@ public final class DatabaseTestHelper {
 
         // Insert user-role assignments
         jdbcTemplate.update(
-                "INSERT INTO user_roles (user_id, role_id) " +
+                "INSERT INTO user_roles (user_id, role_name) " +
                         "VALUES " +
-                        "    (1, (SELECT id FROM roles WHERE name = 'ADMIN')), " +
-                        "    (1, (SELECT id FROM roles WHERE name = 'FINANCE')), " +
-                        "    (1, (SELECT id FROM roles WHERE name = 'PRODUCTION')), " +
-                        "    (1, (SELECT id FROM roles WHERE name = 'SALES')), " +
-                        "    (2, (SELECT id FROM roles WHERE name = 'FINANCE')), " +
-                        "    (3, (SELECT id FROM roles WHERE name = 'PRODUCTION')), " +
-                        "    (4, (SELECT id FROM roles WHERE name = 'SALES')), " +
-                        "    (5, (SELECT id FROM roles WHERE name = 'SALES')) " +
-                        "ON CONFLICT (user_id, role_id) DO NOTHING"
+                        "    (1, 'ADMIN'), " +
+                        "    (1, 'FINANCE'), " +
+                        "    (1, 'PRODUCTION'), " +
+                        "    (1, 'SALES'), " +
+                        "    (2, 'FINANCE'), " +
+                        "    (3, 'PRODUCTION'), " +
+                        "    (4, 'SALES'), " +
+                        "    (5, 'SALES') " +
+                        "ON CONFLICT (user_id, role_name) DO NOTHING"
         );
 
         // Insert customer assignments (FR-062: Sales role customer filtering)

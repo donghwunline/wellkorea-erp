@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Service for authentication operations.
@@ -71,16 +70,14 @@ public class AuthenticationService {
             throw new AuthenticationException("Invalid credentials");
         }
 
-        // Load user roles from database
-        User userWithRoles = loadUserRoles(user);
-
-        String roles = userWithRoles.getRolesAsString();
+        // Roles are loaded automatically via JPA @ElementCollection (LAZY fetch)
+        String roles = user.getRolesAsString();
         String token = jwtTokenProvider.generateToken(username, roles);
 
         // Update last login (fire-and-forget, don't block login)
-        updateLastLogin(userWithRoles);
+        updateLastLogin(user);
 
-        return LoginResponse.of(token, toUserInfo(userWithRoles));
+        return LoginResponse.of(token, toUserInfo(user));
     }
 
     /**
@@ -127,15 +124,14 @@ public class AuthenticationService {
             throw new AuthenticationException("User is not active");
         }
 
-        // Load roles and generate new token
-        User userWithRoles = loadUserRoles(user);
-        String roles = userWithRoles.getRolesAsString();
+        // Generate new token with current roles
+        String roles = user.getRolesAsString();
         String newToken = jwtTokenProvider.generateToken(username, roles);
 
         // Blacklist old token
         tokenBlacklist.add(token);
 
-        return LoginResponse.of(newToken, toUserInfo(userWithRoles));
+        return LoginResponse.of(newToken, toUserInfo(user));
     }
 
     /**
@@ -160,8 +156,7 @@ public class AuthenticationService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AuthenticationException("User not found"));
 
-        User userWithRoles = loadUserRoles(user);
-        return toUserInfo(userWithRoles);
+        return toUserInfo(user);
     }
 
     /**
@@ -175,22 +170,6 @@ public class AuthenticationService {
     }
 
     // ==================== Helper Methods ====================
-
-    /**
-     * Load roles for a user from the database.
-     * Since roles are stored in a junction table and marked as @Transient in the entity,
-     * we need to load them separately.
-     *
-     * @param user User entity (without roles)
-     * @return User with roles populated
-     */
-    private User loadUserRoles(User user) {
-        List<String> roleNames = userRepository.findRoleNamesByUserId(user.getId());
-        Set<Role> roles = roleNames.stream()
-                .map(Role::fromName)
-                .collect(Collectors.toSet());
-        return user.withRoles(roles);
-    }
 
     private void validateNotBlank(String value, String message) {
         if (value == null || value.isBlank()) {
