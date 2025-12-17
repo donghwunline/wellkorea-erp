@@ -16,7 +16,7 @@
  * ```
  */
 
-import type { AuthState, RoleName, User } from '@/types/auth';
+import type { AuthState, RoleName, User } from '@/shared/types/auth';
 
 /**
  * Factory function to create a mock User with sensible defaults.

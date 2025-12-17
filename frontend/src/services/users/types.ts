@@ -3,7 +3,7 @@
  */
 
 import type { Paginated } from '@/api/types';
-import type { UserDetails } from '@/types/auth';
+import type { UserDetails } from '@/shared/types/auth';
 
 export type {
   UserDetails,
@@ -11,7 +11,7 @@ export type {
   UpdateUserRequest,
   AssignRolesRequest,
   ChangePasswordRequest,
-} from '@/types/auth';
+} from '@/shared/types/auth';
 
 export interface UserListParams {
   page?: number;

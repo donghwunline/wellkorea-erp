@@ -6,7 +6,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useAuthStore } from './authStore';
 import { mockUsers, createMockUser, mockAuthStates } from '@/test/fixtures';
-import type { LoginResponse } from '@/types/auth';
+import type { LoginResponse } from '@/shared/types/auth';
 import type { ApiError } from '@/api/types';
 
 // Mock authService
@@ -41,7 +41,7 @@ vi.mock('@/services/auth/authService', () => {
 });
 
 // Mock authStorage
-vi.mock('@/utils/storage', () => ({
+vi.mock('@/shared/utils', () => ({
   authStorage: {
     getAccessToken: vi.fn(),
     getRefreshToken: vi.fn(),
@@ -55,7 +55,7 @@ vi.mock('@/utils/storage', () => ({
 
 // Import mocked modules
 import { authService, authEvents } from '@/services/auth/authService';
-import { authStorage } from '@/utils/storage';
+import { authStorage } from '@/shared/utils';
 
 describe('authStore', () => {
   beforeEach(() => {

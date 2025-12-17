@@ -56,4 +56,4 @@ export {
 export type { PaginationMetadata, Paginated, ApiError, ErrorResponse } from '@/api/types';
 
 // Re-export auth constants for component use
-export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/types/auth';
+export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/shared/types/auth';

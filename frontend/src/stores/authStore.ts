@@ -12,8 +12,8 @@
  */
 
 import { create } from 'zustand';
-import { authStorage } from '@/utils/storage';
-import type { LoginRequest, RoleName, User } from '@/types/auth';
+import { authStorage } from '@/shared/utils';
+import type { LoginRequest, RoleName, User } from '@/shared/types/auth';
 import { authEvents, authService } from '@/services/auth/authService';
 
 interface AuthState {
