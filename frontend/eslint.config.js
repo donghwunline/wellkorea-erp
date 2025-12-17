@@ -23,96 +23,117 @@ export default defineConfig([
   },
 
   // Layer encapsulation (excluding tests)
+  // Uses @typescript-eslint/no-restricted-imports because eslint-plugin-import
+  // no-restricted-paths doesn't support TypeScript path aliases in zones
+  // See: https://github.com/import-js/eslint-plugin-import/issues/1872
   {
-    files: ['src/{pages,components,stores,shared}/**/*.{ts,tsx}'],
-    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'src/test/**'],
-    plugins: {
-      import: importPlugin,
-    },
-    settings: {
-      'import/resolver': {
-        typescript: {
-          project: './tsconfig.app.json',
-        },
-      },
-    },
+    files: ['src/pages/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
     rules: {
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-      'import/no-restricted-paths': [
+      // Rule: Pages cannot import stores or services directly
+      '@typescript-eslint/no-restricted-imports': [
         'error',
         {
-          zones: [
-            // ========================================
-            // MANDATORY RULES (Architectural Boundaries)
-            // ========================================
-
-            // Rule 1: Nobody imports from pages (pages는 최상위)
+          patterns: [
             {
-              target: './src/!(pages)/**',
-              from: './src/pages',
-              message: '❌ Pages are top-level orchestrators. Never import from pages.',
-            },
-
-            // Rule 2: UI components stay dumb (재사용 UI는 dumb)
-            {
-              target: './src/components/ui',
-              from: './src/{services,stores,components/features}',
+              group: ['@/services', '@/services/*'],
               message:
-                '❌ UI components must receive data via props. Use components/features/ for smart components.',
+                '❌ Pages should not import services directly. Use feature hooks from @/components/features/**/hooks instead.',
+              allowTypeImports: true,
             },
-
-            // Rule 3: API only imported by services (HTTP 계층 격리)
             {
-              target: './src/{components,shared,stores,pages}',
-              from: './src/api',
-              except: ['./src/api/types.ts'],
-              message: '❌ Use @/services instead of importing @/api directly.',
-            },
-
-            // Rule 4: Shared layers cannot import upward (shared는 아무도 모름)
-            {
-              target: './src/{shared/types,shared/utils,components/ui}',
-              from: './src/{components/features,pages,stores,services}',
+              group: ['@/stores', '@/stores/*'],
               message:
-                '❌ Shared utilities (shared/types/utils, ui) cannot depend on features/pages/stores/services.',
+                '❌ Pages should not import stores directly. Use @/shared/hooks (e.g., useAuth) instead.',
+              allowTypeImports: true,
             },
-
-            // Rule 5: Pages cannot import stores or services directly
-            // (pages must use feature hooks which encapsulate service calls)
             {
-              target: './src/pages',
-              from: './src/{stores,services}',
-              message:
-                '❌ Pages should import from @/components/features (which encapsulate stores/services) or @/shared/hooks.',
+              group: ['@/api', '@/api/*'],
+              allowTypeImports: true,
+              message: '❌ Pages should not import from @/api. Use @/services via feature hooks.',
             },
-
-            // Rule 6: Shared hooks can only use stores (not services directly)
-            {
-              target: './src/shared/hooks',
-              from: './src/services',
-              message:
-                '❌ Shared hooks should only use stores. Feature-specific hooks go in @/components/features/**/hooks.',
-            },
-
-            // ========================================
-            // RECOMMENDED RULES (Best Practices)
-            // ========================================
-
-            // Rule 7: Encourage barrel exports in services
-            {
-              target: './src/{components,stores}',
-              from: './src/services/{auth,users,audit}',
-              except: ['./index.ts'],
-              message: '⚠️  Use barrel export: import from @/services instead.',
-            },
-
-            // Allowed patterns (no restrictions):
-            // - stores → services (orchestration pattern)
-            // - features → services/stores (smart components)
-            // - features/hooks → services (encapsulated service calls)
           ],
         },
       ],
+    },
+  },
+  {
+    files: ['src/components/ui/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      // Rule: UI components must stay dumb (no services/stores)
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/services', '@/services/*'],
+              message: '❌ UI components must receive data via props. Move to @/components/features/ for smart components.',
+            },
+            {
+              group: ['@/stores', '@/stores/*'],
+              message: '❌ UI components must receive data via props. Move to @/components/features/ for smart components.',
+            },
+            {
+              group: ['@/api', '@/api/*'],
+              allowTypeImports: true,
+              message: '❌ UI components should not import from @/api.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/shared/hooks/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      // Rule: Shared hooks can only use stores, not services
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/services', '@/services/*'],
+              message: '❌ Shared hooks should only use stores. Feature-specific hooks go in @/components/features/**/hooks.',
+              allowTypeImports: true,
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/shared/{types,utils}/**/*.{ts,tsx}', 'src/components/ui/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
+    rules: {
+      // Rule: Shared layers cannot import upward
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/pages', '@/pages/*'],
+              message: '❌ Shared utilities cannot depend on pages.',
+            },
+            {
+              group: ['@/components/features', '@/components/features/*'],
+              message: '❌ Shared utilities cannot depend on feature components.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // Type imports allowed everywhere
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'src/test/**'],
+    rules: {
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
     },
   },
 ]);
