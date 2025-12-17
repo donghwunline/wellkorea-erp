@@ -473,27 +473,20 @@ describe('userService', () => {
   });
 
   describe('assignRoles', () => {
-    it('should assign roles and return transformed user', async () => {
+    it('should assign roles successfully', async () => {
       // Given: Assign roles request
       const assignRequest: AssignRolesRequest = {
         roles: ['ROLE_ADMIN', 'ROLE_FINANCE'],
       };
 
-      const mockUser = createMockUserDetails({
-        id: 10,
-        roles: ['ROLE_ADMIN', 'ROLE_FINANCE'],
-      });
-      vi.mocked(httpClient.put).mockResolvedValue(mockUser);
+      vi.mocked(httpClient.put).mockResolvedValue(undefined);
 
       // When: Assign roles
-      const result = await userService.assignRoles(10, assignRequest);
+      await userService.assignRoles(10, assignRequest);
 
       // Then: Calls httpClient.put with correct URL
       expect(httpClient.put).toHaveBeenCalledOnce();
       expect(httpClient.put).toHaveBeenCalledWith('/users/10/roles', assignRequest);
-
-      // And: Returns user with updated roles
-      expect(result.roles).toEqual(['ROLE_ADMIN', 'ROLE_FINANCE']);
     });
 
     it('should propagate authorization errors', async () => {

@@ -86,9 +86,8 @@ export const userService = {
   /**
    * Assign roles to a user.
    */
-  async assignRoles(id: number, request: AssignRolesRequest): Promise<UserDetails> {
-    const user = await httpClient.put<UserDetails>(`${BASE_PATH}/${id}/roles`, request);
-    return transformUserDetails(user);
+  async assignRoles(id: number, request: AssignRolesRequest): Promise<void> {
+    await httpClient.put<void>(`${BASE_PATH}/${id}/roles`, request);
   },
 
   /**
