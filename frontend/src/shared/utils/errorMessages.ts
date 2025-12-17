@@ -9,7 +9,7 @@
  * - Business errors (BUS_*): Context-dependent (inline or toast)
  */
 
-import type { ApiError, ErrorResponse } from './types';
+import type { ApiError, ErrorResponse } from '@/api/types';
 
 /**
  * Mapping of backend error codes to user-friendly messages.
@@ -157,4 +157,3 @@ export function getErrorDisplayStrategy(
   }
   return 'toast'; // Default to toast for unknown errors
 }
-

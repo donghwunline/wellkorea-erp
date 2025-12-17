@@ -8,3 +8,17 @@
 export { storage, authStorage } from './storage';
 export { navigation } from './navigation';
 export { cn } from './cn';
+
+// Error message utilities
+export {
+  errorMessages,
+  getErrorMessage,
+  getErrorDisplayStrategy,
+  isValidationError,
+  isAuthenticationError,
+  isAuthorizationError,
+  isAuthError,
+  isBusinessError,
+  isServerError,
+  isNotFoundError,
+} from './errorMessages';

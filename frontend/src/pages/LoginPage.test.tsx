@@ -15,14 +15,18 @@ vi.mock('@/shared/hooks', () => ({
   useAuth: vi.fn(),
 }));
 
-// Mock getErrorMessage utility
-vi.mock('@/services', () => ({
-  getErrorMessage: vi.fn((error: ApiError) => {
-    if (error.errorCode === 'AUTH_001') return '아이디 또는 비밀번호가 잘못되었습니다';
-    if (error.errorCode === 'AUTH_003') return '세션이 만료되었습니다';
-    return error.message;
-  }),
-}));
+// Mock getErrorMessage utility from @/shared/utils
+vi.mock('@/shared/utils', async () => {
+  const actual = await vi.importActual('@/shared/utils');
+  return {
+    ...actual,
+    getErrorMessage: vi.fn((error: ApiError) => {
+      if (error.errorCode === 'AUTH_001') return '아이디 또는 비밀번호가 잘못되었습니다';
+      if (error.errorCode === 'AUTH_003') return '세션이 만료되었습니다';
+      return error.message;
+    }),
+  };
+});
 
 // Mock useNavigate and useLocation
 const mockNavigate = vi.fn();
@@ -38,7 +42,7 @@ vi.mock('react-router-dom', async () => {
 
 // Import mocked modules
 import { useAuth } from '@/shared/hooks';
-import { getErrorMessage } from '@/services';
+import { getErrorMessage } from '@/shared/utils';
 
 // Helper to render LoginPage with BrowserRouter
 function renderLoginPage() {
