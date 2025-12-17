@@ -16,11 +16,10 @@
  *   Tier 4 (App Global State): Auth → useAuth hook (wraps authStore)
  */
 
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks';
-import type { AxiosError } from 'axios';
-import type { ErrorResponse } from '@/api/types';
+import { getErrorMessage, type ApiError } from '@/services';
 import { ErrorAlert, FormField } from '@/components/ui';
 
 interface LocationState {
@@ -39,6 +38,10 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [shouldFocusPassword, setShouldFocusPassword] = useState(false);
+
+  // Ref for password field focus management
+  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -56,6 +59,14 @@ export function LoginPage() {
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, from]);
+
+  // Focus password field when shouldFocusPassword is set
+  useEffect(() => {
+    if (shouldFocusPassword && passwordInputRef.current) {
+      passwordInputRef.current.focus();
+      setShouldFocusPassword(false);
+    }
+  }, [shouldFocusPassword]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,14 +94,17 @@ export function LoginPage() {
 
       navigate(from, { replace: true });
     } catch (err) {
-      const axiosError = err as AxiosError<ErrorResponse>;
-      if (axiosError.response?.status === 401) {
-        setError('Invalid username or password');
-      } else if (axiosError.response?.data?.message) {
-        setError(axiosError.response.data.message);
-      } else {
-        setError('Login failed. Please try again.');
+      const apiError = err as ApiError;
+
+      // Clear password on authentication error (AUTH_001 = invalid credentials)
+      if (apiError.errorCode === 'AUTH_001') {
+        setPassword('');
+        setShouldFocusPassword(true);
       }
+
+      // Use smart error message mapping (Korean messages)
+      const errorMessage = getErrorMessage(apiError);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -162,6 +176,7 @@ export function LoginPage() {
 
               {/* Password - Using FormField component */}
               <FormField
+                ref={passwordInputRef}
                 label="Password"
                 type="password"
                 id="password"
