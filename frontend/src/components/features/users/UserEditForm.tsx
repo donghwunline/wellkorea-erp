@@ -1,22 +1,22 @@
 /**
  * User Edit Form Component
  *
- * Self-contained form modal for editing user details.
- * Local UI state (Tier 1) for form inputs.
+ * Self-contained form modal that owns its service call.
+ * Notifies parent via onSuccess callback after successful update.
  */
 
 import { useState, type FormEvent } from 'react';
-import { type UpdateUserRequest, type UserDetails } from '@/services';
+import { userService, type UserDetails } from '@/services';
 import { Button, ErrorAlert, FormField, Modal } from '@/components/ui';
 
 export interface UserEditFormProps {
   isOpen: boolean;
   user: UserDetails | null;
   onClose: () => void;
-  onSubmit: (id: number, data: UpdateUserRequest) => Promise<void>;
+  onSuccess: () => void;
 }
 
-export function UserEditForm({ isOpen, user, onClose, onSubmit }: Readonly<UserEditFormProps>) {
+export function UserEditForm({ isOpen, user, onClose, onSuccess }: Readonly<UserEditFormProps>) {
   // Local UI State (Tier 1)
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -44,10 +44,11 @@ export function UserEditForm({ isOpen, user, onClose, onSubmit }: Readonly<UserE
     setError(null);
 
     try {
-      await onSubmit(user.id, {
+      await userService.updateUser(user.id, {
         email: formData.email.trim(),
         fullName: formData.fullName.trim(),
       });
+      onSuccess();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update user');

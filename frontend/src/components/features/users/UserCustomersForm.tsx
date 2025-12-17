@@ -1,8 +1,8 @@
 /**
  * User Customer Assignment Form Component
  *
- * Self-contained form modal for assigning customers to a user.
- * Local UI state (Tier 1) for customer selection.
+ * Self-contained form modal that owns its service call.
+ * Notifies parent via onSuccess callback after successful customer assignment.
  */
 
 import { useState, useEffect, type FormEvent } from 'react';
@@ -13,7 +13,7 @@ export interface UserCustomersFormProps {
   isOpen: boolean;
   user: UserDetails | null;
   onClose: () => void;
-  onSubmit: (id: number, customerIds: number[]) => Promise<void>;
+  onSuccess: () => void;
 }
 
 // Mock customer data (TODO: Replace with real customer service when implemented)
@@ -29,7 +29,7 @@ export function UserCustomersForm({
   isOpen,
   user,
   onClose,
-  onSubmit,
+  onSuccess,
 }: Readonly<UserCustomersFormProps>) {
   // Local UI State (Tier 1)
   const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
@@ -71,7 +71,8 @@ export function UserCustomersForm({
     setError(null);
 
     try {
-      await onSubmit(user.id, selectedCustomers);
+      await userService.assignCustomers(user.id, selectedCustomers);
+      onSuccess();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to assign customers');

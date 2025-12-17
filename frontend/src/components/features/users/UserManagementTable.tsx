@@ -54,8 +54,6 @@ export interface UserManagementTableProps {
   onPassword: (user: UserDetails) => void;
   /** Called when user clicks assign customers (for ROLE_SALES users) */
   onCustomers: (user: UserDetails) => void;
-  /** Called when user clicks activate (for inactive users) */
-  onActivate: (user: UserDetails) => void;
   /** Called when an error occurs */
   onError?: (error: string) => void;
 }
@@ -86,7 +84,6 @@ export function UserManagementTable({
   onRoles,
   onPassword,
   onCustomers,
-  onActivate,
   onError,
 }: Readonly<UserManagementTableProps>) {
   // Server State (Tier 3) - managed here in feature component
@@ -120,6 +117,19 @@ export function UserManagementTable({
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers, refreshTrigger]);
+
+  // Handle user activation (owned by this component)
+  const handleActivate = useCallback(
+    async (user: UserDetails) => {
+      try {
+        await userService.activateUser(user.id);
+        await fetchUsers();
+      } catch {
+        onError?.('Failed to activate user');
+      }
+    },
+    [fetchUsers, onError]
+  );
 
   // Format date utility
   const formatDate = (dateStr: string | null) => {
@@ -261,7 +271,7 @@ export function UserManagementTable({
                         </IconButton>
                       ) : (
                         <IconButton
-                          onClick={() => onActivate(user)}
+                          onClick={() => handleActivate(user)}
                           variant="primary"
                           aria-label="Activate user"
                           title="Activate user"

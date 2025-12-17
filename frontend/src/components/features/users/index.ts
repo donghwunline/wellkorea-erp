@@ -2,29 +2,23 @@
  * User Feature Components
  *
  * Smart components for user management feature.
- * These components can fetch data, access stores, and manage complex state.
+ * These components own their service calls and manage complex state.
  *
  * Components:
- * - UserManagementTable: Data table with user list, fetches from service
+ * - UserManagementTable: Data table with user list, fetches from service, handles activation
  * - UserCreateForm: Modal form for creating users
  * - UserEditForm: Modal form for editing users
  * - UserRolesForm: Modal form for assigning roles
  * - UserPasswordForm: Modal form for changing password
  * - UserCustomersForm: Modal form for assigning customers
- *
- * Hooks:
- * - useUserManagementPage: Page UI state (pagination, search)
- * - useUserManagementActions: CRUD actions with refresh trigger
+ * - UserDeactivateModal: Confirmation modal for deactivating users
  */
 
-// Re-export hooks for convenience
-export * from './hooks';
-
-// Table component (handles data fetching)
+// Table component (handles data fetching and user activation)
 export { UserManagementTable } from './UserManagementTable';
 export type { UserManagementTableProps } from './UserManagementTable';
 
-// Form components (handle local UI state)
+// Form components (own their service calls)
 export { UserCreateForm } from './UserCreateForm';
 export type { UserCreateFormProps } from './UserCreateForm';
 
@@ -39,3 +33,7 @@ export type { UserPasswordFormProps } from './UserPasswordForm';
 
 export { UserCustomersForm } from './UserCustomersForm';
 export type { UserCustomersFormProps } from './UserCustomersForm';
+
+// Modal components (own their service calls)
+export { UserDeactivateModal } from './UserDeactivateModal';
+export type { UserDeactivateModalProps } from './UserDeactivateModal';

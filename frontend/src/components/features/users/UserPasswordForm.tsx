@@ -1,26 +1,26 @@
 /**
  * User Password Change Form Component
  *
- * Self-contained form modal for changing user password.
- * Local UI state (Tier 1) for password input.
+ * Self-contained form modal that owns its service call.
+ * Notifies parent via onSuccess callback after successful password change.
  */
 
 import { useState, type FormEvent } from 'react';
-import { type UserDetails } from '@/services';
+import { userService, type UserDetails } from '@/services';
 import { Button, ErrorAlert, FormField, Modal } from '@/components/ui';
 
 export interface UserPasswordFormProps {
   isOpen: boolean;
   user: UserDetails | null;
   onClose: () => void;
-  onSubmit: (id: number, password: string) => Promise<void>;
+  onSuccess: () => void;
 }
 
 export function UserPasswordForm({
   isOpen,
   user,
   onClose,
-  onSubmit,
+  onSuccess,
 }: Readonly<UserPasswordFormProps>) {
   // Local UI State (Tier 1)
   const [password, setPassword] = useState('');
@@ -46,9 +46,10 @@ export function UserPasswordForm({
     setError(null);
 
     try {
-      await onSubmit(user.id, password);
+      await userService.changePassword(user.id, { newPassword: password });
       setPassword('');
       setConfirmPassword('');
+      onSuccess();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to change password');

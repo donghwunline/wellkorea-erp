@@ -1,41 +1,41 @@
 /**
  * User Management Page - Admin Only
  *
- * Refactored following Constitution Principle VI:
- * - Pure composition layer (composes features and UI components)
- * - No direct service calls (uses feature hooks instead)
+ * Pure composition layer following Constitution Principle VI:
+ * - Composes features and UI components
+ * - No direct service calls (feature components own their service calls)
  * - 4-Tier State Separation:
  *   Tier 1 (Local UI State): Modal open/close, selected user -> Local state in page
- *   Tier 2 (Page UI State): Search/pagination -> useUserManagementPage hook
- *   Tier 3 (Server State): User list data -> UserManagementTable component
+ *   Tier 2 (Page UI State): Search/pagination -> usePaginatedSearch hook
+ *   Tier 3 (Server State): User list data -> Feature components (forms, table)
  *   Tier 4 (App Global State): Auth -> authStore via useAuth (not needed here)
  *
  * Import Policy:
  * - pages -> features: YES (via @/components/features/users)
  * - pages -> ui: YES (via @/components/ui)
- * - pages -> shared/hooks: YES (via @/shared/hooks) - for useAuth if needed
- * - pages -> services: NO (use feature hooks instead)
+ * - pages -> shared/hooks: YES (via @/shared/hooks)
+ * - pages -> services: NO (feature components handle this)
  * - pages -> stores: NO (use shared hooks instead)
  */
 
-import { useState } from 'react';
-import { Alert, Button, ConfirmationModal, Icon, PageHeader, SearchBar } from '@/components/ui';
+import { useReducer, useState } from 'react';
+import { Alert, Button, Icon, PageHeader, SearchBar } from '@/components/ui';
 import {
   UserCreateForm,
   UserCustomersForm,
+  UserDeactivateModal,
   UserEditForm,
   UserManagementTable,
   UserPasswordForm,
   UserRolesForm,
-  useUserManagementActions,
-  useUserManagementPage,
 } from '@/components/features/users';
-import type { CreateUserRequest, RoleName, UpdateUserRequest, UserDetails } from '@/shared/types';
+import { usePaginatedSearch } from '@/shared/hooks';
+import type { UserDetails } from '@/shared/types';
 
 type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | 'customers' | null;
 
 export function UserManagementPage() {
-  // Page UI State (Tier 2) - from feature hook
+  // Page UI State (Tier 2) - pagination and search
   const {
     page,
     setPage,
@@ -44,19 +44,10 @@ export function UserManagementPage() {
     handleSearchChange,
     handleSearchSubmit,
     handleClearSearch,
-  } = useUserManagementPage();
+  } = usePaginatedSearch();
 
-  // Feature actions - from feature hook (NO direct service imports)
-  const {
-    createUser,
-    updateUser,
-    deleteUser,
-    activateUser,
-    assignRoles,
-    changePassword,
-    assignCustomers,
-    refreshTrigger,
-  } = useUserManagementActions();
+  // Refresh trigger - increment to signal table to refetch
+  const [refreshTrigger, triggerRefresh] = useReducer((x: number) => x + 1, 0);
 
   // Local UI State (Tier 1) - Modal type and selected user
   const [modalType, setModalType] = useState<ModalType>(null);
@@ -74,39 +65,10 @@ export function UserManagementPage() {
     setSelectedUser(null);
   };
 
-  // CRUD handlers (delegate to feature hook)
-  const handleCreateUser = async (data: CreateUserRequest) => {
-    await createUser(data);
-  };
-
-  const handleUpdateUser = async (id: number, data: UpdateUserRequest) => {
-    await updateUser(id, data);
-  };
-
-  const handleAssignRoles = async (id: number, roles: RoleName[]) => {
-    await assignRoles(id, roles);
-  };
-
-  const handleChangePassword = async (id: number, password: string) => {
-    await changePassword(id, password);
-  };
-
-  const handleDeactivateUser = async () => {
-    if (!selectedUser) return;
-    await deleteUser(selectedUser.id);
+  // Success handler for forms/modals - triggers refresh after operation completes
+  const handleFormSuccess = () => {
+    triggerRefresh();
     closeModal();
-  };
-
-  const handleActivateUser = async (user: UserDetails) => {
-    try {
-      await activateUser(user.id);
-    } catch {
-      setError('Failed to activate user');
-    }
-  };
-
-  const handleAssignCustomers = async (id: number, customerIds: number[]) => {
-    await assignCustomers(id, customerIds);
   };
 
   return (
@@ -147,7 +109,7 @@ export function UserManagementPage() {
         </Alert>
       )}
 
-      {/* Feature Table Component (handles data fetching) */}
+      {/* Feature Table Component (handles data fetching and activation) */}
       <UserManagementTable
         page={page}
         search={search}
@@ -158,57 +120,49 @@ export function UserManagementPage() {
         onRoles={user => openModal('roles', user)}
         onPassword={user => openModal('password', user)}
         onCustomers={user => openModal('customers', user)}
-        onActivate={handleActivateUser}
         onError={setError}
       />
 
-      {/* Modals - Each is self-contained with local UI state */}
+      {/* Modals - Feature components own their service calls */}
       <UserCreateForm
         isOpen={modalType === 'create'}
         onClose={closeModal}
-        onSubmit={handleCreateUser}
+        onSuccess={handleFormSuccess}
       />
 
       <UserEditForm
         isOpen={modalType === 'edit'}
         user={selectedUser}
         onClose={closeModal}
-        onSubmit={handleUpdateUser}
+        onSuccess={handleFormSuccess}
       />
 
       <UserRolesForm
         isOpen={modalType === 'roles'}
         user={selectedUser}
         onClose={closeModal}
-        onSubmit={handleAssignRoles}
+        onSuccess={handleFormSuccess}
       />
 
       <UserPasswordForm
         isOpen={modalType === 'password'}
         user={selectedUser}
         onClose={closeModal}
-        onSubmit={handleChangePassword}
+        onSuccess={handleFormSuccess}
       />
 
       <UserCustomersForm
         isOpen={modalType === 'customers'}
         user={selectedUser}
         onClose={closeModal}
-        onSubmit={handleAssignCustomers}
+        onSuccess={handleFormSuccess}
       />
 
-      <ConfirmationModal
+      <UserDeactivateModal
         isOpen={modalType === 'delete'}
+        user={selectedUser}
         onClose={closeModal}
-        onConfirm={handleDeactivateUser}
-        title="Deactivate User"
-        message={
-          selectedUser
-            ? `Are you sure you want to deactivate ${selectedUser.fullName}? This user will no longer be able to log in.`
-            : ''
-        }
-        confirmLabel="Deactivate"
-        variant="danger"
+        onSuccess={handleFormSuccess}
       />
     </div>
   );

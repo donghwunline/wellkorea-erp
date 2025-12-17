@@ -1,12 +1,12 @@
 /**
  * User Roles Assignment Form Component
  *
- * Self-contained form modal for assigning roles to a user.
- * Local UI state (Tier 1) for role selection.
+ * Self-contained form modal that owns its service call.
+ * Notifies parent via onSuccess callback after successful role assignment.
  */
 
 import { useState, type FormEvent } from 'react';
-import { type UserDetails } from '@/services';
+import { userService, type UserDetails } from '@/services';
 import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/shared/types/auth';
 import { Badge, Button, ErrorAlert, Modal } from '@/components/ui';
 
@@ -14,10 +14,10 @@ export interface UserRolesFormProps {
   isOpen: boolean;
   user: UserDetails | null;
   onClose: () => void;
-  onSubmit: (id: number, roles: RoleName[]) => Promise<void>;
+  onSuccess: () => void;
 }
 
-export function UserRolesForm({ isOpen, user, onClose, onSubmit }: Readonly<UserRolesFormProps>) {
+export function UserRolesForm({ isOpen, user, onClose, onSuccess }: Readonly<UserRolesFormProps>) {
   // Local UI State (Tier 1)
   const [selectedRoles, setSelectedRoles] = useState<RoleName[]>(user?.roles || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +44,8 @@ export function UserRolesForm({ isOpen, user, onClose, onSubmit }: Readonly<User
     setError(null);
 
     try {
-      await onSubmit(user.id, selectedRoles);
+      await userService.assignRoles(user.id, { roles: selectedRoles });
+      onSuccess();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to assign roles');

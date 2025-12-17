@@ -1,22 +1,22 @@
 /**
  * User Create Form Component
  *
- * Self-contained form modal with local UI state (Tier 1).
- * Receives only data and callbacks from parent.
+ * Self-contained form modal that owns its service call.
+ * Notifies parent via onSuccess callback after successful creation.
  */
 
 import { useState, type FormEvent } from 'react';
-import { type CreateUserRequest } from '@/services';
+import { userService } from '@/services';
 import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/shared/types/auth';
 import { Button, ErrorAlert, FormField, Modal } from '@/components/ui';
 
 export interface UserCreateFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateUserRequest) => Promise<void>;
+  onSuccess: () => void;
 }
 
-export function UserCreateForm({ isOpen, onClose, onSubmit }: Readonly<UserCreateFormProps>) {
+export function UserCreateForm({ isOpen, onClose, onSuccess }: Readonly<UserCreateFormProps>) {
   // Local UI State (Tier 1) - form inputs
   const [formData, setFormData] = useState({
     username: '',
@@ -35,7 +35,7 @@ export function UserCreateForm({ isOpen, onClose, onSubmit }: Readonly<UserCreat
     setError(null);
 
     try {
-      await onSubmit({
+      await userService.createUser({
         username: formData.username.trim(),
         email: formData.email.trim(),
         password: formData.password,
@@ -44,6 +44,7 @@ export function UserCreateForm({ isOpen, onClose, onSubmit }: Readonly<UserCreat
       });
       // Reset form on success
       setFormData({ username: '', email: '', password: '', fullName: '', roles: [] });
+      onSuccess();
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create user');
