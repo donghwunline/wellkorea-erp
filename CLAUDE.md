@@ -216,40 +216,41 @@ com/wellkorea/backend/
 - **JWT Authentication**: Custom `JwtAuthenticationFilter` with token refresh support (temporary, will migrate to Keycloak OAuth2)
 - **Audit Logging**: `AuditLogger` with `AuditContextHolder` for request context tracking
 
-### Frontend Architecture (Service Layer Pattern)
+### Frontend Architecture (Layered Service Pattern)
 
-Frontend uses a service layer pattern with feature-based organization:
+Frontend uses a layered service pattern with strict import boundaries enforced by ESLint.
+
+**See [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) for complete architecture documentation.**
 
 ```
 frontend/src/
-├── api/                 # HTTP client infrastructure
-│   ├── httpClient.ts   # HttpClient class with auto token refresh
-│   ├── tokenStore.ts   # Local storage token management
-│   └── types.ts        # ApiResponse, ApiError types
-│
-├── services/            # Business logic services (by feature)
-│   ├── auth/           # authService.ts, types.ts
-│   ├── users/          # userService.ts, types.ts
-│   └── audit/          # auditService.ts, types.ts
-│
-├── stores/              # Zustand global state
-│   └── authStore.ts    # Authentication state (user, isAuthenticated)
-│
-├── components/          # Reusable React components
-│   ├── ui/             # Design system components (Button, Input)
-│   ├── ProtectedRoute.tsx
-│   └── ErrorBoundary.tsx
-│
-├── pages/               # Route-level components
-│   ├── LoginPage.tsx
-│   └── admin/          # Admin-specific pages
-│
+├── pages/               # Route-level components (orchestration layer)
+├── components/
+│   ├── ui/             # Dumb components (Button, Modal, Table)
+│   └── features/       # Smart components (data fetching, stores)
+│       └── users/      # User management forms
+├── stores/              # Global state (Zustand)
+│   └── authStore.ts    # Authentication state
 ├── hooks/               # Custom React hooks
-│   └── useAuth.ts      # Authentication hook
-│
+├── services/            # Business logic services
+│   ├── auth/           # Authentication service
+│   ├── users/          # User management service
+│   ├── audit/          # Audit logging service
+│   └── shared/         # Shared utilities (pagination)
+├── api/                 # HTTP client layer
+│   ├── httpClient.ts   # Axios wrapper with token refresh
+│   ├── tokenStore.ts   # Token persistence
+│   └── types.ts        # API types
+├── types/               # Shared TypeScript types
 └── utils/               # Pure utility functions
-    ├── storage.ts      # localStorage wrapper
-    └── errorMessages.ts # Error message mapping
+```
+
+**Import Rules** (enforced by ESLint):
+- ❌ `pages/` → Nobody imports from pages (top-level orchestration)
+- ❌ `components/ui/` → No services/stores (dumb components only)
+- ❌ `components/stores/pages/hooks` → No `@/api` (use services)
+- ✅ `stores/` → Can use `services/` (orchestration pattern)
+- ✅ `components/features/` → Can use `services/stores/` (smart components)
 ```
 
 **Key Patterns**:
