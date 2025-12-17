@@ -5,6 +5,8 @@ import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @Transactional(readOnly = true)
 public class AuthenticationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
@@ -183,8 +187,7 @@ public class AuthenticationService {
             User updated = user.withLastLogin();
             userRepository.save(updated);
         } catch (Exception e) {
-            // Log but don't fail login
-            // In production, use proper logging
+            logger.error("Failed to update last login for user: {}", user.getUsername(), e);
         }
     }
 
