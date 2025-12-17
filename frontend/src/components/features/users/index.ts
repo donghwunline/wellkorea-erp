@@ -3,9 +3,28 @@
  *
  * Smart components for user management feature.
  * These components can fetch data, access stores, and manage complex state.
- * Each form manages its own modal open/close, form inputs, and submission state (Tier 1).
+ *
+ * Components:
+ * - UserManagementTable: Data table with user list, fetches from service
+ * - UserCreateForm: Modal form for creating users
+ * - UserEditForm: Modal form for editing users
+ * - UserRolesForm: Modal form for assigning roles
+ * - UserPasswordForm: Modal form for changing password
+ * - UserCustomersForm: Modal form for assigning customers
+ *
+ * Hooks:
+ * - useUserManagementPage: Page UI state (pagination, search)
+ * - useUserManagementActions: CRUD actions with refresh trigger
  */
 
+// Re-export hooks for convenience
+export * from './hooks';
+
+// Table component (handles data fetching)
+export { UserManagementTable } from './UserManagementTable';
+export type { UserManagementTableProps } from './UserManagementTable';
+
+// Form components (handle local UI state)
 export { UserCreateForm } from './UserCreateForm';
 export type { UserCreateFormProps } from './UserCreateForm';
 
