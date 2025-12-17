@@ -26,7 +26,7 @@ import type { ButtonHTMLAttributes, ForwardedRef } from 'react';
 import { forwardRef } from 'react';
 
 import { Spinner } from './Spinner';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';

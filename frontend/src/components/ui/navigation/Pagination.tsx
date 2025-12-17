@@ -21,7 +21,7 @@
  * ```
  */
 
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 export interface PaginationProps {
   /** Current page (0-indexed) */

@@ -8,23 +8,32 @@ The UI components are organized by functional categories for better findability 
 
 ```
 ui/
-├── primitives/      # Atomic building blocks (Button, Input, Badge, Spinner, IconButton)
+├── primitives/      # Atomic building blocks (Button, Input, Badge, Spinner, Icon, IconButton)
 ├── forms/           # Form-specific components (FormField)
 ├── feedback/        # User feedback and status (Alert, ErrorAlert, LoadingState, EmptyState)
 ├── data-display/    # Data presentation (Table, Card, StatCard)
 ├── navigation/      # Navigation and filtering (Pagination, SearchBar, FilterBar)
 ├── modals/          # Modal dialogs (Modal, ConfirmationModal, ModalActions)
-├── layout/          # Page structure (PageHeader)
-├── hooks/           # Reusable React hooks (useFocusTrap, useBodyScrollLock)
-└── utils/           # Shared utilities (cn function for className merging)
+└── layout/          # Page structure (PageHeader)
 ```
+
+**Related shared modules:**
+- `@/shared/hooks` - UI primitive hooks (useFocusTrap, useBodyScrollLock)
+- `@/shared/utils` - Utility functions (cn for className merging)
 
 ## Usage
 
-All components and hooks are exported through a single barrel export for clean imports:
+All components are exported through a single barrel export:
 
 ```typescript
-import { Button, Table, Modal, Alert, useFocusTrap } from '@/components/ui';
+import { Button, Table, Modal, Alert, Icon } from '@/components/ui';
+```
+
+For hooks and utilities, import from shared modules:
+
+```typescript
+import { useFocusTrap, useBodyScrollLock } from '@/shared/hooks';
+import { cn } from '@/shared/utils';
 ```
 
 ## Component Categories
@@ -34,6 +43,7 @@ import { Button, Table, Modal, Alert, useFocusTrap } from '@/components/ui';
 
 - `Button` - Action button with variants, sizes, and loading state
 - `Input` - Text input with label and error handling
+- `Icon` - SVG icon component with named icons (Heroicons outline style)
 - `IconButton` - Icon-only button variant
 - `Badge` - Status indicators and labels
 - `Spinner` - Loading indicator
@@ -43,6 +53,8 @@ import { Button, Table, Modal, Alert, useFocusTrap } from '@/components/ui';
 <Button variant="primary" onClick={handleSave} isLoading={saving}>
   Save Changes
 </Button>
+
+<Icon name="users" size="md" className="text-copper-500" />
 ```
 
 ### Forms
@@ -168,15 +180,16 @@ import { Button, Table, Modal, Alert, useFocusTrap } from '@/components/ui';
 </PageHeader>
 ```
 
-### Hooks
-**Purpose**: Reusable React hooks for common UI patterns and accessibility features.
+## Shared Hooks
+
+UI primitive hooks are located in `@/shared/hooks`:
 
 - `useFocusTrap` - Traps keyboard focus within a container (for modals, dialogs)
 - `useBodyScrollLock` - Prevents body scrolling when overlays are open
 
 **Example**:
 ```tsx
-import { useFocusTrap, useBodyScrollLock } from '@/components/ui';
+import { useFocusTrap, useBodyScrollLock } from '@/shared/hooks';
 
 function CustomDialog({ isOpen, onClose }) {
   const dialogRef = useFocusTrap(isOpen, {
@@ -196,7 +209,21 @@ function CustomDialog({ isOpen, onClose }) {
 }
 ```
 
-See `hooks/README.md` for detailed documentation.
+## Utilities
+
+### `cn` - ClassName Utility
+
+Located in `@/shared/utils`. Utility function for conditional className merging:
+
+```typescript
+import { cn } from '@/shared/utils';
+
+<div className={cn(
+  'base-classes',
+  condition && 'conditional-classes',
+  customClassName
+)} />
+```
 
 ## Design Tokens
 
@@ -262,31 +289,6 @@ When adding new components:
 4. **Add tests**: Create corresponding `.test.tsx` file
 5. **Update category barrel**: Add exports to category `index.ts`
 6. **Document usage**: Add JSDoc comments with usage examples
-
-## Utilities
-
-### `cn` - ClassName Utility
-
-Utility function for conditional className merging:
-
-```typescript
-import { cn } from '@/components/ui';
-
-<div className={cn(
-  'base-classes',
-  condition && 'conditional-classes',
-  customClassName
-)} />
-```
-
-## Migration Notes
-
-The UI components were reorganized in [Date] from a flat structure to category-based organization for better scalability and findability. All imports remain unchanged thanks to the barrel export pattern:
-
-```typescript
-// Before and after reorganization (no changes needed):
-import { Button, Table, Modal } from '@/components/ui';
-```
 
 ## Future Extensions
 

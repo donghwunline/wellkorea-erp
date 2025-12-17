@@ -9,10 +9,9 @@
  * - navigation/    - Navigation and filtering (Pagination, SearchBar, FilterBar)
  * - modals/        - Modal dialogs (Modal, ConfirmationModal)
  * - layout/        - Page structure (PageHeader)
- * - hooks/         - Reusable React hooks (useFocusTrap, useBodyScrollLock)
- * - utils/         - Shared utilities (cn function)
  *
- * All imports remain unchanged: import { Component } from '@/components/ui'
+ * Note: UI hooks (useFocusTrap, useBodyScrollLock) are in @/shared/hooks
+ * Note: cn utility is in @/shared/utils
  */
 
 // Primitives - Atomic building blocks
@@ -35,9 +34,3 @@ export * from './modals';
 
 // Layout - Page structure components
 export * from './layout';
-
-// Hooks - Reusable React hooks
-export * from './hooks';
-
-// Utilities - Shared utility functions
-export * from './utils';

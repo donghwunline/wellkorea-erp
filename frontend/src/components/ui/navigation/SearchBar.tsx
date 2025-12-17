@@ -6,7 +6,7 @@
  */
 
 import { forwardRef, type InputHTMLAttributes } from 'react';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 export interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   value: string;

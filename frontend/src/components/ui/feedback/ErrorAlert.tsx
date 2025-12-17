@@ -6,7 +6,7 @@
  */
 
 import type { HTMLAttributes } from 'react';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 export interface ErrorAlertProps extends HTMLAttributes<HTMLDivElement> {
   message: string;

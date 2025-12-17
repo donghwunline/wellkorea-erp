@@ -25,7 +25,7 @@
 
 import type { HTMLAttributes, ReactNode, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 import { forwardRef } from 'react';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 // Table Root
 export interface TableProps extends HTMLAttributes<HTMLTableElement> {

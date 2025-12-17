@@ -9,6 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Explicit alias for shared layer (lowest layer, no upward dependencies)
+      '@/shared': path.resolve(__dirname, './src/shared'),
     },
   },
 });

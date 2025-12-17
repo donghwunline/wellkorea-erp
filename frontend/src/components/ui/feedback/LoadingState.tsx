@@ -10,7 +10,7 @@
 import type { HTMLAttributes } from 'react';
 import { Spinner } from '../primitives/Spinner';
 import type { SpinnerProps } from '../primitives/Spinner';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 export type LoadingStateVariant = 'spinner' | 'centered' | 'table';
 

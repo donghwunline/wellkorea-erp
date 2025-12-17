@@ -12,7 +12,7 @@
 
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { forwardRef } from 'react';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 export type IconButtonVariant = 'ghost' | 'danger' | 'primary';
 

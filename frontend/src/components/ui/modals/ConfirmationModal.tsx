@@ -24,7 +24,7 @@
 import { useState } from 'react';
 import { Button } from '../primitives/Button';
 import { Modal } from './Modal';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 export interface ConfirmationModalProps {
   /** Controls modal visibility */

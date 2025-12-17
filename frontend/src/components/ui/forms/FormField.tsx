@@ -7,7 +7,7 @@
 
 import type { InputHTMLAttributes } from 'react';
 import { forwardRef } from 'react';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 export interface FormFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;

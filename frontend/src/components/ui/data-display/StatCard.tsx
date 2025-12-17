@@ -7,7 +7,7 @@
 
 import type { HTMLAttributes, ReactNode } from 'react';
 import { forwardRef } from 'react';
-import { cn } from '../utils/cn';
+import { cn } from '@/shared/utils';
 
 export interface StatCardProps extends HTMLAttributes<HTMLDivElement> {
   label: string;
