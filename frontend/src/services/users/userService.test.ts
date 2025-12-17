@@ -104,8 +104,8 @@ describe('userService', () => {
       const mockUser = createMockUserDetails({
         email: 'Test.User@EXAMPLE.COM', // Mixed case
       });
-      const mockResponse = {
-        data: {
+      const mockResponse = createMockApiResponse(
+        {
           content: [mockUser],
           number: 0,
           size: 10,
@@ -114,8 +114,8 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        metadata: {},
-      };
+        {},
+      );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -130,8 +130,8 @@ describe('userService', () => {
       const mockUser = createMockUserDetails({
         fullName: '  Whitespace User  ', // Leading/trailing whitespace
       });
-      const mockResponse = {
-        data: {
+      const mockResponse = createMockApiResponse(
+        {
           content: [mockUser],
           number: 0,
           size: 10,
@@ -140,8 +140,8 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        metadata: {},
-      };
+        {},
+      );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -153,8 +153,8 @@ describe('userService', () => {
 
     it('should handle pagination metadata from metadata field', async () => {
       // Given: Response with metadata
-      const mockResponse = {
-        data: {
+      const mockResponse = createMockApiResponse(
+        {
           content: [createMockUserDetails()],
           number: 5, // Different from metadata
           size: 100,
@@ -163,7 +163,7 @@ describe('userService', () => {
           first: false,
           last: false,
         },
-        metadata: {
+        {
           page: 2, // Preferred value
           size: 20,
           totalElements: 100,
@@ -171,7 +171,7 @@ describe('userService', () => {
           first: false,
           last: false,
         },
-      };
+      );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -185,8 +185,8 @@ describe('userService', () => {
 
     it('should fallback to PagedResponse fields if metadata missing', async () => {
       // Given: Response without metadata
-      const mockResponse = {
-        data: {
+      const mockResponse = createMockApiResponse(
+        {
           content: [createMockUserDetails()],
           number: 3,
           size: 25,
@@ -195,8 +195,8 @@ describe('userService', () => {
           first: false,
           last: false,
         },
-        metadata: undefined,
-      };
+        undefined,
+      );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -210,8 +210,8 @@ describe('userService', () => {
 
     it('should handle search and filter params', async () => {
       // Given: Search and filter params
-      const mockResponse = {
-        data: {
+      const mockResponse = createMockApiResponse(
+        {
           content: [],
           number: 0,
           size: 10,
@@ -220,8 +220,8 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        metadata: {},
-      };
+        {},
+      );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users with search
@@ -247,8 +247,8 @@ describe('userService', () => {
 
     it('should handle empty results', async () => {
       // Given: Empty response
-      const mockResponse = {
-        data: {
+      const mockResponse = createMockApiResponse(
+        {
           content: [],
           number: 0,
           size: 10,
@@ -257,8 +257,8 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        metadata: {},
-      };
+        {},
+      );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
