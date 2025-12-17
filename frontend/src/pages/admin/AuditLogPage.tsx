@@ -1,54 +1,35 @@
 /**
  * Audit Log Page - Admin Only
  *
- * Refactored following Constitution Principle VI:
- * - Pure composition layer (minimal inline markup)
- * - No direct service calls (uses feature hooks instead)
+ * Follows Constitution Principle VI:
+ * - Pure composition layer (composes features and UI components)
+ * - No direct service calls (uses feature components instead)
  * - 4-Tier State Separation:
  *   Tier 1 (Local UI State): Detail modal open/close -> Local state in page
  *   Tier 2 (Page UI State): Filters/pagination -> useAuditLogPage hook
- *   Tier 3 (Server State): Audit log data -> Inline for now (TODO: extract to AuditLogTable)
+ *   Tier 3 (Server State): Audit log data -> AuditLogTable component
  *   Tier 4 (App Global State): Auth -> authStore via useAuth (not needed here)
  *
  * Import Policy:
  * - pages -> features: YES (via @/components/features/audit)
  * - pages -> ui: YES (via @/components/ui)
  * - pages -> shared/hooks: YES (via @/shared/hooks)
- * - pages -> services: NO (use feature hooks/components instead)
+ * - pages -> services: NO (use feature components instead)
  * - pages -> stores: NO (use shared hooks instead)
- *
- * NOTE: This page still has inline service calls for data fetching.
- * TODO: Extract to AuditLogTable component similar to UserManagementTable.
  */
 
-import { useCallback, useEffect, useState } from 'react';
-import { auditService } from '@/services';
-import type { AuditLogEntry as ApiAuditLogEntry } from '@/services';
-import type { PaginationMetadata } from '@/api/types';
+import { useState } from 'react';
+import type { AuditLogEntry } from '@/services';
 import {
   Alert,
   Badge,
   type BadgeVariant,
   Button,
-  Card,
   FilterBar,
-  IconButton,
-  LoadingState,
   Modal,
   PageHeader,
-  Pagination,
-  Table,
 } from '@/components/ui';
-import { useAuditLogPage } from '@/components/features/audit';
-
-interface AuditLogEntry extends Omit<ApiAuditLogEntry, 'action' | 'entityId'> {
-  entityId: number | null;
-  action: AuditAction;
-  userId: number | null;
-  changes: string | null;
-  metadata: string | null;
-  createdAt: string;
-}
+import { AuditLogTable, useAuditLogPage } from '@/components/features/audit';
 
 type AuditAction =
   | 'CREATE'
@@ -75,7 +56,7 @@ const ALL_ACTIONS: AuditAction[] = [
   'ACCESS_DENIED',
 ];
 
-const ACTION_BADGE_VARIANTS: Record<AuditAction, BadgeVariant> = {
+const ACTION_BADGE_VARIANTS: Record<string, BadgeVariant> = {
   CREATE: 'success',
   UPDATE: 'info',
   DELETE: 'danger',
@@ -94,40 +75,9 @@ export function AuditLogPage() {
   // Page UI State (Tier 2) - from feature hook
   const { page, setPage, filters, handleFilterChange, handleClearFilters } = useAuditLogPage();
 
-  // Server State (Tier 3) - TODO: Move to AuditLogTable component
-  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
-  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Local UI State (Tier 1) - Detail modal
+  // Local UI State (Tier 1) - Detail modal and error
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
-
-  // Fetch audit logs
-  // TODO: Move this to AuditLogTable component or useAuditLogActions hook
-  const fetchLogs = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await auditService.getAuditLogs({
-        page,
-        size: 10,
-        sort: 'createdAt,desc',
-        entityType: filters.username || undefined,
-        action: filters.action || undefined,
-      });
-      setLogs(result.data as unknown as AuditLogEntry[]);
-      setPagination(result.pagination);
-    } catch {
-      setError('Failed to load audit logs');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, filters]);
-
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+  const [error, setError] = useState<string | null>(null);
 
   // Utilities
   const formatTimestamp = (dateStr: string) => {
@@ -151,70 +101,6 @@ export function AuditLogPage() {
   };
 
   const hasActiveFilters = filters.username || filters.action;
-
-  // Render table body based on loading/empty/data state
-  const renderTableBody = () => {
-    if (isLoading) {
-      return <LoadingState variant="table" colspan={6} message="Loading audit logs..." />;
-    }
-
-    if (logs.length === 0) {
-      return (
-        <Table.Row>
-          <Table.Cell colSpan={6} className="text-center text-steel-400">
-            No audit logs found.
-          </Table.Cell>
-        </Table.Row>
-      );
-    }
-
-    return logs.map(log => (
-      <Table.Row key={log.id}>
-        <Table.Cell className="font-mono text-sm">{formatTimestamp(log.createdAt)}</Table.Cell>
-        <Table.Cell>
-          <Badge variant={ACTION_BADGE_VARIANTS[log.action] || 'steel'}>{log.action}</Badge>
-        </Table.Cell>
-        <Table.Cell>
-          <div>
-            <div className="text-sm text-white">{log.entityType}</div>
-            {log.entityId && (
-              <div className="font-mono text-xs text-steel-500">ID: {log.entityId}</div>
-            )}
-          </div>
-        </Table.Cell>
-        <Table.Cell>
-          {log.username ? (
-            <div className="text-sm">{log.username}</div>
-          ) : (
-            <span className="text-sm text-steel-500">-</span>
-          )}
-        </Table.Cell>
-        <Table.Cell className="font-mono text-sm">{log.ipAddress || '-'}</Table.Cell>
-        <Table.Cell className="text-right">
-          <IconButton
-            onClick={() => setSelectedLog(log)}
-            title="View details"
-            aria-label="View details"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
-          </IconButton>
-        </Table.Cell>
-      </Table.Row>
-    ));
-  };
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
@@ -257,34 +143,17 @@ export function AuditLogPage() {
         </Alert>
       )}
 
-      {/* Audit Log Table */}
-      <Card variant="table">
-        <Table>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>Timestamp</Table.HeaderCell>
-              <Table.HeaderCell>Action</Table.HeaderCell>
-              <Table.HeaderCell>Entity</Table.HeaderCell>
-              <Table.HeaderCell>User</Table.HeaderCell>
-              <Table.HeaderCell>IP Address</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Details</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>{renderTableBody()}</Table.Body>
-        </Table>
-
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <Pagination
-            currentPage={page}
-            totalItems={pagination.totalElements}
-            itemsPerPage={pagination.size}
-            onPageChange={setPage}
-            isFirst={pagination.first}
-            isLast={pagination.last}
-          />
-        )}
-      </Card>
+      {/* Audit Log Table (Server State managed by feature component) */}
+      <AuditLogTable
+        page={page}
+        filters={{
+          entityType: filters.username || undefined,
+          action: filters.action || undefined,
+        }}
+        onPageChange={setPage}
+        onViewDetails={setSelectedLog}
+        onError={setError}
+      />
 
       {/* Detail Modal */}
       {selectedLog && (
