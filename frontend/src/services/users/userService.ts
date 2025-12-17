@@ -9,7 +9,8 @@
  */
 
 import { httpClient } from '@/api';
-import type { PagedResponse, PaginationMetadata } from '@/api/types';
+import type { PagedResponse } from '@/api/types';
+import { transformPagedResponse } from '@/services/shared';
 import type {
   AssignRolesRequest,
   ChangePasswordRequest,
@@ -51,19 +52,10 @@ export const userService = {
       params,
     });
 
-    const pagedData = response.data;
-    const pagination = response.metadata as unknown as PaginationMetadata;
-
+    const paginated = transformPagedResponse(response.data, response.metadata);
     return {
-      data: pagedData.content.map(transformUserDetails),
-      pagination: {
-        page: pagination.page ?? pagedData.number, // Use metadata if available, fallback to page number
-        size: pagination.size ?? pagedData.size,
-        totalElements: pagination.totalElements ?? pagedData.totalElements,
-        totalPages: pagination.totalPages ?? pagedData.totalPages,
-        first: pagination.first ?? pagedData.first,
-        last: pagination.last ?? pagedData.last,
-      },
+      ...paginated,
+      data: paginated.data.map(transformUserDetails),
     };
   },
 
