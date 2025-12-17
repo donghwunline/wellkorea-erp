@@ -1,6 +1,5 @@
 /**
  * Core types for the API layer.
- * Consolidated from legacy /src/types/api.ts and /src/api/types.ts
  *
  * Defines all API-related interfaces:
  * - Request/Response structures (ApiResponse, ErrorResponse)
@@ -191,7 +190,7 @@ export interface Paginated<T> {
  * @returns true if response has valid pagination metadata with correct types
  */
 export function hasPaginationMetadata(
-  response: ApiResponse<unknown>,
+  response: ApiResponse<unknown>
 ): response is ApiResponse<unknown> & { metadata: PaginationMetadata } {
   const meta = response.metadata;
   return (
