@@ -93,7 +93,10 @@ public class UserController {
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody CreateUserRequest request) {
         Set<Role> roles = request.roles() != null
-                ? request.roles().stream().map(Role::fromName).collect(Collectors.toSet())
+                ? request.roles().stream()
+                    .map(Role::fromAuthority)
+                    .filter(role -> role != null)
+                    .collect(Collectors.toSet())
                 : Set.of();
 
         Long userId = userCommand.createUser(
@@ -144,7 +147,8 @@ public class UserController {
             @Valid @RequestBody AssignRolesRequest request) {
 
         Set<Role> roles = request.roles().stream()
-                .map(Role::fromName)
+                .map(Role::fromAuthority)
+                .filter(role -> role != null)
                 .collect(Collectors.toSet());
 
         userCommand.assignRoles(id, roles);
