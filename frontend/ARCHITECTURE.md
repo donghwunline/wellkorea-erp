@@ -22,17 +22,22 @@ src/
 ├── components/
 │   ├── ui/          Dumb/presentational components (Button, Modal, Table)
 │   └── features/    Smart components with data fetching and state
-│       └── users/   User management forms
+│       ├── users/   User management (forms, hooks, table)
+│       │   └── hooks/  Feature hooks (useUserManagementActions, etc.)
+│       └── audit/   Audit logging feature
+│           └── hooks/  Feature hooks (useAuditLogPage)
 ├── stores/           Global state management (Zustand)
-├── hooks/            Custom React hooks
+├── shared/           Shared code across features
+│   ├── hooks/       Generic reusable hooks (useAuth, usePaginatedSearch)
+│   ├── types/       Shared TypeScript type definitions
+│   └── utils/       Pure utility functions
 ├── services/         Business logic and API abstraction
 │   ├── auth/        Authentication service
 │   ├── users/       User management service
 │   ├── audit/       Audit logging service
 │   └── shared/      Shared service utilities (pagination, etc.)
 ├── api/              HTTP client layer (axios wrapper, interceptors)
-├── types/            Shared TypeScript type definitions
-└── utils/            Pure utility functions
+└── utils/            Pure utility functions (legacy, prefer shared/utils)
 ```
 
 ---
@@ -106,18 +111,47 @@ src/
 
 ---
 
-### 4. `hooks/` - React Reusable Logic
+### 4. `shared/hooks/` - Shared React Hooks
 
-**Purpose**: Extract and reuse React logic.
+**Purpose**: Generic, reusable React hooks that don't depend on features.
 
 **Categories**:
-1. **Shared hooks**: UI/domain independent (`useDebounce`, `useMediaQuery`)
-2. **Store hooks**: Zustand store accessors (`useAuth`)
-3. **Feature hooks**: Specific features (`useLogin`, `useCustomersQuery`)
+1. **Store accessor hooks**: `useAuth` - Wraps Zustand store with convenient API
+2. **Generic UI hooks**: `usePaginatedSearch` - Reusable pagination/search state
 
-**Who can import**: `stores/`, `services/`, `utils/`, `types/`
+**Characteristics**:
+- Can import from `stores/` (to wrap store access)
+- **Cannot** import from `services/` (that would make them feature-specific)
+- Generic enough to use across any feature
+
+**Examples**: `useAuth.ts`, `usePaginatedSearch.ts`
+
+**Who can import**: `stores/`, `shared/types/`, `utils/`
 
 **Who imports this**: `pages/`, `components/`
+
+---
+
+### 4b. `components/features/**/hooks/` - Feature Hooks
+
+**Purpose**: Feature-specific hooks that encapsulate service calls and complex state.
+
+**Categories**:
+1. **Action hooks**: `useUserManagementActions` - Encapsulates CRUD service calls
+2. **Page hooks**: `useAuditLogPage` - Combines pagination state with data fetching
+
+**Characteristics**:
+- **Can** import from `services/` (feature-specific logic)
+- **Can** import from `stores/` and `shared/hooks/`
+- Located within feature directories (not globally shared)
+
+**Examples**:
+- `components/features/users/hooks/useUserManagementActions.ts`
+- `components/features/audit/hooks/useAuditLogPage.ts`
+
+**Who can import**: `services/`, `stores/`, `shared/hooks/`, `shared/types/`
+
+**Who imports this**: `pages/` (the feature's parent page)
 
 ---
 
@@ -181,15 +215,17 @@ src/
 
 ---
 
-### 8. `types/` - Shared Type Definitions
+### 8. `shared/types/` - Shared Type Definitions
 
 **Purpose**: TypeScript types used across multiple layers.
 
-**Examples**: `auth.ts` (User, RoleName), shared interfaces
+**Examples**: `auth.ts` (User, RoleName, LoginRequest), shared interfaces
 
 **Who can import**: Nobody (types have no dependencies)
 
 **Who imports this**: Everyone
+
+**Import path**: `@/shared/types/auth` or via barrel export `@/shared/types`
 
 ---
 
@@ -217,11 +253,12 @@ graph TB
 
     subgraph "Feature Layer"
         features[components/features/]
+        featureHooks[features/**/hooks/]
     end
 
     subgraph "State & Logic Layer"
         stores[stores/]
-        hooks[hooks/]
+        sharedHooks[shared/hooks/]
         services[services/]
     end
 
@@ -231,26 +268,34 @@ graph TB
 
     subgraph "Shared Layer (No Dependencies)"
         ui[components/ui/]
-        types[types/]
+        types[shared/types/]
         utils[utils/]
     end
 
+    %% Pages: Only features, ui, shared/hooks (NOT services/stores directly)
     pages --> features
+    pages --> featureHooks
     pages --> ui
-    pages --> stores
-    pages --> hooks
-    pages --> services
+    pages --> sharedHooks
+    pages -.recommended.-> features
 
+    %% Feature layer
     features --> stores
     features --> services
-    features --> hooks
+    features --> sharedHooks
     features --> ui
 
+    featureHooks --> services
+    featureHooks --> stores
+    featureHooks --> sharedHooks
+
+    %% State layer
     stores --> services
     stores -.type only.-> types
 
-    hooks --> stores
-    hooks -.type only.-> types
+    sharedHooks --> stores
+    sharedHooks -.type only.-> types
+    sharedHooks -.- services
 
     services --> api
     services -.type only.-> types
@@ -261,34 +306,48 @@ graph TB
 
     style pages fill:#e1f5ff
     style features fill:#fff4e6
+    style featureHooks fill:#ffe4b5
     style stores fill:#f3e5f5
+    style sharedHooks fill:#e6e6fa
     style services fill:#e8f5e9
     style api fill:#ffebee
     style ui fill:#f1f8e9
+    style types fill:#f0fff0
 ```
 
 **Legend**:
 - **Solid arrows**: Full imports allowed (runtime dependencies)
 - **Dotted arrows**: Type-only imports allowed (compile-time only)
+- **Dashed red line**: NOT allowed (shared/hooks cannot import services)
 - **No reverse arrows**: Dependencies flow downward only (no circular deps)
+
+### Key Architectural Decisions
+
+1. **Pages should prefer feature imports**: Pages orchestrate via `features/` and `features/**/hooks/`
+2. **Shared hooks are generic**: `shared/hooks/` wraps stores but NOT services
+3. **Feature hooks encapsulate services**: `features/**/hooks/` is where service calls live
+4. **Clean separation**: Pages don't call services directly; they use feature hooks
 
 ---
 
 ### Dependency Rules Summary
 
-| From ↓ / To → | pages | features | stores | hooks | services | api | ui | types | utils |
-|---------------|-------|----------|--------|-------|----------|-----|----|----|------|
-| **pages**     | ❌    | ✅       | ✅     | ✅    | ✅       | ❌  | ✅ | ✅ | ✅   |
-| **features**  | ❌    | ❌       | ✅     | ✅    | ✅       | ❌  | ✅ | ✅ | ✅   |
-| **stores**    | ❌    | ❌       | ❌     | ❌    | ✅       | ❌  | ❌ | ✅ | ✅   |
-| **hooks**     | ❌    | ❌       | ✅     | ❌    | ✅       | ❌  | ❌ | ✅ | ✅   |
-| **services**  | ❌    | ❌       | ❌     | ❌    | ✅*      | ✅  | ❌ | ✅ | ✅   |
-| **api**       | ❌    | ❌       | ❌     | ❌    | ❌       | ❌  | ❌ | ✅ | ✅   |
-| **ui**        | ❌    | ❌       | ❌     | ❌    | ❌       | ❌  | ❌ | ✅ | ✅   |
-| **types**     | ❌    | ❌       | ❌     | ❌    | ❌       | ❌  | ❌ | ❌ | ❌   |
-| **utils**     | ❌    | ❌       | ❌     | ❌    | ❌       | ❌  | ❌ | ❌ | ❌   |
+| From ↓ / To →      | pages | features | feature hooks | stores | shared hooks | services | api | ui | types | utils |
+|--------------------|-------|----------|---------------|--------|--------------|----------|-----|----|----|------|
+| **pages**          | ❌    | ✅       | ✅            | ⚠️*    | ✅           | ⚠️*      | ❌  | ✅ | ✅ | ✅   |
+| **features**       | ❌    | ❌       | ✅            | ✅     | ✅           | ✅       | ❌  | ✅ | ✅ | ✅   |
+| **feature hooks**  | ❌    | ❌       | ❌            | ✅     | ✅           | ✅       | ❌  | ❌ | ✅ | ✅   |
+| **stores**         | ❌    | ❌       | ❌            | ❌     | ❌           | ✅       | ❌  | ❌ | ✅ | ✅   |
+| **shared hooks**   | ❌    | ❌       | ❌            | ✅     | ❌           | ❌       | ❌  | ❌ | ✅ | ✅   |
+| **services**       | ❌    | ❌       | ❌            | ❌     | ❌           | ✅**     | ✅  | ❌ | ✅ | ✅   |
+| **api**            | ❌    | ❌       | ❌            | ❌     | ❌           | ❌       | ❌  | ❌ | ✅ | ✅   |
+| **ui**             | ❌    | ❌       | ❌            | ❌     | ❌           | ❌       | ❌  | ❌ | ✅ | ✅   |
+| **types**          | ❌    | ❌       | ❌            | ❌     | ❌           | ❌       | ❌  | ❌ | ❌ | ❌   |
+| **utils**          | ❌    | ❌       | ❌            | ❌     | ❌           | ❌       | ❌  | ❌ | ❌ | ❌   |
 
-\* `services/` can import from `services/shared/*` (shared utilities like pagination)
+\* `pages/` can technically import `stores/` and `services/`, but should prefer using `feature hooks` which encapsulate these calls. This keeps pages as thin orchestration layers.
+
+\** `services/` can import from `services/shared/*` (shared utilities like pagination)
 
 ---
 
@@ -436,6 +495,10 @@ The architecture is enforced by ESLint rules in `eslint.config.js`:
 ```javascript
 {
   zones: [
+    // ========================================
+    // MANDATORY RULES (Architectural Boundaries)
+    // ========================================
+
     // Rule 1: Nobody imports from pages
     {
       target: './src/!(pages)/**',
@@ -452,7 +515,7 @@ The architecture is enforced by ESLint rules in `eslint.config.js`:
 
     // Rule 3: API only imported by services
     {
-      target: './src/{components,hooks,stores,pages}',
+      target: './src/{components,shared,stores,pages}',
       from: './src/api',
       except: ['./src/api/types.ts'],
       message: '❌ Use @/services instead of importing @/api directly.',
@@ -460,14 +523,32 @@ The architecture is enforced by ESLint rules in `eslint.config.js`:
 
     // Rule 4: Shared layers cannot import upward
     {
-      target: './src/{utils,types,components/ui}',
+      target: './src/{utils,shared/types,shared/utils,components/ui}',
       from: './src/{components/features,pages,stores,services}',
       message: '❌ Shared utilities cannot depend on features/pages/stores/services.',
     },
 
-    // Rule 5: Encourage barrel exports
+    // Rule 5: Pages should use feature hooks (not services/stores directly)
     {
-      target: './src/{pages,components,stores}',
+      target: './src/pages',
+      from: './src/{stores,services}',
+      message: '❌ Pages should import from @/components/features (which encapsulate stores/services) or @/shared/hooks.',
+    },
+
+    // Rule 6: Shared hooks cannot import services
+    {
+      target: './src/shared/hooks',
+      from: './src/services',
+      message: '❌ Shared hooks should only use stores. Feature-specific hooks go in @/components/features/**/hooks.',
+    },
+
+    // ========================================
+    // RECOMMENDED RULES (Best Practices)
+    // ========================================
+
+    // Rule 7: Encourage barrel exports in services
+    {
+      target: './src/{components,stores}',
       from: './src/services/{auth,users,audit}',
       except: ['./index.ts'],
       message: '⚠️  Use barrel export: import from @/services instead.',
@@ -542,29 +623,55 @@ export function UserTableContainer() {
 ### ✅ Correct Patterns
 
 ```typescript
-// Page orchestrates features
+// Page orchestrates via feature hooks (preferred pattern)
 // pages/admin/UserManagementPage.tsx
-import { UserCreateForm, UserTable } from '@/components/features/users';
+import { useUserManagementActions, UserCreateForm, UserManagementTable } from '@/components/features/users';
+import { usePaginatedSearch } from '@/shared/hooks';
 import { PageHeader, Button } from '@/components/ui';
 
 export function UserManagementPage() {
+  const { page, search, setPage, handleSearchSubmit } = usePaginatedSearch();
+  const { createUser, refreshTrigger } = useUserManagementActions();
+
   return (
     <>
       <PageHeader title="User Management" />
-      <UserCreateForm />
-      <UserTable />
+      <UserCreateForm onSubmit={createUser} />
+      <UserManagementTable
+        page={page}
+        search={search}
+        refreshTrigger={refreshTrigger}
+        onPageChange={setPage}
+      />
     </>
   );
 }
 
+// Feature hook encapsulates service calls
+// components/features/users/hooks/useUserManagementActions.ts
+import { userService } from '@/services';
+import { useCallback, useReducer } from 'react';
+
+export function useUserManagementActions() {
+  const [refreshTrigger, triggerRefresh] = useReducer((x) => x + 1, 0);
+
+  const createUser = useCallback(async (data) => {
+    await userService.createUser(data);
+    triggerRefresh();
+  }, []);
+
+  return { createUser, refreshTrigger };
+}
+
 // Feature component fetches data
 // components/features/users/UserCreateForm.tsx
-import { userService } from '@/services';
-import { Button, Input } from '@/components/ui';
+import { type CreateUserRequest } from '@/services';
+import { Button, FormField, Modal } from '@/components/ui';
 
-export function UserCreateForm() {
+export function UserCreateForm({ onSubmit }: { onSubmit: (data: CreateUserRequest) => Promise<void> }) {
+  // Pure component - receives callback, doesn't call services directly
   const handleSubmit = async (data) => {
-    await userService.createUser(data);
+    await onSubmit(data);  // Delegates to parent
   };
 
   return <form onSubmit={handleSubmit}>...</form>;
@@ -580,6 +687,20 @@ export const authStore = create((set) => ({
     set({ user: result.user, isAuthenticated: true });
   },
 }));
+
+// Shared hook wraps store (not services)
+// shared/hooks/useAuth.ts
+import { useAuthStore } from '@/stores/authStore';
+
+export function useAuth() {
+  const store = useAuthStore();
+  return {
+    user: store.user,
+    isAuthenticated: store.isAuthenticated,
+    hasRole: store.hasRole,
+    // ... delegates to store
+  };
+}
 
 // Service calls API
 // services/users/userService.ts
@@ -600,6 +721,17 @@ export const userService = {
 ### ❌ Anti-Patterns
 
 ```typescript
+// ❌ Page calls service directly (should use feature hooks)
+// pages/admin/UserManagementPage.tsx
+import { userService } from '@/services';  // Avoid in pages!
+
+export function UserManagementPage() {
+  const handleCreate = async (data) => {
+    await userService.createUser(data);  // BAD: page calls service
+  };
+}
+// FIX: Create useUserManagementActions hook in features/users/hooks/
+
 // ❌ UI component fetches data
 // components/ui/UserTable.tsx
 import { userService } from '@/services';  // WRONG!
@@ -612,6 +744,15 @@ export function UserTable() {
   return <Table data={users} />;
 }
 // FIX: Move to components/features/users/
+
+// ❌ Shared hook imports services
+// shared/hooks/useUsers.ts
+import { userService } from '@/services';  // WRONG!
+
+export function useUsers() {
+  // This belongs in features/users/hooks/, not shared/hooks/
+}
+// FIX: Move to components/features/users/hooks/
 
 // ❌ Page imports from another page
 // pages/DashboardPage.tsx

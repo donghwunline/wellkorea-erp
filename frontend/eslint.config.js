@@ -24,7 +24,7 @@ export default defineConfig([
 
   // Layer encapsulation (excluding tests)
   {
-    files: ['src/{pages,components,stores,hooks}/**/*.{ts,tsx}'],
+    files: ['src/{pages,components,stores,shared}/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'src/test/**'],
     plugins: {
       import: importPlugin,
@@ -63,7 +63,7 @@ export default defineConfig([
 
             // Rule 3: API only imported by services (HTTP 계층 격리)
             {
-              target: './src/{components,hooks,stores,pages}',
+              target: './src/{components,shared,stores,pages}',
               from: './src/api',
               except: ['./src/api/types.ts'],
               message: '❌ Use @/services instead of importing @/api directly.',
@@ -71,29 +71,45 @@ export default defineConfig([
 
             // Rule 4: Shared layers cannot import upward (shared는 아무도 모름)
             {
-              target: './src/{utils,types,components/ui}',
+              target: './src/{shared/types,shared/utils,components/ui}',
               from: './src/{components/features,pages,stores,services}',
               message:
-                '❌ Shared utilities (utils/types/ui) cannot depend on features/pages/stores/services.',
+                '❌ Shared utilities (shared/types/utils, ui) cannot depend on features/pages/stores/services.',
+            },
+
+            // Rule 5: Pages cannot import stores or services directly
+            // (pages must use feature hooks which encapsulate service calls)
+            {
+              target: './src/pages',
+              from: './src/{stores,services}',
+              message:
+                '❌ Pages should import from @/components/features (which encapsulate stores/services) or @/shared/hooks.',
+            },
+
+            // Rule 6: Shared hooks can only use stores (not services directly)
+            {
+              target: './src/shared/hooks',
+              from: './src/services',
+              message:
+                '❌ Shared hooks should only use stores. Feature-specific hooks go in @/components/features/**/hooks.',
             },
 
             // ========================================
             // RECOMMENDED RULES (Best Practices)
             // ========================================
 
-            // Rule 5: Encourage barrel exports in services
+            // Rule 7: Encourage barrel exports in services
             {
-              target: './src/{pages,components,stores}',
+              target: './src/{components,stores}',
               from: './src/services/{auth,users,audit}',
               except: ['./index.ts'],
               message: '⚠️  Use barrel export: import from @/services instead.',
             },
 
-            // Rule 6: Stores can use services (allowed pattern)
-            // No restriction - stores → services is explicitly allowed
-
-            // Rule 7: Feature components can use services/stores (allowed pattern)
-            // No restriction - features → services/stores is explicitly allowed
+            // Allowed patterns (no restrictions):
+            // - stores → services (orchestration pattern)
+            // - features → services/stores (smart components)
+            // - features/hooks → services (encapsulated service calls)
           ],
         },
       ],
