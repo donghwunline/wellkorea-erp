@@ -5,8 +5,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { auditService } from './auditService';
-import type { PagedResponse, ApiError } from '@/api/types';
-import type { AuditLogEntry, AuditLogListParams } from './types';
+import type { ApiError } from '@/api/types';
+import type { AuditLogListParams } from './types';
 
 // Mock httpClient
 vi.mock('@/api', () => ({

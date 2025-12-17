@@ -445,7 +445,7 @@ describe('authStore', () => {
       useAuthStore.setState(initialState);
 
       // When: Emit unknown event
-      vi.mocked(authEvents.emit)({ type: 'unknown-event' as any });
+      vi.mocked(authEvents.emit)({ type: 'unknown-event' });
 
       // Then: State unchanged
       const state = useAuthStore.getState();

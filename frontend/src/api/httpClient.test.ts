@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
-import axios, { AxiosError } from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from 'axios';
 import { HttpClient } from './httpClient';
-import type { ApiError, ApiResponse, TokenStore, Tokens } from './types';
+import type { TokenStore, Tokens } from './types';
 
 // Mock axios
 vi.mock('axios');
@@ -25,9 +25,9 @@ describe('HttpClient', () => {
   let mockRefreshAxiosInstance: {
     post: Mock;
   };
-  let requestInterceptor: (config: any) => any;
-  let responseInterceptorSuccess: (response: any) => any;
-  let responseInterceptorError: (error: any) => Promise<any>;
+  let requestInterceptor: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
+  let responseInterceptorSuccess: (response: AxiosResponse) => AxiosResponse;
+  let responseInterceptorError: (error: AxiosError) => Promise<AxiosResponse>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -59,9 +59,9 @@ describe('HttpClient', () => {
     vi.mocked(axios.create).mockImplementation(() => {
       createCallCount++;
       if (createCallCount === 1) {
-        return mockAxiosInstance as any;
+        return mockAxiosInstance as unknown as ReturnType<typeof axios.create>;
       }
-      return mockRefreshAxiosInstance as any;
+      return mockRefreshAxiosInstance as unknown as ReturnType<typeof axios.create>;
     });
 
     // Create mock token store
