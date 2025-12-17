@@ -30,7 +30,7 @@ import {
   SearchBar,
   Table,
 } from '@/components/ui';
-import { UserCreateForm, UserCustomersForm, UserEditForm, UserPasswordForm, UserRolesForm, } from '@/components/forms';
+import { UserCreateForm, UserCustomersForm, UserEditForm, UserPasswordForm, UserRolesForm, } from '@/components/features/users';
 import { useUserManagementPage } from './_hooks/useUserManagementPage';
 
 type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | 'customers' | null;

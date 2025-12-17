@@ -1,8 +1,9 @@
 /**
- * Form Components barrel export
+ * User Feature Components
  *
- * Self-contained form components with local UI state (Tier 1).
- * Each form manages its own modal open/close, form inputs, and submission state.
+ * Smart components for user management feature.
+ * These components can fetch data, access stores, and manage complex state.
+ * Each form manages its own modal open/close, form inputs, and submission state (Tier 1).
  */
 
 export { UserCreateForm } from './UserCreateForm';
