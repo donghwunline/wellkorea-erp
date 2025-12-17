@@ -93,8 +93,16 @@ export class HttpClient {
 
         const is401 = apiError.status === 401;
 
-        // Cannot retry
+        // Cannot retry if not 401
         if (!originalRequest || !is401) {
+          return Promise.reject(apiError);
+        }
+
+        // Only refresh token if it's expired (AUTH_003), not for authentication failures (AUTH_001)
+        // or invalid tokens (AUTH_002). This prevents refresh attempts on login failures.
+        const shouldRefreshToken = apiError.errorCode === 'AUTH_003';
+
+        if (!shouldRefreshToken) {
           return Promise.reject(apiError);
         }
 

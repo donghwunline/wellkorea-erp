@@ -38,8 +38,9 @@ export type {
 export { auditService } from './audit/auditService';
 export type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './audit/types';
 
-// Error utilities
+// Error utilities (re-exported from @/api for convenience)
 export {
+  errorMessages,
   getErrorMessage,
   getErrorDisplayStrategy,
   isValidationError,
@@ -49,7 +50,7 @@ export {
   isBusinessError,
   isServerError,
   isNotFoundError,
-} from './errorMessage';
+} from '@/api/errorMessages';
 
 // Re-export common types from API layer for convenience
 export type { PaginationMetadata, Paginated, ApiError, ErrorResponse } from '@/api/types';

@@ -9,7 +9,7 @@
  * - Business errors (BUS_*): Context-dependent (inline or toast)
  */
 
-import type { ApiError } from '@/api';
+import type { ApiError, ErrorResponse } from './types';
 
 /**
  * Mapping of backend error codes to user-friendly messages.
@@ -28,7 +28,7 @@ export const errorMessages: Record<string, string> = {
 
   // ========== Authentication Errors (401) ==========
   AUTH_001: '아이디 또는 비밀번호가 올바르지 않습니다.',
-  AUTH_002: '세션이 만료되었습니다. 다시 로그인해 주세요.',
+  AUTH_002: '유효하지 않은 인증 토큰입니다. 다시 로그인해 주세요.',
   AUTH_003: '인증 정보가 만료되었습니다.',
 
   // ========== Authorization Errors (403) ==========
@@ -49,8 +49,11 @@ export const errorMessages: Record<string, string> = {
 /**
  * Get user-friendly error message for an error.
  * Falls back to error's original message if no mapping exists.
+ *
+ * @param error Normalized API error or backend error response
+ * @returns User-friendly error message
  */
-export function getErrorMessage(error: ApiError | { errorCode?: string; message: string }): string {
+export function getErrorMessage(error: ApiError | ErrorResponse): string {
   if (error.errorCode && errorMessages[error.errorCode]) {
     return errorMessages[error.errorCode];
   }
@@ -59,61 +62,84 @@ export function getErrorMessage(error: ApiError | { errorCode?: string; message:
 
 /**
  * Check if error is a validation error (should be displayed inline).
+ *
+ * @param errorCode Error code from backend
+ * @returns true if validation error
  */
-export function isValidationError(errorCode: string): boolean {
-  return errorCode.startsWith('VAL_');
+export function isValidationError(errorCode?: string): boolean {
+  return errorCode?.startsWith('VAL_') ?? false;
 }
 
 /**
  * Check if error is an authentication error (should redirect or show login modal).
+ *
+ * @param errorCode Error code from backend
+ * @returns true if authentication error
  */
-export function isAuthenticationError(errorCode: string): boolean {
-  return errorCode.startsWith('AUTH_');
+export function isAuthenticationError(errorCode?: string): boolean {
+  return errorCode?.startsWith('AUTH_') ?? false;
 }
 
 /**
  * Check if error is an authorization error (should show access denied page).
+ *
+ * @param errorCode Error code from backend
+ * @returns true if authorization error
  */
-export function isAuthorizationError(errorCode: string): boolean {
-  return errorCode.startsWith('AUTHZ_');
+export function isAuthorizationError(errorCode?: string): boolean {
+  return errorCode?.startsWith('AUTHZ_') ?? false;
 }
 
 /**
  * Check if error is any auth-related error (authentication or authorization).
+ *
+ * @param errorCode Error code from backend
+ * @returns true if any auth error
  */
-export function isAuthError(errorCode: string): boolean {
+export function isAuthError(errorCode?: string): boolean {
   return isAuthenticationError(errorCode) || isAuthorizationError(errorCode);
 }
 
 /**
  * Check if error is a business logic error (context-dependent display).
+ *
+ * @param errorCode Error code from backend
+ * @returns true if business error
  */
-export function isBusinessError(errorCode: string): boolean {
-  return errorCode.startsWith('BUS_');
+export function isBusinessError(errorCode?: string): boolean {
+  return errorCode?.startsWith('BUS_') ?? false;
 }
 
 /**
  * Check if error is a server error (should be displayed as toast).
+ *
+ * @param errorCode Error code from backend
+ * @returns true if server error
  */
-export function isServerError(errorCode: string): boolean {
-  return errorCode.startsWith('SRV_');
+export function isServerError(errorCode?: string): boolean {
+  return errorCode?.startsWith('SRV_') ?? false;
 }
 
 /**
  * Check if error is a resource not found error.
+ *
+ * @param errorCode Error code from backend
+ * @returns true if resource not found
  */
-export function isNotFoundError(errorCode: string): boolean {
-  return errorCode.startsWith('RES_');
+export function isNotFoundError(errorCode?: string): boolean {
+  return errorCode?.startsWith('RES_') ?? false;
 }
 
 /**
  * Determine the appropriate display strategy for an error.
+ *
+ * @param errorCode Error code from backend (optional)
+ * @returns Display strategy: 'inline', 'toast', 'banner', or 'modal'
  */
 export function getErrorDisplayStrategy(
   errorCode?: string,
 ): 'inline' | 'toast' | 'banner' | 'modal' {
   if (!errorCode) return 'toast';
-
   if (isValidationError(errorCode)) {
     return 'inline';
   }
@@ -131,3 +157,4 @@ export function getErrorDisplayStrategy(
   }
   return 'toast'; // Default to toast for unknown errors
 }
+
