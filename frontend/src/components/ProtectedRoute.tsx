@@ -39,7 +39,7 @@
 import type { ReactNode } from 'react';
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/shared/hooks';
 import type { RoleName } from '@/services';
 import { Spinner } from '@/components/ui';
 

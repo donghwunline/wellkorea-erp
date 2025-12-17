@@ -18,7 +18,7 @@
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/shared/hooks';
 import { getErrorMessage, type ApiError } from '@/services';
 import { ErrorAlert, FormField } from '@/components/ui';
 

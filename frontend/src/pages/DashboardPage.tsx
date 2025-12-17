@@ -5,7 +5,7 @@
  */
 
 import { Card, Icon, type IconName, StatCard } from '@/components/ui';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/shared/hooks';
 import type { RoleName } from '@/services';
 
 interface ModuleCard {

@@ -11,7 +11,7 @@ import { LoginPage } from './LoginPage';
 import type { ApiError } from '@/api/types';
 
 // Mock useAuth hook
-vi.mock('@/hooks', () => ({
+vi.mock('@/shared/hooks', () => ({
   useAuth: vi.fn(),
 }));
 
@@ -37,7 +37,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 // Import mocked modules
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/shared/hooks';
 import { getErrorMessage } from '@/services';
 
 // Helper to render LoginPage with BrowserRouter

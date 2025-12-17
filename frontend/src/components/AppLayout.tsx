@@ -11,7 +11,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon, type IconName } from '@/components/ui';
-import { useAuth } from '@/hooks';
+import { useAuth } from '@/shared/hooks';
 import type { RoleName } from '@/services';
 
 interface NavItem {
