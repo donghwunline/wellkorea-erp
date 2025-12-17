@@ -18,29 +18,33 @@ vi.mock('@/api', () => ({
 
 import { httpClient } from '@/api';
 
-// DTO interface (backend returns entityId as string)
+// DTO interface (matches backend AuditLogResponse.java)
 interface AuditLogEntryDto {
   id: number;
-  username: string;
-  action: string;
   entityType: string;
-  entityId: string | null;
-  details: string | null;
+  entityId: number | null;
+  action: string;
+  userId: number | null;
+  username: string | null;
   ipAddress: string | null;
-  timestamp: string;
+  changes: string | null;
+  metadata: string | null;
+  createdAt: string;
 }
 
 // Test fixture factory
 function createMockAuditLogDto(overrides?: Partial<AuditLogEntryDto>): AuditLogEntryDto {
   return {
     id: 1,
-    username: 'admin',
-    action: 'CREATE',
     entityType: 'User',
-    entityId: '123', // Backend returns string
-    details: 'Created user testuser',
+    entityId: 123,
+    action: 'CREATE',
+    userId: 1,
+    username: 'admin',
     ipAddress: '192.168.1.1',
-    timestamp: '2025-01-01T00:00:00Z',
+    changes: '{"name": "testuser"}',
+    metadata: null,
+    createdAt: '2025-01-01T00:00:00Z',
     ...overrides,
   };
 }
@@ -92,10 +96,10 @@ describe('auditService', () => {
       expect(result.pagination.totalElements).toBe(1);
     });
 
-    it('should transform entityId from string to number', async () => {
-      // Given: Response with string entityId
+    it('should pass through entityId as number', async () => {
+      // Given: Response with number entityId (backend returns Long)
       const mockDto = createMockAuditLogDto({
-        entityId: '456', // String from backend
+        entityId: 456,
       });
       const mockResponse = {
         data: {
@@ -114,8 +118,8 @@ describe('auditService', () => {
       // When: Get audit logs
       const result = await auditService.getAuditLogs();
 
-      // Then: entityId transformed to number
-      expect(result.data[0].entityId).toBe(456); // Number
+      // Then: entityId passed through as number
+      expect(result.data[0].entityId).toBe(456);
       expect(typeof result.data[0].entityId).toBe('number');
     });
 
@@ -268,13 +272,15 @@ describe('auditService', () => {
       // Given: Complete audit log entry
       const mockDto = createMockAuditLogDto({
         id: 100,
-        username: 'testuser',
-        action: 'UPDATE',
         entityType: 'Customer',
-        entityId: '789',
-        details: 'Updated customer name',
+        entityId: 789,
+        action: 'UPDATE',
+        userId: 5,
+        username: 'testuser',
         ipAddress: '10.0.0.1',
-        timestamp: '2025-06-15T14:30:00Z',
+        changes: '{"name": "New Customer Name"}',
+        metadata: '{"source": "web"}',
+        createdAt: '2025-06-15T14:30:00Z',
       });
       const mockResponse = {
         data: {
@@ -293,24 +299,29 @@ describe('auditService', () => {
       // When: Get audit logs
       const result = await auditService.getAuditLogs();
 
-      // Then: All fields preserved and correctly transformed
+      // Then: All fields preserved
       const log = result.data[0];
       expect(log.id).toBe(100);
-      expect(log.username).toBe('testuser');
-      expect(log.action).toBe('UPDATE');
       expect(log.entityType).toBe('Customer');
-      expect(log.entityId).toBe(789); // Transformed to number
-      expect(log.details).toBe('Updated customer name');
+      expect(log.entityId).toBe(789);
+      expect(log.action).toBe('UPDATE');
+      expect(log.userId).toBe(5);
+      expect(log.username).toBe('testuser');
       expect(log.ipAddress).toBe('10.0.0.1');
-      expect(log.timestamp).toBe('2025-06-15T14:30:00Z');
+      expect(log.changes).toBe('{"name": "New Customer Name"}');
+      expect(log.metadata).toBe('{"source": "web"}');
+      expect(log.createdAt).toBe('2025-06-15T14:30:00Z');
     });
 
-    it('should handle entries with null details and ipAddress', async () => {
+    it('should handle entries with null optional fields', async () => {
       // Given: Audit log with null optional fields
       const mockDto = createMockAuditLogDto({
-        details: null,
-        ipAddress: null,
         entityId: null,
+        userId: null,
+        username: null,
+        ipAddress: null,
+        changes: null,
+        metadata: null,
       });
       const mockResponse = {
         data: {
@@ -330,9 +341,12 @@ describe('auditService', () => {
       const result = await auditService.getAuditLogs();
 
       // Then: Null values preserved
-      expect(result.data[0].details).toBeNull();
-      expect(result.data[0].ipAddress).toBeNull();
       expect(result.data[0].entityId).toBeNull();
+      expect(result.data[0].userId).toBeNull();
+      expect(result.data[0].username).toBeNull();
+      expect(result.data[0].ipAddress).toBeNull();
+      expect(result.data[0].changes).toBeNull();
+      expect(result.data[0].metadata).toBeNull();
     });
 
     it('should propagate API errors', async () => {
@@ -350,11 +364,11 @@ describe('auditService', () => {
   });
 
   describe('getAuditLog', () => {
-    it('should fetch single audit log by ID and transform', async () => {
+    it('should fetch single audit log by ID', async () => {
       // Given: Mock audit log response
       const mockDto = createMockAuditLogDto({
         id: 555,
-        entityId: '999',
+        entityId: 999,
       });
       vi.mocked(httpClient.get).mockResolvedValue(mockDto);
 
@@ -365,15 +379,15 @@ describe('auditService', () => {
       expect(httpClient.get).toHaveBeenCalledOnce();
       expect(httpClient.get).toHaveBeenCalledWith('/audit/555');
 
-      // And: Returns transformed audit log
+      // And: Returns audit log
       expect(result.id).toBe(555);
-      expect(result.entityId).toBe(999); // Transformed to number
+      expect(result.entityId).toBe(999);
     });
 
-    it('should transform entityId from string to number', async () => {
-      // Given: DTO with string entityId
+    it('should pass through entityId as number', async () => {
+      // Given: DTO with number entityId
       const mockDto = createMockAuditLogDto({
-        entityId: '12345',
+        entityId: 12345,
       });
       vi.mocked(httpClient.get).mockResolvedValue(mockDto);
 
@@ -403,13 +417,15 @@ describe('auditService', () => {
       // Given: Complete audit log DTO
       const mockDto = createMockAuditLogDto({
         id: 777,
-        username: 'alice',
-        action: 'DELETE',
         entityType: 'Project',
-        entityId: '888',
-        details: 'Deleted project WK2025-000001-20250101',
+        entityId: 888,
+        action: 'DELETE',
+        userId: 10,
+        username: 'alice',
         ipAddress: '192.168.100.50',
-        timestamp: '2025-12-17T09:30:00Z',
+        changes: '{"deleted": true}',
+        metadata: '{"reason": "cleanup"}',
+        createdAt: '2025-12-17T09:30:00Z',
       });
       vi.mocked(httpClient.get).mockResolvedValue(mockDto);
 
@@ -418,13 +434,15 @@ describe('auditService', () => {
 
       // Then: All fields preserved
       expect(result.id).toBe(777);
-      expect(result.username).toBe('alice');
-      expect(result.action).toBe('DELETE');
       expect(result.entityType).toBe('Project');
-      expect(result.entityId).toBe(888); // Transformed
-      expect(result.details).toBe('Deleted project WK2025-000001-20250101');
+      expect(result.entityId).toBe(888);
+      expect(result.action).toBe('DELETE');
+      expect(result.userId).toBe(10);
+      expect(result.username).toBe('alice');
       expect(result.ipAddress).toBe('192.168.100.50');
-      expect(result.timestamp).toBe('2025-12-17T09:30:00Z');
+      expect(result.changes).toBe('{"deleted": true}');
+      expect(result.metadata).toBe('{"reason": "cleanup"}');
+      expect(result.createdAt).toBe('2025-12-17T09:30:00Z');
     });
 
     it('should propagate 404 errors', async () => {

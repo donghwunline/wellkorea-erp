@@ -16,33 +16,38 @@ import type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './ty
 const BASE_PATH = '/audit';
 
 /**
- * DTO type from backend (entityId is string | null).
+ * DTO type from backend (matches AuditLogResponse.java).
+ * entityId comes as Long (number) from backend.
  */
 interface AuditLogEntryDto {
   id: number;
-  username: string;
-  action: string;
   entityType: string;
-  entityId: string | null; // Backend returns string
-  details: string | null;
+  entityId: number | null;
+  action: string;
+  userId: number | null;
+  username: string | null;
   ipAddress: string | null;
-  timestamp: string;
+  changes: string | null;
+  metadata: string | null;
+  createdAt: string; // ISO 8601 from Instant
 }
 
 /**
  * Transform AuditLogEntry DTO to domain model.
- * Converts entityId from string to number.
+ * Currently a passthrough since field names match.
  */
 function transformAuditLogEntry(dto: AuditLogEntryDto): AuditLogEntry {
   return {
     id: dto.id,
-    username: dto.username,
-    action: dto.action,
     entityType: dto.entityType,
-    entityId: dto.entityId ? parseInt(dto.entityId, 10) : null, // string → number
-    details: dto.details,
+    entityId: dto.entityId,
+    action: dto.action,
+    userId: dto.userId,
+    username: dto.username,
     ipAddress: dto.ipAddress,
-    timestamp: dto.timestamp,
+    changes: dto.changes,
+    metadata: dto.metadata,
+    createdAt: dto.createdAt,
   };
 }
 

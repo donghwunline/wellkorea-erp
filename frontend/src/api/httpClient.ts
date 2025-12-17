@@ -9,7 +9,7 @@
  * - Error normalization
  */
 
-import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import type { ApiError, ApiResponse, Tokens, TokenStore } from './types';
 
 /**

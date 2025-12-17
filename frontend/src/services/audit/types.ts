@@ -1,18 +1,22 @@
 /**
  * Audit service types (domain models).
+ *
+ * Field names match backend AuditLogResponse.java
  */
 
 import type { Paginated } from '@/api/types';
 
 export interface AuditLogEntry {
   id: number;
-  username: string;
-  action: string;
   entityType: string;
   entityId: number | null; // Transformed from string to number
-  details: string | null;
+  action: string;
+  userId: number | null;
+  username: string | null;
   ipAddress: string | null;
-  timestamp: string; // ISO 8601 string (can be converted to Date if needed)
+  changes: string | null;
+  metadata: string | null;
+  createdAt: string; // ISO 8601 string from Instant
 }
 
 export interface AuditLogListParams {

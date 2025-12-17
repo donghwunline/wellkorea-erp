@@ -101,9 +101,8 @@ export const userService = {
   /**
    * Activate a deactivated user.
    */
-  async activateUser(id: number): Promise<UserDetails> {
-    const user = await httpClient.post<UserDetails>(`${BASE_PATH}/${id}/activate`);
-    return transformUserDetails(user);
+  async activateUser(id: number): Promise<void> {
+    await httpClient.post<void>(`${BASE_PATH}/${id}/activate`);
   },
 
   /**
