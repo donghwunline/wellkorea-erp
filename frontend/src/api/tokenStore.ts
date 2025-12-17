@@ -8,7 +8,7 @@
  * - Easy to mock in tests
  */
 
-import { authStorage } from '@/utils/storage';
+import { authStorage } from '@/shared/utils';
 import type { Tokens, TokenStore } from './types';
 
 /**

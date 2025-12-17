@@ -8,13 +8,13 @@ import userEvent from '@testing-library/user-event';
 import { ErrorBoundary } from './ErrorBoundary';
 
 // Mock navigation utility
-vi.mock('@/utils/navigation', () => ({
+vi.mock('@/shared/utils', () => ({
   navigation: {
     reloadPage: vi.fn(),
   },
 }));
 
-const { navigation } = await import('@/utils/navigation');
+const { navigation } = await import('@/shared/utils');
 
 // Component that throws an error
 const ProblemChild = () => {

@@ -17,7 +17,7 @@
 
 import type { ReactNode } from 'react';
 import React, { Component } from 'react';
-import { navigation } from '@/utils/navigation';
+import { navigation } from '@/shared/utils';
 
 interface Props {
   children: ReactNode;
