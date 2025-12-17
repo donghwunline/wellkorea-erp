@@ -43,12 +43,8 @@ public class AuthenticationController {
      * Invalidate the current token.
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = extractToken(authHeader);
+    public ResponseEntity<ApiResponse<Void>> logout(@CurrentToken String token) {
         authenticationService.logout(token);
-
         return ResponseEntity.ok(ApiResponse.success(null, "Logged out successfully"));
     }
 
@@ -57,12 +53,8 @@ public class AuthenticationController {
      * Refresh the current token.
      */
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<LoginResponse>> refresh(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = extractToken(authHeader);
+    public ResponseEntity<ApiResponse<LoginResponse>> refresh(@CurrentToken String token) {
         LoginResponse response = authenticationService.refreshToken(token);
-
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -71,19 +63,8 @@ public class AuthenticationController {
      * Get current authenticated user info.
      */
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<LoginResponse.UserInfo>> getCurrentUser(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String token = extractToken(authHeader);
+    public ResponseEntity<ApiResponse<LoginResponse.UserInfo>> getCurrentUser(@CurrentToken String token) {
         LoginResponse.UserInfo userInfo = authenticationService.getCurrentUser(token);
-
         return ResponseEntity.ok(ApiResponse.success(userInfo));
-    }
-
-    private String extractToken(String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
-        }
-        throw new IllegalArgumentException("Invalid Authorization header");
     }
 }
