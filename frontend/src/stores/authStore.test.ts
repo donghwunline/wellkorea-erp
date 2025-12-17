@@ -3,11 +3,14 @@
  * Tests Zustand global auth state, login/logout actions, RBAC helpers, and event subscriptions.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStore } from './authStore';
-import { mockUsers, createMockUser, mockAuthStates } from '@/test/fixtures';
-import type { LoginResponse } from '@/shared/types/auth';
+import { mockAuthStates, mockUsers } from '@/test/fixtures';
+import type { LoginResponse } from '@/services/auth/types';
 import type { ApiError } from '@/api/types';
+// Import mocked modules
+import { authEvents, authService } from '@/services/auth/authService';
+import { authStorage } from '@/shared/utils';
 
 // Mock authService
 vi.mock('@/services/auth/authService', () => {
@@ -52,10 +55,6 @@ vi.mock('@/shared/utils', () => ({
     clearAuth: vi.fn(),
   },
 }));
-
-// Import mocked modules
-import { authService, authEvents } from '@/services/auth/authService';
-import { authStorage } from '@/shared/utils';
 
 describe('authStore', () => {
   beforeEach(() => {

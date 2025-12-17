@@ -3,17 +3,17 @@
  * Tests user CRUD operations, data transformation, pagination handling, and error propagation.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { userService } from './userService';
-import type { PagedResponse } from '@/api/types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { userService } from '@/services';
 import type {
-  UserDetails,
-  CreateUserRequest,
-  UpdateUserRequest,
   AssignRolesRequest,
   ChangePasswordRequest,
+  CreateUserRequest,
+  UpdateUserRequest,
+  UserDetails,
 } from './types';
 import type { ApiError } from '@/api/types';
+import { httpClient } from '@/api';
 
 // Mock httpClient
 vi.mock('@/api', () => ({
@@ -26,9 +26,7 @@ vi.mock('@/api', () => ({
   },
 }));
 
-import { httpClient } from '@/api';
-
-// Test fixture factory
+// Test fixture factories
 function createMockUserDetails(overrides?: Partial<UserDetails>): UserDetails {
   return {
     id: 1,
@@ -43,6 +41,17 @@ function createMockUserDetails(overrides?: Partial<UserDetails>): UserDetails {
   };
 }
 
+/** Creates a mock API response with required fields */
+function createMockApiResponse<T>(data: T, metadata?: Record<string, unknown>) {
+  return {
+    success: true,
+    message: 'Success',
+    data,
+    timestamp: '2025-01-01T00:00:00Z',
+    metadata,
+  };
+}
+
 describe('userService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -52,8 +61,8 @@ describe('userService', () => {
     it('should fetch paginated users and transform data', async () => {
       // Given: Mock paginated response
       const mockUser = createMockUserDetails();
-      const mockResponse = {
-        data: {
+      const mockResponse = createMockApiResponse(
+        {
           content: [mockUser],
           number: 0,
           size: 10,
@@ -62,7 +71,7 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        metadata: {
+        {
           page: 0,
           size: 10,
           totalElements: 1,
@@ -70,7 +79,7 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-      };
+      );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -534,23 +543,16 @@ describe('userService', () => {
   });
 
   describe('activateUser', () => {
-    it('should activate user and return transformed result', async () => {
-      // Given: Deactivated user
-      const mockUser = createMockUserDetails({
-        id: 20,
-        isActive: true, // Now active
-      });
-      vi.mocked(httpClient.post).mockResolvedValue(mockUser);
+    it('should activate user (no return value)', async () => {
+      // Given: Backend returns void
+      vi.mocked(httpClient.post).mockResolvedValue(undefined);
 
       // When: Activate user
-      const result = await userService.activateUser(20);
+      await userService.activateUser(20);
 
       // Then: Calls httpClient.post with correct URL
       expect(httpClient.post).toHaveBeenCalledOnce();
       expect(httpClient.post).toHaveBeenCalledWith('/users/20/activate');
-
-      // And: Returns activated user
-      expect(result.isActive).toBe(true);
     });
 
     it('should propagate 404 errors', async () => {

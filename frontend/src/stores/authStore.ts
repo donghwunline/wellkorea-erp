@@ -13,7 +13,8 @@
 
 import { create } from 'zustand';
 import { authStorage } from '@/shared/utils';
-import type { LoginRequest, RoleName, User } from '@/shared/types/auth';
+import type { RoleName, User } from '@/shared/types/auth';
+import type { LoginRequest } from '@/services/auth/types';
 import { authEvents, authService } from '@/services/auth/authService';
 
 interface AuthState {

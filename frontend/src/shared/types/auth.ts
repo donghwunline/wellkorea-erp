@@ -1,5 +1,10 @@
 /**
- * Authentication and user types for the application.
+ * Shared authentication and user domain types.
+ *
+ * Only truly shared types belong here. API DTOs (request/response)
+ * belong in their respective service type files:
+ * - LoginRequest, LoginResponse -> @/services/auth/types
+ * - CreateUserRequest, etc. -> @/services/users/types
  */
 
 export interface User {
@@ -50,42 +55,3 @@ export const ROLE_DESCRIPTIONS: Record<RoleName, string> = {
   ROLE_PRODUCTION: 'Work progress, production tracking',
   ROLE_SALES: 'Quotations for assigned customers',
 };
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken?: string;
-  user: User;
-}
-
-export interface AuthState {
-  user: User | null;
-  accessToken: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
-
-export interface CreateUserRequest {
-  username: string;
-  email: string;
-  password: string;
-  fullName: string;
-  roles: RoleName[];
-}
-
-export interface UpdateUserRequest {
-  fullName: string;
-  email: string;
-}
-
-export interface AssignRolesRequest {
-  roles: RoleName[];
-}
-
-export interface ChangePasswordRequest {
-  newPassword: string;
-}

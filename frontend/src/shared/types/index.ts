@@ -1,21 +1,10 @@
 /**
  * Shared types barrel export.
  *
- * Type definitions used across multiple layers.
- * Types are the "lowest layer" - no runtime dependencies.
+ * Only truly shared domain types belong here.
+ * API DTOs (request/response) belong in service type files.
  */
 
-export type {
-  User,
-  UserDetails,
-  RoleName,
-  LoginRequest,
-  LoginResponse,
-  AuthState,
-  CreateUserRequest,
-  UpdateUserRequest,
-  AssignRolesRequest,
-  ChangePasswordRequest,
-} from './auth';
+export type { User, UserDetails, RoleName } from './auth';
 
 export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from './auth';
