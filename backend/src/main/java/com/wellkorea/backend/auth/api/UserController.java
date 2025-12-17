@@ -7,6 +7,11 @@ import com.wellkorea.backend.auth.application.UserQuery;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -86,7 +91,7 @@ public class UserController {
      * Create a new user.
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<UserResponse>> createUser(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody CreateUserRequest request) {
         Set<Role> roles = request.roles() != null
                 ? request.roles().stream().map(Role::fromName).collect(Collectors.toSet())
                 : Set.of();
@@ -114,7 +119,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable Long id,
-            @RequestBody UpdateUserRequest request) {
+            @Valid @RequestBody UpdateUserRequest request) {
 
         // Check if user exists first
         userQuery.getUserById(id)
@@ -136,7 +141,7 @@ public class UserController {
     @PutMapping("/{id}/roles")
     public ResponseEntity<ApiResponse<Void>> assignRoles(
             @PathVariable Long id,
-            @RequestBody AssignRolesRequest request) {
+            @Valid @RequestBody AssignRolesRequest request) {
 
         Set<Role> roles = request.roles().stream()
                 .map(Role::fromName)
@@ -186,7 +191,7 @@ public class UserController {
     @PutMapping("/{id}/password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @PathVariable Long id,
-            @RequestBody ChangePasswordRequest request) {
+            @Valid @RequestBody ChangePasswordRequest request) {
 
         userCommand.changePassword(id, request.newPassword());
 
@@ -210,7 +215,7 @@ public class UserController {
     @PutMapping("/{id}/customers")
     public ResponseEntity<ApiResponse<Void>> assignCustomers(
             @PathVariable Long id,
-            @RequestBody AssignCustomersRequest request) {
+            @Valid @RequestBody AssignCustomersRequest request) {
 
         customerAssignmentService.replaceUserAssignments(id, request.customerIds());
         return ResponseEntity.ok(ApiResponse.success(null, "Customer assignments updated successfully"));
@@ -219,31 +224,52 @@ public class UserController {
     // ==================== Request DTOs ====================
 
     public record CreateUserRequest(
+            @NotBlank(message = "Username is required")
+            @Size(min = 3, max = 100, message = "Username must be between 3 and 100 characters")
             String username,
+
+            @NotBlank(message = "Email is required")
+            @Email(message = "Email must be valid")
             String email,
+
+            @NotBlank(message = "Password is required")
+            @Size(min = 8, message = "Password must be at least 8 characters")
             String password,
+
+            @NotBlank(message = "Full name is required")
+            @Size(max = 255, message = "Full name must not exceed 255 characters")
             String fullName,
+
             Set<String> roles
     ) {
     }
 
     public record UpdateUserRequest(
+            @NotBlank(message = "Full name is required")
+            @Size(max = 255, message = "Full name must not exceed 255 characters")
             String fullName,
+
+            @NotBlank(message = "Email is required")
+            @Email(message = "Email must be valid")
             String email
     ) {
     }
 
     public record AssignRolesRequest(
+            @NotNull(message = "Roles are required")
             Set<String> roles
     ) {
     }
 
     public record ChangePasswordRequest(
+            @NotBlank(message = "New password is required")
+            @Size(min = 8, message = "New password must be at least 8 characters")
             String newPassword
     ) {
     }
 
     public record AssignCustomersRequest(
+            @NotNull(message = "Customer IDs are required")
             List<Long> customerIds
     ) {
     }

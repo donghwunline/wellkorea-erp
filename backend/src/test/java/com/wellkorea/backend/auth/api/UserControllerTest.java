@@ -297,7 +297,8 @@ class UserControllerTest extends BaseIntegrationTest implements TestFixtures {
         void updateUser_NonExistent_Returns404() throws Exception {
             String updateRequest = """
                     {
-                        "fullName": "Updated Name"
+                        "fullName": "Updated Name",
+                        "email": "updated@example.com"
                     }
                     """;
 
@@ -313,7 +314,8 @@ class UserControllerTest extends BaseIntegrationTest implements TestFixtures {
         void updateUser_AsNonAdmin_Returns403() throws Exception {
             String updateRequest = """
                     {
-                        "fullName": "Updated Name"
+                        "fullName": "Updated Name",
+                        "email": "updated@example.com"
                     }
                     """;
 
