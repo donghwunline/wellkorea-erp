@@ -34,9 +34,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CustomAuthenticationEntryPoint authenticationEntryPoint) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Override
@@ -46,8 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Extract JWT token from Authorization header
             String jwt = getJwtFromRequest(request);
 
-            // Validate token and set authentication in SecurityContext
-            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
+            // If token is present, validate it (throws exception if invalid/expired)
+            if (StringUtils.hasText(jwt)) {
+                jwtTokenProvider.validateToken(jwt);
+
+                // Token is valid - set authentication in SecurityContext
                 String username = jwtTokenProvider.getUsername(jwt);
                 String rolesString = jwtTokenProvider.getRoles(jwt);
 
@@ -73,8 +78,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
+        } catch (JwtAuthenticationException ex) {
+            // Handle JWT authentication exceptions via CustomAuthenticationEntryPoint
+            authenticationEntryPoint.commence(request, response, ex);
+            return; // Stop filter chain execution
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
+            InvalidJwtAuthenticationException authException = new InvalidJwtAuthenticationException("Authentication failed", ex);
+            authenticationEntryPoint.commence(request, response, authException);
+            return; // Stop filter chain execution
         }
 
         filterChain.doFilter(request, response);

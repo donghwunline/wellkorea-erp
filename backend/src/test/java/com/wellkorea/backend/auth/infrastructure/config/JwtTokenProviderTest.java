@@ -67,7 +67,7 @@ class JwtTokenProviderTest {
 
         // Then: Token is valid and contains correct claims
         assertThat(token).isNotBlank();
-        assertThat(jwtTokenProvider.validateToken(token)).isTrue();
+        jwtTokenProvider.validateToken(token); // Should not throw exception
         assertThat(jwtTokenProvider.getUsername(token)).isEqualTo("testuser");
         assertThat(jwtTokenProvider.getRoles(token)).isEqualTo("ROLE_ADMIN,ROLE_FINANCE");
     }
@@ -109,7 +109,7 @@ class JwtTokenProviderTest {
 
         // Then: Token is valid and contains correct claims
         assertThat(token).isNotBlank();
-        assertThat(jwtTokenProvider.validateToken(token)).isTrue();
+        jwtTokenProvider.validateToken(token); // Should not throw exception
         assertThat(jwtTokenProvider.getUsername(token)).isEqualTo(username);
         assertThat(jwtTokenProvider.getRoles(token)).isEqualTo(roles);
     }
@@ -121,11 +121,8 @@ class JwtTokenProviderTest {
         // Given: Valid token
         String token = jwtTokenProvider.generateToken("user", "ROLE_USER");
 
-        // When: Validate token
-        boolean isValid = jwtTokenProvider.validateToken(token);
-
-        // Then: Token is valid
-        assertThat(isValid).isTrue();
+        // When/Then: Validate token (should not throw exception)
+        jwtTokenProvider.validateToken(token);
     }
 
     @Test
@@ -141,11 +138,10 @@ class JwtTokenProviderTest {
             Thread.currentThread().interrupt();
         }
 
-        // When: Validate expired token
-        boolean isValid = shortLivedProvider.validateToken(token);
-
-        // Then: Token is invalid
-        assertThat(isValid).isFalse();
+        // When/Then: Validate expired token (should throw ExpiredJwtAuthenticationException)
+        assertThatThrownBy(() -> shortLivedProvider.validateToken(token))
+                .isInstanceOf(ExpiredJwtAuthenticationException.class)
+                .hasMessageContaining("expired");
     }
 
     @Test
@@ -153,11 +149,10 @@ class JwtTokenProviderTest {
         // Given: Malformed token (not JWT format)
         String malformedToken = "this.is.not.a.valid.jwt";
 
-        // When: Validate malformed token
-        boolean isValid = jwtTokenProvider.validateToken(malformedToken);
-
-        // Then: Token is invalid
-        assertThat(isValid).isFalse();
+        // When/Then: Validate malformed token (should throw InvalidJwtAuthenticationException)
+        assertThatThrownBy(() -> jwtTokenProvider.validateToken(malformedToken))
+                .isInstanceOf(InvalidJwtAuthenticationException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     @Test
@@ -166,11 +161,10 @@ class JwtTokenProviderTest {
         String validToken = jwtTokenProvider.generateToken("user", "ROLE_USER");
         String tamperedToken = validToken.substring(0, validToken.length() - 5) + "XXXXX";
 
-        // When: Validate tampered token
-        boolean isValid = jwtTokenProvider.validateToken(tamperedToken);
-
-        // Then: Token is invalid
-        assertThat(isValid).isFalse();
+        // When/Then: Validate tampered token (should throw InvalidJwtAuthenticationException)
+        assertThatThrownBy(() -> jwtTokenProvider.validateToken(tamperedToken))
+                .isInstanceOf(InvalidJwtAuthenticationException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     @Test
@@ -180,11 +174,10 @@ class JwtTokenProviderTest {
         JwtTokenProvider otherProvider = new JwtTokenProvider(differentSecret, TestFixtures.JWT_EXPIRATION_MS);
         String token = otherProvider.generateToken("user", "ROLE_USER");
 
-        // When: Validate with original provider
-        boolean isValid = jwtTokenProvider.validateToken(token);
-
-        // Then: Token is invalid (signature mismatch)
-        assertThat(isValid).isFalse();
+        // When/Then: Validate with original provider (should throw InvalidJwtAuthenticationException)
+        assertThatThrownBy(() -> jwtTokenProvider.validateToken(token))
+                .isInstanceOf(InvalidJwtAuthenticationException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     @Test
@@ -192,11 +185,10 @@ class JwtTokenProviderTest {
         // Given: Null token
         String nullToken = null;
 
-        // When: Validate null token
-        boolean isValid = jwtTokenProvider.validateToken(nullToken);
-
-        // Then: Token is invalid
-        assertThat(isValid).isFalse();
+        // When/Then: Validate null token (should throw InvalidJwtAuthenticationException)
+        assertThatThrownBy(() -> jwtTokenProvider.validateToken(nullToken))
+                .isInstanceOf(InvalidJwtAuthenticationException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     @Test
@@ -204,11 +196,10 @@ class JwtTokenProviderTest {
         // Given: Empty token
         String emptyToken = "";
 
-        // When: Validate empty token
-        boolean isValid = jwtTokenProvider.validateToken(emptyToken);
-
-        // Then: Token is invalid
-        assertThat(isValid).isFalse();
+        // When/Then: Validate empty token (should throw InvalidJwtAuthenticationException)
+        assertThatThrownBy(() -> jwtTokenProvider.validateToken(emptyToken))
+                .isInstanceOf(InvalidJwtAuthenticationException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     // ========== Claims Extraction Tests ==========

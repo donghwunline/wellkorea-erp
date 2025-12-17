@@ -200,7 +200,7 @@ class AuthenticationServiceTest implements TestFixtures {
         @DisplayName("should invalidate token on logout")
         void logout_ValidToken_InvalidatesToken() {
             String validToken = "valid.jwt.token";
-            when(jwtTokenProvider.validateToken(validToken)).thenReturn(true);
+            // validateToken() is void - no need to mock (default behavior is do nothing)
 
             authenticationService.logout(validToken);
 
@@ -212,7 +212,8 @@ class AuthenticationServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception for invalid token")
         void logout_InvalidToken_ThrowsException() {
-            when(jwtTokenProvider.validateToken(INVALID_JWT_TOKEN)).thenReturn(false);
+            doThrow(new com.wellkorea.backend.auth.infrastructure.config.InvalidJwtAuthenticationException("Invalid token"))
+                    .when(jwtTokenProvider).validateToken(INVALID_JWT_TOKEN);
 
             assertThatThrownBy(() -> authenticationService.logout(INVALID_JWT_TOKEN))
                     .isInstanceOf(AuthenticationException.class)
@@ -246,7 +247,7 @@ class AuthenticationServiceTest implements TestFixtures {
             String oldToken = "old.valid.token";
             String newToken = "new.generated.token";
 
-            when(jwtTokenProvider.validateToken(oldToken)).thenReturn(true);
+            // validateToken() is void - no need to mock
             when(jwtTokenProvider.getUsername(oldToken)).thenReturn(ADMIN_USERNAME);
             when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(activeUser));
             when(jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority()))
@@ -263,7 +264,8 @@ class AuthenticationServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception for expired token")
         void refreshToken_ExpiredToken_ThrowsException() {
-            when(jwtTokenProvider.validateToken(EXPIRED_JWT_TOKEN)).thenReturn(false);
+            doThrow(new com.wellkorea.backend.auth.infrastructure.config.ExpiredJwtAuthenticationException("Token has expired"))
+                    .when(jwtTokenProvider).validateToken(EXPIRED_JWT_TOKEN);
 
             assertThatThrownBy(() -> authenticationService.refreshToken(EXPIRED_JWT_TOKEN))
                     .isInstanceOf(AuthenticationException.class)
@@ -275,7 +277,7 @@ class AuthenticationServiceTest implements TestFixtures {
         void refreshToken_InactiveUser_ThrowsException() {
             String validToken = "valid.token";
 
-            when(jwtTokenProvider.validateToken(validToken)).thenReturn(true);
+            // validateToken() is void - no need to mock
             when(jwtTokenProvider.getUsername(validToken)).thenReturn(FINANCE_USERNAME);
             when(userRepository.findByUsername(FINANCE_USERNAME)).thenReturn(Optional.of(inactiveUser));
 
@@ -289,7 +291,7 @@ class AuthenticationServiceTest implements TestFixtures {
         void refreshToken_DeletedUser_ThrowsException() {
             String validToken = "valid.token";
 
-            when(jwtTokenProvider.validateToken(validToken)).thenReturn(true);
+            // validateToken() is void - no need to mock
             when(jwtTokenProvider.getUsername(validToken)).thenReturn("deleteduser");
             when(userRepository.findByUsername("deleteduser")).thenReturn(Optional.empty());
 
@@ -316,7 +318,7 @@ class AuthenticationServiceTest implements TestFixtures {
         void getCurrentUser_ValidToken_ReturnsUserInfo() {
             String validToken = "valid.jwt.token";
 
-            when(jwtTokenProvider.validateToken(validToken)).thenReturn(true);
+            // validateToken() is void - no need to mock
             when(jwtTokenProvider.getUsername(validToken)).thenReturn(ADMIN_USERNAME);
             when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(activeUser));
 
@@ -333,7 +335,8 @@ class AuthenticationServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception for invalid token")
         void getCurrentUser_InvalidToken_ThrowsException() {
-            when(jwtTokenProvider.validateToken(INVALID_JWT_TOKEN)).thenReturn(false);
+            doThrow(new com.wellkorea.backend.auth.infrastructure.config.InvalidJwtAuthenticationException("Invalid token"))
+                    .when(jwtTokenProvider).validateToken(INVALID_JWT_TOKEN);
 
             assertThatThrownBy(() -> authenticationService.getCurrentUser(INVALID_JWT_TOKEN))
                     .isInstanceOf(AuthenticationException.class)
@@ -345,7 +348,7 @@ class AuthenticationServiceTest implements TestFixtures {
         void getCurrentUser_UserNotFound_ThrowsException() {
             String validToken = "valid.token";
 
-            when(jwtTokenProvider.validateToken(validToken)).thenReturn(true);
+            // validateToken() is void - no need to mock
             when(jwtTokenProvider.getUsername(validToken)).thenReturn("deleteduser");
             when(userRepository.findByUsername("deleteduser")).thenReturn(Optional.empty());
 

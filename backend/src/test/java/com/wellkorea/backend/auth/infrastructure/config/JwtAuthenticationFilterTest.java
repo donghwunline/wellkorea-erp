@@ -29,6 +29,9 @@ class JwtAuthenticationFilterTest {
     private JwtTokenProvider jwtTokenProvider;
 
     @Mock
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -41,7 +44,7 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
-        jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
+        jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider, authenticationEntryPoint);
         SecurityContextHolder.clearContext();
     }
 
@@ -57,7 +60,7 @@ class JwtAuthenticationFilterTest {
         // Given: Valid JWT token in Authorization header
         String token = "valid.jwt.token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtTokenProvider.validateToken(token)).thenReturn(true);
+        // validateToken() is void - no need to mock (default behavior is do nothing)
         when(jwtTokenProvider.getUsername(token)).thenReturn("testuser");
         when(jwtTokenProvider.getRoles(token)).thenReturn("ROLE_ADMIN,ROLE_FINANCE");
 
@@ -83,7 +86,7 @@ class JwtAuthenticationFilterTest {
         // Given: Token with single role
         String token = "valid.jwt.token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtTokenProvider.validateToken(token)).thenReturn(true);
+        // validateToken() is void - no need to mock
         when(jwtTokenProvider.getUsername(token)).thenReturn("sales");
         when(jwtTokenProvider.getRoles(token)).thenReturn("ROLE_SALES");
 
@@ -104,42 +107,47 @@ class JwtAuthenticationFilterTest {
     // ========== Invalid Token Tests ==========
 
     @Test
-    void shouldNotAuthenticateWithInvalidToken() throws Exception {
-        // Given: Invalid JWT token
+    void shouldCallEntryPointWithInvalidToken() throws Exception {
+        // Given: Invalid JWT token (throws InvalidJwtAuthenticationException)
         String token = "invalid.jwt.token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtTokenProvider.validateToken(token)).thenReturn(false);
+        doThrow(new InvalidJwtAuthenticationException("Invalid token"))
+                .when(jwtTokenProvider).validateToken(token);
 
         // When: Filter processes request
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then: SecurityContext remains empty
+        // Then: Entry point is called with exception
+        verify(authenticationEntryPoint).commence(eq(request), eq(response), any(InvalidJwtAuthenticationException.class));
+
+        // SecurityContext remains empty
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication).isNull();
 
-        // Token provider methods not called (validation failed)
-        verify(jwtTokenProvider, never()).getUsername(any());
-        verify(jwtTokenProvider, never()).getRoles(any());
-
-        // Filter chain continues (no exception thrown)
-        verify(filterChain).doFilter(request, response);
+        // Filter chain does NOT continue (stopped by entry point)
+        verify(filterChain, never()).doFilter(request, response);
     }
 
     @Test
-    void shouldNotAuthenticateWithExpiredToken() throws Exception {
-        // Given: Expired token (validation returns false)
+    void shouldCallEntryPointWithExpiredToken() throws Exception {
+        // Given: Expired token (throws ExpiredJwtAuthenticationException)
         String token = "expired.jwt.token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtTokenProvider.validateToken(token)).thenReturn(false);
+        doThrow(new ExpiredJwtAuthenticationException("Token has expired"))
+                .when(jwtTokenProvider).validateToken(token);
 
         // When: Filter processes request
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then: SecurityContext remains empty
+        // Then: Entry point is called with expired exception (triggers AUTH_003)
+        verify(authenticationEntryPoint).commence(eq(request), eq(response), any(ExpiredJwtAuthenticationException.class));
+
+        // SecurityContext remains empty
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication).isNull();
 
-        verify(filterChain).doFilter(request, response);
+        // Filter chain does NOT continue
+        verify(filterChain, never()).doFilter(request, response);
     }
 
     // ========== Missing/Malformed Authorization Header Tests ==========
@@ -212,39 +220,46 @@ class JwtAuthenticationFilterTest {
     // ========== Exception Handling Tests ==========
 
     @Test
-    void shouldContinueFilterChainWhenTokenValidationThrowsException() throws Exception {
-        // Given: Token validation throws exception
+    void shouldHandleGenericExceptionAndCallEntryPoint() throws Exception {
+        // Given: Token validation throws non-JWT exception
         String token = "malformed.token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtTokenProvider.validateToken(token)).thenThrow(new RuntimeException("Malformed JWT"));
+        doThrow(new RuntimeException("Unexpected error"))
+                .when(jwtTokenProvider).validateToken(token);
 
         // When: Filter processes request
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then: Exception caught, SecurityContext remains empty
+        // Then: Entry point is called with wrapped exception (InvalidJwtAuthenticationException)
+        verify(authenticationEntryPoint).commence(eq(request), eq(response), any(InvalidJwtAuthenticationException.class));
+
+        // SecurityContext remains empty
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication).isNull();
 
-        // Filter chain continues (no exception propagated)
-        verify(filterChain).doFilter(request, response);
+        // Filter chain does NOT continue (stopped by entry point)
+        verify(filterChain, never()).doFilter(request, response);
     }
 
     @Test
-    void shouldContinueFilterChainWhenUsernameExtractionThrowsException() throws Exception {
-        // Given: Username extraction throws exception
+    void shouldHandleUsernameExtractionException() throws Exception {
+        // Given: Username extraction throws exception (after validation)
         String token = "valid.token.bad.claims";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtTokenProvider.validateToken(token)).thenReturn(true);
+        // validateToken() succeeds (no exception thrown)
         when(jwtTokenProvider.getUsername(token)).thenThrow(new RuntimeException("Missing subject claim"));
 
         // When: Filter processes request
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then: Exception caught, SecurityContext remains empty
+        // Then: Entry point is called with wrapped exception
+        verify(authenticationEntryPoint).commence(eq(request), eq(response), any(InvalidJwtAuthenticationException.class));
+
+        // SecurityContext remains empty
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication).isNull();
 
-        // Filter chain continues
-        verify(filterChain).doFilter(request, response);
+        // Filter chain does NOT continue
+        verify(filterChain, never()).doFilter(request, response);
     }
 }

@@ -121,30 +121,34 @@ public class JwtTokenProvider {
 
     /**
      * Validate JWT token.
+     * Throws specific authentication exceptions for expired vs invalid tokens.
      *
      * @param token JWT token
-     * @return true if valid, false otherwise
+     * @throws ExpiredJwtAuthenticationException if token is expired (AUTH_003)
+     * @throws InvalidJwtAuthenticationException if token is invalid (AUTH_002)
      */
-    public boolean validateToken(String token) {
+    public void validateToken(String token) {
         try {
             Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token);
-            return true;
+            log.debug("Token validation successful");
 
-        } catch (SecurityException | MalformedJwtException e) {
-            log.debug("Invalid JWT signature: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
             log.debug("Expired JWT token: {}", e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            log.debug("Unsupported JWT token: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            log.debug("JWT claims string is empty: {}", e.getMessage());
-        }
+            throw new ExpiredJwtAuthenticationException("Token has expired", e);
 
-        return false;
+        } catch (SecurityException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException e) {
+            log.debug("Invalid JWT token: {}", e.getMessage());
+            throw new InvalidJwtAuthenticationException("Invalid token", e);
+
+        } catch (Exception e) {
+            log.error("Unexpected error during token validation", e);
+            throw new InvalidJwtAuthenticationException("Token validation failed", e);
+        }
     }
+
 
     /**
      * Extract token from Authorization header.

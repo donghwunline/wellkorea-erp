@@ -93,8 +93,10 @@ public class AuthenticationService {
     public void logout(String token) {
         validateNotBlank(token, "Token is required");
 
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new AuthenticationException("Invalid token");
+        try {
+            jwtTokenProvider.validateToken(token);
+        } catch (com.wellkorea.backend.auth.infrastructure.config.JwtAuthenticationException e) {
+            throw new AuthenticationException("Invalid token", e);
         }
 
         // Add to blacklist (token will be rejected on future requests)
@@ -112,8 +114,10 @@ public class AuthenticationService {
     public LoginResponse refreshToken(String token) {
         validateNotBlank(token, "Token is required");
 
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new AuthenticationException("Invalid or expired token");
+        try {
+            jwtTokenProvider.validateToken(token);
+        } catch (com.wellkorea.backend.auth.infrastructure.config.JwtAuthenticationException e) {
+            throw new AuthenticationException("Invalid or expired token", e);
         }
 
         if (isTokenBlacklisted(token)) {
@@ -148,8 +152,10 @@ public class AuthenticationService {
     public LoginResponse.UserInfo getCurrentUser(String token) {
         validateNotBlank(token, "Token is required");
 
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new AuthenticationException("Invalid token");
+        try {
+            jwtTokenProvider.validateToken(token);
+        } catch (com.wellkorea.backend.auth.infrastructure.config.JwtAuthenticationException e) {
+            throw new AuthenticationException("Invalid token", e);
         }
 
         if (isTokenBlacklisted(token)) {
