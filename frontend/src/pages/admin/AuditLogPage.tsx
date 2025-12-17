@@ -3,16 +3,27 @@
  *
  * Refactored following Constitution Principle VI:
  * - Pure composition layer (minimal inline markup)
- * - No business logic (delegated to services)
+ * - No direct service calls (uses feature hooks instead)
  * - 4-Tier State Separation:
- *   Tier 1 (Local UI State): Detail modal open/close → Local state in page
- *   Tier 2 (Page UI State): Filters/pagination → useAuditLogPage hook
- *   Tier 3 (Server State): Audit log data → Direct service calls (TODO: migrate to React Query)
- *   Tier 4 (App Global State): Auth → authStore (already implemented)
+ *   Tier 1 (Local UI State): Detail modal open/close -> Local state in page
+ *   Tier 2 (Page UI State): Filters/pagination -> useAuditLogPage hook
+ *   Tier 3 (Server State): Audit log data -> Inline for now (TODO: extract to AuditLogTable)
+ *   Tier 4 (App Global State): Auth -> authStore via useAuth (not needed here)
+ *
+ * Import Policy:
+ * - pages -> features: YES (via @/components/features/audit)
+ * - pages -> ui: YES (via @/components/ui)
+ * - pages -> shared/hooks: YES (via @/shared/hooks)
+ * - pages -> services: NO (use feature hooks/components instead)
+ * - pages -> stores: NO (use shared hooks instead)
+ *
+ * NOTE: This page still has inline service calls for data fetching.
+ * TODO: Extract to AuditLogTable component similar to UserManagementTable.
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { type AuditLogEntry as ApiAuditLogEntry, auditService } from '@/services';
+import { auditService } from '@/services';
+import type { AuditLogEntry as ApiAuditLogEntry } from '@/services';
 import type { PaginationMetadata } from '@/api/types';
 import {
   Alert,
@@ -28,7 +39,7 @@ import {
   Pagination,
   Table,
 } from '@/components/ui';
-import { useAuditLogPage } from './_hooks/useAuditLogPage';
+import { useAuditLogPage } from '@/components/features/audit';
 
 interface AuditLogEntry extends Omit<ApiAuditLogEntry, 'action' | 'entityId'> {
   entityId: number | null;
@@ -80,10 +91,10 @@ const ACTION_BADGE_VARIANTS: Record<AuditAction, BadgeVariant> = {
 const ENTITY_TYPES = ['User', 'Project', 'Quotation', 'Product', 'Invoice', 'Delivery'];
 
 export function AuditLogPage() {
-  // Page UI State (Tier 2) - from page hook
+  // Page UI State (Tier 2) - from feature hook
   const { page, setPage, filters, handleFilterChange, handleClearFilters } = useAuditLogPage();
 
-  // Server State (Tier 3) - TODO: Move to React Query
+  // Server State (Tier 3) - TODO: Move to AuditLogTable component
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +104,7 @@ export function AuditLogPage() {
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
 
   // Fetch audit logs
+  // TODO: Move this to AuditLogTable component or useAuditLogActions hook
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
     setError(null);
