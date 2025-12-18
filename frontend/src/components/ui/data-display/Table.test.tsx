@@ -7,11 +7,11 @@ describe('Table', () => {
     render(
       <Table>
         <tbody>
-        <tr>
-          <td>Cell Content</td>
-        </tr>
+          <tr>
+            <td>Cell Content</td>
+          </tr>
         </tbody>
-      </Table>,
+      </Table>
     );
     expect(screen.getByText('Cell Content')).toBeInTheDocument();
   });
@@ -20,11 +20,11 @@ describe('Table', () => {
     const { container } = render(
       <Table>
         <tbody>
-        <tr>
-          <td>Content</td>
-        </tr>
+          <tr>
+            <td>Content</td>
+          </tr>
         </tbody>
-      </Table>,
+      </Table>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('overflow-x-auto');
@@ -34,11 +34,11 @@ describe('Table', () => {
     const { container } = render(
       <Table>
         <tbody>
-        <tr>
-          <td>Content</td>
-        </tr>
+          <tr>
+            <td>Content</td>
+          </tr>
         </tbody>
-      </Table>,
+      </Table>
     );
     const table = container.querySelector('table');
     expect(table).toHaveClass('w-full');
@@ -49,11 +49,11 @@ describe('Table', () => {
     const { container } = render(
       <Table className="custom-table">
         <tbody>
-        <tr>
-          <td>Content</td>
-        </tr>
+          <tr>
+            <td>Content</td>
+          </tr>
         </tbody>
-      </Table>,
+      </Table>
     );
     const table = container.querySelector('table');
     expect(table).toHaveClass('custom-table');
@@ -65,11 +65,11 @@ describe('Table', () => {
     render(
       <Table ref={ref}>
         <tbody>
-        <tr>
-          <td>Content</td>
-        </tr>
+          <tr>
+            <td>Content</td>
+          </tr>
         </tbody>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableElement);
   });
@@ -84,7 +84,7 @@ describe('Table.Header', () => {
             <th>Header</th>
           </tr>
         </Table.Header>
-      </Table>,
+      </Table>
     );
     const thead = container.querySelector('thead');
     expect(thead).toBeInTheDocument();
@@ -99,7 +99,7 @@ describe('Table.Header', () => {
             <th>Header</th>
           </tr>
         </Table.Header>
-      </Table>,
+      </Table>
     );
     const thead = container.querySelector('thead');
     expect(thead).toHaveClass('bg-steel-800/30');
@@ -114,7 +114,7 @@ describe('Table.Header', () => {
             <th>Header</th>
           </tr>
         </Table.Header>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableSectionElement);
   });
@@ -129,7 +129,7 @@ describe('Table.Body', () => {
             <td>Body</td>
           </tr>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     const tbody = container.querySelector('tbody');
     expect(tbody).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe('Table.Body', () => {
             <td>Body</td>
           </tr>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     const tbody = container.querySelector('tbody');
     expect(tbody).toHaveClass('divide-y');
@@ -160,7 +160,7 @@ describe('Table.Body', () => {
             <td>Body</td>
           </tr>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableSectionElement);
   });
@@ -175,7 +175,7 @@ describe('Table.Row', () => {
             <td>Row</td>
           </Table.Row>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     const tr = container.querySelector('tr');
     expect(tr).toBeInTheDocument();
@@ -190,7 +190,7 @@ describe('Table.Row', () => {
             <td>Row</td>
           </Table.Row>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     const tr = container.querySelector('tr');
     expect(tr).toHaveClass('hover:bg-steel-800/30');
@@ -205,7 +205,7 @@ describe('Table.Row', () => {
             <td>Row</td>
           </Table.Row>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableRowElement);
   });
@@ -220,7 +220,7 @@ describe('Table.HeaderCell', () => {
             <Table.HeaderCell>Name</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
-      </Table>,
+      </Table>
     );
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByText('Name').tagName).toBe('TH');
@@ -234,7 +234,7 @@ describe('Table.HeaderCell', () => {
             <Table.HeaderCell>Name</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
-      </Table>,
+      </Table>
     );
     const th = container.querySelector('th');
     expect(th).toHaveClass('px-6');
@@ -252,7 +252,7 @@ describe('Table.HeaderCell', () => {
             <Table.HeaderCell ref={ref}>Header</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableCellElement);
   });
@@ -267,7 +267,7 @@ describe('Table.Cell', () => {
             <Table.Cell>Data</Table.Cell>
           </Table.Row>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     expect(screen.getByText('Data')).toBeInTheDocument();
     expect(screen.getByText('Data').tagName).toBe('TD');
@@ -281,7 +281,7 @@ describe('Table.Cell', () => {
             <Table.Cell>Data</Table.Cell>
           </Table.Row>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     const td = container.querySelector('td');
     expect(td).toHaveClass('px-6');
@@ -297,7 +297,7 @@ describe('Table.Cell', () => {
             <Table.Cell />
           </Table.Row>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     const td = container.querySelector('td');
     expect(td).toBeInTheDocument();
@@ -313,7 +313,7 @@ describe('Table.Cell', () => {
             <Table.Cell ref={ref}>Cell</Table.Cell>
           </Table.Row>
         </Table.Body>
-      </Table>,
+      </Table>
     );
     expect(ref.current).toBeInstanceOf(HTMLTableCellElement);
   });
@@ -339,7 +339,7 @@ describe('Table compound usage', () => {
             <Table.Cell>jane@example.com</Table.Cell>
           </Table.Row>
         </Table.Body>
-      </Table>,
+      </Table>
     );
 
     expect(screen.getByText('Name')).toBeInTheDocument();

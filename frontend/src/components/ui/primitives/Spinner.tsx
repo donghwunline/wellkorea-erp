@@ -40,32 +40,20 @@ const variantClasses = {
 };
 
 export function Spinner({
-                          size = 'md',
-                          variant = 'copper',
-                          label = 'Loading',
-                          className,
-                        }: Readonly<SpinnerProps>) {
+  size = 'md',
+  variant = 'copper',
+  label = 'Loading',
+  className,
+}: Readonly<SpinnerProps>) {
   return (
     <svg
       role="status"
       aria-label={label}
-      className={cn(
-        'animate-spin',
-        sizeClasses[size],
-        variantClasses[variant],
-        className,
-      )}
+      className={cn('animate-spin', sizeClasses[size], variantClasses[variant], className)}
       fill="none"
       viewBox="0 0 24 24"
     >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path
         className="opacity-75"
         fill="currentColor"

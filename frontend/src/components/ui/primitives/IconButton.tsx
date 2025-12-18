@@ -23,10 +23,8 @@ export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 const VARIANT_STYLES: Record<IconButtonVariant, string> = {
-  ghost:
-    'rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white',
-  danger:
-    'rounded-lg p-2 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300',
+  ghost: 'rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white',
+  danger: 'rounded-lg p-2 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300',
   primary:
     'rounded-lg p-2 text-copper-400 transition-colors hover:bg-copper-500/10 hover:text-copper-300',
 };
@@ -42,14 +40,14 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper-500/20',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           VARIANT_STYLES[variant],
-          className,
+          className
         )}
         {...props}
       >
         {children}
       </button>
     );
-  },
+  }
 );
 
 IconButton.displayName = 'IconButton';

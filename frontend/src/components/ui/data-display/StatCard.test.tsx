@@ -37,7 +37,7 @@ describe('StatCard', () => {
         value="$10k"
         icon={<TestIcon />}
         trend={{ value: '+12%', direction: 'up' }}
-      />,
+      />
     );
     expect(screen.getByText('+12%')).toBeInTheDocument();
     expect(screen.getByText('+12%')).toHaveClass('text-green-400');
@@ -50,7 +50,7 @@ describe('StatCard', () => {
         value="500"
         icon={<TestIcon />}
         trend={{ value: '-5%', direction: 'down' }}
-      />,
+      />
     );
     expect(screen.getByText('-5%')).toBeInTheDocument();
     expect(screen.getByText('-5%')).toHaveClass('text-red-400');
@@ -63,16 +63,14 @@ describe('StatCard', () => {
         value="100"
         icon={<TestIcon />}
         trend={{ value: '0%', direction: 'neutral' }}
-      />,
+      />
     );
     expect(screen.getByText('0%')).toBeInTheDocument();
     expect(screen.getByText('0%')).toHaveClass('text-steel-400');
   });
 
   it('applies card styling classes', () => {
-    const { container } = render(
-      <StatCard label="Test" value="100" icon={<TestIcon />} />,
-    );
+    const { container } = render(<StatCard label="Test" value="100" icon={<TestIcon />} />);
     const card = container.firstChild as HTMLElement;
     expect(card).toHaveClass('rounded-xl');
     expect(card).toHaveClass('border');
@@ -82,12 +80,7 @@ describe('StatCard', () => {
 
   it('merges custom className', () => {
     const { container } = render(
-      <StatCard
-        label="Test"
-        value="100"
-        icon={<TestIcon />}
-        className="custom-class"
-      />,
+      <StatCard label="Test" value="100" icon={<TestIcon />} className="custom-class" />
     );
     const card = container.firstChild as HTMLElement;
     expect(card).toHaveClass('custom-class');
@@ -108,7 +101,7 @@ describe('StatCard', () => {
         icon={<TestIcon />}
         data-testid="stat-card"
         aria-label="Statistics"
-      />,
+      />
     );
     const card = screen.getByTestId('stat-card');
     expect(card).toHaveAttribute('aria-label', 'Statistics');

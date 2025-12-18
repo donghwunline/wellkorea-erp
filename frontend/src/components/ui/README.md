@@ -18,6 +18,7 @@ ui/
 ```
 
 **Related shared modules:**
+
 - `@/shared/hooks` - UI primitive hooks (useFocusTrap, useBodyScrollLock)
 - `@/shared/utils` - Utility functions (cn for className merging)
 
@@ -39,6 +40,7 @@ import { cn } from '@/shared/utils';
 ## Component Categories
 
 ### Primitives
+
 **Purpose**: Atomic, self-contained building blocks with minimal dependencies.
 
 - `Button` - Action button with variants, sizes, and loading state
@@ -49,6 +51,7 @@ import { cn } from '@/shared/utils';
 - `Spinner` - Loading indicator
 
 **Example**:
+
 ```tsx
 <Button variant="primary" onClick={handleSave} isLoading={saving}>
   Save Changes
@@ -58,11 +61,13 @@ import { cn } from '@/shared/utils';
 ```
 
 ### Forms
+
 **Purpose**: Form-specific components for data entry.
 
 - `FormField` - Input wrapper with label and error display
 
 **Example**:
+
 ```tsx
 <FormField
   label="Email"
@@ -75,6 +80,7 @@ import { cn } from '@/shared/utils';
 ```
 
 ### Feedback
+
 **Purpose**: User feedback, status indicators, and state communication.
 
 - `Alert` - Contextual messages (info, success, warning, error)
@@ -83,6 +89,7 @@ import { cn } from '@/shared/utils';
 - `EmptyState` - Empty data placeholders
 
 **Example**:
+
 ```tsx
 <Alert variant="success" onDismiss={() => setSuccess(null)}>
   User created successfully!
@@ -90,6 +97,7 @@ import { cn } from '@/shared/utils';
 ```
 
 ### Data Display
+
 **Purpose**: Components for presenting structured data and content.
 
 - `Table` - Compound component for tabular data (Table.Header, Table.Body, Table.Row, etc.)
@@ -97,6 +105,7 @@ import { cn } from '@/shared/utils';
 - `StatCard` - Dashboard statistics display
 
 **Example**:
+
 ```tsx
 <Table>
   <Table.Header>
@@ -117,6 +126,7 @@ import { cn } from '@/shared/utils';
 ```
 
 ### Navigation
+
 **Purpose**: Navigation, search, filtering, and pagination components.
 
 - `Pagination` - Page navigation controls
@@ -124,6 +134,7 @@ import { cn } from '@/shared/utils';
 - `FilterBar` - Compound component for filter controls (FilterBar.Field, FilterBar.Select)
 
 **Example**:
+
 ```tsx
 <FilterBar>
   <FilterBar.Field label="Status">
@@ -141,6 +152,7 @@ import { cn } from '@/shared/utils';
 ```
 
 ### Modals
+
 **Purpose**: Modal dialogs and confirmations with accessibility features.
 
 - `Modal` - Base modal with focus trap, ESC handling, and scroll lock
@@ -148,6 +160,7 @@ import { cn } from '@/shared/utils';
 - `ModalActions` - Standardized modal footer button layout
 
 **Example**:
+
 ```tsx
 <ConfirmationModal
   isOpen={isDeleteOpen}
@@ -161,11 +174,13 @@ import { cn } from '@/shared/utils';
 ```
 
 ### Layout
+
 **Purpose**: Page-level structural components.
 
 - `PageHeader` - Compound component for page title and actions (PageHeader.Title, PageHeader.Actions)
 
 **Example**:
+
 ```tsx
 <PageHeader>
   <PageHeader.Title
@@ -188,6 +203,7 @@ UI primitive hooks are located in `@/shared/hooks`:
 - `useBodyScrollLock` - Prevents body scrolling when overlays are open
 
 **Example**:
+
 ```tsx
 import { useFocusTrap, useBodyScrollLock } from '@/shared/hooks';
 
@@ -232,11 +248,11 @@ import { cn } from '@/shared/utils';
 - **Copper** (`copper-*`): Primary actions, emphasis, highlights
 - **Steel** (`steel-*`): Neutral backgrounds, borders, secondary elements
 - **Semantic Colors**:
-  - Green: Success states
-  - Red: Errors, danger, destructive actions
-  - Blue: Info messages
-  - Orange: Warnings
-  - Purple: Special categories (e.g., Sales role)
+    - Green: Success states
+    - Red: Errors, danger, destructive actions
+    - Blue: Info messages
+    - Orange: Warnings
+    - Purple: Special categories (e.g., Sales role)
 
 ### Component Variants
 
@@ -275,6 +291,7 @@ All components have comprehensive test coverage:
 - Ref forwarding tests
 
 Run tests:
+
 ```bash
 npm test src/components/ui
 ```

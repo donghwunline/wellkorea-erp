@@ -27,7 +27,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       className,
       ...props
     },
-    ref,
+    ref
   ) => {
     const handleClear = () => {
       onValueChange('');
@@ -68,7 +68,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             'pl-10 pr-10 text-sm text-white placeholder-steel-500',
             'transition-colors',
             'focus:border-copper-500/50 focus:bg-steel-800 focus:outline-none focus:ring-2 focus:ring-copper-500/20',
-            'disabled:cursor-not-allowed disabled:opacity-50',
+            'disabled:cursor-not-allowed disabled:opacity-50'
           )}
           {...props}
         />
@@ -99,7 +99,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
         )}
       </div>
     );
-  },
+  }
 );
 
 SearchBar.displayName = 'SearchBar';

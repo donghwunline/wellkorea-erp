@@ -18,12 +18,17 @@ export function ErrorAlert({ message, onDismiss, className, ...props }: Readonly
     <div
       className={cn(
         'flex items-start gap-3 rounded-lg border border-red-500/20 bg-red-500/10 p-4',
-        className,
+        className
       )}
       role="alert"
       {...props}
     >
-      <svg className="mt-0.5 h-5 w-5 shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="mt-0.5 h-5 w-5 shrink-0 text-red-400"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -39,7 +44,12 @@ export function ErrorAlert({ message, onDismiss, className, ...props }: Readonly
           aria-label="Dismiss error"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       )}

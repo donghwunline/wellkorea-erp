@@ -189,7 +189,7 @@ describe('Input', () => {
   describe('additional attributes', () => {
     it('should pass through standard input attributes', () => {
       render(
-        <Input label="Email" required maxLength={50} autoComplete="email" name="user-email" />,
+        <Input label="Email" required maxLength={50} autoComplete="email" name="user-email" />
       );
 
       const input = screen.getByLabelText('Email');

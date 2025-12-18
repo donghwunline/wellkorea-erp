@@ -122,7 +122,8 @@ describe('ErrorAlert', () => {
 
   describe('content', () => {
     it('handles long error messages', () => {
-      const longMessage = 'This is a very long error message that should wrap properly and maintain readability across multiple lines in the error alert component.';
+      const longMessage =
+        'This is a very long error message that should wrap properly and maintain readability across multiple lines in the error alert component.';
       render(<ErrorAlert message={longMessage} />);
       expect(screen.getByText(longMessage)).toBeInTheDocument();
     });

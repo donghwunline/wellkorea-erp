@@ -21,15 +21,15 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 'c
 }
 
 export function EmptyState({
-                             variant = 'default',
-                             message = 'No data found',
-                             description,
-                             icon,
-                             action,
-                             colspan,
-                             className,
-                             ...props
-                           }: Readonly<EmptyStateProps>) {
+  variant = 'default',
+  message = 'No data found',
+  description,
+  icon,
+  action,
+  colspan,
+  className,
+  ...props
+}: Readonly<EmptyStateProps>) {
   const content = (
     <>
       {icon && <div className="mb-4 text-steel-600">{icon}</div>}

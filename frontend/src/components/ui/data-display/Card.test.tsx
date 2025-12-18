@@ -37,9 +37,7 @@ describe('Card', () => {
   });
 
   it('merges custom className with variant styles', () => {
-    const { container } = render(
-      <Card className="custom-class">Content</Card>,
-    );
+    const { container } = render(<Card className="custom-class">Content</Card>);
     const card = container.firstChild as HTMLElement;
     expect(card).toHaveClass('custom-class');
     expect(card).toHaveClass('rounded-xl');
@@ -55,7 +53,7 @@ describe('Card', () => {
     render(
       <Card data-testid="custom-card" aria-label="Test Card">
         Content
-      </Card>,
+      </Card>
     );
     const card = screen.getByTestId('custom-card');
     expect(card).toHaveAttribute('aria-label', 'Test Card');

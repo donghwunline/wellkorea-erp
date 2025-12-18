@@ -20,13 +20,18 @@ const ALIGN_STYLES = {
   center: 'justify-center',
 } as const;
 
-export function ModalActions({ children, align = 'right', className, ...props }: Readonly<ModalActionsProps>) {
+export function ModalActions({
+  children,
+  align = 'right',
+  className,
+  ...props
+}: Readonly<ModalActionsProps>) {
   return (
     <div
       className={cn(
         'mt-6 flex items-center gap-3 border-t border-steel-800/50 pt-6',
         ALIGN_STYLES[align],
-        className,
+        className
       )}
       {...props}
     >

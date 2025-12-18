@@ -8,7 +8,7 @@ describe('ModalActions', () => {
       <ModalActions>
         <button>Cancel</button>
         <button>Submit</button>
-      </ModalActions>,
+      </ModalActions>
     );
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
@@ -18,7 +18,7 @@ describe('ModalActions', () => {
     const { container } = render(
       <ModalActions>
         <button>Action</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('justify-end');
@@ -28,7 +28,7 @@ describe('ModalActions', () => {
     const { container } = render(
       <ModalActions align="left">
         <button>Action</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('justify-start');
@@ -39,7 +39,7 @@ describe('ModalActions', () => {
       <ModalActions align="between">
         <button>Left</button>
         <button>Right</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('justify-between');
@@ -49,7 +49,7 @@ describe('ModalActions', () => {
     const { container } = render(
       <ModalActions align="center">
         <button>Action</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('justify-center');
@@ -59,7 +59,7 @@ describe('ModalActions', () => {
     const { container } = render(
       <ModalActions>
         <button>Action</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('border-t');
@@ -71,7 +71,7 @@ describe('ModalActions', () => {
     const { container } = render(
       <ModalActions>
         <button>Action</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('flex');
@@ -82,7 +82,7 @@ describe('ModalActions', () => {
     const { container } = render(
       <ModalActions className="custom-class">
         <button>Action</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('custom-class');
@@ -93,7 +93,7 @@ describe('ModalActions', () => {
     render(
       <ModalActions data-testid="modal-actions" aria-label="Actions">
         <button>Action</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const element = screen.getByTestId('modal-actions');
     expect(element).toHaveAttribute('aria-label', 'Actions');
@@ -105,7 +105,7 @@ describe('ModalActions', () => {
         <button>Cancel</button>
         <button>Delete</button>
         <button>Save</button>
-      </ModalActions>,
+      </ModalActions>
     );
     const buttons = container.querySelectorAll('button');
     expect(buttons).toHaveLength(3);

@@ -17,7 +17,14 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/shared/utils';
 
-export type BadgeVariant = 'steel' | 'copper' | 'success' | 'warning' | 'danger' | 'info' | 'purple';
+export type BadgeVariant =
+  | 'steel'
+  | 'copper'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'purple';
 
 export interface BadgeProps {
   /** Badge color variant */
@@ -57,26 +64,23 @@ const dotClasses: Record<BadgeVariant, string> = {
 };
 
 export function Badge({
-                        variant = 'steel',
-                        size = 'sm',
-                        dot = false,
-                        children,
-                        className,
-                      }: Readonly<BadgeProps>) {
+  variant = 'steel',
+  size = 'sm',
+  dot = false,
+  children,
+  className,
+}: Readonly<BadgeProps>) {
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-full font-medium',
         variantClasses[variant],
         sizeClasses[size],
-        className,
+        className
       )}
     >
       {dot && (
-        <span
-          className={cn('h-1.5 w-1.5 rounded-full', dotClasses[variant])}
-          aria-hidden="true"
-        />
+        <span className={cn('h-1.5 w-1.5 rounded-full', dotClasses[variant])} aria-hidden="true" />
       )}
       {children}
     </span>

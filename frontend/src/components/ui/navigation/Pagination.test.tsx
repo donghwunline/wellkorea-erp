@@ -46,14 +46,7 @@ describe('Pagination', () => {
     });
 
     it('should calculate correct range for last page', () => {
-      render(
-        <Pagination
-          {...defaultProps}
-          currentPage={9}
-          isFirst={false}
-          isLast={true}
-        />,
-      );
+      render(<Pagination {...defaultProps} currentPage={9} isFirst={false} isLast={true} />);
       expect(screen.getByText(/Showing 91 - 100 of 100 entries/)).toBeInTheDocument();
     });
   });
@@ -85,7 +78,7 @@ describe('Pagination', () => {
           currentPage={5}
           isFirst={false}
           onPageChange={handlePageChange}
-        />,
+        />
       );
 
       await user.click(screen.getByLabelText('Go to previous page'));
@@ -106,13 +99,7 @@ describe('Pagination', () => {
       const user = userEvent.setup();
       const handlePageChange = vi.fn();
 
-      render(
-        <Pagination
-          {...defaultProps}
-          isFirst={true}
-          onPageChange={handlePageChange}
-        />,
-      );
+      render(<Pagination {...defaultProps} isFirst={true} onPageChange={handlePageChange} />);
 
       await user.click(screen.getByLabelText('Go to previous page'));
       expect(handlePageChange).not.toHaveBeenCalled();
@@ -122,13 +109,7 @@ describe('Pagination', () => {
       const user = userEvent.setup();
       const handlePageChange = vi.fn();
 
-      render(
-        <Pagination
-          {...defaultProps}
-          isLast={true}
-          onPageChange={handlePageChange}
-        />,
-      );
+      render(<Pagination {...defaultProps} isLast={true} onPageChange={handlePageChange} />);
 
       await user.click(screen.getByLabelText('Go to next page'));
       expect(handlePageChange).not.toHaveBeenCalled();
@@ -145,7 +126,7 @@ describe('Pagination', () => {
           itemsPerPage={10}
           isFirst={true}
           isLast={true}
-        />,
+        />
       );
       expect(screen.getByText(/Showing 1 - 5 of 5 entries/)).toBeInTheDocument();
       expect(screen.getByLabelText('Go to previous page')).toBeDisabled();
@@ -153,14 +134,7 @@ describe('Pagination', () => {
     });
 
     it('should handle empty results', () => {
-      render(
-        <Pagination
-          {...defaultProps}
-          totalItems={0}
-          isFirst={true}
-          isLast={true}
-        />,
-      );
+      render(<Pagination {...defaultProps} totalItems={0} isFirst={true} isLast={true} />);
       expect(screen.getByText(/Showing 1 - 0 of 0 entries/)).toBeInTheDocument();
     });
   });

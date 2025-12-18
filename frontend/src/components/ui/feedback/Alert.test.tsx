@@ -18,16 +18,32 @@ describe('Alert', () => {
 
     it('should apply variant classes', () => {
       const { rerender } = render(<Alert variant="error">Error</Alert>);
-      expect(screen.getByRole('alert')).toHaveClass('border-red-500/20', 'bg-red-500/10', 'text-red-400');
+      expect(screen.getByRole('alert')).toHaveClass(
+        'border-red-500/20',
+        'bg-red-500/10',
+        'text-red-400'
+      );
 
       rerender(<Alert variant="success">Success</Alert>);
-      expect(screen.getByRole('alert')).toHaveClass('border-green-500/20', 'bg-green-500/10', 'text-green-400');
+      expect(screen.getByRole('alert')).toHaveClass(
+        'border-green-500/20',
+        'bg-green-500/10',
+        'text-green-400'
+      );
 
       rerender(<Alert variant="warning">Warning</Alert>);
-      expect(screen.getByRole('alert')).toHaveClass('border-orange-500/20', 'bg-orange-500/10', 'text-orange-400');
+      expect(screen.getByRole('alert')).toHaveClass(
+        'border-orange-500/20',
+        'bg-orange-500/10',
+        'text-orange-400'
+      );
 
       rerender(<Alert variant="info">Info</Alert>);
-      expect(screen.getByRole('alert')).toHaveClass('border-blue-500/20', 'bg-blue-500/10', 'text-blue-400');
+      expect(screen.getByRole('alert')).toHaveClass(
+        'border-blue-500/20',
+        'bg-blue-500/10',
+        'text-blue-400'
+      );
     });
 
     it('should apply custom className', () => {

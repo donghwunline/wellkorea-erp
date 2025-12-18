@@ -31,7 +31,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             'focus:outline-none focus:ring-2 focus:ring-copper-500/20',
             'disabled:cursor-not-allowed disabled:opacity-50',
             error && 'border-red-500 focus:ring-red-600',
-            className,
+            className
           )}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${inputId}-error` : undefined}
@@ -44,7 +44,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  },
+  }
 );
 
 Input.displayName = 'Input';

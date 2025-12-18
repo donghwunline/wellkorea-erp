@@ -150,7 +150,7 @@ export function ConfirmationModal({
             'rounded-lg px-4 py-2 font-medium transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-steel-900',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            config.buttonClass,
+            config.buttonClass
           )}
         >
           {confirmLabel}

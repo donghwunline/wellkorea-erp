@@ -102,7 +102,7 @@ describe('Button', () => {
       render(
         <Button onClick={handleClick} disabled>
           Disabled
-        </Button>,
+        </Button>
       );
 
       await user.click(screen.getByRole('button', { name: 'Disabled' }));
@@ -117,7 +117,7 @@ describe('Button', () => {
       render(
         <Button onClick={handleClick} isLoading>
           Loading
-        </Button>,
+        </Button>
       );
 
       const button = screen.getByRole('button');

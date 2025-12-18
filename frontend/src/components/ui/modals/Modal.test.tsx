@@ -16,12 +16,20 @@ describe('Modal', () => {
 
   describe('rendering', () => {
     it('should not render when closed', () => {
-      render(<Modal isOpen={false} onClose={vi.fn()}>Content</Modal>);
+      render(
+        <Modal isOpen={false} onClose={vi.fn()}>
+          Content
+        </Modal>
+      );
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('should render when open', () => {
-      render(<Modal isOpen={true} onClose={vi.fn()}>Content</Modal>);
+      render(
+        <Modal isOpen={true} onClose={vi.fn()}>
+          Content
+        </Modal>
+      );
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
@@ -29,7 +37,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={vi.fn()}>
           <p>Modal content</p>
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByText('Modal content')).toBeInTheDocument();
     });
@@ -38,7 +46,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={vi.fn()} title="Test Modal">
           Content
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByText('Test Modal')).toBeInTheDocument();
     });
@@ -47,21 +55,21 @@ describe('Modal', () => {
       const { rerender } = render(
         <Modal isOpen={true} onClose={vi.fn()} size="sm">
           Small
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByRole('dialog')).toHaveClass('max-w-md');
 
       rerender(
         <Modal isOpen={true} onClose={vi.fn()} size="md">
           Medium
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByRole('dialog')).toHaveClass('max-w-2xl');
 
       rerender(
         <Modal isOpen={true} onClose={vi.fn()} size="lg">
           Large
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByRole('dialog')).toHaveClass('max-w-4xl');
     });
@@ -70,7 +78,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={vi.fn()} className="custom-class">
           Content
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByRole('dialog')).toHaveClass('custom-class');
     });
@@ -81,7 +89,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={vi.fn()} title="Test">
           Content
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByLabelText('Close dialog')).toBeInTheDocument();
     });
@@ -92,7 +100,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={handleClose} title="Test">
           Content
-        </Modal>,
+        </Modal>
       );
 
       await user.click(screen.getByLabelText('Close dialog'));
@@ -105,7 +113,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={handleClose}>
           Content
-        </Modal>,
+        </Modal>
       );
 
       await user.keyboard('{Escape}');
@@ -118,7 +126,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={handleClose} closeOnEsc={false}>
           Content
-        </Modal>,
+        </Modal>
       );
 
       await user.keyboard('{Escape}');
@@ -131,7 +139,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={vi.fn()}>
           Content
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
@@ -140,7 +148,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={vi.fn()}>
           Content
-        </Modal>,
+        </Modal>
       );
       expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
     });
@@ -149,7 +157,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={vi.fn()} title="Test Modal">
           Content
-        </Modal>,
+        </Modal>
       );
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-labelledby', 'modal-title');
@@ -160,7 +168,7 @@ describe('Modal', () => {
       render(
         <Modal isOpen={true} onClose={vi.fn()}>
           Content
-        </Modal>,
+        </Modal>
       );
       expect(document.body.style.overflow).toBe('hidden');
     });
@@ -169,14 +177,14 @@ describe('Modal', () => {
       const { rerender } = render(
         <Modal isOpen={true} onClose={vi.fn()}>
           Content
-        </Modal>,
+        </Modal>
       );
       expect(document.body.style.overflow).toBe('hidden');
 
       rerender(
         <Modal isOpen={false} onClose={vi.fn()}>
           Content
-        </Modal>,
+        </Modal>
       );
       expect(document.body.style.overflow).toBe(originalOverflow);
     });
@@ -188,7 +196,7 @@ describe('Modal', () => {
         <Modal isOpen={true} onClose={vi.fn()} title="Test">
           <button>First Button</button>
           <button>Second Button</button>
-        </Modal>,
+        </Modal>
       );
 
       // Close button (X) is the first focusable element in the title

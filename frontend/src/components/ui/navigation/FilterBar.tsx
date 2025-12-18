@@ -31,9 +31,7 @@ export interface FilterFieldProps extends HTMLAttributes<HTMLDivElement> {
 export function FilterField({ label, children, className, ...props }: Readonly<FilterFieldProps>) {
   return (
     <div className={cn('flex flex-col gap-1.5', className)} {...props}>
-      <label className="text-xs font-medium uppercase tracking-wider text-steel-500">
-        {label}
-      </label>
+      <label className="text-xs font-medium uppercase tracking-wider text-steel-500">{label}</label>
       {children}
     </div>
   );
@@ -50,13 +48,13 @@ export interface FilterSelectProps extends SelectHTMLAttributes<HTMLSelectElemen
 }
 
 export function FilterSelect({
-                               value,
-                               onValueChange,
-                               options,
-                               placeholder = 'All',
-                               className,
-                               ...props
-                             }: Readonly<FilterSelectProps>) {
+  value,
+  onValueChange,
+  options,
+  placeholder = 'All',
+  className,
+  ...props
+}: Readonly<FilterSelectProps>) {
   return (
     <select
       value={value}
@@ -67,7 +65,7 @@ export function FilterSelect({
         'transition-colors',
         'focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20',
         'disabled:cursor-not-allowed disabled:opacity-50',
-        className,
+        className
       )}
       {...props}
     >

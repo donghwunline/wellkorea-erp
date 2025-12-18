@@ -26,13 +26,7 @@ describe('ConfirmationModal', () => {
     });
 
     it('should render custom button labels', () => {
-      render(
-        <ConfirmationModal
-          {...defaultProps}
-          confirmLabel="Delete"
-          cancelLabel="Go Back"
-        />,
-      );
+      render(<ConfirmationModal {...defaultProps} confirmLabel="Delete" cancelLabel="Go Back" />);
       expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Go Back' })).toBeInTheDocument();
     });
@@ -64,11 +58,7 @@ describe('ConfirmationModal', () => {
       const handleClose = vi.fn();
 
       render(
-        <ConfirmationModal
-          {...defaultProps}
-          onConfirm={handleConfirm}
-          onClose={handleClose}
-        />,
+        <ConfirmationModal {...defaultProps} onConfirm={handleConfirm} onClose={handleClose} />
       );
 
       await user.click(screen.getByRole('button', { name: 'Confirm' }));
@@ -82,7 +72,7 @@ describe('ConfirmationModal', () => {
     it('should show loading state during async confirm', async () => {
       const user = userEvent.setup();
       const handleConfirm = vi.fn(
-        () => new Promise<void>((resolve) => setTimeout(() => resolve(), 100)),
+        () => new Promise<void>(resolve => setTimeout(() => resolve(), 100))
       );
 
       render(<ConfirmationModal {...defaultProps} onConfirm={handleConfirm} />);
@@ -119,11 +109,7 @@ describe('ConfirmationModal', () => {
       const handleClose = vi.fn();
 
       render(
-        <ConfirmationModal
-          {...defaultProps}
-          onConfirm={handleConfirm}
-          onClose={handleClose}
-        />,
+        <ConfirmationModal {...defaultProps} onConfirm={handleConfirm} onClose={handleClose} />
       );
 
       await user.click(screen.getByRole('button', { name: 'Confirm' }));

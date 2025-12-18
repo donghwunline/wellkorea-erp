@@ -28,7 +28,12 @@ export interface PageHeaderTitleProps extends HTMLAttributes<HTMLDivElement> {
   description?: string;
 }
 
-export function PageHeaderTitle({ title, description, className, ...props }: Readonly<PageHeaderTitleProps>) {
+export function PageHeaderTitle({
+  title,
+  description,
+  className,
+  ...props
+}: Readonly<PageHeaderTitleProps>) {
   return (
     <div className={cn('flex-1', className)} {...props}>
       <h1 className="text-2xl font-bold text-white">{title}</h1>
@@ -44,7 +49,11 @@ export interface PageHeaderActionsProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
 
-export function PageHeaderActions({ children, className, ...props }: Readonly<PageHeaderActionsProps>) {
+export function PageHeaderActions({
+  children,
+  className,
+  ...props
+}: Readonly<PageHeaderActionsProps>) {
   return (
     <div className={cn('flex items-center gap-3', className)} {...props}>
       {children}

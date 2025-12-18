@@ -86,19 +86,14 @@ function AlertIcon({ variant }: Readonly<{ variant: AlertVariant }>) {
   }
 }
 
-export function Alert({
-                        variant = 'info',
-                        onClose,
-                        children,
-                        className,
-                      }: Readonly<AlertProps>) {
+export function Alert({ variant = 'info', onClose, children, className }: Readonly<AlertProps>) {
   return (
     <div
       role="alert"
       className={cn(
         'flex items-center gap-3 rounded-lg border px-4 py-3 text-sm',
         variantClasses[variant],
-        className,
+        className
       )}
     >
       <AlertIcon variant={variant} />

@@ -14,7 +14,7 @@ describe('IconButton', () => {
     render(
       <IconButton aria-label="Delete item">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     expect(screen.getByLabelText('Delete item')).toBeInTheDocument();
   });
@@ -23,7 +23,7 @@ describe('IconButton', () => {
     render(
       <IconButton aria-label="Test">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     expect(screen.getByTestId('test-icon')).toBeInTheDocument();
   });
@@ -32,7 +32,7 @@ describe('IconButton', () => {
     const { container } = render(
       <IconButton aria-label="Test">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     const button = container.firstChild as HTMLElement;
     expect(button).toHaveClass('text-steel-400');
@@ -43,7 +43,7 @@ describe('IconButton', () => {
     const { container } = render(
       <IconButton variant="danger" aria-label="Delete">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     const button = container.firstChild as HTMLElement;
     expect(button).toHaveClass('text-red-400');
@@ -54,7 +54,7 @@ describe('IconButton', () => {
     const { container } = render(
       <IconButton variant="primary" aria-label="Edit">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     const button = container.firstChild as HTMLElement;
     expect(button).toHaveClass('text-copper-400');
@@ -67,7 +67,7 @@ describe('IconButton', () => {
     render(
       <IconButton onClick={handleClick} aria-label="Click me">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     await user.click(screen.getByLabelText('Click me'));
     expect(handleClick).toHaveBeenCalledOnce();
@@ -77,7 +77,7 @@ describe('IconButton', () => {
     render(
       <IconButton disabled aria-label="Disabled">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     const button = screen.getByLabelText('Disabled');
     expect(button).toBeDisabled();
@@ -88,7 +88,7 @@ describe('IconButton', () => {
     const { container } = render(
       <IconButton className="custom-class" aria-label="Test">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     const button = container.firstChild as HTMLElement;
     expect(button).toHaveClass('custom-class');
@@ -100,7 +100,7 @@ describe('IconButton', () => {
     render(
       <IconButton ref={ref} aria-label="Test">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
   });
@@ -109,7 +109,7 @@ describe('IconButton', () => {
     render(
       <IconButton aria-label="Test">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     expect(screen.getByLabelText('Test')).toHaveAttribute('type', 'button');
   });
@@ -118,7 +118,7 @@ describe('IconButton', () => {
     render(
       <IconButton type="submit" aria-label="Submit">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     expect(screen.getByLabelText('Submit')).toHaveAttribute('type', 'submit');
   });
@@ -127,7 +127,7 @@ describe('IconButton', () => {
     render(
       <IconButton data-testid="custom-button" title="Tooltip" aria-label="Test">
         <TestIcon />
-      </IconButton>,
+      </IconButton>
     );
     const button = screen.getByTestId('custom-button');
     expect(button).toHaveAttribute('title', 'Tooltip');

@@ -34,7 +34,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 Card.displayName = 'Card';

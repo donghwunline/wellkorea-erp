@@ -7,7 +7,7 @@ describe('PageHeader', () => {
     render(
       <PageHeader>
         <div>Header Content</div>
-      </PageHeader>,
+      </PageHeader>
     );
     expect(screen.getByText('Header Content')).toBeInTheDocument();
   });
@@ -16,7 +16,7 @@ describe('PageHeader', () => {
     const { container } = render(
       <PageHeader>
         <div>Content</div>
-      </PageHeader>,
+      </PageHeader>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('flex');
@@ -29,7 +29,7 @@ describe('PageHeader', () => {
     const { container } = render(
       <PageHeader className="custom-class">
         <div>Content</div>
-      </PageHeader>,
+      </PageHeader>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('custom-class');
@@ -40,7 +40,7 @@ describe('PageHeader', () => {
     render(
       <PageHeader data-testid="page-header" aria-label="Page Header">
         <div>Content</div>
-      </PageHeader>,
+      </PageHeader>
     );
     const element = screen.getByTestId('page-header');
     expect(element).toHaveAttribute('aria-label', 'Page Header');
@@ -54,12 +54,7 @@ describe('PageHeader.Title', () => {
   });
 
   it('renders title with description', () => {
-    render(
-      <PageHeader.Title
-        title="Settings"
-        description="Manage your account settings"
-      />,
-    );
+    render(<PageHeader.Title title="Settings" description="Manage your account settings" />);
     expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
     expect(screen.getByText('Manage your account settings')).toBeInTheDocument();
   });
@@ -79,18 +74,14 @@ describe('PageHeader.Title', () => {
   });
 
   it('applies description styling', () => {
-    const { container } = render(
-      <PageHeader.Title title="Test" description="Test description" />,
-    );
+    const { container } = render(<PageHeader.Title title="Test" description="Test description" />);
     const description = container.querySelector('p');
     expect(description).toHaveClass('text-sm');
     expect(description).toHaveClass('text-steel-400');
   });
 
   it('merges custom className', () => {
-    const { container } = render(
-      <PageHeader.Title title="Test" className="custom-title" />,
-    );
+    const { container } = render(<PageHeader.Title title="Test" className="custom-title" />);
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('custom-title');
     expect(wrapper).toHaveClass('flex-1');
@@ -103,7 +94,7 @@ describe('PageHeader.Actions', () => {
       <PageHeader.Actions>
         <button>Create</button>
         <button>Export</button>
-      </PageHeader.Actions>,
+      </PageHeader.Actions>
     );
     expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Export' })).toBeInTheDocument();
@@ -113,7 +104,7 @@ describe('PageHeader.Actions', () => {
     const { container } = render(
       <PageHeader.Actions>
         <button>Action</button>
-      </PageHeader.Actions>,
+      </PageHeader.Actions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('flex');
@@ -125,7 +116,7 @@ describe('PageHeader.Actions', () => {
     const { container } = render(
       <PageHeader.Actions className="custom-actions">
         <button>Action</button>
-      </PageHeader.Actions>,
+      </PageHeader.Actions>
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('custom-actions');
@@ -137,14 +128,11 @@ describe('PageHeader compound usage', () => {
   it('works with Title and Actions together', () => {
     render(
       <PageHeader>
-        <PageHeader.Title
-          title="Users"
-          description="Manage system users"
-        />
+        <PageHeader.Title title="Users" description="Manage system users" />
         <PageHeader.Actions>
           <button>Add User</button>
         </PageHeader.Actions>
-      </PageHeader>,
+      </PageHeader>
     );
 
     expect(screen.getByRole('heading', { name: 'Users' })).toBeInTheDocument();
@@ -156,7 +144,7 @@ describe('PageHeader compound usage', () => {
     render(
       <PageHeader>
         <PageHeader.Title title="Dashboard" />
-      </PageHeader>,
+      </PageHeader>
     );
 
     expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
@@ -168,7 +156,7 @@ describe('PageHeader compound usage', () => {
         <PageHeader.Actions>
           <button>Refresh</button>
         </PageHeader.Actions>
-      </PageHeader>,
+      </PageHeader>
     );
 
     expect(screen.getByRole('button', { name: 'Refresh' })).toBeInTheDocument();

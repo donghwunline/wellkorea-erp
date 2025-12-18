@@ -22,9 +22,9 @@ describe('LoadingState', () => {
     const { container } = render(
       <table>
         <tbody>
-        <LoadingState variant="table" colspan={5} />
+          <LoadingState variant="table" colspan={5} />
         </tbody>
-      </table>,
+      </table>
     );
     const td = container.querySelector('td');
     expect(td).toHaveAttribute('colSpan', '5');
@@ -34,9 +34,9 @@ describe('LoadingState', () => {
     render(
       <table>
         <tbody>
-        <LoadingState variant="table" message="Loading data..." />
+          <LoadingState variant="table" message="Loading data..." />
         </tbody>
-      </table>,
+      </table>
     );
     expect(screen.getByText('Loading data...')).toBeInTheDocument();
   });
@@ -57,9 +57,9 @@ describe('LoadingState', () => {
     const { container } = render(
       <table>
         <tbody>
-        <LoadingState variant="table" className="custom-table-class" />
+          <LoadingState variant="table" className="custom-table-class" />
         </tbody>
-      </table>,
+      </table>
     );
     const td = container.querySelector('td');
     expect(td).toHaveClass('custom-table-class');

@@ -8,8 +8,8 @@
  */
 
 import type { HTMLAttributes } from 'react';
-import { Spinner } from '../primitives/Spinner';
 import type { SpinnerProps } from '../primitives/Spinner';
+import { Spinner } from '../primitives/Spinner';
 import { cn } from '@/shared/utils';
 
 export type LoadingStateVariant = 'spinner' | 'centered' | 'table';
@@ -22,13 +22,13 @@ export interface LoadingStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 
 }
 
 export function LoadingState({
-                               variant = 'centered',
-                               message = 'Loading...',
-                               spinnerSize = 'lg',
-                               colspan,
-                               className,
-                               ...props
-                             }: Readonly<LoadingStateProps>) {
+  variant = 'centered',
+  message = 'Loading...',
+  spinnerSize = 'lg',
+  colspan,
+  className,
+  ...props
+}: Readonly<LoadingStateProps>) {
   // Spinner-only variant
   if (variant === 'spinner') {
     return <Spinner size={spinnerSize} className={className} />;

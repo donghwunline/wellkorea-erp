@@ -5,8 +5,4 @@
  */
 
 export { PageHeader } from './PageHeader';
-export type {
-  PageHeaderProps,
-  PageHeaderTitleProps,
-  PageHeaderActionsProps,
-} from './PageHeader';
+export type { PageHeaderProps, PageHeaderTitleProps, PageHeaderActionsProps } from './PageHeader';

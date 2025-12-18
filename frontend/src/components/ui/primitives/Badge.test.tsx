@@ -54,7 +54,11 @@ describe('Badge', () => {
     });
 
     it('should apply variant color to dot', () => {
-      const { container } = render(<Badge variant="success" dot>Success</Badge>);
+      const { container } = render(
+        <Badge variant="success" dot>
+          Success
+        </Badge>
+      );
       const dot = container.querySelector('[aria-hidden="true"]');
       expect(dot).toHaveClass('bg-green-400');
     });

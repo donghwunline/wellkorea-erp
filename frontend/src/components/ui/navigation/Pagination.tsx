@@ -45,16 +45,16 @@ export interface PaginationProps {
 }
 
 export function Pagination({
-                             currentPage,
-                             totalItems,
-                             itemsPerPage,
-                             onPageChange,
-                             isFirst,
-                             isLast,
-                             itemLabel = 'entries',
-                             showInfo = true,
-                             className,
-                           }: Readonly<PaginationProps>) {
+  currentPage,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  isFirst,
+  isLast,
+  itemLabel = 'entries',
+  showInfo = true,
+  className,
+}: Readonly<PaginationProps>) {
   const startItem = currentPage * itemsPerPage + 1;
   const endItem = Math.min((currentPage + 1) * itemsPerPage, totalItems);
 
@@ -75,7 +75,7 @@ export function Pagination({
       aria-label="Pagination"
       className={cn(
         'flex items-center justify-between border-t border-steel-800/50 bg-steel-900/80 px-6 py-3',
-        className,
+        className
       )}
     >
       {showInfo && (

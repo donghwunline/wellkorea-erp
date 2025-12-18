@@ -32,7 +32,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
         ref={ref}
         className={cn(
           'rounded-xl border border-steel-800/50 bg-steel-900/60 p-4 backdrop-blur-sm',
-          className,
+          className
         )}
         {...props}
       >
@@ -41,19 +41,16 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
             <p className="text-sm text-steel-400">{label}</p>
             <p className="mt-1 text-2xl font-bold text-white">{value}</p>
             {trend && (
-              <p className={cn('mt-1 text-xs', TREND_STYLES[trend.direction])}>
-                {trend.value}
-              </p>
+              <p className={cn('mt-1 text-xs', TREND_STYLES[trend.direction])}>{trend.value}</p>
             )}
           </div>
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-steel-800/50 text-copper-500">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-steel-800/50 text-copper-500">
             {icon}
           </div>
         </div>
       </div>
     );
-  },
+  }
 );
 
 StatCard.displayName = 'StatCard';

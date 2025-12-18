@@ -20,22 +20,12 @@ describe('EmptyState', () => {
   });
 
   it('renders with icon', () => {
-    render(
-      <EmptyState
-        message="Empty"
-        icon={<span data-testid="custom-icon">📦</span>}
-      />,
-    );
+    render(<EmptyState message="Empty" icon={<span data-testid="custom-icon">📦</span>} />);
     expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
   });
 
   it('renders with action button', () => {
-    render(
-      <EmptyState
-        message="Empty"
-        action={<button>Add Item</button>}
-      />,
-    );
+    render(<EmptyState message="Empty" action={<button>Add Item</button>} />);
     expect(screen.getByRole('button', { name: 'Add Item' })).toBeInTheDocument();
   });
 
@@ -43,9 +33,9 @@ describe('EmptyState', () => {
     const { container } = render(
       <table>
         <tbody>
-        <EmptyState variant="table" colspan={5} />
+          <EmptyState variant="table" colspan={5} />
         </tbody>
-      </table>,
+      </table>
     );
     const td = container.querySelector('td');
     expect(td).toHaveAttribute('colSpan', '5');
@@ -55,15 +45,15 @@ describe('EmptyState', () => {
     render(
       <table>
         <tbody>
-        <EmptyState
-          variant="table"
-          message="No results"
-          description="Try adjusting filters"
-          icon={<span data-testid="table-icon">🔍</span>}
-          action={<button>Clear Filters</button>}
-        />
+          <EmptyState
+            variant="table"
+            message="No results"
+            description="Try adjusting filters"
+            icon={<span data-testid="table-icon">🔍</span>}
+            action={<button>Clear Filters</button>}
+          />
         </tbody>
-      </table>,
+      </table>
     );
     expect(screen.getByText('No results')).toBeInTheDocument();
     expect(screen.getByText('Try adjusting filters')).toBeInTheDocument();
@@ -82,9 +72,9 @@ describe('EmptyState', () => {
     const { container } = render(
       <table>
         <tbody>
-        <EmptyState variant="table" className="custom-table-class" />
+          <EmptyState variant="table" className="custom-table-class" />
         </tbody>
-      </table>,
+      </table>
     );
     const td = container.querySelector('td');
     expect(td).toHaveClass('custom-table-class');

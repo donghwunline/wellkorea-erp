@@ -5,13 +5,7 @@ import { SearchBar } from './SearchBar';
 
 describe('SearchBar', () => {
   it('renders with placeholder', () => {
-    render(
-      <SearchBar
-        value=""
-        onValueChange={vi.fn()}
-        placeholder="Search users..."
-      />,
-    );
+    render(<SearchBar value="" onValueChange={vi.fn()} placeholder="Search users..." />);
     expect(screen.getByPlaceholderText('Search users...')).toBeInTheDocument();
   });
 
@@ -54,9 +48,7 @@ describe('SearchBar', () => {
   });
 
   it('hides clear button when showClearButton is false', () => {
-    render(
-      <SearchBar value="test" onValueChange={vi.fn()} showClearButton={false} />,
-    );
+    render(<SearchBar value="test" onValueChange={vi.fn()} showClearButton={false} />);
     expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument();
   });
 
@@ -72,13 +64,7 @@ describe('SearchBar', () => {
   it('calls onClear when clear button is clicked', async () => {
     const user = userEvent.setup();
     const handleClear = vi.fn();
-    render(
-      <SearchBar
-        value="test"
-        onValueChange={vi.fn()}
-        onClear={handleClear}
-      />,
-    );
+    render(<SearchBar value="test" onValueChange={vi.fn()} onClear={handleClear} />);
 
     await user.click(screen.getByLabelText('Clear search'));
     expect(handleClear).toHaveBeenCalledOnce();
@@ -92,7 +78,7 @@ describe('SearchBar', () => {
 
   it('applies custom className to wrapper', () => {
     const { container } = render(
-      <SearchBar value="" onValueChange={vi.fn()} className="custom-class" />,
+      <SearchBar value="" onValueChange={vi.fn()} className="custom-class" />
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('custom-class');
@@ -117,7 +103,7 @@ describe('SearchBar', () => {
         onValueChange={vi.fn()}
         data-testid="search-input"
         aria-label="Search field"
-      />,
+      />
     );
     const input = screen.getByTestId('search-input');
     expect(input).toHaveAttribute('aria-label', 'Search field');
@@ -125,9 +111,6 @@ describe('SearchBar', () => {
 
   it('has type="search"', () => {
     render(<SearchBar value="" onValueChange={vi.fn()} />);
-    expect(screen.getByPlaceholderText('Search...')).toHaveAttribute(
-      'type',
-      'search',
-    );
+    expect(screen.getByPlaceholderText('Search...')).toHaveAttribute('type', 'search');
   });
 });

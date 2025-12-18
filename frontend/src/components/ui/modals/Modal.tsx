@@ -19,7 +19,7 @@
 
 import { type ReactNode, useEffect } from 'react';
 import { cn } from '@/shared/utils';
-import { useFocusTrap, useBodyScrollLock } from '@/shared/hooks';
+import { useBodyScrollLock, useFocusTrap } from '@/shared/hooks';
 
 export interface ModalProps {
   /** Controls modal visibility */
@@ -46,15 +46,15 @@ const sizeClasses = {
 };
 
 export function Modal({
-                        isOpen,
-                        onClose,
-                        title,
-                        size = 'md',
-                        closeOnBackdrop = true,
-                        closeOnEsc = true,
-                        children,
-                        className,
-                      }: Readonly<ModalProps>) {
+  isOpen,
+  onClose,
+  title,
+  size = 'md',
+  closeOnBackdrop = true,
+  closeOnEsc = true,
+  children,
+  className,
+}: Readonly<ModalProps>) {
   // Focus trap and body scroll lock
   const modalRef = useFocusTrap<HTMLDivElement>(isOpen, { autoFocus: true, restoreFocus: true });
   useBodyScrollLock(isOpen);
@@ -95,7 +95,7 @@ export function Modal({
         className={cn(
           'w-full rounded-xl border border-steel-800/50 bg-steel-900 p-6 shadow-elevated',
           sizeClasses[size],
-          className,
+          className
         )}
       >
         {title && (
