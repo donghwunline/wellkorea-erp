@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -215,6 +216,120 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
         void logout_WithExpiredToken_Returns401() throws Exception {
             // When & Then
             mockMvc.perform(post(LOGOUT_URL)
+                            .header("Authorization", "Bearer " + EXPIRED_JWT_TOKEN))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/auth/refresh")
+    class RefreshTests {
+
+        private static final String REFRESH_URL = "/api/auth/refresh";
+
+        @Test
+        @DisplayName("should return 200 with new token on valid token")
+        void refresh_WithValidToken_Returns200WithNewToken() throws Exception {
+            // Given - Generate valid token
+            String token = jwtTokenProvider.generateToken(ADMIN_USERNAME, "ROLE_ADMIN");
+
+            // When & Then
+            mockMvc.perform(post(REFRESH_URL)
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
+                    .andExpect(jsonPath("$.data.user.username").value(ADMIN_USERNAME))
+                    .andExpect(jsonPath("$.data.user.roles", hasItem("ROLE_ADMIN")));
+        }
+
+        @Test
+        @DisplayName("should return 401 on missing token")
+        void refresh_WithMissingToken_Returns401() throws Exception {
+            // When & Then
+            mockMvc.perform(post(REFRESH_URL))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("should return 401 on invalid token")
+        void refresh_WithInvalidToken_Returns401() throws Exception {
+            // When & Then
+            mockMvc.perform(post(REFRESH_URL)
+                            .header("Authorization", "Bearer " + INVALID_JWT_TOKEN))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("should return 401 on expired token")
+        void refresh_WithExpiredToken_Returns401() throws Exception {
+            // When & Then
+            mockMvc.perform(post(REFRESH_URL)
+                            .header("Authorization", "Bearer " + EXPIRED_JWT_TOKEN))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/auth/me")
+    class GetCurrentUserTests {
+
+        private static final String ME_URL = "/api/auth/me";
+
+        @Test
+        @DisplayName("should return 200 with user info on valid token")
+        void me_WithValidToken_Returns200WithUserInfo() throws Exception {
+            // Given - Generate valid token
+            String token = jwtTokenProvider.generateToken(ADMIN_USERNAME, "ROLE_ADMIN");
+
+            // When & Then
+            mockMvc.perform(get(ME_URL)
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.username").value(ADMIN_USERNAME))
+                    .andExpect(jsonPath("$.data.roles", hasItem("ROLE_ADMIN")));
+        }
+
+        @Test
+        @DisplayName("should return user with correct roles")
+        void me_WithValidToken_ReturnsCorrectRoles() throws Exception {
+            // Given - Generate valid token for finance user
+            String token = jwtTokenProvider.generateToken(FINANCE_USERNAME, "ROLE_FINANCE");
+
+            // When & Then
+            mockMvc.perform(get(ME_URL)
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.username").value(FINANCE_USERNAME))
+                    .andExpect(jsonPath("$.data.roles", hasItem("ROLE_FINANCE")))
+                    .andExpect(jsonPath("$.data.roles", not(hasItem("ROLE_ADMIN"))));
+        }
+
+        @Test
+        @DisplayName("should return 401 on missing token")
+        void me_WithMissingToken_Returns401() throws Exception {
+            // When & Then
+            mockMvc.perform(get(ME_URL))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("should return 401 on invalid token")
+        void me_WithInvalidToken_Returns401() throws Exception {
+            // When & Then
+            mockMvc.perform(get(ME_URL)
+                            .header("Authorization", "Bearer " + INVALID_JWT_TOKEN))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("should return 401 on expired token")
+        void me_WithExpiredToken_Returns401() throws Exception {
+            // When & Then
+            mockMvc.perform(get(ME_URL)
                             .header("Authorization", "Bearer " + EXPIRED_JWT_TOKEN))
                     .andExpect(status().isUnauthorized());
         }

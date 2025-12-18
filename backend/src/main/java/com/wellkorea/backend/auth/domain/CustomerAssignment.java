@@ -1,6 +1,7 @@
 package com.wellkorea.backend.auth.domain;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -13,8 +14,8 @@ import java.util.Objects;
  */
 @Entity
 @Table(
-    name = "customer_assignments",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "customer_id"})
+        name = "customer_assignments",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "customer_id"})
 )
 public class CustomerAssignment {
 
@@ -91,8 +92,8 @@ public class CustomerAssignment {
         if (o == null || getClass() != o.getClass()) return false;
         CustomerAssignment that = (CustomerAssignment) o;
         return Objects.equals(id, that.id) &&
-               Objects.equals(userId, that.userId) &&
-               Objects.equals(customerId, that.customerId);
+                Objects.equals(userId, that.userId) &&
+                Objects.equals(customerId, that.customerId);
     }
 
     @Override
@@ -103,11 +104,11 @@ public class CustomerAssignment {
     @Override
     public String toString() {
         return "CustomerAssignment{" +
-               "id=" + id +
-               ", userId=" + userId +
-               ", customerId=" + customerId +
-               ", assignedAt=" + assignedAt +
-               '}';
+                "id=" + id +
+                ", userId=" + userId +
+                ", customerId=" + customerId +
+                ", assignedAt=" + assignedAt +
+                '}';
     }
 
     // Builder class

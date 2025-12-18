@@ -3,7 +3,6 @@ package com.wellkorea.backend.auth.infrastructure.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
-import com.wellkorea.backend.shared.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,7 +89,8 @@ class CustomAuthenticationEntryPointTest {
     @Test
     void shouldDefaultToAuth001WhenGenericAuthException() throws Exception {
         // Given: Generic Spring Security AuthenticationException (not our custom types)
-        AuthenticationException authException = new AuthenticationException("Authentication failed") {};
+        AuthenticationException authException = new AuthenticationException("Authentication failed") {
+        };
         when(request.getRequestURI()).thenReturn("/api/users");
 
         // When: Entry point handles authentication failure

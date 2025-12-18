@@ -370,4 +370,331 @@ class UserControllerTest extends BaseIntegrationTest implements TestFixtures {
                     .andExpect(status().isBadRequest());
         }
     }
+
+    @Nested
+    @DisplayName("PUT /api/users/{id}/roles")
+    class AssignRolesTests {
+
+        @Test
+        @DisplayName("should return 200 when roles assigned by Admin")
+        void assignRoles_AsAdmin_Returns200() throws Exception {
+            String rolesRequest = """
+                    {
+                        "roles": ["ROLE_ADMIN", "ROLE_FINANCE"]
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/roles")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(rolesRequest))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.message").value("Roles assigned successfully"));
+        }
+
+        @Test
+        @DisplayName("should return 200 with empty roles")
+        void assignRoles_EmptyRoles_Returns200() throws Exception {
+            String rolesRequest = """
+                    {
+                        "roles": []
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/roles")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(rolesRequest))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("should return 400 when roles is null")
+        void assignRoles_NullRoles_Returns400() throws Exception {
+            String rolesRequest = """
+                    {
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/roles")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(rolesRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 403 for non-Admin role")
+        void assignRoles_AsNonAdmin_Returns403() throws Exception {
+            String rolesRequest = """
+                    {
+                        "roles": ["ROLE_SALES"]
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/roles")
+                            .header("Authorization", "Bearer " + financeToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(rolesRequest))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("should return 401 without authentication")
+        void assignRoles_WithoutAuth_Returns401() throws Exception {
+            String rolesRequest = """
+                    {
+                        "roles": ["ROLE_SALES"]
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/roles")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(rolesRequest))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/users/{id}/activate")
+    class ActivateUserTests {
+
+        @Test
+        @DisplayName("should return 200 when user activated by Admin")
+        void activateUser_AsAdmin_Returns200() throws Exception {
+            // First deactivate the user
+            mockMvc.perform(delete(USERS_URL + "/2")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isNoContent());
+
+            // Then activate the user
+            mockMvc.perform(post(USERS_URL + "/2/activate")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.message").value("User activated successfully"));
+
+            // Verify user is active
+            mockMvc.perform(get(USERS_URL + "/2")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.isActive").value(true));
+        }
+
+        @Test
+        @DisplayName("should return 403 for non-Admin role")
+        void activateUser_AsNonAdmin_Returns403() throws Exception {
+            mockMvc.perform(post(USERS_URL + "/2/activate")
+                            .header("Authorization", "Bearer " + financeToken))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("should return 401 without authentication")
+        void activateUser_WithoutAuth_Returns401() throws Exception {
+            mockMvc.perform(post(USERS_URL + "/2/activate"))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("PUT /api/users/{id}/password")
+    class ChangePasswordTests {
+
+        @Test
+        @DisplayName("should return 200 when password changed by Admin")
+        void changePassword_AsAdmin_Returns200() throws Exception {
+            String passwordRequest = """
+                    {
+                        "newPassword": "newSecurePassword123"
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/password")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(passwordRequest))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.message").value("Password changed successfully"));
+        }
+
+        @Test
+        @DisplayName("should return 400 when password is too short")
+        void changePassword_TooShort_Returns400() throws Exception {
+            String passwordRequest = """
+                    {
+                        "newPassword": "short"
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/password")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(passwordRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 400 when password is missing")
+        void changePassword_MissingPassword_Returns400() throws Exception {
+            String passwordRequest = """
+                    {
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/password")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(passwordRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 403 for non-Admin role")
+        void changePassword_AsNonAdmin_Returns403() throws Exception {
+            String passwordRequest = """
+                    {
+                        "newPassword": "newSecurePassword123"
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/password")
+                            .header("Authorization", "Bearer " + financeToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(passwordRequest))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("should return 401 without authentication")
+        void changePassword_WithoutAuth_Returns401() throws Exception {
+            String passwordRequest = """
+                    {
+                        "newPassword": "newSecurePassword123"
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/password")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(passwordRequest))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/users/{id}/customers")
+    class GetUserCustomersTests {
+
+        @Test
+        @DisplayName("should return 200 with customer IDs for Admin")
+        void getUserCustomers_AsAdmin_Returns200() throws Exception {
+            mockMvc.perform(get(USERS_URL + "/2/customers")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.customerIds").isArray());
+        }
+
+        @Test
+        @DisplayName("should return 403 for non-Admin role")
+        void getUserCustomers_AsNonAdmin_Returns403() throws Exception {
+            mockMvc.perform(get(USERS_URL + "/2/customers")
+                            .header("Authorization", "Bearer " + financeToken))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("should return 401 without authentication")
+        void getUserCustomers_WithoutAuth_Returns401() throws Exception {
+            mockMvc.perform(get(USERS_URL + "/2/customers"))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("PUT /api/users/{id}/customers")
+    class AssignCustomersTests {
+
+        @Test
+        @DisplayName("should return 200 when customers assigned by Admin")
+        void assignCustomers_AsAdmin_Returns200() throws Exception {
+            String customersRequest = """
+                    {
+                        "customerIds": [1, 2, 3]
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/customers")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(customersRequest))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.message").value("Customer assignments updated successfully"));
+        }
+
+        @Test
+        @DisplayName("should return 200 with empty customer list")
+        void assignCustomers_EmptyList_Returns200() throws Exception {
+            String customersRequest = """
+                    {
+                        "customerIds": []
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/customers")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(customersRequest))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("should return 400 when customerIds is null")
+        void assignCustomers_NullCustomerIds_Returns400() throws Exception {
+            String customersRequest = """
+                    {
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/customers")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(customersRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 403 for non-Admin role")
+        void assignCustomers_AsNonAdmin_Returns403() throws Exception {
+            String customersRequest = """
+                    {
+                        "customerIds": [1, 2]
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/customers")
+                            .header("Authorization", "Bearer " + financeToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(customersRequest))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("should return 401 without authentication")
+        void assignCustomers_WithoutAuth_Returns401() throws Exception {
+            String customersRequest = """
+                    {
+                        "customerIds": [1, 2]
+                    }
+                    """;
+
+            mockMvc.perform(put(USERS_URL + "/2/customers")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(customersRequest))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
 }

@@ -177,8 +177,8 @@ public class SecurityConfig {
         // Allow localhost with any port using pattern matching
         // Includes both http://localhost (no port) and http://localhost:* (any explicit port)
         configuration.setAllowedOriginPatterns(List.of(
-            "http://localhost",
-            "http://localhost:*"
+                "http://localhost",
+                "http://localhost:*"
         ));
 
         // Allow all HTTP methods

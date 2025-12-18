@@ -104,9 +104,9 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> createUser(@Valid @RequestBody CreateUserRequest request) {
         Set<Role> roles = request.roles() != null
                 ? request.roles().stream()
-                    .map(Role::fromAuthority)
-                    .filter(role -> role != null)
-                    .collect(Collectors.toSet())
+                .map(Role::fromAuthority)
+                .filter(role -> role != null)
+                .collect(Collectors.toSet())
                 : Set.of();
 
         Long userId = userCommand.createUser(
