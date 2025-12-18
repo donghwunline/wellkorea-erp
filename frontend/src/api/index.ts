@@ -44,4 +44,4 @@ export { HttpClient } from './httpClient';
 export { tokenStore } from './tokenStore';
 
 // Re-export endpoint constants
-export { AUTH_ENDPOINTS, USER_ENDPOINTS, AUDIT_ENDPOINTS } from './endpoints';
+export { AUTH_ENDPOINTS, USER_ENDPOINTS, AUDIT_ENDPOINTS, PROJECT_ENDPOINTS } from './endpoints';
