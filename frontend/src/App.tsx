@@ -10,6 +10,12 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { AuditLogPage } from './pages/admin/AuditLogPage';
+import {
+  ProjectListPage,
+  ProjectCreatePage,
+  ProjectViewPage,
+  ProjectEditPage,
+} from './pages/projects';
 
 const NotFoundPage = () => (
   <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-steel-950">
@@ -77,17 +83,49 @@ function App() {
             }
           />
 
-          {/* Main module routes (placeholders) */}
+          {/* Project routes */}
           <Route
             path="/projects"
             element={
               <ProtectedRoute>
                 <AppLayout>
-                  <PlaceholderPage title="Projects" />
+                  <ProjectListPage />
                 </AppLayout>
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/projects/new"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <ProjectCreatePage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectViewPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/edit"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <ProjectEditPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Other module routes (placeholders) */}
           <Route
             path="/quotations"
             element={
