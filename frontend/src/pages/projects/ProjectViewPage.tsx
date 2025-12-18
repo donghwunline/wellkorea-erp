@@ -9,7 +9,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails } from '@/services';
 import { Alert, Button, Card, Icon, PageHeader } from '@/components/ui';
-import { ProjectDetailsCard, useProjectActions } from '@/components/features/projects';
+import {
+  ProjectDetailsCard,
+  ProjectRelatedNavigationGrid,
+  useProjectActions,
+} from '@/components/features/projects';
 
 // Mock data for resolving names (to be replaced with real API)
 const MOCK_CUSTOMERS: Record<number, string> = {
@@ -152,6 +156,12 @@ export function ProjectViewPage() {
           internalOwnerName={MOCK_USERS[project.internalOwnerId]}
           createdByName={MOCK_USERS[project.createdById]}
         />
+
+        {/* Related Sections Navigation */}
+        <div className="mt-8">
+          <h2 className="mb-4 text-lg font-semibold text-white">Related Sections</h2>
+          <ProjectRelatedNavigationGrid projectId={project.id} />
+        </div>
       </div>
     </div>
   );

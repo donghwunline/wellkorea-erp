@@ -15,6 +15,13 @@ import {
   ProjectCreatePage,
   ProjectViewPage,
   ProjectEditPage,
+  // Project sub-pages
+  ProjectQuotationPage,
+  ProjectProcessPage,
+  ProjectOutsourcePage,
+  ProjectDeliveryPage,
+  ProjectDocumentsPage,
+  ProjectFinancePage,
 } from './pages/projects';
 
 const NotFoundPage = () => (
@@ -120,6 +127,68 @@ function App() {
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
                   <ProjectEditPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Project sub-pages */}
+          <Route
+            path="/projects/:id/quotation"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <ProjectQuotationPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/process"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectProcessPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/outsource"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectOutsourcePage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/delivery"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectDeliveryPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/documents"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectDocumentsPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/finance"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <ProjectFinancePage />
                 </AppLayout>
               </ProtectedRoute>
             }
