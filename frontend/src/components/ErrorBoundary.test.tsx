@@ -2,19 +2,19 @@
  * Tests for ErrorBoundary component
  */
 
-import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {ErrorBoundary} from './ErrorBoundary';
+import { ErrorBoundary } from './ErrorBoundary';
 
 // Mock navigation utility
-vi.mock('@/utils/navigation', () => ({
+vi.mock('@/shared/utils', () => ({
   navigation: {
     reloadPage: vi.fn(),
   },
 }));
 
-const { navigation } = await import('@/utils/navigation');
+const { navigation } = await import('@/shared/utils');
 
 // Component that throws an error
 const ProblemChild = () => {
@@ -34,7 +34,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ProblemChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText(/Something went wrong/i)).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ProblemChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       const errorDetails = screen.getByText(/Test error: Boom!/i);
@@ -58,7 +58,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <GoodChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Success content')).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ProblemChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       // Error should be shown
@@ -93,7 +93,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ProblemChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       await user.click(screen.getByText('Reload Page'));
@@ -107,7 +107,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ProblemChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       const summary = screen.getByText('Error Details');
@@ -119,7 +119,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ProblemChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText(/Test error: Boom!/i)).toBeInTheDocument();
@@ -131,7 +131,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ProblemChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Try Again')).toBeInTheDocument();
@@ -142,11 +142,11 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <ProblemChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(
-        screen.getByText(/An unexpected error occurred/i, { exact: false })
+        screen.getByText(/An unexpected error occurred/i, { exact: false }),
       ).toBeInTheDocument();
     });
   });
@@ -160,7 +160,7 @@ describe('ErrorBoundary', () => {
       render(
         <ErrorBoundary>
           <AnotherErrorChild />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText(/Another error message/i)).toBeInTheDocument();

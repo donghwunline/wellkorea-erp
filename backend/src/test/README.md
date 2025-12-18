@@ -11,7 +11,7 @@ src/test/java/
 ├── com/wellkorea/backend/
 │   ├── BaseIntegrationTest.java          # Base class for integration tests
 │   ├── shared/test/
-│   │   └── TestConstants.java            # Centralized test configuration
+│   │   └── TestFixtures.java             # Centralized test fixtures and configuration
 │   ├── auth/                             # Authentication tests
 │   ├── document/                         # Document storage tests
 │   └── project/                          # Project domain tests
@@ -22,11 +22,13 @@ src/test/java/
 ## Test Categories
 
 ### Unit Tests (`@Tag("unit")`)
+
 - **Fast**: No Spring context, no external dependencies
 - **Examples**: `JwtTokenProviderTest`, `JobCodeGeneratorTest`
 - **Run**: `./gradlew test -Dgroups=unit`
 
 ### Integration Tests (`@Tag("integration")`)
+
 - **Comprehensive**: Full Spring context + Testcontainers
 - **Base Class**: Extend `BaseIntegrationTest`
 - **Examples**: `SecurityIntegrationTest`, `MinioFileStorageTest`
@@ -60,7 +62,7 @@ class MyServiceTest {
 
 ```java
 import com.wellkorea.backend.BaseIntegrationTest;
-import com.wellkorea.backend.shared.test.TestConstants;
+import com.wellkorea.backend.shared.test.TestFixtures;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,19 +82,22 @@ class MyIntegrationTest extends BaseIntegrationTest {
 
 ## Test Configuration
 
-### TestConstants
+### TestFixtures
 
-All test configuration values are centralized in `TestConstants.java`:
+All test configuration values and fixtures are centralized in `TestFixtures.java`:
+
 - JWT secrets and expiration
 - Database credentials
 - MinIO configuration
 - Test entity IDs
+- Sample API request/response payloads
 
-**Always use TestConstants instead of hardcoding values.**
+**Always use TestFixtures instead of hardcoding values.**
 
 ### BaseIntegrationTest
 
 Provides singleton Testcontainers for all integration tests:
+
 - **PostgreSQL 16**: Auto-configured via `@ServiceConnection`
 - **MinIO**: Manually configured for S3-compatible storage
 
@@ -101,6 +106,7 @@ Containers start once per JVM and are reused across all tests for performance.
 ### application-test.yml
 
 Static configuration for test profile:
+
 - Connection pool settings (HikariCP)
 - Logging levels
 - Actuator endpoints
@@ -129,7 +135,7 @@ Static configuration for test profile:
 
 1. **Use `@Tag` annotations** for all tests (`"unit"` or `"integration"`)
 2. **Extend `BaseIntegrationTest`** for database/MinIO tests
-3. **Import `TestConstants`** instead of duplicating config values
+3. **Import `TestFixtures`** instead of duplicating config values
 4. **Use Role enum** for role authorities: `Role.ADMIN.getAuthority()`
 5. **Follow Given-When-Then** structure in test methods
 6. **Use descriptive test names** starting with "should"
@@ -138,6 +144,7 @@ Static configuration for test profile:
 ## CI/CD Integration
 
 GitHub Actions runs:
+
 ```bash
 ./gradlew test jacocoTestReport jacocoTestCoverageVerification
 ```
@@ -149,16 +156,19 @@ GitHub Actions runs:
 ## Troubleshooting
 
 ### Tests fail with "Container not started"
+
 - Ensure Docker is running
 - Check `docker ps` for zombie containers
 - Clear Testcontainers cache: `rm -rf ~/.testcontainers`
 
 ### Tests pass individually but fail when run together
+
 - Likely a test isolation issue
 - Check for shared static state
 - Verify cleanup in `@AfterEach`
 
 ### Slow integration tests
+
 - Testcontainers reuse enabled (`.withReuse(true)`)
 - Run unit tests separately: `./gradlew test -Dgroups=unit`
 - Container startup is one-time cost per JVM

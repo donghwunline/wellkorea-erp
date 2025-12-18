@@ -36,6 +36,9 @@ public enum ErrorCode {
     ACCESS_DENIED(403, "AUTHZ_001", "Access denied - insufficient permissions"),
     FORBIDDEN_OPERATION(403, "AUTHZ_002", "Operation forbidden for this user"),
 
+    // ========== Rate Limiting Errors (429) ==========
+    RATE_LIMITED(429, "RATE_001", "Too many requests - please try again later"),
+
     // ========== Resource Errors (404) ==========
     RESOURCE_NOT_FOUND(404, "RES_001", "Requested resource not found"),
     ENDPOINT_NOT_FOUND(404, "RES_002", "API endpoint not found"),

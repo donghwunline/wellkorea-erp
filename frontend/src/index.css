@@ -1,12 +1,103 @@
 @import "tailwindcss";
 
+/* WellKorea ERP Design System - Tailwind v4 Theme Configuration
+ * Aesthetic: Industrial Precision meets Korean Elegance
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@theme {
+    /* Typography - Manrope for geometric precision */
+    --font-sans: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Primary - Deep Navy Steel */
+    --color-steel-50: #f0f4f8;
+    --color-steel-100: #d9e2ec;
+    --color-steel-200: #bcccdc;
+    --color-steel-300: #9fb3c8;
+    --color-steel-400: #829ab1;
+    --color-steel-500: #627d98;
+    --color-steel-600: #486581;
+    --color-steel-700: #334e68;
+    --color-steel-800: #243b53;
+    --color-steel-900: #102a43;
+    --color-steel-950: #0a1929;
+
+    /* Accent - Warm Copper */
+    --color-copper-300: #fcd34d;
+    --color-copper-400: #fbbf24;
+    --color-copper-500: #d97706;
+    --color-copper-600: #b45309;
+    --color-copper-700: #92400e;
+
+    /* Extended shadows for depth */
+    --shadow-glow: 0 0 20px rgb(217 119 6 / 0.15);
+    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-elevated: 0 20px 40px -12px rgb(0 0 0 / 0.15);
+
+    /* Animation timings */
+    --animate-fade-in: fade-in 0.4s ease-out;
+    --animate-slide-up: slide-up 0.5s ease-out;
+    --animate-pulse-subtle: pulse-subtle 2s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-subtle {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Base styles */
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
     min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-steel-100);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-steel-400);
+    border-radius: 4px;
+}
+
+::selection {
+    background: var(--color-steel-200);
+    color: var(--color-steel-900);
 }

@@ -34,7 +34,7 @@ public final class DatabaseTestHelper {
                 "INSERT INTO users (id, username, email, password_hash, full_name) " +
                         "VALUES (?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                TestConstants.TEST_USER_ID,
+                TestFixtures.TEST_USER_ID,
                 "testuser",
                 "test@example.com",
                 "$2a$10$dummyHashForTestingPurposes",  // BCrypt hash
@@ -53,7 +53,7 @@ public final class DatabaseTestHelper {
                 "INSERT INTO customers (id, name, contact_person, phone, email) " +
                         "VALUES (?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                TestConstants.TEST_CUSTOMER_ID,
+                TestFixtures.TEST_CUSTOMER_ID,
                 "Test Customer",
                 "John Doe",
                 "123-456-7890",
@@ -63,7 +63,7 @@ public final class DatabaseTestHelper {
 
     /**
      * Inserts all test users with their role assignments.
-     * Password for all test users: "password123" (BCrypt hash: $2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO)
+     * Password for all test users: "password123" (BCrypt hash from TestFixtures.TEST_PASSWORD_HASH)
      * <p>
      * Users created:
      * - admin (ID: 1) - All roles (ADMIN, FINANCE, PRODUCTION, SALES)
@@ -77,14 +77,17 @@ public final class DatabaseTestHelper {
      * @param jdbcTemplate Spring JDBC template
      */
     public static void insertTestUsersWithRoles(JdbcTemplate jdbcTemplate) {
+        // BCrypt hash of "password123" - must match TestFixtures.TEST_PASSWORD_HASH
+        String passwordHash = "$2a$10$iILF.Jz64XwbA5epmf3cg.BjFigBnCSq6kNZMFyksQTCn7dCqhMs6";
+
         // Insert users
         jdbcTemplate.update(
                 "INSERT INTO users (id, username, email, password_hash, full_name, is_active) " +
-                        "VALUES (1, 'admin', 'admin@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Admin User', true), " +
-                        "       (2, 'finance', 'finance@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Finance Manager', true), " +
-                        "       (3, 'production', 'production@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Production Lead', true), " +
-                        "       (4, 'sales', 'sales@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Sales Representative', true), " +
-                        "       (5, 'sales2', 'sales2@wellkorea.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.fVQ7dyELpHwqN5pJKt3OJPXvk8dXDO', 'Sales Representative 2', true) " +
+                        "VALUES (1, 'admin', 'admin@wellkorea.com', '" + passwordHash + "', 'Admin User', true), " +
+                        "       (2, 'finance', 'finance@wellkorea.com', '" + passwordHash + "', 'Finance Manager', true), " +
+                        "       (3, 'production', 'production@wellkorea.com', '" + passwordHash + "', 'Production Lead', true), " +
+                        "       (4, 'sales', 'sales@wellkorea.com', '" + passwordHash + "', 'Sales Representative', true), " +
+                        "       (5, 'sales2', 'sales2@wellkorea.com', '" + passwordHash + "', 'Sales Representative 2', true) " +
                         "ON CONFLICT (id) DO NOTHING"
         );
 
@@ -93,17 +96,17 @@ public final class DatabaseTestHelper {
 
         // Insert user-role assignments
         jdbcTemplate.update(
-                "INSERT INTO user_roles (user_id, role_id) " +
+                "INSERT INTO user_roles (user_id, role_name) " +
                         "VALUES " +
-                        "    (1, (SELECT id FROM roles WHERE name = 'ADMIN')), " +
-                        "    (1, (SELECT id FROM roles WHERE name = 'FINANCE')), " +
-                        "    (1, (SELECT id FROM roles WHERE name = 'PRODUCTION')), " +
-                        "    (1, (SELECT id FROM roles WHERE name = 'SALES')), " +
-                        "    (2, (SELECT id FROM roles WHERE name = 'FINANCE')), " +
-                        "    (3, (SELECT id FROM roles WHERE name = 'PRODUCTION')), " +
-                        "    (4, (SELECT id FROM roles WHERE name = 'SALES')), " +
-                        "    (5, (SELECT id FROM roles WHERE name = 'SALES')) " +
-                        "ON CONFLICT (user_id, role_id) DO NOTHING"
+                        "    (1, 'ADMIN'), " +
+                        "    (1, 'FINANCE'), " +
+                        "    (1, 'PRODUCTION'), " +
+                        "    (1, 'SALES'), " +
+                        "    (2, 'FINANCE'), " +
+                        "    (3, 'PRODUCTION'), " +
+                        "    (4, 'SALES'), " +
+                        "    (5, 'SALES') " +
+                        "ON CONFLICT (user_id, role_name) DO NOTHING"
         );
 
         // Insert customer assignments (FR-062: Sales role customer filtering)

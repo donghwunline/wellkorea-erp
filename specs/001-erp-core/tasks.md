@@ -33,18 +33,18 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create backend directory structure following domain-oriented architecture (project/, quotation/, approval/, product/, production/, delivery/, invoice/, purchasing/, document/, security/, shared/)
-- [ ] T002 Create frontend directory structure (components/, pages/, services/, contexts/, hooks/, types/)
-- [ ] T003 [P] Initialize Spring Boot 3.5.8 project with Gradle 8.11 in backend/build.gradle
-- [ ] T004 [P] Initialize React 19 + TypeScript 5.9 project with Vite 7 in frontend/package.json
-- [ ] T005 [P] Configure PostgreSQL 16 Docker service in docker-compose.yml
-- [ ] T006 [P] Configure MinIO S3-compatible storage in docker-compose.yml for document storage
-- [ ] T007 [P] Setup Flyway migration framework in backend/src/main/resources/db/migration/
-- [ ] T008 [P] Configure ESLint and Prettier for frontend code quality
-- [ ] T009 [P] Configure JaCoCo for backend test coverage (70% threshold) in backend/build.gradle
-- [ ] T010 [P] Configure Vitest for frontend test coverage (70% threshold) in frontend/vitest.config.ts
-- [ ] T011 [P] Setup Playwright for E2E tests in frontend/playwright.config.ts
-- [ ] T012 [P] Setup Testcontainers for backend integration tests in backend/build.gradle
+- [X] T001 Create backend directory structure following domain-oriented architecture (project/, quotation/, approval/, product/, production/, delivery/, invoice/, purchasing/, document/, security/, shared/)
+- [X] T002 Create frontend directory structure (components/, pages/, services/, contexts/, hooks/, types/)
+- [X] T003 [P] Initialize Spring Boot 3.5.8 project with Gradle 8.11 in backend/build.gradle
+- [X] T004 [P] Initialize React 19 + TypeScript 5.9 project with Vite 7 in frontend/package.json
+- [X] T005 [P] Configure PostgreSQL 16 Docker service in docker-compose.yml
+- [X] T006 [P] Configure MinIO S3-compatible storage in docker-compose.yml for document storage
+- [X] T007 [P] Setup Flyway migration framework in backend/src/main/resources/db/migration/
+- [X] T008 [P] Configure ESLint and Prettier for frontend code quality
+- [X] T009 [P] Configure JaCoCo for backend test coverage (70% threshold) in backend/build.gradle
+- [X] T010 [P] Configure Vitest for frontend test coverage (70% threshold) in frontend/vitest.config.ts
+- [X] T011 [P] Setup Playwright for E2E tests in frontend/playwright.config.ts
+- [X] T012 [P] Setup Testcontainers for backend integration tests in backend/build.gradle
 
 ---
 
@@ -102,36 +102,36 @@
 ### Tests for User Story 9 (Write FIRST - Red-Green-Refactor)
 
 > **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
+> **Note**: Implementation uses `auth/` package (not `security/`) per domain-oriented architecture
 
-- [ ] T032 [P] [US9] Write contract tests for /api/auth/login endpoint (expects 200 with JWT on valid credentials, 401 on invalid) in backend/src/test/java/com/wellkorea/backend/security/controller/AuthenticationControllerTest.java - MUST FAIL initially
-- [ ] T033 [P] [US9] Write contract tests for /api/auth/logout endpoint (expects 200 on valid token, 401 on missing token) in backend/src/test/java/com/wellkorea/backend/security/controller/AuthenticationControllerTest.java - MUST FAIL initially
-- [ ] T034 [P] [US9] Write contract tests for /api/users endpoints (GET list, POST create, PUT update - Admin only) in backend/src/test/java/com/wellkorea/backend/security/controller/UserControllerTest.java - MUST FAIL initially
-- [ ] T035 [P] [US9] Write contract tests for /api/audit endpoints (GET query - Admin only) in backend/src/test/java/com/wellkorea/backend/security/controller/AuditLogControllerTest.java - MUST FAIL initially
-- [ ] T036 [US9] Write unit tests for UserService (create user, assign roles, validate credentials) in backend/src/test/java/com/wellkorea/backend/security/service/UserServiceTest.java - MUST FAIL initially
-- [ ] T037 [US9] Write unit tests for AuthenticationService (JWT generation, token validation, logout) in backend/src/test/java/com/wellkorea/backend/security/service/AuthenticationServiceTest.java - MUST FAIL initially
-- [ ] T038 [US9] Write integration test for RBAC enforcement (Production user cannot access /api/quotations) in backend/src/test/java/com/wellkorea/backend/security/RBACIntegrationTest.java - MUST FAIL initially
+- [X] T032 [P] [US9] Write contract tests for /api/auth/login endpoint (expects 200 with JWT on valid credentials, 401 on invalid) in backend/src/test/java/com/wellkorea/backend/auth/api/AuthenticationControllerTest.java
+- [X] T033 [P] [US9] Write contract tests for /api/auth/logout endpoint (expects 200 on valid token, 401 on missing token) in backend/src/test/java/com/wellkorea/backend/auth/api/AuthenticationControllerTest.java
+- [X] T034 [P] [US9] Write contract tests for /api/users endpoints (GET list, POST create, PUT update - Admin only) in backend/src/test/java/com/wellkorea/backend/auth/api/UserControllerTest.java
+- [X] T035 [P] [US9] Write contract tests for /api/audit endpoints (GET query - Admin only) in backend/src/test/java/com/wellkorea/backend/auth/api/AuditLogControllerTest.java
+- [X] T036 [US9] Write unit tests for UserService (create user, assign roles, validate credentials) in backend/src/test/java/com/wellkorea/backend/auth/application/UserQueryTest.java and UserCommandTest.java
+- [X] T037 [US9] Write unit tests for AuthenticationService (JWT generation, token validation, logout) in backend/src/test/java/com/wellkorea/backend/auth/application/AuthenticationServiceTest.java
+- [X] T038 [US9] Write integration test for RBAC enforcement (Production user cannot access /api/quotations) in backend/src/test/java/com/wellkorea/backend/auth/RBACIntegrationTest.java
 
 ### Implementation for User Story 9
 
-- [ ] T039 [P] [US9] Create User entity in backend/src/main/java/com/wellkorea/backend/security/domain/User.java
-- [ ] T033 [P] [US9] Create Role entity in backend/src/main/java/com/wellkorea/backend/security/domain/Role.java
-- [ ] T034 [P] [US9] Create AuditLog entity in backend/src/main/java/com/wellkorea/backend/security/domain/AuditLog.java
-- [ ] T035 [US9] Create UserRepository in backend/src/main/java/com/wellkorea/backend/security/infrastructure/persistence/UserRepository.java (depends on T032)
-- [ ] T036 [US9] Create RoleRepository in backend/src/main/java/com/wellkorea/backend/security/infrastructure/persistence/RoleRepository.java (depends on T033)
-- [ ] T037 [US9] Create AuditLogRepository in backend/src/main/java/com/wellkorea/backend/security/infrastructure/persistence/AuditLogRepository.java (depends on T034)
-- [ ] T038 [US9] Implement UserService with user management operations in backend/src/main/java/com/wellkorea/backend/security/service/UserService.java
-- [ ] T039 [US9] Implement AuthenticationService with login/logout in backend/src/main/java/com/wellkorea/backend/security/service/AuthenticationService.java
-- [ ] T040 [US9] Implement AuditService to log sensitive document access in backend/src/main/java/com/wellkorea/backend/security/service/AuditService.java
-- [ ] T041 [US9] Create AuthenticationController with /login and /logout endpoints in backend/src/main/java/com/wellkorea/backend/security/controller/AuthenticationController.java
-- [ ] T042 [US9] Create UserController with user management endpoints (Admin only) in backend/src/main/java/com/wellkorea/backend/security/controller/UserController.java
-- [ ] T043 [US9] Create AuditLogController with audit query endpoints (Admin only) in backend/src/main/java/com/wellkorea/backend/security/controller/AuditLogController.java
-- [ ] T044 [US9] Add @PreAuthorize annotations to all sensitive endpoints (quotations, financial data)
-- [ ] T045 [US9] Implement login page in frontend/src/pages/LoginPage.tsx
-- [ ] T046 [US9] Implement user management UI (Admin only) in frontend/src/pages/admin/UserManagementPage.tsx
-- [ ] T047 [US9] Implement audit log viewer (Admin only) in frontend/src/pages/admin/AuditLogPage.tsx
-- [ ] T048 [US9] Add role-based UI rendering (hide quotations from Production users, hide AR/AP from Sales users)
-- [ ] T048a [US9] Add customer_assignment table (user_id, customer_id, many-to-many) in backend/src/main/resources/db/migration/V4__create_audit_log.sql for Sales role customer filtering per FR-062
-- [ ] T048b [US9] Add customer assignment UI in UserManagementPage (Admin can assign Sales users to specific customers) in frontend/src/pages/admin/UserManagementPage.tsx
+- [X] T039 [P] [US9] Create User entity in backend/src/main/java/com/wellkorea/backend/auth/domain/User.java
+- [X] T040 [P] [US9] Create Role enum in backend/src/main/java/com/wellkorea/backend/auth/domain/Role.java
+- [X] T041 [P] [US9] Create AuditLog entity in backend/src/main/java/com/wellkorea/backend/auth/domain/AuditLog.java
+- [X] T042 [US9] Create UserRepository in backend/src/main/java/com/wellkorea/backend/auth/infrastructure/persistence/UserRepository.java
+- [X] T043 [US9] Create AuditLogRepository in backend/src/main/java/com/wellkorea/backend/auth/infrastructure/persistence/AuditLogRepository.java
+- [X] T044 [US9] Implement UserService (implements UserQuery/UserCommand) with user management operations in backend/src/main/java/com/wellkorea/backend/auth/application/UserService.java
+- [X] T045a [US9] Implement AuthenticationService with login/logout in backend/src/main/java/com/wellkorea/backend/auth/application/AuthenticationService.java
+- [X] T046a [US9] Implement AuditService to log sensitive document access in backend/src/main/java/com/wellkorea/backend/auth/application/AuditService.java
+- [X] T047a [US9] Create AuthenticationController with /login and /logout endpoints in backend/src/main/java/com/wellkorea/backend/auth/api/AuthenticationController.java
+- [X] T048c [US9] Create UserController with user management endpoints (Admin only) in backend/src/main/java/com/wellkorea/backend/auth/api/UserController.java
+- [X] T049 [US9] Create AuditLogController with audit query endpoints (Admin only) in backend/src/main/java/com/wellkorea/backend/auth/api/AuditLogController.java
+- [X] T050 [US9] Add @PreAuthorize annotations to all sensitive endpoints (quotations, financial data)
+- [X] T045 [US9] Implement login page in frontend/src/pages/LoginPage.tsx
+- [X] T046 [US9] Implement user management UI (Admin only) in frontend/src/pages/admin/UserManagementPage.tsx
+- [X] T047 [US9] Implement audit log viewer (Admin only) in frontend/src/pages/admin/AuditLogPage.tsx
+- [X] T048 [US9] Add role-based UI rendering (hide quotations from Production users, hide AR/AP from Sales users) in frontend/src/components/AppLayout.tsx and frontend/src/pages/DashboardPage.tsx
+- [X] T048a [US9] Implement Sales role customer filtering: Add CustomerAssignment entity, repository, and project filtering service (table exists in V1__create_core_tables.sql) per FR-062
+- [X] T048b [US9] Add customer assignment UI in UserManagementPage (Admin can assign Sales users to specific customers) in frontend/src/pages/admin/UserManagementPage.tsx
 
 **Checkpoint**: RBAC and security foundation complete - quotations and financial data are now protected
 

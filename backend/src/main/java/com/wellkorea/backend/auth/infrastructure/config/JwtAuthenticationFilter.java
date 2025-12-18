@@ -6,8 +6,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -15,8 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * JWT authentication filter that intercepts requests and validates JWT tokens.
@@ -31,9 +34,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CustomAuthenticationEntryPoint authenticationEntryPoint) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Override
@@ -43,31 +48,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Extract JWT token from Authorization header
             String jwt = getJwtFromRequest(request);
 
-            // Validate token and set authentication in SecurityContext
-            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
+            // If token is present, validate it (throws exception if invalid/expired)
+            if (StringUtils.hasText(jwt)) {
+                jwtTokenProvider.validateToken(jwt);
+
+                // Token is valid - set authentication in SecurityContext
                 String username = jwtTokenProvider.getUsername(jwt);
                 String rolesString = jwtTokenProvider.getRoles(jwt);
 
                 // Convert comma-separated roles to GrantedAuthority list
                 // Handle null/empty roles gracefully
-                List<SimpleGrantedAuthority> authorities = (rolesString != null && !rolesString.isEmpty())
+                Collection<GrantedAuthority> authorities = (rolesString != null && !rolesString.isEmpty())
                         ? Arrays.stream(rolesString.split(","))
                         .filter(StringUtils::hasText)  // Filter out empty strings
-                        .map(SimpleGrantedAuthority::new)
+                        .map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role))
                         .toList()
                         : Collections.emptyList();
 
-                // Create authentication token
+                // Create UserDetails for @AuthenticationPrincipal support
+                // This enables OAuth2-compatible principal injection in controllers
+                UserDetails userDetails = new User(username, "", authorities);
+
+                // Create authentication token with UserDetails as principal
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
+                        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 // Set authentication in SecurityContext
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
+        } catch (JwtAuthenticationException ex) {
+            // Handle JWT authentication exceptions via CustomAuthenticationEntryPoint
+            authenticationEntryPoint.commence(request, response, ex);
+            return; // Stop filter chain execution
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
+            InvalidJwtAuthenticationException authException = new InvalidJwtAuthenticationException("Authentication failed", ex);
+            authenticationEntryPoint.commence(request, response, authException);
+            return; // Stop filter chain execution
         }
 
         filterChain.doFilter(request, response);

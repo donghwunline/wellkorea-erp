@@ -73,6 +73,9 @@ management:
   endpoint:
     health:
       show-details: always  # Always show health details
+  health:
+    mail:
+      enabled: false  # Mail service not implemented yet
 
 # Logging Configuration - Detailed logging for development
 logging:
