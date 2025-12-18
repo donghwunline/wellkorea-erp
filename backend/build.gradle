@@ -39,9 +39,9 @@ dependencies {
     implementation 'org.flywaydb:flyway-database-postgresql'
 
     // Security & JWT (MVP implementation - will be replaced by Keycloak tokens)
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
     // Rate Limiting (Bucket4j with Caffeine cache)
     implementation 'com.bucket4j:bucket4j-core:8.10.1'
