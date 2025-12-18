@@ -3,6 +3,7 @@ package com.wellkorea.backend.auth.infrastructure.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
 import com.wellkorea.backend.shared.exception.ErrorCode;
+import com.wellkorea.backend.shared.ratelimit.LoginRateLimitFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -51,6 +52,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final LoginRateLimitFilter loginRateLimitFilter;
     private final ObjectMapper objectMapper;
 
     @Value("${security.cors.allowed-origins}")
@@ -62,8 +64,11 @@ public class SecurityConfig {
     @Value("${security.swagger.enabled}")
     private boolean swaggerEnabled;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          LoginRateLimitFilter loginRateLimitFilter,
+                          ObjectMapper objectMapper) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.loginRateLimitFilter = loginRateLimitFilter;
         this.objectMapper = objectMapper;
     }
 
@@ -118,6 +123,8 @@ public class SecurityConfig {
                         })
                 )
 
+                // Add rate limit filter first (before any authentication processing)
+                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 // Add JWT filter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

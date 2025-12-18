@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.BaseIntegrationTest;
 import com.wellkorea.backend.auth.api.dto.LoginRequest;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
+import com.wellkorea.backend.shared.ratelimit.RateLimiter;
 import com.wellkorea.backend.shared.test.DatabaseTestHelper;
 import com.wellkorea.backend.shared.test.TestFixtures;
 import org.junit.jupiter.api.*;
@@ -50,8 +51,13 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired
+    private RateLimiter rateLimiter;
+
     @BeforeEach
     void setUp() {
+        // Clear rate limiter state between tests
+        rateLimiter.clearAll();
         // Insert test users with roles (password: TEST_PASSWORD)
         DatabaseTestHelper.insertTestUsersWithRoles(jdbcTemplate);
     }
