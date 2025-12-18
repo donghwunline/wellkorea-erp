@@ -74,3 +74,46 @@ export interface ProjectListParams {
  * Paginated project list response.
  */
 export type PaginatedProjects = Paginated<ProjectDetails>;
+
+// ============================================================================
+// Project Summary Types (for Navigation Grid)
+// ============================================================================
+
+/**
+ * Project section identifiers for navigation.
+ */
+export type ProjectSection =
+  | 'quotation'
+  | 'process'
+  | 'outsource'
+  | 'delivery'
+  | 'documents'
+  | 'finance';
+
+/**
+ * Summary statistics for a single project section.
+ */
+export interface ProjectSectionSummary {
+  /** Section identifier */
+  section: ProjectSection;
+  /** Display label for the section */
+  label: string;
+  /** Total count (quotations, work items, deliveries, etc.) */
+  totalCount: number;
+  /** Pending/in-progress count */
+  pendingCount: number;
+  /** Optional progress percentage (0-100) */
+  progressPercent?: number;
+  /** Optional monetary value (for quotation total, finance AR/AP) */
+  value?: number;
+  /** Last updated timestamp */
+  lastUpdated: string | null;
+}
+
+/**
+ * Full project summary with all sections.
+ */
+export interface ProjectSummary {
+  projectId: number;
+  sections: ProjectSectionSummary[];
+}

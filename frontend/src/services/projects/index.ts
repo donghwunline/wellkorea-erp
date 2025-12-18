@@ -3,6 +3,7 @@
  */
 
 export { projectService } from './projectService';
+export { projectSummaryService } from './projectSummaryService';
 export type {
   CreateProjectRequest,
   PaginatedProjects,
@@ -10,5 +11,9 @@ export type {
   ProjectListParams,
   ProjectStatus,
   UpdateProjectRequest,
+  // Project summary types
+  ProjectSection,
+  ProjectSectionSummary,
+  ProjectSummary,
 } from './types';
 export { PROJECT_STATUS_LABELS } from './types';
