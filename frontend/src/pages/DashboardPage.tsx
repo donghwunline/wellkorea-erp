@@ -110,9 +110,7 @@ export function DashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <p className="mt-1 text-steel-400">
-          Welcome back, {user?.fullName || user?.username}
-        </p>
+        <p className="mt-1 text-steel-400">Welcome back, {user?.fullName || user?.username}</p>
       </div>
 
       {/* Quick Stats Row (placeholder for future stats) */}
@@ -136,16 +134,14 @@ export function DashboardPage() {
               key={module.title}
               variant="interactive"
               className="group transition-all duration-300 hover:border-copper-500/30"
-              onClick={() => globalThis.location.href = module.path}
+              onClick={() => (globalThis.location.href = module.path)}
             >
-              <div
-                className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-steel-800/50 text-copper-500 transition-colors group-hover:bg-copper-500/10">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-steel-800/50 text-copper-500 transition-colors group-hover:bg-copper-500/10">
                 <Icon name={module.icon} className="h-6 w-6" />
               </div>
               <h3 className="text-lg font-semibold text-white">{module.title}</h3>
               <p className="mt-1 text-sm text-steel-400">{module.description}</p>
-              <span
-                className="mt-4 inline-block rounded-full bg-steel-800/50 px-3 py-1 font-mono text-xs text-steel-500">
+              <span className="mt-4 inline-block rounded-full bg-steel-800/50 px-3 py-1 font-mono text-xs text-steel-500">
                 {module.phase}
               </span>
             </Card>

@@ -3,12 +3,15 @@
  * Tests form rendering, validation, login flow, error handling, and accessibility.
  */
 
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './LoginPage';
 import type { ApiError } from '@/api/types';
+// Import mocked modules
+import { useAuth } from '@/shared/hooks';
+import { getErrorMessage } from '@/shared/utils';
 
 // Mock useAuth hook
 vi.mock('@/shared/hooks', () => ({
@@ -30,7 +33,7 @@ vi.mock('@/shared/utils', async () => {
 
 // Mock useNavigate and useLocation
 const mockNavigate = vi.fn();
-const mockLocation = { state: null };
+const mockLocation: { state: { from?: { pathname: string } } | null } = { state: null };
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -39,10 +42,6 @@ vi.mock('react-router-dom', async () => {
     useLocation: () => mockLocation,
   };
 });
-
-// Import mocked modules
-import { useAuth } from '@/shared/hooks';
-import { getErrorMessage } from '@/shared/utils';
 
 // Helper to render LoginPage with BrowserRouter
 function renderLoginPage() {
@@ -71,6 +70,7 @@ describe('LoginPage', () => {
       login: mockLogin,
       isAuthenticated: false,
       user: null,
+      accessToken: null,
       logout: vi.fn(),
       hasRole: vi.fn(),
       hasAnyRole: vi.fn(),
@@ -289,9 +289,7 @@ describe('LoginPage', () => {
 
       // Error message shown (Korean)
       await waitFor(() => {
-        expect(
-          screen.getByText(/아이디 또는 비밀번호가 잘못되었습니다/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/아이디 또는 비밀번호가 잘못되었습니다/i)).toBeInTheDocument();
       });
 
       // getErrorMessage called
@@ -320,9 +318,7 @@ describe('LoginPage', () => {
 
       // Wait for error
       await waitFor(() => {
-        expect(
-          screen.getByText(/아이디 또는 비밀번호가 잘못되었습니다/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/아이디 또는 비밀번호가 잘못되었습니다/i)).toBeInTheDocument();
       });
 
       // Password field cleared
@@ -393,9 +389,7 @@ describe('LoginPage', () => {
 
       // API error shown
       await waitFor(() => {
-        expect(
-          screen.getByText(/아이디 또는 비밀번호가 잘못되었습니다/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/아이디 또는 비밀번호가 잘못되었습니다/i)).toBeInTheDocument();
       });
 
       // Find and click dismiss button (ErrorAlert has onDismiss)
@@ -556,7 +550,14 @@ describe('LoginPage', () => {
       vi.mocked(useAuth).mockReturnValue({
         login: mockLogin,
         isAuthenticated: true,
-        user: { id: 1, username: 'admin', email: 'admin@example.com', fullName: 'Admin', roles: ['ROLE_ADMIN'] },
+        user: {
+          id: 1,
+          username: 'admin',
+          email: 'admin@example.com',
+          fullName: 'Admin',
+          roles: ['ROLE_ADMIN'],
+        },
+        accessToken: 'mock-token',
         logout: vi.fn(),
         hasRole: vi.fn(),
         hasAnyRole: vi.fn(),
