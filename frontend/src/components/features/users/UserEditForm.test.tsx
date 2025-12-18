@@ -7,7 +7,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserEditForm } from './UserEditForm';
-import { createMockUserDetails, mockUserDetails } from '@/test/fixtures';
+import { createMockUserDetails, mockUserDetails, type UserDetails } from '@/test/fixtures';
+import { getInputByLabel } from '@/test/helpers';
 import { userService } from '@/services';
 
 // Mock userService
@@ -26,17 +27,10 @@ describe('UserEditForm', () => {
     vi.clearAllMocks();
   });
 
-  function renderForm(isOpen = true, user = testUser) {
+  function renderForm(isOpen = true, user: UserDetails | null = testUser) {
     return render(
       <UserEditForm isOpen={isOpen} user={user} onClose={mockOnClose} onSuccess={mockOnSuccess} />
     );
-  }
-
-  // Helper to get input by its label text (finds the label, then its sibling input)
-  function getInputByLabel(labelText: string) {
-    const label = screen.getByText(labelText, { exact: false });
-    const container = label.closest('div.flex.flex-col');
-    return container?.querySelector('input') as HTMLInputElement;
   }
 
   describe('rendering', () => {
@@ -203,11 +197,11 @@ describe('UserEditForm', () => {
   describe('loading state', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
-      let resolveUpdate: (value: unknown) => void;
+      let resolveUpdate: () => void;
       vi.mocked(userService.updateUser).mockImplementation(
         () =>
           new Promise(resolve => {
-            resolveUpdate = resolve;
+            resolveUpdate = () => resolve(createMockUserDetails());
           })
       );
 
@@ -223,7 +217,7 @@ describe('UserEditForm', () => {
         expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
       });
 
-      resolveUpdate!(createMockUserDetails());
+      resolveUpdate!();
     });
   });
 

@@ -8,12 +8,10 @@
  * - Type narrowing (string → number for entityId)
  */
 
-import { httpClient } from '@/api';
+import { httpClient, AUDIT_ENDPOINTS } from '@/api';
 import type { PagedResponse } from '@/api/types';
 import { transformPagedResponse } from '@/services/shared';
 import type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './types';
-
-const BASE_PATH = '/audit';
 
 /**
  * DTO type from backend (matches AuditLogResponse.java).
@@ -62,7 +60,7 @@ export const auditService = {
   async getAuditLogs(params?: AuditLogListParams): Promise<PaginatedAuditLogs> {
     const response = await httpClient.requestWithMeta<PagedResponse<AuditLogEntryDto>>({
       method: 'GET',
-      url: BASE_PATH,
+      url: AUDIT_ENDPOINTS.BASE,
       params,
     });
 
@@ -77,7 +75,7 @@ export const auditService = {
    * Get audit log entry by ID.
    */
   async getAuditLog(id: number): Promise<AuditLogEntry> {
-    const log = await httpClient.get<AuditLogEntryDto>(`${BASE_PATH}/${id}`);
+    const log = await httpClient.get<AuditLogEntryDto>(AUDIT_ENDPOINTS.byId(id));
     return transformAuditLogEntry(log);
   },
 };

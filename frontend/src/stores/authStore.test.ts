@@ -444,8 +444,8 @@ describe('authStore', () => {
       const initialState = { ...mockAuthStates.authenticated };
       useAuthStore.setState(initialState);
 
-      // When: Emit unknown event
-      vi.mocked(authEvents.emit)({ type: 'unknown-event' });
+      // When: Emit unknown event (cast to allow testing unknown event type)
+      vi.mocked(authEvents.emit)({ type: 'unknown-event' } as unknown as Parameters<typeof authEvents.emit>[0]);
 
       // Then: State unchanged
       const state = useAuthStore.getState();

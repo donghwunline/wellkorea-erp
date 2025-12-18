@@ -5,52 +5,50 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { userService } from '@/services';
+import {
+  createMockUserDetails,
+  createMockPagedResponse,
+  createMockApiResponse,
+  mockApiErrors,
+} from '@/test/fixtures';
 import type {
   AssignRolesRequest,
   ChangePasswordRequest,
   CreateUserRequest,
   UpdateUserRequest,
-  UserDetails,
 } from './types';
-import type { ApiError } from '@/api/types';
 import { httpClient } from '@/api';
 
-// Mock httpClient
+// Mock httpClient with inline factory (vi.mock is hoisted, so can't use imported functions)
 vi.mock('@/api', () => ({
   httpClient: {
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
+    patch: vi.fn(),
     delete: vi.fn(),
+    request: vi.fn(),
     requestWithMeta: vi.fn(),
   },
+  AUTH_ENDPOINTS: {
+    LOGIN: '/auth/login',
+    LOGOUT: '/auth/logout',
+    ME: '/auth/me',
+    REFRESH: '/auth/refresh',
+  },
+  USER_ENDPOINTS: {
+    BASE: '/users',
+    byId: (id: number) => `/users/${id}`,
+    roles: (id: number) => `/users/${id}/roles`,
+    password: (id: number) => `/users/${id}/password`,
+    activate: (id: number) => `/users/${id}/activate`,
+    customers: (id: number) => `/users/${id}/customers`,
+  },
+  AUDIT_ENDPOINTS: {
+    BASE: '/audit',
+    byId: (id: number) => `/audit/${id}`,
+  },
 }));
-
-// Test fixture factories
-function createMockUserDetails(overrides?: Partial<UserDetails>): UserDetails {
-  return {
-    id: 1,
-    username: 'testuser',
-    email: 'testuser@example.com',
-    fullName: 'Test User',
-    isActive: true,
-    roles: ['ROLE_SALES'],
-    createdAt: '2025-01-01T00:00:00Z',
-    lastLoginAt: '2025-01-01T12:00:00Z',
-    ...overrides,
-  };
-}
-
-/** Creates a mock API response with required fields */
-function createMockApiResponse<T>(data: T, metadata?: Record<string, unknown>) {
-  return {
-    success: true,
-    message: 'Success',
-    data,
-    timestamp: '2025-01-01T00:00:00Z',
-    metadata,
-  };
-}
 
 describe('userService', () => {
   beforeEach(() => {
@@ -61,25 +59,7 @@ describe('userService', () => {
     it('should fetch paginated users and transform data', async () => {
       // Given: Mock paginated response
       const mockUser = createMockUserDetails();
-      const mockResponse = createMockApiResponse(
-        {
-          content: [mockUser],
-          number: 0,
-          size: 10,
-          totalElements: 1,
-          totalPages: 1,
-          first: true,
-          last: true,
-        },
-        {
-          page: 0,
-          size: 10,
-          totalElements: 1,
-          totalPages: 1,
-          first: true,
-          last: true,
-        }
-      );
+      const mockResponse = createMockPagedResponse([mockUser]);
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -104,18 +84,7 @@ describe('userService', () => {
       const mockUser = createMockUserDetails({
         email: 'Test.User@EXAMPLE.COM', // Mixed case
       });
-      const mockResponse = createMockApiResponse(
-        {
-          content: [mockUser],
-          number: 0,
-          size: 10,
-          totalElements: 1,
-          totalPages: 1,
-          first: true,
-          last: true,
-        },
-        {}
-      );
+      const mockResponse = createMockPagedResponse([mockUser]);
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -130,18 +99,7 @@ describe('userService', () => {
       const mockUser = createMockUserDetails({
         fullName: '  Whitespace User  ', // Leading/trailing whitespace
       });
-      const mockResponse = createMockApiResponse(
-        {
-          content: [mockUser],
-          number: 0,
-          size: 10,
-          totalElements: 1,
-          totalPages: 1,
-          first: true,
-          last: true,
-        },
-        {}
-      );
+      const mockResponse = createMockPagedResponse([mockUser]);
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -210,18 +168,7 @@ describe('userService', () => {
 
     it('should handle search and filter params', async () => {
       // Given: Search and filter params
-      const mockResponse = createMockApiResponse(
-        {
-          content: [],
-          number: 0,
-          size: 10,
-          totalElements: 0,
-          totalPages: 0,
-          first: true,
-          last: true,
-        },
-        {}
-      );
+      const mockResponse = createMockPagedResponse([]);
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users with search
@@ -247,18 +194,7 @@ describe('userService', () => {
 
     it('should handle empty results', async () => {
       // Given: Empty response
-      const mockResponse = createMockApiResponse(
-        {
-          content: [],
-          number: 0,
-          size: 10,
-          totalElements: 0,
-          totalPages: 0,
-          first: true,
-          last: true,
-        },
-        {}
-      );
+      const mockResponse = createMockPagedResponse([]);
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
       // When: Get users
@@ -271,15 +207,10 @@ describe('userService', () => {
 
     it('should propagate API errors', async () => {
       // Given: API error
-      const apiError: ApiError = {
-        status: 500,
-        errorCode: 'SERVER_001',
-        message: 'Internal server error',
-      };
-      vi.mocked(httpClient.requestWithMeta).mockRejectedValue(apiError);
+      vi.mocked(httpClient.requestWithMeta).mockRejectedValue(mockApiErrors.serverError);
 
       // When/Then: Propagates error
-      await expect(userService.getUsers()).rejects.toEqual(apiError);
+      await expect(userService.getUsers()).rejects.toEqual(mockApiErrors.serverError);
     });
   });
 
@@ -318,15 +249,10 @@ describe('userService', () => {
 
     it('should propagate 404 errors', async () => {
       // Given: User not found
-      const apiError: ApiError = {
-        status: 404,
-        errorCode: 'RES_001',
-        message: 'User not found',
-      };
-      vi.mocked(httpClient.get).mockRejectedValue(apiError);
+      vi.mocked(httpClient.get).mockRejectedValue(mockApiErrors.notFound);
 
       // When/Then: Propagates 404
-      await expect(userService.getUser(999)).rejects.toEqual(apiError);
+      await expect(userService.getUser(999)).rejects.toEqual(mockApiErrors.notFound);
     });
   });
 
@@ -387,12 +313,7 @@ describe('userService', () => {
 
     it('should propagate validation errors', async () => {
       // Given: Validation error
-      const apiError: ApiError = {
-        status: 400,
-        errorCode: 'VAL_001',
-        message: 'Username already exists',
-      };
-      vi.mocked(httpClient.post).mockRejectedValue(apiError);
+      vi.mocked(httpClient.post).mockRejectedValue(mockApiErrors.validation);
 
       // When/Then: Propagates validation error
       const request: CreateUserRequest = {
@@ -402,7 +323,7 @@ describe('userService', () => {
         fullName: 'Test',
         roles: ['ROLE_SALES'],
       };
-      await expect(userService.createUser(request)).rejects.toEqual(apiError);
+      await expect(userService.createUser(request)).rejects.toEqual(mockApiErrors.validation);
     });
   });
 
@@ -456,19 +377,14 @@ describe('userService', () => {
 
     it('should propagate 404 errors', async () => {
       // Given: User not found
-      const apiError: ApiError = {
-        status: 404,
-        errorCode: 'RES_001',
-        message: 'User not found',
-      };
-      vi.mocked(httpClient.put).mockRejectedValue(apiError);
+      vi.mocked(httpClient.put).mockRejectedValue(mockApiErrors.notFound);
 
       // When/Then: Propagates 404
       const request: UpdateUserRequest = {
         fullName: 'Test',
         email: 'test@example.com',
       };
-      await expect(userService.updateUser(999, request)).rejects.toEqual(apiError);
+      await expect(userService.updateUser(999, request)).rejects.toEqual(mockApiErrors.notFound);
     });
   });
 
@@ -491,16 +407,11 @@ describe('userService', () => {
 
     it('should propagate authorization errors', async () => {
       // Given: Authorization error
-      const apiError: ApiError = {
-        status: 403,
-        errorCode: 'AUTH_005',
-        message: 'Insufficient permissions',
-      };
-      vi.mocked(httpClient.put).mockRejectedValue(apiError);
+      vi.mocked(httpClient.put).mockRejectedValue(mockApiErrors.forbidden);
 
       // When/Then: Propagates auth error
       const request: AssignRolesRequest = { roles: ['ROLE_ADMIN'] };
-      await expect(userService.assignRoles(1, request)).rejects.toEqual(apiError);
+      await expect(userService.assignRoles(1, request)).rejects.toEqual(mockApiErrors.forbidden);
     });
   });
 
@@ -522,16 +433,11 @@ describe('userService', () => {
 
     it('should propagate validation errors', async () => {
       // Given: Weak password error
-      const apiError: ApiError = {
-        status: 400,
-        errorCode: 'VAL_002',
-        message: 'Password too weak',
-      };
-      vi.mocked(httpClient.put).mockRejectedValue(apiError);
+      vi.mocked(httpClient.put).mockRejectedValue(mockApiErrors.validation);
 
       // When/Then: Propagates validation error
       const request: ChangePasswordRequest = { newPassword: '123' };
-      await expect(userService.changePassword(1, request)).rejects.toEqual(apiError);
+      await expect(userService.changePassword(1, request)).rejects.toEqual(mockApiErrors.validation);
     });
   });
 
@@ -550,15 +456,10 @@ describe('userService', () => {
 
     it('should propagate 404 errors', async () => {
       // Given: User not found
-      const apiError: ApiError = {
-        status: 404,
-        errorCode: 'RES_001',
-        message: 'User not found',
-      };
-      vi.mocked(httpClient.post).mockRejectedValue(apiError);
+      vi.mocked(httpClient.post).mockRejectedValue(mockApiErrors.notFound);
 
       // When/Then: Propagates 404
-      await expect(userService.activateUser(999)).rejects.toEqual(apiError);
+      await expect(userService.activateUser(999)).rejects.toEqual(mockApiErrors.notFound);
     });
   });
 
@@ -577,15 +478,10 @@ describe('userService', () => {
 
     it('should propagate 404 errors', async () => {
       // Given: User not found
-      const apiError: ApiError = {
-        status: 404,
-        errorCode: 'RES_001',
-        message: 'User not found',
-      };
-      vi.mocked(httpClient.delete).mockRejectedValue(apiError);
+      vi.mocked(httpClient.delete).mockRejectedValue(mockApiErrors.notFound);
 
       // When/Then: Propagates 404
-      await expect(userService.deleteUser(999)).rejects.toEqual(apiError);
+      await expect(userService.deleteUser(999)).rejects.toEqual(mockApiErrors.notFound);
     });
   });
 
@@ -620,15 +516,10 @@ describe('userService', () => {
 
     it('should propagate API errors', async () => {
       // Given: API error
-      const apiError: ApiError = {
-        status: 500,
-        errorCode: 'SERVER_001',
-        message: 'Database error',
-      };
-      vi.mocked(httpClient.get).mockRejectedValue(apiError);
+      vi.mocked(httpClient.get).mockRejectedValue(mockApiErrors.serverError);
 
       // When/Then: Propagates error
-      await expect(userService.getUserCustomers(1)).rejects.toEqual(apiError);
+      await expect(userService.getUserCustomers(1)).rejects.toEqual(mockApiErrors.serverError);
     });
   });
 
@@ -663,15 +554,10 @@ describe('userService', () => {
 
     it('should propagate validation errors', async () => {
       // Given: Invalid customer IDs
-      const apiError: ApiError = {
-        status: 400,
-        errorCode: 'VAL_003',
-        message: 'Invalid customer IDs',
-      };
-      vi.mocked(httpClient.put).mockRejectedValue(apiError);
+      vi.mocked(httpClient.put).mockRejectedValue(mockApiErrors.validation);
 
       // When/Then: Propagates validation error
-      await expect(userService.assignCustomers(1, [999])).rejects.toEqual(apiError);
+      await expect(userService.assignCustomers(1, [999])).rejects.toEqual(mockApiErrors.validation);
     });
   });
 });

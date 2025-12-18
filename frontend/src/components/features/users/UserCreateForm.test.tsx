@@ -8,6 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserCreateForm } from './UserCreateForm';
 import { createMockUserDetails, type UserDetails } from '@/test/fixtures';
+import { getInputByPlaceholder } from '@/test/helpers';
 import { userService } from '@/services';
 
 // Mock userService
@@ -31,15 +32,11 @@ describe('UserCreateForm', () => {
     );
   }
 
-  // Helper to get input by placeholder
-  function getInput(placeholder: string) {
-    return screen.getByPlaceholderText(placeholder);
-  }
-
-  const usernameInput = () => getInput('Enter username');
-  const emailInput = () => getInput('user@example.com');
-  const fullNameInput = () => getInput('Enter full name');
-  const passwordInput = () => getInput('Enter password');
+  // Input accessor helpers using shared utility
+  const usernameInput = () => getInputByPlaceholder('Enter username');
+  const emailInput = () => getInputByPlaceholder('user@example.com');
+  const fullNameInput = () => getInputByPlaceholder('Enter full name');
+  const passwordInput = () => getInputByPlaceholder('Enter password');
 
   describe('rendering', () => {
     it('should render modal when open', () => {

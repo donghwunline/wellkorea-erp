@@ -5,17 +5,39 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { authService } from './authService';
-import { createMockUser, mockUsers } from '@/test/fixtures';
+import { createMockUser, mockUsers, mockApiErrors } from '@/test/fixtures';
 import type { LoginRequest, LoginResponse } from './types';
-import type { ApiError } from '@/api/types';
 // Import mocked module
 import { httpClient } from '@/api';
 
-// Mock httpClient
+// Mock httpClient with inline factory (vi.mock is hoisted, so can't use imported functions)
 vi.mock('@/api', () => ({
   httpClient: {
-    post: vi.fn(),
     get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+    request: vi.fn(),
+    requestWithMeta: vi.fn(),
+  },
+  AUTH_ENDPOINTS: {
+    LOGIN: '/auth/login',
+    LOGOUT: '/auth/logout',
+    ME: '/auth/me',
+    REFRESH: '/auth/refresh',
+  },
+  USER_ENDPOINTS: {
+    BASE: '/users',
+    byId: (id: number) => `/users/${id}`,
+    roles: (id: number) => `/users/${id}/roles`,
+    password: (id: number) => `/users/${id}/password`,
+    activate: (id: number) => `/users/${id}/activate`,
+    customers: (id: number) => `/users/${id}/customers`,
+  },
+  AUDIT_ENDPOINTS: {
+    BASE: '/audit',
+    byId: (id: number) => `/audit/${id}`,
   },
 }));
 
@@ -132,17 +154,11 @@ describe('authService', () => {
 
     it('should propagate API errors', async () => {
       // Given: API returns error (invalid credentials)
-      const apiError: ApiError = {
-        status: 401,
-        errorCode: 'AUTH_001',
-        message: 'Invalid credentials',
-      };
-
-      vi.mocked(httpClient.post).mockRejectedValue(apiError);
+      vi.mocked(httpClient.post).mockRejectedValue(mockApiErrors.invalidCredentials);
 
       // When/Then: Login rejects with API error
       await expect(authService.login({ username: 'wrong', password: 'wrong' })).rejects.toEqual(
-        apiError
+        mockApiErrors.invalidCredentials
       );
 
       expect(httpClient.post).toHaveBeenCalledWith('/auth/login', {
@@ -178,16 +194,10 @@ describe('authService', () => {
 
     it('should propagate API errors', async () => {
       // Given: API returns error (token already invalidated)
-      const apiError: ApiError = {
-        status: 401,
-        errorCode: 'AUTH_002',
-        message: 'Invalid token',
-      };
-
-      vi.mocked(httpClient.post).mockRejectedValue(apiError);
+      vi.mocked(httpClient.post).mockRejectedValue(mockApiErrors.invalidToken);
 
       // When/Then: Logout rejects with API error
-      await expect(authService.logout()).rejects.toEqual(apiError);
+      await expect(authService.logout()).rejects.toEqual(mockApiErrors.invalidToken);
     });
   });
 
@@ -262,16 +272,10 @@ describe('authService', () => {
 
     it('should propagate API errors', async () => {
       // Given: API returns error (user not found or token invalid)
-      const apiError: ApiError = {
-        status: 404,
-        errorCode: 'AUTH_004',
-        message: 'User not found',
-      };
-
-      vi.mocked(httpClient.get).mockRejectedValue(apiError);
+      vi.mocked(httpClient.get).mockRejectedValue(mockApiErrors.notFound);
 
       // When/Then: getCurrentUser rejects with API error
-      await expect(authService.getCurrentUser()).rejects.toEqual(apiError);
+      await expect(authService.getCurrentUser()).rejects.toEqual(mockApiErrors.notFound);
 
       expect(httpClient.get).toHaveBeenCalledWith('/auth/me');
     });

@@ -8,6 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserPasswordForm } from './UserPasswordForm';
 import { mockUserDetails } from '@/test/fixtures';
+import { getInputByPlaceholder } from '@/test/helpers';
 import { userService } from '@/services';
 
 // Mock userService
@@ -37,10 +38,9 @@ describe('UserPasswordForm', () => {
     );
   }
 
-  // Helper to get input by placeholder
-  const newPasswordInput = () =>
-    screen.getByPlaceholderText('Enter new password (min 8 characters)');
-  const confirmPasswordInput = () => screen.getByPlaceholderText('Re-enter new password');
+  // Input accessor helpers using shared utility
+  const newPasswordInput = () => getInputByPlaceholder('Enter new password (min 8 characters)');
+  const confirmPasswordInput = () => getInputByPlaceholder('Re-enter new password');
 
   describe('rendering', () => {
     it('should render modal when open with user', () => {

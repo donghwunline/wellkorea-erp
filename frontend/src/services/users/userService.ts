@@ -8,7 +8,7 @@
  * - Data normalization (dates, emails, etc.)
  */
 
-import { httpClient } from '@/api';
+import { httpClient, USER_ENDPOINTS } from '@/api';
 import type { PagedResponse } from '@/api/types';
 import { transformPagedResponse } from '@/services/shared';
 import type {
@@ -20,8 +20,6 @@ import type {
   UserDetails,
   UserListParams,
 } from './types';
-
-const BASE_PATH = '/users';
 
 /**
  * Transform UserDetails DTO to domain model.
@@ -48,7 +46,7 @@ export const userService = {
   async getUsers(params?: UserListParams): Promise<PaginatedUsers> {
     const response = await httpClient.requestWithMeta<PagedResponse<UserDetails>>({
       method: 'GET',
-      url: BASE_PATH,
+      url: USER_ENDPOINTS.BASE,
       params,
     });
 
@@ -63,7 +61,7 @@ export const userService = {
    * Get user by ID.
    */
   async getUser(id: number): Promise<UserDetails> {
-    const user = await httpClient.get<UserDetails>(`${BASE_PATH}/${id}`);
+    const user = await httpClient.get<UserDetails>(USER_ENDPOINTS.byId(id));
     return transformUserDetails(user);
   },
 
@@ -71,7 +69,7 @@ export const userService = {
    * Create a new user.
    */
   async createUser(request: CreateUserRequest): Promise<UserDetails> {
-    const user = await httpClient.post<UserDetails>(BASE_PATH, request);
+    const user = await httpClient.post<UserDetails>(USER_ENDPOINTS.BASE, request);
     return transformUserDetails(user);
   },
 
@@ -79,7 +77,7 @@ export const userService = {
    * Update an existing user.
    */
   async updateUser(id: number, request: UpdateUserRequest): Promise<UserDetails> {
-    const user = await httpClient.put<UserDetails>(`${BASE_PATH}/${id}`, request);
+    const user = await httpClient.put<UserDetails>(USER_ENDPOINTS.byId(id), request);
     return transformUserDetails(user);
   },
 
@@ -87,28 +85,28 @@ export const userService = {
    * Assign roles to a user.
    */
   async assignRoles(id: number, request: AssignRolesRequest): Promise<void> {
-    await httpClient.put<void>(`${BASE_PATH}/${id}/roles`, request);
+    await httpClient.put<void>(USER_ENDPOINTS.roles(id), request);
   },
 
   /**
    * Change user password (admin operation).
    */
   async changePassword(id: number, request: ChangePasswordRequest): Promise<void> {
-    await httpClient.put<void>(`${BASE_PATH}/${id}/password`, request);
+    await httpClient.put<void>(USER_ENDPOINTS.password(id), request);
   },
 
   /**
    * Activate a deactivated user.
    */
   async activateUser(id: number): Promise<void> {
-    await httpClient.post<void>(`${BASE_PATH}/${id}/activate`);
+    await httpClient.post<void>(USER_ENDPOINTS.activate(id));
   },
 
   /**
    * Delete (deactivate) a user.
    */
   async deleteUser(id: number): Promise<void> {
-    await httpClient.delete<void>(`${BASE_PATH}/${id}`);
+    await httpClient.delete<void>(USER_ENDPOINTS.byId(id));
   },
 
   /**
@@ -116,7 +114,7 @@ export const userService = {
    */
   async getUserCustomers(id: number): Promise<number[]> {
     const response = await httpClient.get<{ customerIds: number[] }>(
-      `${BASE_PATH}/${id}/customers`
+      USER_ENDPOINTS.customers(id)
     );
     return response.customerIds;
   },
@@ -125,6 +123,6 @@ export const userService = {
    * Assign customers to a user (Sales role filtering per FR-062).
    */
   async assignCustomers(id: number, customerIds: number[]): Promise<void> {
-    await httpClient.put<void>(`${BASE_PATH}/${id}/customers`, { customerIds });
+    await httpClient.put<void>(USER_ENDPOINTS.customers(id), { customerIds });
   },
 };

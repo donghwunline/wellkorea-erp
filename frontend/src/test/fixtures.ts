@@ -308,6 +308,213 @@ export const mockUserDetails = {
   }),
 };
 
+// ============================================================================
+// API Response Fixtures
+// ============================================================================
+
+/**
+ * Creates a mock API response wrapper.
+ * Matches the ApiResponse<T> structure from the backend.
+ *
+ * @example
+ * ```typescript
+ * const response = createMockApiResponse({ id: 1, name: 'Test' });
+ * // { success: true, message: 'Success', data: {...}, timestamp: '...' }
+ * ```
+ */
+export function createMockApiResponse<T>(
+  data: T,
+  metadata?: Record<string, unknown>
+): { success: boolean; message: string; data: T; timestamp: string; metadata?: Record<string, unknown> } {
+  return {
+    success: true,
+    message: 'Success',
+    data,
+    timestamp: '2025-01-01T00:00:00Z',
+    ...(metadata && { metadata }),
+  };
+}
+
+/**
+ * Creates a mock paginated response.
+ * Matches the PagedResponse<T> structure from Spring Data.
+ *
+ * @example
+ * ```typescript
+ * const response = createMockPagedResponse([user1, user2], { page: 0, totalElements: 100 });
+ * ```
+ */
+export function createMockPagedResponse<T>(
+  content: T[],
+  options: {
+    page?: number;
+    size?: number;
+    totalElements?: number;
+    totalPages?: number;
+  } = {}
+) {
+  const { page = 0, size = 10, totalElements = content.length, totalPages = 1 } = options;
+
+  return createMockApiResponse(
+    {
+      content,
+      number: page,
+      size,
+      totalElements,
+      totalPages,
+      first: page === 0,
+      last: page >= totalPages - 1,
+    },
+    {
+      page,
+      size,
+      totalElements,
+      totalPages,
+      first: page === 0,
+      last: page >= totalPages - 1,
+    }
+  );
+}
+
+/**
+ * Creates a mock API error.
+ * Matches the ApiError structure.
+ *
+ * @example
+ * ```typescript
+ * const error = createMockApiError(401, 'AUTH_001', 'Invalid credentials');
+ * ```
+ */
+export function createMockApiError(
+  status: number,
+  errorCode: string,
+  message: string,
+  details?: unknown
+): { status: number; errorCode: string; message: string; details?: unknown } {
+  return {
+    status,
+    errorCode,
+    message,
+    ...(details && { details }),
+  };
+}
+
+/**
+ * Pre-configured API error fixtures for common scenarios.
+ */
+export const mockApiErrors = {
+  /** Invalid credentials (login failure) */
+  invalidCredentials: createMockApiError(401, 'AUTH_001', 'Invalid credentials'),
+  /** Invalid or malformed token */
+  invalidToken: createMockApiError(401, 'AUTH_002', 'Invalid token'),
+  /** Token has expired */
+  tokenExpired: createMockApiError(401, 'AUTH_003', 'Token expired'),
+  /** Resource not found */
+  notFound: createMockApiError(404, 'RES_001', 'Resource not found'),
+  /** Insufficient permissions */
+  forbidden: createMockApiError(403, 'AUTH_005', 'Insufficient permissions'),
+  /** Validation error */
+  validation: createMockApiError(400, 'VAL_001', 'Validation failed'),
+  /** Server error */
+  serverError: createMockApiError(500, 'SERVER_001', 'Internal server error'),
+};
+
+// ============================================================================
+// Audit Log Fixtures
+// ============================================================================
+
+/**
+ * Audit log entry for test fixtures.
+ */
+export interface AuditLogEntry {
+  id: number;
+  entityType: string;
+  entityId: number | null;
+  action: string;
+  userId: number | null;
+  username: string | null;
+  ipAddress: string | null;
+  changes: string | null;
+  metadata: string | null;
+  createdAt: string;
+}
+
+/**
+ * Factory function to create a mock AuditLogEntry.
+ *
+ * @example
+ * ```typescript
+ * const log = createMockAuditLog({ action: 'DELETE', entityType: 'User' });
+ * ```
+ */
+export function createMockAuditLog(overrides?: Partial<AuditLogEntry>): AuditLogEntry {
+  return {
+    id: 1,
+    entityType: 'User',
+    entityId: 123,
+    action: 'CREATE',
+    userId: 1,
+    username: 'admin',
+    ipAddress: '192.168.1.1',
+    changes: '{"field": "value"}',
+    metadata: null,
+    createdAt: '2025-01-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
+/**
+ * Pre-configured audit log fixtures for common scenarios.
+ */
+export const mockAuditLogs = {
+  /** User creation action */
+  userCreate: createMockAuditLog({
+    id: 1,
+    entityType: 'User',
+    entityId: 100,
+    action: 'CREATE',
+    changes: '{"username": "newuser"}',
+  }),
+  /** User update action */
+  userUpdate: createMockAuditLog({
+    id: 2,
+    entityType: 'User',
+    entityId: 100,
+    action: 'UPDATE',
+    changes: '{"email": "updated@example.com"}',
+  }),
+  /** User deletion action */
+  userDelete: createMockAuditLog({
+    id: 3,
+    entityType: 'User',
+    entityId: 100,
+    action: 'DELETE',
+    changes: null,
+  }),
+  /** Login action */
+  login: createMockAuditLog({
+    id: 4,
+    entityType: 'Session',
+    entityId: null,
+    action: 'LOGIN',
+    changes: null,
+  }),
+  /** Audit log with all null optional fields */
+  minimal: createMockAuditLog({
+    id: 5,
+    entityId: null,
+    userId: null,
+    username: null,
+    ipAddress: null,
+    changes: null,
+    metadata: null,
+  }),
+};
+
+// ============================================================================
+// Re-exports
+// ============================================================================
+
 /**
  * Re-export types for convenience in test files
  */

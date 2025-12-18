@@ -118,7 +118,7 @@ describe('HttpClient', () => {
       const config = {
         url: '/api/users',
         method: 'GET',
-      };
+      } as InternalAxiosRequestConfig;
 
       // When: Request interceptor runs
       const result = requestInterceptor(config);
@@ -135,7 +135,7 @@ describe('HttpClient', () => {
       const config = {
         url: '/api/users',
         method: 'GET',
-      };
+      } as InternalAxiosRequestConfig;
 
       // When: Request interceptor runs
       const result = requestInterceptor(config);
@@ -157,7 +157,7 @@ describe('HttpClient', () => {
         headers: {
           'X-Custom-Header': 'custom-value',
         },
-      };
+      } as unknown as InternalAxiosRequestConfig;
 
       // When: Request interceptor runs
       const result = requestInterceptor(config);
@@ -173,11 +173,14 @@ describe('HttpClient', () => {
       // Given: Successful response
       const response = {
         status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as InternalAxiosRequestConfig,
         data: {
           success: true,
           data: { id: 1, name: 'Test' },
         },
-      };
+      } as AxiosResponse;
 
       // When: Success interceptor runs
       const result = responseInterceptorSuccess(response);

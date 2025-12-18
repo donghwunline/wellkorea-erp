@@ -9,7 +9,7 @@
  * - Event emitters for decoupled state updates
  */
 
-import { httpClient } from '@/api';
+import { httpClient, AUTH_ENDPOINTS } from '@/api';
 import type { LoginRequest, LoginResponse, User } from './types';
 
 /**
@@ -66,7 +66,7 @@ export const authService = {
    * No event emitted - login is an intentional user action.
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await httpClient.post<LoginResponse>('/auth/login', credentials);
+    const response = await httpClient.post<LoginResponse>(AUTH_ENDPOINTS.LOGIN, credentials);
 
     // DTO → Domain transformation (normalize data)
     return {
@@ -86,14 +86,14 @@ export const authService = {
    * No event emitted - logout is an intentional user action handled by store.
    */
   async logout(): Promise<void> {
-    await httpClient.post<void>('/auth/logout');
+    await httpClient.post<void>(AUTH_ENDPOINTS.LOGOUT);
   },
 
   /**
    * Get current authenticated user info.
    */
   async getCurrentUser(): Promise<User> {
-    const user = await httpClient.get<User>('/auth/me');
+    const user = await httpClient.get<User>(AUTH_ENDPOINTS.ME);
 
     // Normalize user data
     return {

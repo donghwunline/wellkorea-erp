@@ -42,3 +42,6 @@ export const httpClient = new HttpClient(BASE_URL, tokenStore, onUnauthorized);
 export type { Tokens, ApiError } from './types';
 export { HttpClient } from './httpClient';
 export { tokenStore } from './tokenStore';
+
+// Re-export endpoint constants
+export { AUTH_ENDPOINTS, USER_ENDPOINTS, AUDIT_ENDPOINTS } from './endpoints';

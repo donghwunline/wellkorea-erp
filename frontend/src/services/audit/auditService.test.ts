@@ -5,48 +5,40 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { auditService } from './auditService';
-import type { ApiError } from '@/api/types';
+import { createMockAuditLog, mockApiErrors } from '@/test/fixtures';
 import type { AuditLogListParams } from './types';
 import { httpClient } from '@/api';
 
-// Mock httpClient
+// Mock httpClient with inline factory (vi.mock is hoisted, so can't use imported functions)
 vi.mock('@/api', () => ({
   httpClient: {
     get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+    request: vi.fn(),
     requestWithMeta: vi.fn(),
   },
+  AUTH_ENDPOINTS: {
+    LOGIN: '/auth/login',
+    LOGOUT: '/auth/logout',
+    ME: '/auth/me',
+    REFRESH: '/auth/refresh',
+  },
+  USER_ENDPOINTS: {
+    BASE: '/users',
+    byId: (id: number) => `/users/${id}`,
+    roles: (id: number) => `/users/${id}/roles`,
+    password: (id: number) => `/users/${id}/password`,
+    activate: (id: number) => `/users/${id}/activate`,
+    customers: (id: number) => `/users/${id}/customers`,
+  },
+  AUDIT_ENDPOINTS: {
+    BASE: '/audit',
+    byId: (id: number) => `/audit/${id}`,
+  },
 }));
-
-// DTO interface (matches backend AuditLogResponse.java)
-interface AuditLogEntryDto {
-  id: number;
-  entityType: string;
-  entityId: number | null;
-  action: string;
-  userId: number | null;
-  username: string | null;
-  ipAddress: string | null;
-  changes: string | null;
-  metadata: string | null;
-  createdAt: string;
-}
-
-// Test fixture factory
-function createMockAuditLogDto(overrides?: Partial<AuditLogEntryDto>): AuditLogEntryDto {
-  return {
-    id: 1,
-    entityType: 'User',
-    entityId: 123,
-    action: 'CREATE',
-    userId: 1,
-    username: 'admin',
-    ipAddress: '192.168.1.1',
-    changes: '{"name": "testuser"}',
-    metadata: null,
-    createdAt: '2025-01-01T00:00:00Z',
-    ...overrides,
-  };
-}
 
 describe('auditService', () => {
   beforeEach(() => {
@@ -56,8 +48,11 @@ describe('auditService', () => {
   describe('getAuditLogs', () => {
     it('should fetch paginated audit logs and transform data', async () => {
       // Given: Mock paginated response
-      const mockDto = createMockAuditLogDto();
+      const mockDto = createMockAuditLog();
       const mockResponse = {
+        success: true,
+        message: 'Audit logs retrieved successfully',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
           content: [mockDto],
           number: 0,
@@ -97,10 +92,13 @@ describe('auditService', () => {
 
     it('should pass through entityId as number', async () => {
       // Given: Response with number entityId (backend returns Long)
-      const mockDto = createMockAuditLogDto({
+      const mockDto = createMockAuditLog({
         entityId: 456,
       });
       const mockResponse = {
+        success: true,
+        message: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
           content: [mockDto],
           number: 0,
@@ -124,10 +122,13 @@ describe('auditService', () => {
 
     it('should handle null entityId', async () => {
       // Given: Response with null entityId
-      const mockDto = createMockAuditLogDto({
+      const mockDto = createMockAuditLog({
         entityId: null,
       });
       const mockResponse = {
+        success: true,
+        message: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
           content: [mockDto],
           number: 0,
@@ -151,8 +152,11 @@ describe('auditService', () => {
     it('should handle pagination metadata from metadata field', async () => {
       // Given: Response with metadata
       const mockResponse = {
+        success: true,
+        message: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
-          content: [createMockAuditLogDto()],
+          content: [createMockAuditLog()],
           number: 5, // Different from metadata
           size: 100,
           totalElements: 500,
@@ -183,8 +187,11 @@ describe('auditService', () => {
     it('should fallback to PagedResponse fields if metadata missing', async () => {
       // Given: Response without metadata
       const mockResponse = {
+        success: true,
+        message: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
-          content: [createMockAuditLogDto()],
+          content: [createMockAuditLog()],
           number: 3,
           size: 25,
           totalElements: 150,
@@ -219,6 +226,9 @@ describe('auditService', () => {
       };
 
       const mockResponse = {
+        success: true,
+        message: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
           content: [],
           number: 0,
@@ -246,6 +256,9 @@ describe('auditService', () => {
     it('should handle empty results', async () => {
       // Given: Empty response
       const mockResponse = {
+        success: true,
+        message: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
           content: [],
           number: 0,
@@ -269,7 +282,7 @@ describe('auditService', () => {
 
     it('should preserve all audit log fields', async () => {
       // Given: Complete audit log entry
-      const mockDto = createMockAuditLogDto({
+      const mockDto = createMockAuditLog({
         id: 100,
         entityType: 'Customer',
         entityId: 789,
@@ -282,6 +295,9 @@ describe('auditService', () => {
         createdAt: '2025-06-15T14:30:00Z',
       });
       const mockResponse = {
+        success: true,
+        message: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
           content: [mockDto],
           number: 0,
@@ -314,7 +330,7 @@ describe('auditService', () => {
 
     it('should handle entries with null optional fields', async () => {
       // Given: Audit log with null optional fields
-      const mockDto = createMockAuditLogDto({
+      const mockDto = createMockAuditLog({
         entityId: null,
         userId: null,
         username: null,
@@ -323,6 +339,9 @@ describe('auditService', () => {
         metadata: null,
       });
       const mockResponse = {
+        success: true,
+        message: 'Success',
+        timestamp: '2025-01-01T00:00:00Z',
         data: {
           content: [mockDto],
           number: 0,
@@ -350,22 +369,17 @@ describe('auditService', () => {
 
     it('should propagate API errors', async () => {
       // Given: API error
-      const apiError: ApiError = {
-        status: 500,
-        errorCode: 'SERVER_001',
-        message: 'Database error',
-      };
-      vi.mocked(httpClient.requestWithMeta).mockRejectedValue(apiError);
+      vi.mocked(httpClient.requestWithMeta).mockRejectedValue(mockApiErrors.serverError);
 
       // When/Then: Propagates error
-      await expect(auditService.getAuditLogs()).rejects.toEqual(apiError);
+      await expect(auditService.getAuditLogs()).rejects.toEqual(mockApiErrors.serverError);
     });
   });
 
   describe('getAuditLog', () => {
     it('should fetch single audit log by ID', async () => {
       // Given: Mock audit log response
-      const mockDto = createMockAuditLogDto({
+      const mockDto = createMockAuditLog({
         id: 555,
         entityId: 999,
       });
@@ -385,7 +399,7 @@ describe('auditService', () => {
 
     it('should pass through entityId as number', async () => {
       // Given: DTO with number entityId
-      const mockDto = createMockAuditLogDto({
+      const mockDto = createMockAuditLog({
         entityId: 12345,
       });
       vi.mocked(httpClient.get).mockResolvedValue(mockDto);
@@ -400,7 +414,7 @@ describe('auditService', () => {
 
     it('should handle null entityId', async () => {
       // Given: DTO with null entityId
-      const mockDto = createMockAuditLogDto({
+      const mockDto = createMockAuditLog({
         entityId: null,
       });
       vi.mocked(httpClient.get).mockResolvedValue(mockDto);
@@ -414,7 +428,7 @@ describe('auditService', () => {
 
     it('should preserve all fields', async () => {
       // Given: Complete audit log DTO
-      const mockDto = createMockAuditLogDto({
+      const mockDto = createMockAuditLog({
         id: 777,
         entityType: 'Project',
         entityId: 888,
@@ -446,28 +460,18 @@ describe('auditService', () => {
 
     it('should propagate 404 errors', async () => {
       // Given: Audit log not found
-      const apiError: ApiError = {
-        status: 404,
-        errorCode: 'RES_001',
-        message: 'Audit log not found',
-      };
-      vi.mocked(httpClient.get).mockRejectedValue(apiError);
+      vi.mocked(httpClient.get).mockRejectedValue(mockApiErrors.notFound);
 
       // When/Then: Propagates 404
-      await expect(auditService.getAuditLog(999)).rejects.toEqual(apiError);
+      await expect(auditService.getAuditLog(999)).rejects.toEqual(mockApiErrors.notFound);
     });
 
     it('should propagate authorization errors', async () => {
       // Given: Unauthorized access
-      const apiError: ApiError = {
-        status: 403,
-        errorCode: 'AUTH_005',
-        message: 'Insufficient permissions to view audit logs',
-      };
-      vi.mocked(httpClient.get).mockRejectedValue(apiError);
+      vi.mocked(httpClient.get).mockRejectedValue(mockApiErrors.forbidden);
 
       // When/Then: Propagates auth error
-      await expect(auditService.getAuditLog(1)).rejects.toEqual(apiError);
+      await expect(auditService.getAuditLog(1)).rejects.toEqual(mockApiErrors.forbidden);
     });
   });
 });

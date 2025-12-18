@@ -11,6 +11,7 @@
 
 import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import type { ApiError, ApiResponse, Tokens, TokenStore } from './types';
+import { AUTH_ENDPOINTS } from './endpoints';
 
 /**
  * Pending request during token refresh.
@@ -167,7 +168,7 @@ export class HttpClient {
         refreshToken: string | null;
       }>
     >(
-      '/auth/refresh',
+      AUTH_ENDPOINTS.REFRESH,
       undefined, // No body
       {
         headers: {
