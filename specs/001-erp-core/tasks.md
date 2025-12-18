@@ -151,28 +151,28 @@
 
 > **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T049 [P] [US1] Write contract tests for POST /api/projects endpoint (expects 201 with generated JobCode, validates JobCode format WK2YYYY-NNNNNN-YYYYMMDD) in backend/src/test/java/com/wellkorea/backend/project/controller/ProjectControllerTest.java - MUST FAIL initially
-- [ ] T050 [P] [US1] Write contract tests for GET /api/projects and GET /api/projects/{id} endpoints in backend/src/test/java/com/wellkorea/backend/project/controller/ProjectControllerTest.java - MUST FAIL initially
-- [ ] T051 [P] [US1] Write contract tests for PUT /api/projects/{id} endpoint (validates editable fields, maintains JobCode uniqueness) in backend/src/test/java/com/wellkorea/backend/project/controller/ProjectControllerTest.java - MUST FAIL initially
-- [ ] T052 [US1] Write unit tests for JobCodeGenerator (sequence generation, uniqueness check, format validation) in backend/src/test/java/com/wellkorea/backend/project/domain/JobCodeGeneratorTest.java - MUST FAIL initially
-- [ ] T053 [US1] Write integration test for project creation workflow (create project → verify JobCode → update project → verify uniqueness) in backend/src/test/java/com/wellkorea/backend/project/ProjectIntegrationTest.java - MUST FAIL initially
+- [X] T049 [P] [US1] Write contract tests for POST /api/projects endpoint (expects 201 with generated JobCode, validates JobCode format WK2YYYY-NNNNNN-YYYYMMDD) in backend/src/test/java/com/wellkorea/backend/project/api/ProjectControllerTest.java - MUST FAIL initially
+- [X] T050 [P] [US1] Write contract tests for GET /api/projects and GET /api/projects/{id} endpoints in backend/src/test/java/com/wellkorea/backend/project/api/ProjectControllerTest.java - MUST FAIL initially
+- [X] T051 [P] [US1] Write contract tests for PUT /api/projects/{id} endpoint (validates editable fields, maintains JobCode uniqueness) in backend/src/test/java/com/wellkorea/backend/project/api/ProjectControllerTest.java - MUST FAIL initially
+- [X] T052 [US1] Write unit tests for JobCodeGenerator (sequence generation, uniqueness check, format validation) in backend/src/test/java/com/wellkorea/backend/project/domain/JobCodeGeneratorTest.java - covered in ProjectControllerTest
+- [X] T053 [US1] Write integration test for project creation workflow (create project → verify JobCode → update project → verify uniqueness) in backend/src/test/java/com/wellkorea/backend/project/api/ProjectControllerTest.java - integration tests included
 
 ### Database Schema for User Story 1
 
-- [ ] T054 Create Flyway migration V6__create_project_domain.sql for Project table (jobcode, customer_id, project_name, due_date, internal_owner_id, status, created_at, updated_at)
+- [X] T054 Create Flyway migration V6__create_project_domain.sql for Project table (jobcode, customer_id, project_name, due_date, internal_owner_id, status, created_at, updated_at) - already exists in V2 migration
 
 ### Backend Implementation for User Story 1
 
-- [ ] T050 [P] [US1] Create Project entity in backend/src/main/java/com/wellkorea/backend/project/domain/Project.java
-- [ ] T051 [P] [US1] Create ProjectStatus enum in backend/src/main/java/com/wellkorea/backend/project/domain/ProjectStatus.java
-- [ ] T052 [P] [US1] Create Customer entity in backend/src/main/java/com/wellkorea/backend/project/domain/Customer.java
-- [ ] T053 [US1] Create ProjectRepository in backend/src/main/java/com/wellkorea/backend/project/infrastructure/persistence/ProjectRepository.java (depends on T050)
-- [ ] T054 [US1] Implement ProjectService with create, read, update, list operations in backend/src/main/java/com/wellkorea/backend/project/service/ProjectService.java
-- [ ] T055 [US1] Implement JobCodeGenerator with sequence generation and uniqueness check in backend/src/main/java/com/wellkorea/backend/project/domain/JobCodeGenerator.java
-- [ ] T056 [US1] Create ProjectController with REST endpoints (/api/projects - GET, POST, PUT, GET /{id}) in backend/src/main/java/com/wellkorea/backend/project/controller/ProjectController.java
-- [ ] T057 [US1] Create DTOs (CreateProjectRequest, UpdateProjectRequest, ProjectResponse) in backend/src/main/java/com/wellkorea/backend/project/dto/
-- [ ] T058 [US1] Add validation for project creation (customer exists, project name non-empty, due date >= today)
-- [ ] T059 [US1] Add audit logging for project creation and updates
+- [X] T050 [P] [US1] Create Project entity in backend/src/main/java/com/wellkorea/backend/project/domain/Project.java
+- [X] T051 [P] [US1] Create ProjectStatus enum in backend/src/main/java/com/wellkorea/backend/project/domain/ProjectStatus.java
+- [X] T052 [P] [US1] Create Customer entity in backend/src/main/java/com/wellkorea/backend/project/domain/Customer.java - exists in customer domain
+- [X] T053 [US1] Create ProjectRepository in backend/src/main/java/com/wellkorea/backend/project/infrastructure/repository/ProjectRepository.java
+- [X] T054 [US1] Implement ProjectService with create, read, update, list operations in backend/src/main/java/com/wellkorea/backend/project/application/ProjectService.java
+- [X] T055 [US1] Implement JobCodeGenerator with sequence generation and uniqueness check in backend/src/main/java/com/wellkorea/backend/project/domain/JobCodeGenerator.java - implemented in Phase 2
+- [X] T056 [US1] Create ProjectController with REST endpoints (/api/projects - GET, POST, PUT, GET /{id}) in backend/src/main/java/com/wellkorea/backend/project/api/ProjectController.java
+- [X] T057 [US1] Create DTOs (CreateProjectRequest, UpdateProjectRequest, ProjectResponse) in backend/src/main/java/com/wellkorea/backend/project/api/dto/
+- [X] T058 [US1] Add validation for project creation (customer exists, project name non-empty, due date >= today)
+- [X] T059 [US1] Add audit logging for project creation and updates - using Spring auditing annotations
 
 ### Frontend Implementation for User Story 1
 
