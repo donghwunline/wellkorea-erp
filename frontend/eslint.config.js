@@ -69,11 +69,13 @@ export default defineConfig([
           patterns: [
             {
               group: ['@/services', '@/services/*'],
-              message: '❌ UI components must receive data via props. Move to @/components/features/ for smart components.',
+              message:
+                '❌ UI components must receive data via props. Move to @/components/features/ for smart components.',
             },
             {
               group: ['@/stores', '@/stores/*'],
-              message: '❌ UI components must receive data via props. Move to @/components/features/ for smart components.',
+              message:
+                '❌ UI components must receive data via props. Move to @/components/features/ for smart components.',
             },
             {
               group: ['@/api', '@/api/*'],
@@ -97,7 +99,8 @@ export default defineConfig([
           patterns: [
             {
               group: ['@/services', '@/services/*'],
-              message: '❌ Shared hooks should only use stores. Feature-specific hooks go in @/components/features/**/hooks.',
+              message:
+                '❌ Shared hooks should only use stores. Feature-specific hooks go in @/components/features/**/hooks.',
               allowTypeImports: true,
             },
           ],
