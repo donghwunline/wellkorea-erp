@@ -3,10 +3,11 @@
  * Tests audit log querying, entity ID transformation, pagination handling, and error propagation.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { auditService } from './auditService';
 import type { ApiError } from '@/api/types';
 import type { AuditLogListParams } from './types';
+import { httpClient } from '@/api';
 
 // Mock httpClient
 vi.mock('@/api', () => ({
@@ -15,8 +16,6 @@ vi.mock('@/api', () => ({
     requestWithMeta: vi.fn(),
   },
 }));
-
-import { httpClient } from '@/api';
 
 // DTO interface (matches backend AuditLogResponse.java)
 interface AuditLogEntryDto {

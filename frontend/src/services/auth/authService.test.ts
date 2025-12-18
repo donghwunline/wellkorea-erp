@@ -3,11 +3,13 @@
  * Tests authentication business logic, API calls, and data normalization.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { authService } from './authService';
-import { mockUsers, createMockUser } from '@/test/fixtures';
+import { createMockUser, mockUsers } from '@/test/fixtures';
 import type { LoginRequest, LoginResponse } from './types';
 import type { ApiError } from '@/api/types';
+// Import mocked module
+import { httpClient } from '@/api';
 
 // Mock httpClient
 vi.mock('@/api', () => ({
@@ -16,9 +18,6 @@ vi.mock('@/api', () => ({
     get: vi.fn(),
   },
 }));
-
-// Import mocked module
-import { httpClient } from '@/api';
 
 describe('authService', () => {
   beforeEach(() => {

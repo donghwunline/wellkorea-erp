@@ -137,7 +137,7 @@ export function isNotFoundError(errorCode?: string): boolean {
  * @returns Display strategy: 'inline', 'toast', 'banner', or 'modal'
  */
 export function getErrorDisplayStrategy(
-  errorCode?: string,
+  errorCode?: string
 ): 'inline' | 'toast' | 'banner' | 'modal' {
   if (!errorCode) return 'toast';
   if (isValidationError(errorCode)) {

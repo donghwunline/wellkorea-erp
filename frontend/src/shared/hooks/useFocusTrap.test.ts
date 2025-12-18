@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useFocusTrap } from './useFocusTrap';
 
@@ -50,7 +50,7 @@ describe('useFocusTrap', () => {
       // Manually trigger the effect by re-rendering
       const { rerender } = renderHook(
         ({ isActive }) => useFocusTrap(isActive, { autoFocus: true }),
-        { initialProps: { isActive: false } },
+        { initialProps: { isActive: false } }
       );
 
       rerender({ isActive: true });
@@ -96,10 +96,9 @@ describe('useFocusTrap', () => {
     });
 
     it('activates when isActive changes from false to true', () => {
-      const { result, rerender } = renderHook(
-        ({ isActive }) => useFocusTrap(isActive),
-        { initialProps: { isActive: false } },
-      );
+      const { result, rerender } = renderHook(({ isActive }) => useFocusTrap(isActive), {
+        initialProps: { isActive: false },
+      });
       result.current.current = container;
 
       rerender({ isActive: true });
@@ -109,10 +108,9 @@ describe('useFocusTrap', () => {
     });
 
     it('deactivates when isActive changes from true to false', () => {
-      const { result, rerender } = renderHook(
-        ({ isActive }) => useFocusTrap(isActive),
-        { initialProps: { isActive: true } },
-      );
+      const { result, rerender } = renderHook(({ isActive }) => useFocusTrap(isActive), {
+        initialProps: { isActive: true },
+      });
       result.current.current = container;
 
       rerender({ isActive: false });
@@ -162,13 +160,11 @@ describe('useFocusTrap', () => {
 
   describe('options', () => {
     it('respects autoFocus option', () => {
-      const { result: withAutoFocus } = renderHook(() =>
-        useFocusTrap(true, { autoFocus: true }),
-      );
+      const { result: withAutoFocus } = renderHook(() => useFocusTrap(true, { autoFocus: true }));
       withAutoFocus.current.current = container;
 
       const { result: withoutAutoFocus } = renderHook(() =>
-        useFocusTrap(true, { autoFocus: false }),
+        useFocusTrap(true, { autoFocus: false })
       );
       withoutAutoFocus.current.current = container;
 
@@ -182,13 +178,11 @@ describe('useFocusTrap', () => {
       document.body.appendChild(outsideButton);
       outsideButton.focus();
 
-      const { result: withRestore } = renderHook(() =>
-        useFocusTrap(true, { restoreFocus: true }),
-      );
+      const { result: withRestore } = renderHook(() => useFocusTrap(true, { restoreFocus: true }));
       withRestore.current.current = container;
 
       const { result: withoutRestore } = renderHook(() =>
-        useFocusTrap(true, { restoreFocus: false }),
+        useFocusTrap(true, { restoreFocus: false })
       );
       withoutRestore.current.current = container;
 

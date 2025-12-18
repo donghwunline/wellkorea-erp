@@ -3,8 +3,10 @@
  * Tests token storage abstraction layer that delegates to authStorage.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tokenStore } from './tokenStore';
+// Import mocked module
+import { authStorage } from '@/shared/utils';
 
 // Mock authStorage module
 vi.mock('@/shared/utils', () => ({
@@ -16,9 +18,6 @@ vi.mock('@/shared/utils', () => ({
     clearAuth: vi.fn(),
   },
 }));
-
-// Import mocked module
-import { authStorage } from '@/shared/utils';
 
 describe('tokenStore', () => {
   beforeEach(() => {

@@ -36,6 +36,6 @@ export function useAuth() {
       logout: s.logout,
       hasRole: s.hasRole,
       hasAnyRole: s.hasAnyRole,
-    })),
+    }))
   );
 }

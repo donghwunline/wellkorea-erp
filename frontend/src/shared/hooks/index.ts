@@ -12,10 +12,7 @@
 
 export { useAuth } from './useAuth';
 export { usePaginatedSearch } from './usePaginatedSearch';
-export type {
-  UsePaginatedSearchOptions,
-  UsePaginatedSearchReturn,
-} from './usePaginatedSearch';
+export type { UsePaginatedSearchOptions, UsePaginatedSearchReturn } from './usePaginatedSearch';
 
 // UI primitive hooks (accessibility and overlay support)
 export { useFocusTrap } from './useFocusTrap';

@@ -3,9 +3,9 @@
  * Tests pagination transformation logic and metadata fallback behavior.
  */
 
-import { describe, it, expect } from 'vitest';
-import { transformPagedResponse, createEmptyPaginated } from './pagination';
-import type { PagedResponse, PaginationMetadata, Paginated } from '@/api/types';
+import { describe, expect, it } from 'vitest';
+import { createEmptyPaginated, transformPagedResponse } from './pagination';
+import type { PagedResponse, Paginated, PaginationMetadata } from '@/api/types';
 
 describe('pagination utilities', () => {
   describe('transformPagedResponse', () => {

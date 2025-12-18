@@ -27,7 +27,7 @@
  * ```
  */
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 
 export interface UseFocusTrapOptions {
   /**
@@ -51,7 +51,7 @@ export interface UseFocusTrapOptions {
  */
 export function useFocusTrap<T extends HTMLElement = HTMLElement>(
   isActive: boolean,
-  options: UseFocusTrapOptions = {},
+  options: UseFocusTrapOptions = {}
 ): RefObject<T | null> {
   const { autoFocus = true, restoreFocus = true } = options;
   const containerRef = useRef<T | null>(null);
@@ -67,7 +67,7 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
 
     // Get all focusable elements within container
     const focusableElements = container.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
 
     // If no focusable elements, nothing to do

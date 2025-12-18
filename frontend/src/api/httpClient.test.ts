@@ -3,10 +3,10 @@
  * Tests token injection, AUTH_003 refresh logic, request queuing, and error normalization.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
-import axios, { type AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from 'axios';
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import axios, { type AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { HttpClient } from './httpClient';
-import type { TokenStore, Tokens } from './types';
+import type { Tokens, TokenStore } from './types';
 
 // Mock axios
 vi.mock('axios');

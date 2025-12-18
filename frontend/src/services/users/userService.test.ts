@@ -78,7 +78,7 @@ describe('userService', () => {
           totalPages: 1,
           first: true,
           last: true,
-        },
+        }
       );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
@@ -114,7 +114,7 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        {},
+        {}
       );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
@@ -140,7 +140,7 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        {},
+        {}
       );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
@@ -170,7 +170,7 @@ describe('userService', () => {
           totalPages: 5,
           first: false,
           last: false,
-        },
+        }
       );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
@@ -195,7 +195,7 @@ describe('userService', () => {
           first: false,
           last: false,
         },
-        undefined,
+        undefined
       );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
@@ -220,7 +220,7 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        {},
+        {}
       );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 
@@ -257,7 +257,7 @@ describe('userService', () => {
           first: true,
           last: true,
         },
-        {},
+        {}
       );
       vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
 

@@ -152,7 +152,7 @@ export class HttpClient {
         } finally {
           this.isRefreshing = false;
         }
-      },
+      }
     );
   }
 
@@ -173,7 +173,7 @@ export class HttpClient {
         headers: {
           Authorization: `Bearer ${currentAccessToken}`,
         },
-      },
+      }
     );
 
     const { accessToken, refreshToken } = response.data.data;

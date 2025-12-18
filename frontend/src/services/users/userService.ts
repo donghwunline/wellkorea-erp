@@ -115,7 +115,9 @@ export const userService = {
    * Get customer assignments for a user (Sales role filtering per FR-062).
    */
   async getUserCustomers(id: number): Promise<number[]> {
-    const response = await httpClient.get<{ customerIds: number[] }>(`${BASE_PATH}/${id}/customers`);
+    const response = await httpClient.get<{ customerIds: number[] }>(
+      `${BASE_PATH}/${id}/customers`
+    );
     return response.customerIds;
   },
 

@@ -52,8 +52,7 @@ describe('storage utility', () => {
       // Manually set invalid JSON
       localStorage.setItem('invalid', '{invalid json');
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
-      });
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = storage.getJson('invalid');
 
@@ -68,8 +67,7 @@ describe('storage utility', () => {
       const circular: Record<string, unknown> = {};
       circular.self = circular; // Create circular reference
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
-      });
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       storage.setJson('circular', circular);
 
