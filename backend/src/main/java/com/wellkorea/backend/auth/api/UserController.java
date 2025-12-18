@@ -13,7 +13,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -45,24 +47,32 @@ public class UserController {
         this.customerAssignmentService = customerAssignmentService;
     }
 
+    private static final int MAX_PAGE_SIZE = 100;
+
     /**
      * GET /api/users
      * List all users with pagination.
+     * Default page size is 20, maximum is 100.
      */
     @GetMapping
     public ResponseEntity<ApiResponse<Page<UserResponse>>> listUsers(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean activeOnly,
-            Pageable pageable) {
+            @PageableDefault(size = 20) Pageable pageable) {
+
+        // Enforce maximum page size to prevent memory/performance issues
+        Pageable safePageable = pageable.getPageSize() > MAX_PAGE_SIZE
+                ? PageRequest.of(pageable.getPageNumber(), MAX_PAGE_SIZE, pageable.getSort())
+                : pageable;
 
         Page<UserResponse> users;
 
         if (search != null && !search.isBlank()) {
-            users = userQuery.searchUsers(search, pageable);
+            users = userQuery.searchUsers(search, safePageable);
         } else if (Boolean.TRUE.equals(activeOnly)) {
-            users = userQuery.getActiveUsers(pageable);
+            users = userQuery.getActiveUsers(safePageable);
         } else {
-            users = userQuery.getAllUsers(pageable);
+            users = userQuery.getAllUsers(safePageable);
         }
 
         Map<String, Object> metadata = Map.of(
