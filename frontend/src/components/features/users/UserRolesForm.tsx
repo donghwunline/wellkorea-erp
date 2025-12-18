@@ -5,8 +5,8 @@
  * Notifies parent via onSuccess callback after successful role assignment.
  */
 
-import { useState, type FormEvent } from 'react';
-import { userService, type UserDetails } from '@/services';
+import { type FormEvent, useState } from 'react';
+import { type UserDetails, userService } from '@/services';
 import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/shared/types/auth';
 import { Badge, Button, ErrorAlert, Modal } from '@/components/ui';
 
@@ -32,7 +32,7 @@ export function UserRolesForm({ isOpen, user, onClose, onSuccess }: Readonly<Use
 
   const toggleRole = (role: RoleName) => {
     setSelectedRoles(prev =>
-      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role],
+      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
     );
   };
 

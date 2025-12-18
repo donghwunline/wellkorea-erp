@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { userService, type UserDetails } from '@/services';
+import { type UserDetails, userService } from '@/services';
 import { ConfirmationModal } from '@/components/ui';
 
 export interface UserDeactivateModalProps {

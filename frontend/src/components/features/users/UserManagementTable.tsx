@@ -10,7 +10,7 @@
  * This component owns Server State (Tier 3) for the user list.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { userService } from '@/services';
 import type { UserDetails } from '@/shared/types';
 import { ROLE_LABELS, type RoleName } from '@/shared/types';

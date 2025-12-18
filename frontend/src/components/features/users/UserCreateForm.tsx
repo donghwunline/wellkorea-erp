@@ -5,7 +5,7 @@
  * Notifies parent via onSuccess callback after successful creation.
  */
 
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 import { userService } from '@/services';
 import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/shared/types/auth';
 import { Button, ErrorAlert, FormField, Modal } from '@/components/ui';
@@ -56,9 +56,7 @@ export function UserCreateForm({ isOpen, onClose, onSuccess }: Readonly<UserCrea
   const toggleRole = (role: RoleName) => {
     setFormData(prev => ({
       ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter(r => r !== role)
-        : [...prev.roles, role],
+      roles: prev.roles.includes(role) ? prev.roles.filter(r => r !== role) : [...prev.roles, role],
     }));
   };
 

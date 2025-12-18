@@ -8,7 +8,7 @@
  * Server state (Tier 3) is managed by the table component or useAuditLogActions.
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { usePaginatedSearch } from '@/shared/hooks';
 
 export interface AuditLogFilters {

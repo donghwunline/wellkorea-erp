@@ -5,8 +5,8 @@
  * Notifies parent via onSuccess callback after successful password change.
  */
 
-import { useState, type FormEvent } from 'react';
-import { userService, type UserDetails } from '@/services';
+import { type FormEvent, useState } from 'react';
+import { type UserDetails, userService } from '@/services';
 import { Button, ErrorAlert, FormField, Modal } from '@/components/ui';
 
 export interface UserPasswordFormProps {

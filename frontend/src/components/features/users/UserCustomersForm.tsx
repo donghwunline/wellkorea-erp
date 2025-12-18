@@ -5,7 +5,7 @@
  * Notifies parent via onSuccess callback after successful customer assignment.
  */
 
-import { useState, useEffect, type FormEvent } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { type UserDetails, userService } from '@/services';
 import { Button, ErrorAlert, LoadingState, Modal } from '@/components/ui';
 
@@ -59,7 +59,7 @@ export function UserCustomersForm({
 
   const toggleCustomer = (customerId: number) => {
     setSelectedCustomers(prev =>
-      prev.includes(customerId) ? prev.filter(id => id !== customerId) : [...prev, customerId],
+      prev.includes(customerId) ? prev.filter(id => id !== customerId) : [...prev, customerId]
     );
   };
 
