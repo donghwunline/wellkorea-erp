@@ -187,12 +187,28 @@ public class AuthenticationService {
         }
     }
 
+    /**
+     * Update the last login timestamp for a user.
+     * <p>
+     * <b>Fire-and-forget pattern:</b> This method intentionally catches and logs exceptions
+     * without re-throwing them. The rationale is that updating last login is a non-critical
+     * side effect that should never prevent a successful login. If the update fails
+     * (e.g., due to a transient database issue), the user should still be able to log in.
+     * The failure is logged for operational visibility but does not affect the login response.
+     * <p>
+     * This approach prioritizes user experience (successful login) over complete data
+     * consistency (accurate last_login timestamp).
+     *
+     * @param user The user whose last login timestamp should be updated
+     */
     @Transactional
     protected void updateLastLogin(User user) {
         try {
             User updated = user.withLastLogin();
             userRepository.save(updated);
         } catch (Exception e) {
+            // Fire-and-forget: Log error but don't propagate - login should succeed
+            // even if we can't record the last login timestamp
             logger.error("Failed to update last login for user: {}", user.getUsername(), e);
         }
     }
