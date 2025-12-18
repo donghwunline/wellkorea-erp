@@ -27,14 +27,9 @@ function renderUserManagementPage() {
   );
 }
 
-// Track props passed to mocked components
+// Track props passed to mocked components (only those used in assertions)
 let userTableProps: Record<string, unknown> = {};
-let createFormProps: Record<string, unknown> = {};
 let editFormProps: Record<string, unknown> = {};
-let rolesFormProps: Record<string, unknown> = {};
-let passwordFormProps: Record<string, unknown> = {};
-let customersFormProps: Record<string, unknown> = {};
-let deactivateModalProps: Record<string, unknown> = {};
 
 // Mock shared hooks
 const mockSetPage = vi.fn();
@@ -104,7 +99,6 @@ vi.mock('@/components/features/users', () => ({
     );
   }),
   UserCreateForm: vi.fn((props: Record<string, unknown>) => {
-    createFormProps = props;
     return props.isOpen ? (
       <div data-testid="create-form">
         <button data-testid="create-form-close" onClick={() => (props.onClose as () => void)()}>
@@ -131,7 +125,6 @@ vi.mock('@/components/features/users', () => ({
     ) : null;
   }),
   UserRolesForm: vi.fn((props: Record<string, unknown>) => {
-    rolesFormProps = props;
     return props.isOpen ? (
       <div data-testid="roles-form">
         <span data-testid="roles-form-user">{(props.user as UserDetails | null)?.username}</span>
@@ -145,7 +138,6 @@ vi.mock('@/components/features/users', () => ({
     ) : null;
   }),
   UserPasswordForm: vi.fn((props: Record<string, unknown>) => {
-    passwordFormProps = props;
     return props.isOpen ? (
       <div data-testid="password-form">
         <span data-testid="password-form-user">{(props.user as UserDetails | null)?.username}</span>
@@ -162,7 +154,6 @@ vi.mock('@/components/features/users', () => ({
     ) : null;
   }),
   UserCustomersForm: vi.fn((props: Record<string, unknown>) => {
-    customersFormProps = props;
     return props.isOpen ? (
       <div data-testid="customers-form">
         <span data-testid="customers-form-user">
@@ -181,7 +172,6 @@ vi.mock('@/components/features/users', () => ({
     ) : null;
   }),
   UserDeactivateModal: vi.fn((props: Record<string, unknown>) => {
-    deactivateModalProps = props;
     return props.isOpen ? (
       <div data-testid="deactivate-modal">
         <span data-testid="deactivate-modal-user">
@@ -209,12 +199,7 @@ describe('UserManagementPage', () => {
     vi.clearAllMocks();
     // Reset captured props
     userTableProps = {};
-    createFormProps = {};
     editFormProps = {};
-    rolesFormProps = {};
-    passwordFormProps = {};
-    customersFormProps = {};
-    deactivateModalProps = {};
   });
 
   describe('rendering', () => {
