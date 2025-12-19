@@ -3,7 +3,6 @@ package com.wellkorea.backend.project.api;
 import com.wellkorea.backend.auth.application.CustomerAssignmentService;
 import com.wellkorea.backend.auth.application.UserService;
 import com.wellkorea.backend.auth.domain.Role;
-import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.ProjectResponse;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
@@ -11,13 +10,15 @@ import com.wellkorea.backend.project.application.ProjectService;
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,17 +38,14 @@ public class ProjectController {
     private final ProjectService projectService;
     private final CustomerAssignmentService customerAssignmentService;
     private final UserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     public ProjectController(
             ProjectService projectService,
             CustomerAssignmentService customerAssignmentService,
-            UserService userService,
-            JwtTokenProvider jwtTokenProvider) {
+            UserService userService) {
         this.projectService = projectService;
         this.customerAssignmentService = customerAssignmentService;
         this.userService = userService;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     /**
@@ -58,15 +56,16 @@ public class ProjectController {
      * Access: ADMIN, FINANCE, SALES
      *
      * @param request Create project request
+     * @param currentUser Authenticated user from Spring Security
      * @return Created project with 201 status
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
     public ResponseEntity<ApiResponse<ProjectResponse>> createProject(
             @Valid @RequestBody CreateProjectRequest request,
-            HttpServletRequest httpRequest) {
+            @AuthenticationPrincipal UserDetails currentUser) {
 
-        Long currentUserId = getCurrentUserId(httpRequest);
+        Long currentUserId = getUserId(currentUser);
         Project project = projectService.createProject(request, currentUserId);
         ProjectResponse response = ProjectResponse.from(project);
 
@@ -104,6 +103,7 @@ public class ProjectController {
      * @param status Optional status filter
      * @param search Optional search term (JobCode or project name)
      * @param pageable Pagination parameters
+     * @param currentUser Authenticated user from Spring Security
      * @return Paginated list of projects
      */
     @GetMapping
@@ -111,18 +111,15 @@ public class ProjectController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
             Pageable pageable,
-            HttpServletRequest httpRequest) {
+            @AuthenticationPrincipal UserDetails currentUser) {
 
         Page<Project> projectsPage;
 
         // Check if user is Sales role (needs customer filtering)
-        String roles = getCurrentUserRoles(httpRequest);
-        boolean isSalesOnly = roles != null && roles.contains(Role.SALES.getAuthority())
-                && !roles.contains(Role.ADMIN.getAuthority())
-                && !roles.contains(Role.FINANCE.getAuthority());
+        boolean isSalesOnly = isSalesRoleOnly(currentUser);
 
         if (isSalesOnly) {
-            Long userId = getCurrentUserId(httpRequest);
+            Long userId = getUserId(currentUser);
             List<Long> customerIds = customerAssignmentService.getAssignedCustomerIds(userId);
 
             if (status != null && !status.isBlank()) {
@@ -159,17 +156,31 @@ public class ProjectController {
      * PUT /api/projects/{id}
      * <p>
      * Access: ADMIN, FINANCE, SALES
+     * - Sales users can only update projects for their assigned customers (FR-062)
      * Note: JobCode cannot be changed
      *
      * @param id Project ID
      * @param request Update request
+     * @param currentUser Authenticated user from Spring Security
      * @return Updated project
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
     public ResponseEntity<ApiResponse<ProjectResponse>> updateProject(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateProjectRequest request) {
+            @Valid @RequestBody UpdateProjectRequest request,
+            @AuthenticationPrincipal UserDetails currentUser) {
+
+        // Check if Sales user can access this project's customer (FR-062)
+        if (isSalesRoleOnly(currentUser)) {
+            Long userId = getUserId(currentUser);
+            Project existingProject = projectService.getProject(id);
+            List<Long> assignedCustomerIds = customerAssignmentService.getAssignedCustomerIds(userId);
+
+            if (!assignedCustomerIds.contains(existingProject.getCustomerId())) {
+                throw new AccessDeniedException("You are not authorized to update this project");
+            }
+        }
 
         Project project = projectService.updateProject(id, request);
         ProjectResponse response = ProjectResponse.from(project);
@@ -194,38 +205,34 @@ public class ProjectController {
     }
 
     /**
-     * Extract current user ID from JWT token.
+     * Get user ID from Spring Security principal.
+     * Looks up the user by username from the authenticated principal.
+     *
+     * @param userDetails Authenticated user details
+     * @return User ID
      */
-    private Long getCurrentUserId(HttpServletRequest request) {
-        String token = extractToken(request);
-        if (token != null) {
-            String username = jwtTokenProvider.getUsername(token);
-            return userService.findByUsername(username)
-                    .map(user -> user.getId())
-                    .orElse(null);
-        }
-        return null;
+    private Long getUserId(UserDetails userDetails) {
+        return userService.findByUsername(userDetails.getUsername())
+                .map(user -> user.getId())
+                .orElse(null);
     }
 
     /**
-     * Extract current user roles from JWT token.
+     * Check if user has only Sales role (not Admin or Finance).
+     * These users need customer assignment filtering (FR-062).
+     *
+     * @param userDetails Authenticated user details
+     * @return true if user has only Sales role
      */
-    private String getCurrentUserRoles(HttpServletRequest request) {
-        String token = extractToken(request);
-        if (token != null) {
-            return jwtTokenProvider.getRoles(token);
-        }
-        return null;
-    }
+    private boolean isSalesRoleOnly(UserDetails userDetails) {
+        var authorities = userDetails.getAuthorities();
+        boolean hasSales = authorities.stream()
+                .anyMatch(a -> a.getAuthority().equals(Role.SALES.getAuthority()));
+        boolean hasAdmin = authorities.stream()
+                .anyMatch(a -> a.getAuthority().equals(Role.ADMIN.getAuthority()));
+        boolean hasFinance = authorities.stream()
+                .anyMatch(a -> a.getAuthority().equals(Role.FINANCE.getAuthority()));
 
-    /**
-     * Extract JWT token from Authorization header.
-     */
-    private String extractToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+        return hasSales && !hasAdmin && !hasFinance;
     }
 }

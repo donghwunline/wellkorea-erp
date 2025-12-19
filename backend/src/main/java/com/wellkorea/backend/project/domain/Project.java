@@ -205,9 +205,13 @@ public class Project {
      *
      * @param newStatus New project status
      * @return New Project instance with updated status
+     * @throws IllegalArgumentException if newStatus is null
      * @throws IllegalStateException if status transition is not allowed
      */
     public Project withStatus(@Nonnull ProjectStatus newStatus) {
+        if (newStatus == null) {
+            throw new IllegalArgumentException("New status cannot be null");
+        }
         if (!this.status.canTransitionTo(newStatus)) {
             throw new IllegalStateException(
                     "Cannot transition from " + this.status + " to " + newStatus);
