@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -59,6 +60,9 @@ class QuotationServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private QuotationService quotationService;
@@ -404,7 +408,7 @@ class QuotationServiceTest {
             given(quotationRepository.save(any(Quotation.class))).willAnswer(invocation -> invocation.getArgument(0));
 
             // When
-            Quotation result = quotationService.submitForApproval(1L);
+            Quotation result = quotationService.submitForApproval(1L, 100L);
 
             // Then
             assertThat(result.getStatus()).isEqualTo(QuotationStatus.PENDING);
@@ -419,7 +423,7 @@ class QuotationServiceTest {
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
 
             // When/Then
-            assertThatThrownBy(() -> quotationService.submitForApproval(1L))
+            assertThatThrownBy(() -> quotationService.submitForApproval(1L, 100L))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("DRAFT");
         }

@@ -5,7 +5,6 @@ import com.wellkorea.backend.approval.infrastructure.repository.*;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.quotation.application.QuotationService;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.*;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -69,7 +69,7 @@ class ApprovalServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private QuotationService quotationService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private ApprovalService approvalService;
@@ -286,7 +286,8 @@ class ApprovalServiceTest {
             assertThat(result.getStatus()).isEqualTo(ApprovalStatus.APPROVED);
             assertThat(result.getCompletedAt()).isNotNull();
             assertThat(level2Decision.getDecision()).isEqualTo(DecisionStatus.APPROVED);
-            verify(quotationService).approveQuotation(eq(100L), eq(1L));
+            // Verify event was published for entity-specific handlers
+            verify(eventPublisher).publishEvent(any(com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.class));
         }
 
         @Test
@@ -352,7 +353,6 @@ class ApprovalServiceTest {
             given(levelDecisionRepository.save(any(ApprovalLevelDecision.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(historyRepository.save(any(ApprovalHistory.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(commentRepository.save(any(ApprovalComment.class))).willAnswer(invocation -> invocation.getArgument(0));
-            given(commentRepository.findByApprovalRequestIdAndRejectionReasonTrue(1L)).willReturn(Optional.empty());
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -365,7 +365,8 @@ class ApprovalServiceTest {
             assertThat(level1Decision.getDecision()).isEqualTo(DecisionStatus.REJECTED);
             verify(historyRepository).save(any(ApprovalHistory.class));
             verify(commentRepository).save(any(ApprovalComment.class));
-            verify(quotationService).rejectQuotation(eq(100L), anyString());
+            // Verify event was published for entity-specific handlers
+            verify(eventPublisher).publishEvent(any(com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.class));
         }
 
         @Test
