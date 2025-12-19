@@ -3,8 +3,9 @@
  * Tests rendering of project details, status badge, date formatting, and optional fields.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { ProjectDetailsCard } from './ProjectDetailsCard';
 import type { ProjectDetails } from '@/services';
 
@@ -53,10 +54,7 @@ describe('ProjectDetailsCard', () => {
 
     it('should render customer name when provided', () => {
       render(
-        <ProjectDetailsCard
-          project={createMockProject()}
-          customerName="Samsung Electronics"
-        />
+        <ProjectDetailsCard project={createMockProject()} customerName="Samsung Electronics" />
       );
 
       expect(screen.getByText('Samsung Electronics')).toBeInTheDocument();
@@ -84,12 +82,7 @@ describe('ProjectDetailsCard', () => {
     });
 
     it('should render internal owner name when provided', () => {
-      render(
-        <ProjectDetailsCard
-          project={createMockProject()}
-          internalOwnerName="Kim Minjun"
-        />
-      );
+      render(<ProjectDetailsCard project={createMockProject()} internalOwnerName="Kim Minjun" />);
 
       expect(screen.getByText('Kim Minjun')).toBeInTheDocument();
     });
@@ -101,12 +94,7 @@ describe('ProjectDetailsCard', () => {
     });
 
     it('should render created by name when provided', () => {
-      render(
-        <ProjectDetailsCard
-          project={createMockProject()}
-          createdByName="Park Admin"
-        />
-      );
+      render(<ProjectDetailsCard project={createMockProject()} createdByName="Park Admin" />);
 
       expect(screen.getByText('Park Admin')).toBeInTheDocument();
     });
@@ -159,9 +147,7 @@ describe('ProjectDetailsCard', () => {
 
     it('should format created at with time', () => {
       render(
-        <ProjectDetailsCard
-          project={createMockProject({ createdAt: '2025-01-15T10:30:00Z' })}
-        />
+        <ProjectDetailsCard project={createMockProject({ createdAt: '2025-01-15T10:30:00Z' })} />
       );
 
       // Should show date and time
@@ -171,9 +157,7 @@ describe('ProjectDetailsCard', () => {
 
     it('should format updated at with time', () => {
       render(
-        <ProjectDetailsCard
-          project={createMockProject({ updatedAt: '2025-01-16T14:45:00Z' })}
-        />
+        <ProjectDetailsCard project={createMockProject({ updatedAt: '2025-01-16T14:45:00Z' })} />
       );
 
       // Should show date and time
@@ -299,11 +283,48 @@ describe('ProjectDetailsCard', () => {
     });
 
     it('should render correctly with no name props provided', () => {
-      render(<ProjectDetailsCard project={createMockProject({ customerId: 10, internalOwnerId: 20, createdById: 30 })} />);
+      render(
+        <ProjectDetailsCard
+          project={createMockProject({ customerId: 10, internalOwnerId: 20, createdById: 30 })}
+        />
+      );
 
       expect(screen.getByText('Customer #10')).toBeInTheDocument();
       expect(screen.getByText('User #20')).toBeInTheDocument();
       expect(screen.getByText('User #30')).toBeInTheDocument();
+    });
+  });
+
+  describe('edit action', () => {
+    it('should not render edit button when onEdit is not provided', () => {
+      render(<ProjectDetailsCard project={createMockProject()} />);
+
+      expect(screen.queryByRole('button', { name: /edit project/i })).not.toBeInTheDocument();
+    });
+
+    it('should render edit button when onEdit is provided', () => {
+      render(<ProjectDetailsCard project={createMockProject()} onEdit={() => {}} />);
+
+      expect(screen.getByRole('button', { name: /edit project/i })).toBeInTheDocument();
+    });
+
+    it('should call onEdit when edit button is clicked', async () => {
+      // Note: Need to use real timers for userEvent, as fake timers are set in beforeEach
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      const onEdit = vi.fn();
+      render(<ProjectDetailsCard project={createMockProject()} onEdit={onEdit} />);
+
+      await user.click(screen.getByRole('button', { name: /edit project/i }));
+
+      expect(onEdit).toHaveBeenCalledOnce();
+    });
+
+    it('should have accessible edit button with title', () => {
+      render(<ProjectDetailsCard project={createMockProject()} onEdit={() => {}} />);
+
+      const editButton = screen.getByRole('button', { name: /edit project/i });
+      expect(editButton).toHaveAttribute('title', 'Edit project');
     });
   });
 });

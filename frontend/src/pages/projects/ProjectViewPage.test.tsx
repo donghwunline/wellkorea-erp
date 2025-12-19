@@ -63,6 +63,15 @@ vi.mock('@/components/features/projects', () => ({
       <div data-testid="project-details-card">
         <span data-testid="project-name">{(props.project as ProjectDetails)?.projectName}</span>
         <span data-testid="customer-name">{props.customerName as string}</span>
+        {props.onEdit && (
+          <button
+            data-testid="edit-project-button"
+            onClick={() => (props.onEdit as () => void)()}
+            aria-label="Edit project"
+          >
+            Edit
+          </button>
+        )}
       </div>
     );
   }),
@@ -323,27 +332,28 @@ describe('ProjectViewPage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/projects');
     });
 
-    it('should render Edit Project button', async () => {
+    it('should pass onEdit to ProjectDetailsCard', async () => {
       mockGetProject.mockResolvedValue(createMockProject());
 
       renderProjectViewPage();
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /edit project/i })).toBeInTheDocument();
+        expect(detailsCardProps.onEdit).toBeDefined();
+        expect(typeof detailsCardProps.onEdit).toBe('function');
       });
     });
 
-    it('should navigate to edit page when Edit Project is clicked', async () => {
+    it('should navigate to edit page when edit is triggered from card', async () => {
       const user = userEvent.setup();
       mockGetProject.mockResolvedValue(createMockProject({ id: 42 }));
 
       renderProjectViewPage('42');
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /edit project/i })).toBeInTheDocument();
+        expect(screen.getByTestId('edit-project-button')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByRole('button', { name: /edit project/i }));
+      await user.click(screen.getByTestId('edit-project-button'));
 
       expect(mockNavigate).toHaveBeenCalledWith('/projects/42/edit');
     });
@@ -406,13 +416,14 @@ describe('ProjectViewPage', () => {
       });
     });
 
-    it('should have accessible Edit Project button', async () => {
+    it('should have accessible edit button in details card', async () => {
       mockGetProject.mockResolvedValue(createMockProject());
 
       renderProjectViewPage();
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /edit project/i })).toBeInTheDocument();
+        const editButton = screen.getByTestId('edit-project-button');
+        expect(editButton).toHaveAttribute('aria-label', 'Edit project');
       });
     });
 

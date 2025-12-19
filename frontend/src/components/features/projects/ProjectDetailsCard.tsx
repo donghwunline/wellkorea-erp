@@ -7,7 +7,7 @@
 
 import type { ProjectDetails, ProjectStatus } from '@/services';
 import { PROJECT_STATUS_LABELS } from '@/services';
-import { Badge, type BadgeVariant, Card, Icon } from '@/components/ui';
+import { Badge, type BadgeVariant, Card, Icon, IconButton } from '@/components/ui';
 
 // Status badge variant mapping
 const STATUS_BADGE_VARIANTS: Record<ProjectStatus, BadgeVariant> = {
@@ -26,6 +26,8 @@ export interface ProjectDetailsCardProps {
   internalOwnerName?: string;
   /** Created by user name (resolved from ID) */
   createdByName?: string;
+  /** Callback when edit action is clicked */
+  onEdit?: () => void;
 }
 
 /**
@@ -36,6 +38,7 @@ export function ProjectDetailsCard({
   customerName,
   internalOwnerName,
   createdByName,
+  onEdit,
 }: Readonly<ProjectDetailsCardProps>) {
   // Format date utility
   const formatDate = (dateStr: string | null, includeTime = false) => {
@@ -58,7 +61,21 @@ export function ProjectDetailsCard({
 
   return (
     <Card>
-      <div className="p-6">
+      <div className="relative p-6">
+        {/* Edit Action (top-right corner) */}
+        {onEdit && (
+          <div className="absolute right-4 top-4">
+            <IconButton
+              variant="primary"
+              onClick={onEdit}
+              aria-label="Edit project"
+              title="Edit project"
+            >
+              <Icon name="pencil" className="h-4 w-4" />
+            </IconButton>
+          </div>
+        )}
+
         {/* Header with JobCode and Status */}
         <div className="mb-6 flex items-start justify-between">
           <div>

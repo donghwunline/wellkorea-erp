@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails } from '@/services';
-import { Alert, Button, Card, Icon, PageHeader } from '@/components/ui';
+import { Alert, Card, Icon, PageHeader } from '@/components/ui';
 import {
   ProjectDetailsCard,
   ProjectRelatedNavigationGrid,
@@ -141,10 +141,6 @@ export function ProjectViewPage() {
             <Icon name="arrow-left" className="h-5 w-5" />
             Back to Projects
           </button>
-          <Button onClick={handleEdit}>
-            <Icon name="pencil" className="mr-2 h-4 w-4" />
-            Edit Project
-          </Button>
         </PageHeader.Actions>
       </PageHeader>
 
@@ -155,6 +151,7 @@ export function ProjectViewPage() {
           customerName={MOCK_CUSTOMERS[project.customerId]}
           internalOwnerName={MOCK_USERS[project.internalOwnerId]}
           createdByName={MOCK_USERS[project.createdById]}
+          onEdit={handleEdit}
         />
 
         {/* Related Sections Navigation */}
