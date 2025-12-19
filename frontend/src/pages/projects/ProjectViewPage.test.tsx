@@ -59,14 +59,17 @@ vi.mock('@/components/features/projects', () => ({
   })),
   ProjectDetailsCard: vi.fn((props: Record<string, unknown>) => {
     detailsCardProps = props;
+    const project = props.project as ProjectDetails | undefined;
+    const customerName = props.customerName as string | undefined;
+    const onEdit = props.onEdit as (() => void) | undefined;
     return (
       <div data-testid="project-details-card">
-        <span data-testid="project-name">{(props.project as ProjectDetails)?.projectName}</span>
-        <span data-testid="customer-name">{props.customerName as string}</span>
-        {props.onEdit && (
+        <span data-testid="project-name">{project?.projectName}</span>
+        <span data-testid="customer-name">{customerName}</span>
+        {onEdit && (
           <button
             data-testid="edit-project-button"
-            onClick={() => (props.onEdit as () => void)()}
+            onClick={() => onEdit()}
             aria-label="Edit project"
           >
             Edit

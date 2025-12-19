@@ -29,7 +29,7 @@ describe('UserCustomersForm', () => {
     vi.mocked(userService.getUserCustomers).mockResolvedValue([]);
   });
 
-  function renderForm(isOpen = true, user = testUser) {
+  function renderForm(isOpen = true, user: typeof testUser | null = testUser) {
     return render(
       <UserCustomersForm
         isOpen={isOpen}
