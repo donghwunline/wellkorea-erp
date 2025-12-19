@@ -13,7 +13,6 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { ProjectListPage } from './ProjectListPage';
-import type { ProjectDetails } from '@/services';
 // Import mocked hook for type-safe assertions
 import { usePaginatedSearch } from '@/shared/hooks';
 

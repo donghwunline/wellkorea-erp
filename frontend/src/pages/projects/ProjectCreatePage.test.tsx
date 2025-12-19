@@ -35,7 +35,6 @@ function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDeta
 
 // Track props passed to mocked components
 let formProps: Record<string, unknown> = {};
-let modalProps: Record<string, unknown> = {};
 
 // Mock navigation
 const mockNavigate = vi.fn();
@@ -87,7 +86,8 @@ vi.mock('@/components/features/projects', () => ({
     );
   }),
   JobCodeSuccessModal: vi.fn((props: Record<string, unknown>) => {
-    modalProps = props;
+    // Props are captured for rendering but not needed for assertions
+    void props;
     return props.isOpen ? (
       <div data-testid="success-modal">
         <span data-testid="modal-job-code">{props.jobCode as string}</span>
@@ -125,7 +125,6 @@ describe('ProjectCreatePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     formProps = {};
-    modalProps = {};
     mockCreateProject.mockResolvedValue(createMockProject());
 
     // Reset the mock to default state
