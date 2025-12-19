@@ -3,7 +3,7 @@
  * Tests form rendering, validation, submission, create/edit modes, and accessibility.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ProjectForm, type SelectOption } from './ProjectForm';
@@ -164,7 +164,9 @@ describe('ProjectForm', () => {
     it('should show help text that internal owner cannot be changed', () => {
       render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
 
-      expect(screen.getByText('Internal owner cannot be changed after creation')).toBeInTheDocument();
+      expect(
+        screen.getByText('Internal owner cannot be changed after creation')
+      ).toBeInTheDocument();
     });
   });
 
