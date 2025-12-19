@@ -119,7 +119,6 @@ describe('ProjectForm', () => {
   describe('rendering (edit mode)', () => {
     it('should pre-fill form with initial data', async () => {
       vi.useRealTimers();
-      const user = userEvent.setup();
       const initialData = createMockProject({
         customerId: 1,
         projectName: 'Existing Project',
