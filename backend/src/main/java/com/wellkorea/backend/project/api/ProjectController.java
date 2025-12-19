@@ -3,6 +3,7 @@ package com.wellkorea.backend.project.api;
 import com.wellkorea.backend.auth.application.CustomerAssignmentService;
 import com.wellkorea.backend.auth.application.UserService;
 import com.wellkorea.backend.auth.domain.Role;
+import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.ProjectResponse;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
@@ -55,7 +56,7 @@ public class ProjectController {
      * <p>
      * Access: ADMIN, FINANCE, SALES
      *
-     * @param request Create project request
+     * @param request     Create project request
      * @param currentUser Authenticated user from Spring Security
      * @return Created project with 201 status
      */
@@ -100,9 +101,9 @@ public class ProjectController {
      * - Sales users only see projects for their assigned customers (FR-062)
      * - Other roles see all projects
      *
-     * @param status Optional status filter
-     * @param search Optional search term (JobCode or project name)
-     * @param pageable Pagination parameters
+     * @param status      Optional status filter
+     * @param search      Optional search term (JobCode or project name)
+     * @param pageable    Pagination parameters
      * @param currentUser Authenticated user from Spring Security
      * @return Paginated list of projects
      */
@@ -159,8 +160,8 @@ public class ProjectController {
      * - Sales users can only update projects for their assigned customers (FR-062)
      * Note: JobCode cannot be changed
      *
-     * @param id Project ID
-     * @param request Update request
+     * @param id          Project ID
+     * @param request     Update request
      * @param currentUser Authenticated user from Spring Security
      * @return Updated project
      */
@@ -210,11 +211,12 @@ public class ProjectController {
      *
      * @param userDetails Authenticated user details
      * @return User ID
+     * @throws AccessDeniedException if user cannot be identified
      */
     private Long getUserId(UserDetails userDetails) {
         return userService.findByUsername(userDetails.getUsername())
-                .map(user -> user.getId())
-                .orElse(null);
+                .map(User::getId)
+                .orElseThrow(() -> new AccessDeniedException("Unable to identify current user"));
     }
 
     /**
