@@ -38,6 +38,21 @@ export type {
 export { auditService } from './audit/auditService';
 export type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './audit/types';
 
+// Project service
+export { projectService, projectSummaryService, PROJECT_STATUS_LABELS } from './projects';
+export type {
+  ProjectDetails,
+  ProjectListParams,
+  PaginatedProjects,
+  CreateProjectRequest,
+  UpdateProjectRequest,
+  ProjectStatus,
+  // Project summary types
+  ProjectSection,
+  ProjectSectionSummary,
+  ProjectSummary,
+} from './projects';
+
 // Error utilities (re-exported from @/shared/utils for convenience)
 export {
   errorMessages,

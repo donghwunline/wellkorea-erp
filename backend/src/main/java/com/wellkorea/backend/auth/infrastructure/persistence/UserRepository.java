@@ -61,6 +61,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmailAndIdNot(String email, Long id);
 
     /**
+     * Check if an active user exists by ID.
+     *
+     * @param id User ID to check
+     * @return true if an active user exists with the given ID
+     */
+    boolean existsByIdAndIsActiveTrue(Long id);
+
+    /**
      * Find all active users.
      *
      * @return List of active users

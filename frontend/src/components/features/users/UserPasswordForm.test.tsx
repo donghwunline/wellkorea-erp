@@ -27,7 +27,7 @@ describe('UserPasswordForm', () => {
     vi.clearAllMocks();
   });
 
-  function renderForm(isOpen = true, user = testUser) {
+  function renderForm(isOpen = true, user: typeof testUser | null = testUser) {
     return render(
       <UserPasswordForm
         isOpen={isOpen}

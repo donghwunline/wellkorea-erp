@@ -26,7 +26,7 @@ describe('UserDeactivateModal', () => {
     vi.clearAllMocks();
   });
 
-  function renderModal(isOpen = true, user = testUser) {
+  function renderModal(isOpen = true, user: typeof testUser | null = testUser) {
     return render(
       <UserDeactivateModal
         isOpen={isOpen}

@@ -10,6 +10,19 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { AuditLogPage } from './pages/admin/AuditLogPage';
+import {
+  ProjectListPage,
+  ProjectCreatePage,
+  ProjectViewPage,
+  ProjectEditPage,
+  // Project sub-pages
+  ProjectQuotationPage,
+  ProjectProcessPage,
+  ProjectOutsourcePage,
+  ProjectDeliveryPage,
+  ProjectDocumentsPage,
+  ProjectFinancePage,
+} from './pages/projects';
 
 const NotFoundPage = () => (
   <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-steel-950">
@@ -77,17 +90,111 @@ function App() {
             }
           />
 
-          {/* Main module routes (placeholders) */}
+          {/* Project routes */}
           <Route
             path="/projects"
             element={
               <ProtectedRoute>
                 <AppLayout>
-                  <PlaceholderPage title="Projects" />
+                  <ProjectListPage />
                 </AppLayout>
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/projects/new"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <ProjectCreatePage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectViewPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/edit"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <ProjectEditPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Project sub-pages */}
+          <Route
+            path="/projects/:id/quotation"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <ProjectQuotationPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/process"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectProcessPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/outsource"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectOutsourcePage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/delivery"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectDeliveryPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/documents"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectDocumentsPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id/finance"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <ProjectFinancePage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Other module routes (placeholders) */}
           <Route
             path="/quotations"
             element={

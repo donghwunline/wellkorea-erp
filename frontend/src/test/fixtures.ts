@@ -391,12 +391,15 @@ export function createMockApiError(
   message: string,
   details?: unknown
 ): { status: number; errorCode: string; message: string; details?: unknown } {
-  return {
+  const result: { status: number; errorCode: string; message: string; details?: unknown } = {
     status,
     errorCode,
     message,
-    ...(details && { details }),
   };
+  if (details !== undefined) {
+    result.details = details;
+  }
+  return result;
 }
 
 /**

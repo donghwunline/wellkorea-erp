@@ -53,3 +53,17 @@ export const AUDIT_ENDPOINTS = {
   /** GET /audit/:id */
   byId: (id: number) => `/audit/${id}`,
 } as const;
+
+// ============================================================================
+// Project Endpoints
+// ============================================================================
+
+export const PROJECT_ENDPOINTS = {
+  /** Base path for project operations */
+  BASE: '/projects',
+
+  /** GET/PUT/DELETE /projects/:id */
+  byId: (id: number) => `/projects/${id}`,
+  /** GET /projects/jobcode/:jobCode */
+  byJobCode: (jobCode: string) => `/projects/jobcode/${jobCode}`,
+} as const;

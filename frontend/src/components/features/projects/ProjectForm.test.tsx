@@ -1,0 +1,497 @@
+/**
+ * Unit tests for ProjectForm component.
+ * Tests form rendering, validation, submission, create/edit modes, and accessibility.
+ */
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
+import { ProjectForm, type SelectOption } from './ProjectForm';
+import type { ProjectDetails } from '@/services';
+
+// Mock scrollIntoView since JSDOM doesn't implement it
+Element.prototype.scrollIntoView = vi.fn();
+
+// Mock customers and users
+const mockCustomers: SelectOption[] = [
+  { id: 1, name: 'Samsung Electronics' },
+  { id: 2, name: 'LG Display' },
+  { id: 3, name: 'SK Hynix' },
+];
+
+const mockUsers: SelectOption[] = [
+  { id: 1, name: 'Kim Minjun (Admin)' },
+  { id: 2, name: 'Lee Jiwon (Sales)' },
+  { id: 3, name: 'Park Seohyun (Finance)' },
+];
+
+// Helper to create mock project for edit mode
+function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
+  return {
+    id: 1,
+    jobCode: 'WK2-2025-001-0115',
+    customerId: 1,
+    projectName: 'Test Project',
+    requesterName: 'John Doe',
+    dueDate: '2025-02-15',
+    internalOwnerId: 2,
+    status: 'ACTIVE',
+    createdById: 1,
+    createdAt: '2025-01-15T10:30:00Z',
+    updatedAt: '2025-01-16T14:45:00Z',
+    ...overrides,
+  };
+}
+
+describe('ProjectForm', () => {
+  const defaultProps = {
+    mode: 'create' as const,
+    customers: mockCustomers,
+    users: mockUsers,
+    onSubmit: vi.fn(),
+    onCancel: vi.fn(),
+    isSubmitting: false,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Use fake timers to control "today" for date picker
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-01-15T12:00:00Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  describe('rendering (create mode)', () => {
+    it('should render customer combobox', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByText('Customer')).toBeInTheDocument();
+    });
+
+    it('should render project name field', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByText('Project Name')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter project name')).toBeInTheDocument();
+    });
+
+    it('should render requester name field', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByText('Requester Name')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter requester name (optional)')).toBeInTheDocument();
+    });
+
+    it('should render due date picker', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByText('Due Date')).toBeInTheDocument();
+    });
+
+    it('should render internal owner combobox', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByText('Internal Owner')).toBeInTheDocument();
+    });
+
+    it('should render Create Project button', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByRole('button', { name: /create project/i })).toBeInTheDocument();
+    });
+
+    it('should render Cancel button', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+    });
+
+    it('should not render job code field in create mode', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.queryByText('Job Code')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('rendering (edit mode)', () => {
+    it('should pre-fill form with initial data', async () => {
+      vi.useRealTimers();
+      const initialData = createMockProject({
+        customerId: 1,
+        projectName: 'Existing Project',
+        requesterName: 'Jane Smith',
+        dueDate: '2025-03-01',
+        internalOwnerId: 2,
+      });
+
+      render(<ProjectForm {...defaultProps} mode="edit" initialData={initialData} />);
+
+      // Project name should be pre-filled
+      expect(screen.getByDisplayValue('Existing Project')).toBeInTheDocument();
+
+      // Requester name should be pre-filled
+      expect(screen.getByDisplayValue('Jane Smith')).toBeInTheDocument();
+    });
+
+    it('should render Save Changes button in edit mode', () => {
+      render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
+
+      expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+    });
+
+    it('should render Job Code field in edit mode', () => {
+      render(
+        <ProjectForm
+          {...defaultProps}
+          mode="edit"
+          initialData={createMockProject({ jobCode: 'WK2-2025-042-0120' })}
+        />
+      );
+
+      expect(screen.getByText('Job Code')).toBeInTheDocument();
+      expect(screen.getByText('WK2-2025-042-0120')).toBeInTheDocument();
+    });
+
+    it('should show help text that customer cannot be changed', () => {
+      render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
+
+      expect(screen.getByText('Customer cannot be changed after creation')).toBeInTheDocument();
+    });
+
+    it('should show help text that internal owner cannot be changed', () => {
+      render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
+
+      expect(
+        screen.getByText('Internal owner cannot be changed after creation')
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe('validation', () => {
+    it('should disable submit button when form is incomplete', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByRole('button', { name: /create project/i })).toBeDisabled();
+    });
+
+    it('should enable submit button when form is complete', async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      render(<ProjectForm {...defaultProps} />);
+
+      // Fill in all required fields
+      // Select customer
+      const customerInput = screen.getAllByRole('textbox')[0];
+      await user.click(customerInput);
+      await user.click(screen.getByText('Samsung Electronics'));
+
+      // Enter project name
+      const projectNameInput = screen.getByPlaceholderText('Enter project name');
+      await user.type(projectNameInput, 'New Project');
+
+      // Select due date - click the button to open, then select a date
+      const dateButton = screen.getByRole('button', { name: /select due date/i });
+      await user.click(dateButton);
+      await user.click(screen.getByRole('button', { name: '20' }));
+
+      // Select internal owner (index 3: customer=0, projectName=1, requester=2, owner=3)
+      const ownerInput = screen.getAllByRole('textbox')[3];
+      await user.click(ownerInput);
+      await user.click(screen.getByText('Lee Jiwon (Sales)'));
+
+      expect(screen.getByRole('button', { name: /create project/i })).not.toBeDisabled();
+    });
+
+    it('should show validation error for whitespace-only project name', async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      render(<ProjectForm {...defaultProps} />);
+
+      const projectNameInput = screen.getByPlaceholderText('Enter project name');
+      await user.type(projectNameInput, '   ');
+
+      expect(screen.getByText('Project name cannot be whitespace only')).toBeInTheDocument();
+    });
+  });
+
+  describe('form submission', () => {
+    it('should call onSubmit with form data in create mode', async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+      render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
+
+      // Fill form
+      // Select customer
+      const customerInput = screen.getAllByRole('textbox')[0];
+      await user.click(customerInput);
+      await user.click(screen.getByText('Samsung Electronics'));
+
+      // Enter project name
+      await user.type(screen.getByPlaceholderText('Enter project name'), 'New Project');
+
+      // Enter requester name
+      await user.type(screen.getByPlaceholderText('Enter requester name (optional)'), 'John');
+
+      // Select due date
+      const dateButton = screen.getByRole('button', { name: /select due date/i });
+      await user.click(dateButton);
+      await user.click(screen.getByRole('button', { name: '20' }));
+
+      // Select internal owner
+      const ownerInput = screen.getAllByRole('textbox')[3];
+      await user.click(ownerInput);
+      await user.click(screen.getByText('Lee Jiwon (Sales)'));
+
+      // Submit
+      await user.click(screen.getByRole('button', { name: /create project/i }));
+
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalledWith({
+          customerId: 1,
+          projectName: 'New Project',
+          requesterName: 'John',
+          dueDate: expect.stringMatching(/^\d{4}-\d{2}-20$/), // Day 20 of current month
+          internalOwnerId: 2,
+        });
+      });
+    });
+
+    it('should call onSubmit with form data in edit mode', async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+      const initialData = createMockProject();
+
+      render(
+        <ProjectForm {...defaultProps} mode="edit" initialData={initialData} onSubmit={onSubmit} />
+      );
+
+      // Modify project name
+      const projectNameInput = screen.getByDisplayValue('Test Project');
+      await user.clear(projectNameInput);
+      await user.type(projectNameInput, 'Updated Project');
+
+      // Submit
+      await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalledWith({
+          projectName: 'Updated Project',
+          requesterName: 'John Doe',
+          dueDate: '2025-02-15',
+        });
+      });
+    });
+
+    it('should trim project name before submission', async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+      render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
+
+      // Fill form with spaces
+      const customerInput = screen.getAllByRole('textbox')[0];
+      await user.click(customerInput);
+      await user.click(screen.getByText('Samsung Electronics'));
+
+      await user.type(screen.getByPlaceholderText('Enter project name'), '  New Project  ');
+
+      const dateButton = screen.getByRole('button', { name: /select due date/i });
+      await user.click(dateButton);
+      await user.click(screen.getByRole('button', { name: '20' }));
+
+      const ownerInput = screen.getAllByRole('textbox')[3];
+      await user.click(ownerInput);
+      await user.click(screen.getByText('Lee Jiwon (Sales)'));
+
+      await user.click(screen.getByRole('button', { name: /create project/i }));
+
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            projectName: 'New Project',
+          })
+        );
+      });
+    });
+
+    it('should omit requester name if empty', async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+      render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
+
+      // Fill form without requester
+      const customerInput = screen.getAllByRole('textbox')[0];
+      await user.click(customerInput);
+      await user.click(screen.getByText('Samsung Electronics'));
+
+      await user.type(screen.getByPlaceholderText('Enter project name'), 'Project');
+
+      const dateButton = screen.getByRole('button', { name: /select due date/i });
+      await user.click(dateButton);
+      await user.click(screen.getByRole('button', { name: '20' }));
+
+      const ownerInput = screen.getAllByRole('textbox')[3];
+      await user.click(ownerInput);
+      await user.click(screen.getByText('Lee Jiwon (Sales)'));
+
+      await user.click(screen.getByRole('button', { name: /create project/i }));
+
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            requesterName: undefined,
+          })
+        );
+      });
+    });
+  });
+
+  describe('cancel button', () => {
+    it('should call onCancel when clicked', async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      const onCancel = vi.fn();
+      render(<ProjectForm {...defaultProps} onCancel={onCancel} />);
+
+      await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+      expect(onCancel).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('submitting state', () => {
+    it('should disable all inputs when submitting', () => {
+      render(<ProjectForm {...defaultProps} isSubmitting />);
+
+      // Combobox inputs should be disabled
+      const inputs = screen.getAllByRole('textbox');
+      inputs.forEach(input => {
+        expect(input).toBeDisabled();
+      });
+    });
+
+    it('should disable buttons when submitting', () => {
+      render(<ProjectForm {...defaultProps} isSubmitting />);
+
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /create project/i })).toBeDisabled();
+    });
+
+    it('should show loading state on submit button', () => {
+      render(<ProjectForm {...defaultProps} isSubmitting />);
+
+      // Button should have loading indicator (controlled by Button component)
+      const submitButton = screen.getByRole('button', { name: /create project/i });
+      expect(submitButton).toBeDisabled();
+    });
+  });
+
+  describe('error handling', () => {
+    it('should display error message when error prop provided', () => {
+      render(<ProjectForm {...defaultProps} error="Failed to create project" />);
+
+      expect(screen.getByText('Failed to create project')).toBeInTheDocument();
+    });
+
+    it('should call onDismissError when error is dismissed', async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup();
+      const onDismissError = vi.fn();
+      render(
+        <ProjectForm {...defaultProps} error="Error message" onDismissError={onDismissError} />
+      );
+
+      // Find and click dismiss button (ErrorAlert has close button)
+      const alert = screen.getByRole('alert');
+      const closeButton = alert.querySelector('button');
+      if (closeButton) {
+        await user.click(closeButton);
+        expect(onDismissError).toHaveBeenCalledOnce();
+      }
+    });
+  });
+
+  describe('required field indicators', () => {
+    it('should mark customer as required', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      const customerLabel = screen.getByText('Customer');
+      const requiredIndicator = customerLabel.parentElement?.querySelector('.text-red-400');
+      expect(requiredIndicator).toBeInTheDocument();
+    });
+
+    it('should mark project name as required', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      const label = screen.getByText('Project Name');
+      const requiredIndicator = label.parentElement?.querySelector('.text-red-400');
+      expect(requiredIndicator).toBeInTheDocument();
+    });
+
+    it('should mark due date as required', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      const label = screen.getByText('Due Date');
+      const requiredIndicator = label.parentElement?.querySelector('.text-red-400');
+      expect(requiredIndicator).toBeInTheDocument();
+    });
+
+    it('should mark internal owner as required', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      const label = screen.getByText('Internal Owner');
+      const requiredIndicator = label.parentElement?.querySelector('.text-red-400');
+      expect(requiredIndicator).toBeInTheDocument();
+    });
+
+    it('should not mark requester name as required', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      const label = screen.getByText('Requester Name');
+      const requiredIndicator = label.parentElement?.querySelector('.text-red-400');
+      expect(requiredIndicator).not.toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('should have form element', () => {
+      const { container } = render(<ProjectForm {...defaultProps} />);
+
+      expect(container.querySelector('form')).toBeInTheDocument();
+    });
+
+    it('should have proper button types', () => {
+      render(<ProjectForm {...defaultProps} />);
+
+      expect(screen.getByRole('button', { name: /cancel/i })).toHaveAttribute('type', 'button');
+      expect(screen.getByRole('button', { name: /create project/i })).toHaveAttribute(
+        'type',
+        'submit'
+      );
+    });
+  });
+
+  describe('disabled fields in edit mode', () => {
+    it('should disable customer field in edit mode', () => {
+      render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
+
+      const customerInputs = screen.getAllByRole('textbox');
+      expect(customerInputs[0]).toBeDisabled();
+    });
+
+    it('should disable internal owner field in edit mode', () => {
+      render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
+
+      // Internal owner is the third textbox (after customer and project name)
+      const textboxes = screen.getAllByRole('textbox');
+      // Customer, ProjectName, Requester, InternalOwner
+      expect(textboxes[3]).toBeDisabled();
+    });
+  });
+});

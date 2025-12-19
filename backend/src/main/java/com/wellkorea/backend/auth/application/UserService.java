@@ -147,6 +147,19 @@ public class UserService implements UserQuery, UserCommand {
         userRepository.save(updatedUser);
     }
 
+    // ==================== Additional Query Methods ====================
+
+    /**
+     * Find a user by username (returns domain entity).
+     * Used for internal operations like authentication and project creation.
+     *
+     * @param username Username to search for
+     * @return Optional containing the User entity if found
+     */
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
     // ==================== Helper Methods ====================
 
     private UserResponse toResponse(User user) {
