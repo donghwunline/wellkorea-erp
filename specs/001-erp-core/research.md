@@ -83,33 +83,56 @@ public class Project {
 
 ---
 
-### Approval as Separate Domain
+### Approval as Separate Domain (Multi-Level Sequential Approval)
 
-**Decision**: Extract approval workflows (승인/결재) into dedicated `approval/` domain.
+**Decision**: Extract approval workflows (승인/결재) into dedicated `approval/` domain with **multi-level sequential approval** support.
+
+**Clarification (2025-12-19)**: Approval requires sequential multi-level approval (팀장 → 부서장 → 사장). Each level references a specific user (not RBAC roles). Approval chain is fixed per entity type but configurable by Admin.
 
 **Rationale**:
 - **Reusability**: Approval logic shared across quotations, purchase orders, etc.
 - **Single Responsibility**: Approval rules separate from quotation business logic
 - **Audit compliance**: Centralized approval history meets FR-067
-- **Workflow flexibility**: Approval rules evolve independently
+- **Workflow flexibility**: Approval chain configuration independent of entity logic
+- **Korean business practice**: Sequential approval (결재 라인) with position-based approvers (팀장, 부서장, 사장)
 
 **Implementation**:
-- `ApprovalRequest` entity links to quotation (or other approvable entity) via `entity_type` and `entity_id`
-- `ApprovalHistory` tracks all approval/rejection events with timestamps
-- `ApprovalComment` stores rejection comments (mandatory per FR-017)
-- Quotation domain has NO approval endpoints; all approval handled via Approval domain
-- API Design:
-  - `POST /approvals` - Create approval request for any entity (Quotation, PurchaseOrder, etc.)
-  - `POST /approvals/{id}/approve` - Approve request
-  - `POST /approvals/{id}/reject` - Reject request with mandatory comments
-  - `POST /quotations/{id}/submit-for-approval` - Convenience endpoint (delegates to Approval domain)
+
+**Multi-Level Approval Schema**:
+- `ApprovalChainTemplate` - Defines approval chain per entity type (QUOTATION, PURCHASE_ORDER)
+- `ApprovalChainLevel` - Ordered sequence of approvers (level_order, level_name, approver_user_id)
+  - Level 1: 팀장 (Team Lead) - User ID X
+  - Level 2: 부서장 (Department Head) - User ID Y
+  - Level 3: 사장 (CEO) - User ID Z (if needed)
+- `ApprovalRequest` - Workflow instance with current_level and total_levels
+- `ApprovalLevelDecision` - Decision at each level (expected_approver_id, decided_by_id, decision)
+- `ApprovalHistory` - Audit trail of all actions
+- `ApprovalComment` - Discussion and rejection reasons
+
+**Workflow**:
+1. Admin configures approval chain with specific users (not roles)
+2. Submitter creates approval request → `current_level = 1`
+3. Only Level 1 approver (팀장) can approve/reject
+4. After Level 1 approval → `current_level = 2`
+5. Only Level 2 approver (부서장) can now approve/reject
+6. After all levels approve → status = APPROVED
+7. Any level rejection → status = REJECTED, workflow stops
+
+**API Design**:
+- `GET /approvals/chains` - List approval chain templates
+- `GET /approvals/chains/{entityType}` - Get chain config for entity type
+- `PUT /approvals/chains/{entityType}/levels` - Admin configures approval levels
+- `POST /approvals` - Create approval request for any entity
+- `GET /approvals/{id}` - Get approval request with level decisions
+- `POST /approvals/{id}/approve` - Approve at current level (must be expected approver)
+- `POST /approvals/{id}/reject` - Reject with mandatory comments
+- `POST /quotations/{id}/submit-for-approval` - Convenience endpoint
 
 **Alternatives Considered**:
-- **Approval endpoints on Quotation**: Rejected; creates duplication, violates Single Responsibility
-  - Would have `/quotations/{id}/submit`, `/quotations/{id}/approve`, `/quotations/{id}/reject`
-  - Problem: Same approval logic duplicated for every approvable entity type
-  - Solution: Centralize in Approval domain
-- **Generic workflow engine**: Deferred; over-engineering for current simple approve/reject workflow
+- **Single-level approval**: Rejected; business requires sequential multi-level (팀장 → 부서장 → 사장)
+- **Role-based approval levels**: Rejected; positions (팀장, 부서장) are not system roles (ADMIN, FINANCE)
+- **Dynamic approval chains per request**: Deferred; fixed chains per entity type sufficient for MVP
+- **Generic workflow engine (BPMN)**: Deferred; over-engineering for current sequential workflow
 
 ---
 

@@ -6,6 +6,8 @@
 
 **Key Update (2025-12-01)**: **Project** is the core domain entity. **JobCode** is a unique business identifier (natural key) on the Project entity. Approval workflows extracted into separate Approval domain.
 
+**Key Update (2025-12-19)**: **Multi-level sequential approval** (결재 라인) implemented. Approval levels reference specific users (팀장, 부서장, 사장), not RBAC roles. Fixed chains per entity type, configurable by Admin.
+
 ---
 
 ## Entity-Relationship Overview
@@ -35,10 +37,13 @@ Project (root aggregate)
 └── RFQ (one-to-many, purchase requests)
     └── PurchaseOrder (one-to-many)
 
-ApprovalRequest (cross-cutting domain)
-├── ApprovalHistory (one-to-many, tracks approve/reject events)
-├── ApprovalComment (one-to-many, rejection comments)
-└── Quotation (many-to-one, approvable entity)
+ApprovalChainTemplate (approval configuration per entity type)
+├── ApprovalChainLevel (one-to-many, ordered approvers: 팀장 → 부서장 → 사장)
+│   └── User (many-to-one, specific approver at this level)
+└── ApprovalRequest (one-to-many, workflow instances)
+    ├── ApprovalLevelDecision (one-to-many, decision at each level)
+    ├── ApprovalHistory (one-to-many, audit trail)
+    └── ApprovalComment (one-to-many, discussions/rejection reasons)
 
 User (cross-cutting)
 ├── Role (many-to-many)
@@ -302,24 +307,172 @@ Product (catalog, referenced by quotations and invoices)
 
 ---
 
-### 8. Approval
+### 8. Approval Domain (Multi-Level Sequential Approval)
 
-**Purpose**: Audit trail of quotation approvals and rejections.
+**Purpose**: Multi-level sequential approval workflow (승인/결재) for quotations, purchase orders, and other approvable entities. Supports configurable approval chains with position-based approvers (팀장, 부서장, 사장).
 
-**Fields**:
+**Key Design**:
+- Fixed approval chains per entity type (all Quotations use same chain)
+- Sequential processing: Level 1 must approve before Level 2 can act
+- Position-based: Each level assigned to specific user (not RBAC roles)
+- Configurable: Admin assigns specific users to approval levels
+
+#### 8a. ApprovalChainTemplate
+
+**Purpose**: Defines the approval chain configuration for each entity type.
+
+**Table Name**: `approval_chain_templates`
+
+| Field | Type | Required | Unique | Notes |
+|-------|------|----------|--------|-------|
+| id | BigInt | Yes | Yes (PK) | Primary key |
+| entity_type | String(50) | Yes | Yes | QUOTATION, PURCHASE_ORDER |
+| name | String(100) | Yes | No | "견적서 결재", "발주서 결재" |
+| description | Text | No | No | Chain description |
+| is_active | Boolean | Yes | No | Default true |
+| created_at | Timestamp | Yes | No | UTC |
+| updated_at | Timestamp | Yes | No | UTC |
+
+**Relationships**:
+- 1:N → ApprovalChainLevel
+
+---
+
+#### 8b. ApprovalChainLevel
+
+**Purpose**: Ordered sequence of approval levels within a chain. Each level references a specific user.
+
+**Table Name**: `approval_chain_levels`
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
-| id | UUID/BigInt | Yes | Primary key |
-| quotation_id | FK | Yes | References Quotation |
-| approver_id | FK | Yes | References User |
-| approval_date | Timestamp | Yes | When approval/rejection occurred |
-| decision | Enum | Yes | Approved, Rejected |
-| comments | Text | No | If Rejected, mandatory; if Approved, optional |
+| id | BigInt | Yes | Primary key |
+| chain_template_id | FK | Yes | References ApprovalChainTemplate |
+| level_order | Int | Yes | 1, 2, 3... (execution order) |
+| level_name | String(100) | Yes | Position title: "팀장", "부서장", "사장" |
+| approver_user_id | FK | Yes | References User (specific approver) |
+| is_required | Boolean | Yes | Can this level be skipped? Default true |
+| created_at | Timestamp | Yes | UTC |
+
+**Validation Rules**:
+- Unique constraint on (chain_template_id, level_order)
+- level_order > 0
+
+**Default Configuration**:
+- **Quotation**: Level 1 (팀장) → Level 2 (부서장) → Level 3 (사장, if needed)
+- **PurchaseOrder**: Level 1 (팀장) → Level 2 (부서장) → Level 3 (사장, if needed)
 
 **Relationships**:
-- M:1 → Quotation
+- M:1 → ApprovalChainTemplate
 - M:1 → User (approver)
+
+---
+
+#### 8c. ApprovalRequest
+
+**Purpose**: Tracks approval workflow instance for a specific entity.
+
+**Table Name**: `approval_requests`
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| id | BigInt | Yes | Primary key |
+| entity_type | String(50) | Yes | QUOTATION, PURCHASE_ORDER |
+| entity_id | BigInt | Yes | ID of entity being approved |
+| entity_description | String(500) | No | "견적서 v3 - WK2K25-0001-0104" |
+| chain_template_id | FK | Yes | References ApprovalChainTemplate |
+| current_level | Int | Yes | Which level awaiting approval (default 1) |
+| total_levels | Int | Yes | Total levels in chain |
+| status | Enum | Yes | PENDING, APPROVED, REJECTED |
+| submitted_by_id | FK | Yes | References User |
+| submitted_at | Timestamp | Yes | When submitted |
+| completed_at | Timestamp | No | When final decision made |
+| created_at | Timestamp | Yes | UTC |
+| updated_at | Timestamp | Yes | UTC |
+
+**Validation Rules**:
+- Unique constraint on (entity_type, entity_id) - one active approval per entity
+- Status: PENDING until all levels approve, APPROVED when complete, REJECTED if any level rejects
+
+**Relationships**:
+- M:1 → ApprovalChainTemplate
+- M:1 → User (submitted_by)
+- 1:N → ApprovalLevelDecision
+- 1:N → ApprovalHistory
+- 1:N → ApprovalComment
+
+---
+
+#### 8d. ApprovalLevelDecision
+
+**Purpose**: Tracks the decision at each level of the approval chain.
+
+**Table Name**: `approval_level_decisions`
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| id | BigInt | Yes | Primary key |
+| approval_request_id | FK | Yes | References ApprovalRequest |
+| level_order | Int | Yes | Which level this decision is for |
+| expected_approver_id | FK | Yes | References User (who should approve) |
+| decision | Enum | Yes | PENDING, APPROVED, REJECTED (default PENDING) |
+| decided_by_id | FK | No | References User (who actually decided) |
+| decided_at | Timestamp | No | When decision was made |
+| comments | Text | No | Approval/rejection comments |
+| created_at | Timestamp | Yes | UTC |
+| updated_at | Timestamp | Yes | UTC |
+
+**Validation Rules**:
+- Unique constraint on (approval_request_id, level_order)
+- decided_by_id should match expected_approver_id (enforced in business logic)
+
+**Relationships**:
+- M:1 → ApprovalRequest
+- M:1 → User (expected_approver)
+- M:1 → User (decided_by)
+
+---
+
+#### 8e. ApprovalHistory
+
+**Purpose**: Audit trail of all approval workflow actions.
+
+**Table Name**: `approval_history`
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| id | BigInt | Yes | Primary key |
+| approval_request_id | FK | Yes | References ApprovalRequest |
+| level_order | Int | No | Which level (null for SUBMITTED) |
+| action | Enum | Yes | SUBMITTED, APPROVED, REJECTED |
+| actor_id | FK | Yes | References User |
+| comments | Text | No | Action comments |
+| created_at | Timestamp | Yes | UTC |
+
+**Relationships**:
+- M:1 → ApprovalRequest
+- M:1 → User (actor)
+
+---
+
+#### 8f. ApprovalComment
+
+**Purpose**: Discussion comments on approval requests (including mandatory rejection reasons).
+
+**Table Name**: `approval_comments`
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| id | BigInt | Yes | Primary key |
+| approval_request_id | FK | Yes | References ApprovalRequest |
+| commenter_id | FK | Yes | References User |
+| comment_text | Text | Yes | Comment content |
+| is_rejection_reason | Boolean | Yes | True if mandatory rejection reason |
+| created_at | Timestamp | Yes | UTC |
+
+**Relationships**:
+- M:1 → ApprovalRequest
+- M:1 → User (commenter)
 
 ---
 

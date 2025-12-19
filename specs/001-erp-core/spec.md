@@ -22,6 +22,12 @@ The WellKorea Integrated Work System consolidates fragmented job lifecycle data 
 - Q: Production staff visibility scope? → A: Flexible per-user assignment by Admin (to JobCodes, departments, or full plant visibility).
 - Q: Quotation revision after "Sent" status? → A: New version created with automatic versioning AND optional email notification to customer (Admin chooses whether to notify).
 
+### Session 2025-12-19
+
+- Q: Single-level or multi-level approval? → A: **Multi-level sequential approval required** (결재 라인). Approval must proceed through ordered levels (e.g., 팀장 → 부서장 → 사장).
+- Q: How should approval levels be configured? → A: **Fixed chains per entity type**, configurable by Admin. All quotations use the same approval chain; all purchase orders use the same chain.
+- Q: How should approval positions (팀장, 부서장, 사장) be defined? → A: **Specific approver users** are assigned to each level. Each level references a specific user ID, not RBAC roles. Admin assigns who is 팀장, 부서장, 사장 for each entity type.
+
 ---
 
 ## User Scenarios & Testing *(mandatory)*

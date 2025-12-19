@@ -14,6 +14,8 @@
 
 **✅ Final Pre-Implementation Fixes (2025-12-03)**: Added 3 tasks (T048a, T048b, T097a) for FR-062 Sales role customer assignment + updated T147 to explicitly include delivery_id foreign key per FR-035. Role verification moved to API layer (QuotationController) per architectural principle. All analysis findings (R1, R2, I1, U1) now resolved. Ready for implementation.
 
+**✅ Multi-Level Approval Update (2025-12-19)**: Updated approval domain (US2) to support multi-level sequential approval (결재 라인). Added 14 tasks for ApprovalChainTemplate, ApprovalChainLevel, ApprovalLevelDecision entities and Admin configuration endpoints. Approval now proceeds through ordered levels (팀장 → 부서장 → 사장) with position-based approvers (specific users, not roles).
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
@@ -176,13 +178,13 @@
 
 ### Frontend Implementation for User Story 1
 
-- [ ] T060 [US1] Create ProjectService API client in frontend/src/services/projectService.ts
-- [ ] T061 [US1] Create ProjectListPage with table view in frontend/src/pages/projects/ProjectListPage.tsx
-- [ ] T062 [US1] Create CreateProjectPage with form in frontend/src/pages/projects/CreateProjectPage.tsx
-- [ ] T063 [US1] Create EditProjectPage with form in frontend/src/pages/projects/EditProjectPage.tsx
-- [ ] T064 [US1] Create ProjectDetailPage showing all project information in frontend/src/pages/projects/ProjectDetailPage.tsx
-- [ ] T065 [US1] Add form validation (required fields, date validation)
-- [ ] T066 [US1] Display generated JobCode prominently after creation
+- [X] T060 [US1] Create ProjectService API client in frontend/src/services/projectService.ts
+- [X] T061 [US1] Create ProjectListPage with table view in frontend/src/pages/projects/ProjectListPage.tsx
+- [X] T062 [US1] Create CreateProjectPage with form in frontend/src/pages/projects/CreateProjectPage.tsx
+- [X] T063 [US1] Create EditProjectPage with form in frontend/src/pages/projects/EditProjectPage.tsx
+- [X] T064 [US1] Create ProjectDetailPage showing all project information in frontend/src/pages/projects/ProjectViewPage.tsx
+- [X] T065 [US1] Add form validation (required fields, date validation)
+- [X] T066 [US1] Display generated JobCode prominently after creation
 
 **Checkpoint**: JobCode creation MVP complete - users can create and edit projects with auto-generated JobCodes
 
@@ -193,10 +195,13 @@
 **Goal**: Implement quotation creation with product catalog, approval workflow, and PDF generation
 
 **Independent Test**: Can be fully tested by:
-1. Creating a quotation from an existing JobCode by selecting 3–5 products from catalog
-2. Submitting quotation for internal approval
-3. Approving/rejecting the quotation with approval history logged
-4. Generating a PDF quotation for customer delivery
+1. Admin configures multi-level approval chain for QUOTATION: 팀장 (Team Lead) → 부서장 (Dept Head) → 사장 (CEO)
+2. Creating a quotation from an existing JobCode by selecting 3–5 products from catalog
+3. Submitting quotation for multi-level approval (starts at level 1)
+4. 팀장 approves at level 1 → workflow advances to level 2 (부서장)
+5. 부서장 approves at level 2 → workflow completes, quotation status = Approved
+6. Test rejection: 팀장 rejects with mandatory comment → workflow stops, quotation returns to Draft
+7. Generating a PDF quotation for customer delivery
 
 ### Tests for User Story 2 (Write FIRST - Red-Green-Refactor)
 
@@ -205,17 +210,27 @@
 - [ ] T067 [P] [US2] Write contract tests for POST /api/quotations endpoint (validates product selection, quantity > 0, calculates totals) in backend/src/test/java/com/wellkorea/backend/quotation/controller/QuotationControllerTest.java - MUST FAIL initially
 - [ ] T068 [P] [US2] Write contract tests for GET /api/quotations and PUT /api/quotations/{id} endpoints in backend/src/test/java/com/wellkorea/backend/quotation/controller/QuotationControllerTest.java - MUST FAIL initially
 - [ ] T069 [P] [US2] Write contract tests for GET /api/quotations/{id}/pdf endpoint (expects PDF content-type, valid PDF structure) in backend/src/test/java/com/wellkorea/backend/quotation/controller/QuotationControllerTest.java - MUST FAIL initially
-- [ ] T070 [P] [US2] Write contract tests for POST /api/approvals endpoint (creates approval request for quotation) in backend/src/test/java/com/wellkorea/backend/approval/controller/ApprovalControllerTest.java - MUST FAIL initially
-- [ ] T071 [P] [US2] Write contract tests for PUT /api/approvals/{id}/approve and /reject endpoints (Admin/Finance only) in backend/src/test/java/com/wellkorea/backend/approval/controller/ApprovalControllerTest.java - MUST FAIL initially
-- [ ] T072 [P] [US2] Write contract tests for GET /api/approvals/{id}/history endpoint in backend/src/test/java/com/wellkorea/backend/approval/controller/ApprovalControllerTest.java - MUST FAIL initially
+- [ ] T070 [P] [US2] Write contract tests for POST /api/approvals endpoint (creates multi-level approval request, initializes level_decisions for all levels) in backend/src/test/java/com/wellkorea/backend/approval/api/ApprovalControllerTest.java - MUST FAIL initially
+- [ ] T070a [P] [US2] Write contract tests for GET/PUT /api/approvals/chains/{entityType}/levels endpoints (Admin chain configuration) in backend/src/test/java/com/wellkorea/backend/approval/api/ApprovalChainControllerTest.java - MUST FAIL initially
+- [ ] T071 [P] [US2] Write contract tests for POST /api/approvals/{id}/approve endpoint (only expected approver at current level can approve, advances workflow) in backend/src/test/java/com/wellkorea/backend/approval/api/ApprovalControllerTest.java - MUST FAIL initially
+- [ ] T071a [P] [US2] Write contract tests for POST /api/approvals/{id}/reject endpoint (mandatory comments, stops workflow immediately) in backend/src/test/java/com/wellkorea/backend/approval/api/ApprovalControllerTest.java - MUST FAIL initially
+- [ ] T072 [P] [US2] Write contract tests for GET /api/approvals/{id} endpoint (includes level_decisions, history, comments) in backend/src/test/java/com/wellkorea/backend/approval/api/ApprovalControllerTest.java - MUST FAIL initially
 - [ ] T073 [US2] Write unit tests for QuotationService (quotation total calculation, versioning logic) in backend/src/test/java/com/wellkorea/backend/quotation/service/QuotationServiceTest.java - MUST FAIL initially
-- [ ] T074 [US2] Write unit tests for ApprovalService (approval workflow state transitions, rejection validation) in backend/src/test/java/com/wellkorea/backend/approval/service/ApprovalServiceTest.java - MUST FAIL initially
-- [ ] T075 [US2] Write integration test for quotation approval workflow (create quotation → submit for approval → approve → verify status change) in backend/src/test/java/com/wellkorea/backend/quotation/QuotationApprovalIntegrationTest.java - MUST FAIL initially
+- [ ] T074 [US2] Write unit tests for ApprovalService (multi-level workflow state transitions: submit → level 1 approve → level 2 approve → complete) in backend/src/test/java/com/wellkorea/backend/approval/application/ApprovalServiceTest.java - MUST FAIL initially
+- [ ] T074a [US2] Write unit tests for ApprovalChainService (get chain for entity type, configure approval levels) in backend/src/test/java/com/wellkorea/backend/approval/application/ApprovalChainServiceTest.java - MUST FAIL initially
+- [ ] T075 [US2] Write integration test for multi-level quotation approval workflow (submit → 팀장 approve → 부서장 approve → verify quotation status changes to Approved) in backend/src/test/java/com/wellkorea/backend/quotation/QuotationApprovalIntegrationTest.java - MUST FAIL initially
+- [ ] T075a [US2] Write integration test for approval rejection (submit → 팀장 reject with comments → verify workflow stops, quotation returns to Draft) in backend/src/test/java/com/wellkorea/backend/approval/ApprovalRejectionIntegrationTest.java - MUST FAIL initially
 
 ### Database Schema for User Story 2
 
-- [ ] T076 Create Flyway migration V7__create_quotation_domain.sql for Quotation, QuotationLineItem tables
-- [ ] T077 Create Flyway migration V8__create_approval_domain.sql for ApprovalRequest, ApprovalHistory, ApprovalComment tables
+- [X] T076 Create Flyway migration V6__create_quotation_domain.sql for Quotation, QuotationLineItem tables
+- [X] T077 Create Flyway migration V7__create_approval_domain.sql for multi-level approval:
+  - ApprovalChainTemplate (entity_type UNIQUE, name, is_active)
+  - ApprovalChainLevel (chain_template_id FK, level_order, level_name, approver_user_id FK, is_required) with UNIQUE(chain_template_id, level_order)
+  - ApprovalRequest (entity_type, entity_id, chain_template_id FK, current_level, total_levels, status, submitted_by_id FK) with UNIQUE(entity_type, entity_id)
+  - ApprovalLevelDecision (approval_request_id FK, level_order, expected_approver_id FK, decision, decided_by_id FK, comments) with UNIQUE(approval_request_id, level_order)
+  - ApprovalHistory (approval_request_id FK, level_order, action, actor_id FK, comments)
+  - ApprovalComment (approval_request_id FK, commenter_id FK, comment_text, is_rejection_reason)
 
 ### Backend Implementation for User Story 2 - Quotation
 
@@ -232,18 +247,66 @@
 - [ ] T078a [US2] Implement quotation revision notification email feature in QuotationEmailService (Admin chooses to send email on version creation) in backend/src/main/java/com/wellkorea/backend/quotation/application/QuotationEmailService.java
 - [ ] T078b [US2] Add email notification endpoint POST /api/quotations/{id}/send-revision-notification in QuotationController
 
-### Backend Implementation for User Story 2 - Approval Domain
+### Backend Implementation for User Story 2 - Approval Domain (Multi-Level Sequential Approval)
 
-- [ ] T079 [P] [US2] Create ApprovalRequest entity in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalRequest.java
-- [ ] T080 [P] [US2] Create ApprovalStatus enum in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalStatus.java
-- [ ] T081 [P] [US2] Create ApprovalHistory entity in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalHistory.java
-- [ ] T082 [P] [US2] Create ApprovalComment entity in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalComment.java
-- [ ] T083 [US2] Create ApprovalRepository in backend/src/main/java/com/wellkorea/backend/approval/infrastructure/persistence/ApprovalRepository.java (depends on T079)
-- [ ] T084 [US2] Implement ApprovalService with submit, approve, reject, get history in backend/src/main/java/com/wellkorea/backend/approval/service/ApprovalService.java
-- [ ] T085 [US2] Create ApprovalController with REST endpoints (/api/approvals - POST, PUT /{id}/approve, PUT /{id}/reject, GET /{id}/history) in backend/src/main/java/com/wellkorea/backend/approval/controller/ApprovalController.java
-- [ ] T086 [US2] Create DTOs (CreateApprovalRequest, ApprovalDecisionRequest, ApprovalResponse) in backend/src/main/java/com/wellkorea/backend/approval/dto/
-- [ ] T087 [US2] Add approval workflow validation (only Admin/Finance can approve, rejection requires comments)
-- [ ] T088 [US2] Integrate ApprovalService with QuotationService (quotation status changes on approve/reject)
+> **Key Design (2025-12-19)**: Approval uses multi-level sequential approval (결재 라인).
+> - Fixed approval chains per entity type (QUOTATION, PURCHASE_ORDER), configurable by Admin
+> - Sequential levels: Level 1 (팀장) → Level 2 (부서장) → Level 3 (사장)
+> - Each level references a specific user (not RBAC roles)
+> - Only the expected approver at current level can approve/reject
+
+#### Core Entities (Multi-Level Approval)
+
+- [ ] T079 [P] [US2] Create ApprovalChainTemplate entity (entity_type, name, is_active) in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalChainTemplate.java
+- [ ] T079a [P] [US2] Create ApprovalChainLevel entity (chain_template_id, level_order, level_name, approver_user_id, is_required) in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalChainLevel.java
+- [ ] T080 [P] [US2] Create ApprovalStatus enum (PENDING, APPROVED, REJECTED) in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalStatus.java
+- [ ] T081 [P] [US2] Create ApprovalRequest entity (entity_type, entity_id, chain_template_id, current_level, total_levels, status, submitted_by_id) in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalRequest.java
+- [ ] T081a [P] [US2] Create ApprovalLevelDecision entity (approval_request_id, level_order, expected_approver_id, decision, decided_by_id, comments) in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalLevelDecision.java
+- [ ] T082 [P] [US2] Create ApprovalHistory entity (approval_request_id, level_order, action, actor_id, comments) in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalHistory.java
+- [ ] T082a [P] [US2] Create ApprovalComment entity (approval_request_id, commenter_id, comment_text, is_rejection_reason) in backend/src/main/java/com/wellkorea/backend/approval/domain/ApprovalComment.java
+
+#### Repositories (Multi-Level Approval)
+
+- [ ] T083 [US2] Create ApprovalChainTemplateRepository in backend/src/main/java/com/wellkorea/backend/approval/infrastructure/persistence/ApprovalChainTemplateRepository.java
+- [ ] T083a [US2] Create ApprovalChainLevelRepository in backend/src/main/java/com/wellkorea/backend/approval/infrastructure/persistence/ApprovalChainLevelRepository.java
+- [ ] T083b [US2] Create ApprovalRequestRepository in backend/src/main/java/com/wellkorea/backend/approval/infrastructure/persistence/ApprovalRequestRepository.java
+- [ ] T083c [US2] Create ApprovalLevelDecisionRepository in backend/src/main/java/com/wellkorea/backend/approval/infrastructure/persistence/ApprovalLevelDecisionRepository.java
+
+#### Services (Multi-Level Approval Workflow)
+
+- [ ] T084 [US2] Implement ApprovalChainService (get chain for entity type, Admin configure chain levels) in backend/src/main/java/com/wellkorea/backend/approval/application/ApprovalChainService.java
+- [ ] T084a [US2] Implement ApprovalService with multi-level workflow (submit, approve at current level, reject, advance level, complete) in backend/src/main/java/com/wellkorea/backend/approval/application/ApprovalService.java
+- [ ] T084b [US2] Add multi-level approval validation logic: only expected_approver at current_level can approve/reject
+- [ ] T084c [US2] Implement approval level advancement: after Level N approval, increment current_level and enable Level N+1 approver
+
+#### Controllers (Multi-Level Approval API)
+
+- [ ] T085 [US2] Create ApprovalChainController with REST endpoints for Admin chain configuration in backend/src/main/java/com/wellkorea/backend/approval/api/ApprovalChainController.java:
+  - GET /api/approvals/chains - list all approval chain templates
+  - GET /api/approvals/chains/{entityType} - get chain for entity type
+  - PUT /api/approvals/chains/{entityType}/levels - Admin configure approval levels (level_order, level_name, approver_user_id)
+- [ ] T085a [US2] Create ApprovalController with REST endpoints for approval workflow in backend/src/main/java/com/wellkorea/backend/approval/api/ApprovalController.java:
+  - POST /api/approvals - create approval request (starts at level 1)
+  - GET /api/approvals/{id} - get approval request with level_decisions, history, comments
+  - POST /api/approvals/{id}/approve - approve at current level (advances workflow or completes)
+  - POST /api/approvals/{id}/reject - reject with mandatory comments (stops workflow)
+
+#### DTOs (Multi-Level Approval)
+
+- [ ] T086 [US2] Create DTOs in backend/src/main/java/com/wellkorea/backend/approval/api/dto/:
+  - ApprovalChainTemplateResponse, ApprovalChainLevelResponse, UpdateApprovalChainLevelsRequest
+  - ApprovalRequestResponse (with level_decisions, history, comments), ApprovalLevelDecisionResponse
+  - ApprovalHistoryResponse, ApprovalCommentResponse
+  - CreateApprovalRequest, ApproveRequest, RejectRequest (with mandatory comments)
+
+#### Integration & Validation
+
+- [ ] T087 [US2] Add multi-level approval workflow validation:
+  - Only expected approver at current level can approve/reject
+  - Rejection requires mandatory comments (is_rejection_reason=true)
+  - After all levels approve → status = APPROVED
+  - Any level rejection → status = REJECTED, workflow stops
+- [ ] T088 [US2] Integrate ApprovalService with QuotationService (quotation status changes on final approval/rejection)
 
 ### Frontend Implementation for User Story 2
 
@@ -255,6 +318,9 @@
 - [ ] T093a [US2] Add email notification checkbox in EditQuotationPage when creating new version (calls POST /api/quotations/{id}/send-revision-notification) in frontend/src/pages/quotations/EditQuotationPage.tsx
 - [ ] T094 [US2] Create QuotationDetailPage with approval history in frontend/src/pages/quotations/QuotationDetailPage.tsx
 - [ ] T095 [US2] Create ApprovalModal for approve/reject with comments in frontend/src/components/quotations/ApprovalModal.tsx
+- [ ] T095a [US2] Create ApprovalChainConfigPage (Admin only) to configure approval levels for entity types in frontend/src/pages/admin/ApprovalChainConfigPage.tsx
+- [ ] T095b [US2] Create ApprovalChainService API client (get chain, configure levels) in frontend/src/services/approvalChainService.ts
+- [ ] T095c [US2] Display multi-level approval progress in QuotationDetailPage (show current level, approver, decision status per level)
 - [ ] T096 [US2] Add PDF download button that fetches quotation PDF
 - [ ] T097 [US2] Add role-based visibility (Sales: read-only their quotations, Finance: all quotations)
 - [ ] T097a [US2] Filter quotations by assigned customers for Sales role in QuotationController (verify role and apply customer filter using customer_assignment from T048a) in backend/src/main/java/com/wellkorea/backend/quotation/api/QuotationController.java
@@ -755,20 +821,20 @@ Stories integrate at natural boundaries (e.g., quotations use products from cata
 
 ## Summary
 
-**Total Tasks**: 284 tasks (238 implementation + 46 test-first tasks)
-**MVP Tasks (P1)**: ~124 tasks (Setup + Foundational + US9 + US1 + US2 including test-first tasks + FR-062 customer assignment)
+**Total Tasks**: 298 tasks (252 implementation + 56 test-first tasks)
+**MVP Tasks (P1)**: ~138 tasks (Setup + Foundational + US9 + US1 + US2 including test-first tasks + multi-level approval + FR-062 customer assignment)
 **P2 Tasks**: ~105 tasks (US3 + US4 + US5 + US6 including test-first tasks)
 **P3 Tasks**: ~32 tasks (US7 + US8 including test-first tasks)
 **Polish Tasks**: ~23 tasks (Phase 12)
 
-**Constitution Compliance**: ✅ **Test-First Development enforced** - 46 test tasks explicitly marked "Write FIRST - MUST FAIL initially" across all 9 user stories
+**Constitution Compliance**: ✅ **Test-First Development enforced** - 56 test tasks explicitly marked "Write FIRST - MUST FAIL initially" across all 9 user stories
 
 **Task Distribution by User Story** (including test-first tasks):
 - Setup (Phase 1): 12 tasks
 - Foundational (Phase 2): 19 tasks
 - US9 - RBAC (Phase 3): 26 tasks (7 tests + 19 implementation)
 - US1 - JobCode (Phase 4): 22 tasks (5 tests + 17 implementation)
-- US2 - Quotation (Phase 5): 43 tasks (9 tests + 34 implementation)
+- US2 - Quotation (Phase 5): 57 tasks (13 tests + 44 implementation) **← Multi-Level Approval (+14 tasks)**
 - US3 - Product Catalog (Phase 6): 19 tasks (4 tests + 15 implementation)
 - US4 - Production Tracking (Phase 7): 20 tasks (4 tests + 16 implementation)
 - US5 - Delivery (Phase 8): 20 tasks (4 tests + 16 implementation)
@@ -776,6 +842,17 @@ Stories integrate at natural boundaries (e.g., quotations use products from cata
 - US7 - Documents (Phase 10): 20 tasks (4 tests + 16 implementation)
 - US8 - Purchasing (Phase 11): 24 tasks (4 tests + 20 implementation)
 - Polish (Phase 12): 23 tasks (validation & deployment)
+
+**Multi-Level Approval (2025-12-19 Update)**:
+- Added 14 new tasks for multi-level sequential approval (결재 라인):
+  - 4 new test tasks (T070a, T071a, T074a, T075a)
+  - 7 new entity tasks (T079, T079a, T081, T081a, T082, T082a + updated)
+  - 4 new repository tasks (T083, T083a, T083b, T083c)
+  - 4 new service/controller tasks (T084, T084a, T084b, T084c, T085, T085a)
+  - 3 new frontend tasks (T095a, T095b, T095c)
+- Approval chain configurable by Admin per entity type (QUOTATION, PURCHASE_ORDER)
+- Sequential levels: Level 1 (팀장) → Level 2 (부서장) → Level 3 (사장)
+- Position-based approvers (specific users, not RBAC roles)
 
 **Test-First Discipline**:
 - Each user story phase NOW includes explicit "Tests for User Story X (Write FIRST)" section
@@ -790,7 +867,8 @@ Stories integrate at natural boundaries (e.g., quotations use products from cata
 - User stories after Foundational: US3, US7 can run in parallel with any story
 - US4, US8 can run in parallel after US1 completes
 - Within each story: 2-5 entity/component tasks marked [P]
+- **Within Approval Domain**: 7 entity tasks marked [P] (can create entities in parallel)
 
-**Suggested MVP Scope**: Complete through Phase 5 (US2 Quotation) = ~124 tasks for first production-ready release (includes all test-first tasks + FR-018c quotation revision notification + FR-062 Sales role customer assignment)
+**Suggested MVP Scope**: Complete through Phase 5 (US2 Quotation) = ~138 tasks for first production-ready release (includes multi-level approval + FR-018c quotation revision notification + FR-062 Sales role customer assignment)
 
 **Format Validation**: ✅ All tasks follow `- [ ] [ID] [P?] [Story?] Description with file path` format

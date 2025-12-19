@@ -533,7 +533,12 @@ paths:
     post:
       tags:
         - Approval
-      summary: Approve request
+      summary: Approve request at current level
+      description: |
+        Approve the request at the current level. Only the expected approver at the
+        current level can approve. After approval:
+        - If more levels remain: current_level increments, next approver can act
+        - If this was the last level: status changes to APPROVED
       operationId: approveRequest
       security:
         - BearerAuth: [ ]
@@ -556,7 +561,7 @@ paths:
                   description: Optional approval comments
       responses:
         '200':
-          description: Request approved
+          description: Request approved at current level
           content:
             application/json:
               schema:
@@ -564,7 +569,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Only authorized approvers can approve
+          description: Only the expected approver at current level can approve
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -572,7 +577,10 @@ paths:
     post:
       tags:
         - Approval
-      summary: Reject request with mandatory comments
+      summary: Reject request at current level with mandatory comments
+      description: |
+        Reject the approval request at the current level. Only the expected approver
+        at the current level can reject. Rejection stops the workflow immediately.
       operationId: rejectRequest
       security:
         - BearerAuth: [ ]
@@ -607,9 +615,129 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Only authorized approvers can reject
+          description: Only the expected approver at current level can reject
         '404':
           $ref: '#/components/responses/NotFound'
+
+  # Approval Chain Configuration Endpoints
+  # ============================================================================
+
+  /approvals/chains:
+    get:
+      tags:
+        - Approval
+      summary: List all approval chain templates
+      description: Returns all approval chain configurations (one per entity type)
+      operationId: listApprovalChains
+      security:
+        - BearerAuth: [ ]
+      responses:
+        '200':
+          description: List of approval chain templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApprovalChainTemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /approvals/chains/{entityType}:
+    get:
+      tags:
+        - Approval
+      summary: Get approval chain for entity type
+      description: Returns the approval chain configuration for a specific entity type
+      operationId: getApprovalChain
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: entityType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [ QUOTATION, PURCHASE_ORDER ]
+      responses:
+        '200':
+          description: Approval chain template with levels
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalChainTemplateResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Chain template not found for entity type
+
+  /approvals/chains/{entityType}/levels:
+    put:
+      tags:
+        - Approval
+      summary: Configure approval levels for entity type (Admin only)
+      description: |
+        Configure the approval chain levels for a specific entity type.
+        Each level specifies a position name (팀장, 부서장, 사장) and the user assigned to that position.
+        Admin only endpoint.
+      operationId: updateApprovalChainLevels
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: entityType
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [ QUOTATION, PURCHASE_ORDER ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - levels
+              properties:
+                levels:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - level_order
+                      - level_name
+                      - approver_user_id
+                    properties:
+                      level_order:
+                        type: integer
+                        minimum: 1
+                        description: Execution order (1 = first approver)
+                      level_name:
+                        type: string
+                        description: Position title (팀장, 부서장, 사장)
+                      approver_user_id:
+                        type: string
+                        format: uuid
+                        description: User ID of the approver at this level
+                      is_required:
+                        type: boolean
+                        default: true
+                        description: Whether this level can be skipped
+      responses:
+        '200':
+          description: Approval chain levels updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalChainTemplateResponse'
+        '400':
+          description: Invalid level configuration
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin can configure approval chains
+        '404':
+          description: Chain template not found for entity type
 
   # Work Progress Endpoints
   # ============================================================================
@@ -1614,27 +1742,79 @@ components:
     # ========================================================================
 
     # ========================================================================
-    # Approval Schemas
+    # Approval Schemas (Multi-Level Sequential Approval)
     # ========================================================================
 
-    ApprovalRequestResponse:
+    ApprovalChainTemplateResponse:
       type: object
+      description: Approval chain configuration for an entity type
       properties:
         id:
           type: string
           format: uuid
         entity_type:
           type: string
-          enum: [ Quotation, PurchaseOrder ]
+          enum: [ QUOTATION, PURCHASE_ORDER ]
+        name:
+          type: string
+          description: Human-readable name (견적서 결재)
+        description:
+          type: string
+        is_active:
+          type: boolean
+        levels:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApprovalChainLevelResponse'
+
+    ApprovalChainLevelResponse:
+      type: object
+      description: Approval level within a chain (팀장, 부서장, 사장)
+      properties:
+        id:
+          type: string
+          format: uuid
+        level_order:
+          type: integer
+          description: Execution order (1 = first approver)
+        level_name:
+          type: string
+          description: Position title (팀장, 부서장, 사장)
+        approver_user_id:
+          type: string
+          format: uuid
+        approver_user_name:
+          type: string
+          description: Full name of the approver
+        is_required:
+          type: boolean
+
+    ApprovalRequestResponse:
+      type: object
+      description: Approval request instance with multi-level status
+      properties:
+        id:
+          type: string
+          format: uuid
+        entity_type:
+          type: string
+          enum: [ QUOTATION, PURCHASE_ORDER ]
         entity_id:
           type: string
           format: uuid
         entity_description:
           type: string
-          description: Human-readable description of what's being approved
+          description: Human-readable description (견적서 v3 - WK2K25-0001-0104)
+        current_level:
+          type: integer
+          description: Which level is currently awaiting approval
+        total_levels:
+          type: integer
+          description: Total number of levels in the chain
         status:
           type: string
           enum: [ Pending, Approved, Rejected ]
+          description: PENDING until all levels approve
         submitted_by_id:
           type: string
           format: uuid
@@ -1643,22 +1823,15 @@ components:
         submitted_at:
           type: string
           format: date-time
-        approved_by_id:
-          type: string
-          format: uuid
-        approved_by_name:
-          type: string
-        approved_at:
+        completed_at:
           type: string
           format: date-time
-        rejected_by_id:
-          type: string
-          format: uuid
-        rejected_by_name:
-          type: string
-        rejected_at:
-          type: string
-          format: date-time
+          description: When final approval/rejection occurred
+        level_decisions:
+          type: array
+          description: Decision status at each level
+          items:
+            $ref: '#/components/schemas/ApprovalLevelDecisionResponse'
         history:
           type: array
           items:
@@ -1668,15 +1841,52 @@ components:
           items:
             $ref: '#/components/schemas/ApprovalCommentResponse'
 
+    ApprovalLevelDecisionResponse:
+      type: object
+      description: Decision at each level of the approval chain
+      properties:
+        id:
+          type: string
+          format: uuid
+        level_order:
+          type: integer
+        level_name:
+          type: string
+          description: Position title at this level
+        expected_approver_id:
+          type: string
+          format: uuid
+        expected_approver_name:
+          type: string
+        decision:
+          type: string
+          enum: [ Pending, Approved, Rejected ]
+        decided_by_id:
+          type: string
+          format: uuid
+        decided_by_name:
+          type: string
+        decided_at:
+          type: string
+          format: date-time
+        comments:
+          type: string
+
     ApprovalHistoryResponse:
       type: object
       properties:
         id:
           type: string
           format: uuid
+        level_order:
+          type: integer
+          description: Which level this action was for (null for SUBMITTED)
         action:
           type: string
           enum: [ Submitted, Approved, Rejected ]
+        actor_id:
+          type: string
+          format: uuid
         actor_name:
           type: string
         timestamp:
@@ -1689,6 +1899,9 @@ components:
       type: object
       properties:
         id:
+          type: string
+          format: uuid
+        commenter_id:
           type: string
           format: uuid
         commenter_name:
