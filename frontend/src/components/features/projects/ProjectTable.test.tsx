@@ -68,7 +68,6 @@ describe('ProjectTable', () => {
     search: '',
     onPageChange: vi.fn(),
     onView: vi.fn(),
-    onEdit: vi.fn(),
   };
 
   beforeEach(() => {
@@ -355,17 +354,6 @@ describe('ProjectTable', () => {
       });
     });
 
-    it('should render edit button for each project', async () => {
-      const projects = [createMockProject()];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
-
-      render(<ProjectTable {...defaultProps} />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /edit project/i })).toBeInTheDocument();
-      });
-    });
-
     it('should call onView with project when view is clicked', async () => {
       const user = userEvent.setup();
       const onView = vi.fn();
@@ -381,23 +369,6 @@ describe('ProjectTable', () => {
       await user.click(screen.getByRole('button', { name: /view project/i }));
 
       expect(onView).toHaveBeenCalledWith(project);
-    });
-
-    it('should call onEdit with project when edit is clicked', async () => {
-      const user = userEvent.setup();
-      const onEdit = vi.fn();
-      const project = createMockProject();
-      mockGetProjects.mockResolvedValue(createMockPagedResponse([project]));
-
-      render(<ProjectTable {...defaultProps} onEdit={onEdit} />);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /edit project/i })).toBeInTheDocument();
-      });
-
-      await user.click(screen.getByRole('button', { name: /edit project/i }));
-
-      expect(onEdit).toHaveBeenCalledWith(project);
     });
   });
 
@@ -493,18 +464,6 @@ describe('ProjectTable', () => {
       await waitFor(() => {
         const viewButton = screen.getByRole('button', { name: /view project/i });
         expect(viewButton).toHaveAttribute('aria-label', 'View project');
-      });
-    });
-
-    it('should have accessible edit button', async () => {
-      const projects = [createMockProject()];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
-
-      render(<ProjectTable {...defaultProps} />);
-
-      await waitFor(() => {
-        const editButton = screen.getByRole('button', { name: /edit project/i });
-        expect(editButton).toHaveAttribute('aria-label', 'Edit project');
       });
     });
   });

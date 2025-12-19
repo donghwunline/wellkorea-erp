@@ -71,14 +71,6 @@ vi.mock('@/components/features/projects', () => ({
           Trigger View
         </button>
         <button
-          data-testid="trigger-edit"
-          onClick={() =>
-            (props.onEdit as (project: { id: number }) => void)({ id: 42 })
-          }
-        >
-          Trigger Edit
-        </button>
-        <button
           data-testid="trigger-error"
           onClick={() => (props.onError as (error: string) => void)('Test error message')}
         >
@@ -162,7 +154,6 @@ describe('ProjectListPage', () => {
       renderProjectListPage();
 
       expect(typeof projectTableProps.onView).toBe('function');
-      expect(typeof projectTableProps.onEdit).toBe('function');
       expect(typeof projectTableProps.onError).toBe('function');
     });
 
@@ -201,15 +192,6 @@ describe('ProjectListPage', () => {
       await user.click(screen.getByTestId('trigger-view'));
 
       expect(mockNavigate).toHaveBeenCalledWith('/projects/42');
-    });
-
-    it('should navigate to edit page when onEdit is triggered', async () => {
-      const user = userEvent.setup();
-      renderProjectListPage();
-
-      await user.click(screen.getByTestId('trigger-edit'));
-
-      expect(mockNavigate).toHaveBeenCalledWith('/projects/42/edit');
     });
   });
 

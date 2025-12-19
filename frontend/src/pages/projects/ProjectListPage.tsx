@@ -39,10 +39,6 @@ export function ProjectListPage() {
     navigate(`/projects/${project.id}`);
   };
 
-  const handleEdit = (project: { id: number }) => {
-    navigate(`/projects/${project.id}/edit`);
-  };
-
   return (
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
@@ -87,7 +83,6 @@ export function ProjectListPage() {
         search={search}
         onPageChange={setPage}
         onView={handleView}
-        onEdit={handleEdit}
         onError={setError}
       />
     </div>

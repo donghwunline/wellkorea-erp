@@ -45,8 +45,6 @@ export interface ProjectTableProps {
   onPageChange: (page: number) => void;
   /** Called when user clicks view */
   onView: (project: ProjectDetails) => void;
-  /** Called when user clicks edit */
-  onEdit: (project: ProjectDetails) => void;
   /** Called when an error occurs */
   onError?: (error: string) => void;
 }
@@ -60,7 +58,6 @@ export function ProjectTable({
   refreshTrigger,
   onPageChange,
   onView,
-  onEdit,
   onError,
 }: Readonly<ProjectTableProps>) {
   // Server State (Tier 3) - managed here in feature component
@@ -188,20 +185,13 @@ export function ProjectTable({
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end">
                       <IconButton
                         onClick={() => onView(project)}
                         aria-label="View project"
                         title="View project"
                       >
                         <Icon name="eye" className="h-4 w-4" />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => onEdit(project)}
-                        aria-label="Edit project"
-                        title="Edit project"
-                      >
-                        <Icon name="pencil" className="h-4 w-4" />
                       </IconButton>
                     </div>
                   </Table.Cell>
