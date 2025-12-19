@@ -4,7 +4,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
-import { act, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { useProjectActions } from './useProjectActions';
 import { projectService } from '@/services';
 import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
