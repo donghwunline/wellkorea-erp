@@ -208,7 +208,7 @@ describe('JobCodeSuccessModal', () => {
     });
 
     it('should render View Project as primary button with icon', () => {
-      const { container } = render(<JobCodeSuccessModal {...defaultProps} />);
+      render(<JobCodeSuccessModal {...defaultProps} />);
 
       const viewButton = screen.getByRole('button', { name: /view project/i });
       expect(viewButton).toBeInTheDocument();
