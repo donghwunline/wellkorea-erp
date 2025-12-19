@@ -11,6 +11,7 @@ import com.wellkorea.backend.product.infrastructure.repository.ProductRepository
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.*;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -62,7 +62,7 @@ class QuotationServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private DomainEventPublisher eventPublisher;
 
     @InjectMocks
     private QuotationService quotationService;

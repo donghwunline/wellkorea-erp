@@ -5,6 +5,7 @@ import com.wellkorea.backend.approval.infrastructure.repository.*;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.*;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -69,7 +69,7 @@ class ApprovalServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private DomainEventPublisher eventPublisher;
 
     @InjectMocks
     private ApprovalService approvalService;
@@ -287,7 +287,7 @@ class ApprovalServiceTest {
             assertThat(result.getCompletedAt()).isNotNull();
             assertThat(level2Decision.getDecision()).isEqualTo(DecisionStatus.APPROVED);
             // Verify event was published for entity-specific handlers
-            verify(eventPublisher).publishEvent(any(com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.class));
+            verify(eventPublisher).publish(any(com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.class));
         }
 
         @Test
@@ -366,7 +366,7 @@ class ApprovalServiceTest {
             verify(historyRepository).save(any(ApprovalHistory.class));
             verify(commentRepository).save(any(ApprovalComment.class));
             // Verify event was published for entity-specific handlers
-            verify(eventPublisher).publishEvent(any(com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.class));
+            verify(eventPublisher).publish(any(com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.class));
         }
 
         @Test
