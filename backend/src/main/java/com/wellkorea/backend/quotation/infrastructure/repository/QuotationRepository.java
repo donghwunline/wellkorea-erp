@@ -36,8 +36,12 @@ public interface QuotationRepository extends JpaRepository<Quotation, Long> {
 
     /**
      * Find all quotations with filters.
+     * Uses JOIN FETCH to avoid N+1 queries when accessing project and createdBy.
      */
-    @Query("SELECT q FROM Quotation q WHERE q.deleted = false " +
+    @Query("SELECT q FROM Quotation q " +
+            "LEFT JOIN FETCH q.project " +
+            "LEFT JOIN FETCH q.createdBy " +
+            "WHERE q.deleted = false " +
             "AND (:status IS NULL OR q.status = :status) " +
             "AND (:projectId IS NULL OR q.project.id = :projectId)")
     Page<Quotation> findAllWithFilters(
@@ -62,7 +66,12 @@ public interface QuotationRepository extends JpaRepository<Quotation, Long> {
 
     /**
      * Find quotation with line items eagerly loaded.
+     * Also fetches project and createdBy to avoid N+1 queries.
      */
-    @Query("SELECT q FROM Quotation q LEFT JOIN FETCH q.lineItems WHERE q.id = :id AND q.deleted = false")
+    @Query("SELECT q FROM Quotation q " +
+            "LEFT JOIN FETCH q.lineItems " +
+            "LEFT JOIN FETCH q.project " +
+            "LEFT JOIN FETCH q.createdBy " +
+            "WHERE q.id = :id AND q.deleted = false")
     Optional<Quotation> findByIdWithLineItems(@Param("id") Long id);
 }
