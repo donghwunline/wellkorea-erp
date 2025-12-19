@@ -2,6 +2,7 @@ package com.wellkorea.backend.approval.domain.event;
 
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.EntityType;
+import com.wellkorea.backend.shared.event.DomainEvent;
 
 /**
  * Domain event published when an approval workflow is completed (approved or rejected).
@@ -14,7 +15,7 @@ public record ApprovalCompletedEvent(
         ApprovalStatus finalStatus,
         Long approverUserId,
         String rejectionReason
-) {
+) implements DomainEvent {
     /**
      * Create an approved event.
      */

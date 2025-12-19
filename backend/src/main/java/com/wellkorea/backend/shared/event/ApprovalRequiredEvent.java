@@ -7,6 +7,8 @@ import com.wellkorea.backend.approval.domain.EntityType;
  * Implement this interface for any entity that needs to go through
  * the multi-level approval process.
  *
+ * <p>Extends DomainEvent to enable publishing through DomainEventPublisher abstraction.
+ *
  * <p>Usage example:
  * <pre>
  * public record QuotationSubmittedEvent(
@@ -18,7 +20,7 @@ import com.wellkorea.backend.approval.domain.EntityType;
  * }
  * </pre>
  */
-public interface ApprovalRequiredEvent {
+public interface ApprovalRequiredEvent extends DomainEvent {
 
     /**
      * The type of entity requiring approval.
