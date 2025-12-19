@@ -60,6 +60,7 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
     @BeforeEach
     void setUp() {
         DatabaseTestHelper.insertTestUsersWithRoles(jdbcTemplate);
+        DatabaseTestHelper.insertTestCustomer(jdbcTemplate);
         DatabaseTestHelper.insertTestProducts(jdbcTemplate);
 
         // Generate tokens for different roles (with userId for approval operations)

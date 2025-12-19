@@ -7,6 +7,7 @@ import com.wellkorea.backend.quotation.api.dto.QuotationResponse;
 import com.wellkorea.backend.quotation.api.dto.UpdateQuotationRequest;
 import com.wellkorea.backend.quotation.application.CreateQuotationCommand;
 import com.wellkorea.backend.quotation.application.LineItemCommand;
+import com.wellkorea.backend.quotation.application.QuotationEmailService;
 import com.wellkorea.backend.quotation.application.QuotationService;
 import com.wellkorea.backend.quotation.application.UpdateQuotationCommand;
 import com.wellkorea.backend.quotation.domain.Quotation;
@@ -30,10 +31,15 @@ import org.springframework.web.bind.annotation.*;
 public class QuotationController {
 
     private final QuotationService quotationService;
+    private final QuotationEmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public QuotationController(QuotationService quotationService, JwtTokenProvider jwtTokenProvider) {
+    public QuotationController(
+            QuotationService quotationService,
+            QuotationEmailService emailService,
+            JwtTokenProvider jwtTokenProvider) {
         this.quotationService = quotationService;
+        this.emailService = emailService;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -181,5 +187,20 @@ public class QuotationController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .header("Content-Disposition", "attachment; filename=quotation-" + id + ".pdf")
                 .body(pdfBytes);
+    }
+
+    /**
+     * Send revision notification email for a quotation.
+     * POST /api/quotations/{id}/send-revision-notification
+     *
+     * Admin can use this endpoint to notify the customer about a new quotation version.
+     */
+    @PostMapping("/{id}/send-revision-notification")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<String>> sendRevisionNotification(@PathVariable Long id) {
+        Quotation quotation = quotationService.getQuotation(id);
+        emailService.sendRevisionNotification(quotation);
+
+        return ResponseEntity.ok(ApiResponse.success("Revision notification sent successfully"));
     }
 }

@@ -38,6 +38,7 @@ public class QuotationService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final DomainEventPublisher eventPublisher;
+    private final QuotationPdfService pdfService;
 
     public QuotationService(
             QuotationRepository quotationRepository,
@@ -45,13 +46,15 @@ public class QuotationService {
             ProjectRepository projectRepository,
             ProductRepository productRepository,
             UserRepository userRepository,
-            DomainEventPublisher eventPublisher) {
+            DomainEventPublisher eventPublisher,
+            QuotationPdfService pdfService) {
         this.quotationRepository = quotationRepository;
         this.lineItemRepository = lineItemRepository;
         this.projectRepository = projectRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
+        this.pdfService = pdfService;
     }
 
     /**
@@ -245,7 +248,7 @@ public class QuotationService {
     }
 
     /**
-     * Generate PDF for quotation (placeholder - actual PDF generation would use a library).
+     * Generate PDF for quotation using iText7.
      */
     @Transactional(readOnly = true)
     public byte[] generatePdf(Long quotationId) {
@@ -256,15 +259,7 @@ public class QuotationService {
             throw new BusinessException("PDF can only be generated for non-DRAFT quotations");
         }
 
-        // TODO: Implement actual PDF generation using iText or PDFBox
-        // For now, return placeholder bytes
-        return generatePlaceholderPdf(quotation);
-    }
-
-    private byte[] generatePlaceholderPdf(Quotation quotation) {
-        // Placeholder PDF content
-        String content = "Quotation PDF - ID: " + quotation.getId() + ", Version: " + quotation.getVersion();
-        return content.getBytes();
+        return pdfService.generatePdf(quotation);
     }
 
     private void validateCreateCommand(CreateQuotationCommand command) {
