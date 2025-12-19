@@ -1,5 +1,7 @@
 package com.wellkorea.backend.project.application;
 
+import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
 import com.wellkorea.backend.project.domain.JobCodeGenerator;
@@ -18,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -49,7 +50,10 @@ class ProjectServiceTest implements TestFixtures {
     private JobCodeGenerator jobCodeGenerator;
 
     @Mock
-    private JdbcTemplate jdbcTemplate;
+    private CustomerRepository customerRepository;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private ProjectService projectService;
@@ -98,10 +102,8 @@ class ProjectServiceTest implements TestFixtures {
         @Test
         @DisplayName("should create project with generated JobCode")
         void createProject_ValidRequest_ReturnsCreatedProject() {
-            when(jdbcTemplate.queryForObject(contains("customers"), eq(Integer.class), eq(TEST_CUSTOMER_ID)))
-                    .thenReturn(1);
-            when(jdbcTemplate.queryForObject(contains("users"), eq(Integer.class), eq(TEST_USER_ID)))
-                    .thenReturn(1);
+            when(customerRepository.existsByIdAndIsDeletedFalse(TEST_CUSTOMER_ID)).thenReturn(true);
+            when(userRepository.existsByIdAndIsActiveTrue(TEST_USER_ID)).thenReturn(true);
             when(jobCodeGenerator.generateJobCode()).thenReturn("WK2K25-0002-0301");
             when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> {
                 Project saved = invocation.getArgument(0);
@@ -121,8 +123,7 @@ class ProjectServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception when customer does not exist")
         void createProject_CustomerNotExist_ThrowsBusinessException() {
-            when(jdbcTemplate.queryForObject(contains("customers"), eq(Integer.class), eq(TEST_CUSTOMER_ID)))
-                    .thenReturn(0);
+            when(customerRepository.existsByIdAndIsDeletedFalse(TEST_CUSTOMER_ID)).thenReturn(false);
 
             assertThatThrownBy(() -> projectService.createProject(createRequest, TEST_USER_ID))
                     .isInstanceOf(BusinessException.class)
@@ -134,10 +135,8 @@ class ProjectServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception when internal owner does not exist")
         void createProject_InternalOwnerNotExist_ThrowsBusinessException() {
-            when(jdbcTemplate.queryForObject(contains("customers"), eq(Integer.class), eq(TEST_CUSTOMER_ID)))
-                    .thenReturn(1);
-            when(jdbcTemplate.queryForObject(contains("users"), eq(Integer.class), eq(TEST_USER_ID)))
-                    .thenReturn(0);
+            when(customerRepository.existsByIdAndIsDeletedFalse(TEST_CUSTOMER_ID)).thenReturn(true);
+            when(userRepository.existsByIdAndIsActiveTrue(TEST_USER_ID)).thenReturn(false);
 
             assertThatThrownBy(() -> projectService.createProject(createRequest, TEST_USER_ID))
                     .isInstanceOf(BusinessException.class)

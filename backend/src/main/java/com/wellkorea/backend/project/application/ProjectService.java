@@ -1,5 +1,7 @@
 package com.wellkorea.backend.project.application;
 
+import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
 import com.wellkorea.backend.project.domain.Project;
@@ -10,7 +12,6 @@ import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,15 +32,18 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final JobCodeGenerator jobCodeGenerator;
-    private final JdbcTemplate jdbcTemplate;
+    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
 
     public ProjectService(
             ProjectRepository projectRepository,
             JobCodeGenerator jobCodeGenerator,
-            JdbcTemplate jdbcTemplate) {
+            CustomerRepository customerRepository,
+            UserRepository userRepository) {
         this.projectRepository = projectRepository;
         this.jobCodeGenerator = jobCodeGenerator;
-        this.jdbcTemplate = jdbcTemplate;
+        this.customerRepository = customerRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -228,22 +232,16 @@ public class ProjectService {
     }
 
     /**
-     * Check if customer exists.
+     * Check if customer exists and is not deleted.
      */
     private boolean customerExists(Long customerId) {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM customers WHERE id = ? AND is_deleted = false",
-                Integer.class, customerId);
-        return count != null && count > 0;
+        return customerRepository.existsByIdAndIsDeletedFalse(customerId);
     }
 
     /**
-     * Check if user exists.
+     * Check if user exists and is active.
      */
     private boolean userExists(Long userId) {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM users WHERE id = ? AND is_active = true",
-                Integer.class, userId);
-        return count != null && count > 0;
+        return userRepository.existsByIdAndIsActiveTrue(userId);
     }
 }
