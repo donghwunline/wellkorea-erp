@@ -4,9 +4,9 @@ import com.wellkorea.backend.approval.domain.*;
 import com.wellkorea.backend.approval.infrastructure.repository.*;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -30,7 +30,7 @@ public class ApprovalService {
     private final ApprovalChainTemplateRepository chainTemplateRepository;
     private final ApprovalChainLevelRepository chainLevelRepository;
     private final UserRepository userRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final DomainEventPublisher eventPublisher;
 
     public ApprovalService(
             ApprovalRequestRepository approvalRequestRepository,
@@ -40,7 +40,7 @@ public class ApprovalService {
             ApprovalChainTemplateRepository chainTemplateRepository,
             ApprovalChainLevelRepository chainLevelRepository,
             UserRepository userRepository,
-            ApplicationEventPublisher eventPublisher) {
+            DomainEventPublisher eventPublisher) {
         this.approvalRequestRepository = approvalRequestRepository;
         this.levelDecisionRepository = levelDecisionRepository;
         this.historyRepository = historyRepository;
@@ -136,7 +136,7 @@ public class ApprovalService {
 
         // Publish event after final approval (handled by entity-specific handlers)
         if (savedRequest.isCompleted() && savedRequest.getStatus() == ApprovalStatus.APPROVED) {
-            eventPublisher.publishEvent(
+            eventPublisher.publish(
                     com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.approved(
                             savedRequest.getId(),
                             savedRequest.getEntityType(),
@@ -186,7 +186,7 @@ public class ApprovalService {
         ApprovalRequest savedRequest = approvalRequestRepository.save(request);
 
         // Publish event for rejection (handled by entity-specific handlers)
-        eventPublisher.publishEvent(
+        eventPublisher.publish(
                 com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.rejected(
                         savedRequest.getId(),
                         savedRequest.getEntityType(),

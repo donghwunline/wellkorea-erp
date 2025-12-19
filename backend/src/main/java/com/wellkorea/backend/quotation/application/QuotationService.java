@@ -12,9 +12,9 @@ import com.wellkorea.backend.quotation.domain.QuotationStatus;
 import com.wellkorea.backend.quotation.domain.event.QuotationSubmittedEvent;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationLineItemRepository;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
+import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class QuotationService {
     private final ProjectRepository projectRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final DomainEventPublisher eventPublisher;
 
     public QuotationService(
             QuotationRepository quotationRepository,
@@ -45,7 +45,7 @@ public class QuotationService {
             ProjectRepository projectRepository,
             ProductRepository productRepository,
             UserRepository userRepository,
-            ApplicationEventPublisher eventPublisher) {
+            DomainEventPublisher eventPublisher) {
         this.quotationRepository = quotationRepository;
         this.lineItemRepository = lineItemRepository;
         this.projectRepository = projectRepository;
@@ -152,7 +152,7 @@ public class QuotationService {
         Quotation savedQuotation = quotationRepository.save(quotation);
 
         // Publish event - handled by ApprovalEventHandler within same transaction
-        eventPublisher.publishEvent(new QuotationSubmittedEvent(
+        eventPublisher.publish(new QuotationSubmittedEvent(
                 savedQuotation.getId(),
                 savedQuotation.getVersion(),
                 savedQuotation.getProject().getJobCode(),
