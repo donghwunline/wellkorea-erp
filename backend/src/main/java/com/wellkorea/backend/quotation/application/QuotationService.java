@@ -9,10 +9,12 @@ import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
+import com.wellkorea.backend.quotation.domain.event.QuotationSubmittedEvent;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationLineItemRepository;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,18 +37,21 @@ public class QuotationService {
     private final ProjectRepository projectRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public QuotationService(
             QuotationRepository quotationRepository,
             QuotationLineItemRepository lineItemRepository,
             ProjectRepository projectRepository,
             ProductRepository productRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            ApplicationEventPublisher eventPublisher) {
         this.quotationRepository = quotationRepository;
         this.lineItemRepository = lineItemRepository;
         this.projectRepository = projectRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -75,22 +80,7 @@ public class QuotationService {
         quotation.setCreatedBy(createdBy);
 
         // Add line items
-        int sequence = 1;
-        for (LineItemCommand itemCmd : command.lineItems()) {
-            Product product = productRepository.findById(itemCmd.productId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + itemCmd.productId()));
-
-            QuotationLineItem lineItem = new QuotationLineItem();
-            lineItem.setProduct(product);
-            lineItem.setSequence(sequence++);
-            lineItem.setQuantity(itemCmd.quantity());
-            lineItem.setUnitPrice(itemCmd.unitPrice());
-            lineItem.calculateLineTotal();
-            lineItem.setNotes(itemCmd.notes());
-
-            quotation.addLineItem(lineItem);
-        }
-
+        addLineItemsFromCommands(quotation, command.lineItems());
         quotation.recalculateTotalAmount();
         return quotationRepository.save(quotation);
     }
@@ -120,21 +110,7 @@ public class QuotationService {
             lineItemRepository.flush();
             quotation.getLineItems().clear();
 
-            int sequence = 1;
-            for (LineItemCommand itemCmd : command.lineItems()) {
-                Product product = productRepository.findById(itemCmd.productId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + itemCmd.productId()));
-
-                QuotationLineItem lineItem = new QuotationLineItem();
-                lineItem.setProduct(product);
-                lineItem.setSequence(sequence++);
-                lineItem.setQuantity(itemCmd.quantity());
-                lineItem.setUnitPrice(itemCmd.unitPrice());
-                lineItem.calculateLineTotal();
-                lineItem.setNotes(itemCmd.notes());
-
-                quotation.addLineItem(lineItem);
-            }
+            addLineItemsFromCommands(quotation, command.lineItems());
             quotation.recalculateTotalAmount();
         }
 
@@ -160,8 +136,10 @@ public class QuotationService {
 
     /**
      * Submit quotation for approval.
+     * Publishes QuotationSubmittedEvent which is handled by ApprovalEventHandler
+     * within the same transaction (BEFORE_COMMIT phase).
      */
-    public Quotation submitForApproval(Long quotationId) {
+    public Quotation submitForApproval(Long quotationId, Long submittedByUserId) {
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
 
@@ -171,7 +149,17 @@ public class QuotationService {
 
         quotation.setStatus(QuotationStatus.PENDING);
         quotation.setSubmittedAt(LocalDateTime.now());
-        return quotationRepository.save(quotation);
+        Quotation savedQuotation = quotationRepository.save(quotation);
+
+        // Publish event - handled by ApprovalEventHandler within same transaction
+        eventPublisher.publishEvent(new QuotationSubmittedEvent(
+                savedQuotation.getId(),
+                savedQuotation.getVersion(),
+                savedQuotation.getProject().getJobCode(),
+                submittedByUserId
+        ));
+
+        return savedQuotation;
     }
 
     /**
@@ -219,11 +207,16 @@ public class QuotationService {
     }
 
     /**
-     * Approve quotation (called by approval workflow).
+     * Approve quotation (called by approval workflow via event).
+     * Only quotations in PENDING status can be approved.
      */
     public Quotation approveQuotation(Long quotationId, Long approvedByUserId) {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+
+        if (quotation.getStatus() != QuotationStatus.PENDING) {
+            throw new BusinessException("Only PENDING quotations can be approved");
+        }
 
         User approvedBy = userRepository.findById(approvedByUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + approvedByUserId));
@@ -235,11 +228,16 @@ public class QuotationService {
     }
 
     /**
-     * Reject quotation (called by approval workflow).
+     * Reject quotation (called by approval workflow via event).
+     * Only quotations in PENDING status can be rejected.
      */
     public Quotation rejectQuotation(Long quotationId, String rejectionReason) {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+
+        if (quotation.getStatus() != QuotationStatus.PENDING) {
+            throw new BusinessException("Only PENDING quotations can be rejected");
+        }
 
         quotation.setStatus(QuotationStatus.REJECTED);
         quotation.setRejectionReason(rejectionReason);
@@ -281,6 +279,29 @@ public class QuotationService {
             if (item.unitPrice() == null || item.unitPrice().compareTo(BigDecimal.ZERO) < 0) {
                 throw new BusinessException("Line item unit price cannot be negative");
             }
+        }
+    }
+
+    /**
+     * Add line items from commands to a quotation.
+     * Common logic extracted from create, update, and version creation methods.
+     */
+    private void addLineItemsFromCommands(Quotation quotation, List<LineItemCommand> commands) {
+        int sequence = 1;
+        for (LineItemCommand itemCmd : commands) {
+            Product product = productRepository.findById(itemCmd.productId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Product not found with ID: " + itemCmd.productId()));
+
+            QuotationLineItem lineItem = new QuotationLineItem();
+            lineItem.setProduct(product);
+            lineItem.setSequence(sequence++);
+            lineItem.setQuantity(itemCmd.quantity());
+            lineItem.setUnitPrice(itemCmd.unitPrice());
+            lineItem.calculateLineTotal();
+            lineItem.setNotes(itemCmd.notes());
+
+            quotation.addLineItem(lineItem);
         }
     }
 }

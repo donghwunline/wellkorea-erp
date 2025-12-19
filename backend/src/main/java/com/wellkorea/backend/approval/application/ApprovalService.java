@@ -4,9 +4,9 @@ import com.wellkorea.backend.approval.domain.*;
 import com.wellkorea.backend.approval.infrastructure.repository.*;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.quotation.application.QuotationService;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -30,7 +30,7 @@ public class ApprovalService {
     private final ApprovalChainTemplateRepository chainTemplateRepository;
     private final ApprovalChainLevelRepository chainLevelRepository;
     private final UserRepository userRepository;
-    private final QuotationService quotationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ApprovalService(
             ApprovalRequestRepository approvalRequestRepository,
@@ -40,7 +40,7 @@ public class ApprovalService {
             ApprovalChainTemplateRepository chainTemplateRepository,
             ApprovalChainLevelRepository chainLevelRepository,
             UserRepository userRepository,
-            QuotationService quotationService) {
+            ApplicationEventPublisher eventPublisher) {
         this.approvalRequestRepository = approvalRequestRepository;
         this.levelDecisionRepository = levelDecisionRepository;
         this.historyRepository = historyRepository;
@@ -48,7 +48,7 @@ public class ApprovalService {
         this.chainTemplateRepository = chainTemplateRepository;
         this.chainLevelRepository = chainLevelRepository;
         this.userRepository = userRepository;
-        this.quotationService = quotationService;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -127,14 +127,26 @@ public class ApprovalService {
         // Check if this is the final level
         if (request.isAtFinalLevel()) {
             request.complete(ApprovalStatus.APPROVED);
-            // Update the entity status
-            updateEntityStatus(request, ApprovalStatus.APPROVED, approverUserId);
         } else {
             // Move to next level
             request.moveToNextLevel();
         }
 
-        return approvalRequestRepository.save(request);
+        ApprovalRequest savedRequest = approvalRequestRepository.save(request);
+
+        // Publish event after final approval (handled by entity-specific handlers)
+        if (savedRequest.isCompleted() && savedRequest.getStatus() == ApprovalStatus.APPROVED) {
+            eventPublisher.publishEvent(
+                    com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.approved(
+                            savedRequest.getId(),
+                            savedRequest.getEntityType(),
+                            savedRequest.getEntityId(),
+                            approverUserId
+                    )
+            );
+        }
+
+        return savedRequest;
     }
 
     /**
@@ -171,10 +183,19 @@ public class ApprovalService {
         // Complete the request as rejected (chain stops)
         request.complete(ApprovalStatus.REJECTED);
 
-        // Update the entity status
-        updateEntityStatus(request, ApprovalStatus.REJECTED, null);
+        ApprovalRequest savedRequest = approvalRequestRepository.save(request);
 
-        return approvalRequestRepository.save(request);
+        // Publish event for rejection (handled by entity-specific handlers)
+        eventPublisher.publishEvent(
+                com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.rejected(
+                        savedRequest.getId(),
+                        savedRequest.getEntityType(),
+                        savedRequest.getEntityId(),
+                        reason
+                )
+        );
+
+        return savedRequest;
     }
 
     /**
@@ -298,17 +319,4 @@ public class ApprovalService {
         }
     }
 
-    private void updateEntityStatus(ApprovalRequest request, ApprovalStatus status, Long approverUserId) {
-        if (request.getEntityType() == EntityType.QUOTATION) {
-            if (status == ApprovalStatus.APPROVED && approverUserId != null) {
-                quotationService.approveQuotation(request.getEntityId(), approverUserId);
-            } else if (status == ApprovalStatus.REJECTED) {
-                String reason = commentRepository.findByApprovalRequestIdAndRejectionReasonTrue(request.getId())
-                        .map(ApprovalComment::getCommentText)
-                        .orElse("Rejected by approver");
-                quotationService.rejectQuotation(request.getEntityId(), reason);
-            }
-        }
-        // TODO: Handle PURCHASE_ORDER entity type when implemented
-    }
 }

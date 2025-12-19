@@ -1,10 +1,10 @@
 package com.wellkorea.backend.quotation.api;
 
-import com.wellkorea.backend.approval.application.ApprovalService;
-import com.wellkorea.backend.approval.domain.EntityType;
 import com.wellkorea.backend.auth.api.CurrentToken;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
-import com.wellkorea.backend.quotation.api.dto.*;
+import com.wellkorea.backend.quotation.api.dto.CreateQuotationRequest;
+import com.wellkorea.backend.quotation.api.dto.QuotationResponse;
+import com.wellkorea.backend.quotation.api.dto.UpdateQuotationRequest;
 import com.wellkorea.backend.quotation.application.CreateQuotationCommand;
 import com.wellkorea.backend.quotation.application.LineItemCommand;
 import com.wellkorea.backend.quotation.application.QuotationService;
@@ -30,15 +30,10 @@ import org.springframework.web.bind.annotation.*;
 public class QuotationController {
 
     private final QuotationService quotationService;
-    private final ApprovalService approvalService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public QuotationController(
-            QuotationService quotationService,
-            ApprovalService approvalService,
-            JwtTokenProvider jwtTokenProvider) {
+    public QuotationController(QuotationService quotationService, JwtTokenProvider jwtTokenProvider) {
         this.quotationService = quotationService;
-        this.approvalService = approvalService;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -136,6 +131,10 @@ public class QuotationController {
     /**
      * Submit quotation for approval.
      * POST /api/quotations/{id}/submit
+     *
+     * The approval request is created automatically via event-driven architecture.
+     * QuotationService publishes QuotationSubmittedEvent, which is handled by
+     * ApprovalEventHandler within the same transaction.
      */
     @PostMapping("/{id}/submit")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
@@ -144,19 +143,7 @@ public class QuotationController {
             @CurrentToken String token) {
 
         Long userId = jwtTokenProvider.getUserId(token);
-
-        Quotation quotation = quotationService.submitForApproval(id);
-
-        // Create approval request
-        String description = String.format("견적서 v%d - %s",
-                quotation.getVersion(),
-                quotation.getProject().getJobCode());
-        approvalService.createApprovalRequest(
-                EntityType.QUOTATION,
-                quotation.getId(),
-                description,
-                userId);
-
+        Quotation quotation = quotationService.submitForApproval(id, userId);
         QuotationResponse response = QuotationResponse.from(quotation);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
