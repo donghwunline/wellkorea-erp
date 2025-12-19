@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>견적서</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        @font-face {
+            font-family: 'NotoSansKR';
+            src: url('fonts/NotoSansKR.ttf');
+            font-weight: normal;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'NotoSansKR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            font-size: 10pt;
+        }
+
+        .page {
+            width: 190mm;
+            margin: 0 auto;
+            padding: 5mm 0 0 0;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 2px 4px;
+            vertical-align: middle;
+        }
+
+        .no-border td,
+        .no-border th {
+            border: none;
+        }
+
+        .title-row td {
+            border-top-width: 2px;
+            border-bottom-width: 2px;
+        }
+
+        .outer-top td {
+            border-bottom-width: 0;
+        }
+
+        .outer-bottom td {
+            border-top-width: 0;
+        }
+
+        .doc-number {
+            font-size: 8pt;
+            text-align: left;
+            height: 14mm;
+        }
+
+        .title {
+            font-size: 24pt;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 8px;
+            height: 18mm;
+        }
+
+        .customer-name {
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: left;
+            height: 12mm;
+        }
+
+        .quote-date {
+            font-size: 9pt;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .client-info td {
+            font-size: 9pt;
+            height: 6mm;
+        }
+
+        .company-info td {
+            font-size: 9pt;
+            height: 6mm;
+        }
+
+        .company-name {
+            font-size: 14pt;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 2mm;
+            white-space: nowrap;
+        }
+
+        .logo-cell {
+            width: 20mm;
+            text-align: center;
+            vertical-align: middle;
+            padding: 2mm;
+        }
+
+        .logo-cell img {
+            max-width: 18mm;
+            max-height: 18mm;
+        }
+
+        .seal-cell {
+            width: 26mm;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .seal-cell img {
+            width: 22mm;
+            height: 22mm;
+        }
+
+        .sum-row-inner td {
+            border: none;
+            padding-top: 4px;
+            padding-bottom: 4px;
+        }
+
+        .sum-label {
+            font-weight: bold;
+            text-align: center;
+            background: #f0f0f0;
+            white-space: nowrap;
+        }
+
+        .sum-amount-text {
+            font-weight: bold;
+            text-align: left;
+            padding-left: 6px;
+        }
+
+        .vat-info {
+            font-weight: bold;
+            text-align: center;
+            background: #f0f0f0;
+            white-space: nowrap;
+        }
+
+        .bg-gray {
+            background: #f0f0f0;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .items th,
+        .items td {
+            font-size: 9pt;
+            height: 6mm;
+        }
+
+        .total-table td {
+            height: 8mm;
+            font-weight: bold;
+        }
+
+        .total-label {
+            text-align: center;
+        }
+
+        .total-amount {
+            width: 35mm;
+            white-space: nowrap;
+        }
+
+        .note {
+            margin-top: 3mm;
+            font-size: 9pt;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <table>
+            <!-- Document number row -->
+            <tr class="outer-top">
+                <td class="doc-number">견적번호 : <span th:text="${quotationNumber}">WK2K25-0001-Q01</span></td>
+            </tr>
+
+            <!-- Title row -->
+            <tr class="title-row">
+                <td class="title">見 積 書</td>
+            </tr>
+
+            <!-- Customer name and date row -->
+            <tr>
+                <td>
+                    <table class="no-border">
+                        <tr>
+                            <td class="customer-name" th:text="${customer.name}">한빛EDS(주)</td>
+                            <td style="width: 36mm; text-align: center; font-weight: bold;">견적일</td>
+                            <td style="width: 40mm; text-align: center;" th:text="${quotationDate}">2025년 11월 13일</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Client info and Company info section -->
+            <tr>
+                <td>
+                    <table>
+                        <tr>
+                            <!-- Left: Client information -->
+                            <td style="width: 60%; padding: 0;">
+                                <table class="client-info">
+                                    <tr>
+                                        <td class="label" style="width: 22mm;">프로젝트명 :</td>
+                                        <td th:text="${project.projectName}">샘플 프로젝트</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">담 당 자 :</td>
+                                        <td th:text="${(customer.contactPerson != null) ? customer.contactPerson + ' 님 귀하' : '-'}">담당자 님 귀하</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">납품기한 :</td>
+                                        <td th:text="${deliveryTerm}">발주후 협의</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">납품장소 :</td>
+                                        <td>귀사지정장소</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">전화번호 :</td>
+                                        <td th:text="${customer.phone != null ? customer.phone : '-'}">042-882-5882</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">이 메 일 :</td>
+                                        <td th:text="${customer.email != null ? customer.email : '-'}">customer@example.com</td>
+                                    </tr>
+                                </table>
+                            </td>
+
+                            <!-- Right: Company info with logo and seal -->
+                            <td style="width: 40%; padding: 0;">
+                                <table class="company-info">
+                                    <tr>
+                                        <td class="logo-cell" rowspan="2">
+                                            <img th:src="${logoDataUri}" alt="Logo" />
+                                        </td>
+                                        <td class="company-name" th:text="${company.name}">웰코리아(주)</td>
+                                        <td class="seal-cell" rowspan="6">
+                                            <img th:src="${sealDataUri}" alt="Seal" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="height: 6mm;">&#160;</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">주 소 :</td>
+                                        <td th:text="${company.address}">대전광역시 유성구 테크노11로 44</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">대표번호 :</td>
+                                        <td th:text="${company.phone}">(042) 933-8115</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">설계부서 :</td>
+                                        <td th:text="${company.designDeptPhone}">(042) 934-8115</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">팩스번호 :</td>
+                                        <td th:text="${company.fax}">(042) 935-8115</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Total amount summary -->
+            <tr>
+                <td>
+                    <table class="sum-row-inner">
+                        <tr>
+                            <td class="sum-label" style="width: 32mm;">합계금액</td>
+                            <td class="sum-amount-text" th:text="${totalAmountText}">일금삼천만원정</td>
+                            <td class="vat-info" style="width: 40mm;">-- 부가세별도 --</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Line items table -->
+            <tr>
+                <td>
+                    <table class="items">
+                        <thead>
+                            <tr class="bg-gray">
+                                <th style="width: 6%;">번호</th>
+                                <th style="width: 40%;">품 명</th>
+                                <th style="width: 12%;">규 격</th>
+                                <th style="width: 10%;">단 위</th>
+                                <th style="width: 8%;">수 량</th>
+                                <th style="width: 12%;">단 가</th>
+                                <th style="width: 12%;">금 액</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item, stat : ${lineItems}">
+                                <td class="center" th:text="${stat.count}">1</td>
+                                <td th:text="${item.productName}">품목명</td>
+                                <td class="center" th:text="${item.specification != null ? item.specification : '-'}">규격</td>
+                                <td class="center" th:text="${item.unit}">EA</td>
+                                <td class="center" th:text="${item.quantity}">1</td>
+                                <td class="right" th:text="${item.unitPriceFormatted}">￦ 1,000,000</td>
+                                <td class="right" th:text="${item.lineTotalFormatted}">￦ 1,000,000</td>
+                            </tr>
+                            <!-- Notes row if exists -->
+                            <tr th:if="${notes != null and !notes.isEmpty()}">
+                                <td class="center">비고</td>
+                                <td colspan="6" th:text="${notes}">비고 내용</td>
+                            </tr>
+                            <!-- Total row -->
+                            <tr>
+                                <td class="center">합계</td>
+                                <td colspan="5">&#160;</td>
+                                <td class="right" th:text="${totalAmountFormatted}">￦ 30,000,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Grand total with VAT -->
+            <tr>
+                <td>
+                    <table class="total-table">
+                        <tr>
+                            <td class="total-label">TOTAL (부가세 포함)</td>
+                            <td class="total-amount right" th:text="${grandTotalFormatted}">￦ 33,000,000</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Notes section -->
+            <tr class="outer-bottom">
+                <td style="border-bottom-width: 0;">
+                    <div class="note">※ 참고사항 : 견적유효기간(<span th:text="${validityDays}">30</span>일)</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>

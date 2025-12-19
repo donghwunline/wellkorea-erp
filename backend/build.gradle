@@ -51,7 +51,12 @@ dependencies {
     implementation 'io.minio:minio:8.5.7'
 
     // PDF Generation (quotations, invoices, transaction statements)
-    implementation 'com.itextpdf:itext7-core:8.0.2'
+    // OpenHTMLtoPDF for HTML-to-PDF with proper Korean font support
+    implementation 'com.openhtmltopdf:openhtmltopdf-core:1.0.10'
+    implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
+
+    // Thymeleaf for HTML email and PDF templates
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
     // Excel Generation (catalog import/export)
     implementation 'org.apache.poi:poi:5.2.5'
