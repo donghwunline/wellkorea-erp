@@ -70,16 +70,32 @@ public class JwtTokenProvider {
      * @return JWT token string
      */
     public String generateToken(String username, String roles) {
+        return generateToken(username, roles, null);
+    }
+
+    /**
+     * Generate JWT token from username, roles, and user ID.
+     *
+     * @param username Username
+     * @param roles    Comma-separated roles (e.g., "ROLE_ADMIN,ROLE_FINANCE")
+     * @param userId   User ID (optional)
+     * @return JWT token string
+     */
+    public String generateToken(String username, String roles, Long userId) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(username)
                 .claim("roles", roles)
                 .issuedAt(now)
-                .expiration(validity)
-                .signWith(secretKey, Jwts.SIG.HS256)
-                .compact();
+                .expiration(validity);
+
+        if (userId != null) {
+            builder.claim("userId", userId);
+        }
+
+        return builder.signWith(secretKey, Jwts.SIG.HS256).compact();
     }
 
     /**
@@ -102,6 +118,16 @@ public class JwtTokenProvider {
      */
     public String getRoles(String token) {
         return getClaims(token).get("roles", String.class);
+    }
+
+    /**
+     * Extract user ID from JWT token.
+     *
+     * @param token JWT token
+     * @return User ID, or null if not present in token
+     */
+    public Long getUserId(String token) {
+        return getClaims(token).get("userId", Long.class);
     }
 
     /**

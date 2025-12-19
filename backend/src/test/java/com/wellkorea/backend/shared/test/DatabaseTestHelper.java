@@ -143,6 +143,28 @@ public final class DatabaseTestHelper {
     }
 
     /**
+     * Inserts test products for quotation tests.
+     * Products created:
+     * - Product 1: Control Panel - Sheet Metal Parts (Type 1) - Base price 50000.00
+     * - Product 2: L-Bracket - Sheet Metal Parts (Type 1) - Base price 3500.00
+     * - Product 3: Enclosure - Custom Enclosures (Type 4) - Base price 150000.00
+     *
+     * @param jdbcTemplate Spring JDBC template
+     */
+    public static void insertTestProducts(JdbcTemplate jdbcTemplate) {
+        jdbcTemplate.update(
+                "INSERT INTO products (id, sku, name, product_type_id, base_unit_price, unit) " +
+                        "VALUES (1, 'SM-PANEL-001', 'Control Panel', 1, 50000.00, 'EA'), " +
+                        "       (2, 'SM-BRACKET-001', 'L-Bracket', 1, 3500.00, 'EA'), " +
+                        "       (3, 'SM-ENCLOSURE-001', 'Enclosure', 4, 150000.00, 'EA') " +
+                        "ON CONFLICT (id) DO NOTHING"
+        );
+
+        // Reset sequence
+        jdbcTemplate.execute("SELECT setval('products_id_seq', (SELECT COALESCE(MAX(id), 0) FROM products))");
+    }
+
+    /**
      * Truncates a table (for cleanup in tests).
      * Use cautiously - only for test isolation.
      *
