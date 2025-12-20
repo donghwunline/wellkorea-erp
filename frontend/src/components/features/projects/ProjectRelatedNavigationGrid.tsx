@@ -15,6 +15,8 @@ import { ProjectSummaryCard } from './ProjectSummaryCard';
 export interface ProjectRelatedNavigationGridProps {
   /** Project ID to display sections for */
   projectId: number;
+  /** Optional callback when a section card is clicked (instead of navigation) */
+  onSectionClick?: (section: ProjectSection) => void;
 }
 
 /**
@@ -32,6 +34,7 @@ const SECTION_ROLE_REQUIREMENTS: Partial<Record<ProjectSection, RoleName[]>> = {
  */
 export function ProjectRelatedNavigationGrid({
   projectId,
+  onSectionClick,
 }: Readonly<ProjectRelatedNavigationGridProps>) {
   const { hasAnyRole } = useAuth();
   const { summary, isLoading, error, refetch } = useProjectSummary({ projectId });
@@ -91,6 +94,7 @@ export function ProjectRelatedNavigationGrid({
           key={section.section}
           projectId={projectId}
           summary={section}
+          onSectionClick={onSectionClick}
         />
       ))}
     </div>

@@ -20,6 +20,9 @@ export type { ProjectSummaryCardProps } from './ProjectSummaryCard';
 export { ProjectRelatedNavigationGrid } from './ProjectRelatedNavigationGrid';
 export type { ProjectRelatedNavigationGridProps } from './ProjectRelatedNavigationGrid';
 
+export { ProjectKPIStrip } from './ProjectKPIStrip';
+export type { ProjectKPIStripProps } from './ProjectKPIStrip';
+
 // Hooks
 export { useProjectActions, useProjectSummary } from './hooks';
 export type { UseProjectSummaryOptions, UseProjectSummaryReturn } from './hooks';

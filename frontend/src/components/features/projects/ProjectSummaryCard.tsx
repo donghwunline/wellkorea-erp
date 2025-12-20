@@ -16,6 +16,8 @@ export interface ProjectSummaryCardProps {
   projectId: number;
   /** Section summary data */
   summary: ProjectSectionSummary;
+  /** Optional callback when card is clicked (overrides default navigation) */
+  onSectionClick?: (section: ProjectSection) => void;
 }
 
 /**
@@ -65,11 +67,19 @@ function formatRelativeTime(dateStr: string | null): string {
 /**
  * Card displaying section summary with click navigation.
  */
-export function ProjectSummaryCard({ projectId, summary }: Readonly<ProjectSummaryCardProps>) {
+export function ProjectSummaryCard({
+  projectId,
+  summary,
+  onSectionClick,
+}: Readonly<ProjectSummaryCardProps>) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/projects/${projectId}/${summary.section}`);
+    if (onSectionClick) {
+      onSectionClick(summary.section);
+    } else {
+      navigate(`/projects/${projectId}/${summary.section}`);
+    }
   };
 
   const iconName = SECTION_ICONS[summary.section];
