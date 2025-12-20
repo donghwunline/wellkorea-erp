@@ -1,19 +1,55 @@
 /**
- * Project View Page
+ * Project View Page (Hub Page)
  *
- * Displays project details in read-only format.
- * Provides navigation to edit page.
+ * Unified project view with horizontal tabs for different sections.
+ * Displays project details, KPI strip, and tabbed navigation.
+ *
+ * Route: /projects/:id
+ *
+ * 4-Tier State Separation:
+ * - Tier 1 (Local UI State): Modal confirmations (handled by child components)
+ * - Tier 2 (Page UI State): Tab state via URL hash
+ * - Tier 3 (Server State): Delegated to feature components (KPI, tabs)
+ * - Tier 4 (App Global State): Auth via useAuth for role-based tabs
+ *
+ * Layout:
+ * ┌──────────────────────────────────────────────────┐
+ * │ PageHeader (Project Name, JobCode, Back Button) │
+ * ├──────────────────────────────────────────────────┤
+ * │ ProjectDetailsCard (Collapsible project info)   │
+ * ├──────────────────────────────────────────────────┤
+ * │ KPI Strip (진행률, 결재대기, 문서누락, 미수금)    │
+ * ├──────────────────────────────────────────────────┤
+ * │ Tabs: [개요] [견적/결재] [공정] [외주] [More ▾] │
+ * ├──────────────────────────────────────────────────┤
+ * │ Tab Content Area                                 │
+ * └──────────────────────────────────────────────────┘
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { ProjectDetails } from '@/services';
-import { Alert, Card, Icon, PageHeader } from '@/components/ui';
+import type { ProjectDetails, ProjectSection } from '@/services';
+import { useAuth } from '@/shared/hooks';
+import type { RoleName } from '@/shared/types';
+import {
+  Alert,
+  Card,
+  Icon,
+  PageHeader,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanel,
+  TabOverflow,
+} from '@/components/ui';
 import {
   ProjectDetailsCard,
+  ProjectKPIStrip,
   ProjectRelatedNavigationGrid,
   useProjectActions,
+  useProjectSummary,
 } from '@/components/features/projects';
+import { QuotationDetailsPanel } from '@/components/features/quotations';
 
 // Mock data for resolving names (to be replaced with real API)
 const MOCK_CUSTOMERS: Record<number, string> = {
@@ -31,48 +67,125 @@ const MOCK_USERS: Record<number, string> = {
   4: 'Choi Daehyun (Production)',
 };
 
+// Tab configuration with role requirements
+interface TabConfig {
+  id: string;
+  label: string;
+  /** Required roles (if undefined, visible to all) */
+  requiredRoles?: RoleName[];
+  /** Badge key from summary data */
+  badgeKey?: 'pendingApprovals' | 'missingDocuments';
+}
+
+const ALL_TABS: TabConfig[] = [
+  { id: 'overview', label: '개요' },
+  { id: 'quotation', label: '견적/결재', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
+  { id: 'process', label: '공정/진행률' },
+  { id: 'outsource', label: '외주관리' },
+  { id: 'delivery', label: '출고관리' },
+  { id: 'documents', label: '문서' },
+  { id: 'finance', label: '정산관리', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE'] },
+];
+
+// Primary tabs count (rest go to overflow)
+const PRIMARY_TAB_COUNT = 5;
+
 export function ProjectViewPage() {
   const { id } = useParams<{ id: string }>();
+  const projectId = id ? parseInt(id, 10) : 0;
   const navigate = useNavigate();
-  const { getProject, isLoading, error } = useProjectActions();
+  const { hasAnyRole } = useAuth();
+  const { getProject, isLoading: isProjectLoading, error: projectError } = useProjectActions();
 
-  // Local State
+  // Project data
   const [project, setProject] = useState<ProjectDetails | null>(null);
 
+  // Refresh triggers for child components
+  const [kpiRefreshTrigger, triggerKpiRefresh] = useReducer((x: number) => x + 1, 0);
+
+  // Get summary for badge counts
+  const { summary } = useProjectSummary({ projectId, enabled: !!project });
+
+  // Tab state from URL hash
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.slice(1);
+      return hash || 'overview';
+    }
+    return 'overview';
+  });
+
+  // Sync hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      setActiveTab(hash || 'overview');
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Handle tab change
+  const handleTabChange = useCallback((tabId: string) => {
+    setActiveTab(tabId);
+    window.location.hash = tabId === 'overview' ? '' : tabId;
+  }, []);
+
+  // Filter tabs based on user roles
+  const visibleTabs = useMemo(() => {
+    return ALL_TABS.filter(tab => {
+      if (!tab.requiredRoles) return true;
+      return hasAnyRole(tab.requiredRoles);
+    });
+  }, [hasAnyRole]);
+
+  const primaryTabs = visibleTabs.slice(0, PRIMARY_TAB_COUNT);
+  const overflowTabs = visibleTabs.slice(PRIMARY_TAB_COUNT);
+
+  // Get badge count for a tab
+  const getBadgeCount = useCallback(
+    (tabId: string) => {
+      if (!summary) return undefined;
+      const section = summary.sections.find(s => s.section === tabId);
+      return section?.pendingCount && section.pendingCount > 0 ? section.pendingCount : undefined;
+    },
+    [summary]
+  );
+
+  // Fetch project data
   useEffect(() => {
     const fetchProject = async () => {
-      if (!id) return;
-
+      if (!projectId) return;
       try {
-        const data = await getProject(parseInt(id, 10));
+        const data = await getProject(projectId);
         setProject(data);
       } catch {
-        // Error is handled by the hook
+        // Error handled by hook
       }
     };
-
     fetchProject();
-  }, [id, getProject]);
+  }, [projectId, getProject]);
 
-  const handleBack = () => {
-    navigate('/projects');
-  };
+  // Navigation handlers
+  const handleBack = () => navigate('/projects');
+  const handleEdit = () => navigate(`/projects/${id}/edit`);
 
-  const handleEdit = () => {
-    navigate(`/projects/${id}/edit`);
-  };
+  // Handle section card click (switch to that tab)
+  const handleSectionClick = useCallback((section: ProjectSection) => {
+    handleTabChange(section);
+  }, [handleTabChange]);
 
   // Loading state
-  if (isLoading) {
+  if (isProjectLoading) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
           <PageHeader.Title title="Loading..." />
         </PageHeader>
-        <Card className="mx-auto max-w-4xl">
+        <Card className="mx-auto max-w-6xl">
           <div className="flex items-center justify-center p-12">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-steel-600 border-t-copper-500" />
-            <span className="ml-3 text-steel-400">Loading project details...</span>
+            <span className="ml-3 text-steel-400">Loading project...</span>
           </div>
         </Card>
       </div>
@@ -80,7 +193,7 @@ export function ProjectViewPage() {
   }
 
   // Error state
-  if (error) {
+  if (projectError) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
@@ -95,8 +208,8 @@ export function ProjectViewPage() {
             </button>
           </PageHeader.Actions>
         </PageHeader>
-        <Alert variant="error" className="mx-auto max-w-4xl">
-          {error}
+        <Alert variant="error" className="mx-auto max-w-6xl">
+          {projectError}
         </Alert>
       </div>
     );
@@ -118,7 +231,7 @@ export function ProjectViewPage() {
             </button>
           </PageHeader.Actions>
         </PageHeader>
-        <Alert variant="warning" className="mx-auto max-w-4xl">
+        <Alert variant="warning" className="mx-auto max-w-6xl">
           The requested project could not be found.
         </Alert>
       </div>
@@ -144,8 +257,9 @@ export function ProjectViewPage() {
         </PageHeader.Actions>
       </PageHeader>
 
-      {/* Project Details */}
-      <div className="mx-auto max-w-4xl">
+      {/* Main Content */}
+      <div className="mx-auto max-w-6xl">
+        {/* Project Details Card */}
         <ProjectDetailsCard
           project={project}
           customerName={MOCK_CUSTOMERS[project.customerId]}
@@ -154,11 +268,116 @@ export function ProjectViewPage() {
           onEdit={handleEdit}
         />
 
-        {/* Related Sections Navigation */}
-        <div className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold text-white">Related Sections</h2>
-          <ProjectRelatedNavigationGrid projectId={project.id} />
-        </div>
+        {/* KPI Strip */}
+        <ProjectKPIStrip
+          projectId={project.id}
+          refreshTrigger={kpiRefreshTrigger}
+          className="mt-6"
+        />
+
+        {/* Tabbed Navigation */}
+        <Tabs defaultTab="overview" hash={true} onTabChange={handleTabChange}>
+          <TabList className="mt-6">
+            {primaryTabs.map(tab => (
+              <Tab
+                key={tab.id}
+                id={tab.id}
+                badge={getBadgeCount(tab.id)}
+                badgeVariant="warning"
+              >
+                {tab.label}
+              </Tab>
+            ))}
+            {overflowTabs.length > 0 && (
+              <TabOverflow
+                activeTab={activeTab}
+                onTabSelect={handleTabChange}
+              >
+                {overflowTabs.map(tab => (
+                  <TabOverflow.Item
+                    key={tab.id}
+                    id={tab.id}
+                    badge={getBadgeCount(tab.id)}
+                    badgeVariant="warning"
+                  >
+                    {tab.label}
+                  </TabOverflow.Item>
+                ))}
+              </TabOverflow>
+            )}
+          </TabList>
+
+          {/* Overview Tab */}
+          <TabPanel id="overview">
+            <ProjectRelatedNavigationGrid
+              projectId={project.id}
+              onSectionClick={handleSectionClick}
+            />
+          </TabPanel>
+
+          {/* Quotation Tab */}
+          <TabPanel id="quotation">
+            <QuotationDetailsPanel
+              projectId={project.id}
+              onDataChange={triggerKpiRefresh}
+            />
+          </TabPanel>
+
+          {/* Process Tab (Placeholder) */}
+          <TabPanel id="process">
+            <Card className="p-12 text-center">
+              <Icon name="cog" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+              <h3 className="text-lg font-semibold text-white">공정/진행률</h3>
+              <p className="mt-2 text-steel-500">
+                Production tracking will be available in a future release.
+              </p>
+            </Card>
+          </TabPanel>
+
+          {/* Outsource Tab (Placeholder) */}
+          <TabPanel id="outsource">
+            <Card className="p-12 text-center">
+              <Icon name="handshake" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+              <h3 className="text-lg font-semibold text-white">외주관리</h3>
+              <p className="mt-2 text-steel-500">
+                Outsource management will be available in a future release.
+              </p>
+            </Card>
+          </TabPanel>
+
+          {/* Delivery Tab (Placeholder) */}
+          <TabPanel id="delivery">
+            <Card className="p-12 text-center">
+              <Icon name="truck" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+              <h3 className="text-lg font-semibold text-white">출고관리</h3>
+              <p className="mt-2 text-steel-500">
+                Delivery management will be available in a future release.
+              </p>
+            </Card>
+          </TabPanel>
+
+          {/* Documents Tab (Placeholder) */}
+          <TabPanel id="documents">
+            <Card className="p-12 text-center">
+              <Icon name="folder" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+              <h3 className="text-lg font-semibold text-white">문서</h3>
+              <p className="mt-2 text-steel-500">
+                Document management will be available in a future release.
+              </p>
+            </Card>
+          </TabPanel>
+
+          {/* Finance Tab (Placeholder) */}
+          <TabPanel id="finance">
+            <Card className="p-12 text-center">
+              <Icon name="banknotes" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+              <h3 className="text-lg font-semibold text-white">정산관리</h3>
+              <p className="mt-2 text-steel-500">
+                Finance management will be available in a future release.
+              </p>
+            </Card>
+          </TabPanel>
+        </Tabs>
       </div>
     </div>
   );
