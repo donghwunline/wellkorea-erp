@@ -136,6 +136,68 @@ public class Project {
 
 ---
 
+### CQRS (Command Query Responsibility Segregation) Pattern
+
+**Decision**: Apply CQRS pattern to Quotation and Approval domains. Command operations return minimal `CommandResult { id, message }` instead of full entities.
+
+**Rationale**:
+- **Simplicity**: Commands focus on state changes without assembling complex response objects
+- **Consistency**: Clients always get the latest state from query endpoints (no stale data from command responses)
+- **Scalability**: Commands and queries can be scaled independently
+- **Event-driven**: Commands can publish domain events (e.g., `QuotationSubmittedEvent`) for side effects
+- **Single Source of Truth**: Query services are the only source for reading data
+
+**Implementation**:
+
+**CommandResult** (record):
+```java
+public record CommandResult(Long id, String message) {
+    public static CommandResult created(Long id) {
+        return new CommandResult(id, "Entity created successfully");
+    }
+    public static CommandResult updated(Long id) {
+        return new CommandResult(id, "Entity updated successfully");
+    }
+}
+```
+
+**Command Endpoints** (return `CommandResult`):
+- `POST /api/quotations` → `CommandResult` (created)
+- `PUT /api/quotations/{id}` → `CommandResult` (updated)
+- `POST /api/quotations/{id}/submit` → `CommandResult` (submitted)
+- `POST /api/quotations/{id}/versions` → `CommandResult` (version created)
+- `POST /api/approvals/{id}/approve` → `CommandResult` (approved)
+- `POST /api/approvals/{id}/reject` → `CommandResult` (rejected)
+- `PUT /api/admin/approval-chains/{id}/levels` → `CommandResult` (chain updated)
+
+**Query Endpoints** (return full entities):
+- `GET /api/quotations` → `Page<QuotationSummaryView>`
+- `GET /api/quotations/{id}` → `QuotationDetailView`
+- `GET /api/approvals` → `Page<ApprovalSummaryView>`
+- `GET /api/approvals/{id}` → `ApprovalDetailView`
+- `GET /api/admin/approval-chains` → `List<ChainTemplateResponse>`
+- `GET /api/admin/approval-chains/{id}` → `ChainTemplateResponse`
+
+**Service Separation**:
+- `QuotationCommandService`: Handles create, update, submit, version operations
+- `QuotationQueryService`: Handles list, get, search operations
+- `ApprovalCommandService`: Handles approve, reject, chain update operations
+- `ApprovalQueryService`: Handles list, get, history operations
+
+**Frontend Pattern**:
+- Command functions in hooks return `CommandResult`
+- After command success, UI can:
+  1. Use the returned `id` to fetch fresh data via query endpoint
+  2. Invalidate cache and refetch (React Query pattern)
+  3. Show success message from `CommandResult.message`
+
+**Alternatives Considered**:
+- **Return full entities from commands**: Rejected; adds complexity and potential stale data
+- **Event sourcing**: Deferred; CQRS without event sourcing sufficient for current needs
+- **Apply to all domains**: Only Quotation and Approval have command complexity warranting CQRS
+
+---
+
 ## Technology Stack Decisions
 
 ### Backend Framework: Java 21 + Spring Boot 3.5.8

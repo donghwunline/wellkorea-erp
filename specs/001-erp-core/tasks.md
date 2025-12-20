@@ -16,6 +16,8 @@
 
 **✅ Multi-Level Approval Update (2025-12-19)**: Updated approval domain (US2) to support multi-level sequential approval (결재 라인). Added 14 tasks for ApprovalChainTemplate, ApprovalChainLevel, ApprovalLevelDecision entities and Admin configuration endpoints. Approval now proceeds through ordered levels (팀장 → 부서장 → 사장) with position-based approvers (specific users, not roles).
 
+**✅ CQRS Pattern Implementation (2025-12-20)**: Applied Command Query Responsibility Segregation (CQRS) pattern to Quotation and Approval domains. Command endpoints (create, update, submit, approve, reject) now return minimal `CommandResult { id, message }` instead of full entities. Query endpoints return full entities. Updated OpenAPI specification (v1.1.0), research.md, and frontend services/hooks. All backend and frontend tests pass. See research.md for detailed architectural decision.
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
@@ -311,18 +313,18 @@
 
 ### Frontend Implementation for User Story 2
 
-- [ ] T089 [US2] Create QuotationService API client in frontend/src/services/quotationService.ts
-- [ ] T090 [US2] Create ApprovalService API client in frontend/src/services/approvalService.ts
-- [ ] T091 [US2] Create QuotationListPage with table view (filtered by role) in frontend/src/pages/quotations/QuotationListPage.tsx
-- [ ] T092 [US2] Create CreateQuotationPage with product selection and line items in frontend/src/pages/quotations/CreateQuotationPage.tsx
+- [X] T089 [US2] Create QuotationService API client in frontend/src/services/quotations/quotationService.ts ✅ (also created productService.ts for product search)
+- [X] T090 [US2] Create ApprovalService API client in frontend/src/services/quotations/approvalService.ts
+- [X] T091 [US2] Create QuotationListPage with table view (filtered by role) in frontend/src/pages/quotations/QuotationListPage.tsx ✅ (with QuotationTable feature component)
+- [X] T092 [US2] Create CreateQuotationPage with product selection and line items in frontend/src/pages/quotations/QuotationCreatePage.tsx ✅ (with QuotationForm and ProductSelector components)
 - [ ] T093 [US2] Create EditQuotationPage with version management in frontend/src/pages/quotations/EditQuotationPage.tsx
 - [ ] T093a [US2] Add email notification checkbox in EditQuotationPage when creating new version (calls POST /api/quotations/{id}/send-revision-notification) in frontend/src/pages/quotations/EditQuotationPage.tsx
 - [ ] T094 [US2] Create QuotationDetailPage with approval history in frontend/src/pages/quotations/QuotationDetailPage.tsx
-- [ ] T095 [US2] Create ApprovalModal for approve/reject with comments in frontend/src/components/quotations/ApprovalModal.tsx
-- [ ] T095a [US2] Create ApprovalChainConfigPage (Admin only) to configure approval levels for entity types in frontend/src/pages/admin/ApprovalChainConfigPage.tsx
-- [ ] T095b [US2] Create ApprovalChainService API client (get chain, configure levels) in frontend/src/services/approvalChainService.ts
+- [X] T095 [US2] Create ApprovalModal for approve/reject with comments in frontend/src/components/features/quotations/ApprovalRejectModal.tsx ✅ (implemented as ApprovalRejectModal + ApprovalRequestCard)
+- [X] T095a [US2] Create ApprovalChainConfigPage (Admin only) to configure approval levels for entity types in frontend/src/pages/admin/ApprovalChainConfigPage.tsx
+- [X] T095b [US2] Create ApprovalChainService API client (get chain, configure levels) in frontend/src/services/quotations/approvalChainService.ts
 - [ ] T095c [US2] Display multi-level approval progress in QuotationDetailPage (show current level, approver, decision status per level)
-- [ ] T096 [US2] Add PDF download button that fetches quotation PDF
+- [X] T096 [US2] Add PDF download button that fetches quotation PDF ✅ (downloadPdf in quotationService, button in QuotationTable)
 - [ ] T097 [US2] Add role-based visibility (Sales: read-only their quotations, Finance: all quotations)
 - [ ] T097a [US2] Filter quotations by assigned customers for Sales role in QuotationController (verify role and apply customer filter using customer_assignment from T048a) in backend/src/main/java/com/wellkorea/backend/quotation/api/QuotationController.java
 

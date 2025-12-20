@@ -9,7 +9,30 @@ info:
     - **Project**: Core domain entity representing a customer work request
     - **JobCode**: Unique business identifier for each Project (format: WK2{year}-{sequence}-{date})
     - **Approval**: Separate domain handling approval workflows for quotations and other entities
-  version: 1.0.0
+
+    ## CQRS Pattern
+
+    This API follows the **Command Query Responsibility Segregation (CQRS)** pattern:
+
+    ### Command Endpoints (Write Operations)
+    Command endpoints (POST for create/submit, PUT for update) return a minimal `CommandResult`:
+    ```json
+    {
+      "id": 123,
+      "message": "Quotation created successfully"
+    }
+    ```
+    After a command succeeds, clients should fetch the updated entity via the corresponding query endpoint if they need fresh data.
+
+    ### Query Endpoints (Read Operations)
+    Query endpoints (GET) return full entity representations with all fields.
+
+    ### Benefits
+    - **Simplicity**: Commands don't need to assemble complex response objects
+    - **Consistency**: Clients always get the latest state from query endpoints
+    - **Scalability**: Commands and queries can be scaled independently
+    - **Event-driven**: Commands can publish domain events for side effects (e.g., email notifications)
+  version: 1.1.0
   contact:
     name: WellKorea Development Team
 
@@ -201,7 +224,10 @@ paths:
     post:
       tags:
         - Quotation
-      summary: Create quotation from JobCode
+      summary: Create quotation from JobCode (CQRS Command)
+      description: |
+        Creates a new quotation. Returns CommandResult with the new quotation ID.
+        Use GET /quotations/{id} to fetch the full quotation details.
       operationId: createQuotation
       security:
         - BearerAuth: [ ]
@@ -213,11 +239,11 @@ paths:
               $ref: '#/components/schemas/CreateQuotationRequest'
       responses:
         '201':
-          description: Quotation created
+          description: Quotation created (CQRS - returns ID only)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuotationResponse'
+                $ref: '#/components/schemas/CommandResult'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -306,7 +332,10 @@ paths:
     put:
       tags:
         - Quotation
-      summary: Update quotation (Draft only)
+      summary: Update quotation (Draft only) (CQRS Command)
+      description: |
+        Updates an existing quotation. Returns CommandResult with the quotation ID.
+        Use GET /quotations/{id} to fetch the updated details.
       operationId: updateQuotation
       security:
         - BearerAuth: [ ]
@@ -325,11 +354,11 @@ paths:
               $ref: '#/components/schemas/UpdateQuotationRequest'
       responses:
         '200':
-          description: Quotation updated
+          description: Quotation updated (CQRS - returns ID only)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuotationResponse'
+                $ref: '#/components/schemas/CommandResult'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -341,17 +370,18 @@ paths:
 
 
   # NOTE: Quotation approval workflow is handled via /approvals endpoints.
-  # To submit a quotation for approval, create an ApprovalRequest with entity_type=Quotation.
-  # Example: POST /approvals with { "entity_type": "Quotation", "entity_id": "{quotation_id}" }
+  # Submitting a quotation creates an ApprovalRequest via event-driven architecture.
 
-  /quotations/{id}/submit-for-approval:
+  /quotations/{id}/submit:
     post:
       tags:
         - Quotation
-      summary: Submit quotation for approval (creates ApprovalRequest)
+      summary: Submit quotation for approval (CQRS Command)
       description: |
-        Convenience endpoint that creates an ApprovalRequest for this quotation.
-        Equivalent to: POST /approvals with entity_type=Quotation and entity_id={id}
+        Submits the quotation for approval. An ApprovalRequest is created automatically
+        via event-driven architecture (QuotationSubmittedEvent).
+        Returns CommandResult with the quotation ID.
+        Use GET /approvals to find the created approval request.
       operationId: submitQuotationForApproval
       security:
         - BearerAuth: [ ]
@@ -363,14 +393,47 @@ paths:
             type: string
             format: uuid
       responses:
-        '201':
-          description: Approval request created
+        '200':
+          description: Quotation submitted for approval (CQRS - returns ID only)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApprovalRequestResponse'
+                $ref: '#/components/schemas/CommandResult'
         '400':
           description: Quotation cannot be submitted (validation errors)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /quotations/{id}/versions:
+    post:
+      tags:
+        - Quotation
+      summary: Create new version from existing quotation (CQRS Command)
+      description: |
+        Creates a new version of an existing quotation (typically after rejection).
+        Returns CommandResult with the new version's ID.
+        Use GET /quotations/{newId} to fetch the new version details.
+      operationId: createQuotationVersion
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: New quotation version created (CQRS - returns ID only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResult'
+        '400':
+          description: Cannot create new version (e.g., quotation is still pending)
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -533,12 +596,15 @@ paths:
     post:
       tags:
         - Approval
-      summary: Approve request at current level
+      summary: Approve request at current level (CQRS Command)
       description: |
         Approve the request at the current level. Only the expected approver at the
         current level can approve. After approval:
         - If more levels remain: current_level increments, next approver can act
         - If this was the last level: status changes to APPROVED
+
+        Returns CommandResult with the approval request ID.
+        Use GET /approvals/{id} to fetch the updated approval status.
       operationId: approveRequest
       security:
         - BearerAuth: [ ]
@@ -561,11 +627,11 @@ paths:
                   description: Optional approval comments
       responses:
         '200':
-          description: Request approved at current level
+          description: Request approved at current level (CQRS - returns ID only)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApprovalRequestResponse'
+                $ref: '#/components/schemas/CommandResult'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -577,10 +643,13 @@ paths:
     post:
       tags:
         - Approval
-      summary: Reject request at current level with mandatory comments
+      summary: Reject request at current level (CQRS Command)
       description: |
         Reject the approval request at the current level. Only the expected approver
         at the current level can reject. Rejection stops the workflow immediately.
+
+        Returns CommandResult with the approval request ID.
+        Use GET /approvals/{id} to fetch the updated approval status.
       operationId: rejectRequest
       security:
         - BearerAuth: [ ]
@@ -598,20 +667,23 @@ paths:
             schema:
               type: object
               properties:
-                comments:
+                reason:
                   type: string
                   description: Mandatory rejection reason
+                comments:
+                  type: string
+                  description: Optional additional comments
               required:
-                - comments
+                - reason
       responses:
         '200':
-          description: Request rejected
+          description: Request rejected (CQRS - returns ID only)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApprovalRequestResponse'
+                $ref: '#/components/schemas/CommandResult'
         '400':
-          description: Rejection comments are mandatory
+          description: Rejection reason is mandatory
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -619,15 +691,15 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Approval Chain Configuration Endpoints
+  # Approval Chain Configuration Endpoints (Admin)
   # ============================================================================
 
-  /approvals/chains:
+  /admin/approval-chains:
     get:
       tags:
-        - Approval
+        - Admin
       summary: List all approval chain templates
-      description: Returns all approval chain configurations (one per entity type)
+      description: Returns all approval chain configurations (one per entity type). Admin only.
       operationId: listApprovalChains
       security:
         - BearerAuth: [ ]
@@ -642,23 +714,25 @@ paths:
                   $ref: '#/components/schemas/ApprovalChainTemplateResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin can view approval chain configuration
 
-  /approvals/chains/{entityType}:
+  /admin/approval-chains/{id}:
     get:
       tags:
-        - Approval
-      summary: Get approval chain for entity type
-      description: Returns the approval chain configuration for a specific entity type
+        - Admin
+      summary: Get approval chain by ID
+      description: Returns the approval chain configuration for a specific template. Admin only.
       operationId: getApprovalChain
       security:
         - BearerAuth: [ ]
       parameters:
-        - name: entityType
+        - name: id
           in: path
           required: true
           schema:
-            type: string
-            enum: [ QUOTATION, PURCHASE_ORDER ]
+            type: integer
+            format: int64
       responses:
         '200':
           description: Approval chain template with levels
@@ -668,28 +742,33 @@ paths:
                 $ref: '#/components/schemas/ApprovalChainTemplateResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only Admin can view approval chain configuration
         '404':
-          description: Chain template not found for entity type
+          description: Chain template not found
 
-  /approvals/chains/{entityType}/levels:
+  /admin/approval-chains/{id}/levels:
     put:
       tags:
-        - Approval
-      summary: Configure approval levels for entity type (Admin only)
+        - Admin
+      summary: Configure approval levels for chain template (CQRS Command)
       description: |
-        Configure the approval chain levels for a specific entity type.
+        Configure the approval chain levels for a specific template.
         Each level specifies a position name (팀장, 부서장, 사장) and the user assigned to that position.
         Admin only endpoint.
+
+        Returns CommandResult with the chain template ID.
+        Use GET /admin/approval-chains/{id} to fetch the updated configuration.
       operationId: updateApprovalChainLevels
       security:
         - BearerAuth: [ ]
       parameters:
-        - name: entityType
+        - name: id
           in: path
           required: true
           schema:
-            type: string
-            enum: [ QUOTATION, PURCHASE_ORDER ]
+            type: integer
+            format: int64
       requestBody:
         required: true
         content:
@@ -716,8 +795,8 @@ paths:
                         type: string
                         description: Position title (팀장, 부서장, 사장)
                       approver_user_id:
-                        type: string
-                        format: uuid
+                        type: integer
+                        format: int64
                         description: User ID of the approver at this level
                       is_required:
                         type: boolean
@@ -725,11 +804,11 @@ paths:
                         description: Whether this level can be skipped
       responses:
         '200':
-          description: Approval chain levels updated
+          description: Approval chain levels updated (CQRS - returns ID only)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApprovalChainTemplateResponse'
+                $ref: '#/components/schemas/CommandResult'
         '400':
           description: Invalid level configuration
         '401':
@@ -737,7 +816,7 @@ paths:
         '403':
           description: Only Admin can configure approval chains
         '404':
-          description: Chain template not found for entity type
+          description: Chain template not found
 
   # Work Progress Endpoints
   # ============================================================================
@@ -1535,6 +1614,30 @@ paths:
 
 components:
   schemas:
+    # ========================================================================
+    # CQRS Command Result Schema
+    # ========================================================================
+
+    CommandResult:
+      type: object
+      description: |
+        Result of a command operation (CQRS pattern).
+        Returns only the entity ID - clients should fetch fresh data via query endpoints.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID of the created/updated entity
+        message:
+          type: string
+          description: Human-readable success message
+      required:
+        - id
+        - message
+      example:
+        id: 123
+        message: "Quotation created successfully"
+
     # ========================================================================
     # Project Schemas
     # ========================================================================
