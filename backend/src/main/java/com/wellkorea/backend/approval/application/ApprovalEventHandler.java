@@ -25,10 +25,10 @@ public class ApprovalEventHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApprovalEventHandler.class);
 
-    private final ApprovalService approvalService;
+    private final ApprovalCommandService commandService;
 
-    public ApprovalEventHandler(ApprovalService approvalService) {
-        this.approvalService = approvalService;
+    public ApprovalEventHandler(ApprovalCommandService commandService) {
+        this.commandService = commandService;
     }
 
     /**
@@ -40,7 +40,7 @@ public class ApprovalEventHandler {
         log.debug("Handling approval required event: entityType={}, entityId={}, submittedBy={}",
                 event.getEntityType(), event.getEntityId(), event.getSubmittedByUserId());
 
-        approvalService.createApprovalRequest(
+        commandService.createApprovalRequest(
                 event.getEntityType(),
                 event.getEntityId(),
                 event.getEntityDescription(),

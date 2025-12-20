@@ -1,4 +1,4 @@
-package com.wellkorea.backend.approval.api.dto;
+package com.wellkorea.backend.approval.api.dto.command;
 
 /**
  * Request DTO for approving at a level.

@@ -1,13 +1,9 @@
 package com.wellkorea.backend.approval.application;
 
-import com.wellkorea.backend.approval.api.query.ApprovalDetailView;
-import com.wellkorea.backend.approval.api.query.ApprovalHistoryView;
-import com.wellkorea.backend.approval.api.query.ApprovalSummaryView;
-import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
-import com.wellkorea.backend.approval.domain.ApprovalHistory;
-import com.wellkorea.backend.approval.domain.ApprovalRequest;
-import com.wellkorea.backend.approval.domain.ApprovalStatus;
-import com.wellkorea.backend.approval.domain.EntityType;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalDetailView;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
+import com.wellkorea.backend.approval.domain.*;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalHistoryRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalRequestRepository;

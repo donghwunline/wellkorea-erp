@@ -1,7 +1,10 @@
 package com.wellkorea.backend.approval.api;
 
-import com.wellkorea.backend.approval.api.dto.*;
-import com.wellkorea.backend.approval.application.ApprovalService;
+import com.wellkorea.backend.approval.api.dto.query.ChainTemplateView;
+import com.wellkorea.backend.approval.api.dto.command.UpdateChainLevelsRequest;
+import com.wellkorea.backend.approval.api.dto.command.ApprovalCommandResult;
+import com.wellkorea.backend.approval.application.ApprovalCommandService;
+import com.wellkorea.backend.approval.application.ApprovalQueryService;
 import com.wellkorea.backend.approval.application.ChainLevelCommand;
 import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
 import com.wellkorea.backend.shared.dto.ApiResponse;
@@ -14,28 +17,34 @@ import java.util.List;
 
 /**
  * REST controller for admin approval chain configuration.
- * Provides endpoints for managing approval chain templates and levels.
+ * Follows CQRS pattern - uses separate Command and Query services.
  */
 @RestController
 @RequestMapping("/api/admin/approval-chains")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminApprovalChainController {
 
-    private final ApprovalService approvalService;
+    private final ApprovalCommandService commandService;
+    private final ApprovalQueryService queryService;
 
-    public AdminApprovalChainController(ApprovalService approvalService) {
-        this.approvalService = approvalService;
+    public AdminApprovalChainController(
+            ApprovalCommandService commandService,
+            ApprovalQueryService queryService) {
+        this.commandService = commandService;
+        this.queryService = queryService;
     }
+
+    // ==================== QUERY ENDPOINTS ====================
 
     /**
      * List all approval chain templates.
      * GET /api/admin/approval-chains
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ChainTemplateResponse>>> listChainTemplates() {
-        var templates = approvalService.listChainTemplates();
+    public ResponseEntity<ApiResponse<List<ChainTemplateView>>> listChainTemplates() {
+        var templates = queryService.listChainTemplates();
         var response = templates.stream()
-                .map(ChainTemplateResponse::from)
+                .map(ChainTemplateView::from)
                 .toList();
 
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -46,23 +55,19 @@ public class AdminApprovalChainController {
      * GET /api/admin/approval-chains/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ChainTemplateResponse>> getChainTemplate(@PathVariable Long id) {
-        var templates = approvalService.listChainTemplates();
-        var template = templates.stream()
-                .filter(t -> t.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new com.wellkorea.backend.shared.exception.ResourceNotFoundException(
-                        "Chain template not found with ID: " + id));
-
-        return ResponseEntity.ok(ApiResponse.success(ChainTemplateResponse.from(template)));
+    public ResponseEntity<ApiResponse<ChainTemplateView>> getChainTemplate(@PathVariable Long id) {
+        ApprovalChainTemplate template = queryService.getChainTemplate(id);
+        return ResponseEntity.ok(ApiResponse.success(ChainTemplateView.from(template)));
     }
+
+    // ==================== COMMAND ENDPOINTS ====================
 
     /**
      * Update chain levels for a template.
      * PUT /api/admin/approval-chains/{id}/levels
      */
     @PutMapping("/{id}/levels")
-    public ResponseEntity<ApiResponse<ChainTemplateResponse>> updateChainLevels(
+    public ResponseEntity<ApiResponse<ApprovalCommandResult>> updateChainLevels(
             @PathVariable Long id,
             @Valid @RequestBody UpdateChainLevelsRequest request) {
 
@@ -74,9 +79,9 @@ public class AdminApprovalChainController {
                         l.isRequired()))
                 .toList();
 
-        ApprovalChainTemplate template = approvalService.updateChainLevels(id, commands);
-        ChainTemplateResponse response = ChainTemplateResponse.from(template);
+        Long chainId = commandService.updateChainLevels(id, commands);
+        ApprovalCommandResult result = ApprovalCommandResult.chainUpdated(chainId);
 
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }

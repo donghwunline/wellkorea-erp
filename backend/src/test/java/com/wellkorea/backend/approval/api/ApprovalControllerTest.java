@@ -347,15 +347,16 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                     }
                     """;
 
+            // CQRS: Command returns { id, message }
+            // The approval state change is verified via unit tests and the GET endpoint
             mockMvc.perform(post(APPROVALS_URL + "/" + approvalRequestId + "/approve")
                             .header("Authorization", "Bearer " + financeToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(approveRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.currentLevel").value(2))
-                    .andExpect(jsonPath("$.data.status").value("PENDING"))
-                    .andExpect(jsonPath("$.data.levels[0].decision").value("APPROVED"));
+                    .andExpect(jsonPath("$.data.id").value(approvalRequestId))
+                    .andExpect(jsonPath("$.data.message").value("Approval request approved at current level"));
         }
 
         @Test
@@ -378,14 +379,16 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                     }
                     """;
 
+            // CQRS: Command returns { id, message }
+            // The final approval completion is verified via unit tests and the GET endpoint
             mockMvc.perform(post(APPROVALS_URL + "/" + approvalRequestId + "/approve")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(approveRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.status").value("APPROVED"))
-                    .andExpect(jsonPath("$.data.completedAt").exists());
+                    .andExpect(jsonPath("$.data.id").value(approvalRequestId))
+                    .andExpect(jsonPath("$.data.message").value("Approval request approved at current level"));
         }
 
         @Test
@@ -500,15 +503,16 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                     }
                     """;
 
+            // CQRS: Command returns { id, message }
+            // The rejection state change is verified via unit tests and the GET endpoint
             mockMvc.perform(post(APPROVALS_URL + "/" + approvalRequestId + "/reject")
                             .header("Authorization", "Bearer " + financeToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(rejectRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.status").value("REJECTED"))
-                    .andExpect(jsonPath("$.data.completedAt").exists())
-                    .andExpect(jsonPath("$.data.levels[0].decision").value("REJECTED"));
+                    .andExpect(jsonPath("$.data.id").value(approvalRequestId))
+                    .andExpect(jsonPath("$.data.message").value("Approval request rejected"));
         }
 
         @Test
@@ -697,13 +701,16 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                     }
                     """;
 
+            // CQRS: Command returns { id, message }
+            // The chain update is verified via unit tests and the GET endpoint
             mockMvc.perform(put(APPROVAL_CHAINS_URL + "/" + chainTemplateId + "/levels")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updateRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.levels", hasSize(3)));
+                    .andExpect(jsonPath("$.data.id").value(chainTemplateId))
+                    .andExpect(jsonPath("$.data.message").value("Approval chain updated"));
         }
 
         @Test
@@ -774,13 +781,15 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                     }
                     """;
 
+            // CQRS: Command returns { id, message }
             mockMvc.perform(post(APPROVALS_URL + "/" + approvalRequestId + "/approve")
                             .header("Authorization", "Bearer " + financeToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(approveRequest1))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.currentLevel").value(2))
-                    .andExpect(jsonPath("$.data.status").value("PENDING"));
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").value(approvalRequestId))
+                    .andExpect(jsonPath("$.data.message").value("Approval request approved at current level"));
 
             // Step 2: Level 2 (Admin/부서장) approves - Final approval
             String approveRequest2 = """
@@ -789,17 +798,18 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                     }
                     """;
 
+            // CQRS: Command returns { id, message } - approval completion verified via GET endpoint
             mockMvc.perform(post(APPROVALS_URL + "/" + approvalRequestId + "/approve")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(approveRequest2))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.status").value("APPROVED"))
-                    .andExpect(jsonPath("$.data.completedAt").exists());
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").value(approvalRequestId))
+                    .andExpect(jsonPath("$.data.message").value("Approval request approved at current level"));
 
-            // Note: Quotation status update happens in the approval transaction
-            // Due to test transaction isolation, we verify the approval response data instead
-            // The approval response shows status="APPROVED" which confirms the workflow completed
+            // Note: Quotation status update and approval completion happens in the transaction
+            // Due to CQRS, we verify the command succeeds and state changes are tested in unit tests
         }
 
         @Test
@@ -818,17 +828,19 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                     }
                     """;
 
+            // CQRS: Command returns { id, message }
+            // The rejection and chain stop are verified via unit tests and the GET endpoint
             mockMvc.perform(post(APPROVALS_URL + "/" + approvalRequestId + "/reject")
                             .header("Authorization", "Bearer " + financeToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(rejectRequest))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.status").value("REJECTED"))
-                    .andExpect(jsonPath("$.data.completedAt").exists());
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").value(approvalRequestId))
+                    .andExpect(jsonPath("$.data.message").value("Approval request rejected"));
 
             // Note: Quotation status update happens in the approval transaction
-            // Due to test transaction isolation, we verify the approval response data instead
-            // The approval response shows status="REJECTED" which confirms the workflow stopped
+            // Due to CQRS, we verify the command succeeds and state changes are tested in unit tests
         }
     }
 }

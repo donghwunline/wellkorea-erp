@@ -1,24 +1,25 @@
-package com.wellkorea.backend.approval.api.dto;
+package com.wellkorea.backend.approval.api.dto.query;
 
 import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
 import com.wellkorea.backend.approval.domain.EntityType;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
  * Response DTO for an approval chain template.
  */
-public record ChainTemplateResponse(
+public record ChainTemplateView(
         Long id,
         EntityType entityType,
         String name,
         String description,
         boolean active,
         LocalDateTime createdAt,
-        List<ChainLevelResponse> levels
+        List<ChainLevelView> levels
 ) {
-    public static ChainTemplateResponse from(ApprovalChainTemplate template) {
-        return new ChainTemplateResponse(
+    public static ChainTemplateView from(ApprovalChainTemplate template) {
+        return new ChainTemplateView(
                 template.getId(),
                 template.getEntityType(),
                 template.getName(),
@@ -26,7 +27,7 @@ public record ChainTemplateResponse(
                 template.isActive(),
                 template.getCreatedAt(),
                 template.getLevels().stream()
-                        .map(ChainLevelResponse::from)
+                        .map(ChainLevelView::from)
                         .toList()
         );
     }

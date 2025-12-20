@@ -1,9 +1,13 @@
 package com.wellkorea.backend.approval.api;
 
-import com.wellkorea.backend.approval.api.dto.*;
-import com.wellkorea.backend.approval.application.ApprovalService;
-import com.wellkorea.backend.approval.application.ChainLevelCommand;
-import com.wellkorea.backend.approval.domain.ApprovalRequest;
+import com.wellkorea.backend.approval.api.dto.command.ApproveRequest;
+import com.wellkorea.backend.approval.api.dto.command.RejectRequest;
+import com.wellkorea.backend.approval.api.dto.command.ApprovalCommandResult;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalDetailView;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
+import com.wellkorea.backend.approval.application.ApprovalCommandService;
+import com.wellkorea.backend.approval.application.ApprovalQueryService;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.EntityType;
 import com.wellkorea.backend.auth.api.CurrentToken;
@@ -20,19 +24,27 @@ import java.util.List;
 
 /**
  * REST controller for approval workflow management.
- * Provides endpoints for approval requests and admin chain configuration.
+ * Follows CQRS pattern - uses separate Command and Query services.
+ * Command endpoints return only IDs; clients fetch fresh data via query endpoints.
  */
 @RestController
 @RequestMapping("/api/approvals")
 public class ApprovalController {
 
-    private final ApprovalService approvalService;
+    private final ApprovalCommandService commandService;
+    private final ApprovalQueryService queryService;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public ApprovalController(ApprovalService approvalService, JwtTokenProvider jwtTokenProvider) {
-        this.approvalService = approvalService;
+    public ApprovalController(
+            ApprovalCommandService commandService,
+            ApprovalQueryService queryService,
+            JwtTokenProvider jwtTokenProvider) {
+        this.commandService = commandService;
+        this.queryService = queryService;
         this.jwtTokenProvider = jwtTokenProvider;
     }
+
+    // ==================== QUERY ENDPOINTS ====================
 
     /**
      * List approval requests.
@@ -40,24 +52,23 @@ public class ApprovalController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<Page<ApprovalRequestResponse>>> listApprovals(
+    public ResponseEntity<ApiResponse<Page<ApprovalSummaryView>>> listApprovals(
             @RequestParam(required = false) EntityType entityType,
             @RequestParam(required = false) ApprovalStatus status,
             @RequestParam(required = false) Boolean myPending,
             @CurrentToken String token,
             Pageable pageable) {
 
-        Page<ApprovalRequest> requests;
+        Page<ApprovalSummaryView> approvals;
 
         if (Boolean.TRUE.equals(myPending)) {
             Long userId = jwtTokenProvider.getUserId(token);
-            requests = approvalService.listPendingApprovals(userId, pageable);
+            approvals = queryService.listPendingApprovals(userId, pageable);
         } else {
-            requests = approvalService.listAllApprovals(entityType, status, pageable);
+            approvals = queryService.listAllApprovals(entityType, status, pageable);
         }
 
-        Page<ApprovalRequestResponse> response = requests.map(ApprovalRequestResponse::fromSummary);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(approvals));
     }
 
     /**
@@ -66,51 +77,9 @@ public class ApprovalController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ApprovalRequestResponse>> getApproval(@PathVariable Long id) {
-        ApprovalRequest request = approvalService.getApprovalDetails(id);
-        ApprovalRequestResponse response = ApprovalRequestResponse.from(request);
-
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    /**
-     * Approve at the current level.
-     * POST /api/approvals/{id}/approve
-     */
-    @PostMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ApprovalRequestResponse>> approve(
-            @PathVariable Long id,
-            @RequestBody(required = false) ApproveRequest request,
-            @CurrentToken String token) {
-
-        Long userId = jwtTokenProvider.getUserId(token);
-        String comments = request != null ? request.comments() : null;
-
-        ApprovalRequest approvalRequest = approvalService.approve(id, userId, comments);
-        ApprovalRequestResponse response = ApprovalRequestResponse.from(approvalRequest);
-
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    /**
-     * Reject at the current level.
-     * POST /api/approvals/{id}/reject
-     */
-    @PostMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ApprovalRequestResponse>> reject(
-            @PathVariable Long id,
-            @Valid @RequestBody RejectRequest request,
-            @CurrentToken String token) {
-
-        Long userId = jwtTokenProvider.getUserId(token);
-
-        ApprovalRequest approvalRequest = approvalService.reject(
-                id, userId, request.reason(), request.comments());
-        ApprovalRequestResponse response = ApprovalRequestResponse.from(approvalRequest);
-
-        return ResponseEntity.ok(ApiResponse.success(response));
+    public ResponseEntity<ApiResponse<ApprovalDetailView>> getApproval(@PathVariable Long id) {
+        ApprovalDetailView approval = queryService.getApprovalDetail(id);
+        return ResponseEntity.ok(ApiResponse.success(approval));
     }
 
     /**
@@ -119,12 +88,49 @@ public class ApprovalController {
      */
     @GetMapping("/{id}/history")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<List<ApprovalHistoryResponse>>> getHistory(@PathVariable Long id) {
-        var history = approvalService.getApprovalHistory(id);
-        var response = history.stream()
-                .map(ApprovalHistoryResponse::from)
-                .toList();
+    public ResponseEntity<ApiResponse<List<ApprovalHistoryView>>> getHistory(@PathVariable Long id) {
+        List<ApprovalHistoryView> history = queryService.getApprovalHistory(id);
+        return ResponseEntity.ok(ApiResponse.success(history));
+    }
 
-        return ResponseEntity.ok(ApiResponse.success(response));
+    // ==================== COMMAND ENDPOINTS ====================
+
+    /**
+     * Approve at the current level.
+     * POST /api/approvals/{id}/approve
+     */
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    public ResponseEntity<ApiResponse<ApprovalCommandResult>> approve(
+            @PathVariable Long id,
+            @RequestBody(required = false) ApproveRequest request,
+            @CurrentToken String token) {
+
+        Long userId = jwtTokenProvider.getUserId(token);
+        String comments = request != null ? request.comments() : null;
+
+        Long approvalId = commandService.approve(id, userId, comments);
+        ApprovalCommandResult result = ApprovalCommandResult.approved(approvalId);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * Reject at the current level.
+     * POST /api/approvals/{id}/reject
+     */
+    @PostMapping("/{id}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    public ResponseEntity<ApiResponse<ApprovalCommandResult>> reject(
+            @PathVariable Long id,
+            @Valid @RequestBody RejectRequest request,
+            @CurrentToken String token) {
+
+        Long userId = jwtTokenProvider.getUserId(token);
+
+        Long approvalId = commandService.reject(id, userId, request.reason(), request.comments());
+        ApprovalCommandResult result = ApprovalCommandResult.rejected(approvalId);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }

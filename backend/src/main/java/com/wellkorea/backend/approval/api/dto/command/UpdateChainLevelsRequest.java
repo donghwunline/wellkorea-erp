@@ -1,4 +1,4 @@
-package com.wellkorea.backend.approval.api.dto;
+package com.wellkorea.backend.approval.api.dto.command;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;

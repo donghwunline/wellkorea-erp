@@ -1,11 +1,11 @@
-package com.wellkorea.backend.approval.api.dto;
+package com.wellkorea.backend.approval.api.dto.query;
 
 import com.wellkorea.backend.approval.domain.ApprovalChainLevel;
 
 /**
  * Response DTO for an approval chain level.
  */
-public record ChainLevelResponse(
+public record ChainLevelView(
         Long id,
         Integer levelOrder,
         String levelName,
@@ -13,8 +13,8 @@ public record ChainLevelResponse(
         String approverUserName,
         boolean required
 ) {
-    public static ChainLevelResponse from(ApprovalChainLevel level) {
-        return new ChainLevelResponse(
+    public static ChainLevelView from(ApprovalChainLevel level) {
+        return new ChainLevelView(
                 level.getId(),
                 level.getLevelOrder(),
                 level.getLevelName(),
