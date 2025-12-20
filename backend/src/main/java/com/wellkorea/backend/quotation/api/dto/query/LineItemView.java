@@ -1,12 +1,14 @@
-package com.wellkorea.backend.quotation.api.dto;
+package com.wellkorea.backend.quotation.api.dto.query;
 
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
+
 import java.math.BigDecimal;
 
 /**
- * Response DTO for a quotation line item.
+ * Read model for quotation line item.
+ * Used in QuotationDetailView for displaying line item details.
  */
-public record LineItemResponse(
+public record LineItemView(
         Long id,
         Long productId,
         String productSku,
@@ -17,8 +19,8 @@ public record LineItemResponse(
         BigDecimal lineTotal,
         String notes
 ) {
-    public static LineItemResponse from(QuotationLineItem lineItem) {
-        return new LineItemResponse(
+    public static LineItemView from(QuotationLineItem lineItem) {
+        return new LineItemView(
                 lineItem.getId(),
                 lineItem.getProduct().getId(),
                 lineItem.getProduct().getSku(),

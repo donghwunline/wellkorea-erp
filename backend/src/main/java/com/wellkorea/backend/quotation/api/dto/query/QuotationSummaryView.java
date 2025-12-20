@@ -1,16 +1,17 @@
-package com.wellkorea.backend.quotation.api.dto;
+package com.wellkorea.backend.quotation.api.dto.query;
 
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * Response DTO for a quotation.
+ * Read model for quotation list views.
+ * Optimized for summary display - excludes line items for performance.
  */
-public record QuotationResponse(
+public record QuotationSummaryView(
         Long id,
         Long projectId,
         String projectName,
@@ -30,11 +31,10 @@ public record QuotationResponse(
         String approvedByName,
         String rejectionReason,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt,
-        List<LineItemResponse> lineItems
+        LocalDateTime updatedAt
 ) {
-    public static QuotationResponse from(Quotation quotation) {
-        return new QuotationResponse(
+    public static QuotationSummaryView from(Quotation quotation) {
+        return new QuotationSummaryView(
                 quotation.getId(),
                 quotation.getProject().getId(),
                 quotation.getProject().getProjectName(),
@@ -54,36 +54,7 @@ public record QuotationResponse(
                 quotation.getApprovedBy() != null ? quotation.getApprovedBy().getFullName() : null,
                 quotation.getRejectionReason(),
                 quotation.getCreatedAt(),
-                quotation.getUpdatedAt(),
-                quotation.getLineItems().stream()
-                        .map(LineItemResponse::from)
-                        .toList()
-        );
-    }
-
-    public static QuotationResponse fromSummary(Quotation quotation) {
-        return new QuotationResponse(
-                quotation.getId(),
-                quotation.getProject().getId(),
-                quotation.getProject().getProjectName(),
-                quotation.getProject().getJobCode(),
-                quotation.getVersion(),
-                quotation.getStatus(),
-                quotation.getQuotationDate(),
-                quotation.getValidityDays(),
-                quotation.getExpiryDate(),
-                quotation.getTotalAmount(),
-                quotation.getNotes(),
-                quotation.getCreatedBy().getId(),
-                quotation.getCreatedBy().getFullName(),
-                quotation.getSubmittedAt(),
-                quotation.getApprovedAt(),
-                quotation.getApprovedBy() != null ? quotation.getApprovedBy().getId() : null,
-                quotation.getApprovedBy() != null ? quotation.getApprovedBy().getFullName() : null,
-                quotation.getRejectionReason(),
-                quotation.getCreatedAt(),
-                quotation.getUpdatedAt(),
-                null // No line items in summary
+                quotation.getUpdatedAt()
         );
     }
 }

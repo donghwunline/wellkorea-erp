@@ -15,8 +15,6 @@ import com.wellkorea.backend.quotation.infrastructure.repository.QuotationReposi
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +23,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Service for quotation management.
- * Handles quotation creation, updates, submission, and version management.
+ * Command service for quotation write operations.
+ * Part of CQRS pattern - handles all create/update/delete operations.
+ * Returns only entity IDs - clients should fetch fresh data via QuotationQueryService.
  */
 @Service
 @Transactional
-public class QuotationService {
+public class QuotationCommandService {
 
     private final QuotationRepository quotationRepository;
     private final QuotationLineItemRepository lineItemRepository;
@@ -38,29 +37,27 @@ public class QuotationService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final DomainEventPublisher eventPublisher;
-    private final QuotationPdfService pdfService;
 
-    public QuotationService(
+    public QuotationCommandService(
             QuotationRepository quotationRepository,
             QuotationLineItemRepository lineItemRepository,
             ProjectRepository projectRepository,
             ProductRepository productRepository,
             UserRepository userRepository,
-            DomainEventPublisher eventPublisher,
-            QuotationPdfService pdfService) {
+            DomainEventPublisher eventPublisher) {
         this.quotationRepository = quotationRepository;
         this.lineItemRepository = lineItemRepository;
         this.projectRepository = projectRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
-        this.pdfService = pdfService;
     }
 
     /**
      * Create a new quotation with line items.
+     * @return ID of the created quotation
      */
-    public Quotation createQuotation(CreateQuotationCommand command, Long createdByUserId) {
+    public Long createQuotation(CreateQuotationCommand command, Long createdByUserId) {
         validateCreateCommand(command);
 
         Project project = projectRepository.findById(command.projectId())
@@ -85,13 +82,16 @@ public class QuotationService {
         // Add line items
         addLineItemsFromCommands(quotation, command.lineItems());
         quotation.recalculateTotalAmount();
-        return quotationRepository.save(quotation);
+
+        Quotation saved = quotationRepository.save(quotation);
+        return saved.getId();
     }
 
     /**
      * Update an existing quotation (only allowed for DRAFT status).
+     * @return ID of the updated quotation
      */
-    public Quotation updateQuotation(Long quotationId, UpdateQuotationCommand command) {
+    public Long updateQuotation(Long quotationId, UpdateQuotationCommand command) {
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
 
@@ -117,32 +117,17 @@ public class QuotationService {
             quotation.recalculateTotalAmount();
         }
 
-        return quotationRepository.save(quotation);
-    }
-
-    /**
-     * Get quotation by ID.
-     */
-    @Transactional(readOnly = true)
-    public Quotation getQuotation(Long quotationId) {
-        return quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
-    }
-
-    /**
-     * List quotations with filters.
-     */
-    @Transactional(readOnly = true)
-    public Page<Quotation> listQuotations(QuotationStatus status, Long projectId, Pageable pageable) {
-        return quotationRepository.findAllWithFilters(status, projectId, pageable);
+        Quotation saved = quotationRepository.save(quotation);
+        return saved.getId();
     }
 
     /**
      * Submit quotation for approval.
      * Publishes QuotationSubmittedEvent which is handled by ApprovalEventHandler
      * within the same transaction (BEFORE_COMMIT phase).
+     * @return ID of the submitted quotation
      */
-    public Quotation submitForApproval(Long quotationId, Long submittedByUserId) {
+    public Long submitForApproval(Long quotationId, Long submittedByUserId) {
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
 
@@ -162,13 +147,14 @@ public class QuotationService {
                 submittedByUserId
         ));
 
-        return savedQuotation;
+        return savedQuotation.getId();
     }
 
     /**
      * Create a new version from an existing quotation.
+     * @return ID of the new quotation version
      */
-    public Quotation createNewVersion(Long quotationId, Long createdByUserId) {
+    public Long createNewVersion(Long quotationId, Long createdByUserId) {
         Quotation original = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
 
@@ -206,14 +192,16 @@ public class QuotationService {
         }
 
         newQuotation.recalculateTotalAmount();
-        return quotationRepository.save(newQuotation);
+        Quotation saved = quotationRepository.save(newQuotation);
+        return saved.getId();
     }
 
     /**
      * Approve quotation (called by approval workflow via event).
      * Only quotations in PENDING status can be approved.
+     * @return ID of the approved quotation
      */
-    public Quotation approveQuotation(Long quotationId, Long approvedByUserId) {
+    public Long approveQuotation(Long quotationId, Long approvedByUserId) {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
 
@@ -227,14 +215,17 @@ public class QuotationService {
         quotation.setStatus(QuotationStatus.APPROVED);
         quotation.setApprovedAt(LocalDateTime.now());
         quotation.setApprovedBy(approvedBy);
-        return quotationRepository.save(quotation);
+
+        Quotation saved = quotationRepository.save(quotation);
+        return saved.getId();
     }
 
     /**
      * Reject quotation (called by approval workflow via event).
      * Only quotations in PENDING status can be rejected.
+     * @return ID of the rejected quotation
      */
-    public Quotation rejectQuotation(Long quotationId, String rejectionReason) {
+    public Long rejectQuotation(Long quotationId, String rejectionReason) {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
 
@@ -244,22 +235,9 @@ public class QuotationService {
 
         quotation.setStatus(QuotationStatus.REJECTED);
         quotation.setRejectionReason(rejectionReason);
-        return quotationRepository.save(quotation);
-    }
 
-    /**
-     * Generate PDF for quotation using iText7.
-     */
-    @Transactional(readOnly = true)
-    public byte[] generatePdf(Long quotationId) {
-        Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
-
-        if (!quotation.canGeneratePdf()) {
-            throw new BusinessException("PDF can only be generated for non-DRAFT quotations");
-        }
-
-        return pdfService.generatePdf(quotation);
+        Quotation saved = quotationRepository.save(quotation);
+        return saved.getId();
     }
 
     private void validateCreateCommand(CreateQuotationCommand command) {

@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,13 +72,15 @@ class QuotationPdfServiceTest {
                 .status(ProjectStatus.ACTIVE)
                 .build();
 
-        testCustomer = new Customer();
-        testCustomer.setId(100L);
-        testCustomer.setName("Test Customer");
-        testCustomer.setContactPerson("John Doe");
-        testCustomer.setPhone("02-1234-5678");
-        testCustomer.setEmail("customer@test.com");
-        testCustomer.setAddress("Seoul, Korea");
+        // Use Customer builder pattern
+        testCustomer = Customer.builder()
+                .id(100L)
+                .name("Test Customer")
+                .contactPerson("John Doe")
+                .phone("02-1234-5678")
+                .email("customer@test.com")
+                .address("Seoul, Korea")
+                .build();
 
         testProduct = new Product();
         testProduct.setId(1L);
@@ -85,23 +88,22 @@ class QuotationPdfServiceTest {
         testProduct.setDescription("Product Description");
         testProduct.setUnit("EA");
 
-        testQuotation = Quotation.builder()
-                .id(1L)
-                .project(testProject)
-                .quotationDate(LocalDate.now())
-                .validityDays(30)
-                .status(QuotationStatus.APPROVED)
-                .version(1)
-                .createdById(1L)
-                .build();
+        // Use Quotation setter pattern (no builder on Quotation)
+        testQuotation = new Quotation();
+        testQuotation.setId(1L);
+        testQuotation.setProject(testProject);
+        testQuotation.setQuotationDate(LocalDate.now());
+        testQuotation.setValidityDays(30);
+        testQuotation.setStatus(QuotationStatus.APPROVED);
+        testQuotation.setVersion(1);
 
-        QuotationLineItem lineItem = QuotationLineItem.builder()
-                .id(1L)
-                .quotation(testQuotation)
-                .product(testProduct)
-                .quantity(10)
-                .unitPrice(new BigDecimal("100000"))
-                .build();
+        // Use QuotationLineItem setter pattern (no builder on QuotationLineItem)
+        QuotationLineItem lineItem = new QuotationLineItem();
+        lineItem.setId(1L);
+        lineItem.setProduct(testProduct);
+        lineItem.setQuantity(BigDecimal.TEN);
+        lineItem.setUnitPrice(new BigDecimal("100000"));
+        lineItem.setLineTotal(new BigDecimal("1000000"));
 
         testQuotation.addLineItem(lineItem);
 
@@ -109,14 +111,14 @@ class QuotationPdfServiceTest {
     }
 
     private void setupCompanyProperties() {
-        given(companyProperties.getName()).willReturn("웰코리아(주)");
-        given(companyProperties.getNameEn()).willReturn("WellKorea Co., Ltd.");
-        given(companyProperties.getRegistrationNumber()).willReturn("123-45-67890");
-        given(companyProperties.getAddress()).willReturn("대전광역시 유성구");
-        given(companyProperties.getPhone()).willReturn("042-933-8115");
-        given(companyProperties.getFax()).willReturn("042-935-8115");
-        given(companyProperties.getDesignDeptPhone()).willReturn("042-934-8115");
-        given(companyProperties.getEmail()).willReturn("info@wellkorea.com");
+        lenient().when(companyProperties.getName()).thenReturn("웰코리아(주)");
+        lenient().when(companyProperties.getNameEn()).thenReturn("WellKorea Co., Ltd.");
+        lenient().when(companyProperties.getRegistrationNumber()).thenReturn("123-45-67890");
+        lenient().when(companyProperties.getAddress()).thenReturn("대전광역시 유성구");
+        lenient().when(companyProperties.getPhone()).thenReturn("042-933-8115");
+        lenient().when(companyProperties.getFax()).thenReturn("042-935-8115");
+        lenient().when(companyProperties.getDesignDeptPhone()).thenReturn("042-934-8115");
+        lenient().when(companyProperties.getEmail()).thenReturn("info@wellkorea.com");
     }
 
     @Nested

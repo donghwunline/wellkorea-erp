@@ -1,4 +1,4 @@
-package com.wellkorea.backend.quotation.api.dto;
+package com.wellkorea.backend.quotation.api.dto.command;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;

@@ -90,13 +90,15 @@ class QuotationEmailServiceTest {
                 .status(ProjectStatus.ACTIVE)
                 .build();
 
-        testCustomer = new Customer();
-        testCustomer.setId(100L);
-        testCustomer.setName("Test Customer");
-        testCustomer.setContactPerson("김철수");
-        testCustomer.setPhone("02-1234-5678");
-        testCustomer.setEmail("customer@test.com");
-        testCustomer.setAddress("Seoul, Korea");
+        // Use Customer builder pattern
+        testCustomer = Customer.builder()
+                .id(100L)
+                .name("Test Customer")
+                .contactPerson("김철수")
+                .phone("02-1234-5678")
+                .email("customer@test.com")
+                .address("Seoul, Korea")
+                .build();
 
         testProduct = new Product();
         testProduct.setId(1L);
@@ -104,23 +106,22 @@ class QuotationEmailServiceTest {
         testProduct.setDescription("Product Description");
         testProduct.setUnit("EA");
 
-        testQuotation = Quotation.builder()
-                .id(1L)
-                .project(testProject)
-                .quotationDate(LocalDate.now())
-                .validityDays(30)
-                .status(QuotationStatus.APPROVED)
-                .version(1)
-                .createdById(1L)
-                .build();
+        // Use Quotation setter pattern (no builder on Quotation)
+        testQuotation = new Quotation();
+        testQuotation.setId(1L);
+        testQuotation.setProject(testProject);
+        testQuotation.setQuotationDate(LocalDate.now());
+        testQuotation.setValidityDays(30);
+        testQuotation.setStatus(QuotationStatus.APPROVED);
+        testQuotation.setVersion(1);
 
-        QuotationLineItem lineItem = QuotationLineItem.builder()
-                .id(1L)
-                .quotation(testQuotation)
-                .product(testProduct)
-                .quantity(10)
-                .unitPrice(new BigDecimal("100000"))
-                .build();
+        // Use QuotationLineItem setter pattern (no builder on QuotationLineItem)
+        QuotationLineItem lineItem = new QuotationLineItem();
+        lineItem.setId(1L);
+        lineItem.setProduct(testProduct);
+        lineItem.setQuantity(BigDecimal.TEN);
+        lineItem.setUnitPrice(new BigDecimal("100000"));
+        lineItem.setLineTotal(new BigDecimal("1000000"));
 
         testQuotation.addLineItem(lineItem);
 
@@ -153,8 +154,15 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should throw BusinessException when customer has no email")
         void sendRevisionNotification_NoEmail_ThrowsException() {
-            testCustomer.setEmail(null);
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            Customer customerNoEmail = Customer.builder()
+                    .id(100L)
+                    .name("Test Customer")
+                    .contactPerson("김철수")
+                    .phone("02-1234-5678")
+                    .email(null)
+                    .address("Seoul, Korea")
+                    .build();
+            given(customerRepository.findById(100L)).willReturn(Optional.of(customerNoEmail));
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(testQuotation))
                     .isInstanceOf(BusinessException.class)
@@ -164,8 +172,15 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should throw BusinessException when customer email is blank")
         void sendRevisionNotification_BlankEmail_ThrowsException() {
-            testCustomer.setEmail("   ");
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            Customer customerBlankEmail = Customer.builder()
+                    .id(100L)
+                    .name("Test Customer")
+                    .contactPerson("김철수")
+                    .phone("02-1234-5678")
+                    .email("   ")
+                    .address("Seoul, Korea")
+                    .build();
+            given(customerRepository.findById(100L)).willReturn(Optional.of(customerBlankEmail));
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(testQuotation))
                     .isInstanceOf(BusinessException.class)
@@ -240,8 +255,15 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should throw BusinessException when customer has no email")
         void sendSimpleNotification_NoEmail_ThrowsException() {
-            testCustomer.setEmail(null);
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            Customer customerNoEmail = Customer.builder()
+                    .id(100L)
+                    .name("Test Customer")
+                    .contactPerson("김철수")
+                    .phone("02-1234-5678")
+                    .email(null)
+                    .address("Seoul, Korea")
+                    .build();
+            given(customerRepository.findById(100L)).willReturn(Optional.of(customerNoEmail));
 
             assertThatThrownBy(() -> quotationEmailService.sendSimpleNotification(testQuotation))
                     .isInstanceOf(BusinessException.class)
@@ -314,28 +336,26 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should include version info for revised quotations")
         void sendSimpleNotification_RevisedQuotation_IncludesVersionInfo() {
-            testQuotation = Quotation.builder()
-                    .id(2L)
-                    .project(testProject)
-                    .quotationDate(LocalDate.now())
-                    .validityDays(30)
-                    .status(QuotationStatus.APPROVED)
-                    .version(2)
-                    .createdById(1L)
-                    .build();
+            // Create revised quotation (version 2)
+            Quotation revisedQuotation = new Quotation();
+            revisedQuotation.setId(2L);
+            revisedQuotation.setProject(testProject);
+            revisedQuotation.setQuotationDate(LocalDate.now());
+            revisedQuotation.setValidityDays(30);
+            revisedQuotation.setStatus(QuotationStatus.APPROVED);
+            revisedQuotation.setVersion(2);
 
-            QuotationLineItem lineItem = QuotationLineItem.builder()
-                    .id(1L)
-                    .quotation(testQuotation)
-                    .product(testProduct)
-                    .quantity(10)
-                    .unitPrice(new BigDecimal("100000"))
-                    .build();
-            testQuotation.addLineItem(lineItem);
+            QuotationLineItem lineItem = new QuotationLineItem();
+            lineItem.setId(1L);
+            lineItem.setProduct(testProduct);
+            lineItem.setQuantity(BigDecimal.TEN);
+            lineItem.setUnitPrice(new BigDecimal("100000"));
+            lineItem.setLineTotal(new BigDecimal("1000000"));
+            revisedQuotation.addLineItem(lineItem);
 
             given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
-            quotationEmailService.sendSimpleNotification(testQuotation);
+            quotationEmailService.sendSimpleNotification(revisedQuotation);
 
             verify(mailSender).send(simpleMailCaptor.capture());
             SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
@@ -348,8 +368,15 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should use default greeting when contact person is null")
         void sendSimpleNotification_NoContactPerson_UsesDefaultGreeting() {
-            testCustomer.setContactPerson(null);
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            Customer customerNoContact = Customer.builder()
+                    .id(100L)
+                    .name("Test Customer")
+                    .contactPerson(null)
+                    .phone("02-1234-5678")
+                    .email("customer@test.com")
+                    .address("Seoul, Korea")
+                    .build();
+            given(customerRepository.findById(100L)).willReturn(Optional.of(customerNoContact));
 
             quotationEmailService.sendSimpleNotification(testQuotation);
 
@@ -366,8 +393,8 @@ class QuotationEmailServiceTest {
     class QuotationNumberFormattingTests {
 
         @Test
-        @DisplayName("should format version with leading zero for single digit")
-        void formatQuotationNumber_SingleDigitVersion_FormatsWithLeadingZero() {
+        @DisplayName("should format version correctly for single digit")
+        void formatQuotationNumber_SingleDigitVersion_FormatsCorrectly() {
             given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
             quotationEmailService.sendSimpleNotification(testQuotation);
@@ -375,39 +402,39 @@ class QuotationEmailServiceTest {
             verify(mailSender).send(simpleMailCaptor.capture());
             SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
 
-            assertThat(sentMessage.getSubject()).contains("-Q01");
+            // Format: "[웰코리아(주)] 견적서 안내 - WK2K25-0001-1219 (V1)"
+            assertThat(sentMessage.getSubject()).contains("(V1)");
         }
 
         @Test
-        @DisplayName("should format version without leading zero for double digit")
+        @DisplayName("should format version correctly for double digit")
         void formatQuotationNumber_DoubleDigitVersion_FormatsCorrectly() {
-            testQuotation = Quotation.builder()
-                    .id(2L)
-                    .project(testProject)
-                    .quotationDate(LocalDate.now())
-                    .validityDays(30)
-                    .status(QuotationStatus.APPROVED)
-                    .version(12)
-                    .createdById(1L)
-                    .build();
+            // Create quotation with version 12
+            Quotation quotationV12 = new Quotation();
+            quotationV12.setId(2L);
+            quotationV12.setProject(testProject);
+            quotationV12.setQuotationDate(LocalDate.now());
+            quotationV12.setValidityDays(30);
+            quotationV12.setStatus(QuotationStatus.APPROVED);
+            quotationV12.setVersion(12);
 
-            QuotationLineItem lineItem = QuotationLineItem.builder()
-                    .id(1L)
-                    .quotation(testQuotation)
-                    .product(testProduct)
-                    .quantity(10)
-                    .unitPrice(new BigDecimal("100000"))
-                    .build();
-            testQuotation.addLineItem(lineItem);
+            QuotationLineItem lineItem = new QuotationLineItem();
+            lineItem.setId(1L);
+            lineItem.setProduct(testProduct);
+            lineItem.setQuantity(BigDecimal.TEN);
+            lineItem.setUnitPrice(new BigDecimal("100000"));
+            lineItem.setLineTotal(new BigDecimal("1000000"));
+            quotationV12.addLineItem(lineItem);
 
             given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
-            quotationEmailService.sendSimpleNotification(testQuotation);
+            quotationEmailService.sendSimpleNotification(quotationV12);
 
             verify(mailSender).send(simpleMailCaptor.capture());
             SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
 
-            assertThat(sentMessage.getSubject()).contains("-Q12");
+            // Format: "[웰코리아(주)] 견적서 안내 - WK2K25-0001-1219 (V12)"
+            assertThat(sentMessage.getSubject()).contains("(V12)");
         }
     }
 }

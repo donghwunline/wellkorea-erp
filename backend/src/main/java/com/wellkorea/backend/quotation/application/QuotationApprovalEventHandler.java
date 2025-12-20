@@ -18,10 +18,10 @@ public class QuotationApprovalEventHandler {
 
     private static final Logger log = LoggerFactory.getLogger(QuotationApprovalEventHandler.class);
 
-    private final QuotationService quotationService;
+    private final QuotationCommandService commandService;
 
-    public QuotationApprovalEventHandler(QuotationService quotationService) {
-        this.quotationService = quotationService;
+    public QuotationApprovalEventHandler(QuotationCommandService commandService) {
+        this.commandService = commandService;
     }
 
     /**
@@ -39,10 +39,10 @@ public class QuotationApprovalEventHandler {
                 event.entityId(), event.finalStatus());
 
         if (event.isApproved()) {
-            quotationService.approveQuotation(event.entityId(), event.approverUserId());
+            commandService.approveQuotation(event.entityId(), event.approverUserId());
             log.info("Quotation {} approved", event.entityId());
         } else if (event.isRejected()) {
-            quotationService.rejectQuotation(event.entityId(), event.rejectionReason());
+            commandService.rejectQuotation(event.entityId(), event.rejectionReason());
             log.info("Quotation {} rejected: {}", event.entityId(), event.rejectionReason());
         }
     }

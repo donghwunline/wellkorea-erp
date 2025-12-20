@@ -1,4 +1,4 @@
-package com.wellkorea.backend.approval.api.dto;
+package com.wellkorea.backend.approval.api.dto.query;
 
 import com.wellkorea.backend.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
@@ -7,9 +7,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Response DTO for an approval request.
+ * Read model for approval request detail views.
+ * Includes level decisions for full detail display.
  */
-public record ApprovalRequestResponse(
+public record ApprovalDetailView(
         Long id,
         EntityType entityType,
         Long entityId,
@@ -22,10 +23,10 @@ public record ApprovalRequestResponse(
         LocalDateTime submittedAt,
         LocalDateTime completedAt,
         LocalDateTime createdAt,
-        List<LevelDecisionResponse> levels
+        List<LevelDecisionView> levels
 ) {
-    public static ApprovalRequestResponse from(ApprovalRequest request) {
-        return new ApprovalRequestResponse(
+    public static ApprovalDetailView from(ApprovalRequest request) {
+        return new ApprovalDetailView(
                 request.getId(),
                 request.getEntityType(),
                 request.getEntityId(),
@@ -39,26 +40,8 @@ public record ApprovalRequestResponse(
                 request.getCompletedAt(),
                 request.getCreatedAt(),
                 request.getLevelDecisions().stream()
-                        .map(LevelDecisionResponse::from)
+                        .map(LevelDecisionView::from)
                         .toList()
-        );
-    }
-
-    public static ApprovalRequestResponse fromSummary(ApprovalRequest request) {
-        return new ApprovalRequestResponse(
-                request.getId(),
-                request.getEntityType(),
-                request.getEntityId(),
-                request.getEntityDescription(),
-                request.getCurrentLevel(),
-                request.getTotalLevels(),
-                request.getStatus(),
-                request.getSubmittedBy().getId(),
-                request.getSubmittedBy().getFullName(),
-                request.getSubmittedAt(),
-                request.getCompletedAt(),
-                request.getCreatedAt(),
-                null // No level details in summary
         );
     }
 }

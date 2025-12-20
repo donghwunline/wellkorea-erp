@@ -1,13 +1,14 @@
-package com.wellkorea.backend.approval.api.dto;
+package com.wellkorea.backend.approval.api.dto.query;
 
 import com.wellkorea.backend.approval.domain.ApprovalAction;
 import com.wellkorea.backend.approval.domain.ApprovalHistory;
 import java.time.LocalDateTime;
 
 /**
- * Response DTO for an approval history entry.
+ * Read model for approval history entry.
+ * Used for displaying approval workflow history.
  */
-public record ApprovalHistoryResponse(
+public record ApprovalHistoryView(
         Long id,
         Integer levelOrder,
         ApprovalAction action,
@@ -16,8 +17,8 @@ public record ApprovalHistoryResponse(
         String comments,
         LocalDateTime createdAt
 ) {
-    public static ApprovalHistoryResponse from(ApprovalHistory history) {
-        return new ApprovalHistoryResponse(
+    public static ApprovalHistoryView from(ApprovalHistory history) {
+        return new ApprovalHistoryView(
                 history.getId(),
                 history.getLevelOrder(),
                 history.getAction(),

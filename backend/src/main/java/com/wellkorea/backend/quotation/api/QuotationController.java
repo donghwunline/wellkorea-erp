@@ -2,17 +2,16 @@ package com.wellkorea.backend.quotation.api;
 
 import com.wellkorea.backend.auth.api.CurrentToken;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
-import com.wellkorea.backend.quotation.api.dto.CreateQuotationRequest;
-import com.wellkorea.backend.quotation.api.dto.QuotationResponse;
-import com.wellkorea.backend.quotation.api.dto.UpdateQuotationRequest;
-import com.wellkorea.backend.quotation.application.CreateQuotationCommand;
-import com.wellkorea.backend.quotation.application.LineItemCommand;
-import com.wellkorea.backend.quotation.application.QuotationEmailService;
-import com.wellkorea.backend.quotation.application.QuotationService;
-import com.wellkorea.backend.quotation.application.UpdateQuotationCommand;
+import com.wellkorea.backend.quotation.api.dto.command.CreateQuotationRequest;
+import com.wellkorea.backend.quotation.api.dto.command.UpdateQuotationRequest;
+import com.wellkorea.backend.quotation.api.dto.command.QuotationCommandResult;
+import com.wellkorea.backend.quotation.api.dto.query.QuotationDetailView;
+import com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView;
+import com.wellkorea.backend.quotation.application.*;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.exception.BusinessException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,24 +23,61 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * REST controller for quotation management.
- * Provides endpoints for CRUD operations, submission, and PDF generation.
+ * Follows CQRS pattern - uses separate Command and Query services.
+ * Command endpoints return only IDs; clients fetch fresh data via query endpoints.
  */
 @RestController
 @RequestMapping("/api/quotations")
 public class QuotationController {
 
-    private final QuotationService quotationService;
+    private final QuotationCommandService commandService;
+    private final QuotationQueryService queryService;
+    private final QuotationPdfService pdfService;
     private final QuotationEmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
 
     public QuotationController(
-            QuotationService quotationService,
+            QuotationCommandService commandService,
+            QuotationQueryService queryService,
+            QuotationPdfService pdfService,
             QuotationEmailService emailService,
             JwtTokenProvider jwtTokenProvider) {
-        this.quotationService = quotationService;
+        this.commandService = commandService;
+        this.queryService = queryService;
+        this.pdfService = pdfService;
         this.emailService = emailService;
         this.jwtTokenProvider = jwtTokenProvider;
     }
+
+    // ==================== QUERY ENDPOINTS ====================
+
+    /**
+     * List quotations with optional filters.
+     * GET /api/quotations
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    public ResponseEntity<ApiResponse<Page<QuotationSummaryView>>> listQuotations(
+            @RequestParam(required = false) QuotationStatus status,
+            @RequestParam(required = false) Long projectId,
+            Pageable pageable) {
+
+        Page<QuotationSummaryView> quotations = queryService.listQuotations(status, projectId, pageable);
+        return ResponseEntity.ok(ApiResponse.success(quotations));
+    }
+
+    /**
+     * Get quotation by ID.
+     * GET /api/quotations/{id}
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    public ResponseEntity<ApiResponse<QuotationDetailView>> getQuotation(@PathVariable Long id) {
+        QuotationDetailView quotation = queryService.getQuotationDetail(id);
+        return ResponseEntity.ok(ApiResponse.success(quotation));
+    }
+
+    // ==================== COMMAND ENDPOINTS ====================
 
     /**
      * Create a new quotation.
@@ -49,7 +85,7 @@ public class QuotationController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationResponse>> createQuotation(
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> createQuotation(
             @Valid @RequestBody CreateQuotationRequest request,
             @CurrentToken String token) {
 
@@ -68,42 +104,12 @@ public class QuotationController {
                         .toList()
         );
 
-        Quotation quotation = quotationService.createQuotation(command, userId);
-        QuotationResponse response = QuotationResponse.from(quotation);
+        Long quotationId = commandService.createQuotation(command, userId);
+        QuotationCommandResult result = QuotationCommandResult.created(quotationId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
-    }
-
-    /**
-     * List quotations with optional filters.
-     * GET /api/quotations
-     */
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<Page<QuotationResponse>>> listQuotations(
-            @RequestParam(required = false) QuotationStatus status,
-            @RequestParam(required = false) Long projectId,
-            Pageable pageable) {
-
-        Page<Quotation> quotations = quotationService.listQuotations(status, projectId, pageable);
-        Page<QuotationResponse> response = quotations.map(QuotationResponse::fromSummary);
-
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    /**
-     * Get quotation by ID.
-     * GET /api/quotations/{id}
-     */
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationResponse>> getQuotation(@PathVariable Long id) {
-        Quotation quotation = quotationService.getQuotation(id);
-        QuotationResponse response = QuotationResponse.from(quotation);
-
-        return ResponseEntity.ok(ApiResponse.success(response));
+                .body(ApiResponse.success(result));
     }
 
     /**
@@ -112,7 +118,7 @@ public class QuotationController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationResponse>> updateQuotation(
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> updateQuotation(
             @PathVariable Long id,
             @Valid @RequestBody UpdateQuotationRequest request) {
 
@@ -128,30 +134,31 @@ public class QuotationController {
                         .toList()
         );
 
-        Quotation quotation = quotationService.updateQuotation(id, command);
-        QuotationResponse response = QuotationResponse.from(quotation);
+        Long quotationId = commandService.updateQuotation(id, command);
+        QuotationCommandResult result = QuotationCommandResult.updated(quotationId);
 
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
      * Submit quotation for approval.
      * POST /api/quotations/{id}/submit
-     *
+     * <p>
      * The approval request is created automatically via event-driven architecture.
-     * QuotationService publishes QuotationSubmittedEvent, which is handled by
+     * QuotationCommandService publishes QuotationSubmittedEvent, which is handled by
      * ApprovalEventHandler within the same transaction.
      */
     @PostMapping("/{id}/submit")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationResponse>> submitForApproval(
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> submitForApproval(
             @PathVariable Long id,
             @CurrentToken String token) {
 
         Long userId = jwtTokenProvider.getUserId(token);
-        Quotation quotation = quotationService.submitForApproval(id, userId);
-        QuotationResponse response = QuotationResponse.from(quotation);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        Long quotationId = commandService.submitForApproval(id, userId);
+        QuotationCommandResult result = QuotationCommandResult.submitted(quotationId);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -160,28 +167,37 @@ public class QuotationController {
      */
     @PostMapping("/{id}/versions")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationResponse>> createNewVersion(
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> createNewVersion(
             @PathVariable Long id,
             @CurrentToken String token) {
 
         Long userId = jwtTokenProvider.getUserId(token);
-
-        Quotation quotation = quotationService.createNewVersion(id, userId);
-        QuotationResponse response = QuotationResponse.from(quotation);
+        Long newVersionId = commandService.createNewVersion(id, userId);
+        QuotationCommandResult result = QuotationCommandResult.versionCreated(newVersionId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
+                .body(ApiResponse.success(result));
     }
+
+    // ==================== SIDE-EFFECT ENDPOINTS ====================
 
     /**
      * Generate PDF for a quotation.
      * POST /api/quotations/{id}/pdf
+     * <p>
+     * This is a query-like operation (returns data, no state change) but uses POST
+     * because it generates a resource on-demand.
      */
     @PostMapping("/{id}/pdf")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
     public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) {
-        byte[] pdfBytes = quotationService.generatePdf(id);
+        if (!queryService.canGeneratePdf(id)) {
+            throw new BusinessException("PDF can only be generated for non-DRAFT quotations");
+        }
+
+        Quotation quotation = queryService.getQuotationEntity(id);
+        byte[] pdfBytes = pdfService.generatePdf(quotation);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
@@ -192,13 +208,13 @@ public class QuotationController {
     /**
      * Send revision notification email for a quotation.
      * POST /api/quotations/{id}/send-revision-notification
-     *
+     * <p>
      * Admin can use this endpoint to notify the customer about a new quotation version.
      */
     @PostMapping("/{id}/send-revision-notification")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> sendRevisionNotification(@PathVariable Long id) {
-        Quotation quotation = quotationService.getQuotation(id);
+        Quotation quotation = queryService.getQuotationEntity(id);
         emailService.sendRevisionNotification(quotation);
 
         return ResponseEntity.ok(ApiResponse.success("Revision notification sent successfully"));
