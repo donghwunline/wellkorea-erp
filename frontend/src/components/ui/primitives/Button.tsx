@@ -2,7 +2,7 @@
  * Button component with loading state and Tailwind CSS styling.
  *
  * Features:
- * - Multiple variants (primary, secondary, ghost, danger)
+ * - Multiple variants (primary, secondary, ghost, danger, warning)
  * - Multiple sizes (sm, md, lg, icon)
  * - Loading state with spinner
  * - Automatic disabled when loading
@@ -28,7 +28,7 @@ import { forwardRef } from 'react';
 import { Spinner } from './Spinner';
 import { cn } from '@/shared/utils';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'warning';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -45,6 +45,7 @@ const variantClasses: Record<ButtonVariant, string> = {
     'bg-steel-800 text-white hover:bg-steel-700 border border-steel-700/50 focus-visible:ring-steel-500/50',
   ghost: 'bg-transparent text-steel-400 hover:bg-steel-800/30 focus-visible:ring-steel-500/20',
   danger: 'bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-500/50',
+  warning: 'bg-orange-500 text-white hover:bg-orange-600 focus-visible:ring-orange-500/50',
 };
 
 // Size styles

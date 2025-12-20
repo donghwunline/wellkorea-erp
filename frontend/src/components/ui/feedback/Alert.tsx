@@ -22,6 +22,8 @@ export type AlertVariant = 'info' | 'success' | 'warning' | 'error';
 export interface AlertProps {
   /** Alert type/severity */
   variant?: AlertVariant;
+  /** Optional title/header for the alert */
+  title?: string;
   /** Optional dismiss handler (shows close button if provided) */
   onClose?: () => void;
   children: ReactNode;
@@ -86,18 +88,21 @@ function AlertIcon({ variant }: Readonly<{ variant: AlertVariant }>) {
   }
 }
 
-export function Alert({ variant = 'info', onClose, children, className }: Readonly<AlertProps>) {
+export function Alert({ variant = 'info', title, onClose, children, className }: Readonly<AlertProps>) {
   return (
     <div
       role="alert"
       className={cn(
-        'flex items-center gap-3 rounded-lg border px-4 py-3 text-sm',
+        'flex gap-3 rounded-lg border px-4 py-3 text-sm',
         variantClasses[variant],
         className
       )}
     >
       <AlertIcon variant={variant} />
-      <span className="flex-1">{children}</span>
+      <div className="flex-1">
+        {title && <div className="font-medium">{title}</div>}
+        <span className={title ? 'text-steel-300' : ''}>{children}</span>
+      </div>
       {onClose && (
         <button
           onClick={onClose}

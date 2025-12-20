@@ -53,6 +53,47 @@ export type {
   ProjectSummary,
 } from './projects';
 
+// Quotation services
+export {
+  quotationService,
+  approvalService,
+  approvalChainService,
+  productService,
+  QUOTATION_STATUS_LABELS,
+  QUOTATION_STATUS_COLORS,
+  APPROVAL_STATUS_LABELS,
+} from './quotations';
+export type {
+  // Quotation types
+  QuotationStatus,
+  QuotationLineItem,
+  QuotationDetails,
+  LineItemRequest,
+  CreateQuotationRequest,
+  UpdateQuotationRequest,
+  QuotationListParams,
+  PaginatedQuotations,
+  // Approval types
+  ApprovalStatus,
+  EntityType,
+  LevelDecision,
+  ApprovalDetails,
+  ApprovalHistoryEntry,
+  ApproveRequest,
+  RejectRequest,
+  ApprovalListParams,
+  PaginatedApprovals,
+  // Approval chain types
+  ChainLevel,
+  ChainTemplate,
+  ChainLevelRequest,
+  UpdateChainLevelsRequest,
+  // Product types
+  ProductSearchResult,
+  ProductSearchParams,
+  PaginatedProducts,
+} from './quotations';
+
 // Error utilities (re-exported from @/shared/utils for convenience)
 export {
   errorMessages,
