@@ -14,12 +14,12 @@
 
 import {
   forwardRef,
+  type KeyboardEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
 } from 'react';
 import { cn } from '@/shared/utils';
 
@@ -170,7 +170,7 @@ function Calendar({
   viewYear,
   onMonthChange,
   onYearChange,
-}: CalendarProps) {
+}: Readonly<CalendarProps>) {
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
   const today = new Date();
@@ -221,7 +221,12 @@ function Calendar({
           aria-label="Previous month"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
 
@@ -296,6 +301,12 @@ function Calendar({
               rangeStartParsed < hoveredDate ? hoveredDate : rangeStartParsed
             );
 
+          const dateLabel = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+
           return (
             <button
               key={date.toISOString()}
@@ -304,14 +315,24 @@ function Calendar({
               onClick={() => onSelect(date)}
               onMouseEnter={() => onHover(date)}
               onMouseLeave={() => onHover(null)}
+              aria-label={dateLabel}
               className={cn(
                 'relative h-8 w-8 rounded-md text-sm font-medium transition-all',
                 'focus:outline-none focus:ring-2 focus:ring-copper-500/50 focus:ring-offset-1 focus:ring-offset-steel-800',
                 // Default state
-                !isDisabled && !isSelected && !isRangeStart && !isRangeEnd && !isInRange && !isInHoverRange &&
+                !isDisabled &&
+                  !isSelected &&
+                  !isRangeStart &&
+                  !isRangeEnd &&
+                  !isInRange &&
+                  !isInHoverRange &&
                   'text-steel-300 hover:bg-steel-700/50 hover:text-white',
                 // Today indicator
-                isToday && !isSelected && !isRangeStart && !isRangeEnd && 'ring-1 ring-copper-500/30',
+                isToday &&
+                  !isSelected &&
+                  !isRangeStart &&
+                  !isRangeEnd &&
+                  'ring-1 ring-copper-500/30',
                 // Selected (single mode)
                 isSelected && 'bg-copper-500 text-white shadow-lg shadow-copper-500/25',
                 // Range start/end
@@ -320,9 +341,7 @@ function Calendar({
                 // In range
                 isInRange && !isRangeStart && !isRangeEnd && 'bg-copper-500/20 text-copper-300',
                 // Hover range preview
-                isInHoverRange &&
-                  !isRangeStart &&
-                  'bg-copper-500/10 text-copper-400',
+                isInHoverRange && !isRangeStart && 'bg-copper-500/10 text-copper-400',
                 // Disabled
                 isDisabled && 'cursor-not-allowed text-steel-600 opacity-50'
               )}

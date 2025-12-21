@@ -192,10 +192,23 @@ describe('ProjectForm', () => {
       const projectNameInput = screen.getByPlaceholderText('Enter project name');
       await user.type(projectNameInput, 'New Project');
 
-      // Select due date - click the button to open, then select a date
+      // Select due date - click the button to open, then select a future date
       const dateButton = screen.getByRole('button', { name: /select due date/i });
       await user.click(dateButton);
-      await user.click(screen.getByRole('button', { name: '20' }));
+      // Navigate to next month to ensure dates are in the future
+      const nextMonthButton = screen.getByRole('button', { name: /next month/i });
+      await user.click(nextMonthButton);
+      // Click day 15 - find by aria-label containing "15," (e.g., "January 15, 2026")
+      const nextMonthDate = new Date();
+      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+      nextMonthDate.setDate(15);
+      const expectedLabel = nextMonthDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
+      await user.click(day15Button);
 
       // Select internal owner (index 3: customer=0, projectName=1, requester=2, owner=3)
       const ownerInput = screen.getAllByRole('textbox')[3];
@@ -236,10 +249,22 @@ describe('ProjectForm', () => {
       // Enter requester name
       await user.type(screen.getByPlaceholderText('Enter requester name (optional)'), 'John');
 
-      // Select due date
+      // Select due date - navigate to next month and pick day 15
       const dateButton = screen.getByRole('button', { name: /select due date/i });
       await user.click(dateButton);
-      await user.click(screen.getByRole('button', { name: '20' }));
+      const nextMonthButton = screen.getByRole('button', { name: /next month/i });
+      await user.click(nextMonthButton);
+      // Click day 15 - dynamically calculate next month's date
+      const nextMonthDate = new Date();
+      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+      nextMonthDate.setDate(15);
+      const expectedLabel = nextMonthDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
+      await user.click(day15Button);
 
       // Select internal owner
       const ownerInput = screen.getAllByRole('textbox')[3];
@@ -249,12 +274,15 @@ describe('ProjectForm', () => {
       // Submit
       await user.click(screen.getByRole('button', { name: /create project/i }));
 
+      // Calculate expected due date string (YYYY-MM-15)
+      const expectedDueDate = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}-15`;
+
       await waitFor(() => {
         expect(onSubmit).toHaveBeenCalledWith({
           customerId: 1,
           projectName: 'New Project',
           requesterName: 'John',
-          dueDate: expect.stringMatching(/^\d{4}-\d{2}-20$/), // Day 20 of current month
+          dueDate: expectedDueDate,
           internalOwnerId: 2,
         });
       });
@@ -300,9 +328,22 @@ describe('ProjectForm', () => {
 
       await user.type(screen.getByPlaceholderText('Enter project name'), '  New Project  ');
 
+      // Select due date - navigate to next month and pick day 15
       const dateButton = screen.getByRole('button', { name: /select due date/i });
       await user.click(dateButton);
-      await user.click(screen.getByRole('button', { name: '20' }));
+      const nextMonthButton = screen.getByRole('button', { name: /next month/i });
+      await user.click(nextMonthButton);
+      // Click day 15 - dynamically calculate next month's date
+      const nextMonthDate = new Date();
+      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+      nextMonthDate.setDate(15);
+      const expectedLabel = nextMonthDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
+      await user.click(day15Button);
 
       const ownerInput = screen.getAllByRole('textbox')[3];
       await user.click(ownerInput);
@@ -332,9 +373,22 @@ describe('ProjectForm', () => {
 
       await user.type(screen.getByPlaceholderText('Enter project name'), 'Project');
 
+      // Select due date - navigate to next month and pick day 15
       const dateButton = screen.getByRole('button', { name: /select due date/i });
       await user.click(dateButton);
-      await user.click(screen.getByRole('button', { name: '20' }));
+      const nextMonthButton = screen.getByRole('button', { name: /next month/i });
+      await user.click(nextMonthButton);
+      // Click day 15 - dynamically calculate next month's date
+      const nextMonthDate2 = new Date();
+      nextMonthDate2.setMonth(nextMonthDate2.getMonth() + 1);
+      nextMonthDate2.setDate(15);
+      const expectedLabel2 = nextMonthDate2.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel2, 'i') });
+      await user.click(day15Button);
 
       const ownerInput = screen.getAllByRole('textbox')[3];
       await user.click(ownerInput);
