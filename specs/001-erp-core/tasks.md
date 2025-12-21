@@ -313,18 +313,18 @@
 
 ### Frontend Implementation for User Story 2
 
-- [X] T089 [US2] Create QuotationService API client in frontend/src/services/quotations/quotationService.ts ✅ (also created productService.ts for product search)
-- [X] T090 [US2] Create ApprovalService API client in frontend/src/services/quotations/approvalService.ts
-- [X] T091 [US2] Create QuotationListPage with table view (filtered by role) in frontend/src/pages/quotations/QuotationListPage.tsx ✅ (with QuotationTable feature component)
-- [X] T092 [US2] Create CreateQuotationPage with product selection and line items in frontend/src/pages/quotations/QuotationCreatePage.tsx ✅ (with QuotationForm and ProductSelector components)
+- [ ] T089 [US2] Create QuotationService API client in frontend/src/services/quotations/quotationService.ts ✅ (also created productService.ts for product search)
+- [ ] T090 [US2] Create ApprovalService API client in frontend/src/services/quotations/approvalService.ts
+- [ ] T091 [US2] Create QuotationListPage with table view (filtered by role) in frontend/src/pages/quotations/QuotationListPage.tsx ✅ (with QuotationTable feature component)
+- [ ] T092 [US2] Create CreateQuotationPage with product selection and line items in frontend/src/pages/quotations/QuotationCreatePage.tsx ✅ (with QuotationForm and ProductSelector components)
 - [ ] T093 [US2] Create EditQuotationPage with version management in frontend/src/pages/quotations/EditQuotationPage.tsx
 - [ ] T093a [US2] Add email notification checkbox in EditQuotationPage when creating new version (calls POST /api/quotations/{id}/send-revision-notification) in frontend/src/pages/quotations/EditQuotationPage.tsx
 - [ ] T094 [US2] Create QuotationDetailPage with approval history in frontend/src/pages/quotations/QuotationDetailPage.tsx
-- [X] T095 [US2] Create ApprovalModal for approve/reject with comments in frontend/src/components/features/quotations/ApprovalRejectModal.tsx ✅ (implemented as ApprovalRejectModal + ApprovalRequestCard)
-- [X] T095a [US2] Create ApprovalChainConfigPage (Admin only) to configure approval levels for entity types in frontend/src/pages/admin/ApprovalChainConfigPage.tsx
-- [X] T095b [US2] Create ApprovalChainService API client (get chain, configure levels) in frontend/src/services/quotations/approvalChainService.ts
+- [ ] T095 [US2] Create ApprovalModal for approve/reject with comments in frontend/src/components/features/quotations/ApprovalRejectModal.tsx ✅ (implemented as ApprovalRejectModal + ApprovalRequestCard)
+- [ ] T095a [US2] Create ApprovalChainConfigPage (Admin only) to configure approval levels for entity types in frontend/src/pages/admin/ApprovalChainConfigPage.tsx
+- [ ] T095b [US2] Create ApprovalChainService API client (get chain, configure levels) in frontend/src/services/quotations/approvalChainService.ts
 - [ ] T095c [US2] Display multi-level approval progress in QuotationDetailPage (show current level, approver, decision status per level)
-- [X] T096 [US2] Add PDF download button that fetches quotation PDF ✅ (downloadPdf in quotationService, button in QuotationTable)
+- [ ] T096 [US2] Add PDF download button that fetches quotation PDF ✅ (downloadPdf in quotationService, button in QuotationTable)
 - [ ] T097 [US2] Add role-based visibility (Sales: read-only their quotations, Finance: all quotations)
 - [ ] T097a [US2] Filter quotations by assigned customers for Sales role in QuotationController (verify role and apply customer filter using customer_assignment from T048a) in backend/src/main/java/com/wellkorea/backend/quotation/api/QuotationController.java
 
