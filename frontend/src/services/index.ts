@@ -64,6 +64,8 @@ export {
   APPROVAL_STATUS_LABELS,
 } from './quotations';
 export type {
+  // CQRS types
+  CommandResult,
   // Quotation types
   QuotationStatus,
   QuotationLineItem,

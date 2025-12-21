@@ -15,5 +15,7 @@ export type {
   ProjectSection,
   ProjectSectionSummary,
   ProjectSummary,
+  // Project KPI types
+  ProjectKPI,
 } from './types';
 export { PROJECT_STATUS_LABELS } from './types';

@@ -10,7 +10,7 @@
  * 3. Ensure response matches ProjectSummary interface
  */
 
-import type { ProjectSummary, ProjectSectionSummary } from './types';
+import type { ProjectSummary, ProjectSectionSummary, ProjectKPI } from './types';
 
 // ============================================================================
 // Stub Implementation (Mock Data)
@@ -109,6 +109,37 @@ async function getProjectSummary(projectId: number): Promise<ProjectSummary> {
   return generateMockSummary(projectId);
 }
 
+/**
+ * Generate mock KPI data for a project.
+ */
+function generateMockKPI(projectId: number): ProjectKPI {
+  const baseMultiplier = (projectId % 5) + 1;
+
+  return {
+    progressPercent: Math.min(100, 20 * baseMultiplier),
+    pendingApprovals: Math.max(0, baseMultiplier - 2),
+    missingDocuments: baseMultiplier > 2 ? 1 : 0,
+    accountsReceivable: 5000000 * baseMultiplier,
+  };
+}
+
+/**
+ * Fetch project KPI statistics.
+ *
+ * @param projectId - The project ID to fetch KPIs for
+ * @returns Promise resolving to project KPIs
+ */
+async function getProjectKPIs(projectId: number): Promise<ProjectKPI> {
+  // Simulate network delay (200-400ms)
+  await delay(200 + Math.random() * 200);
+
+  // Return mock data (replace with real API call when backend is ready)
+  // Example real implementation:
+  // return httpClient.get<ProjectKPI>(PROJECT_ENDPOINTS.kpis(projectId));
+  return generateMockKPI(projectId);
+}
+
 export const projectSummaryService = {
   getProjectSummary,
+  getProjectKPIs,
 };

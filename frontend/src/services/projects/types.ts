@@ -117,3 +117,22 @@ export interface ProjectSummary {
   projectId: number;
   sections: ProjectSectionSummary[];
 }
+
+// ============================================================================
+// Project KPI Types (for Dashboard Strip)
+// ============================================================================
+
+/**
+ * Key performance indicators for a project.
+ * Displayed in the KPI strip at the top of the project hub page.
+ */
+export interface ProjectKPI {
+  /** Overall progress percentage (0-100) */
+  progressPercent: number;
+  /** Number of pending approval requests */
+  pendingApprovals: number;
+  /** Number of missing required documents */
+  missingDocuments: number;
+  /** Accounts receivable amount (KRW) */
+  accountsReceivable: number;
+}

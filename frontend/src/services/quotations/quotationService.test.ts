@@ -10,7 +10,7 @@ import {
   createMockPagedResponse,
   mockApiErrors,
 } from '@/test/fixtures';
-import type { CreateQuotationRequest, UpdateQuotationRequest } from './types';
+import type { CommandResult, CreateQuotationRequest, UpdateQuotationRequest } from './types';
 import { httpClient } from '@/api';
 
 // Mock httpClient with inline factory (vi.mock is hoisted)
@@ -194,7 +194,7 @@ describe('quotationService', () => {
   });
 
   describe('createQuotation', () => {
-    it('should create quotation and return transformed result', async () => {
+    it('should create quotation and return command result', async () => {
       // Given: Create request
       const createRequest: CreateQuotationRequest = {
         projectId: 1,
@@ -205,12 +205,11 @@ describe('quotationService', () => {
         ],
       };
 
-      const mockCreatedQuotation = createMockQuotation({
+      const mockCommandResult: CommandResult = {
         id: 100,
-        projectId: 1,
-        version: 1,
-      });
-      vi.mocked(httpClient.post).mockResolvedValue(mockCreatedQuotation);
+        message: 'Quotation created successfully',
+      };
+      vi.mocked(httpClient.post).mockResolvedValue(mockCommandResult);
 
       // When: Create quotation
       const result = await quotationService.createQuotation(createRequest);
@@ -219,9 +218,8 @@ describe('quotationService', () => {
       expect(httpClient.post).toHaveBeenCalledOnce();
       expect(httpClient.post).toHaveBeenCalledWith('/quotations', createRequest);
 
-      // And: Returns transformed quotation
-      expect(result.id).toBe(100);
-      expect(result.version).toBe(1);
+      // And: Returns command result (CQRS pattern)
+      expect(result).toEqual(mockCommandResult);
     });
 
     it('should propagate validation errors', async () => {
@@ -238,7 +236,7 @@ describe('quotationService', () => {
   });
 
   describe('updateQuotation', () => {
-    it('should update quotation and return transformed result', async () => {
+    it('should update quotation and return command result', async () => {
       // Given: Update request
       const updateRequest: UpdateQuotationRequest = {
         validityDays: 60,
@@ -248,12 +246,11 @@ describe('quotationService', () => {
         ],
       };
 
-      const mockUpdatedQuotation = createMockQuotation({
+      const mockCommandResult: CommandResult = {
         id: 50,
-        validityDays: 60,
-        notes: 'Updated notes',
-      });
-      vi.mocked(httpClient.put).mockResolvedValue(mockUpdatedQuotation);
+        message: 'Quotation updated successfully',
+      };
+      vi.mocked(httpClient.put).mockResolvedValue(mockCommandResult);
 
       // When: Update quotation
       const result = await quotationService.updateQuotation(50, updateRequest);
@@ -262,9 +259,8 @@ describe('quotationService', () => {
       expect(httpClient.put).toHaveBeenCalledOnce();
       expect(httpClient.put).toHaveBeenCalledWith('/quotations/50', updateRequest);
 
-      // And: Returns transformed quotation
-      expect(result.id).toBe(50);
-      expect(result.validityDays).toBe(60);
+      // And: Returns command result (CQRS pattern)
+      expect(result).toEqual(mockCommandResult);
     });
 
     it('should propagate 404 errors', async () => {
@@ -281,14 +277,13 @@ describe('quotationService', () => {
   });
 
   describe('submitForApproval', () => {
-    it('should submit quotation for approval', async () => {
-      // Given: Mock submitted quotation
-      const mockQuotation = createMockQuotation({
+    it('should submit quotation for approval and return command result', async () => {
+      // Given: Mock command result
+      const mockCommandResult: CommandResult = {
         id: 10,
-        status: 'PENDING',
-        submittedAt: '2025-01-15T10:00:00Z',
-      });
-      vi.mocked(httpClient.post).mockResolvedValue(mockQuotation);
+        message: 'Quotation submitted for approval',
+      };
+      vi.mocked(httpClient.post).mockResolvedValue(mockCommandResult);
 
       // When: Submit for approval
       const result = await quotationService.submitForApproval(10);
@@ -297,9 +292,8 @@ describe('quotationService', () => {
       expect(httpClient.post).toHaveBeenCalledOnce();
       expect(httpClient.post).toHaveBeenCalledWith('/quotations/10/submit');
 
-      // And: Returns updated quotation
-      expect(result.id).toBe(10);
-      expect(result.status).toBe('PENDING');
+      // And: Returns command result (CQRS pattern)
+      expect(result).toEqual(mockCommandResult);
     });
 
     it('should propagate errors', async () => {
@@ -312,14 +306,13 @@ describe('quotationService', () => {
   });
 
   describe('createNewVersion', () => {
-    it('should create new version of quotation', async () => {
-      // Given: Mock new version
-      const mockNewVersion = createMockQuotation({
+    it('should create new version of quotation and return command result', async () => {
+      // Given: Mock command result
+      const mockCommandResult: CommandResult = {
         id: 200,
-        version: 2,
-        status: 'DRAFT',
-      });
-      vi.mocked(httpClient.post).mockResolvedValue(mockNewVersion);
+        message: 'New version created',
+      };
+      vi.mocked(httpClient.post).mockResolvedValue(mockCommandResult);
 
       // When: Create new version
       const result = await quotationService.createNewVersion(100);
@@ -328,9 +321,8 @@ describe('quotationService', () => {
       expect(httpClient.post).toHaveBeenCalledOnce();
       expect(httpClient.post).toHaveBeenCalledWith('/quotations/100/versions');
 
-      // And: Returns new version
-      expect(result.id).toBe(200);
-      expect(result.version).toBe(2);
+      // And: Returns command result (CQRS pattern)
+      expect(result).toEqual(mockCommandResult);
     });
 
     it('should propagate errors', async () => {
