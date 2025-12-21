@@ -11,12 +11,11 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { quotationService, QUOTATION_STATUS_LABELS } from '@/services';
+import { quotationService } from '@/services';
 import type { QuotationDetails, QuotationStatus } from '@/services';
 import type { PaginationMetadata } from '@/api/types';
 import {
   Badge,
-  type BadgeVariant,
   Card,
   EmptyState,
   Icon,
@@ -25,16 +24,7 @@ import {
   Pagination,
   Table,
 } from '@/components/ui';
-
-// Status badge variant mapping
-const STATUS_BADGE_VARIANTS: Record<QuotationStatus, BadgeVariant> = {
-  DRAFT: 'warning',
-  PENDING: 'info',
-  APPROVED: 'success',
-  SENT: 'copper',
-  ACCEPTED: 'success',
-  REJECTED: 'danger',
-};
+import { QUOTATION_STATUS_BADGE_VARIANTS, QUOTATION_STATUS_LABELS } from './quotationUtils';
 
 export interface QuotationTableProps {
   /** Current page (0-indexed) */
@@ -207,7 +197,7 @@ export function QuotationTable({
                     <span className="text-steel-300">v{quotation.version}</span>
                   </Table.Cell>
                   <Table.Cell>
-                    <Badge variant={STATUS_BADGE_VARIANTS[quotation.status]}>
+                    <Badge variant={QUOTATION_STATUS_BADGE_VARIANTS[quotation.status]}>
                       {QUOTATION_STATUS_LABELS[quotation.status]}
                     </Badge>
                   </Table.Cell>

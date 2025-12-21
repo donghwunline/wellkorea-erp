@@ -14,14 +14,6 @@ vi.mock('@/services', () => ({
   quotationService: {
     getQuotations: vi.fn(),
   },
-  QUOTATION_STATUS_LABELS: {
-    DRAFT: '초안',
-    PENDING: '승인대기',
-    APPROVED: '승인됨',
-    SENT: '발송됨',
-    ACCEPTED: '수락됨',
-    REJECTED: '반려됨',
-  },
 }));
 
 describe('QuotationTable', () => {
@@ -164,7 +156,7 @@ describe('QuotationTable', () => {
         expect(screen.getByText('Test Project')).toBeInTheDocument();
         expect(screen.getByText('WK2-2025-001-0115')).toBeInTheDocument();
         expect(screen.getByText('v2')).toBeInTheDocument();
-        expect(screen.getByText('초안')).toBeInTheDocument();
+        expect(screen.getByText('작성중')).toBeInTheDocument();
         expect(screen.getByText('₩1,500,000')).toBeInTheDocument();
         expect(screen.getByText('John Doe')).toBeInTheDocument();
       });

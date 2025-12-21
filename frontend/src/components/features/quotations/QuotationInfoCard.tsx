@@ -14,9 +14,9 @@
 
 import { Alert, Badge, Card, Table } from '@/components/ui';
 import type { QuotationDetails } from '@/services';
-import { QUOTATION_STATUS_LABELS } from '@/services';
 import {
   QUOTATION_STATUS_BADGE_VARIANTS,
+  QUOTATION_STATUS_LABELS,
   formatQuotationCurrency,
   formatQuotationDate,
 } from './quotationUtils';

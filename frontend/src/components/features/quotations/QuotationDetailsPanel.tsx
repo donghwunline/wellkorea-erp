@@ -13,11 +13,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Badge, Button, Card, ConfirmationModal, Icon, Spinner } from '@/components/ui';
+import { quotationService } from '@/services';
 import type { QuotationDetails } from '@/services';
-import { QUOTATION_STATUS_LABELS, quotationService } from '@/services';
 import { useQuotationActions } from './hooks';
 import { QuotationInfoCard } from './QuotationInfoCard';
-import { QUOTATION_STATUS_BADGE_VARIANTS } from './quotationUtils';
+import { QUOTATION_STATUS_BADGE_VARIANTS, QUOTATION_STATUS_LABELS } from './quotationUtils';
 
 export interface QuotationDetailsPanelProps {
   /** Project ID to fetch quotations for */
@@ -307,6 +307,7 @@ export function QuotationDetailsPanel({
         confirmLabel="Submit"
         onConfirm={handleSubmitConfirm}
         onClose={() => setSubmitConfirm(false)}
+        variant={'warning'}
       />
 
       <ConfirmationModal
