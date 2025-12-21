@@ -60,7 +60,7 @@ export function ProductSelector({
   // Load products for combobox
   const loadProducts = useCallback(async (query: string): Promise<ComboboxOption[]> => {
     const result = await productService.searchProducts({
-      search: query,
+      query,
       page: 0,
       size: 20,
     });
@@ -86,15 +86,16 @@ export function ProductSelector({
 
       // Fetch full product details
       const product = await productService.getProduct(productId);
+      const price = product.baseUnitPrice ?? 0;
       setSelectedProduct({
         productId: product.id,
         name: product.name,
         sku: product.sku,
         unit: product.unit,
-        unitPrice: product.unitPrice,
+        unitPrice: price,
         quantity: 1,
       });
-      setUnitPrice(product.unitPrice.toString());
+      setUnitPrice(price.toString());
     },
     []
   );
@@ -113,7 +114,7 @@ export function ProductSelector({
       productId: selectedProduct.productId,
       quantity: parsedQuantity,
       unitPrice: parsedUnitPrice,
-      note: note.trim() || undefined,
+      notes: note.trim() || undefined,
     };
 
     onChange([...lineItems, newLineItem]);
@@ -276,7 +277,7 @@ export function ProductSelector({
                 <Table.HeaderCell className="w-32 text-right">Unit Price</Table.HeaderCell>
                 <Table.HeaderCell className="w-32 text-right">Amount</Table.HeaderCell>
                 <Table.HeaderCell className="w-32">Note</Table.HeaderCell>
-                {!disabled && <Table.HeaderCell className="w-12" />}
+                {!disabled && <Table.HeaderCell className="w-12">{''}</Table.HeaderCell>}
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -315,8 +316,8 @@ export function ProductSelector({
                   <Table.Cell className="text-right text-white">
                     {formatCurrency(item.quantity * item.unitPrice)}
                   </Table.Cell>
-                  <Table.Cell className="text-steel-400 text-sm">
-                    {item.note || '-'}
+                  <Table.Cell className="text-sm text-steel-400">
+                    {item.notes || '-'}
                   </Table.Cell>
                   {!disabled && (
                     <Table.Cell>

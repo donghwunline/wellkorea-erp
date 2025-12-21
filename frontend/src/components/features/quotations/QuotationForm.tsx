@@ -63,12 +63,13 @@ export function QuotationForm({
       return {
         validityDays: quotation.validityDays,
         notes: quotation.notes || '',
-        lineItems: quotation.lineItems?.map(item => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          notes: item.notes || undefined,
-        })) || [],
+        lineItems:
+          quotation.lineItems?.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            notes: item.notes || undefined,
+          })) || [],
       };
     }
     return {
@@ -158,7 +159,7 @@ export function QuotationForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Error Alert */}
       {error && (
-        <Alert variant="danger" title="Error">
+        <Alert variant="error" title="Error">
           {error}
         </Alert>
       )}
@@ -173,9 +174,7 @@ export function QuotationForm({
             <FormField label="Project">
               <Input
                 value={
-                  isEditMode
-                    ? quotation?.projectName || ''
-                    : projectName || `Project #${projectId}`
+                  isEditMode ? quotation?.projectName || '' : projectName || `Project #${projectId}`
                 }
                 disabled
               />
@@ -238,7 +237,7 @@ export function QuotationForm({
       <div>
         <h3 className="mb-4 text-lg font-medium text-white">Products</h3>
         {validationErrors.lineItems && (
-          <Alert variant="danger" className="mb-4">
+          <Alert variant="error" className="mb-4">
             {validationErrors.lineItems}
           </Alert>
         )}
@@ -267,12 +266,7 @@ export function QuotationForm({
           </div>
 
           <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
