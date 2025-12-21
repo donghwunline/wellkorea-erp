@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails, UpdateProjectRequest } from '@/services';
-import { Alert, Card, Icon, PageHeader } from '@/components/ui';
+import { Alert, Card, Icon, PageHeader, Spinner } from '@/components/ui';
 import { ProjectForm, type SelectOption, useProjectActions } from '@/components/features/projects';
 
 // Mock data for customer/user dropdowns (to be replaced with real API)
@@ -89,7 +89,7 @@ export function ProjectEditPage() {
         </PageHeader>
         <Card className="mx-auto max-w-2xl">
           <div className="flex items-center justify-center p-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-steel-600 border-t-copper-500" />
+            <Spinner size="lg" label="Loading project" />
             <span className="ml-3 text-steel-400">Loading project...</span>
           </div>
         </Card>

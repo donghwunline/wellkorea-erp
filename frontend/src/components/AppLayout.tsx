@@ -70,6 +70,21 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+const APPROVAL_NAV_ITEMS: NavItem[] = [
+  {
+    label: 'Pending Approvals',
+    path: '/approvals',
+    icon: 'check-circle',
+    roles: ['ROLE_ADMIN'],
+  },
+  {
+    label: 'Approval Chains',
+    path: '/admin/approval-chains',
+    icon: 'cog',
+    roles: ['ROLE_ADMIN'],
+  },
+];
+
 const ADMIN_NAV_ITEMS: NavItem[] = [
   {
     label: 'User Management',
@@ -112,6 +127,7 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
   };
 
   const visibleNavItems = filterNavItems(NAV_ITEMS);
+  const visibleApprovalItems = filterNavItems(APPROVAL_NAV_ITEMS);
   const visibleAdminItems = filterNavItems(ADMIN_NAV_ITEMS);
 
   const handleLogout = () => {
@@ -174,6 +190,36 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
               </li>
             ))}
           </ul>
+
+          {/* Approval Section */}
+          {visibleApprovalItems.length > 0 && (
+            <>
+              <div className="my-4 border-t border-steel-800/50" />
+              {!sidebarCollapsed && (
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-steel-500">
+                  Approval
+                </p>
+              )}
+              <ul className="space-y-1">
+                {visibleApprovalItems.map(item => (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                        isActive(item.path)
+                          ? 'bg-copper-500/10 text-copper-400'
+                          : 'text-steel-400 hover:bg-steel-800 hover:text-white'
+                      }`}
+                      title={sidebarCollapsed ? item.label : undefined}
+                    >
+                      <Icon name={item.icon} className="h-5 w-5 shrink-0" />
+                      {!sidebarCollapsed && <span>{item.label}</span>}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           {/* Admin Section */}
           {visibleAdminItems.length > 0 && (

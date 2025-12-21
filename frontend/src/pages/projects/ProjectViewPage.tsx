@@ -36,6 +36,7 @@ import {
   Card,
   Icon,
   PageHeader,
+  Spinner,
   Tabs,
   TabList,
   Tab,
@@ -184,7 +185,7 @@ export function ProjectViewPage() {
         </PageHeader>
         <Card className="mx-auto max-w-6xl">
           <div className="flex items-center justify-center p-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-steel-600 border-t-copper-500" />
+            <Spinner size="lg" label="Loading project" />
             <span className="ml-3 text-steel-400">Loading project...</span>
           </div>
         </Card>

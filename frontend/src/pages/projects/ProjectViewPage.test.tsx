@@ -48,12 +48,24 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+// Mock useAuth hook
+vi.mock('@/shared/hooks', () => ({
+  useAuth: () => ({
+    hasAnyRole: vi.fn(() => true),
+  }),
+}));
+
 // Mock useProjectActions hook
 const mockGetProject = vi.fn();
 
 vi.mock('@/components/features/projects', () => ({
   useProjectActions: vi.fn(() => ({
     getProject: mockGetProject,
+    isLoading: false,
+    error: null,
+  })),
+  useProjectSummary: vi.fn(() => ({
+    summary: null,
     isLoading: false,
     error: null,
   })),
@@ -82,7 +94,43 @@ vi.mock('@/components/features/projects', () => ({
     navigationGridProps = props;
     return <div data-testid="navigation-grid">Project ID: {props.projectId as number}</div>;
   }),
+  ProjectKPIStrip: vi.fn(() => <div data-testid="kpi-strip">KPI Strip</div>),
 }));
+
+// Mock quotation feature components
+vi.mock('@/components/features/quotations', () => ({
+  QuotationDetailsPanel: vi.fn(() => <div data-testid="quotation-panel">Quotation Panel</div>),
+}));
+
+// Mock UI tab components to simplify testing
+vi.mock('@/components/ui', async () => {
+  const actual = await vi.importActual('@/components/ui');
+  return {
+    ...actual,
+    Tabs: vi.fn(({ children, defaultTab }: { children: React.ReactNode; defaultTab?: string }) => (
+      <div data-testid="tabs" data-default-tab={defaultTab}>{children}</div>
+    )),
+    TabList: vi.fn(({ children, className }: { children: React.ReactNode; className?: string }) => (
+      <div role="tablist" className={className}>{children}</div>
+    )),
+    Tab: vi.fn(({ children, id }: { children: React.ReactNode; id: string }) => (
+      <button role="tab" id={`tab-${id}`}>{children}</button>
+    )),
+    TabPanel: vi.fn(({ children, id }: { children: React.ReactNode; id: string }) => (
+      <div role="tabpanel" id={`panel-${id}`}>{children}</div>
+    )),
+    TabOverflow: Object.assign(
+      vi.fn(({ children }: { children: React.ReactNode }) => (
+        <div data-testid="tab-overflow">{children}</div>
+      )),
+      {
+        Item: vi.fn(({ children, id }: { children: React.ReactNode; id: string }) => (
+          <div data-testid={`overflow-item-${id}`}>{children}</div>
+        )),
+      }
+    ),
+  };
+});
 
 // Import mocked hook for assertions
 import { useProjectActions } from '@/components/features/projects';
@@ -131,7 +179,7 @@ describe('ProjectViewPage', () => {
       renderProjectViewPage();
 
       expect(screen.getByText('Loading...')).toBeInTheDocument();
-      expect(screen.getByText('Loading project details...')).toBeInTheDocument();
+      expect(screen.getByText('Loading project...')).toBeInTheDocument();
     });
 
     it('should show loading spinner', () => {
@@ -278,13 +326,14 @@ describe('ProjectViewPage', () => {
       });
     });
 
-    it('should render Related Sections heading', async () => {
+    it('should render overview tab with navigation grid', async () => {
       mockGetProject.mockResolvedValue(createMockProject());
 
       renderProjectViewPage();
 
       await waitFor(() => {
-        expect(screen.getByText('Related Sections')).toBeInTheDocument();
+        // Tabs are now used instead of "Related Sections" heading
+        expect(screen.getByRole('tab', { name: /개요/i })).toBeInTheDocument();
       });
     });
 
@@ -430,13 +479,14 @@ describe('ProjectViewPage', () => {
       });
     });
 
-    it('should have accessible section heading for Related Sections', async () => {
+    it('should have accessible tab navigation', async () => {
       mockGetProject.mockResolvedValue(createMockProject());
 
       renderProjectViewPage();
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /related sections/i })).toBeInTheDocument();
+        // Page now uses tabs; verify tablist has correct role
+        expect(screen.getByRole('tablist')).toBeInTheDocument();
       });
     });
   });
