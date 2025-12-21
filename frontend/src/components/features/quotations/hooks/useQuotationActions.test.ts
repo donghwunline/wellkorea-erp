@@ -8,7 +8,7 @@ import { act, renderHook } from '@testing-library/react';
 import { useQuotationActions } from './useQuotationActions';
 import { quotationService } from '@/services';
 import { createMockQuotation } from '@/test/fixtures';
-import type { CreateQuotationRequest, QuotationDetails, UpdateQuotationRequest } from '@/services';
+import type { CommandResult, CreateQuotationRequest, QuotationDetails, UpdateQuotationRequest } from '@/services';
 
 // Mock the quotation service
 vi.mock('@/services', () => ({
@@ -134,10 +134,10 @@ describe('useQuotationActions', () => {
 
   describe('createQuotation', () => {
     it('should set isLoading true during creation', async () => {
-      let resolvePromise: (value: QuotationDetails) => void;
+      let resolvePromise: (value: CommandResult) => void;
       mockCreateQuotation.mockImplementation(
         () =>
-          new Promise<QuotationDetails>(resolve => {
+          new Promise<CommandResult>(resolve => {
             resolvePromise = resolve;
           })
       );
@@ -154,7 +154,7 @@ describe('useQuotationActions', () => {
       expect(result.current.isLoading).toBe(true);
 
       await act(async () => {
-        resolvePromise(createMockQuotation());
+        resolvePromise({ id: 1, message: 'Created' });
       });
 
       expect(result.current.isLoading).toBe(false);
@@ -180,21 +180,21 @@ describe('useQuotationActions', () => {
       expect(mockCreateQuotation).toHaveBeenCalledWith(createData);
     });
 
-    it('should return created quotation', async () => {
-      const mockQuotation = createMockQuotation({ id: 100 });
-      mockCreateQuotation.mockResolvedValue(mockQuotation);
+    it('should return command result with id', async () => {
+      const mockCommandResult: CommandResult = { id: 100, message: 'Quotation created successfully' };
+      mockCreateQuotation.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useQuotationActions());
 
-      let createdQuotation: QuotationDetails | undefined;
+      let commandResult: CommandResult | undefined;
       await act(async () => {
-        createdQuotation = await result.current.createQuotation({
+        commandResult = await result.current.createQuotation({
           projectId: 1,
           lineItems: [],
         });
       });
 
-      expect(createdQuotation).toEqual(mockQuotation);
+      expect(commandResult).toEqual(mockCommandResult);
     });
 
     it('should set error on failure', async () => {
@@ -235,10 +235,10 @@ describe('useQuotationActions', () => {
 
   describe('updateQuotation', () => {
     it('should set isLoading true during update', async () => {
-      let resolvePromise: (value: QuotationDetails) => void;
+      let resolvePromise: (value: CommandResult) => void;
       mockUpdateQuotation.mockImplementation(
         () =>
-          new Promise<QuotationDetails>(resolve => {
+          new Promise<CommandResult>(resolve => {
             resolvePromise = resolve;
           })
       );
@@ -252,7 +252,7 @@ describe('useQuotationActions', () => {
       expect(result.current.isLoading).toBe(true);
 
       await act(async () => {
-        resolvePromise(createMockQuotation());
+        resolvePromise({ id: 1, message: 'Updated' });
       });
 
       expect(result.current.isLoading).toBe(false);
@@ -277,18 +277,18 @@ describe('useQuotationActions', () => {
       expect(mockUpdateQuotation).toHaveBeenCalledWith(42, updateData);
     });
 
-    it('should return updated quotation', async () => {
-      const mockQuotation = createMockQuotation({ validityDays: 60 });
-      mockUpdateQuotation.mockResolvedValue(mockQuotation);
+    it('should return command result with id', async () => {
+      const mockCommandResult: CommandResult = { id: 1, message: 'Quotation updated successfully' };
+      mockUpdateQuotation.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useQuotationActions());
 
-      let updatedQuotation: QuotationDetails | undefined;
+      let commandResult: CommandResult | undefined;
       await act(async () => {
-        updatedQuotation = await result.current.updateQuotation(1, { lineItems: [] });
+        commandResult = await result.current.updateQuotation(1, { lineItems: [] });
       });
 
-      expect(updatedQuotation?.validityDays).toBe(60);
+      expect(commandResult).toEqual(mockCommandResult);
     });
 
     it('should set error on failure', async () => {
@@ -310,10 +310,10 @@ describe('useQuotationActions', () => {
 
   describe('submitForApproval', () => {
     it('should set isLoading true during submission', async () => {
-      let resolvePromise: (value: QuotationDetails) => void;
+      let resolvePromise: (value: CommandResult) => void;
       mockSubmitForApproval.mockImplementation(
         () =>
-          new Promise<QuotationDetails>(resolve => {
+          new Promise<CommandResult>(resolve => {
             resolvePromise = resolve;
           })
       );
@@ -327,15 +327,15 @@ describe('useQuotationActions', () => {
       expect(result.current.isLoading).toBe(true);
 
       await act(async () => {
-        resolvePromise(createMockQuotation({ status: 'PENDING' }));
+        resolvePromise({ id: 1, message: 'Submitted for approval' });
       });
 
       expect(result.current.isLoading).toBe(false);
     });
 
     it('should call quotationService.submitForApproval with id', async () => {
-      const mockQuotation = createMockQuotation({ status: 'PENDING' });
-      mockSubmitForApproval.mockResolvedValue(mockQuotation);
+      const mockCommandResult: CommandResult = { id: 42, message: 'Submitted for approval' };
+      mockSubmitForApproval.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useQuotationActions());
 
@@ -346,18 +346,18 @@ describe('useQuotationActions', () => {
       expect(mockSubmitForApproval).toHaveBeenCalledWith(42);
     });
 
-    it('should return submitted quotation', async () => {
-      const mockQuotation = createMockQuotation({ status: 'PENDING' });
-      mockSubmitForApproval.mockResolvedValue(mockQuotation);
+    it('should return command result', async () => {
+      const mockCommandResult: CommandResult = { id: 1, message: 'Submitted for approval' };
+      mockSubmitForApproval.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useQuotationActions());
 
-      let submittedQuotation: QuotationDetails | undefined;
+      let commandResult: CommandResult | undefined;
       await act(async () => {
-        submittedQuotation = await result.current.submitForApproval(1);
+        commandResult = await result.current.submitForApproval(1);
       });
 
-      expect(submittedQuotation?.status).toBe('PENDING');
+      expect(commandResult).toEqual(mockCommandResult);
     });
 
     it('should set error on failure', async () => {
@@ -379,8 +379,8 @@ describe('useQuotationActions', () => {
 
   describe('createNewVersion', () => {
     it('should call quotationService.createNewVersion with id', async () => {
-      const mockQuotation = createMockQuotation({ version: 2 });
-      mockCreateNewVersion.mockResolvedValue(mockQuotation);
+      const mockCommandResult: CommandResult = { id: 200, message: 'New version created' };
+      mockCreateNewVersion.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useQuotationActions());
 
@@ -391,19 +391,18 @@ describe('useQuotationActions', () => {
       expect(mockCreateNewVersion).toHaveBeenCalledWith(42);
     });
 
-    it('should return new version quotation', async () => {
-      const mockQuotation = createMockQuotation({ id: 200, version: 2 });
-      mockCreateNewVersion.mockResolvedValue(mockQuotation);
+    it('should return command result with new version id', async () => {
+      const mockCommandResult: CommandResult = { id: 200, message: 'New version created' };
+      mockCreateNewVersion.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useQuotationActions());
 
-      let newVersion: QuotationDetails | undefined;
+      let commandResult: CommandResult | undefined;
       await act(async () => {
-        newVersion = await result.current.createNewVersion(100);
+        commandResult = await result.current.createNewVersion(100);
       });
 
-      expect(newVersion?.id).toBe(200);
-      expect(newVersion?.version).toBe(2);
+      expect(commandResult).toEqual(mockCommandResult);
     });
 
     it('should set error on failure', async () => {

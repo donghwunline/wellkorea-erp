@@ -17,10 +17,10 @@ vi.mock('@/services', () => ({
 }));
 
 // Helper to create mock project
-function createMockProject(overrides = {}) {
+function createMockProject(overrides: Record<string, unknown> = {}) {
   return {
     id: 1,
-    name: 'Test Project',
+    projectName: 'Test Project',
     jobCode: 'WK2-2025-001-0115',
     customerId: 1,
     ...overrides,
@@ -72,7 +72,7 @@ describe('useProjectSearch', () => {
     it('should return combobox options from projects', async () => {
       const mockProject = createMockProject({
         id: 10,
-        name: 'My Project',
+        projectName: 'My Project',
         jobCode: 'WK2-2025-042-0120',
       });
       mockGetProjects.mockResolvedValue({
@@ -99,7 +99,7 @@ describe('useProjectSearch', () => {
     it('should return undefined description if jobCode is null', async () => {
       const mockProject = createMockProject({
         id: 10,
-        name: 'My Project',
+        projectName: 'My Project',
         jobCode: null,
       });
       mockGetProjects.mockResolvedValue({
@@ -125,9 +125,9 @@ describe('useProjectSearch', () => {
 
     it('should return multiple options for multiple projects', async () => {
       const mockProjects = [
-        createMockProject({ id: 1, name: 'Project One', jobCode: 'JC-001' }),
-        createMockProject({ id: 2, name: 'Project Two', jobCode: 'JC-002' }),
-        createMockProject({ id: 3, name: 'Project Three', jobCode: 'JC-003' }),
+        createMockProject({ id: 1, projectName: 'Project One', jobCode: 'JC-001' }),
+        createMockProject({ id: 2, projectName: 'Project Two', jobCode: 'JC-002' }),
+        createMockProject({ id: 3, projectName: 'Project Three', jobCode: 'JC-003' }),
       ];
       mockGetProjects.mockResolvedValue({
         data: mockProjects,
@@ -190,7 +190,7 @@ describe('useProjectSearch', () => {
     it('should return project from service', async () => {
       const mockProject = createMockProject({
         id: 42,
-        name: 'Fetched Project',
+        projectName: 'Fetched Project',
       });
       mockGetProject.mockResolvedValue(mockProject);
 

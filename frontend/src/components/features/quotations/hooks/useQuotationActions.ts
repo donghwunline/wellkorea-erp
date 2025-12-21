@@ -15,7 +15,6 @@ import type {
   QuotationDetails,
   UpdateQuotationRequest,
 } from '@/services';
-import { getErrorMessage } from '@/shared/utils';
 
 export interface UseQuotationActionsReturn {
   isLoading: boolean;
@@ -49,7 +48,7 @@ export function useQuotationActions(): UseQuotationActionsReturn {
         const quotation = await quotationService.getQuotation(id);
         return quotation;
       } catch (err) {
-        const message = getErrorMessage(err);
+        const message = err instanceof Error ? err.message : 'An error occurred';
         setError(message);
         throw err;
       } finally {
@@ -66,7 +65,7 @@ export function useQuotationActions(): UseQuotationActionsReturn {
       try {
         return await quotationService.createQuotation(data);
       } catch (err) {
-        const message = getErrorMessage(err);
+        const message = err instanceof Error ? err.message : 'An error occurred';
         setError(message);
         throw err;
       } finally {
@@ -83,7 +82,7 @@ export function useQuotationActions(): UseQuotationActionsReturn {
       try {
         return await quotationService.updateQuotation(id, data);
       } catch (err) {
-        const message = getErrorMessage(err);
+        const message = err instanceof Error ? err.message : 'An error occurred';
         setError(message);
         throw err;
       } finally {
@@ -99,7 +98,7 @@ export function useQuotationActions(): UseQuotationActionsReturn {
     try {
       return await quotationService.submitForApproval(id);
     } catch (err) {
-      const message = getErrorMessage(err);
+      const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
       throw err;
     } finally {
@@ -113,7 +112,7 @@ export function useQuotationActions(): UseQuotationActionsReturn {
     try {
       return await quotationService.createNewVersion(id);
     } catch (err) {
-      const message = getErrorMessage(err);
+      const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
       throw err;
     } finally {
@@ -127,7 +126,7 @@ export function useQuotationActions(): UseQuotationActionsReturn {
     try {
       await quotationService.downloadPdf(id, filename);
     } catch (err) {
-      const message = getErrorMessage(err);
+      const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
       throw err;
     } finally {
@@ -141,7 +140,7 @@ export function useQuotationActions(): UseQuotationActionsReturn {
     try {
       await quotationService.sendRevisionNotification(id);
     } catch (err) {
-      const message = getErrorMessage(err);
+      const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
       throw err;
     } finally {

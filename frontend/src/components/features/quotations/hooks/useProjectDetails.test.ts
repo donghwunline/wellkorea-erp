@@ -16,10 +16,10 @@ vi.mock('@/services', () => ({
 }));
 
 // Helper to create mock project
-function createMockProject(overrides = {}) {
+function createMockProject(overrides: Record<string, unknown> = {}) {
   return {
     id: 1,
-    name: 'Test Project',
+    projectName: 'Test Project',
     jobCode: 'WK2-2025-001-0115',
     customerId: 1,
     ...overrides,
@@ -95,8 +95,8 @@ describe('useProjectDetails', () => {
     });
 
     it('should refetch when projectId changes', async () => {
-      const mockProject1 = createMockProject({ id: 1, name: 'Project 1' });
-      const mockProject2 = createMockProject({ id: 2, name: 'Project 2' });
+      const mockProject1 = createMockProject({ id: 1, projectName: 'Project 1' });
+      const mockProject2 = createMockProject({ id: 2, projectName: 'Project 2' });
 
       mockGetProject.mockResolvedValueOnce(mockProject1);
       mockGetProject.mockResolvedValueOnce(mockProject2);
@@ -107,13 +107,13 @@ describe('useProjectDetails', () => {
       );
 
       await waitFor(() => {
-        expect(result.current.project?.name).toBe('Project 1');
+        expect(result.current.project?.projectName).toBe('Project 1');
       });
 
       rerender({ projectId: 2 });
 
       await waitFor(() => {
-        expect(result.current.project?.name).toBe('Project 2');
+        expect(result.current.project?.projectName).toBe('Project 2');
       });
 
       expect(mockGetProject).toHaveBeenCalledTimes(2);
@@ -210,8 +210,8 @@ describe('useProjectDetails', () => {
     });
 
     it('should cancel previous request when projectId changes', async () => {
-      const mockProject1 = createMockProject({ id: 1, name: 'Project 1' });
-      const mockProject2 = createMockProject({ id: 2, name: 'Project 2' });
+      const mockProject1 = createMockProject({ id: 1, projectName: 'Project 1' });
+      const mockProject2 = createMockProject({ id: 2, projectName: 'Project 2' });
 
       let resolve1: (value: unknown) => void;
       let resolve2: (value: unknown) => void;
@@ -244,7 +244,7 @@ describe('useProjectDetails', () => {
       resolve2!(mockProject2);
 
       await waitFor(() => {
-        expect(result.current.project?.name).toBe('Project 2');
+        expect(result.current.project?.projectName).toBe('Project 2');
       });
 
       // Resolve first request after second
@@ -253,7 +253,7 @@ describe('useProjectDetails', () => {
       // Wait a bit and check that first result didn't override second
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      expect(result.current.project?.name).toBe('Project 2');
+      expect(result.current.project?.projectName).toBe('Project 2');
     });
   });
 });

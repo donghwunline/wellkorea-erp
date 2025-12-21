@@ -25,7 +25,7 @@ export function useProjectSearch(): UseProjectSearchReturn {
     });
     return result.data.map(project => ({
       id: project.id,
-      label: project.name,
+      label: project.projectName,
       description: project.jobCode || undefined,
     }));
   }, []);
