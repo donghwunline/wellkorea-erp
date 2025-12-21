@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { Button, Icon, Modal } from '@/components/ui';
+import { Button, Icon, Modal, ModalActions } from '@/components/ui';
 
 export interface JobCodeSuccessModalProps {
   /** Whether modal is open */
@@ -87,7 +87,7 @@ export function JobCodeSuccessModal({
         </p>
 
         {/* Actions */}
-        <div className="flex justify-center gap-3">
+        <ModalActions align="center">
           <Button variant="secondary" onClick={onClose}>
             Back to List
           </Button>
@@ -95,7 +95,7 @@ export function JobCodeSuccessModal({
             <Icon name="eye" className="mr-2 h-4 w-4" />
             View Project
           </Button>
-        </div>
+        </ModalActions>
       </div>
     </Modal>
   );

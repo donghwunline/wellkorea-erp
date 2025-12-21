@@ -22,8 +22,10 @@
  */
 
 import { useState } from 'react';
+import { Alert } from '../feedback/Alert';
 import { Button } from '../primitives/Button';
 import { Modal } from './Modal';
+import { ModalActions } from './ModalActions';
 import { cn } from '@/shared/utils';
 
 export interface ConfirmationModalProps {
@@ -133,12 +135,12 @@ export function ConfirmationModal({
       <p className="mb-6 text-sm text-steel-400">{message}</p>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <Alert variant="error" className="mb-4">
           {error}
-        </div>
+        </Alert>
       )}
 
-      <div className="flex justify-end gap-3">
+      <ModalActions>
         <Button type="button" variant="secondary" onClick={handleClose} disabled={isLoading}>
           {cancelLabel}
         </Button>
@@ -155,7 +157,7 @@ export function ConfirmationModal({
         >
           {confirmLabel}
         </Button>
-      </div>
+      </ModalActions>
     </Modal>
   );
 }

@@ -12,6 +12,21 @@ import { Combobox, type ComboboxOption } from './Combobox';
 // Mock scrollIntoView since JSDOM doesn't implement it
 Element.prototype.scrollIntoView = vi.fn();
 
+// Mock getBoundingClientRect for portal positioning
+const mockRect = {
+  bottom: 100,
+  height: 40,
+  left: 0,
+  right: 200,
+  top: 60,
+  width: 200,
+  x: 0,
+  y: 60,
+  toJSON: () => ({}),
+};
+
+Element.prototype.getBoundingClientRect = vi.fn(() => mockRect);
+
 // Mock options for testing
 const mockOptions: ComboboxOption[] = [
   { id: 1, label: 'Samsung Electronics' },
@@ -242,7 +257,7 @@ describe('Combobox', () => {
   describe('filtering', () => {
     it('should filter options as user types', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
@@ -251,10 +266,11 @@ describe('Combobox', () => {
       await user.type(input, 'LG');
 
       // Check that only LG Display is in the list (text is split by <mark>)
-      const listItems = container.querySelectorAll('li');
+      // Portal renders to document.body
+      const listItems = document.body.querySelectorAll('li');
       expect(listItems).toHaveLength(1);
       expect(listItems[0].textContent).toContain('LG Display');
-      expect(container.textContent).not.toContain('Samsung Electronics');
+      expect(screen.queryByText('Samsung Electronics')).not.toBeInTheDocument();
     });
 
     it('should show no results message when no matches', async () => {
@@ -277,7 +293,7 @@ describe('Combobox', () => {
 
     it('should filter by description if provided', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
@@ -286,7 +302,8 @@ describe('Combobox', () => {
       await user.type(input, 'Steel');
 
       // POSCO has "Steel manufacturer" as description
-      const listItems = container.querySelectorAll('li');
+      // Portal renders to document.body
+      const listItems = document.body.querySelectorAll('li');
       expect(listItems).toHaveLength(1);
       expect(listItems[0].textContent).toContain('POSCO');
       expect(listItems[0].textContent).toContain('Steel manufacturer');
@@ -320,7 +337,7 @@ describe('Combobox', () => {
 
     it('should navigate down with ArrowDown', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
@@ -328,19 +345,19 @@ describe('Combobox', () => {
       await user.click(input);
 
       // First option should be highlighted by default
-      let highlighted = container.querySelector('[data-highlighted="true"]');
+      let highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('Samsung Electronics');
 
       // Navigate down
       await user.keyboard('{ArrowDown}');
 
-      highlighted = container.querySelector('[data-highlighted="true"]');
+      highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('LG Display');
     });
 
     it('should navigate up with ArrowUp', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
@@ -354,7 +371,7 @@ describe('Combobox', () => {
       // Navigate back up
       await user.keyboard('{ArrowUp}');
 
-      const highlighted = container.querySelector('[data-highlighted="true"]');
+      const highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('LG Display');
     });
 
@@ -375,7 +392,7 @@ describe('Combobox', () => {
 
     it('should not navigate past last option', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
@@ -387,13 +404,13 @@ describe('Combobox', () => {
         await user.keyboard('{ArrowDown}');
       }
 
-      const highlighted = container.querySelector('[data-highlighted="true"]');
+      const highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('POSCO');
     });
 
     it('should not navigate before first option', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
@@ -403,7 +420,7 @@ describe('Combobox', () => {
       // Try to navigate up from first option
       await user.keyboard('{ArrowUp}');
 
-      const highlighted = container.querySelector('[data-highlighted="true"]');
+      const highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('Samsung Electronics');
     });
   });
@@ -604,14 +621,14 @@ describe('Combobox', () => {
 
     it('should have list element for dropdown', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
       await user.click(screen.getByRole('textbox'));
 
-      // Dropdown uses ul element
-      const list = container.querySelector('ul');
+      // Dropdown uses ul element (portal renders to document.body)
+      const list = document.body.querySelector('ul');
       expect(list).toBeInTheDocument();
     });
   });

@@ -10,6 +10,7 @@
  * - Optional "Create new" action
  * - Keyboard navigation (arrow keys, enter, escape)
  * - Debounced search for async mode
+ * - Portal-based dropdown (escapes backdrop-blur and stacking contexts)
  * - Steel/Copper theme with elegant animations
  */
 
@@ -17,12 +18,15 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type KeyboardEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/shared/utils';
+import { Spinner } from '../primitives/Spinner';
 
 // ============================================================================
 // Types
@@ -132,10 +136,12 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [asyncOptions, setAsyncOptions] = useState<ComboboxOption[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLUListElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const debouncedQuery = useDebounce(query, loadOptions ? debounceMs : 0);
 
@@ -172,60 +178,77 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
       return found || null;
     }, [value, staticOptions, asyncOptions]);
 
-    // Load async options - using ref to track loading state to avoid setState in effect
-    const loadingRef = useRef(false);
+    // Load async options
     const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
-      if (!loadOptions || !isOpen) {
-        return;
-      }
+      if (!loadOptions || !isOpen) return;
 
       // Cancel previous request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
+      abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      // Use startTransition or schedule microtask to avoid sync setState
-      const timeoutId = setTimeout(() => {
+      // Start async load - setState in Promise callback avoids sync cascading renders
+      Promise.resolve().then(() => {
         if (controller.signal.aborted) return;
-
-        loadingRef.current = true;
         setIsLoading(true);
+      });
 
-        loadOptions(debouncedQuery)
-          .then(opts => {
-            if (!controller.signal.aborted) {
-              setAsyncOptions(opts);
-              setHighlightedIndex(0);
-            }
-          })
-          .catch(() => {
-            if (!controller.signal.aborted) {
-              setAsyncOptions([]);
-            }
-          })
-          .finally(() => {
-            if (!controller.signal.aborted) {
-              loadingRef.current = false;
-              setIsLoading(false);
-            }
-          });
-      }, 0);
+      loadOptions(debouncedQuery)
+        .then(opts => {
+          if (!controller.signal.aborted) {
+            setAsyncOptions(opts);
+            setHighlightedIndex(0);
+          }
+        })
+        .catch(() => {
+          if (!controller.signal.aborted) {
+            setAsyncOptions([]);
+          }
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) {
+            setIsLoading(false);
+          }
+        });
+
+      return () => controller.abort();
+    }, [loadOptions, debouncedQuery, isOpen]);
+
+    // Calculate dropdown position when open (portal needs absolute coordinates)
+    useLayoutEffect(() => {
+      if (!isOpen || !containerRef.current) return;
+
+      const updatePosition = () => {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY + 4,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+        });
+      };
+
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
 
       return () => {
-        controller.abort();
-        clearTimeout(timeoutId);
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+        setDropdownPosition(null);
       };
-    }, [loadOptions, debouncedQuery, isOpen]);
+    }, [isOpen]);
 
     // Close on outside click
     useEffect(() => {
       const handleClickOutside = (e: MouseEvent) => {
-        if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        const target = e.target as Node;
+        const isInsideContainer = containerRef.current?.contains(target);
+        const isInsideDropdown = dropdownRef.current?.contains(target);
+
+        if (!isInsideContainer && !isInsideDropdown) {
           setIsOpen(false);
           setQuery('');
         }
@@ -400,21 +423,7 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
           {/* Dropdown indicator */}
           <div className="mr-3 text-steel-400">
             {isLoading ? (
-              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
+              <Spinner size="sm" variant="steel" label="Loading options" />
             ) : (
               <svg
                 className={cn('h-4 w-4 transition-transform', isOpen && 'rotate-180')}
@@ -438,11 +447,18 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
           <span className="mt-1 block text-xs text-steel-500">{helpText}</span>
         )}
 
-        {/* Dropdown */}
-        {isOpen && (
+        {/* Dropdown - rendered as portal to escape backdrop-blur */}
+        {isOpen && dropdownPosition && createPortal(
           <div
+            ref={dropdownRef}
+            style={{
+              position: 'absolute',
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+            }}
             className={cn(
-              'absolute z-50 mt-1 max-h-64 w-full overflow-hidden rounded-lg border border-steel-700/50',
+              'z-[9999] max-h-64 overflow-hidden rounded-lg border border-steel-700/50',
               'bg-steel-800 shadow-xl shadow-black/20',
               'animate-in fade-in-0 zoom-in-95 duration-150'
             )}
@@ -450,21 +466,7 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
             <ul ref={listRef} className="max-h-56 overflow-y-auto py-1">
               {isLoading && (
                 <li className="flex items-center gap-2 px-3 py-2 text-sm text-steel-400">
-                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
+                  <Spinner size="sm" variant="steel" label="Loading" />
                   {loadingText}
                 </li>
               )}
@@ -550,7 +552,8 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
                 </li>
               )}
             </ul>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     );

@@ -6,7 +6,7 @@
  */
 
 import { useAuth } from '@/shared/hooks';
-import { Alert, Button, Card, Icon } from '@/components/ui';
+import { Alert, Button, Card, Icon, Spinner } from '@/components/ui';
 import type { RoleName } from '@/shared/types';
 import type { ProjectSection } from '@/services';
 import { useProjectSummary } from './hooks';
@@ -52,7 +52,7 @@ export function ProjectRelatedNavigationGrid({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-steel-600 border-t-copper-500" />
+        <Spinner size="lg" label="Loading project summary" />
         <span className="ml-3 text-steel-400">Loading project summary...</span>
       </div>
     );
