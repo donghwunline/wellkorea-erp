@@ -10,13 +10,12 @@
  *
  * Features:
  * - Edit quotation details and line items
- * - Optionally send revision notification email (T093a)
  * - Version management
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Card, Icon, Modal, PageHeader, Spinner } from '@/components/ui';
+import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/components/ui';
 import {
   QuotationForm,
   useQuotationActions,
@@ -32,8 +31,6 @@ export function QuotationEditPage() {
   const [quotation, setQuotation] = useState<QuotationDetails | null>(null);
   const [isLoadingQuotation, setIsLoadingQuotation] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [sendEmailOnSave, setSendEmailOnSave] = useState(false);
 
   // Hooks
   const {
@@ -41,7 +38,6 @@ export function QuotationEditPage() {
     error,
     getQuotation,
     updateQuotation,
-    sendRevisionNotification,
   } = useQuotationActions();
 
   // Load quotation on mount
@@ -80,31 +76,11 @@ export function QuotationEditPage() {
 
     try {
       await updateQuotation(quotationId, data);
-
-      // Show email modal if this is a new version (version > 1)
-      if (quotation && quotation.version > 1) {
-        setShowEmailModal(true);
-      } else {
-        // Navigate back
-        navigateBack();
-      }
+      navigateBack();
     } catch {
       // Error is handled by the hook
     }
-  }, [quotationId, quotation, updateQuotation]);
-
-  // Handle email modal confirmation
-  const handleEmailModalConfirm = useCallback(async () => {
-    if (sendEmailOnSave && quotationId) {
-      try {
-        await sendRevisionNotification(quotationId);
-      } catch {
-        // Log error but continue - email failure shouldn't block navigation
-        console.error('Failed to send revision notification');
-      }
-    }
-    navigateBack();
-  }, [sendEmailOnSave, quotationId, sendRevisionNotification]);
+  }, [quotationId, updateQuotation]);
 
   // Navigate back to appropriate page
   const navigateBack = useCallback(() => {
@@ -194,49 +170,6 @@ export function QuotationEditPage() {
           onCancel={handleCancel}
         />
       )}
-
-      {/* Email Notification Modal (T093a) */}
-      <Modal
-        isOpen={showEmailModal}
-        onClose={handleEmailModalConfirm}
-        title="Send Revision Notification"
-        size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-steel-300">
-            Quotation updated successfully. Would you like to send a revision notification email to the customer?
-          </p>
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={sendEmailOnSave}
-              onChange={e => setSendEmailOnSave(e.target.checked)}
-              className="h-4 w-4 rounded border-steel-600 bg-steel-800 text-copper-500 focus:ring-copper-500/20"
-            />
-            <span className="text-white">Send email notification to customer</span>
-          </label>
-
-          <p className="text-xs text-steel-500">
-            This will notify the customer that a new version of the quotation is available.
-          </p>
-
-          <div className="flex justify-end gap-3 border-t border-steel-700/50 pt-4">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setSendEmailOnSave(false);
-                handleEmailModalConfirm();
-              }}
-            >
-              Skip
-            </Button>
-            <Button onClick={handleEmailModalConfirm}>
-              {sendEmailOnSave ? 'Send & Continue' : 'Continue'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
