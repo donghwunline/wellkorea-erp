@@ -19,7 +19,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { projectSummaryService } from '@/services/projects';
 import type { ProjectKPI } from '@/services/projects';
 import { Icon, StatCard } from '@/components/ui';
-import { cn } from '@/shared/utils';
+import { cn, formatCurrency } from '@/shared/utils';
 
 export interface ProjectKPIStripProps {
   /** Project ID to fetch KPIs for */
@@ -28,17 +28,6 @@ export interface ProjectKPIStripProps {
   refreshTrigger?: number;
   /** Additional className */
   className?: string;
-}
-
-/**
- * Format currency in KRW.
- */
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency: 'KRW',
-    maximumFractionDigits: 0,
-  }).format(value);
 }
 
 /**

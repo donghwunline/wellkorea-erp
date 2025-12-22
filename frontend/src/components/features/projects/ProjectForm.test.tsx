@@ -6,24 +6,45 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { ProjectForm, type SelectOption } from './ProjectForm';
+import { ProjectForm } from './ProjectForm';
 import type { ProjectDetails } from '@/services';
 
 // Mock scrollIntoView since JSDOM doesn't implement it
 Element.prototype.scrollIntoView = vi.fn();
 
-// Mock customers and users
-const mockCustomers: SelectOption[] = [
-  { id: 1, name: 'Samsung Electronics' },
-  { id: 2, name: 'LG Display' },
-  { id: 3, name: 'SK Hynix' },
-];
-
-const mockUsers: SelectOption[] = [
-  { id: 1, name: 'Kim Minjun (Admin)' },
-  { id: 2, name: 'Lee Jiwon (Sales)' },
-  { id: 3, name: 'Park Seohyun (Finance)' },
-];
+// Mock the services used by the Combobox components
+vi.mock('@/services', async importOriginal => {
+  const original = await importOriginal<typeof import('@/services')>();
+  return {
+    ...original,
+    customerService: {
+      getCustomers: vi.fn().mockResolvedValue({
+        data: [
+          { id: 1, name: 'Samsung Electronics', isActive: true, createdAt: '2025-01-01' },
+          { id: 2, name: 'LG Display', isActive: true, createdAt: '2025-01-01' },
+          { id: 3, name: 'SK Hynix', isActive: true, createdAt: '2025-01-01' },
+        ],
+        page: 0,
+        size: 20,
+        totalElements: 3,
+        totalPages: 1,
+      }),
+    },
+    userService: {
+      getUsers: vi.fn().mockResolvedValue({
+        data: [
+          { id: 1, username: 'minjun', fullName: 'Kim Minjun (Admin)', email: 'minjun@test.com', roles: [] },
+          { id: 2, username: 'jiwon', fullName: 'Lee Jiwon (Sales)', email: 'jiwon@test.com', roles: [] },
+          { id: 3, username: 'seohyun', fullName: 'Park Seohyun (Finance)', email: 'seohyun@test.com', roles: [] },
+        ],
+        page: 0,
+        size: 20,
+        totalElements: 3,
+        totalPages: 1,
+      }),
+    },
+  };
+});
 
 // Helper to create mock project for edit mode
 function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
@@ -46,8 +67,6 @@ function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDeta
 describe('ProjectForm', () => {
   const defaultProps = {
     mode: 'create' as const,
-    customers: mockCustomers,
-    users: mockUsers,
     onSubmit: vi.fn(),
     onCancel: vi.fn(),
     isSubmitting: false,

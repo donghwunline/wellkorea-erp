@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, Icon } from '@/components/ui';
 import type { IconName } from '@/components/ui/primitives/Icon';
 import type { ProjectSection, ProjectSectionSummary } from '@/services';
-import { cn } from '@/shared/utils';
+import { cn, formatCurrency } from '@/shared/utils';
 
 export interface ProjectSummaryCardProps {
   /** Project ID for navigation */
@@ -31,17 +31,6 @@ const SECTION_ICONS: Record<ProjectSection, IconName> = {
   documents: 'folder',
   finance: 'banknotes',
 };
-
-/**
- * Format currency in KRW.
- */
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency: 'KRW',
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 /**
  * Format relative time (e.g., "2h ago", "3d ago").

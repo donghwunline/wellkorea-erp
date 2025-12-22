@@ -344,28 +344,6 @@ describe('ProjectEditPage', () => {
       });
     });
 
-    it('should pass customers to form', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectEditPage();
-
-      await waitFor(() => {
-        expect(formProps.customers).toBeDefined();
-        expect(Array.isArray(formProps.customers)).toBe(true);
-      });
-    });
-
-    it('should pass users to form', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectEditPage();
-
-      await waitFor(() => {
-        expect(formProps.users).toBeDefined();
-        expect(Array.isArray(formProps.users)).toBe(true);
-      });
-    });
-
     it('should pass isSubmitting from hook', async () => {
       mockGetProject.mockResolvedValue(createMockProject());
 
@@ -607,31 +585,4 @@ describe('ProjectEditPage', () => {
     });
   });
 
-  describe('mock data', () => {
-    it('should provide mock customers', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectEditPage();
-
-      await waitFor(() => {
-        const customers = formProps.customers as Array<{ id: number; name: string }>;
-        expect(customers.length).toBeGreaterThan(0);
-        expect(customers[0]).toHaveProperty('id');
-        expect(customers[0]).toHaveProperty('name');
-      });
-    });
-
-    it('should provide mock users', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectEditPage();
-
-      await waitFor(() => {
-        const users = formProps.users as Array<{ id: number; name: string }>;
-        expect(users.length).toBeGreaterThan(0);
-        expect(users[0]).toHaveProperty('id');
-        expect(users[0]).toHaveProperty('name');
-      });
-    });
-  });
 });

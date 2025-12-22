@@ -185,20 +185,6 @@ describe('ProjectCreatePage', () => {
       expect(screen.getByTestId('form-mode')).toHaveTextContent('create');
     });
 
-    it('should pass customers to form', () => {
-      renderProjectCreatePage();
-
-      expect(formProps.customers).toBeDefined();
-      expect(Array.isArray(formProps.customers)).toBe(true);
-    });
-
-    it('should pass users to form', () => {
-      renderProjectCreatePage();
-
-      expect(formProps.users).toBeDefined();
-      expect(Array.isArray(formProps.users)).toBe(true);
-    });
-
     it('should pass isSubmitting from hook', () => {
       renderProjectCreatePage();
 
@@ -392,26 +378,6 @@ describe('ProjectCreatePage', () => {
 
       const card = container.querySelector('.rounded-xl');
       expect(card).toBeInTheDocument();
-    });
-  });
-
-  describe('mock data', () => {
-    it('should provide mock customers', () => {
-      renderProjectCreatePage();
-
-      const customers = formProps.customers as Array<{ id: number; name: string }>;
-      expect(customers.length).toBeGreaterThan(0);
-      expect(customers[0]).toHaveProperty('id');
-      expect(customers[0]).toHaveProperty('name');
-    });
-
-    it('should provide mock users', () => {
-      renderProjectCreatePage();
-
-      const users = formProps.users as Array<{ id: number; name: string }>;
-      expect(users.length).toBeGreaterThan(0);
-      expect(users[0]).toHaveProperty('id');
-      expect(users[0]).toHaveProperty('name');
     });
   });
 });

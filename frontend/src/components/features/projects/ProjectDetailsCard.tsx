@@ -8,6 +8,7 @@
 import type { ProjectDetails, ProjectStatus } from '@/services';
 import { PROJECT_STATUS_LABELS } from '@/services';
 import { Badge, type BadgeVariant, Card, Icon, IconButton } from '@/components/ui';
+import { formatDate, formatDateTime } from '@/shared/utils';
 
 // Status badge variant mapping
 const STATUS_BADGE_VARIANTS: Record<ProjectStatus, BadgeVariant> = {
@@ -40,25 +41,6 @@ export function ProjectDetailsCard({
   createdByName,
   onEdit,
 }: Readonly<ProjectDetailsCardProps>) {
-  // Format date utility
-  const formatDate = (dateStr: string | null, includeTime = false) => {
-    if (!dateStr) return '-';
-    const options: Intl.DateTimeFormatOptions = includeTime
-      ? {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        }
-      : {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-        };
-    return new Date(dateStr).toLocaleDateString('ko-KR', options);
-  };
-
   return (
     <Card>
       <div className="relative p-6">
@@ -150,7 +132,7 @@ export function ProjectDetailsCard({
               <Icon name="clock" className="h-4 w-4" />
               Created At
             </div>
-            <p className="text-white">{formatDate(project.createdAt, true)}</p>
+            <p className="text-white">{formatDateTime(project.createdAt)}</p>
           </div>
 
           {/* Last Updated */}
@@ -159,7 +141,7 @@ export function ProjectDetailsCard({
               <Icon name="clock" className="h-4 w-4" />
               Last Updated
             </div>
-            <p className="text-white">{formatDate(project.updatedAt, true)}</p>
+            <p className="text-white">{formatDateTime(project.updatedAt)}</p>
           </div>
         </div>
       </div>

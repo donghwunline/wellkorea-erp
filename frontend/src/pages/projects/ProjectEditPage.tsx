@@ -9,23 +9,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails, UpdateProjectRequest } from '@/services';
 import { Alert, Card, Icon, PageHeader, Spinner } from '@/components/ui';
-import { ProjectForm, type SelectOption, useProjectActions } from '@/components/features/projects';
-
-// Mock data for customer/user dropdowns (to be replaced with real API)
-const MOCK_CUSTOMERS: SelectOption[] = [
-  { id: 1, name: 'Samsung Electronics' },
-  { id: 2, name: 'LG Display' },
-  { id: 3, name: 'SK Hynix' },
-  { id: 4, name: 'Hyundai Motor' },
-  { id: 5, name: 'POSCO' },
-];
-
-const MOCK_USERS: SelectOption[] = [
-  { id: 1, name: 'Kim Minjun (Admin)' },
-  { id: 2, name: 'Lee Jiwon (Sales)' },
-  { id: 3, name: 'Park Seohyun (Finance)' },
-  { id: 4, name: 'Choi Daehyun (Production)' },
-];
+import { ProjectForm, useProjectActions } from '@/components/features/projects';
 
 export function ProjectEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -169,8 +153,6 @@ export function ProjectEditPage() {
           <ProjectForm
             mode="edit"
             initialData={project}
-            customers={MOCK_CUSTOMERS}
-            users={MOCK_USERS}
             onSubmit={handleSubmit}
             onCancel={handleCancel}
             isSubmitting={isLoading}

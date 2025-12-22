@@ -2,27 +2,19 @@
  * Project Form Component
  *
  * Reusable form for creating and editing projects.
- * Receives customer/user options as props (supports mock data).
+ * Uses CustomerCombobox and UserCombobox for async data loading.
  */
 
-import { type FormEvent, useMemo, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
-import { Button, Combobox, type ComboboxOption, DatePicker, ErrorAlert, FormField } from '@/components/ui';
-
-export interface SelectOption {
-  id: number;
-  name: string;
-}
+import { Button, DatePicker, ErrorAlert, FormField } from '@/components/ui';
+import { CustomerCombobox, UserCombobox } from '@/components/features/shared/selectors';
 
 export interface ProjectFormProps {
   /** Form mode: 'create' or 'edit' */
   mode: 'create' | 'edit';
   /** Initial data for edit mode */
   initialData?: ProjectDetails | null;
-  /** Available customers for dropdown */
-  customers: SelectOption[];
-  /** Available users for internal owner dropdown */
-  users: SelectOption[];
   /** Called when form is submitted */
   onSubmit: (data: CreateProjectRequest | UpdateProjectRequest) => Promise<void>;
   /** Called when cancel is clicked */
@@ -41,8 +33,6 @@ export interface ProjectFormProps {
 export function ProjectForm({
   mode,
   initialData,
-  customers,
-  users,
   onSubmit,
   onCancel,
   isSubmitting,
@@ -68,17 +58,6 @@ export function ProjectForm({
       internalOwnerId: null as number | null,
     };
   });
-
-  // Convert SelectOption to ComboboxOption for use with Combobox
-  const customerOptions: ComboboxOption[] = useMemo(
-    () => customers.map(c => ({ id: c.id, label: c.name })),
-    [customers]
-  );
-
-  const userOptions: ComboboxOption[] = useMemo(
-    () => users.map(u => ({ id: u.id, label: u.name })),
-    [users]
-  );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -126,11 +105,10 @@ export function ProjectForm({
       {error && <ErrorAlert message={error} onDismiss={onDismissError} />}
 
       {/* Customer Selection */}
-      <Combobox
+      <CustomerCombobox
         label="Customer"
         value={formData.customerId}
-        onChange={(value) => setFormData(prev => ({ ...prev, customerId: value as number | null }))}
-        options={customerOptions}
+        onChange={value => setFormData(prev => ({ ...prev, customerId: value }))}
         placeholder="Search or select a customer..."
         required
         disabled={isSubmitting || mode === 'edit'}
@@ -173,11 +151,10 @@ export function ProjectForm({
       />
 
       {/* Internal Owner Selection */}
-      <Combobox
+      <UserCombobox
         label="Internal Owner"
         value={formData.internalOwnerId}
-        onChange={(value) => setFormData(prev => ({ ...prev, internalOwnerId: value as number | null }))}
-        options={userOptions}
+        onChange={value => setFormData(prev => ({ ...prev, internalOwnerId: value }))}
         placeholder="Search or select internal owner..."
         required
         disabled={isSubmitting || mode === 'edit'}

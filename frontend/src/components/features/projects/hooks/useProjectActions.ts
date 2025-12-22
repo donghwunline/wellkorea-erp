@@ -5,75 +5,46 @@
  * Following architecture rule: pages should not import services directly.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useServiceActions } from '@/shared/hooks';
 import { projectService } from '@/services';
-import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
+import type { CreateProjectRequest, UpdateProjectRequest } from '@/services';
 
 /**
  * Hook for project CRUD actions.
  */
 export function useProjectActions() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { isLoading, error, clearError, wrapAction } = useServiceActions();
 
-  const createProject = useCallback(async (data: CreateProjectRequest): Promise<ProjectDetails> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const project = await projectService.createProject(data);
-      return project;
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to create project';
-      setError(errorMsg);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const updateProject = useCallback(
-    async (id: number, data: UpdateProjectRequest): Promise<ProjectDetails> => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const project = await projectService.updateProject(id, data);
-        return project;
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'Failed to update project';
-        setError(errorMsg);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
+  const createProject = useCallback(
+    (data: CreateProjectRequest) =>
+      wrapAction(projectService.createProject, 'Failed to create project')(data),
+    [wrapAction]
   );
 
-  const getProject = useCallback(async (id: number): Promise<ProjectDetails> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const project = await projectService.getProject(id);
-      return project;
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to load project';
-      setError(errorMsg);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const updateProject = useCallback(
+    (id: number, data: UpdateProjectRequest) =>
+      wrapAction(
+        (i: number, d: UpdateProjectRequest) => projectService.updateProject(i, d),
+        'Failed to update project'
+      )(id, data),
+    [wrapAction]
+  );
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+  const getProject = useCallback(
+    (id: number) => wrapAction(projectService.getProject, 'Failed to load project')(id),
+    [wrapAction]
+  );
 
-  return {
-    isLoading,
-    error,
-    createProject,
-    updateProject,
-    getProject,
-    clearError,
-  };
+  return useMemo(
+    () => ({
+      isLoading,
+      error,
+      createProject,
+      updateProject,
+      getProject,
+      clearError,
+    }),
+    [isLoading, error, createProject, updateProject, getProject, clearError]
+  );
 }
