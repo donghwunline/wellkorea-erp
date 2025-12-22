@@ -76,7 +76,7 @@ public class AuthenticationService {
 
         // Roles are loaded automatically via JPA @ElementCollection (LAZY fetch)
         String roles = user.getRolesAsString();
-        String token = jwtTokenProvider.generateToken(username, roles);
+        String token = jwtTokenProvider.generateToken(username, roles, user.getId());
 
         // Update last login (fire-and-forget, don't block login)
         updateLastLogin(user);
@@ -134,7 +134,7 @@ public class AuthenticationService {
 
         // Generate new token with current roles
         String roles = user.getRolesAsString();
-        String newToken = jwtTokenProvider.generateToken(username, roles);
+        String newToken = jwtTokenProvider.generateToken(username, roles, user.getId());
 
         // Blacklist old token
         tokenBlacklist.add(token);

@@ -82,7 +82,7 @@ class AuthenticationServiceTest implements TestFixtures {
         void login_ValidCredentials_ReturnsLoginResponse() {
             when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(activeUser));
             when(passwordEncoder.matches(TEST_PASSWORD, TEST_PASSWORD_HASH)).thenReturn(true);
-            when(jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority()))
+            when(jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority(), TEST_USER_ID))
                     .thenReturn("generated.jwt.token");
 
             LoginResponse result = authenticationService.login(ADMIN_USERNAME, TEST_PASSWORD);
@@ -92,7 +92,7 @@ class AuthenticationServiceTest implements TestFixtures {
             assertThat(result.user()).isNotNull();
             assertThat(result.user().username()).isEqualTo(ADMIN_USERNAME);
             assertThat(result.user().roles()).contains(Role.ADMIN.getAuthority());
-            verify(jwtTokenProvider).generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority());
+            verify(jwtTokenProvider).generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority(), TEST_USER_ID);
         }
 
         @Test
@@ -110,7 +110,7 @@ class AuthenticationServiceTest implements TestFixtures {
 
             when(userRepository.findByUsername("multirole")).thenReturn(Optional.of(multiRoleUser));
             when(passwordEncoder.matches(TEST_PASSWORD, TEST_PASSWORD_HASH)).thenReturn(true);
-            when(jwtTokenProvider.generateToken(anyString(), anyString()))
+            when(jwtTokenProvider.generateToken(anyString(), anyString(), anyLong()))
                     .thenReturn("generated.jwt.token");
 
             LoginResponse result = authenticationService.login("multirole", TEST_PASSWORD);
@@ -132,7 +132,7 @@ class AuthenticationServiceTest implements TestFixtures {
                     .isInstanceOf(AuthenticationException.class)
                     .hasMessageContaining("Invalid credentials");
 
-            verify(jwtTokenProvider, never()).generateToken(anyString(), anyString());
+            verify(jwtTokenProvider, never()).generateToken(anyString(), anyString(), anyLong());
         }
 
         @Test
@@ -144,7 +144,7 @@ class AuthenticationServiceTest implements TestFixtures {
                     .isInstanceOf(AuthenticationException.class)
                     .hasMessageContaining("Invalid credentials");
 
-            verify(jwtTokenProvider, never()).generateToken(anyString(), anyString());
+            verify(jwtTokenProvider, never()).generateToken(anyString(), anyString(), anyLong());
         }
 
         @Test
@@ -156,7 +156,7 @@ class AuthenticationServiceTest implements TestFixtures {
                     .isInstanceOf(AuthenticationException.class)
                     .hasMessageContaining("Invalid credentials");
 
-            verify(jwtTokenProvider, never()).generateToken(anyString(), anyString());
+            verify(jwtTokenProvider, never()).generateToken(anyString(), anyString(), anyLong());
         }
 
         @Test
@@ -250,7 +250,7 @@ class AuthenticationServiceTest implements TestFixtures {
             // validateToken() is void - no need to mock
             when(jwtTokenProvider.getUsername(oldToken)).thenReturn(ADMIN_USERNAME);
             when(userRepository.findByUsername(ADMIN_USERNAME)).thenReturn(Optional.of(activeUser));
-            when(jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority()))
+            when(jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority(), TEST_USER_ID))
                     .thenReturn(newToken);
 
             LoginResponse result = authenticationService.refreshToken(oldToken);

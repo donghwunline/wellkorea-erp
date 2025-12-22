@@ -61,11 +61,11 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
     void setUp() {
         DatabaseTestHelper.insertTestUsersWithRoles(jdbcTemplate);
 
-        // Generate tokens for different roles
-        adminToken = jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority());
-        financeToken = jwtTokenProvider.generateToken(FINANCE_USERNAME, Role.FINANCE.getAuthority());
-        productionToken = jwtTokenProvider.generateToken(PRODUCTION_USERNAME, Role.PRODUCTION.getAuthority());
-        salesToken = jwtTokenProvider.generateToken(SALES_USERNAME, Role.SALES.getAuthority());
+        // Generate tokens for different roles (userId is required for approval workflows)
+        adminToken = jwtTokenProvider.generateToken(ADMIN_USERNAME, Role.ADMIN.getAuthority(), TEST_USER_ID);
+        financeToken = jwtTokenProvider.generateToken(FINANCE_USERNAME, Role.FINANCE.getAuthority(), 2L);
+        productionToken = jwtTokenProvider.generateToken(PRODUCTION_USERNAME, Role.PRODUCTION.getAuthority(), 3L);
+        salesToken = jwtTokenProvider.generateToken(SALES_USERNAME, Role.SALES.getAuthority(), 4L);
     }
 
     @Nested

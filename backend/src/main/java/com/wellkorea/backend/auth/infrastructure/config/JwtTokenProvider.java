@@ -49,6 +49,8 @@ public class JwtTokenProvider {
 
     /**
      * Generate JWT token from Authentication object.
+     * Note: This method does not include userId in the token.
+     * For production use, prefer generateToken(String, String, Long).
      *
      * @param authentication Spring Security Authentication
      * @return JWT token string
@@ -59,17 +61,6 @@ public class JwtTokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        return generateToken(username, roles);
-    }
-
-    /**
-     * Generate JWT token from username and roles.
-     *
-     * @param username Username
-     * @param roles    Comma-separated roles (e.g., "ROLE_ADMIN,ROLE_FINANCE")
-     * @return JWT token string
-     */
-    public String generateToken(String username, String roles) {
         return generateToken(username, roles, null);
     }
 
@@ -78,7 +69,7 @@ public class JwtTokenProvider {
      *
      * @param username Username
      * @param roles    Comma-separated roles (e.g., "ROLE_ADMIN,ROLE_FINANCE")
-     * @param userId   User ID (optional)
+     * @param userId   User ID (required for production use, can be null for testing)
      * @return JWT token string
      */
     public String generateToken(String username, String roles, Long userId) {

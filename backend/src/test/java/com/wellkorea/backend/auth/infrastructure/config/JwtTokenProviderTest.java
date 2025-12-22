@@ -104,14 +104,15 @@ class JwtTokenProviderTest {
         String username = "admin";
         String roles = "ROLE_ADMIN,ROLE_SALES";
 
-        // When: Generate token
-        String token = jwtTokenProvider.generateToken(username, roles);
+        // When: Generate token (with userId)
+        String token = jwtTokenProvider.generateToken(username, roles, 1L);
 
         // Then: Token is valid and contains correct claims
         assertThat(token).isNotBlank();
         jwtTokenProvider.validateToken(token); // Should not throw exception
         assertThat(jwtTokenProvider.getUsername(token)).isEqualTo(username);
         assertThat(jwtTokenProvider.getRoles(token)).isEqualTo(roles);
+        assertThat(jwtTokenProvider.getUserId(token)).isEqualTo(1L);
     }
 
     // ========== Token Validation Tests ==========
@@ -119,7 +120,7 @@ class JwtTokenProviderTest {
     @Test
     void shouldValidateValidToken() {
         // Given: Valid token
-        String token = jwtTokenProvider.generateToken("user", "ROLE_USER");
+        String token = jwtTokenProvider.generateToken("user", "ROLE_USER", 1L);
 
         // When/Then: Validate token (should not throw exception)
         jwtTokenProvider.validateToken(token);
@@ -129,7 +130,7 @@ class JwtTokenProviderTest {
     void shouldRejectExpiredToken() {
         // Given: Token with immediate expiration
         JwtTokenProvider shortLivedProvider = new JwtTokenProvider(TestFixtures.JWT_SECRET, 1L);
-        String token = shortLivedProvider.generateToken("user", "ROLE_USER");
+        String token = shortLivedProvider.generateToken("user", "ROLE_USER", 1L);
 
         // Wait for expiration
         try {
@@ -158,7 +159,7 @@ class JwtTokenProviderTest {
     @Test
     void shouldRejectTamperedToken() {
         // Given: Valid token that's been tampered with
-        String validToken = jwtTokenProvider.generateToken("user", "ROLE_USER");
+        String validToken = jwtTokenProvider.generateToken("user", "ROLE_USER", 1L);
         String tamperedToken = validToken.substring(0, validToken.length() - 5) + "XXXXX";
 
         // When/Then: Validate tampered token (should throw InvalidJwtAuthenticationException)
@@ -172,7 +173,7 @@ class JwtTokenProviderTest {
         // Given: Token signed with different secret
         String differentSecret = "different-secret-key-with-256-bits-minimum-required";
         JwtTokenProvider otherProvider = new JwtTokenProvider(differentSecret, TestFixtures.JWT_EXPIRATION_MS);
-        String token = otherProvider.generateToken("user", "ROLE_USER");
+        String token = otherProvider.generateToken("user", "ROLE_USER", 1L);
 
         // When/Then: Validate with original provider (should throw InvalidJwtAuthenticationException)
         assertThatThrownBy(() -> jwtTokenProvider.validateToken(token))
@@ -208,7 +209,7 @@ class JwtTokenProviderTest {
     void shouldExtractUsernameFromToken() {
         // Given: Token with username
         String expectedUsername = "testuser";
-        String token = jwtTokenProvider.generateToken(expectedUsername, "ROLE_USER");
+        String token = jwtTokenProvider.generateToken(expectedUsername, "ROLE_USER", 1L);
 
         // When: Extract username
         String actualUsername = jwtTokenProvider.getUsername(token);
@@ -221,7 +222,7 @@ class JwtTokenProviderTest {
     void shouldExtractRolesFromToken() {
         // Given: Token with multiple roles
         String expectedRoles = "ROLE_ADMIN,ROLE_FINANCE,ROLE_SALES";
-        String token = jwtTokenProvider.generateToken("admin", expectedRoles);
+        String token = jwtTokenProvider.generateToken("admin", expectedRoles, 1L);
 
         // When: Extract roles
         String actualRoles = jwtTokenProvider.getRoles(token);
