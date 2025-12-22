@@ -17,6 +17,10 @@ export {
 export { ProductSelector, type ProductSelectorProps } from './ProductSelector';
 export { ApprovalRequestCard, type ApprovalRequestCardProps } from './ApprovalRequestCard';
 export { ApprovalRejectModal, type ApprovalRejectModalProps } from './ApprovalRejectModal';
+export {
+  EmailNotificationModal,
+  type EmailNotificationModalProps,
+} from './EmailNotificationModal';
 
 // Hooks
 export {

@@ -7,14 +7,15 @@
  * Features:
  * - Display quotation details and line items
  * - Navigate between quotation versions
- * - Actions: edit, submit for approval, download PDF, create new version
+ * - Actions: edit, submit for approval, download PDF, send email, create new version
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Badge, Button, Card, ConfirmationModal, Icon, Spinner } from '@/components/ui';
 import { quotationService } from '@/services';
 import type { QuotationDetails } from '@/services';
+import { EmailNotificationModal } from './EmailNotificationModal';
 import { useQuotationActions } from './hooks';
 import { QuotationInfoCard } from './QuotationInfoCard';
 import { QUOTATION_STATUS_BADGE_VARIANTS, QUOTATION_STATUS_LABELS } from './quotationUtils';
@@ -38,15 +39,31 @@ export function QuotationDetailsPanel({
 }: Readonly<QuotationDetailsPanelProps>) {
   const navigate = useNavigate();
 
-  // Quotation list and current index
+  // Quotation list and current selection
   const [quotations, setQuotations] = useState<QuotationDetails[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentQuotation, setCurrentQuotation] = useState<QuotationDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   // Modal states
   const [submitConfirm, setSubmitConfirm] = useState(false);
   const [versionConfirm, setVersionConfirm] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+
+  // Success message state
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Action hooks
   const {
@@ -55,11 +72,27 @@ export function QuotationDetailsPanel({
     submitForApproval,
     createNewVersion,
     downloadPdf,
+    sendRevisionNotification,
     clearError,
   } = useQuotationActions();
 
-  // Current quotation
-  const quotation = quotations[currentIndex] ?? null;
+  // Get quotation from list (for navigation info)
+  const quotationFromList = quotations[currentIndex] ?? null;
+  // Use the fully-loaded quotation (with line items) for display
+  const quotation = currentQuotation;
+
+  // Show success message with auto-dismiss
+  const showSuccess = useCallback((message: string) => {
+    // Clear any existing timeout
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
+    setSuccessMessage(message);
+    successTimeoutRef.current = setTimeout(() => {
+      setSuccessMessage(null);
+      successTimeoutRef.current = null;
+    }, 3000);
+  }, []);
 
   // Load all quotations for project
   const loadQuotations = useCallback(async () => {
@@ -85,10 +118,32 @@ export function QuotationDetailsPanel({
     }
   }, [projectId, onError]);
 
+  // Load full quotation details (with line items)
+  const loadQuotationDetails = useCallback(async (quotationId: number) => {
+    setIsLoadingDetails(true);
+    try {
+      const details = await quotationService.getQuotation(quotationId);
+      setCurrentQuotation(details);
+    } catch {
+      onError?.('Failed to load quotation details');
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  }, [onError]);
+
   // Load on mount and when projectId changes
   useEffect(() => {
     loadQuotations();
   }, [loadQuotations]);
+
+  // Load full details when current quotation changes
+  useEffect(() => {
+    if (quotationFromList) {
+      loadQuotationDetails(quotationFromList.id);
+    } else {
+      setCurrentQuotation(null);
+    }
+  }, [quotationFromList, loadQuotationDetails]);
 
   // Navigate to previous version (older)
   const handlePrevVersion = useCallback(() => {
@@ -118,11 +173,13 @@ export function QuotationDetailsPanel({
       await submitForApproval(quotation.id);
       setSubmitConfirm(false);
       await loadQuotations();
+      // Reload the current quotation details
+      await loadQuotationDetails(quotation.id);
       onDataChange?.();
     } catch {
       onError?.('Failed to submit quotation for approval');
     }
-  }, [quotation, submitForApproval, loadQuotations, onDataChange, onError]);
+  }, [quotation, submitForApproval, loadQuotations, loadQuotationDetails, onDataChange, onError]);
 
   // Handle create new version
   const handleVersionConfirm = useCallback(async () => {
@@ -148,6 +205,29 @@ export function QuotationDetailsPanel({
       onError?.('Failed to download PDF');
     }
   }, [quotation, downloadPdf, onError]);
+
+  // Handle send email
+  const handleSendEmail = useCallback(async () => {
+    if (!quotation) return;
+
+    try {
+      // Send notification
+      await sendRevisionNotification(quotation.id);
+      setShowEmailModal(false);
+
+      // Reload data to reflect status change (APPROVED → SENT)
+      await loadQuotations();
+      if (quotation.id) {
+        await loadQuotationDetails(quotation.id);
+      }
+      onDataChange?.();
+
+      // Only show success after ALL operations complete
+      showSuccess('Email notification sent successfully');
+    } catch {
+      onError?.('Failed to send email notification');
+    }
+  }, [quotation, sendRevisionNotification, loadQuotations, loadQuotationDetails, onDataChange, onError, showSuccess]);
 
   // Handle create new quotation
   const handleCreate = useCallback(() => {
@@ -201,12 +281,20 @@ export function QuotationDetailsPanel({
   const canSubmit = quotation?.status === 'DRAFT';
   const canCreateVersion = quotation && ['APPROVED', 'SENT', 'ACCEPTED'].includes(quotation.status);
   const canDownloadPdf = quotation && quotation.status !== 'DRAFT';
+  const canSendEmail = quotation && ['APPROVED', 'SENT', 'ACCEPTED'].includes(quotation.status);
 
   const hasPrevVersion = currentIndex < quotations.length - 1;
   const hasNextVersion = currentIndex > 0;
 
   return (
     <div className="space-y-6">
+      {/* Success Message */}
+      {successMessage && (
+        <Alert variant="success" onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      )}
+
       {/* Error Message */}
       {actionError && (
         <Alert variant="error" onClose={clearError}>
@@ -278,6 +366,18 @@ export function QuotationDetailsPanel({
             </Button>
           )}
 
+          {canSendEmail && (
+            <Button
+              variant="secondary"
+              onClick={() => setShowEmailModal(true)}
+              disabled={isActing}
+              size={'sm'}
+            >
+              <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
+              Send Email
+            </Button>
+          )}
+
           {canCreateVersion && (
             <Button
               variant="secondary"
@@ -297,7 +397,14 @@ export function QuotationDetailsPanel({
         </div>
       </div>
 
-      {quotation && <QuotationInfoCard quotation={quotation} showStatusBadge={false} />}
+      {isLoadingDetails ? (
+        <Card className="p-12 text-center">
+          <Spinner className="mx-auto h-8 w-8" />
+          <p className="mt-4 text-steel-400">Loading quotation details...</p>
+        </Card>
+      ) : quotation ? (
+        <QuotationInfoCard quotation={quotation} showStatusBadge={false} />
+      ) : null}
 
       {/* Modals */}
       <ConfirmationModal
@@ -317,6 +424,16 @@ export function QuotationDetailsPanel({
         confirmLabel="Create Version"
         onConfirm={handleVersionConfirm}
         onClose={() => setVersionConfirm(false)}
+      />
+
+      <EmailNotificationModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        onSend={handleSendEmail}
+        quotationInfo={
+          quotation ? { jobCode: quotation.jobCode, version: quotation.version } : undefined
+        }
+        isLoading={isActing}
       />
     </div>
   );

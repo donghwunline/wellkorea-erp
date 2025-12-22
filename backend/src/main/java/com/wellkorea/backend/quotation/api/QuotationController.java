@@ -209,12 +209,33 @@ public class QuotationController {
      * Send revision notification email for a quotation.
      * POST /api/quotations/{id}/send-revision-notification
      * <p>
-     * Admin can use this endpoint to notify the customer about a new quotation version.
+     * Admin can use this endpoint to notify the customer about a quotation.
+     * Only quotations in APPROVED, SENT, or ACCEPTED status can be sent.
+     * If the quotation is APPROVED, it will be automatically marked as SENT before sending.
+     * This ensures status is updated even if email fails (user can retry sending).
      */
     @PostMapping("/{id}/send-revision-notification")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> sendRevisionNotification(@PathVariable Long id) {
         Quotation quotation = queryService.getQuotationEntity(id);
+
+        // Validate quotation status - only APPROVED, SENT, or ACCEPTED can send emails
+        if (quotation.getStatus() != QuotationStatus.APPROVED
+                && quotation.getStatus() != QuotationStatus.SENT
+                && quotation.getStatus() != QuotationStatus.ACCEPTED) {
+            throw new BusinessException(
+                    "Email can only be sent for APPROVED, SENT, or ACCEPTED quotations. Current status: "
+                            + quotation.getStatus());
+        }
+
+        // Update status to SENT if currently APPROVED (before email)
+        // This ensures status is updated even if email fails - user can retry
+        if (quotation.getStatus() == QuotationStatus.APPROVED) {
+            commandService.markAsSent(id);
+            // Re-fetch to get updated quotation for email
+            quotation = queryService.getQuotationEntity(id);
+        }
+
         emailService.sendRevisionNotification(quotation);
 
         return ResponseEntity.ok(ApiResponse.success("Revision notification sent successfully"));

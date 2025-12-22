@@ -108,10 +108,11 @@ public class QuotationCommandService {
 
         // Update line items if provided
         if (command.lineItems() != null && !command.lineItems().isEmpty()) {
-            // Delete existing line items first to avoid unique constraint violation
-            lineItemRepository.deleteAllByQuotationId(quotation.getId());
-            lineItemRepository.flush();
+            // Clear existing line items - orphanRemoval=true will handle deletion
+            // We need to flush after clearing to ensure deletes are executed before inserts
+            // This avoids unique constraint violation on (quotation_id, sequence)
             quotation.getLineItems().clear();
+            quotationRepository.flush();
 
             addLineItemsFromCommands(quotation, command.lineItems());
             quotation.recalculateTotalAmount();
@@ -235,6 +236,25 @@ public class QuotationCommandService {
 
         quotation.setStatus(QuotationStatus.REJECTED);
         quotation.setRejectionReason(rejectionReason);
+
+        Quotation saved = quotationRepository.save(quotation);
+        return saved.getId();
+    }
+
+    /**
+     * Mark quotation as sent to customer.
+     * Only quotations in APPROVED status can be marked as sent.
+     * @return ID of the sent quotation
+     */
+    public Long markAsSent(Long quotationId) {
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+
+        if (quotation.getStatus() != QuotationStatus.APPROVED) {
+            throw new BusinessException("Only APPROVED quotations can be marked as sent");
+        }
+
+        quotation.setStatus(QuotationStatus.SENT);
 
         Quotation saved = quotationRepository.save(quotation);
         return saved.getId();
