@@ -4,9 +4,9 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { approvalChainService, userService } from '@/services';
 import type { ChainLevelRequest, ChainTemplate } from '@/services';
-import type { ComboboxOption } from '@/components/ui/forms/Combobox';
+import { approvalChainService, userService } from '@/services';
+import type { ComboboxOption } from '@/components/ui/forms/Combobox.tsx';
 
 export interface UseApprovalChainConfigReturn {
   templates: ChainTemplate[];
@@ -48,22 +48,25 @@ export function useApprovalChainConfig(): UseApprovalChainConfigReturn {
     refetch();
   }, [refetch]);
 
-  const updateChainLevels = useCallback(async (templateId: number, levels: ChainLevelRequest[]) => {
-    setIsSaving(true);
-    setSaveError(null);
+  const updateChainLevels = useCallback(
+    async (templateId: number, levels: ChainLevelRequest[]) => {
+      setIsSaving(true);
+      setSaveError(null);
 
-    try {
-      // CQRS: Command returns CommandResult, then we refetch fresh data
-      await approvalChainService.updateChainLevels(templateId, levels);
-      await refetch();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update chain levels';
-      setSaveError(message);
-      throw err;
-    } finally {
-      setIsSaving(false);
-    }
-  }, [refetch]);
+      try {
+        // CQRS: Command returns CommandResult, then we refetch fresh data
+        await approvalChainService.updateChainLevels(templateId, levels);
+        await refetch();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to update chain levels';
+        setSaveError(message);
+        throw err;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [refetch]
+  );
 
   const loadUsers = useCallback(async (query: string): Promise<ComboboxOption[]> => {
     const result = await userService.getUsers({

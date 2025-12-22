@@ -3,11 +3,11 @@
  * Tests approval chain configuration fetching, updating, and user loading.
  */
 
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { useApprovalChainConfig } from './useApprovalChainConfig';
+import { useApprovalChainConfig } from './useApprovalChainConfig.ts';
 import { approvalChainService, userService } from '@/services';
-import { createMockChainTemplate, createMockUserDetails } from '@/test/fixtures';
+import { createMockChainTemplate, createMockUserDetails } from '@/test/fixtures.ts';
 
 // Mock the services
 vi.mock('@/services', () => ({
@@ -163,9 +163,7 @@ describe('useApprovalChainConfig', () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      const levels = [
-        { levelOrder: 1, levelName: '팀장', approverUserId: 10, isRequired: true },
-      ];
+      const levels = [{ levelOrder: 1, levelName: '팀장', approverUserId: 10, isRequired: true }];
 
       await act(async () => {
         await result.current.updateChainLevels(42, levels);

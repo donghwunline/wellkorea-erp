@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon, type IconName } from '@/components/ui';
 import { useAuth } from '@/shared/hooks';
-import type { RoleName } from '@/services';
+import type { RoleName } from '@/shared/types/auth.ts';
 
 interface NavItem {
   label: string;
@@ -73,7 +73,7 @@ const NAV_ITEMS: NavItem[] = [
 const APPROVAL_NAV_ITEMS: NavItem[] = [
   {
     label: 'Pending Approvals',
-    path: '/approvals/pending',
+    path: '/approvals',
     icon: 'check-circle',
   },
   {

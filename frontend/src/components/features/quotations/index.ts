@@ -9,32 +9,19 @@ export { QuotationDetailsPanel, type QuotationDetailsPanelProps } from './Quotat
 export { QuotationInfoCard, type QuotationInfoCardProps } from './QuotationInfoCard';
 export {
   QUOTATION_STATUS_LABELS,
-  APPROVAL_STATUS_LABELS,
   QUOTATION_STATUS_BADGE_VARIANTS,
   formatQuotationDate,
   formatQuotationCurrency,
 } from './quotationUtils';
-export { ProductSelector, type ProductSelectorProps } from './ProductSelector';
-export { ApprovalRequestCard, type ApprovalRequestCardProps } from './ApprovalRequestCard';
-export { ApprovalRejectModal, type ApprovalRejectModalProps } from './ApprovalRejectModal';
-export {
-  EmailNotificationModal,
-  type EmailNotificationModalProps,
-} from './EmailNotificationModal';
+export { ProductSelector, type ProductSelectorProps, type LineItemWithName } from './ProductSelector';
+export { EmailNotificationModal, type EmailNotificationModalProps } from './EmailNotificationModal';
 
 // Hooks
 export {
   useQuotationActions,
   type UseQuotationActionsReturn,
-  useApprovalActions,
-  type UseApprovalActionsReturn,
   useProjectSearch,
   type UseProjectSearchReturn,
-  useApprovalList,
-  type UseApprovalListParams,
-  type UseApprovalListReturn,
-  useApprovalChainConfig,
-  type UseApprovalChainConfigReturn,
   useProjectDetails,
   type UseProjectDetailsReturn,
 } from './hooks';

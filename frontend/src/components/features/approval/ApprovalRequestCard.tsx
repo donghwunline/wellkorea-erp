@@ -9,16 +9,10 @@
  * This component is a presentation component that receives data from parent.
  */
 
-import type { ApprovalDetails, ApprovalStatus, LevelDecision } from '@/services';
-import { Badge, type BadgeVariant, Button, Card, Icon, Spinner } from '@/components/ui';
-import { APPROVAL_STATUS_LABELS } from './quotationUtils';
-
-// Decision badge variants
-const DECISION_BADGE_VARIANTS: Record<ApprovalStatus, BadgeVariant> = {
-  PENDING: 'info',
-  APPROVED: 'success',
-  REJECTED: 'danger',
-};
+import type { ApprovalDetails, LevelDecision } from '@/services';
+import { Badge, Button, Card, Icon, Spinner } from '@/components/ui';
+import { formatDateTime } from '@/shared/utils';
+import { APPROVAL_STATUS_LABELS, APPROVAL_STATUS_BADGE_VARIANTS } from './approvalUtils';
 
 export interface ApprovalRequestCardProps {
   /** Approval details */
@@ -46,18 +40,6 @@ export function ApprovalRequestCard({
   onReject,
   onViewEntity,
 }: Readonly<ApprovalRequestCardProps>) {
-  // Format date
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   // Get levels array (with null safety)
   const levels: LevelDecision[] = approval.levels ?? [];
 
@@ -72,7 +54,7 @@ export function ApprovalRequestCard({
               {approval.entityDescription || `#${approval.entityId}`}
             </span>
           </div>
-          <Badge variant={DECISION_BADGE_VARIANTS[approval.status]}>
+          <Badge variant={APPROVAL_STATUS_BADGE_VARIANTS[approval.status]}>
             {APPROVAL_STATUS_LABELS[approval.status]}
           </Badge>
         </div>
@@ -88,7 +70,7 @@ export function ApprovalRequestCard({
           </div>
           <div>
             <span className="text-steel-500">Submitted At</span>
-            <p className="text-steel-300">{formatDate(approval.submittedAt)}</p>
+            <p className="text-steel-300">{formatDateTime(approval.submittedAt)}</p>
           </div>
           <div>
             <span className="text-steel-500">Current Level</span>
@@ -151,7 +133,7 @@ export function ApprovalRequestCard({
               {levels.map(level => (
                 <span key={level.id} className="mr-4">
                   L{level.levelOrder}: {level.decidedByName || level.expectedApproverName}
-                  {level.decidedAt && ` (${formatDate(level.decidedAt)})`}
+                  {level.decidedAt && ` (${formatDateTime(level.decidedAt)})`}
                 </span>
               ))}
             </div>

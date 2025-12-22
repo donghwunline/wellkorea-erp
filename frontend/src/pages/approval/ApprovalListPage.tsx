@@ -21,7 +21,7 @@ import {
   ApprovalRequestCard,
   useApprovalActions,
   useApprovalList,
-} from '@/components/features/quotations';
+} from '@/components/features/approval';
 import type { ApprovalDetails, ApprovalStatus } from '@/services';
 
 // Status filter options

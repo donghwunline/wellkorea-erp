@@ -27,8 +27,8 @@ import {
   Spinner,
   Table,
 } from '@/components/ui';
-import { Combobox } from '@/components/ui/forms/Combobox';
-import { useApprovalChainConfig } from '@/components/features/quotations';
+import { useApprovalChainConfig } from '@/components/features/approval';
+import { UserCombobox } from '@/components/features/shared/selectors';
 import type { ChainLevel, ChainLevelRequest, ChainTemplate } from '@/services';
 
 interface EditingChain {
@@ -46,7 +46,6 @@ export function ApprovalChainConfigPage() {
     saveError,
     refetch,
     updateChainLevels,
-    loadUsers,
     clearSaveError,
   } = useApprovalChainConfig();
 
@@ -302,10 +301,9 @@ export function ApprovalChainConfigPage() {
                         {level.levelOrder}
                       </div>
                       <div className="flex-1">
-                        <Combobox
+                        <UserCombobox
                           value={level.approverUserId || null}
-                          onChange={value => handleApproverChange(index, value as number | null)}
-                          loadOptions={loadUsers}
+                          onChange={value => handleApproverChange(index, value)}
                           placeholder="Select approver..."
                           disabled={isSaving}
                         />

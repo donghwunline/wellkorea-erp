@@ -6,11 +6,11 @@
  * instead of full ApprovalDetails entity.
  */
 
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { useApprovalActions } from './useApprovalActions';
-import { approvalService } from '@/services';
+import { useApprovalActions } from './useApprovalActions.ts';
 import type { CommandResult } from '@/services';
+import { approvalService } from '@/services';
 
 // Helper to create mock command result
 const createMockCommandResult = (overrides?: Partial<CommandResult>): CommandResult => ({
@@ -108,7 +108,10 @@ describe('useApprovalActions', () => {
     });
 
     it('should return command result (CQRS)', async () => {
-      const mockResult = createMockCommandResult({ id: 42, message: 'Approval request approved at current level' });
+      const mockResult = createMockCommandResult({
+        id: 42,
+        message: 'Approval request approved at current level',
+      });
       mockApprove.mockResolvedValue(mockResult);
 
       const { result } = renderHook(() => useApprovalActions());
@@ -178,7 +181,9 @@ describe('useApprovalActions', () => {
     });
 
     it('should call approvalService.reject with id and reason (CQRS)', async () => {
-      mockReject.mockResolvedValue(createMockCommandResult({ message: 'Approval request rejected' }));
+      mockReject.mockResolvedValue(
+        createMockCommandResult({ message: 'Approval request rejected' })
+      );
 
       const { result } = renderHook(() => useApprovalActions());
 
