@@ -38,6 +38,10 @@ export type {
 export { auditService } from './audit/auditService';
 export type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './audit/types';
 
+// Customer service
+export { customerService } from './customers';
+export type { CustomerDetails, CustomerListParams, PaginatedCustomers } from './customers';
+
 // Project service
 export { projectService, projectSummaryService, PROJECT_STATUS_LABELS } from './projects';
 export type {
