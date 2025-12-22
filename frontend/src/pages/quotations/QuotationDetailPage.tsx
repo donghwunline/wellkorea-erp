@@ -20,14 +20,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Card, ConfirmationModal, Icon, PageHeader, Spinner } from '@/components/ui';
 import {
-  ApprovalRejectModal,
-  ApprovalRequestCard,
   formatQuotationDate,
   QUOTATION_STATUS_LABELS,
   QuotationInfoCard,
-  useApprovalActions,
   useQuotationActions,
 } from '@/components/features/quotations';
+import {
+  ApprovalRejectModal,
+  ApprovalRequestCard,
+  useApprovalActions,
+} from '@/components/features/approval';
 import { useAuth } from '@/shared/hooks';
 import type { ApprovalDetails, QuotationDetails } from '@/services';
 

@@ -13,12 +13,11 @@
 import { useCallback, useState } from 'react';
 import type {
   CreateQuotationRequest,
-  LineItemRequest,
   QuotationDetails,
   UpdateQuotationRequest,
 } from '@/services';
 import { Alert, Button, Card, FormField, Input, Spinner } from '@/components/ui';
-import { ProductSelector } from './ProductSelector';
+import { ProductSelector, type LineItemWithName } from './ProductSelector';
 
 export interface QuotationFormProps {
   /** Existing quotation for edit mode (undefined for create) */
@@ -40,7 +39,7 @@ export interface QuotationFormProps {
 interface FormState {
   validityDays: number;
   notes: string;
-  lineItems: LineItemRequest[];
+  lineItems: LineItemWithName[];
 }
 
 /**
@@ -66,6 +65,8 @@ export function QuotationForm({
         lineItems:
           quotation.lineItems?.map(item => ({
             productId: item.productId,
+            productName: item.productName,
+            productSku: item.productSku,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             notes: item.notes || undefined,

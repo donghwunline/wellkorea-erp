@@ -12,11 +12,10 @@
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, Card, Icon, PageHeader, Spinner } from '@/components/ui';
-import { Combobox } from '@/components/ui/forms/Combobox';
+import { ProjectCombobox } from '@/components/features/shared/selectors';
 import {
   QuotationForm,
   useProjectDetails,
-  useProjectSearch,
   useQuotationActions,
 } from '@/components/features/quotations';
 import type { CreateQuotationRequest, UpdateQuotationRequest } from '@/services';
@@ -39,7 +38,6 @@ export function QuotationCreatePage() {
 
   // Hooks
   const { isLoading: isSubmitting, error, createQuotation, clearError } = useQuotationActions();
-  const { loadProjects } = useProjectSearch();
   const {
     project: selectedProject,
     isLoading: isLoadingProject,
@@ -48,8 +46,8 @@ export function QuotationCreatePage() {
 
   // Handle project selection
   const handleProjectSelect = useCallback(
-    (value: string | number | null) => {
-      setSelectedProjectId(value ? Number(value) : null);
+    (projectId: number | null) => {
+      setSelectedProjectId(projectId);
       clearError();
     },
     [clearError]
@@ -111,10 +109,9 @@ export function QuotationCreatePage() {
         <Card className="mb-6 p-6">
           <h3 className="mb-4 text-lg font-medium text-white">Select Project</h3>
           <div className="max-w-md">
-            <Combobox
+            <ProjectCombobox
               value={selectedProjectId}
               onChange={handleProjectSelect}
-              loadOptions={loadProjects}
               label="Project"
               placeholder="Search for a project..."
               required

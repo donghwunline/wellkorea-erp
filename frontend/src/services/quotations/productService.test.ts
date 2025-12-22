@@ -1,234 +1,168 @@
 /**
  * Unit tests for productService.
- * Tests product search operations, data transformation, and error propagation.
+ * Tests product search operations with mock data.
+ *
+ * NOTE: This tests the mock implementation.
+ * When backend is available, update tests to mock httpClient.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { productService } from './productService';
-import {
-  createMockProduct,
-  createMockPagedResponse,
-  mockApiErrors,
-} from '@/test/fixtures';
-import { httpClient } from '@/api';
 
-// Mock httpClient with inline factory (vi.mock is hoisted)
-vi.mock('@/api', () => ({
-  httpClient: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-    request: vi.fn(),
-    requestWithMeta: vi.fn(),
-  },
-  PRODUCT_ENDPOINTS: {
-    BASE: '/products',
-    byId: (id: number) => `/products/${id}`,
-    search: '/products/search',
-  },
-}));
-
-describe('productService', () => {
+describe('productService (mock implementation)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   describe('searchProducts', () => {
-    it('should fetch paginated products and transform data', async () => {
-      // Given: Mock paginated response
-      const mockProduct = createMockProduct();
-      const mockResponse = createMockPagedResponse([mockProduct]);
-      vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
-
-      // When: Search products
+    it('should return paginated products', async () => {
+      // When: Search products with default params
       const result = await productService.searchProducts({ page: 0, size: 10 });
 
-      // Then: Calls httpClient with correct params
-      expect(httpClient.requestWithMeta).toHaveBeenCalledOnce();
-      expect(httpClient.requestWithMeta).toHaveBeenCalledWith({
-        method: 'GET',
-        url: '/products',
-        params: { page: 0, size: 10 },
-      });
-
-      // And: Returns paginated data
-      expect(result.data).toHaveLength(1);
-      expect(result.data[0]).toEqual(mockProduct);
-      expect(result.pagination.totalElements).toBe(1);
+      // Then: Returns paginated data
+      expect(result.data.length).toBeGreaterThan(0);
+      expect(result.data.length).toBeLessThanOrEqual(10);
+      expect(result.pagination).toBeDefined();
+      expect(result.pagination.page).toBe(0);
+      expect(result.pagination.size).toBe(10);
     });
 
-    it('should trim whitespace from text fields', async () => {
-      // Given: Response with whitespace
-      const mockProduct = createMockProduct({
-        name: '  Test Product  ',
-        sku: '  SKU-001  ',
-        description: '  Description  ',
-        productTypeName: '  Electronics  ',
-        unit: '  EA  ',
-      });
-      const mockResponse = createMockPagedResponse([mockProduct]);
-      vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
+    it('should filter products by search query matching name', async () => {
+      // When: Search for "Aluminum"
+      const result = await productService.searchProducts({ query: 'Aluminum' });
 
-      // When: Search products
-      const result = await productService.searchProducts();
-
-      // Then: Text fields are trimmed
-      expect(result.data[0].name).toBe('Test Product');
-      expect(result.data[0].sku).toBe('SKU-001');
-      expect(result.data[0].description).toBe('Description');
-      expect(result.data[0].productTypeName).toBe('Electronics');
-      expect(result.data[0].unit).toBe('EA');
+      // Then: Returns matching products
+      expect(result.data.length).toBeGreaterThan(0);
+      expect(result.data.every(p => p.name.toLowerCase().includes('aluminum'))).toBe(true);
     });
 
-    it('should handle search query param', async () => {
-      // Given: Search with query
-      const mockResponse = createMockPagedResponse([]);
-      vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
+    it('should filter products by search query matching SKU', async () => {
+      // When: Search for "CNC"
+      const result = await productService.searchProducts({ query: 'CNC' });
 
-      // When: Search with query
-      await productService.searchProducts({
-        query: 'laptop',
-        page: 0,
-        size: 20,
-      });
-
-      // Then: Passes query param
-      expect(httpClient.requestWithMeta).toHaveBeenCalledWith({
-        method: 'GET',
-        url: '/products',
-        params: {
-          query: 'laptop',
-          page: 0,
-          size: 20,
-        },
-      });
+      // Then: Returns matching products (matches both name and SKU)
+      expect(result.data.length).toBeGreaterThan(0);
+      expect(result.data.some(p => p.sku.includes('CNC'))).toBe(true);
     });
 
-    it('should handle type filter param', async () => {
-      // Given: Search with type filter
-      const mockResponse = createMockPagedResponse([]);
-      vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
+    it('should be case-insensitive for search', async () => {
+      // When: Search with different cases
+      const upper = await productService.searchProducts({ query: 'STEEL' });
+      const lower = await productService.searchProducts({ query: 'steel' });
 
-      // When: Search with type filter
-      await productService.searchProducts({
-        typeId: 5,
-      });
+      // Then: Both return same results
+      expect(upper.data.length).toBe(lower.data.length);
+    });
 
-      // Then: Passes typeId param
-      expect(httpClient.requestWithMeta).toHaveBeenCalledWith({
-        method: 'GET',
-        url: '/products',
-        params: {
-          typeId: 5,
-        },
-      });
+    it('should filter by type ID', async () => {
+      // When: Search by type ID 1 (CNC Parts)
+      const result = await productService.searchProducts({ typeId: 1 });
+
+      // Then: All products are CNC Parts
+      expect(result.data.length).toBeGreaterThan(0);
+      expect(result.data.every(p => p.productTypeName === 'CNC Parts')).toBe(true);
+    });
+
+    it('should filter by type ID 2 (Sheet Metal)', async () => {
+      // When: Search by type ID 2 (Sheet Metal)
+      const result = await productService.searchProducts({ typeId: 2 });
+
+      // Then: All products are Sheet Metal
+      expect(result.data.length).toBeGreaterThan(0);
+      expect(result.data.every(p => p.productTypeName === 'Sheet Metal')).toBe(true);
     });
 
     it('should handle empty results', async () => {
-      // Given: Empty response
-      const mockResponse = createMockPagedResponse([]);
-      vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
+      // When: Search for non-existent product
+      const result = await productService.searchProducts({ query: 'xyz-nonexistent-product' });
 
-      // When: Search products
-      const result = await productService.searchProducts();
-
-      // Then: Returns empty array
+      // Then: Returns empty array with pagination
       expect(result.data).toEqual([]);
       expect(result.pagination.totalElements).toBe(0);
     });
 
-    it('should handle null optional fields', async () => {
-      // Given: Product with null fields
-      const mockProduct = createMockProduct({
-        description: null,
-        productTypeName: null,
-        baseUnitPrice: null,
-        unit: null,
-      });
-      const mockResponse = createMockPagedResponse([mockProduct]);
-      vi.mocked(httpClient.requestWithMeta).mockResolvedValue(mockResponse);
+    it('should handle pagination correctly', async () => {
+      // Given: Get total count
+      const all = await productService.searchProducts({ page: 0, size: 100 });
+      const total = all.data.length;
 
+      // When: Paginate with small page size
+      const page0 = await productService.searchProducts({ page: 0, size: 3 });
+      const page1 = await productService.searchProducts({ page: 1, size: 3 });
+
+      // Then: Pagination is correct
+      expect(page0.data.length).toBe(3);
+      expect(page0.pagination.first).toBe(true);
+      expect(page0.pagination.last).toBe(false);
+
+      expect(page1.data.length).toBe(3);
+      expect(page1.pagination.first).toBe(false);
+      expect(page1.pagination.page).toBe(1);
+
+      expect(page0.pagination.totalElements).toBe(total);
+    });
+
+    it('should apply default page and size', async () => {
+      // When: Search without pagination params
+      const result = await productService.searchProducts();
+
+      // Then: Uses defaults
+      expect(result.pagination.page).toBe(0);
+      expect(result.pagination.size).toBe(20);
+    });
+
+    it('should only return active products', async () => {
+      // When: Search all products
+      const result = await productService.searchProducts();
+
+      // Then: All returned products are active
+      expect(result.data.every(p => p.isActive)).toBe(true);
+    });
+
+    it('should return products with all required fields', async () => {
       // When: Search products
       const result = await productService.searchProducts();
 
-      // Then: Null fields remain null
-      expect(result.data[0].description).toBeNull();
-      expect(result.data[0].productTypeName).toBeNull();
-      expect(result.data[0].baseUnitPrice).toBeNull();
-      expect(result.data[0].unit).toBeNull();
-    });
-
-    it('should propagate API errors', async () => {
-      // Given: API error
-      vi.mocked(httpClient.requestWithMeta).mockRejectedValue(mockApiErrors.serverError);
-
-      // When/Then: Propagates error
-      await expect(productService.searchProducts()).rejects.toEqual(mockApiErrors.serverError);
+      // Then: Each product has required fields
+      result.data.forEach(product => {
+        expect(product.id).toBeDefined();
+        expect(product.sku).toBeDefined();
+        expect(product.name).toBeDefined();
+        expect(typeof product.isActive).toBe('boolean');
+      });
     });
   });
 
   describe('getProduct', () => {
-    it('should fetch single product by ID and transform', async () => {
-      // Given: Mock product response
-      const mockProduct = createMockProduct({ id: 123 });
-      vi.mocked(httpClient.get).mockResolvedValue(mockProduct);
-
+    it('should return product by ID', async () => {
       // When: Get product by ID
-      const result = await productService.getProduct(123);
+      const result = await productService.getProduct(1);
 
-      // Then: Calls httpClient with correct URL
-      expect(httpClient.get).toHaveBeenCalledOnce();
-      expect(httpClient.get).toHaveBeenCalledWith('/products/123');
-
-      // And: Returns transformed product
-      expect(result.id).toBe(123);
+      // Then: Returns the product
+      expect(result.id).toBe(1);
+      expect(result.name).toBeDefined();
+      expect(result.sku).toBeDefined();
     });
 
-    it('should trim whitespace from text fields', async () => {
-      // Given: Product with whitespace
-      const mockProduct = createMockProduct({
-        name: '  Product  ',
-        sku: '  SKU  ',
-        description: '  Desc  ',
-      });
-      vi.mocked(httpClient.get).mockResolvedValue(mockProduct);
+    it('should throw error for non-existent product', async () => {
+      // When/Then: Getting non-existent product throws
+      await expect(productService.getProduct(9999)).rejects.toThrow(
+        'Product not found with ID: 9999'
+      );
+    });
 
+    it('should return product with all fields', async () => {
       // When: Get product
       const result = await productService.getProduct(1);
 
-      // Then: Data is trimmed
-      expect(result.name).toBe('Product');
-      expect(result.sku).toBe('SKU');
-      expect(result.description).toBe('Desc');
-    });
-
-    it('should handle null optional fields', async () => {
-      // Given: Product with null fields
-      const mockProduct = createMockProduct({
-        description: null,
-        productTypeName: null,
-        baseUnitPrice: null,
-        unit: null,
-      });
-      vi.mocked(httpClient.get).mockResolvedValue(mockProduct);
-
-      // When: Get product
-      const result = await productService.getProduct(1);
-
-      // Then: Null fields remain null
-      expect(result.description).toBeNull();
-      expect(result.productTypeName).toBeNull();
-      expect(result.baseUnitPrice).toBeNull();
-      expect(result.unit).toBeNull();
-    });
-
-    it('should propagate 404 errors', async () => {
-      // Given: Product not found
-      vi.mocked(httpClient.get).mockRejectedValue(mockApiErrors.notFound);
-
-      // When/Then: Propagates 404
-      await expect(productService.getProduct(999)).rejects.toEqual(mockApiErrors.notFound);
+      // Then: Has all fields
+      expect(result.id).toBe(1);
+      expect(result.sku).toBe('CNC-AL-001');
+      expect(result.name).toBe('Aluminum CNC Bracket');
+      expect(result.productTypeName).toBe('CNC Parts');
+      expect(result.baseUnitPrice).toBe(45000);
+      expect(result.unit).toBe('EA');
+      expect(result.isActive).toBe(true);
     });
   });
 });

@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { quotationService } from '@/services';
 import type { QuotationDetails, QuotationStatus } from '@/services';
 import type { PaginationMetadata } from '@/api/types';
+import { formatDate, formatCurrency } from '@/shared/utils';
 import {
   Badge,
   Card,
@@ -102,25 +103,6 @@ export function QuotationTable({
   useEffect(() => {
     fetchQuotations();
   }, [fetchQuotations, refreshTrigger, search]);
-
-  // Format date utility
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-  };
-
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ko-KR', {
-      style: 'currency',
-      currency: 'KRW',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Render loading state
   if (isLoading) {

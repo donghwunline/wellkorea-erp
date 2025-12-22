@@ -12,6 +12,7 @@
 import { useCallback, useState } from 'react';
 import { productService } from '@/services';
 import type { LineItemRequest } from '@/services';
+import { formatCurrency } from '@/shared/utils';
 import {
   Button,
   Card,
@@ -24,11 +25,20 @@ import {
   Table,
 } from '@/components/ui';
 
+/**
+ * Extended line item with display name for UI rendering.
+ * The name is stored locally for display purposes only.
+ */
+export interface LineItemWithName extends LineItemRequest {
+  productName: string;
+  productSku: string;
+}
+
 export interface ProductSelectorProps {
-  /** Current line items */
-  lineItems: LineItemRequest[];
+  /** Current line items with display names */
+  lineItems: LineItemWithName[];
   /** Called when line items change */
-  onChange: (lineItems: LineItemRequest[]) => void;
+  onChange: (lineItems: LineItemWithName[]) => void;
   /** Whether the form is disabled */
   disabled?: boolean;
 }
@@ -110,8 +120,10 @@ export function ProductSelector({
     if (isNaN(parsedQuantity) || parsedQuantity <= 0) return;
     if (isNaN(parsedUnitPrice) || parsedUnitPrice < 0) return;
 
-    const newLineItem: LineItemRequest = {
+    const newLineItem: LineItemWithName = {
       productId: selectedProduct.productId,
+      productName: selectedProduct.name,
+      productSku: selectedProduct.sku,
       quantity: parsedQuantity,
       unitPrice: parsedUnitPrice,
       notes: note.trim() || undefined,
@@ -163,15 +175,6 @@ export function ProductSelector({
     },
     [lineItems, onChange]
   );
-
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ko-KR', {
-      style: 'currency',
-      currency: 'KRW',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Calculate total
   const totalAmount = lineItems.reduce(
@@ -285,7 +288,10 @@ export function ProductSelector({
                 <Table.Row key={index}>
                   <Table.Cell className="text-steel-400">{index + 1}</Table.Cell>
                   <Table.Cell>
-                    <span className="text-white">Product #{item.productId}</span>
+                    <div>
+                      <span className="font-medium text-white">{item.productName}</span>
+                      <span className="ml-2 text-sm text-steel-400">({item.productSku})</span>
+                    </div>
                   </Table.Cell>
                   <Table.Cell className="text-right">
                     {disabled ? (
@@ -296,7 +302,7 @@ export function ProductSelector({
                         min="1"
                         value={item.quantity}
                         onChange={e => handleQuantityChange(index, e.target.value)}
-                        className="w-20 text-right"
+                        className="w-24 text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                     )}
                   </Table.Cell>
@@ -309,7 +315,7 @@ export function ProductSelector({
                         min="0"
                         value={item.unitPrice}
                         onChange={e => handleUnitPriceChange(index, e.target.value)}
-                        className="w-28 text-right"
+                        className="w-32 text-right [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
                     )}
                   </Table.Cell>

@@ -7,7 +7,8 @@
  * fetch full details after a command operation if needed.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useServiceActions } from '@/shared/hooks';
 import { quotationService } from '@/services';
 import type {
   CommandResult,
@@ -33,131 +34,82 @@ export interface UseQuotationActionsReturn {
  * Hook that provides quotation action handlers with loading and error state.
  */
 export function useQuotationActions(): UseQuotationActionsReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+  const { isLoading, error, clearError, wrapAction } = useServiceActions();
 
   const getQuotation = useCallback(
-    async (id: number): Promise<QuotationDetails> => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const quotation = await quotationService.getQuotation(id);
-        return quotation;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'An error occurred';
-        setError(message);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
+    (id: number) => wrapAction(quotationService.getQuotation, 'Failed to load quotation')(id),
+    [wrapAction]
   );
 
   const createQuotation = useCallback(
-    async (data: CreateQuotationRequest): Promise<CommandResult> => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        return await quotationService.createQuotation(data);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'An error occurred';
-        setError(message);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
+    (data: CreateQuotationRequest) =>
+      wrapAction(quotationService.createQuotation, 'Failed to create quotation')(data),
+    [wrapAction]
   );
 
   const updateQuotation = useCallback(
-    async (id: number, data: UpdateQuotationRequest): Promise<CommandResult> => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        return await quotationService.updateQuotation(id, data);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'An error occurred';
-        setError(message);
-        throw err;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
+    (id: number, data: UpdateQuotationRequest) =>
+      wrapAction(
+        (i: number, d: UpdateQuotationRequest) => quotationService.updateQuotation(i, d),
+        'Failed to update quotation'
+      )(id, data),
+    [wrapAction]
   );
 
-  const submitForApproval = useCallback(async (id: number): Promise<CommandResult> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      return await quotationService.submitForApproval(id);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const submitForApproval = useCallback(
+    (id: number) =>
+      wrapAction(quotationService.submitForApproval, 'Failed to submit for approval')(id),
+    [wrapAction]
+  );
 
-  const createNewVersion = useCallback(async (id: number): Promise<CommandResult> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      return await quotationService.createNewVersion(id);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const createNewVersion = useCallback(
+    (id: number) =>
+      wrapAction(quotationService.createNewVersion, 'Failed to create new version')(id),
+    [wrapAction]
+  );
 
-  const downloadPdf = useCallback(async (id: number, filename?: string): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await quotationService.downloadPdf(id, filename);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const downloadPdf = useCallback(
+    (id: number, filename?: string) =>
+      wrapAction(
+        (i: number, f?: string) => quotationService.downloadPdf(i, f),
+        'Failed to download PDF'
+      )(id, filename),
+    [wrapAction]
+  );
 
-  const sendRevisionNotification = useCallback(async (id: number): Promise<void> => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await quotationService.sendRevisionNotification(id);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      setError(message);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const sendRevisionNotification = useCallback(
+    (id: number) =>
+      wrapAction(
+        quotationService.sendRevisionNotification,
+        'Failed to send revision notification'
+      )(id),
+    [wrapAction]
+  );
 
-  return {
-    isLoading,
-    error,
-    getQuotation,
-    createQuotation,
-    updateQuotation,
-    submitForApproval,
-    createNewVersion,
-    downloadPdf,
-    sendRevisionNotification,
-    clearError,
-  };
+  return useMemo(
+    () => ({
+      isLoading,
+      error,
+      getQuotation,
+      createQuotation,
+      updateQuotation,
+      submitForApproval,
+      createNewVersion,
+      downloadPdf,
+      sendRevisionNotification,
+      clearError,
+    }),
+    [
+      isLoading,
+      error,
+      getQuotation,
+      createQuotation,
+      updateQuotation,
+      submitForApproval,
+      createNewVersion,
+      downloadPdf,
+      sendRevisionNotification,
+      clearError,
+    ]
+  );
 }
