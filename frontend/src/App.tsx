@@ -10,7 +10,8 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { AuditLogPage } from './pages/admin/AuditLogPage';
-import { ApprovalChainConfigPage } from './pages/admin/ApprovalChainConfigPage';
+import { ApprovalChainConfigPage } from './pages/approval/ApprovalChainConfigPage.tsx';
+import { ApprovalListPage } from './pages/approval/ApprovalListPage.tsx';
 import {
   ProjectCreatePage,
   ProjectEditPage,
@@ -23,7 +24,6 @@ import {
   QuotationEditPage,
   QuotationListPage,
 } from './pages/quotations';
-import { ApprovalListPage } from '@/pages/quotations/ApprovalListPage.tsx';
 
 const NotFoundPage = () => (
   <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-steel-950">

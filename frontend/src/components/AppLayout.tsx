@@ -73,9 +73,8 @@ const NAV_ITEMS: NavItem[] = [
 const APPROVAL_NAV_ITEMS: NavItem[] = [
   {
     label: 'Pending Approvals',
-    path: '/approvals',
+    path: '/approvals/pending',
     icon: 'check-circle',
-    roles: ['ROLE_ADMIN'],
   },
   {
     label: 'Approval Chains',
