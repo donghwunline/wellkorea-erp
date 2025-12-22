@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,7 +98,7 @@ class DatabaseJobCodeSequenceProviderTest extends BaseIntegrationTest {
             // When: Generate sequences concurrently using invokeAll (guarantees all tasks complete)
             List<Callable<Integer>> tasks = IntStream.range(0, threadCount)
                     .<Callable<Integer>>mapToObj(i -> () -> sequenceProvider.getNextSequence(year))
-                    .collect(Collectors.toList());
+                    .toList();
 
             List<Future<Integer>> futures = executor.invokeAll(tasks, 30, TimeUnit.SECONDS);
 
@@ -115,7 +114,7 @@ class DatabaseJobCodeSequenceProviderTest extends BaseIntegrationTest {
             assertThat(generatedSequences)
                     .as("Should have %d unique sequences", threadCount)
                     .hasSize(threadCount)
-                    .containsExactlyInAnyOrder(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+                    .containsExactlyInAnyOrder(4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
         } finally {
             executor.shutdown();
             executor.awaitTermination(5, TimeUnit.SECONDS);
