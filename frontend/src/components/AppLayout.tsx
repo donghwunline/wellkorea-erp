@@ -47,6 +47,12 @@ const NAV_ITEMS: NavItem[] = [
     icon: 'box',
   },
   {
+    label: 'Companies',
+    path: '/companies',
+    icon: 'building-office',
+    roles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'],
+  },
+  {
     label: 'Production',
     path: '/production',
     icon: 'cog',

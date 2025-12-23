@@ -24,6 +24,7 @@ import {
   QuotationEditPage,
   QuotationListPage,
 } from './pages/quotations';
+import { CompanyListPage, CompanyDetailPage, CreateCompanyPage } from './pages/companies';
 
 const NotFoundPage = () => (
   <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-steel-950">
@@ -214,6 +215,48 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <ApprovalListPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Company routes */}
+          <Route
+            path="/companies"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <CompanyListPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/companies/new"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <CreateCompanyPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/companies/:id"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <CompanyDetailPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/companies/:id/edit"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <PlaceholderPage title="Edit Company" />
                 </AppLayout>
               </ProtectedRoute>
             }
