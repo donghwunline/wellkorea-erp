@@ -17,17 +17,21 @@ vi.mock('@/services', async importOriginal => {
   const original = await importOriginal<typeof import('@/services')>();
   return {
     ...original,
-    customerService: {
-      getCustomers: vi.fn().mockResolvedValue({
+    companyService: {
+      getCompanies: vi.fn().mockResolvedValue({
         data: [
-          { id: 1, name: 'Samsung Electronics', isActive: true, createdAt: '2025-01-01' },
-          { id: 2, name: 'LG Display', isActive: true, createdAt: '2025-01-01' },
-          { id: 3, name: 'SK Hynix', isActive: true, createdAt: '2025-01-01' },
+          { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com', roles: [{ id: 1, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
+          { id: 2, name: 'LG Display', email: 'contact@lgdisplay.com', roles: [{ id: 2, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
+          { id: 3, name: 'SK Hynix', email: 'contact@skhynix.com', roles: [{ id: 3, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
         ],
-        page: 0,
-        size: 20,
-        totalElements: 3,
-        totalPages: 1,
+        pagination: {
+          page: 0,
+          size: 20,
+          totalElements: 3,
+          totalPages: 1,
+          first: true,
+          last: true,
+        },
       }),
     },
     userService: {

@@ -2,13 +2,13 @@
  * Project Form Component
  *
  * Reusable form for creating and editing projects.
- * Uses CustomerCombobox and UserCombobox for async data loading.
+ * Uses CompanyCombobox (filtered by CUSTOMER role) and UserCombobox for async data loading.
  */
 
 import { type FormEvent, useState } from 'react';
 import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
 import { Button, DatePicker, ErrorAlert, FormField } from '@/components/ui';
-import { CustomerCombobox, UserCombobox } from '@/components/features/shared/selectors';
+import { CompanyCombobox, UserCombobox } from '@/components/features/shared/selectors';
 
 export interface ProjectFormProps {
   /** Form mode: 'create' or 'edit' */
@@ -104,12 +104,12 @@ export function ProjectForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <ErrorAlert message={error} onDismiss={onDismissError} />}
 
-      {/* Customer Selection */}
-      <CustomerCombobox
+      {/* Customer Selection (Company with CUSTOMER role) */}
+      <CompanyCombobox
         label="Customer"
         value={formData.customerId}
         onChange={value => setFormData(prev => ({ ...prev, customerId: value }))}
-        placeholder="Search or select a customer..."
+        roleType="CUSTOMER"
         required
         disabled={isSubmitting || mode === 'edit'}
         helpText={mode === 'edit' ? 'Customer cannot be changed after creation' : undefined}
