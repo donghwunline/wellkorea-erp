@@ -9,14 +9,11 @@ import io.jsonwebtoken.security.SecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 /**
  * JWT token provider for generating and validating JWT tokens.
@@ -45,23 +42,6 @@ public class JwtTokenProvider {
 
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.validityInMilliseconds = validityInMilliseconds;
-    }
-
-    /**
-     * Generate JWT token from Authentication object.
-     * Note: This method does not include userId in the token.
-     * For production use, prefer generateToken(String, String, Long).
-     *
-     * @param authentication Spring Security Authentication
-     * @return JWT token string
-     */
-    public String generateToken(Authentication authentication) {
-        String username = authentication.getName();
-        String roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        return generateToken(username, roles, null);
     }
 
     /**
@@ -99,16 +79,18 @@ public class JwtTokenProvider {
         return getClaims(token).getSubject();
     }
 
-    // TODO Consider changing it return List<String>
-
     /**
      * Extract roles from JWT token.
      *
      * @param token JWT token
-     * @return Comma-separated roles string
+     * @return Array of role strings (e.g., ["ROLE_ADMIN", "ROLE_FINANCE"])
      */
-    public String getRoles(String token) {
-        return getClaims(token).get("roles", String.class);
+    public String[] getRoles(String token) {
+        String rolesString = getClaims(token).get("roles", String.class);
+        if (rolesString == null || rolesString.isEmpty()) {
+            return new String[0];
+        }
+        return rolesString.split(",");
     }
 
     /**
@@ -164,19 +146,5 @@ public class JwtTokenProvider {
             log.error("Unexpected error during token validation", e);
             throw new InvalidJwtAuthenticationException("Token validation failed", e);
         }
-    }
-
-
-    /**
-     * Extract token from Authorization header.
-     *
-     * @param authorizationHeader Authorization header value
-     * @return JWT token string, or null if not found
-     */
-    public String extractTokenFromHeader(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        }
-        return null;
     }
 }
