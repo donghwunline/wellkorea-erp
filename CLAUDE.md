@@ -191,9 +191,9 @@ wellkorea-erp/
 
 ## Architecture Patterns
 
-### Backend Architecture (Layered DDD)
+### Backend Architecture (Layered DDD + CQRS)
 
-Backend follows a layered Domain-Driven Design approach:
+Backend follows a layered Domain-Driven Design approach with **CQRS (Command Query Responsibility Segregation)** pattern:
 
 ```
 com/wellkorea/backend/
@@ -202,11 +202,41 @@ com/wellkorea/backend/
 │   ├── dto/             # ApiResponse, ErrorResponse
 │   └── exception/       # GlobalExceptionHandler, ErrorCode
 │
-├── {domain}/            # Feature-specific packages (auth, project, document)
-│   ├── api/            # REST controllers, DTOs (presentation layer)
-│   ├── application/    # Use cases, services (application layer)
-│   ├── domain/         # Entities, value objects, domain logic
+├── {domain}/            # Feature-specific packages (auth, project, quotation)
+│   ├── api/            # REST controllers
+│   │   └── dto/
+│   │       ├── command/   # Request DTOs, CommandResult DTOs
+│   │       └── query/     # View DTOs (DetailView, SummaryView)
+│   ├── application/    # Use cases (CQRS services)
+│   │   ├── {Domain}CommandService.java  # Write operations
+│   │   ├── {Domain}QueryService.java    # Read operations
+│   │   └── {Create/Update}Command.java  # Internal command objects
+│   ├── domain/         # Entities, value objects, domain events
+│   │   └── event/      # Domain events (e.g., QuotationSubmittedEvent)
 │   └── infrastructure/ # Persistence, external services
+```
+
+**CQRS Pattern** (see `quotation/` package for reference implementation):
+- **Separate Command and Query Services**:
+  - `{Domain}CommandService` - `@Transactional`, handles create/update/delete, returns **only entity IDs**
+  - `{Domain}QueryService` - `@Transactional(readOnly = true)`, handles reads, returns **View DTOs**
+- **DTO Segregation**:
+  - `api/dto/command/` - Request DTOs (`CreateXxxRequest`), Result DTOs (`XxxCommandResult`)
+  - `api/dto/query/` - View DTOs (`XxxDetailView`, `XxxSummaryView`) with static `from(Entity)` factory
+- **Controller Pattern**:
+  - Inject both `CommandService` and `QueryService`
+  - Command endpoints return `CommandResult` (ID + message), clients fetch fresh data via query endpoints
+  - Clear endpoint grouping: `// ========== QUERY ENDPOINTS ==========` and `// ========== COMMAND ENDPOINTS ==========`
+
+**Command Pattern Example**:
+```java
+// Controller: Request DTO → Command object → CommandService
+CreateQuotationCommand command = new CreateQuotationCommand(request.projectId(), ...);
+Long quotationId = commandService.createQuotation(command, userId);
+return QuotationCommandResult.created(quotationId);  // Returns only ID
+
+// Client fetches fresh data via query endpoint
+GET /api/quotations/{id} → queryService.getQuotationDetail(id) → QuotationDetailView
 ```
 
 **Key Patterns**:
@@ -215,12 +245,17 @@ com/wellkorea/backend/
 - **Global Exception Handling**: `@RestControllerAdvice` with `GlobalExceptionHandler` for centralized error handling
 - **JWT Authentication**: Custom `JwtAuthenticationFilter` with token refresh support (temporary, will migrate to Keycloak OAuth2)
 - **Audit Logging**: `AuditLogger` with `AuditContextHolder` for request context tracking
+- **Domain Events**: Use `DomainEventPublisher` for cross-domain communication (e.g., approval workflow)
 
 ### Frontend Architecture (Layered Service Pattern)
 
 Frontend uses a layered service pattern with strict import boundaries enforced by ESLint.
 
-**See [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) for complete architecture documentation.**
+**IMPORTANT: See [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) for complete architecture documentation including:**
+- Layer definitions (pages, features, ui, services, stores, hooks, api)
+- Dependency flow diagram and import rules matrix
+- ESLint rule configuration
+- Code examples and anti-patterns
 
 ```
 frontend/src/
