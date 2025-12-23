@@ -627,9 +627,7 @@ class ServiceCategoryCommandServiceTest {
                 .roleType(roleType)
                 .build();
 
-        Set<CompanyRole> roles = new HashSet<>();
-        roles.add(role);
-        company.setRoles(roles);
+        company.addRole(role);
 
         return company;
     }

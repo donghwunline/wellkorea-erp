@@ -204,9 +204,10 @@ class ServiceCategoryControllerTest extends BaseIntegrationTest implements TestF
 
         @BeforeEach
         void setUpCategories() {
-            insertTestServiceCategory(1L, "CNC Machining");
-            insertTestServiceCategory(2L, "Laser Cutting");
-            insertTestServiceCategory(3L, "Surface Painting");
+            // Use IDs 100+ to avoid conflicts with seeded data (IDs 1-8 are used in V5__seed_initial_data.sql)
+            insertTestServiceCategory(101L, "CNC Machining");
+            insertTestServiceCategory(102L, "Laser Cutting");
+            insertTestServiceCategory(103L, "Surface Painting");
         }
 
         @Test
@@ -438,10 +439,11 @@ class ServiceCategoryControllerTest extends BaseIntegrationTest implements TestF
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isNoContent());
 
-            // Verify category is deactivated (not returned in list)
+            // Verify category is deactivated (soft-delete sets isActive=false)
             mockMvc.perform(get(SERVICE_CATEGORIES_URL + "/300")
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.isActive").value(false));
         }
 
         @Test

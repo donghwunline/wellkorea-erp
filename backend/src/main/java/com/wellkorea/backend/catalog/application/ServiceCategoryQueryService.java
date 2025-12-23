@@ -47,7 +47,7 @@ public class ServiceCategoryQueryService {
     public ServiceCategoryDetailView getServiceCategoryDetail(Long categoryId) {
         ServiceCategory category = serviceCategoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("ServiceCategory", categoryId));
-        int vendorCount = (int) vendorOfferingRepository.countByServiceCategoryId(categoryId);
+        int vendorCount = (int) vendorOfferingRepository.countByServiceCategory_Id(categoryId);
         return ServiceCategoryDetailView.from(category, vendorCount);
     }
 
@@ -60,7 +60,7 @@ public class ServiceCategoryQueryService {
     public Page<ServiceCategorySummaryView> listServiceCategories(Pageable pageable) {
         Page<ServiceCategory> categories = serviceCategoryRepository.findByActiveTrue(pageable);
         return categories.map(cat -> {
-            int vendorCount = (int) vendorOfferingRepository.countByServiceCategoryId(cat.getId());
+            int vendorCount = (int) vendorOfferingRepository.countByServiceCategory_Id(cat.getId());
             return ServiceCategorySummaryView.from(cat, vendorCount);
         });
     }
@@ -78,7 +78,7 @@ public class ServiceCategoryQueryService {
         }
         Page<ServiceCategory> categories = serviceCategoryRepository.searchByName(search, pageable);
         return categories.map(cat -> {
-            int vendorCount = (int) vendorOfferingRepository.countByServiceCategoryId(cat.getId());
+            int vendorCount = (int) vendorOfferingRepository.countByServiceCategory_Id(cat.getId());
             return ServiceCategorySummaryView.from(cat, vendorCount);
         });
     }
@@ -92,7 +92,7 @@ public class ServiceCategoryQueryService {
         List<ServiceCategory> categories = serviceCategoryRepository.findByActiveTrue();
         return categories.stream()
                 .map(cat -> {
-                    int vendorCount = (int) vendorOfferingRepository.countByServiceCategoryId(cat.getId());
+                    int vendorCount = (int) vendorOfferingRepository.countByServiceCategory_Id(cat.getId());
                     return ServiceCategorySummaryView.from(cat, vendorCount);
                 })
                 .toList();
@@ -108,7 +108,7 @@ public class ServiceCategoryQueryService {
      * @return Page of vendor offering views
      */
     public Page<VendorServiceOfferingView> getOfferingsForServiceCategory(Long serviceCategoryId, Pageable pageable) {
-        Page<VendorServiceOffering> offerings = vendorOfferingRepository.findByServiceCategoryId(serviceCategoryId, pageable);
+        Page<VendorServiceOffering> offerings = vendorOfferingRepository.findByServiceCategory_Id(serviceCategoryId, pageable);
         return offerings.map(VendorServiceOfferingView::from);
     }
 
@@ -135,7 +135,7 @@ public class ServiceCategoryQueryService {
      * @return Page of vendor offering views
      */
     public Page<VendorServiceOfferingView> getOfferingsForVendor(Long vendorId, Pageable pageable) {
-        Page<VendorServiceOffering> offerings = vendorOfferingRepository.findByVendorId(vendorId, pageable);
+        Page<VendorServiceOffering> offerings = vendorOfferingRepository.findByVendor_Id(vendorId, pageable);
         return offerings.map(VendorServiceOfferingView::from);
     }
 

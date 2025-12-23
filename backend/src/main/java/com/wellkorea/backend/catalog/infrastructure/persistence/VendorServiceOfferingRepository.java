@@ -20,12 +20,12 @@ public interface VendorServiceOfferingRepository extends JpaRepository<VendorSer
     /**
      * Find offerings by service category.
      */
-    Page<VendorServiceOffering> findByServiceCategoryId(Long serviceCategoryId, Pageable pageable);
+    Page<VendorServiceOffering> findByServiceCategory_Id(Long serviceCategoryId, Pageable pageable);
 
     /**
      * Find offerings by vendor.
      */
-    Page<VendorServiceOffering> findByVendorId(Long vendorId, Pageable pageable);
+    Page<VendorServiceOffering> findByVendor_Id(Long vendorId, Pageable pageable);
 
     /**
      * Find current offerings for a service category (within effective date range).
@@ -80,5 +80,5 @@ public interface VendorServiceOfferingRepository extends JpaRepository<VendorSer
     /**
      * Count offerings by service category.
      */
-    long countByServiceCategoryId(Long serviceCategoryId);
+    long countByServiceCategory_Id(Long serviceCategoryId);
 }
