@@ -155,7 +155,7 @@ export function ApprovalChainConfigPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="Approval Chain Configuration"
+          title="결재 설정"
           description="Configure approval workflows for different entity types"
         />
       </PageHeader>

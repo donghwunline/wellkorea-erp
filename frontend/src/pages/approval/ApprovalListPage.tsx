@@ -140,7 +140,7 @@ export function ApprovalListPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="Approval Requests"
+          title="결재 대기 문서"
           description="Review and process pending approval requests"
         />
       </PageHeader>

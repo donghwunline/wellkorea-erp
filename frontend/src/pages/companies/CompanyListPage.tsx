@@ -11,16 +11,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Alert,
-  Button,
-  Icon,
-  PageHeader,
-  SearchBar,
-  Tabs,
-  TabList,
-  Tab,
-} from '@/components/ui';
+import { Alert, Button, Icon, PageHeader, SearchBar, Tab, TabList, Tabs } from '@/components/ui';
 import { CompanyTable } from '@/components/features/companies';
 import { usePaginatedSearch } from '@/shared/hooks';
 import type { RoleType } from '@/services';
@@ -77,7 +68,7 @@ export function CompanyListPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="Companies"
+          title="CRM"
           description="Manage customers, vendors, and outsource partners"
         />
         <PageHeader.Actions>

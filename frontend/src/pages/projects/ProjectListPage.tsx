@@ -43,10 +43,7 @@ export function ProjectListPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title="Projects"
-          description="Manage customer projects and job codes"
-        />
+        <PageHeader.Title title="프로젝트" description="Manage customer projects and job codes" />
         <PageHeader.Actions>
           <Button onClick={handleCreate}>
             <Icon name="plus" className="h-5 w-5" />

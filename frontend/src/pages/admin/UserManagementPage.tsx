@@ -75,10 +75,7 @@ export function UserManagementPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title="User Management"
-          description="Manage system users and their roles"
-        />
+        <PageHeader.Title title="사용자 관리" description="Manage system users and their roles" />
         <PageHeader.Actions>
           <Button onClick={() => openModal('create')}>
             <Icon name="plus" className="h-5 w-5" />

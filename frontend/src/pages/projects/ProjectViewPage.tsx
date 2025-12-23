@@ -31,7 +31,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails, ProjectSection } from '@/services';
 import { useAuth } from '@/shared/hooks';
 import type { RoleName } from '@/shared/types';
-import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabOverflow, TabPanel, Tabs, } from '@/components/ui';
+import {
+  Alert,
+  Card,
+  Icon,
+  PageHeader,
+  Spinner,
+  Tab,
+  TabList,
+  TabOverflow,
+  TabPanel,
+  Tabs,
+} from '@/components/ui';
 import {
   ProjectDetailsCard,
   ProjectKPIStrip,
@@ -70,9 +81,9 @@ interface TabConfig {
 const ALL_TABS: TabConfig[] = [
   { id: 'overview', label: '개요' },
   { id: 'quotation', label: '견적', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
-  { id: 'process', label: '공정/진행률' },
+  { id: 'process', label: '공정' },
   { id: 'outsource', label: '외주관리' },
-  { id: 'delivery', label: '출고관리' },
+  { id: 'delivery', label: '출고' },
   { id: 'documents', label: '문서' },
   { id: 'finance', label: '정산관리', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE'] },
 ];

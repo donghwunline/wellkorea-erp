@@ -138,7 +138,7 @@ export function QuotationListPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="Quotations" description="View and manage all quotations" />
+        <PageHeader.Title title="견적" description="View and manage all quotations" />
         <PageHeader.Actions>
           <Button onClick={() => navigate('/quotations/create')}>
             <Icon name="plus" className="h-5 w-5" />
