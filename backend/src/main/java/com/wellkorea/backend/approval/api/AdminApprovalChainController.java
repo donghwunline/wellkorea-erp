@@ -1,8 +1,8 @@
 package com.wellkorea.backend.approval.api;
 
-import com.wellkorea.backend.approval.api.dto.query.ChainTemplateView;
-import com.wellkorea.backend.approval.api.dto.command.UpdateChainLevelsRequest;
 import com.wellkorea.backend.approval.api.dto.command.ApprovalCommandResult;
+import com.wellkorea.backend.approval.api.dto.command.UpdateChainLevelsRequest;
+import com.wellkorea.backend.approval.api.dto.query.ChainTemplateView;
 import com.wellkorea.backend.approval.application.ApprovalCommandService;
 import com.wellkorea.backend.approval.application.ApprovalQueryService;
 import com.wellkorea.backend.approval.application.ChainLevelCommand;
@@ -27,9 +27,8 @@ public class AdminApprovalChainController {
     private final ApprovalCommandService commandService;
     private final ApprovalQueryService queryService;
 
-    public AdminApprovalChainController(
-            ApprovalCommandService commandService,
-            ApprovalQueryService queryService) {
+    public AdminApprovalChainController(ApprovalCommandService commandService,
+                                        ApprovalQueryService queryService) {
         this.commandService = commandService;
         this.queryService = queryService;
     }
@@ -67,9 +66,8 @@ public class AdminApprovalChainController {
      * PUT /api/admin/approval-chains/{id}/levels
      */
     @PutMapping("/{id}/levels")
-    public ResponseEntity<ApiResponse<ApprovalCommandResult>> updateChainLevels(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateChainLevelsRequest request) {
+    public ResponseEntity<ApiResponse<ApprovalCommandResult>> updateChainLevels(@PathVariable Long id,
+                                                                                @Valid @RequestBody UpdateChainLevelsRequest request) {
 
         var commands = request.levels().stream()
                 .map(l -> new ChainLevelCommand(
