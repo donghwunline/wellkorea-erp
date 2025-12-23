@@ -1,15 +1,15 @@
 # Implementation Plan: WellKorea Integrated Work System (ERP)
 
-**Branch**: `001-erp-core` | **Date**: 2025-12-01 | **Spec**: [spec.md](./spec.md)
+**Branch**: `001-erp-core` | **Date**: 2025-12-01 (Updated: 2025-12-23) | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-erp-core/spec.md`
-
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
 The WellKorea Integrated Work System consolidates fragmented job lifecycle data into a unified web application managing the complete workflow from customer request through project creation, quotation & approval, production tracking, delivery, invoicing, and financial reporting.
 
 **Key Architectural Clarification**: **Project** is the core domain entity representing a customer work request. **JobCode** (format: WK2{year}-{sequence}-{date}) is the unique business identifier for each Project. All business logic centers around the Project entity, with JobCode serving as its human-readable, memorable key for cross-functional communication.
+
+**Key Update (2025-12-23)**: **Company Unification** - Customer and Supplier merged into unified `Company` entity with `CompanyRole` for CUSTOMER/VENDOR/OUTSOURCE differentiation. **VendorServiceOffering** added to support "select service category → get vendor/price list" functionality per FR-053.
 
 **Technical Approach**: Spring Boot backend with REST APIs, PostgreSQL database, React frontend. Granular quotation-to-invoice tracking at product-quantity level to prevent double-billing. Role-based access control (Admin/Finance/Production/Sales) with audit logging for compliance.
 
@@ -190,24 +190,46 @@ backend/                                       # Spring Boot application
 │   │           ├── TaxInvoiceRepository.java
 │   │           └── PaymentRepository.java
 │   │
+│   ├── company/                              # Company domain module (unified Customer/Vendor)
+│   │   ├── domain/
+│   │   │   ├── Company.java                  # Unified entity for Customer/Vendor/Outsource
+│   │   │   ├── CompanyRole.java              # CUSTOMER, VENDOR, OUTSOURCE roles
+│   │   │   └── RoleType.java                 # Role enum
+│   │   ├── application/
+│   │   │   └── CompanyService.java
+│   │   ├── api/
+│   │   │   ├── CompanyController.java
+│   │   │   └── dto/
+│   │   └── infrastructure/
+│   │       └── persistence/
+│   │           ├── CompanyRepository.java
+│   │           └── CompanyRoleRepository.java
+│   │
 │   ├── purchasing/                           # Purchasing & RFQ domain module
 │   │   ├── domain/
-│   │   │   ├── RFQ.java
+│   │   │   ├── ServiceCategory.java          # CNC, etching, painting, etc.
+│   │   │   ├── VendorServiceOffering.java    # Vendor-specific service pricing
+│   │   │   ├── PurchaseRequest.java          # Purchase/outsource request
+│   │   │   ├── RFQItem.java                  # RFQ sent to vendor
 │   │   │   ├── PurchaseOrder.java
-│   │   │   ├── Supplier.java
-│   │   │   └── RFQStatus.java
+│   │   │   └── PurchaseOrderStatus.java
 │   │   ├── application/
+│   │   │   ├── PurchaseRequestService.java
+│   │   │   ├── VendorSuggestionService.java  # Suggests vendors by service category
 │   │   │   ├── RFQService.java
-│   │   │   ├── VendorSuggestionService.java
 │   │   │   └── EmailService.java
 │   │   ├── api/
-│   │   │   ├── RFQController.java
+│   │   │   ├── ServiceCategoryController.java
+│   │   │   ├── VendorOfferingController.java
+│   │   │   ├── PurchaseRequestController.java
 │   │   │   ├── PurchaseOrderController.java
 │   │   │   └── dto/
 │   │   └── infrastructure/
 │   │       └── persistence/
-│   │           ├── RFQRepository.java
-│   │           └── SupplierRepository.java
+│   │           ├── ServiceCategoryRepository.java
+│   │           ├── VendorServiceOfferingRepository.java
+│   │           ├── PurchaseRequestRepository.java
+│   │           └── PurchaseOrderRepository.java
 │   │
 │   ├── document/                             # Document management domain module
 │   │   ├── domain/
@@ -288,10 +310,12 @@ frontend/                                     # React application
 
 **Key Architectural Decisions**:
 - **Domain isolation**: Each domain module is self-contained with clear boundaries (no cross-domain imports)
-- **Consistent layering**: All 9 domains follow the same 4-layer structure (domain → application → api + infrastructure/persistence)
+- **Consistent layering**: All domains follow the same 4-layer structure (domain → application → api + infrastructure/persistence)
 - **Explicit `/persistence` subfolder**: JPA repositories always under `infrastructure/persistence/` for clarity
 - **Dependency direction**: `api/` and `infrastructure/` depend on `application/`; `application/` depends on `domain/`; `domain/` has zero external dependencies
 - **Project is core domain**: JobCode is the unique business identifier on Project entity
+- **Company unification (2025-12-23)**: Customer and Supplier merged into `Company` with `CompanyRole` to handle dual roles (same company can be Customer AND Vendor)
+- **VendorServiceOffering (2025-12-23)**: Enables "select service → get vendor/price list" for purchasing/outsourcing (FR-053)
 - **Approval is cross-cutting domain**: Handles approval workflows for quotations and other entities (승인/결재)
 - **Shared infrastructure**: Technical utilities (exceptions, config, audit logging) in `shared/` package
 - **Test organization**: Tests mirror domain structure (`src/test/java/.../project/`, `.../quotation/`, etc.)

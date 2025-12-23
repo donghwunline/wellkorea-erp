@@ -1,6 +1,6 @@
 # Phase 0: Research & Clarifications
 
-**Date**: 2025-11-24 (Updated: 2025-12-01)
+**Date**: 2025-11-24 (Updated: 2025-12-23)
 **Branch**: `001-erp-core`
 **Status**: Complete
 
@@ -9,9 +9,210 @@
 - **Domain-oriented backend**: Code organized by business domain (Project, Quotation, Approval, etc.) rather than technical layer
 - **Approval as separate domain**: Approval workflows extracted from Quotation domain for reusability
 
+**Key Architectural Clarifications (2025-12-23)**:
+- **Company unification**: Customer and Supplier merged into single `Company` entity with `CompanyRole` for role differentiation
+- **VendorServiceOffering**: New entity for vendor-specific service pricing to support "select service → get vendor/price list" feature
+- **ServiceCategory**: Purchase/outsource services (CNC, etching, painting) managed separately from sales Products
+
 ---
 
-## Architectural Decisions (Updated 2025-12-01)
+## Architectural Decisions (Updated 2025-12-23)
+
+### Company Unification (Customer + Supplier → Company + CompanyRole)
+
+**Decision**: Merge `Customer` and `Supplier` entities into a single `Company` entity with `CompanyRole` for differentiation.
+
+**Rationale**:
+- **B2B reality**: In manufacturing B2B, a company can be both a customer (buys products) AND a vendor (provides outsourcing services)
+- **Data integrity**: Prevents duplicate company records with same 사업자등록번호
+- **Simplified AR/AP**: Net receivables/payables can be calculated per company
+- **Single source of truth**: Company master data (name, address, contact) maintained in one place
+
+**Implementation**:
+
+```java
+@Entity
+@Table(name = "companies")
+public class Company {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(name = "registration_number", unique = true)
+    private String registrationNumber;  // 사업자등록번호
+
+    private String representative;       // 대표자명
+    private String businessType;         // 업태
+    private String businessCategory;     // 업종
+    private String contactPerson;
+    private String phone;
+    private String email;
+    private String address;
+    private String bankAccount;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentTerms paymentTerms;
+
+    private boolean isActive = true;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL)
+    private List<CompanyRole> roles = new ArrayList<>();
+}
+
+@Entity
+@Table(name = "company_roles")
+public class CompanyRole {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role_type", nullable = false)
+    private RoleType roleType;  // CUSTOMER, VENDOR, OUTSOURCE
+
+    private BigDecimal creditLimit;       // 여신한도 (role-specific)
+    private Integer defaultPaymentDays;   // 결제조건 (role-specific)
+}
+
+public enum RoleType {
+    CUSTOMER,   // 고객사 (판매 대상)
+    VENDOR,     // 공급업체 (원자재/부품 구매)
+    OUTSOURCE   // 외주업체 (서비스 외주)
+}
+```
+
+**Migration from Current Model**:
+- `customers` table → `companies` table (add `role = CUSTOMER`)
+- `suppliers` table → `companies` table (add `role = VENDOR` or `OUTSOURCE`)
+- Deduplicate by `registration_number` where same company exists in both tables
+- Update all FK references (`customer_id` → `company_id`, `supplier_id` → `company_id`)
+
+**Alternatives Considered**:
+- **Separate Customer/Supplier tables**: Rejected; duplicate data, complex AR/AP queries
+- **Single Company without roles**: Rejected; loses business context (is this a customer or vendor?)
+
+---
+
+### VendorServiceOffering (Purchase/Outsource Service Pricing)
+
+**Decision**: Create `ServiceCategory` and `VendorServiceOffering` entities to manage vendor-specific service pricing.
+
+**Rationale**:
+- **FR-053 requirement**: "System MUST store a 'who sells what' mapping of vendors to service categories"
+- **Price lookup**: Select service category → get list of vendors with their prices/lead times
+- **Separation from Products**: Purchase services (CNC, etching, painting) differ from sales products (brackets, frames)
+- **Vendor comparison**: Compare vendor quotes for same service category
+
+**Implementation**:
+
+```java
+@Entity
+@Table(name = "service_categories")
+public class ServiceCategory {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String name;  // "CNC 가공", "에칭", "도장", "레이저 컷팅"
+
+    private String description;
+    private boolean isActive = true;
+}
+
+@Entity
+@Table(name = "vendor_service_offerings")
+public class VendorServiceOffering {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vendor_company_id", nullable = false)
+    private Company vendorCompany;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_category_id", nullable = false)
+    private ServiceCategory serviceCategory;
+
+    private String vendorServiceCode;     // 업체측 서비스 코드
+    private String vendorServiceName;     // 업체측 서비스명
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal unitPrice;
+
+    private String currency = "KRW";
+    private Integer leadTimeDays;
+    private Integer minOrderQuantity;
+
+    private LocalDate effectiveFrom;
+    private LocalDate effectiveTo;
+
+    private boolean isPreferred = false;  // 선호 업체 여부
+}
+```
+
+**Key Queries**:
+
+```sql
+-- "CNC 가공" 서비스를 제공하는 업체 + 가격 리스트
+SELECT c.name AS vendor_name, vso.unit_price, vso.lead_time_days, vso.is_preferred
+FROM vendor_service_offerings vso
+JOIN companies c ON vso.vendor_company_id = c.id
+JOIN service_categories sc ON vso.service_category_id = sc.id
+WHERE sc.name = 'CNC 가공'
+  AND vso.effective_from <= CURRENT_DATE
+  AND (vso.effective_to IS NULL OR vso.effective_to >= CURRENT_DATE)
+  AND c.is_active = true
+ORDER BY vso.is_preferred DESC, vso.unit_price ASC;
+```
+
+**API Design**:
+- `GET /api/service-categories` - List all service categories
+- `GET /api/service-categories/{id}/vendors` - Get vendors offering this service with pricing
+- `GET /api/vendors/{companyId}/services` - Get services offered by a vendor
+- `POST /api/vendor-offerings` - Register vendor service offering
+- `PUT /api/vendor-offerings/{id}` - Update vendor service pricing/terms
+
+**Alternatives Considered**:
+- **Unified Item table (Product + Service)**: Rejected; sales products have SKU, production steps, etc. that services don't need
+- **Service as Product type**: Rejected; services have vendor-specific pricing, products have catalog pricing
+- **No ServiceCategory (free-text service names)**: Rejected; prevents standardized vendor comparison
+
+---
+
+### Product vs ServiceCategory Distinction
+
+**Decision**: Keep `Product` for sales items and `ServiceCategory` for purchase/outsource services as separate entities.
+
+**Rationale**:
+- **Different lifecycles**: Products are manufactured and sold; services are purchased externally
+- **Different attributes**: Products have SKU, product type, manufacturing steps; services have lead time, MOQ
+- **Different pricing models**: Products have catalog base price (optional per-quote override); services have vendor-specific pricing
+- **Different management**: Sales/Finance manages products; Purchasing manages service categories
+
+**Entity Comparison**:
+
+| Aspect | Product (판매 품목) | ServiceCategory (구매/외주 서비스) |
+|--------|-------------------|--------------------------------|
+| Purpose | What WellKorea sells | What WellKorea buys |
+| Pricing | Base price in catalog, override per quote | Vendor-specific via VendorServiceOffering |
+| Attributes | SKU, name, product_type, base_unit_price | name, description |
+| Relationships | QuotationLineItem, WorkProgressSheet | VendorServiceOffering, PurchaseRequest |
+| Managed by | Sales/Finance | Purchasing |
+
+**Future Extension**: If WellKorea needs to purchase raw materials (원자재), a `PurchaseItem` entity can be added with `VendorCatalog` for vendor-specific material pricing.
+
+---
+
+## Architectural Decisions (2025-12-01)
 
 ### Domain-Oriented Backend Structure
 

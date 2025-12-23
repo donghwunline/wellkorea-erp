@@ -18,6 +18,8 @@
 
 **✅ CQRS Pattern Implementation (2025-12-20)**: Applied Command Query Responsibility Segregation (CQRS) pattern to Quotation and Approval domains. Command endpoints (create, update, submit, approve, reject) now return minimal `CommandResult { id, message }` instead of full entities. Query endpoints return full entities. Updated OpenAPI specification (v1.1.0), research.md, and frontend services/hooks. All backend and frontend tests pass. See research.md for detailed architectural decision.
 
+**✅ Company Unification & Purchasing Redesign (2025-12-23)**: Merged Customer and Supplier into unified `Company` entity with `CompanyRole` (CUSTOMER, VENDOR, OUTSOURCE) for dual-role support. Added `ServiceCategory` and `VendorServiceOffering` for "select service → get vendor/price list" functionality (FR-053). Replaced RFQ with `PurchaseRequest` + `RFQItem` workflow. Updated all FK references (customer_id → customer_company_id, supplier_id → vendor_company_id).
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
@@ -60,7 +62,7 @@
 
 ### Database Schema Foundation
 
-- [X] T013 Create Flyway migration V1__create_core_tables.sql for User, Role, Customer, Supplier tables
+- [ ] T013 Create Flyway migration V1__create_core_tables.sql for User, Role, Company, CompanyRole tables (unified Customer/Vendor - **UPDATED 2025-12-23**)
 - [X] T014 Create Flyway migration V2__create_project_tables.sql for Project (JobCode), Product, ProductType tables
 - [X] T015 Create indexes migration V3__create_core_indexes.sql for performance-critical queries
 - [X] T016 Create audit log migration V4__create_audit_log.sql for immutable audit trail
@@ -169,7 +171,7 @@
 
 - [X] T050 [P] [US1] Create Project entity in backend/src/main/java/com/wellkorea/backend/project/domain/Project.java
 - [X] T051 [P] [US1] Create ProjectStatus enum in backend/src/main/java/com/wellkorea/backend/project/domain/ProjectStatus.java
-- [X] T052 [P] [US1] Create Customer entity in backend/src/main/java/com/wellkorea/backend/project/domain/Customer.java - exists in customer domain
+- [ ] T052 [P] [US1] Create Company and CompanyRole entities in backend/src/main/java/com/wellkorea/backend/company/domain/ (unified Customer/Vendor - **UPDATED 2025-12-23**)
 - [X] T053 [US1] Create ProjectRepository in backend/src/main/java/com/wellkorea/backend/project/infrastructure/repository/ProjectRepository.java
 - [X] T054 [US1] Implement ProjectService with create, read, update, list operations in backend/src/main/java/com/wellkorea/backend/project/application/ProjectService.java
 - [X] T055 [US1] Implement JobCodeGenerator with sequence generation and uniqueness check in backend/src/main/java/com/wellkorea/backend/project/domain/JobCodeGenerator.java - implemented in Phase 2
@@ -189,6 +191,53 @@
 - [X] T066 [US1] Display generated JobCode prominently after creation
 
 **Checkpoint**: JobCode creation MVP complete - users can create and edit projects with auto-generated JobCodes
+
+---
+
+## Phase 4a: Company Domain (Unified Customer/Vendor) - **NEW 2025-12-23**
+
+**Goal**: Implement unified Company entity with CompanyRole to support dual-role companies (e.g., same company can be both customer and vendor)
+
+**Independent Test**: Can be fully tested by:
+1. Creating a company with CUSTOMER role
+2. Adding VENDOR role to same company
+3. Verifying company appears in both customer and vendor lists
+4. Creating a project referencing the company as customer
+
+### Tests for Company Domain (Write FIRST - Red-Green-Refactor)
+
+> **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
+
+- [ ] T052a [P] [US1] Write contract tests for GET /api/companies, POST /api/companies endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - MUST FAIL initially
+- [ ] T052b [P] [US1] Write contract tests for PUT /api/companies/{id}, GET /api/companies/{id} endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - MUST FAIL initially
+- [ ] T052c [P] [US1] Write contract tests for POST /api/companies/{id}/roles, DELETE /api/companies/{id}/roles/{roleId} endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - MUST FAIL initially
+- [ ] T052d [US1] Write unit tests for CompanyService (create company, add role, dual-role validation) in backend/src/test/java/com/wellkorea/backend/company/application/CompanyServiceTest.java - MUST FAIL initially
+
+### Database Schema for Company Domain
+
+- [ ] T052e Create Flyway migration V__create_company_tables.sql for Company, CompanyRole tables with unique constraint on (company_id, role_type)
+
+### Backend Implementation for Company Domain
+
+- [ ] T052f [P] [US1] Create Company entity in backend/src/main/java/com/wellkorea/backend/company/domain/Company.java
+- [ ] T052g [P] [US1] Create CompanyRole entity in backend/src/main/java/com/wellkorea/backend/company/domain/CompanyRole.java
+- [ ] T052h [P] [US1] Create RoleType enum (CUSTOMER, VENDOR, OUTSOURCE) in backend/src/main/java/com/wellkorea/backend/company/domain/RoleType.java
+- [ ] T052i [US1] Create CompanyRepository in backend/src/main/java/com/wellkorea/backend/company/infrastructure/persistence/CompanyRepository.java
+- [ ] T052j [US1] Create CompanyRoleRepository in backend/src/main/java/com/wellkorea/backend/company/infrastructure/persistence/CompanyRoleRepository.java
+- [ ] T052k [US1] Implement CompanyService with CRUD operations and role management in backend/src/main/java/com/wellkorea/backend/company/application/CompanyService.java
+- [ ] T052l [US1] Create CompanyController with REST endpoints in backend/src/main/java/com/wellkorea/backend/company/api/CompanyController.java
+- [ ] T052m [US1] Create DTOs (CreateCompanyRequest, AddRoleRequest, CompanyResponse, CompanyRoleResponse) in backend/src/main/java/com/wellkorea/backend/company/api/dto/
+- [ ] T052n [US1] Add validation (registration_number unique, role_type enum validation, at least one role required)
+
+### Frontend Implementation for Company Domain
+
+- [ ] T052o [US1] Create CompanyService API client in frontend/src/services/companies/companyService.ts
+- [ ] T052p [US1] Create CompanyListPage with role filter in frontend/src/pages/companies/CompanyListPage.tsx
+- [ ] T052q [US1] Create CompanyDetailPage showing all roles in frontend/src/pages/companies/CompanyDetailPage.tsx
+- [ ] T052r [US1] Create CreateCompanyPage with role selection in frontend/src/pages/companies/CreateCompanyPage.tsx
+- [ ] T052s [US1] Update project creation form to use Company dropdown filtered by CUSTOMER role
+
+**Checkpoint**: Company domain complete - unified customer/vendor management with dual-role support
 
 ---
 
@@ -584,57 +633,93 @@
 
 ---
 
-## Phase 11: User Story 8 - Purchasing & Automated RFQ (Priority: P3)
+## Phase 11: User Story 8 - Purchasing & Vendor Service Management (Priority: P3) - **UPDATED 2025-12-23**
 
-**Goal**: Implement RFQ management with vendor suggestions and email automation
+**Goal**: Implement purchasing workflow with ServiceCategory, VendorServiceOffering, PurchaseRequest, and RFQItem entities for "select service → get vendor/price list" functionality (FR-053)
 
 **Independent Test**: Can be fully tested by:
-1. Creating a purchase request with category (e.g., "CNC machining")
-2. System suggests suitable vendors
-3. Auto-generating RFQ email with attachments
-4. Recording vendor quotes and selecting best vendor
-5. Linking purchase to JobCode for cost tracking
+1. Admin creates service categories (CNC machining, etching, painting)
+2. Admin links vendors to service categories with pricing via VendorServiceOffering
+3. Creating a purchase request with service category (e.g., "CNC machining")
+4. System suggests vendors with pricing based on VendorServiceOffering
+5. Sending RFQItems to multiple vendors, recording responses
+6. Selecting best vendor and creating PurchaseOrder
+7. Linking purchase to Project for cost tracking
 
 ### Tests for User Story 8 (Write FIRST - Red-Green-Refactor)
 
 > **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T189 [P] [US8] Write contract tests for POST /api/rfqs endpoint (validates vendor list, category-based vendor suggestions) in backend/src/test/java/com/wellkorea/backend/purchasing/controller/RFQControllerTest.java - MUST FAIL initially
-- [ ] T190 [P] [US8] Write contract tests for GET /api/rfqs and POST /api/purchase-orders endpoints in backend/src/test/java/com/wellkorea/backend/purchasing/controller/PurchaseOrderControllerTest.java - MUST FAIL initially
-- [ ] T191 [US8] Write unit tests for VendorSuggestionService (category-based vendor recommendations) in backend/src/test/java/com/wellkorea/backend/purchasing/service/VendorSuggestionServiceTest.java - MUST FAIL initially
-- [ ] T192 [US8] Write unit tests for EmailService (RFQ email generation with attachments) in backend/src/test/java/com/wellkorea/backend/purchasing/service/EmailServiceTest.java - MUST FAIL initially
+- [ ] T189 [P] [US8] Write contract tests for GET/POST /api/service-categories endpoints in backend/src/test/java/com/wellkorea/backend/purchasing/api/ServiceCategoryControllerTest.java - MUST FAIL initially
+- [ ] T189a [P] [US8] Write contract tests for GET/POST /api/vendor-offerings, GET /api/vendor-offerings/by-service/{serviceId} endpoints in backend/src/test/java/com/wellkorea/backend/purchasing/api/VendorOfferingControllerTest.java - MUST FAIL initially
+- [ ] T189b [P] [US8] Write contract tests for GET/POST /api/purchase-requests endpoints in backend/src/test/java/com/wellkorea/backend/purchasing/api/PurchaseRequestControllerTest.java - MUST FAIL initially
+- [ ] T190 [P] [US8] Write contract tests for POST /api/purchase-requests/{id}/rfq-items, GET /api/rfq-items/{id} endpoints in backend/src/test/java/com/wellkorea/backend/purchasing/api/RFQItemControllerTest.java - MUST FAIL initially
+- [ ] T190a [P] [US8] Write contract tests for POST /api/purchase-orders endpoints (from selected RFQItem) in backend/src/test/java/com/wellkorea/backend/purchasing/api/PurchaseOrderControllerTest.java - MUST FAIL initially
+- [ ] T191 [US8] Write unit tests for VendorSuggestionService (get vendors by service category with pricing from VendorServiceOffering) in backend/src/test/java/com/wellkorea/backend/purchasing/application/VendorSuggestionServiceTest.java - MUST FAIL initially
+- [ ] T192 [US8] Write unit tests for PurchaseRequestService (create request, send RFQs, select vendor) in backend/src/test/java/com/wellkorea/backend/purchasing/application/PurchaseRequestServiceTest.java - MUST FAIL initially
+- [ ] T192a [US8] Write unit tests for EmailService (RFQ email generation with attachments) in backend/src/test/java/com/wellkorea/backend/purchasing/application/EmailServiceTest.java - MUST FAIL initially
 
 ### Database Schema for User Story 8
 
-- [ ] T189 Create Flyway migration V14__create_purchasing_domain.sql for RFQ, PurchaseOrder, SupplierResponse tables
+- [ ] T193 Create Flyway migration V14__create_purchasing_domain.sql for ServiceCategory, VendorServiceOffering, PurchaseRequest, RFQItem, PurchaseOrder tables
 
-### Backend Implementation for User Story 8
+### Backend Implementation for User Story 8 - Service Catalog
 
-- [ ] T190 [P] [US8] Create RFQ entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/RFQ.java
-- [ ] T191 [P] [US8] Create PurchaseOrder entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/PurchaseOrder.java
-- [ ] T192 [P] [US8] Create Supplier entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/Supplier.java
-- [ ] T193 [P] [US8] Create RFQStatus enum in backend/src/main/java/com/wellkorea/backend/purchasing/domain/RFQStatus.java
-- [ ] T194 [US8] Create RFQRepository in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/RFQRepository.java (depends on T190)
-- [ ] T195 [US8] Create SupplierRepository with service category search in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/SupplierRepository.java (depends on T192)
-- [ ] T196 [US8] Implement RFQService with create, send, track responses in backend/src/main/java/com/wellkorea/backend/purchasing/service/RFQService.java
-- [ ] T197 [US8] Implement VendorSuggestionService to recommend vendors by category in backend/src/main/java/com/wellkorea/backend/purchasing/service/VendorSuggestionService.java
-- [ ] T198 [US8] Implement EmailService for RFQ email generation and sending in backend/src/main/java/com/wellkorea/backend/purchasing/service/EmailService.java
-- [ ] T199 [US8] Create RFQController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/controller/RFQController.java
-- [ ] T200 [US8] Create PurchaseOrderController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/controller/PurchaseOrderController.java
-- [ ] T201 [US8] Create DTOs (CreateRFQRequest, RFQResponse, CreatePurchaseOrderRequest) in backend/src/main/java/com/wellkorea/backend/purchasing/dto/
-- [ ] T202 [US8] Add validation (RFQ has vendor list, purchase order links to RFQ, cost tracking per project)
+- [ ] T194 [P] [US8] Create ServiceCategory entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/ServiceCategory.java
+- [ ] T195 [P] [US8] Create VendorServiceOffering entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/VendorServiceOffering.java
+- [ ] T196 [US8] Create ServiceCategoryRepository in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/ServiceCategoryRepository.java
+- [ ] T197 [US8] Create VendorServiceOfferingRepository with queries for vendor lookup by service in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/VendorServiceOfferingRepository.java
+- [ ] T198 [US8] Implement ServiceCategoryService with CRUD operations in backend/src/main/java/com/wellkorea/backend/purchasing/application/ServiceCategoryService.java
+- [ ] T199 [US8] Implement VendorOfferingService with "get vendors by service" functionality in backend/src/main/java/com/wellkorea/backend/purchasing/application/VendorOfferingService.java
+- [ ] T200 [US8] Create ServiceCategoryController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/api/ServiceCategoryController.java
+- [ ] T201 [US8] Create VendorOfferingController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/api/VendorOfferingController.java
+
+### Backend Implementation for User Story 8 - Purchase Request & RFQ
+
+- [ ] T202 [P] [US8] Create PurchaseRequest entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/PurchaseRequest.java
+- [ ] T203 [P] [US8] Create PurchaseRequestStatus enum (DRAFT, RFQ_SENT, VENDOR_SELECTED, CLOSED, CANCELED) in backend/src/main/java/com/wellkorea/backend/purchasing/domain/PurchaseRequestStatus.java
+- [ ] T204 [P] [US8] Create RFQItem entity in backend/src/main/java/com/wellkorea/backend/purchasing/domain/RFQItem.java
+- [ ] T205 [P] [US8] Create RFQItemStatus enum (SENT, REPLIED, NO_RESPONSE, SELECTED, REJECTED) in backend/src/main/java/com/wellkorea/backend/purchasing/domain/RFQItemStatus.java
+- [ ] T206 [US8] Create PurchaseRequestRepository in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/PurchaseRequestRepository.java
+- [ ] T207 [US8] Create RFQItemRepository in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/RFQItemRepository.java
+- [ ] T208 [US8] Implement PurchaseRequestService with create, send RFQs, record responses in backend/src/main/java/com/wellkorea/backend/purchasing/application/PurchaseRequestService.java
+- [ ] T209 [US8] Implement VendorSuggestionService to recommend vendors from VendorServiceOffering in backend/src/main/java/com/wellkorea/backend/purchasing/application/VendorSuggestionService.java
+- [ ] T210 [US8] Implement EmailService for RFQ email generation and sending in backend/src/main/java/com/wellkorea/backend/purchasing/application/EmailService.java
+- [ ] T211 [US8] Create PurchaseRequestController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/api/PurchaseRequestController.java
+- [ ] T212 [US8] Create RFQItemController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/api/RFQItemController.java
+
+### Backend Implementation for User Story 8 - Purchase Order
+
+- [ ] T213 [P] [US8] Create PurchaseOrder entity (references RFQItem, Company as vendor) in backend/src/main/java/com/wellkorea/backend/purchasing/domain/PurchaseOrder.java
+- [ ] T214 [P] [US8] Create PurchaseOrderStatus enum (DRAFT, SENT, CONFIRMED, RECEIVED, CANCELED) in backend/src/main/java/com/wellkorea/backend/purchasing/domain/PurchaseOrderStatus.java
+- [ ] T215 [US8] Create PurchaseOrderRepository in backend/src/main/java/com/wellkorea/backend/purchasing/infrastructure/persistence/PurchaseOrderRepository.java
+- [ ] T216 [US8] Implement PurchaseOrderService with create from RFQItem, status tracking in backend/src/main/java/com/wellkorea/backend/purchasing/application/PurchaseOrderService.java
+- [ ] T217 [US8] Create PurchaseOrderController with REST endpoints in backend/src/main/java/com/wellkorea/backend/purchasing/api/PurchaseOrderController.java
+
+### Backend Implementation for User Story 8 - DTOs & Validation
+
+- [ ] T218 [US8] Create DTOs for ServiceCategory (CreateServiceCategoryRequest, ServiceCategoryResponse) in backend/src/main/java/com/wellkorea/backend/purchasing/api/dto/
+- [ ] T219 [US8] Create DTOs for VendorServiceOffering (CreateVendorOfferingRequest, VendorOfferingResponse, VendorsByServiceResponse) in backend/src/main/java/com/wellkorea/backend/purchasing/api/dto/
+- [ ] T220 [US8] Create DTOs for PurchaseRequest (CreatePurchaseRequestRequest, PurchaseRequestResponse) in backend/src/main/java/com/wellkorea/backend/purchasing/api/dto/
+- [ ] T221 [US8] Create DTOs for RFQItem (SendRFQRequest, RecordRFQResponseRequest, RFQItemResponse) in backend/src/main/java/com/wellkorea/backend/purchasing/api/dto/
+- [ ] T222 [US8] Create DTOs for PurchaseOrder (CreatePurchaseOrderRequest, PurchaseOrderResponse) in backend/src/main/java/com/wellkorea/backend/purchasing/api/dto/
+- [ ] T223 [US8] Add validation (vendor must have VENDOR/OUTSOURCE role, service category exists, RFQItem selected before PO creation)
 
 ### Frontend Implementation for User Story 8
 
-- [ ] T203 [US8] Create RFQService API client in frontend/src/services/rfqService.ts
-- [ ] T204 [US8] Create RFQListPage with filters in frontend/src/pages/purchasing/RFQListPage.tsx
-- [ ] T205 [US8] Create CreateRFQPage with vendor suggestions in frontend/src/pages/purchasing/CreateRFQPage.tsx
-- [ ] T206 [US8] Create RFQDetailPage with vendor response tracking in frontend/src/pages/purchasing/RFQDetailPage.tsx
-- [ ] T207 [US8] Create PurchaseOrderPage with vendor selection in frontend/src/pages/purchasing/PurchaseOrderPage.tsx
-- [ ] T208 [US8] Add RFQ/PO display on project detail page with cost aggregation
-- [ ] T209 [US8] Add role-based access (Admin/Finance can create RFQs and POs)
+- [ ] T224 [US8] Create ServiceCategoryService API client in frontend/src/services/purchasing/serviceCategoryService.ts
+- [ ] T225 [US8] Create VendorOfferingService API client in frontend/src/services/purchasing/vendorOfferingService.ts
+- [ ] T226 [US8] Create PurchaseRequestService API client in frontend/src/services/purchasing/purchaseRequestService.ts
+- [ ] T227 [US8] Create PurchaseOrderService API client in frontend/src/services/purchasing/purchaseOrderService.ts
+- [ ] T228 [US8] Create ServiceCategoryListPage (Admin) in frontend/src/pages/purchasing/ServiceCategoryListPage.tsx
+- [ ] T229 [US8] Create VendorOfferingListPage with "select service → show vendors" in frontend/src/pages/purchasing/VendorOfferingListPage.tsx
+- [ ] T230 [US8] Create CreatePurchaseRequestPage with vendor suggestions in frontend/src/pages/purchasing/CreatePurchaseRequestPage.tsx
+- [ ] T231 [US8] Create PurchaseRequestDetailPage with RFQ tracking in frontend/src/pages/purchasing/PurchaseRequestDetailPage.tsx
+- [ ] T232 [US8] Create PurchaseOrderListPage with filters in frontend/src/pages/purchasing/PurchaseOrderListPage.tsx
+- [ ] T233 [US8] Add purchasing display on project detail page with cost aggregation
+- [ ] T234 [US8] Add role-based access (Admin/Finance can manage service categories and vendor offerings)
 
-**Checkpoint**: Purchasing and RFQ complete - vendor management with automated email generation
+**Checkpoint**: Purchasing and vendor service management complete - "select service → get vendor/price list" functionality with RFQ workflow
 
 ---
 
@@ -690,41 +775,44 @@
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
 - **US9 - RBAC (Phase 3)**: Depends on Foundational - Security foundation for P1
 - **US1 - JobCode (Phase 4)**: Depends on Foundational and US9 - Core MVP data entry
-- **US2 - Quotation (Phase 5)**: Depends on US1 and US9 - Commercial documents require projects and security
+- **Company Domain (Phase 4a)**: Depends on Foundational - Unified Customer/Vendor entity **← NEW 2025-12-23**
+- **US2 - Quotation (Phase 5)**: Depends on US1, Company Domain, and US9 - Commercial documents require projects, companies, and security
 - **US3 - Product Catalog (Phase 6)**: Depends on Foundational - Can run in parallel with US1/US2
 - **US4 - Production (Phase 7)**: Depends on US1 (requires projects) - Can run in parallel with US2/US3
 - **US5 - Delivery (Phase 8)**: Depends on US2 (requires quotations) - Sequential after US2
 - **US6 - Invoicing (Phase 9)**: Depends on US5 (requires deliveries) - Sequential after US5
 - **US7 - Documents (Phase 10)**: Depends on Foundational - Can run in parallel with any user story
-- **US8 - Purchasing (Phase 11)**: Depends on US1 (requires projects) - Can run in parallel with other stories
+- **US8 - Purchasing (Phase 11)**: Depends on US1 and Company Domain (requires projects and unified Company/vendor) **← UPDATED 2025-12-23**
 - **Polish (Phase 12)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
 - **US9 (RBAC)**: Foundation for security - must complete before quotations/invoices
 - **US1 (JobCode)**: Foundation for all work - most other stories depend on this
-- **US2 (Quotation)**: Depends on US1 (requires projects)
+- **Company Domain**: Foundation for Customer/Vendor - US2 and US8 depend on this **← NEW 2025-12-23**
+- **US2 (Quotation)**: Depends on US1 and Company Domain (requires projects and companies)
 - **US3 (Product Catalog)**: Independent - can run in parallel
 - **US4 (Production)**: Depends on US1 - can run in parallel with US2
 - **US5 (Delivery)**: Depends on US2 - sequential after quotations
 - **US6 (Invoicing)**: Depends on US5 - sequential after deliveries
 - **US7 (Documents)**: Independent - can run in parallel with any story
-- **US8 (Purchasing)**: Depends on US1 - can run in parallel with other stories
+- **US8 (Purchasing)**: Depends on US1 and Company Domain (requires projects and vendors) **← UPDATED 2025-12-23**
 
 ### Critical Path for MVP (P1 Stories Only)
 
 1. Phase 1: Setup → Phase 2: Foundational
 2. Phase 3: US9 (RBAC) - Security foundation
 3. Phase 4: US1 (JobCode) - Core data entry
-4. Phase 5: US2 (Quotation) - Commercial documents
-5. **MVP DELIVERED** - Can stop here for initial launch
+4. Phase 4a: Company Domain - Unified Customer/Vendor **← NEW 2025-12-23**
+5. Phase 5: US2 (Quotation) - Commercial documents
+6. **MVP DELIVERED** - Can stop here for initial launch
 
 ### Parallel Opportunities
 
 #### After Foundational Phase Completes:
 
-- US9 (RBAC), US3 (Products), US7 (Documents) can all run in parallel
-- Once US1 (JobCode) completes: US4 (Production), US8 (Purchasing) can run in parallel
+- US9 (RBAC), US3 (Products), US7 (Documents), Company Domain can all run in parallel
+- Once US1 (JobCode) and Company Domain complete: US4 (Production), US8 (Purchasing) can run in parallel
 - Once US2 (Quotation) completes: US5 (Delivery) starts
 - Once US5 (Delivery) completes: US6 (Invoicing) starts
 
@@ -784,31 +872,33 @@ Task T064: ProjectDetailPage
 
 ## Implementation Strategy
 
-### MVP First (P1 Stories: US9 + US1 + US2)
+### MVP First (P1 Stories: US9 + US1 + Company Domain + US2)
 
 1. Complete Phase 1: Setup
 2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
 3. Complete Phase 3: US9 (RBAC security foundation)
 4. Complete Phase 4: US1 (JobCode creation)
-5. Complete Phase 5: US2 (Quotation + Approval)
-6. **STOP and VALIDATE**: Test MVP independently
-7. Deploy/demo if ready
+5. Complete Phase 4a: Company Domain (Unified Customer/Vendor) **← NEW 2025-12-23**
+6. Complete Phase 5: US2 (Quotation + Approval)
+7. **STOP and VALIDATE**: Test MVP independently
+8. Deploy/demo if ready
 
-**Estimated MVP Scope**: ~97 tasks (T001-T097) - delivers core job intake, quotation workflow, and security
+**Estimated MVP Scope**: ~116 tasks (T001-T097 + Company Domain T052a-T052s) - delivers core job intake, unified company management, quotation workflow, and security
 
 ### Incremental Delivery
 
 1. **Foundation**: Setup + Foundational → Infrastructure ready (~31 tasks)
 2. **Security MVP**: + US9 → RBAC complete (~17 tasks)
 3. **Data Entry MVP**: + US1 → JobCode creation complete (~17 tasks)
-4. **Commercial MVP**: + US2 → Quotation workflow complete (~30 tasks) 🎯 **LAUNCH HERE**
-5. **Product Catalog**: + US3 → Product standardization (~15 tasks)
-6. **Production Tracking**: + US4 → Work progress visible (~16 tasks)
-7. **Delivery**: + US5 → Delivery tracking complete (~16 tasks)
-8. **Financial**: + US6 → AR/AP tracking complete (~25 tasks)
-9. **Documents**: + US7 → Document management complete (~16 tasks)
-10. **Purchasing**: + US8 → RFQ automation complete (~20 tasks)
-11. **Polish**: Final validation and deployment (~23 tasks)
+4. **Company Domain**: + Company → Unified Customer/Vendor complete (~19 tasks) **← NEW 2025-12-23**
+5. **Commercial MVP**: + US2 → Quotation workflow complete (~30 tasks) 🎯 **LAUNCH HERE**
+6. **Product Catalog**: + US3 → Product standardization (~15 tasks)
+7. **Production Tracking**: + US4 → Work progress visible (~16 tasks)
+8. **Delivery**: + US5 → Delivery tracking complete (~16 tasks)
+9. **Financial**: + US6 → AR/AP tracking complete (~25 tasks)
+10. **Documents**: + US7 → Document management complete (~16 tasks)
+11. **Purchasing**: + US8 → Vendor service management complete (~46 tasks) **← UPDATED 2025-12-23**
+12. **Polish**: Final validation and deployment (~23 tasks)
 
 ### Parallel Team Strategy
 
@@ -824,27 +914,41 @@ Stories integrate at natural boundaries (e.g., quotations use products from cata
 
 ## Summary
 
-**Total Tasks**: 298 tasks (252 implementation + 56 test-first tasks)
-**MVP Tasks (P1)**: ~138 tasks (Setup + Foundational + US9 + US1 + US2 including test-first tasks + multi-level approval + FR-062 customer assignment)
+**Total Tasks**: ~340 tasks (280 implementation + 60 test-first tasks)
+**MVP Tasks (P1)**: ~160 tasks (Setup + Foundational + US9 + US1 + Company Domain + US2 including test-first tasks + multi-level approval + FR-062 customer assignment)
 **P2 Tasks**: ~105 tasks (US3 + US4 + US5 + US6 including test-first tasks)
-**P3 Tasks**: ~32 tasks (US7 + US8 including test-first tasks)
+**P3 Tasks**: ~52 tasks (US7 + US8 including test-first tasks)
 **Polish Tasks**: ~23 tasks (Phase 12)
 
-**Constitution Compliance**: ✅ **Test-First Development enforced** - 56 test tasks explicitly marked "Write FIRST - MUST FAIL initially" across all 9 user stories
+**Constitution Compliance**: ✅ **Test-First Development enforced** - 60 test tasks explicitly marked "Write FIRST - MUST FAIL initially" across all 9 user stories + Company domain
 
 **Task Distribution by User Story** (including test-first tasks):
 - Setup (Phase 1): 12 tasks
 - Foundational (Phase 2): 19 tasks
 - US9 - RBAC (Phase 3): 26 tasks (7 tests + 19 implementation)
 - US1 - JobCode (Phase 4): 22 tasks (5 tests + 17 implementation)
+- Company Domain (Phase 4a): 19 tasks (4 tests + 15 implementation) **← NEW 2025-12-23**
 - US2 - Quotation (Phase 5): 57 tasks (13 tests + 44 implementation) **← Multi-Level Approval (+14 tasks)**
 - US3 - Product Catalog (Phase 6): 19 tasks (4 tests + 15 implementation)
 - US4 - Production Tracking (Phase 7): 20 tasks (4 tests + 16 implementation)
 - US5 - Delivery (Phase 8): 20 tasks (4 tests + 16 implementation)
 - US6 - Invoicing (Phase 9): 30 tasks (5 tests + 25 implementation)
 - US7 - Documents (Phase 10): 20 tasks (4 tests + 16 implementation)
-- US8 - Purchasing (Phase 11): 24 tasks (4 tests + 20 implementation)
+- US8 - Purchasing (Phase 11): 46 tasks (8 tests + 38 implementation) **← UPDATED 2025-12-23**
 - Polish (Phase 12): 23 tasks (validation & deployment)
+
+**Company Unification & Purchasing Redesign (2025-12-23 Update)**:
+- Added 19 new tasks for Company domain (Phase 4a):
+  - 4 new test tasks (T052a, T052b, T052c, T052d)
+  - 1 migration task (T052e)
+  - 9 backend tasks (T052f-T052n)
+  - 5 frontend tasks (T052o-T052s)
+- Unified `Company` entity with `CompanyRole` (CUSTOMER, VENDOR, OUTSOURCE) for dual-role support
+- Updated US8 Purchasing domain (+22 tasks) with new entities:
+  - `ServiceCategory`: Service types (CNC, etching, painting)
+  - `VendorServiceOffering`: Vendor-specific service pricing
+  - `PurchaseRequest` + `RFQItem`: Replaces old RFQ structure
+  - Updated FK references (customer_id → customer_company_id, supplier_id → vendor_company_id)
 
 **Multi-Level Approval (2025-12-19 Update)**:
 - Added 14 new tasks for multi-level sequential approval (결재 라인):
