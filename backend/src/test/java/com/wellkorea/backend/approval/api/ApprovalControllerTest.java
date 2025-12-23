@@ -246,11 +246,13 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
         }
 
         @Test
-        @DisplayName("should return 403 for Production role")
-        void listApprovals_AsProduction_Returns403() throws Exception {
+        @DisplayName("should return 200 for Production role")
+        void listApprovals_AsProduction_Returns200() throws Exception {
             mockMvc.perform(get(APPROVALS_URL)
                             .header("Authorization", "Bearer " + productionToken))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.content").isArray());
         }
 
         @Test
