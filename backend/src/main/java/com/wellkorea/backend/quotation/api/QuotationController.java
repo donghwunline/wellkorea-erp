@@ -200,7 +200,7 @@ public class QuotationController {
      * Status validation is handled by EmailService.
      */
     @PostMapping("/{id}/send-revision-notification")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
     public ResponseEntity<ApiResponse<String>> sendRevisionNotification(@PathVariable Long id) {
         // Update status to SENT if currently APPROVED (before email)
         // This ensures status is updated even if email fails - user can retry
