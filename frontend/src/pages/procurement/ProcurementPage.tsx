@@ -7,7 +7,7 @@
  * - Purchase Orders
  */
 
-import { PageHeader, Card, Icon } from '@/components/ui';
+import { Card, Icon, PageHeader } from '@/components/ui';
 
 /**
  * Procurement page placeholder.
@@ -17,7 +17,7 @@ export function ProcurementPage() {
     <div className="min-h-screen bg-steel-950 p-6">
       <PageHeader>
         <PageHeader.Title
-          title="Procurement"
+          title="조달"
           description="Manage purchase requests, RFQs, and purchase orders"
         />
       </PageHeader>

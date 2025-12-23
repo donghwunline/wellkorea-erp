@@ -6,7 +6,7 @@
  * - Purchased Items: Service categories I buy (with vendor offerings)
  */
 
-import { PageHeader, Tabs, TabList, Tab, TabPanel } from '@/components/ui';
+import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/components/ui';
 import { ProductsTab } from './ProductsTab';
 import { PurchasedItemsTab } from './PurchasedItemsTab';
 
@@ -18,7 +18,7 @@ export function ItemsPage() {
     <div className="min-h-screen bg-steel-950 p-6">
       <PageHeader>
         <PageHeader.Title
-          title="Items"
+          title="아이템"
           description="Manage your product catalog and purchased item categories"
         />
       </PageHeader>
@@ -27,10 +27,10 @@ export function ItemsPage() {
         <Tabs defaultTab="products" hash>
           <TabList>
             <Tab id="products" icon="box">
-              Products
+              판매 품목
             </Tab>
             <Tab id="purchased" icon="shopping-cart">
-              Purchased Items
+              구매 품목
             </Tab>
           </TabList>
 

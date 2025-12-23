@@ -130,8 +130,30 @@ export const PRODUCT_ENDPOINTS = {
 
   /** GET /products/:id */
   byId: (id: number) => `/products/${id}`,
-  /** GET /products/search - Search products */
-  search: '/products/search',
+  /** GET /products/types - Get all product types */
+  types: '/products/types',
+} as const;
+
+// ============================================================================
+// Service Category Endpoints (Catalog)
+// ============================================================================
+
+export const SERVICE_CATEGORY_ENDPOINTS = {
+  /** Base path for service category operations */
+  BASE: '/service-categories',
+
+  /** GET/PUT/DELETE /service-categories/:id */
+  byId: (id: number) => `/service-categories/${id}`,
+  /** GET /service-categories/all - Get all categories for dropdown */
+  all: '/service-categories/all',
+  /** GET /service-categories/:id/offerings - Get vendor offerings for category */
+  offerings: (id: number) => `/service-categories/${id}/offerings`,
+  /** GET /service-categories/:id/offerings/current - Get current offerings */
+  currentOfferings: (id: number) => `/service-categories/${id}/offerings/current`,
+  /** POST/PUT/DELETE /service-categories/offerings/:id */
+  offering: (id: number) => `/service-categories/offerings/${id}`,
+  /** POST /service-categories/offerings - Create offering */
+  createOffering: '/service-categories/offerings',
 } as const;
 
 // ============================================================================

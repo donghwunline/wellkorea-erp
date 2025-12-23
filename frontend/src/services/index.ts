@@ -77,7 +77,6 @@ export {
   quotationService,
   approvalService,
   approvalChainService,
-  productService,
   QUOTATION_STATUS_LABELS,
   QUOTATION_STATUS_COLORS,
   APPROVAL_STATUS_LABELS,
@@ -109,11 +108,41 @@ export type {
   ChainTemplate,
   ChainLevelRequest,
   UpdateChainLevelsRequest,
-  // Product types
+  // Product types for quotation (legacy - use productService for full CRUD)
   ProductSearchResult,
   ProductSearchParams,
-  PaginatedProducts,
 } from './quotations';
+
+// Product service (Items → Products tab)
+export { productService } from './products';
+export type {
+  ProductType,
+  ProductSummary,
+  ProductDetails,
+  CreateProductRequest,
+  UpdateProductRequest,
+  ProductCommandResult,
+  ProductListParams,
+  PaginatedProducts,
+} from './products';
+
+// Catalog service (Items → Purchased Items tab)
+export { serviceCategoryService } from './catalog';
+export type {
+  ServiceCategorySummary,
+  ServiceCategoryDetails,
+  CreateServiceCategoryRequest,
+  UpdateServiceCategoryRequest,
+  ServiceCategoryCommandResult,
+  ServiceCategoryListParams,
+  PaginatedServiceCategories,
+  VendorServiceOffering,
+  CreateVendorOfferingRequest,
+  UpdateVendorOfferingRequest,
+  VendorOfferingCommandResult,
+  VendorOfferingListParams,
+  PaginatedVendorOfferings,
+} from './catalog';
 
 // Error utilities (re-exported from @/shared/utils for convenience)
 export {

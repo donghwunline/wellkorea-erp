@@ -25,6 +25,8 @@ import {
   QuotationListPage,
 } from './pages/quotations';
 import { CompanyListPage, CompanyDetailPage, CreateCompanyPage } from './pages/companies';
+import { ItemsPage } from './pages/items';
+import { ProcurementPage } from './pages/procurement';
 
 const NotFoundPage = () => (
   <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-steel-950">
@@ -262,17 +264,31 @@ function App() {
             }
           />
 
-          {/* Other module routes (placeholders) */}
+          {/* Items route (Products + Purchased Items tabs) */}
           <Route
-            path="/products"
+            path="/items"
             element={
-              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
                 <AppLayout>
-                  <PlaceholderPage title="Products" />
+                  <ItemsPage />
                 </AppLayout>
               </ProtectedRoute>
             }
           />
+
+          {/* Procurement route */}
+          <Route
+            path="/procurement"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <ProcurementPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Other module routes (placeholders) */}
           <Route
             path="/production"
             element={
