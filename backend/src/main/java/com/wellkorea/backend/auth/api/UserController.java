@@ -4,6 +4,7 @@ import com.wellkorea.backend.auth.api.dto.UserResponse;
 import com.wellkorea.backend.auth.application.CustomerAssignmentService;
 import com.wellkorea.backend.auth.application.UserCommand;
 import com.wellkorea.backend.auth.application.UserQuery;
+import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
@@ -20,11 +21,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,9 @@ public class UserController {
     private final UserCommand userCommand;
     private final CustomerAssignmentService customerAssignmentService;
 
-    public UserController(UserQuery userQuery, UserCommand userCommand, CustomerAssignmentService customerAssignmentService) {
+    public UserController(UserQuery userQuery,
+                          UserCommand userCommand,
+                          CustomerAssignmentService customerAssignmentService) {
         this.userQuery = userQuery;
         this.userCommand = userCommand;
         this.customerAssignmentService = customerAssignmentService;
@@ -55,10 +58,9 @@ public class UserController {
      * Default page size is 20, maximum is 100.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<UserResponse>>> listUsers(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) Boolean activeOnly,
-            @PageableDefault(size = 20) Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<UserResponse>>> listUsers(@RequestParam(required = false) String search,
+                                                                     @RequestParam(required = false) Boolean activeOnly,
+                                                                     @PageableDefault(size = 20) Pageable pageable) {
 
         // Enforce maximum page size to prevent memory/performance issues
         Pageable safePageable = pageable.getPageSize() > MAX_PAGE_SIZE
@@ -105,7 +107,7 @@ public class UserController {
         Set<Role> roles = request.roles() != null
                 ? request.roles().stream()
                 .map(Role::fromAuthority)
-                .filter(role -> role != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet())
                 : Set.of();
 
@@ -130,9 +132,8 @@ public class UserController {
      * Update user profile.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(@PathVariable Long id,
+                                                                @Valid @RequestBody UpdateUserRequest request) {
 
         // Check if user exists first
         userQuery.getUserById(id)
@@ -152,13 +153,12 @@ public class UserController {
      * Assign roles to user.
      */
     @PutMapping("/{id}/roles")
-    public ResponseEntity<ApiResponse<Void>> assignRoles(
-            @PathVariable Long id,
-            @Valid @RequestBody AssignRolesRequest request) {
+    public ResponseEntity<ApiResponse<Void>> assignRoles(@PathVariable Long id,
+                                                         @Valid @RequestBody AssignRolesRequest request) {
 
         Set<Role> roles = request.roles().stream()
                 .map(Role::fromAuthority)
-                .filter(role -> role != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         userCommand.assignRoles(id, roles);
@@ -181,9 +181,8 @@ public class UserController {
      * Deactivate a user (soft delete).
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivateUser(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<Void> deactivateUser(@PathVariable Long id,
+                                               @AuthenticationPrincipal AuthenticatedUser currentUser) {
 
         // Check if user exists first
         UserResponse targetUser = userQuery.getUserById(id)
@@ -203,9 +202,8 @@ public class UserController {
      * Change user password.
      */
     @PutMapping("/{id}/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(
-            @PathVariable Long id,
-            @Valid @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<ApiResponse<Void>> changePassword(@PathVariable Long id,
+                                                            @Valid @RequestBody ChangePasswordRequest request) {
 
         userCommand.changePassword(id, request.newPassword());
 
@@ -227,9 +225,8 @@ public class UserController {
      * Replace all customer assignments for a user.
      */
     @PutMapping("/{id}/customers")
-    public ResponseEntity<ApiResponse<Void>> assignCustomers(
-            @PathVariable Long id,
-            @Valid @RequestBody AssignCustomersRequest request) {
+    public ResponseEntity<ApiResponse<Void>> assignCustomers(@PathVariable Long id,
+                                                             @Valid @RequestBody AssignCustomersRequest request) {
 
         customerAssignmentService.replaceUserAssignments(id, request.customerIds());
         return ResponseEntity.ok(ApiResponse.success(null, "Customer assignments updated successfully"));

@@ -1,8 +1,8 @@
 package com.wellkorea.backend.approval.api;
 
+import com.wellkorea.backend.approval.api.dto.command.ApprovalCommandResult;
 import com.wellkorea.backend.approval.api.dto.command.ApproveRequest;
 import com.wellkorea.backend.approval.api.dto.command.RejectRequest;
-import com.wellkorea.backend.approval.api.dto.command.ApprovalCommandResult;
 import com.wellkorea.backend.approval.api.dto.query.ApprovalDetailView;
 import com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView;
 import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
@@ -10,14 +10,14 @@ import com.wellkorea.backend.approval.application.ApprovalCommandService;
 import com.wellkorea.backend.approval.application.ApprovalQueryService;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.EntityType;
-import com.wellkorea.backend.auth.api.CurrentToken;
-import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
+import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,15 +33,10 @@ public class ApprovalController {
 
     private final ApprovalCommandService commandService;
     private final ApprovalQueryService queryService;
-    private final JwtTokenProvider jwtTokenProvider;
 
-    public ApprovalController(
-            ApprovalCommandService commandService,
-            ApprovalQueryService queryService,
-            JwtTokenProvider jwtTokenProvider) {
+    public ApprovalController(ApprovalCommandService commandService, ApprovalQueryService queryService) {
         this.commandService = commandService;
         this.queryService = queryService;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     // ==================== QUERY ENDPOINTS ====================
@@ -52,17 +47,16 @@ public class ApprovalController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<Page<ApprovalSummaryView>>> listApprovals(
-            @RequestParam(required = false) EntityType entityType,
-            @RequestParam(required = false) ApprovalStatus status,
-            @RequestParam(required = false) Boolean myPending,
-            @CurrentToken String token,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<ApprovalSummaryView>>> listApprovals(@RequestParam(required = false) EntityType entityType,
+                                                                                @RequestParam(required = false) ApprovalStatus status,
+                                                                                @RequestParam(required = false) Boolean myPending,
+                                                                                @AuthenticationPrincipal AuthenticatedUser user,
+                                                                                Pageable pageable) {
 
         Page<ApprovalSummaryView> approvals;
 
         if (Boolean.TRUE.equals(myPending)) {
-            Long userId = jwtTokenProvider.getUserId(token);
+            Long userId = user.getUserId();
             approvals = queryService.listPendingApprovals(userId, pageable);
         } else {
             approvals = queryService.listAllApprovals(entityType, status, pageable);
@@ -101,12 +95,11 @@ public class ApprovalController {
      */
     @PostMapping("/{id}/approve")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ApprovalCommandResult>> approve(
-            @PathVariable Long id,
-            @RequestBody(required = false) ApproveRequest request,
-            @CurrentToken String token) {
+    public ResponseEntity<ApiResponse<ApprovalCommandResult>> approve(@PathVariable Long id,
+                                                                      @RequestBody(required = false) ApproveRequest request,
+                                                                      @AuthenticationPrincipal AuthenticatedUser user) {
 
-        Long userId = jwtTokenProvider.getUserId(token);
+        Long userId = user.getUserId();
         String comments = request != null ? request.comments() : null;
 
         Long approvalId = commandService.approve(id, userId, comments);
@@ -121,12 +114,11 @@ public class ApprovalController {
      */
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ApprovalCommandResult>> reject(
-            @PathVariable Long id,
-            @Valid @RequestBody RejectRequest request,
-            @CurrentToken String token) {
+    public ResponseEntity<ApiResponse<ApprovalCommandResult>> reject(@PathVariable Long id,
+                                                                     @Valid @RequestBody RejectRequest request,
+                                                                     @AuthenticationPrincipal AuthenticatedUser user) {
 
-        Long userId = jwtTokenProvider.getUserId(token);
+        Long userId = user.getUserId();
 
         Long approvalId = commandService.reject(id, userId, request.reason(), request.comments());
         ApprovalCommandResult result = ApprovalCommandResult.rejected(approvalId);

@@ -1,10 +1,9 @@
 package com.wellkorea.backend.quotation.api;
 
-import com.wellkorea.backend.auth.api.CurrentToken;
-import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
+import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.quotation.api.dto.command.CreateQuotationRequest;
-import com.wellkorea.backend.quotation.api.dto.command.UpdateQuotationRequest;
 import com.wellkorea.backend.quotation.api.dto.command.QuotationCommandResult;
+import com.wellkorea.backend.quotation.api.dto.command.UpdateQuotationRequest;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationDetailView;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView;
 import com.wellkorea.backend.quotation.application.*;
@@ -19,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -34,19 +34,15 @@ public class QuotationController {
     private final QuotationQueryService queryService;
     private final QuotationPdfService pdfService;
     private final QuotationEmailService emailService;
-    private final JwtTokenProvider jwtTokenProvider;
 
-    public QuotationController(
-            QuotationCommandService commandService,
-            QuotationQueryService queryService,
-            QuotationPdfService pdfService,
-            QuotationEmailService emailService,
-            JwtTokenProvider jwtTokenProvider) {
+    public QuotationController(QuotationCommandService commandService,
+                               QuotationQueryService queryService,
+                               QuotationPdfService pdfService,
+                               QuotationEmailService emailService) {
         this.commandService = commandService;
         this.queryService = queryService;
         this.pdfService = pdfService;
         this.emailService = emailService;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     // ==================== QUERY ENDPOINTS ====================
@@ -57,10 +53,9 @@ public class QuotationController {
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<Page<QuotationSummaryView>>> listQuotations(
-            @RequestParam(required = false) QuotationStatus status,
-            @RequestParam(required = false) Long projectId,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<QuotationSummaryView>>> listQuotations(@RequestParam(required = false) QuotationStatus status,
+                                                                                  @RequestParam(required = false) Long projectId,
+                                                                                  Pageable pageable) {
 
         Page<QuotationSummaryView> quotations = queryService.listQuotations(status, projectId, pageable);
         return ResponseEntity.ok(ApiResponse.success(quotations));
@@ -85,11 +80,10 @@ public class QuotationController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationCommandResult>> createQuotation(
-            @Valid @RequestBody CreateQuotationRequest request,
-            @CurrentToken String token) {
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> createQuotation(@Valid @RequestBody CreateQuotationRequest request,
+                                                                               @AuthenticationPrincipal AuthenticatedUser user) {
 
-        Long userId = jwtTokenProvider.getUserId(token);
+        Long userId = user.getUserId();
 
         CreateQuotationCommand command = new CreateQuotationCommand(
                 request.projectId(),
@@ -118,9 +112,8 @@ public class QuotationController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationCommandResult>> updateQuotation(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateQuotationRequest request) {
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> updateQuotation(@PathVariable Long id,
+                                                                               @Valid @RequestBody UpdateQuotationRequest request) {
 
         UpdateQuotationCommand command = new UpdateQuotationCommand(
                 request.validityDays(),
@@ -150,11 +143,10 @@ public class QuotationController {
      */
     @PostMapping("/{id}/submit")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationCommandResult>> submitForApproval(
-            @PathVariable Long id,
-            @CurrentToken String token) {
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> submitForApproval(@PathVariable Long id,
+                                                                                 @AuthenticationPrincipal AuthenticatedUser user) {
 
-        Long userId = jwtTokenProvider.getUserId(token);
+        Long userId = user.getUserId();
         Long quotationId = commandService.submitForApproval(id, userId);
         QuotationCommandResult result = QuotationCommandResult.submitted(quotationId);
 
@@ -167,11 +159,10 @@ public class QuotationController {
      */
     @PostMapping("/{id}/versions")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<QuotationCommandResult>> createNewVersion(
-            @PathVariable Long id,
-            @CurrentToken String token) {
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> createNewVersion(@PathVariable Long id,
+                                                                                @AuthenticationPrincipal AuthenticatedUser user) {
 
-        Long userId = jwtTokenProvider.getUserId(token);
+        Long userId = user.getUserId();
         Long newVersionId = commandService.createNewVersion(id, userId);
         QuotationCommandResult result = QuotationCommandResult.versionCreated(newVersionId);
 

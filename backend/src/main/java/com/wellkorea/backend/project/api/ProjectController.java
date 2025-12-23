@@ -1,9 +1,8 @@
 package com.wellkorea.backend.project.api;
 
 import com.wellkorea.backend.auth.application.CustomerAssignmentService;
-import com.wellkorea.backend.auth.application.UserService;
+import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.auth.domain.Role;
-import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.ProjectResponse;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
@@ -19,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,15 +36,10 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final CustomerAssignmentService customerAssignmentService;
-    private final UserService userService;
 
-    public ProjectController(
-            ProjectService projectService,
-            CustomerAssignmentService customerAssignmentService,
-            UserService userService) {
+    public ProjectController(ProjectService projectService, CustomerAssignmentService customerAssignmentService) {
         this.projectService = projectService;
         this.customerAssignmentService = customerAssignmentService;
-        this.userService = userService;
     }
 
     /**
@@ -62,11 +55,10 @@ public class ProjectController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ProjectResponse>> createProject(
-            @Valid @RequestBody CreateProjectRequest request,
-            @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<ApiResponse<ProjectResponse>> createProject(@Valid @RequestBody CreateProjectRequest request,
+                                                                      @AuthenticationPrincipal AuthenticatedUser currentUser) {
 
-        Long currentUserId = getUserId(currentUser);
+        Long currentUserId = currentUser.getUserId();
         Project project = projectService.createProject(request, currentUserId);
         ProjectResponse response = ProjectResponse.from(project);
 
@@ -108,11 +100,10 @@ public class ProjectController {
      * @return Paginated list of projects
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ProjectResponse>>> listProjects(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String search,
-            Pageable pageable,
-            @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<ApiResponse<Page<ProjectResponse>>> listProjects(@RequestParam(required = false) String status,
+                                                                           @RequestParam(required = false) String search,
+                                                                           Pageable pageable,
+                                                                           @AuthenticationPrincipal AuthenticatedUser currentUser) {
 
         Page<Project> projectsPage;
 
@@ -120,7 +111,7 @@ public class ProjectController {
         boolean isSalesOnly = isSalesRoleOnly(currentUser);
 
         if (isSalesOnly) {
-            Long userId = getUserId(currentUser);
+            Long userId = currentUser.getUserId();
             List<Long> customerIds = customerAssignmentService.getAssignedCustomerIds(userId);
 
             if (status != null && !status.isBlank()) {
@@ -167,14 +158,13 @@ public class ProjectController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ProjectResponse>> updateProject(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateProjectRequest request,
-            @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<ApiResponse<ProjectResponse>> updateProject(@PathVariable Long id,
+                                                                      @Valid @RequestBody UpdateProjectRequest request,
+                                                                      @AuthenticationPrincipal AuthenticatedUser currentUser) {
 
         // Check if Sales user can access this project's customer (FR-062)
         if (isSalesRoleOnly(currentUser)) {
-            Long userId = getUserId(currentUser);
+            Long userId = currentUser.getUserId();
             Project existingProject = projectService.getProject(id);
             List<Long> assignedCustomerIds = customerAssignmentService.getAssignedCustomerIds(userId);
 
@@ -206,28 +196,14 @@ public class ProjectController {
     }
 
     /**
-     * Get user ID from Spring Security principal.
-     * Looks up the user by username from the authenticated principal.
-     *
-     * @param userDetails Authenticated user details
-     * @return User ID
-     * @throws AccessDeniedException if user cannot be identified
-     */
-    private Long getUserId(UserDetails userDetails) {
-        return userService.findByUsername(userDetails.getUsername())
-                .map(User::getId)
-                .orElseThrow(() -> new AccessDeniedException("Unable to identify current user"));
-    }
-
-    /**
      * Check if user has only Sales role (not Admin or Finance).
      * These users need customer assignment filtering (FR-062).
      *
-     * @param userDetails Authenticated user details
+     * @param currentUser Authenticated user
      * @return true if user has only Sales role
      */
-    private boolean isSalesRoleOnly(UserDetails userDetails) {
-        var authorities = userDetails.getAuthorities();
+    private boolean isSalesRoleOnly(AuthenticatedUser currentUser) {
+        var authorities = currentUser.getAuthorities();
         boolean hasSales = authorities.stream()
                 .anyMatch(a -> a.getAuthority().equals(Role.SALES.getAuthority()));
         boolean hasAdmin = authorities.stream()
