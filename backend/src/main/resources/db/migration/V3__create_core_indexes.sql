@@ -7,7 +7,7 @@
 -- =====================================================================
 
 -- Project queries: Filter by customer and status
-CREATE INDEX idx_projects_customer_status ON projects (customer_id, status) WHERE is_deleted = false;
+CREATE INDEX idx_projects_customer_status ON projects (customer_company_id, status) WHERE is_deleted = false;
 
 -- Project queries: Filter by owner and status
 CREATE INDEX idx_projects_owner_status ON projects (internal_owner_id, status) WHERE is_deleted = false;
@@ -15,8 +15,8 @@ CREATE INDEX idx_projects_owner_status ON projects (internal_owner_id, status) W
 -- Project queries: Recent projects with due dates
 CREATE INDEX idx_projects_recent_due_date ON projects (created_at DESC, due_date) WHERE is_deleted = false;
 
--- Customer queries: Active customers with names (for autocomplete)
-CREATE INDEX idx_customers_active_name ON customers (name) WHERE is_deleted = false;
+-- Company queries: Active companies with names (for autocomplete)
+CREATE INDEX idx_companies_active_name ON companies (name) WHERE is_active = true;
 
 -- User queries: Active users for assignment
 CREATE INDEX idx_users_active_fullname ON users (full_name) WHERE is_active = true;
@@ -37,8 +37,8 @@ CREATE INDEX idx_projects_name_search ON projects (LOWER(project_name) text_patt
 -- Text search for product names (supports LIKE queries)
 CREATE INDEX idx_products_name_search ON products (LOWER(name) text_pattern_ops);
 
--- Text search for customer names (supports LIKE queries)
-CREATE INDEX idx_customers_name_search ON customers (LOWER(name) text_pattern_ops);
+-- Text search for company names (supports LIKE queries)
+CREATE INDEX idx_companies_name_search ON companies (LOWER(name) text_pattern_ops);
 
 -- =====================================================================
 -- PARTIAL INDEXES FOR FILTERED QUERIES
@@ -67,6 +67,6 @@ COMMENT
 COMMENT
     ON INDEX idx_products_name_search IS 'Text pattern search for product catalog (LIKE queries)';
 COMMENT
-    ON INDEX idx_customers_name_search IS 'Text pattern search for customer names (LIKE queries)';
+    ON INDEX idx_companies_name_search IS 'Text pattern search for company names (LIKE queries)';
 COMMENT
     ON INDEX idx_projects_by_due_date IS 'Quick lookup for projects by due date (overdue check done in application layer)';

@@ -157,12 +157,12 @@ CREATE TRIGGER trg_audit_users
     FOR EACH ROW
 EXECUTE FUNCTION audit_trigger_function();
 
--- Customers
-CREATE TRIGGER trg_audit_customers
+-- Companies
+CREATE TRIGGER trg_audit_companies
     AFTER INSERT OR
         UPDATE OR
         DELETE
-    ON customers
+    ON companies
     FOR EACH ROW
 EXECUTE FUNCTION audit_trigger_function();
 

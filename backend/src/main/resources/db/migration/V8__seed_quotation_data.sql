@@ -17,8 +17,8 @@ SELECT setval('job_code_sequences_id_seq', (SELECT COALESCE(MAX(id), 1) FROM job
 
 -- Create sample projects with JobCodes
 -- Format: WK2K{YY}-{SSSS}-{MMDD} (e.g., WK2K25-0001-0115)
--- Schema: id, job_code, customer_id, project_name, requester_name, due_date, internal_owner_id, status, created_by_id
-INSERT INTO projects (id, job_code, customer_id, project_name, requester_name, due_date, internal_owner_id, status,
+-- Schema: id, job_code, customer_company_id, project_name, requester_name, due_date, internal_owner_id, status, created_by_id
+INSERT INTO projects (id, job_code, customer_company_id, project_name, requester_name, due_date, internal_owner_id, status,
                       created_by_id, created_at, updated_at)
 VALUES
     -- Samsung project

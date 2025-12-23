@@ -22,18 +22,18 @@ CREATE TABLE job_code_sequences
 -- Project table (aggregate root - JobCode is the unique business identifier)
 CREATE TABLE projects
 (
-    id                BIGSERIAL PRIMARY KEY,
-    job_code          VARCHAR(20)  NOT NULL UNIQUE,          -- WK2K{YY}-{SSSS}-{MMDD} format
-    customer_id       BIGINT       NOT NULL REFERENCES customers (id),
-    project_name      VARCHAR(255) NOT NULL,
-    requester_name    VARCHAR(100),
-    due_date          DATE         NOT NULL,
-    internal_owner_id BIGINT       NOT NULL REFERENCES users (id),
-    status            VARCHAR(50)  NOT NULL DEFAULT 'DRAFT', -- DRAFT, ACTIVE, COMPLETED, ARCHIVED
-    created_by_id     BIGINT       NOT NULL REFERENCES users (id),
-    created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_deleted        BOOLEAN      NOT NULL DEFAULT false,
+    id                    BIGSERIAL PRIMARY KEY,
+    job_code              VARCHAR(20)  NOT NULL UNIQUE,          -- WK2K{YY}-{SSSS}-{MMDD} format
+    customer_company_id   BIGINT       NOT NULL REFERENCES companies (id),  -- Company with CUSTOMER role
+    project_name          VARCHAR(255) NOT NULL,
+    requester_name        VARCHAR(100),
+    due_date              DATE         NOT NULL,
+    internal_owner_id     BIGINT       NOT NULL REFERENCES users (id),
+    status                VARCHAR(50)  NOT NULL DEFAULT 'DRAFT', -- DRAFT, ACTIVE, COMPLETED, ARCHIVED
+    created_by_id         BIGINT       NOT NULL REFERENCES users (id),
+    created_at            TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at            TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_deleted            BOOLEAN      NOT NULL DEFAULT false,
 
     CONSTRAINT chk_project_status CHECK (status IN ('DRAFT', 'ACTIVE', 'COMPLETED', 'ARCHIVED')),
     CONSTRAINT chk_job_code_format CHECK (job_code ~ '^WK2K\d{2}-\d{4}-\d{4}$'
@@ -94,7 +94,7 @@ CREATE INDEX idx_job_code_sequences_year ON job_code_sequences (year);
 
 -- Projects indexes
 CREATE INDEX idx_projects_job_code ON projects (job_code);
-CREATE INDEX idx_projects_customer_id ON projects (customer_id);
+CREATE INDEX idx_projects_customer_company_id ON projects (customer_company_id);
 CREATE INDEX idx_projects_internal_owner_id ON projects (internal_owner_id);
 CREATE INDEX idx_projects_status ON projects (status);
 CREATE INDEX idx_projects_created_at ON projects (created_at);
