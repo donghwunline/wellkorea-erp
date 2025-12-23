@@ -72,6 +72,8 @@ export interface ComboboxProps {
   loadingText?: string;
   /** Additional class name */
   className?: string;
+  /** Initial label for async mode when value is pre-selected but options haven't loaded */
+  initialLabel?: string | null;
 }
 
 // ============================================================================
@@ -128,6 +130,7 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
       noResultsText = 'No results found',
       loadingText = 'Loading...',
       className,
+      initialLabel,
     },
     ref
   ) => {
@@ -384,15 +387,15 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
           <input
             ref={inputRef}
             type="text"
-            value={isOpen ? query : selectedOption?.label || ''}
+            value={isOpen ? query : selectedOption?.label || initialLabel || ''}
             onChange={e => setQuery(e.target.value)}
             onFocus={() => {
               if (!disabled) {
                 setIsOpen(true);
-                if (selectedOption) setQuery('');
+                if (selectedOption || initialLabel) setQuery('');
               }
             }}
-            placeholder={selectedOption ? selectedOption.label : placeholder}
+            placeholder={selectedOption?.label || initialLabel || placeholder}
             disabled={disabled}
             className={cn(
               'h-full flex-1 bg-transparent px-3 text-sm outline-none',
@@ -402,7 +405,7 @@ export const Combobox = forwardRef<HTMLDivElement, ComboboxProps>(
           />
 
           {/* Clear button */}
-          {selectedOption && !disabled && (
+          {(selectedOption || (value !== null && initialLabel)) && !disabled && (
             <button
               type="button"
               onClick={handleClear}

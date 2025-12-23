@@ -2,10 +2,7 @@
  * CustomerCombobox - Reusable Customer Selector Component
  *
  * A specialized Combobox for selecting customers.
- * Encapsulates customerService calls and provides consistent customer selection UI.
- *
- * NOTE: Currently uses stub customerService with mock data.
- * Will automatically use real API when customerService is updated.
+ * Uses companyService with roleType: 'CUSTOMER' filter.
  *
  * Usage:
  * ```tsx
@@ -19,7 +16,7 @@
  */
 
 import { useCallback } from 'react';
-import { customerService } from '@/services';
+import { companyService } from '@/services';
 import { Combobox, type ComboboxOption } from '@/components/ui';
 
 export interface CustomerComboboxProps {
@@ -44,7 +41,7 @@ export interface CustomerComboboxProps {
 }
 
 /**
- * Customer selector component that wraps Combobox with customerService.
+ * Customer selector component that wraps Combobox with companyService.
  */
 export function CustomerCombobox({
   value,
@@ -59,19 +56,20 @@ export function CustomerCombobox({
 }: Readonly<CustomerComboboxProps>) {
   /**
    * Load customers from API based on search query.
-   * Transforms CustomerDetails to ComboboxOption format.
+   * Filters by roleType: 'CUSTOMER' to get only customer companies.
    */
   const loadCustomers = useCallback(async (query: string): Promise<ComboboxOption[]> => {
-    const result = await customerService.getCustomers({
+    const result = await companyService.getCompanies({
       search: query,
+      roleType: 'CUSTOMER',
       page: 0,
       size: 20,
     });
 
-    return result.data.map(customer => ({
-      id: customer.id,
-      label: customer.name,
-      description: customer.email || undefined,
+    return result.data.map(company => ({
+      id: company.id,
+      label: company.name,
+      description: company.email || undefined,
     }));
   }, []);
 

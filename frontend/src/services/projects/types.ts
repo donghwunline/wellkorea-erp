@@ -60,10 +60,13 @@ export interface ProjectListItem {
 
 /**
  * Command result for project create/update operations.
+ * For create operations, includes the generated jobCode.
  */
 export interface ProjectCommandResult {
   id: number;
   message: string;
+  /** Generated jobCode (only present for create operations) */
+  jobCode: string | null;
 }
 
 /**

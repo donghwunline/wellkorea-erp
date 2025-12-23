@@ -38,6 +38,8 @@ export interface UserComboboxProps {
   helpText?: string;
   /** Additional class name */
   className?: string;
+  /** Initial label for pre-selected value (used in edit mode before options load) */
+  initialLabel?: string | null;
 }
 
 /**
@@ -53,6 +55,7 @@ export function UserCombobox({
   error,
   helpText,
   className,
+  initialLabel,
 }: Readonly<UserComboboxProps>) {
   /**
    * Load users from API based on search query.
@@ -95,6 +98,7 @@ export function UserCombobox({
       error={error}
       helpText={helpText}
       className={className}
+      initialLabel={initialLabel}
     />
   );
 }

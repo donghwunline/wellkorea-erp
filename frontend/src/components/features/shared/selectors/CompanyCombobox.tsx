@@ -42,6 +42,8 @@ export interface CompanyComboboxProps {
   helpText?: string;
   /** Additional class name */
   className?: string;
+  /** Initial label for pre-selected value (used in edit mode before options load) */
+  initialLabel?: string | null;
 }
 
 /**
@@ -58,6 +60,7 @@ export function CompanyCombobox({
   error,
   helpText,
   className,
+  initialLabel,
 }: Readonly<CompanyComboboxProps>) {
   // Generate default placeholder based on roleType
   const defaultPlaceholder = roleType
@@ -109,6 +112,7 @@ export function CompanyCombobox({
       error={error}
       helpText={helpText}
       className={className}
+      initialLabel={initialLabel}
     />
   );
 }

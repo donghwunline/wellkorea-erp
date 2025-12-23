@@ -46,7 +46,7 @@ public class ApprovalController {
      * GET /api/approvals
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES', 'PRODUCTION')")
     public ResponseEntity<ApiResponse<Page<ApprovalSummaryView>>> listApprovals(@RequestParam(required = false) EntityType entityType,
                                                                                 @RequestParam(required = false) ApprovalStatus status,
                                                                                 @RequestParam(required = false) Boolean myPending,
@@ -81,7 +81,7 @@ public class ApprovalController {
      * GET /api/approvals/{id}/history
      */
     @GetMapping("/{id}/history")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES', 'PRODUCTION')")
     public ResponseEntity<ApiResponse<List<ApprovalHistoryView>>> getHistory(@PathVariable Long id) {
         List<ApprovalHistoryView> history = queryService.getApprovalHistory(id);
         return ResponseEntity.ok(ApiResponse.success(history));
@@ -94,7 +94,7 @@ public class ApprovalController {
      * POST /api/approvals/{id}/approve
      */
     @PostMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES', 'PRODUCTION')")
     public ResponseEntity<ApiResponse<ApprovalCommandResult>> approve(@PathVariable Long id,
                                                                       @RequestBody(required = false) ApproveRequest request,
                                                                       @AuthenticationPrincipal AuthenticatedUser user) {
@@ -113,7 +113,7 @@ public class ApprovalController {
      * POST /api/approvals/{id}/reject
      */
     @PostMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES', 'PRODUCTION')")
     public ResponseEntity<ApiResponse<ApprovalCommandResult>> reject(@PathVariable Long id,
                                                                      @Valid @RequestBody RejectRequest request,
                                                                      @AuthenticationPrincipal AuthenticatedUser user) {

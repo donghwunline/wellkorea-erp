@@ -297,35 +297,3 @@ export interface UpdateChainLevelsRequest {
   levels: ChainLevelRequest[];
 }
 
-// ============================================================================
-// Product Types
-// ============================================================================
-
-/**
- * Product search result.
- */
-export interface ProductSearchResult {
-  id: number;
-  sku: string;
-  name: string;
-  description: string | null;
-  productTypeName: string | null;
-  baseUnitPrice: number | null;
-  unit: string | null;
-  isActive: boolean;
-}
-
-/**
- * Query parameters for searching products.
- */
-export interface ProductSearchParams {
-  query?: string;
-  typeId?: number;
-  page?: number;
-  size?: number;
-}
-
-/**
- * Paginated product search response.
- */
-export type PaginatedProducts = Paginated<ProductSearchResult>;

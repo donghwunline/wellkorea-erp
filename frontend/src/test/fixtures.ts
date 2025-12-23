@@ -29,8 +29,8 @@ import type {
   ApprovalHistoryEntry,
   ChainTemplate,
   ChainLevel,
-  ProductSearchResult,
 } from '@/services/quotations/types';
+import type { ProductSummary } from '@/services/products/types';
 
 /**
  * Authentication state for test fixtures.
@@ -720,14 +720,15 @@ export function createMockChainTemplate(overrides?: Partial<ChainTemplate>): Cha
 }
 
 /**
- * Factory function to create a mock ProductSearchResult.
+ * Factory function to create a mock ProductSummary.
  */
-export function createMockProduct(overrides?: Partial<ProductSearchResult>): ProductSearchResult {
+export function createMockProduct(overrides?: Partial<ProductSummary>): ProductSummary {
   return {
     id: 1,
     sku: 'SKU-001',
     name: 'Test Product',
     description: 'A test product description',
+    productTypeId: 1,
     productTypeName: 'Electronics',
     baseUnitPrice: 50000,
     unit: 'EA',

@@ -7,7 +7,6 @@
 export { quotationService } from './quotationService';
 export { approvalService } from './approvalService';
 export { approvalChainService } from './approvalChainService';
-export { productService } from './productService';
 
 // Types
 export type {
@@ -37,10 +36,6 @@ export type {
   ChainTemplate,
   ChainLevelRequest,
   UpdateChainLevelsRequest,
-  // Product types
-  ProductSearchResult,
-  ProductSearchParams,
-  PaginatedProducts,
 } from './types';
 
 // Status labels and colors

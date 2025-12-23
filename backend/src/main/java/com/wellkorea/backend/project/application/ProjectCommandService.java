@@ -16,11 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Command service for project write operations.
  * Part of CQRS pattern - handles all create/update/delete operations.
- * Returns only entity IDs - clients should fetch fresh data via ProjectQueryService.
+ * Returns minimal data - typically only entity IDs.
+ * Exception: createProject returns both ID and jobCode since jobCode is auto-generated
+ * and the user needs to see it immediately after creation.
  */
 @Service
 @Transactional
 public class ProjectCommandService {
+
+    /**
+     * Result of project creation containing both ID and generated JobCode.
+     */
+    public record CreateProjectResult(Long id, String jobCode) {}
 
     private final ProjectRepository projectRepository;
     private final JobCodeGenerator jobCodeGenerator;
@@ -44,10 +51,10 @@ public class ProjectCommandService {
      *
      * @param request Create project request
      * @param createdById ID of the user creating the project
-     * @return ID of the created project
+     * @return Result containing both ID and generated jobCode
      * @throws BusinessException if customer or internal owner doesn't exist
      */
-    public Long createProject(CreateProjectRequest request, Long createdById) {
+    public CreateProjectResult createProject(CreateProjectRequest request, Long createdById) {
         // Validate customer exists
         if (!customerExists(request.customerId())) {
             throw new BusinessException("Customer with ID " + request.customerId() + " does not exist");
@@ -74,7 +81,7 @@ public class ProjectCommandService {
                 .build();
 
         Project saved = projectRepository.save(project);
-        return saved.getId();
+        return new CreateProjectResult(saved.getId(), saved.getJobCode());
     }
 
     /**

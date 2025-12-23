@@ -53,18 +53,16 @@ export type {
   PaginatedCompanies,
 } from './companies';
 
-// Legacy customer service (deprecated - use companyService with roleType: 'CUSTOMER')
-export { customerService } from './customers';
-export type { CustomerDetails, CustomerListParams, PaginatedCustomers } from './customers';
-
 // Project service
 export { projectService, projectSummaryService, PROJECT_STATUS_LABELS } from './projects';
 export type {
   ProjectDetails,
+  ProjectListItem,
   ProjectListParams,
   PaginatedProjects,
   CreateProjectRequest,
   UpdateProjectRequest,
+  ProjectCommandResult,
   ProjectStatus,
   // Project summary types
   ProjectSection,
@@ -108,9 +106,6 @@ export type {
   ChainTemplate,
   ChainLevelRequest,
   UpdateChainLevelsRequest,
-  // Product types for quotation (legacy - use productService for full CRUD)
-  ProductSearchResult,
-  ProductSearchParams,
 } from './quotations';
 
 // Product service (Items → Products tab)

@@ -9,6 +9,7 @@ import com.wellkorea.backend.project.api.dto.command.ProjectCommandResult;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSummaryView;
 import com.wellkorea.backend.project.application.ProjectCommandService;
+import com.wellkorea.backend.project.application.ProjectCommandService.CreateProjectResult;
 import com.wellkorea.backend.project.application.ProjectQueryService;
 import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
@@ -146,8 +147,8 @@ public class ProjectController {
             @AuthenticationPrincipal AuthenticatedUser currentUser
     ) {
         Long currentUserId = currentUser.getUserId();
-        Long projectId = commandService.createProject(request, currentUserId);
-        ProjectCommandResult result = ProjectCommandResult.created(projectId);
+        CreateProjectResult createResult = commandService.createProject(request, currentUserId);
+        ProjectCommandResult result = ProjectCommandResult.created(createResult.id(), createResult.jobCode());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

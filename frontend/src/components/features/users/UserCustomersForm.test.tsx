@@ -8,15 +8,40 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserCustomersForm } from './UserCustomersForm';
 import { mockUserDetails } from '@/test/fixtures';
-import { userService } from '@/services';
+import { companyService, userService } from '@/services';
+import type { CompanySummary, PaginatedCompanies } from '@/services';
 
-// Mock userService
+// Mock services
 vi.mock('@/services', () => ({
   userService: {
     getUserCustomers: vi.fn(),
     assignCustomers: vi.fn(),
   },
+  companyService: {
+    getCompanies: vi.fn(),
+  },
 }));
+
+// Mock customer data for tests
+const MOCK_CUSTOMERS: CompanySummary[] = [
+  { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com', phone: '02-1234-5678', address: 'Seoul', isActive: true, roles: [{ id: 1, roleType: 'CUSTOMER', notes: null }] },
+  { id: 2, name: 'LG Display', email: 'info@lgdisplay.com', phone: '02-2345-6789', address: 'Seoul', isActive: true, roles: [{ id: 2, roleType: 'CUSTOMER', notes: null }] },
+  { id: 3, name: 'Hyundai Motor', email: 'info@hyundai.com', phone: '02-3456-7890', address: 'Seoul', isActive: true, roles: [{ id: 3, roleType: 'CUSTOMER', notes: null }] },
+  { id: 4, name: 'SK Hynix', email: 'contact@skhynix.com', phone: '031-345-6789', address: 'Icheon', isActive: true, roles: [{ id: 4, roleType: 'CUSTOMER', notes: null }] },
+  { id: 5, name: 'POSCO', email: 'contact@posco.com', phone: '054-456-7890', address: 'Pohang', isActive: true, roles: [{ id: 5, roleType: 'CUSTOMER', notes: null }] },
+];
+
+const MOCK_PAGINATED_CUSTOMERS: PaginatedCompanies = {
+  data: MOCK_CUSTOMERS,
+  pagination: {
+    page: 0,
+    size: 100,
+    totalElements: 5,
+    totalPages: 1,
+    first: true,
+    last: true,
+  },
+};
 
 describe('UserCustomersForm', () => {
   const mockOnClose = vi.fn();
@@ -25,6 +50,8 @@ describe('UserCustomersForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default mock: return available customers from company service
+    vi.mocked(companyService.getCompanies).mockResolvedValue(MOCK_PAGINATED_CUSTOMERS);
     // Default mock: no customers assigned
     vi.mocked(userService.getUserCustomers).mockResolvedValue([]);
   });
@@ -82,14 +109,14 @@ describe('UserCustomersForm', () => {
       expect(screen.getAllByText('POSCO').length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should render customer codes', async () => {
+    it('should render customer emails', async () => {
       renderForm();
 
       await waitFor(() => {
-        expect(screen.getByText('SAMSUNG')).toBeInTheDocument();
+        expect(screen.getByText('contact@samsung.com')).toBeInTheDocument();
       });
-      expect(screen.getByText('LG')).toBeInTheDocument();
-      expect(screen.getByText('HYUNDAI')).toBeInTheDocument();
+      expect(screen.getByText('info@lgdisplay.com')).toBeInTheDocument();
+      expect(screen.getByText('info@hyundai.com')).toBeInTheDocument();
     });
 
     it('should render action buttons', async () => {
@@ -104,22 +131,22 @@ describe('UserCustomersForm', () => {
 
   describe('loading state', () => {
     it('should show loading state while fetching customers', async () => {
-      let resolveCustomers: (value: number[]) => void;
-      vi.mocked(userService.getUserCustomers).mockImplementation(
+      let resolveCompanies: (value: PaginatedCompanies) => void;
+      vi.mocked(companyService.getCompanies).mockImplementation(
         () =>
           new Promise(resolve => {
-            resolveCustomers = resolve;
+            resolveCompanies = resolve;
           })
       );
 
       renderForm();
 
-      expect(screen.getByText('Loading customer assignments...')).toBeInTheDocument();
+      expect(screen.getByText('Loading customers...')).toBeInTheDocument();
 
-      resolveCustomers!([]);
+      resolveCompanies!(MOCK_PAGINATED_CUSTOMERS);
 
       await waitFor(() => {
-        expect(screen.queryByText('Loading customer assignments...')).not.toBeInTheDocument();
+        expect(screen.queryByText('Loading customers...')).not.toBeInTheDocument();
       });
     });
 
@@ -348,12 +375,12 @@ describe('UserCustomersForm', () => {
 
   describe('error handling', () => {
     it('should display error when loading customers fails', async () => {
-      vi.mocked(userService.getUserCustomers).mockRejectedValue(new Error('Network error'));
+      vi.mocked(companyService.getCompanies).mockRejectedValue(new Error('Network error'));
 
       renderForm();
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to load customer assignments')).toBeInTheDocument();
+        expect(screen.getByText('Failed to load customer data')).toBeInTheDocument();
       });
     });
 

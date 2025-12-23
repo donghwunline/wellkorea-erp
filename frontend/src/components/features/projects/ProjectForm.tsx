@@ -113,6 +113,7 @@ export function ProjectForm({
         required
         disabled={isSubmitting || mode === 'edit'}
         helpText={mode === 'edit' ? 'Customer cannot be changed after creation' : undefined}
+        initialLabel={initialData?.customerName}
       />
 
       {/* Project Name */}
@@ -159,6 +160,7 @@ export function ProjectForm({
         required
         disabled={isSubmitting || mode === 'edit'}
         helpText={mode === 'edit' ? 'Internal owner cannot be changed after creation' : undefined}
+        initialLabel={initialData?.internalOwnerName}
       />
 
       {/* Job Code (read-only in edit mode) */}

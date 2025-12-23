@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
+import type { CreateProjectRequest, ProjectCommandResult, UpdateProjectRequest } from '@/services';
 import { Card, Icon, PageHeader } from '@/components/ui';
 import { JobCodeSuccessModal, ProjectForm, useProjectActions } from '@/components/features/projects';
 
@@ -17,13 +17,13 @@ export function ProjectCreatePage() {
 
   // Local UI State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [createdProject, setCreatedProject] = useState<ProjectDetails | null>(null);
+  const [createdResult, setCreatedResult] = useState<ProjectCommandResult | null>(null);
 
   const handleSubmit = async (data: CreateProjectRequest | UpdateProjectRequest) => {
     try {
       // In create mode, the form always provides CreateProjectRequest
-      const project = await createProject(data as CreateProjectRequest);
-      setCreatedProject(project);
+      const result = await createProject(data as CreateProjectRequest);
+      setCreatedResult(result);
       setShowSuccessModal(true);
     } catch {
       // Error is handled by the hook
@@ -40,8 +40,8 @@ export function ProjectCreatePage() {
   };
 
   const handleViewProject = () => {
-    if (createdProject) {
-      navigate(`/projects/${createdProject.id}`);
+    if (createdResult) {
+      navigate(`/projects/${createdResult.id}`);
     }
   };
 
@@ -80,10 +80,10 @@ export function ProjectCreatePage() {
       </Card>
 
       {/* Success Modal */}
-      {createdProject && (
+      {createdResult?.jobCode && (
         <JobCodeSuccessModal
           isOpen={showSuccessModal}
-          jobCode={createdProject.jobCode}
+          jobCode={createdResult.jobCode}
           onClose={handleSuccessClose}
           onViewProject={handleViewProject}
         />
