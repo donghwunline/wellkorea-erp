@@ -84,7 +84,7 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
         String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yy"));
         Long projectId = 1000L;
         jdbcTemplate.update(
-                "INSERT INTO projects (id, job_code, customer_id, project_name, due_date, internal_owner_id, status, created_by_id) " +
+                "INSERT INTO projects (id, job_code, customer_company_id, project_name, due_date, internal_owner_id, status, created_by_id) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
                 projectId, "WK2K" + year + "-1000-" + today, 1L, "Test Project for Quotation",

@@ -1,7 +1,7 @@
 package com.wellkorea.backend.project.application;
 
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
+import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
 import com.wellkorea.backend.project.domain.JobCodeGenerator;
@@ -50,7 +50,7 @@ class ProjectServiceTest implements TestFixtures {
     private JobCodeGenerator jobCodeGenerator;
 
     @Mock
-    private CustomerRepository customerRepository;
+    private CompanyRepository companyRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -102,7 +102,7 @@ class ProjectServiceTest implements TestFixtures {
         @Test
         @DisplayName("should create project with generated JobCode")
         void createProject_ValidRequest_ReturnsCreatedProject() {
-            when(customerRepository.existsByIdAndIsDeletedFalse(TEST_CUSTOMER_ID)).thenReturn(true);
+            when(companyRepository.existsByIdAndIsActiveTrue(TEST_CUSTOMER_ID)).thenReturn(true);
             when(userRepository.existsByIdAndIsActiveTrue(TEST_USER_ID)).thenReturn(true);
             when(jobCodeGenerator.generateJobCode()).thenReturn("WK2K25-0002-0301");
             when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> {
@@ -123,7 +123,7 @@ class ProjectServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception when customer does not exist")
         void createProject_CustomerNotExist_ThrowsBusinessException() {
-            when(customerRepository.existsByIdAndIsDeletedFalse(TEST_CUSTOMER_ID)).thenReturn(false);
+            when(companyRepository.existsByIdAndIsActiveTrue(TEST_CUSTOMER_ID)).thenReturn(false);
 
             assertThatThrownBy(() -> projectService.createProject(createRequest, TEST_USER_ID))
                     .isInstanceOf(BusinessException.class)
@@ -135,7 +135,7 @@ class ProjectServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception when internal owner does not exist")
         void createProject_InternalOwnerNotExist_ThrowsBusinessException() {
-            when(customerRepository.existsByIdAndIsDeletedFalse(TEST_CUSTOMER_ID)).thenReturn(true);
+            when(companyRepository.existsByIdAndIsActiveTrue(TEST_CUSTOMER_ID)).thenReturn(true);
             when(userRepository.existsByIdAndIsActiveTrue(TEST_USER_ID)).thenReturn(false);
 
             assertThatThrownBy(() -> projectService.createProject(createRequest, TEST_USER_ID))

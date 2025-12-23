@@ -252,14 +252,14 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
             String today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMdd"));
             String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yy"));
             jdbcTemplate.update(
-                    "INSERT INTO projects (id, job_code, customer_id, project_name, due_date, internal_owner_id, status, created_by_id) " +
+                    "INSERT INTO projects (id, job_code, customer_company_id, project_name, due_date, internal_owner_id, status, created_by_id)" +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                             "ON CONFLICT (id) DO NOTHING",
                     1L, "WK2K" + year + "-0001-" + today, 1L, "Test Project 1",
                     LocalDate.now().plusDays(30), 1L, "DRAFT", 1L
             );
             jdbcTemplate.update(
-                    "INSERT INTO projects (id, job_code, customer_id, project_name, due_date, internal_owner_id, status, created_by_id) " +
+                    "INSERT INTO projects (id, job_code, customer_company_id, project_name, due_date, internal_owner_id, status, created_by_id)" +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                             "ON CONFLICT (id) DO NOTHING",
                     2L, "WK2K" + year + "-0002-" + today, 1L, "Test Project 2",
@@ -349,7 +349,7 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
             String today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMdd"));
             String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yy"));
             jdbcTemplate.update(
-                    "INSERT INTO projects (id, job_code, customer_id, project_name, requester_name, due_date, internal_owner_id, status, created_by_id) " +
+                    "INSERT INTO projects (id, job_code, customer_company_id, project_name, requester_name, due_date, internal_owner_id, status, created_by_id) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                             "ON CONFLICT (id) DO NOTHING",
                     100L, "WK2K" + year + "-0100-" + today, 1L, "Detailed Test Project", "Jane Doe",
@@ -397,7 +397,7 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
             String today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMdd"));
             String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yy"));
             jdbcTemplate.update(
-                    "INSERT INTO projects (id, job_code, customer_id, project_name, due_date, internal_owner_id, status, created_by_id) " +
+                    "INSERT INTO projects (id, job_code, customer_company_id, project_name, due_date, internal_owner_id, status, created_by_id)" +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                             "ON CONFLICT (id) DO NOTHING",
                     200L, "WK2K" + year + "-0200-" + today, 1L, "Original Project Name",

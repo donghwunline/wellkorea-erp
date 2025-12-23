@@ -1,7 +1,7 @@
 package com.wellkorea.backend.quotation.application;
 
-import com.wellkorea.backend.customer.domain.Customer;
-import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
+import com.wellkorea.backend.company.domain.Company;
+import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.product.domain.Product;
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.domain.ProjectStatus;
@@ -43,7 +43,7 @@ class QuotationPdfServiceTest {
     private QuotationRepository quotationRepository;
 
     @Mock
-    private CustomerRepository customerRepository;
+    private CompanyRepository companyRepository;
 
     @Mock
     private CompanyProperties companyProperties;
@@ -54,7 +54,7 @@ class QuotationPdfServiceTest {
     private QuotationPdfService quotationPdfService;
 
     private Project testProject;
-    private Customer testCustomer;
+    private Company testCustomer;
     private Quotation testQuotation;
     private Product testProduct;
 
@@ -62,7 +62,7 @@ class QuotationPdfServiceTest {
     void setUp() {
         quotationPdfService = new QuotationPdfService(
                 quotationRepository,
-                customerRepository,
+                companyRepository,
                 companyProperties,
                 templateEngine
         );
@@ -78,8 +78,8 @@ class QuotationPdfServiceTest {
                 .status(ProjectStatus.ACTIVE)
                 .build();
 
-        // Use Customer builder pattern
-        testCustomer = Customer.builder()
+        // Use Company builder pattern
+        testCustomer = Company.builder()
                 .id(100L)
                 .name("Test Customer")
                 .contactPerson("John Doe")
@@ -157,7 +157,7 @@ class QuotationPdfServiceTest {
         void generatePdfById_ApprovedQuotation_GeneratesPdf() {
             testQuotation.setStatus(QuotationStatus.APPROVED);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willReturn("<html><body>Test PDF</body></html>");
 
@@ -176,7 +176,7 @@ class QuotationPdfServiceTest {
         void generatePdfById_PendingQuotation_GeneratesPdf() {
             testQuotation.setStatus(QuotationStatus.PENDING);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willReturn("<html><body>Test PDF</body></html>");
 
@@ -198,17 +198,17 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should throw ResourceNotFoundException when customer not found")
         void generatePdf_CustomerNotFound_ThrowsException() {
-            given(customerRepository.findById(100L)).willReturn(Optional.empty());
+            given(companyRepository.findById(100L)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> quotationPdfService.generatePdf(testQuotation))
                     .isInstanceOf(ResourceNotFoundException.class)
-                    .hasMessageContaining("Customer not found");
+                    .hasMessageContaining("Company not found");
         }
 
         @Test
         @DisplayName("should call template engine with correct template name")
         void generatePdf_ValidQuotation_CallsTemplateEngine() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willReturn("<html><body>Test PDF</body></html>");
 
@@ -224,7 +224,7 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should format quotation number correctly")
         void generatePdf_ValidQuotation_FormatsQuotationNumber() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willAnswer(invocation -> {
                         Context context = invocation.getArgument(1);
@@ -250,7 +250,7 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should convert amount to Korean text in template context")
         void generatePdf_ValidAmount_ConvertsToKoreanText() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willAnswer(invocation -> {
                         Context context = invocation.getArgument(1);
@@ -277,7 +277,7 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should include company information in context")
         void generatePdf_ValidQuotation_IncludesCompanyInfo() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willAnswer(invocation -> {
                         Context context = invocation.getArgument(1);
@@ -300,7 +300,7 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should include customer information in context")
         void generatePdf_ValidQuotation_IncludesCustomerInfo() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willAnswer(invocation -> {
                         Context context = invocation.getArgument(1);
@@ -323,7 +323,7 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should include line items in context")
         void generatePdf_ValidQuotation_IncludesLineItems() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willAnswer(invocation -> {
                         Context context = invocation.getArgument(1);
@@ -346,7 +346,7 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should calculate VAT and grand total correctly")
         void generatePdf_ValidQuotation_CalculatesVatCorrectly() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willAnswer(invocation -> {
                         Context context = invocation.getArgument(1);

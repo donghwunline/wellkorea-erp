@@ -1,7 +1,7 @@
 package com.wellkorea.backend.quotation.application;
 
-import com.wellkorea.backend.customer.domain.Customer;
-import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
+import com.wellkorea.backend.company.domain.Company;
+import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.product.domain.Product;
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.domain.ProjectStatus;
@@ -49,7 +49,7 @@ class QuotationEmailServiceTest {
     private JavaMailSender mailSender;
 
     @Mock
-    private CustomerRepository customerRepository;
+    private CompanyRepository companyRepository;
 
     @Mock
     private CompanyProperties companyProperties;
@@ -69,7 +69,7 @@ class QuotationEmailServiceTest {
     private QuotationEmailService quotationEmailService;
 
     private Project testProject;
-    private Customer testCustomer;
+    private Company testCustomer;
     private Quotation testQuotation;
     private Product testProduct;
 
@@ -78,7 +78,7 @@ class QuotationEmailServiceTest {
         quotationEmailService = new QuotationEmailService(
                 quotationRepository,
                 mailSender,
-                customerRepository,
+                companyRepository,
                 companyProperties,
                 templateEngine,
                 quotationPdfService
@@ -95,8 +95,8 @@ class QuotationEmailServiceTest {
                 .status(ProjectStatus.ACTIVE)
                 .build();
 
-        // Use Customer builder pattern
-        testCustomer = Customer.builder()
+        // Use Company builder pattern
+        testCustomer = Company.builder()
                 .id(100L)
                 .name("Test Customer")
                 .contactPerson("김철수")
@@ -194,7 +194,7 @@ class QuotationEmailServiceTest {
         void sendRevisionNotificationById_ApprovedStatus_SendsEmail() {
             testQuotation.setStatus(QuotationStatus.APPROVED);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
             given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
@@ -210,7 +210,7 @@ class QuotationEmailServiceTest {
         void sendRevisionNotificationById_SentStatus_SendsEmail() {
             testQuotation.setStatus(QuotationStatus.SENT);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
             given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
@@ -226,7 +226,7 @@ class QuotationEmailServiceTest {
         void sendRevisionNotificationById_AcceptedStatus_SendsEmail() {
             testQuotation.setStatus(QuotationStatus.ACCEPTED);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
             given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
@@ -242,17 +242,17 @@ class QuotationEmailServiceTest {
         void sendRevisionNotificationById_CustomerNotFound_ThrowsException() {
             testQuotation.setStatus(QuotationStatus.APPROVED);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.empty());
+            given(companyRepository.findById(100L)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
                     .isInstanceOf(ResourceNotFoundException.class)
-                    .hasMessageContaining("Customer not found");
+                    .hasMessageContaining("Company not found");
         }
 
         @Test
         @DisplayName("should throw BusinessException when customer has no email")
         void sendRevisionNotificationById_NoEmail_ThrowsException() {
-            Customer customerNoEmail = Customer.builder()
+            Company customerNoEmail = Company.builder()
                     .id(100L)
                     .name("Test Customer")
                     .contactPerson("김철수")
@@ -262,7 +262,7 @@ class QuotationEmailServiceTest {
                     .build();
             testQuotation.setStatus(QuotationStatus.APPROVED);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(customerNoEmail));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(customerNoEmail));
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
                     .isInstanceOf(BusinessException.class)
@@ -272,7 +272,7 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should throw BusinessException when customer email is blank")
         void sendRevisionNotificationById_BlankEmail_ThrowsException() {
-            Customer customerBlankEmail = Customer.builder()
+            Company customerBlankEmail = Company.builder()
                     .id(100L)
                     .name("Test Customer")
                     .contactPerson("김철수")
@@ -282,7 +282,7 @@ class QuotationEmailServiceTest {
                     .build();
             testQuotation.setStatus(QuotationStatus.APPROVED);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(customerBlankEmail));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(customerBlankEmail));
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
                     .isInstanceOf(BusinessException.class)
@@ -294,7 +294,7 @@ class QuotationEmailServiceTest {
         void sendRevisionNotificationById_ValidQuotation_UsesKoreanTemplate() {
             testQuotation.setStatus(QuotationStatus.APPROVED);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
             given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
@@ -310,7 +310,7 @@ class QuotationEmailServiceTest {
         void sendRevisionNotificationById_ValidQuotation_IncludesCorrectContext() {
             testQuotation.setStatus(QuotationStatus.APPROVED);
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
             given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
@@ -336,17 +336,17 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should throw ResourceNotFoundException when customer not found")
         void sendSimpleNotification_CustomerNotFound_ThrowsException() {
-            given(customerRepository.findById(100L)).willReturn(Optional.empty());
+            given(companyRepository.findById(100L)).willReturn(Optional.empty());
 
             assertThatThrownBy(() -> quotationEmailService.sendSimpleNotification(testQuotation))
                     .isInstanceOf(ResourceNotFoundException.class)
-                    .hasMessageContaining("Customer not found");
+                    .hasMessageContaining("Company not found");
         }
 
         @Test
         @DisplayName("should throw BusinessException when customer has no email")
         void sendSimpleNotification_NoEmail_ThrowsException() {
-            Customer customerNoEmail = Customer.builder()
+            Company customerNoEmail = Company.builder()
                     .id(100L)
                     .name("Test Customer")
                     .contactPerson("김철수")
@@ -354,7 +354,7 @@ class QuotationEmailServiceTest {
                     .email(null)
                     .address("Seoul, Korea")
                     .build();
-            given(customerRepository.findById(100L)).willReturn(Optional.of(customerNoEmail));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(customerNoEmail));
 
             assertThatThrownBy(() -> quotationEmailService.sendSimpleNotification(testQuotation))
                     .isInstanceOf(BusinessException.class)
@@ -364,7 +364,7 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should send simple mail message")
         void sendSimpleNotification_ValidQuotation_SendsSimpleMail() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
             quotationEmailService.sendSimpleNotification(testQuotation);
 
@@ -378,7 +378,7 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should include Korean subject line")
         void sendSimpleNotification_ValidQuotation_HasKoreanSubject() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
             quotationEmailService.sendSimpleNotification(testQuotation);
 
@@ -393,7 +393,7 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should include quotation details in plain text body")
         void sendSimpleNotification_ValidQuotation_IncludesQuotationDetails() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
             quotationEmailService.sendSimpleNotification(testQuotation);
 
@@ -411,7 +411,7 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should include contact information in plain text body")
         void sendSimpleNotification_ValidQuotation_IncludesContactInfo() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
             quotationEmailService.sendSimpleNotification(testQuotation);
 
@@ -444,7 +444,7 @@ class QuotationEmailServiceTest {
             lineItem.setLineTotal(new BigDecimal("1000000"));
             revisedQuotation.addLineItem(lineItem);
 
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
             quotationEmailService.sendSimpleNotification(revisedQuotation);
 
@@ -459,7 +459,7 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should use default greeting when contact person is null")
         void sendSimpleNotification_NoContactPerson_UsesDefaultGreeting() {
-            Customer customerNoContact = Customer.builder()
+            Company customerNoContact = Company.builder()
                     .id(100L)
                     .name("Test Customer")
                     .contactPerson(null)
@@ -467,7 +467,7 @@ class QuotationEmailServiceTest {
                     .email("customer@test.com")
                     .address("Seoul, Korea")
                     .build();
-            given(customerRepository.findById(100L)).willReturn(Optional.of(customerNoContact));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(customerNoContact));
 
             quotationEmailService.sendSimpleNotification(testQuotation);
 
@@ -486,7 +486,7 @@ class QuotationEmailServiceTest {
         @Test
         @DisplayName("should format version correctly for single digit")
         void formatQuotationNumber_SingleDigitVersion_FormatsCorrectly() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
             quotationEmailService.sendSimpleNotification(testQuotation);
 
@@ -517,7 +517,7 @@ class QuotationEmailServiceTest {
             lineItem.setLineTotal(new BigDecimal("1000000"));
             quotationV12.addLineItem(lineItem);
 
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
 
             quotationEmailService.sendSimpleNotification(quotationV12);
 
