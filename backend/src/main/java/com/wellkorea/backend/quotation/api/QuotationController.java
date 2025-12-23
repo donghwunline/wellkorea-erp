@@ -7,10 +7,8 @@ import com.wellkorea.backend.quotation.api.dto.command.UpdateQuotationRequest;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationDetailView;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView;
 import com.wellkorea.backend.quotation.application.*;
-import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
-import com.wellkorea.backend.shared.exception.BusinessException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -179,16 +177,12 @@ public class QuotationController {
      * <p>
      * This is a query-like operation (returns data, no state change) but uses POST
      * because it generates a resource on-demand.
+     * Validation (non-DRAFT status) is handled by PdfService.
      */
     @PostMapping("/{id}/pdf")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
     public ResponseEntity<byte[]> generatePdf(@PathVariable Long id) {
-        if (!queryService.canGeneratePdf(id)) {
-            throw new BusinessException("PDF can only be generated for non-DRAFT quotations");
-        }
-
-        Quotation quotation = queryService.getQuotationEntity(id);
-        byte[] pdfBytes = pdfService.generatePdf(quotation);
+        byte[] pdfBytes = pdfService.generatePdf(id);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
@@ -203,31 +197,19 @@ public class QuotationController {
      * Admin can use this endpoint to notify the customer about a quotation.
      * Only quotations in APPROVED, SENT, or ACCEPTED status can be sent.
      * If the quotation is APPROVED, it will be automatically marked as SENT before sending.
-     * This ensures status is updated even if email fails (user can retry sending).
+     * Status validation is handled by EmailService.
      */
     @PostMapping("/{id}/send-revision-notification")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> sendRevisionNotification(@PathVariable Long id) {
-        Quotation quotation = queryService.getQuotationEntity(id);
-
-        // Validate quotation status - only APPROVED, SENT, or ACCEPTED can send emails
-        if (quotation.getStatus() != QuotationStatus.APPROVED
-                && quotation.getStatus() != QuotationStatus.SENT
-                && quotation.getStatus() != QuotationStatus.ACCEPTED) {
-            throw new BusinessException(
-                    "Email can only be sent for APPROVED, SENT, or ACCEPTED quotations. Current status: "
-                            + quotation.getStatus());
-        }
-
         // Update status to SENT if currently APPROVED (before email)
         // This ensures status is updated even if email fails - user can retry
-        if (quotation.getStatus() == QuotationStatus.APPROVED) {
+        if (emailService.needsStatusUpdateBeforeSend(id)) {
             commandService.markAsSent(id);
-            // Re-fetch to get updated quotation for email
-            quotation = queryService.getQuotationEntity(id);
         }
 
-        emailService.sendRevisionNotification(quotation);
+        // EmailService validates status and sends email
+        emailService.sendRevisionNotification(id);
 
         return ResponseEntity.ok(ApiResponse.success("Revision notification sent successfully"));
     }

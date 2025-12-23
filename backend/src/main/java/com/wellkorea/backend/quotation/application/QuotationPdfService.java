@@ -5,7 +5,9 @@ import com.wellkorea.backend.customer.domain.Customer;
 import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
+import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.config.CompanyProperties;
+import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -18,15 +20,12 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Service for generating PDF quotations using OpenHTMLtoPDF.
  * Generates professional Korean business quotations (견적서) with proper Korean font support.
+ * Self-contained: handles its own data access and validation.
  */
 @Service
 public class QuotationPdfService {
@@ -35,20 +34,53 @@ public class QuotationPdfService {
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,###");
     private static final BigDecimal VAT_RATE = new BigDecimal("0.10");
 
+    private final QuotationRepository quotationRepository;
     private final CustomerRepository customerRepository;
     private final CompanyProperties companyProperties;
     private final TemplateEngine templateEngine;
 
-    public QuotationPdfService(
-            CustomerRepository customerRepository,
-            CompanyProperties companyProperties,
-            TemplateEngine templateEngine) {
+    public QuotationPdfService(QuotationRepository quotationRepository,
+                               CustomerRepository customerRepository,
+                               CompanyProperties companyProperties,
+                               TemplateEngine templateEngine) {
+        this.quotationRepository = quotationRepository;
         this.customerRepository = customerRepository;
         this.companyProperties = companyProperties;
         this.templateEngine = templateEngine;
     }
 
+    /**
+     * Generate PDF for a quotation by ID.
+     * Fetches the quotation, validates it can generate PDF, and returns PDF bytes.
+     *
+     * @param quotationId The quotation ID
+     * @return PDF as byte array
+     * @throws ResourceNotFoundException if quotation not found
+     * @throws BusinessException         if quotation is in DRAFT status
+     */
+    public byte[] generatePdf(Long quotationId) {
+        Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+
+        if (!quotation.canGeneratePdf()) {
+            throw new BusinessException("PDF can only be generated for non-DRAFT quotations");
+        }
+
+        return generatePdfFromEntity(quotation);
+    }
+
+    /**
+     * Generate PDF from a quotation entity.
+     * Used internally and by QuotationEmailService which already has the entity.
+     *
+     * @param quotation The quotation entity (must have line items loaded)
+     * @return PDF as byte array
+     */
     public byte[] generatePdf(Quotation quotation) {
+        return generatePdfFromEntity(quotation);
+    }
+
+    private byte[] generatePdfFromEntity(Quotation quotation) {
         Customer customer = customerRepository.findById(quotation.getProject().getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Customer not found with ID: " + quotation.getProject().getCustomerId()));

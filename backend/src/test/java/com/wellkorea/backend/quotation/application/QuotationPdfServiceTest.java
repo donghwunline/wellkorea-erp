@@ -8,7 +8,9 @@ import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
+import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.config.CompanyProperties;
+import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,6 +40,9 @@ import static org.mockito.Mockito.verify;
 class QuotationPdfServiceTest {
 
     @Mock
+    private QuotationRepository quotationRepository;
+
+    @Mock
     private CustomerRepository customerRepository;
 
     @Mock
@@ -56,6 +61,7 @@ class QuotationPdfServiceTest {
     @BeforeEach
     void setUp() {
         quotationPdfService = new QuotationPdfService(
+                quotationRepository,
                 customerRepository,
                 companyProperties,
                 templateEngine
@@ -122,8 +128,72 @@ class QuotationPdfServiceTest {
     }
 
     @Nested
-    @DisplayName("generatePdf")
-    class GeneratePdfTests {
+    @DisplayName("generatePdf(Long quotationId)")
+    class GeneratePdfByIdTests {
+
+        @Test
+        @DisplayName("should throw ResourceNotFoundException when quotation not found")
+        void generatePdfById_QuotationNotFound_ThrowsException() {
+            given(quotationRepository.findByIdWithLineItems(999L)).willReturn(Optional.empty());
+
+            assertThatThrownBy(() -> quotationPdfService.generatePdf(999L))
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .hasMessageContaining("Quotation not found");
+        }
+
+        @Test
+        @DisplayName("should throw BusinessException when quotation is DRAFT")
+        void generatePdfById_DraftQuotation_ThrowsException() {
+            testQuotation.setStatus(QuotationStatus.DRAFT);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+
+            assertThatThrownBy(() -> quotationPdfService.generatePdf(1L))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("PDF can only be generated for non-DRAFT quotations");
+        }
+
+        @Test
+        @DisplayName("should generate PDF for APPROVED quotation")
+        void generatePdfById_ApprovedQuotation_GeneratesPdf() {
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
+                    .willReturn("<html><body>Test PDF</body></html>");
+
+            try {
+                quotationPdfService.generatePdf(1L);
+            } catch (RuntimeException e) {
+                // Expected - font file not available in test
+            }
+
+            verify(quotationRepository).findByIdWithLineItems(1L);
+            verify(templateEngine).process(eq("quotation-pdf"), any(Context.class));
+        }
+
+        @Test
+        @DisplayName("should generate PDF for PENDING quotation")
+        void generatePdfById_PendingQuotation_GeneratesPdf() {
+            testQuotation.setStatus(QuotationStatus.PENDING);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
+                    .willReturn("<html><body>Test PDF</body></html>");
+
+            try {
+                quotationPdfService.generatePdf(1L);
+            } catch (RuntimeException e) {
+                // Expected - font file not available in test
+            }
+
+            verify(quotationRepository).findByIdWithLineItems(1L);
+            verify(templateEngine).process(eq("quotation-pdf"), any(Context.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("generatePdf(Quotation)")
+    class GeneratePdfByEntityTests {
 
         @Test
         @DisplayName("should throw ResourceNotFoundException when customer not found")

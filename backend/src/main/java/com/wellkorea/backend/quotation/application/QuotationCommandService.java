@@ -10,7 +10,6 @@ import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
 import com.wellkorea.backend.quotation.domain.event.QuotationSubmittedEvent;
-import com.wellkorea.backend.quotation.infrastructure.repository.QuotationLineItemRepository;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
@@ -32,21 +31,17 @@ import java.util.List;
 public class QuotationCommandService {
 
     private final QuotationRepository quotationRepository;
-    private final QuotationLineItemRepository lineItemRepository;
     private final ProjectRepository projectRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final DomainEventPublisher eventPublisher;
 
-    public QuotationCommandService(
-            QuotationRepository quotationRepository,
-            QuotationLineItemRepository lineItemRepository,
-            ProjectRepository projectRepository,
-            ProductRepository productRepository,
-            UserRepository userRepository,
-            DomainEventPublisher eventPublisher) {
+    public QuotationCommandService(QuotationRepository quotationRepository,
+                                   ProjectRepository projectRepository,
+                                   ProductRepository productRepository,
+                                   UserRepository userRepository,
+                                   DomainEventPublisher eventPublisher) {
         this.quotationRepository = quotationRepository;
-        this.lineItemRepository = lineItemRepository;
         this.projectRepository = projectRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
@@ -55,6 +50,7 @@ public class QuotationCommandService {
 
     /**
      * Create a new quotation with line items.
+     *
      * @return ID of the created quotation
      */
     public Long createQuotation(CreateQuotationCommand command, Long createdByUserId) {
@@ -89,6 +85,7 @@ public class QuotationCommandService {
 
     /**
      * Update an existing quotation (only allowed for DRAFT status).
+     *
      * @return ID of the updated quotation
      */
     public Long updateQuotation(Long quotationId, UpdateQuotationCommand command) {
@@ -126,6 +123,7 @@ public class QuotationCommandService {
      * Submit quotation for approval.
      * Publishes QuotationSubmittedEvent which is handled by ApprovalEventHandler
      * within the same transaction (BEFORE_COMMIT phase).
+     *
      * @return ID of the submitted quotation
      */
     public Long submitForApproval(Long quotationId, Long submittedByUserId) {
@@ -153,6 +151,7 @@ public class QuotationCommandService {
 
     /**
      * Create a new version from an existing quotation.
+     *
      * @return ID of the new quotation version
      */
     public Long createNewVersion(Long quotationId, Long createdByUserId) {
@@ -200,6 +199,7 @@ public class QuotationCommandService {
     /**
      * Approve quotation (called by approval workflow via event).
      * Only quotations in PENDING status can be approved.
+     *
      * @return ID of the approved quotation
      */
     public Long approveQuotation(Long quotationId, Long approvedByUserId) {
@@ -224,6 +224,7 @@ public class QuotationCommandService {
     /**
      * Reject quotation (called by approval workflow via event).
      * Only quotations in PENDING status can be rejected.
+     *
      * @return ID of the rejected quotation
      */
     public Long rejectQuotation(Long quotationId, String rejectionReason) {
@@ -244,6 +245,7 @@ public class QuotationCommandService {
     /**
      * Mark quotation as sent to customer.
      * Only quotations in APPROVED status can be marked as sent.
+     *
      * @return ID of the sent quotation
      */
     public Long markAsSent(Long quotationId) {

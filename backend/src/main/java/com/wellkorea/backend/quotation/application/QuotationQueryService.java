@@ -44,28 +44,4 @@ public class QuotationQueryService {
         Page<Quotation> quotations = quotationRepository.findAllWithFilters(status, projectId, pageable);
         return quotations.map(QuotationSummaryView::from);
     }
-
-    /**
-     * Check if quotation exists.
-     */
-    public boolean exists(Long quotationId) {
-        return quotationRepository.existsById(quotationId);
-    }
-
-    /**
-     * Get quotation by ID (raw entity - for internal use only).
-     * Used by PDF service and email service that need the domain entity.
-     */
-    public Quotation getQuotationEntity(Long quotationId) {
-        return quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
-    }
-
-    /**
-     * Check if quotation can generate PDF (non-DRAFT status).
-     */
-    public boolean canGeneratePdf(Long quotationId) {
-        Quotation quotation = getQuotationEntity(quotationId);
-        return quotation.canGeneratePdf();
-    }
 }

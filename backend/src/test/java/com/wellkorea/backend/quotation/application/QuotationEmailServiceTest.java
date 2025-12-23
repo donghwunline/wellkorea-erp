@@ -8,6 +8,7 @@ import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
+import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
@@ -42,6 +43,9 @@ import static org.mockito.Mockito.*;
 class QuotationEmailServiceTest {
 
     @Mock
+    private QuotationRepository quotationRepository;
+
+    @Mock
     private JavaMailSender mailSender;
 
     @Mock
@@ -72,6 +76,7 @@ class QuotationEmailServiceTest {
     @BeforeEach
     void setUp() {
         quotationEmailService = new QuotationEmailService(
+                quotationRepository,
                 mailSender,
                 customerRepository,
                 companyProperties,
@@ -138,22 +143,115 @@ class QuotationEmailServiceTest {
     }
 
     @Nested
-    @DisplayName("sendRevisionNotification")
-    class SendRevisionNotificationTests {
+    @DisplayName("sendRevisionNotification by ID")
+    class SendRevisionNotificationByIdTests {
+
+        @Test
+        @DisplayName("should throw ResourceNotFoundException when quotation not found")
+        void sendRevisionNotificationById_QuotationNotFound_ThrowsException() {
+            given(quotationRepository.findByIdWithLineItems(999L)).willReturn(Optional.empty());
+
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(999L))
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .hasMessageContaining("Quotation not found with ID: 999");
+        }
+
+        @Test
+        @DisplayName("should throw BusinessException when quotation is in DRAFT status")
+        void sendRevisionNotificationById_DraftStatus_ThrowsException() {
+            testQuotation.setStatus(QuotationStatus.DRAFT);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("APPROVED, SENT, or ACCEPTED");
+        }
+
+        @Test
+        @DisplayName("should throw BusinessException when quotation is in PENDING status")
+        void sendRevisionNotificationById_PendingStatus_ThrowsException() {
+            testQuotation.setStatus(QuotationStatus.PENDING);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("APPROVED, SENT, or ACCEPTED");
+        }
+
+        @Test
+        @DisplayName("should throw BusinessException when quotation is in REJECTED status")
+        void sendRevisionNotificationById_RejectedStatus_ThrowsException() {
+            testQuotation.setStatus(QuotationStatus.REJECTED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("APPROVED, SENT, or ACCEPTED");
+        }
+
+        @Test
+        @DisplayName("should send email when quotation is APPROVED")
+        void sendRevisionNotificationById_ApprovedStatus_SendsEmail() {
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
+            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
+            given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
+                    .willReturn("<html>Email Content</html>");
+
+            quotationEmailService.sendRevisionNotification(1L);
+
+            verify(mailSender).send(mimeMessage);
+        }
+
+        @Test
+        @DisplayName("should send email when quotation is SENT")
+        void sendRevisionNotificationById_SentStatus_SendsEmail() {
+            testQuotation.setStatus(QuotationStatus.SENT);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
+            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
+            given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
+                    .willReturn("<html>Email Content</html>");
+
+            quotationEmailService.sendRevisionNotification(1L);
+
+            verify(mailSender).send(mimeMessage);
+        }
+
+        @Test
+        @DisplayName("should send email when quotation is ACCEPTED")
+        void sendRevisionNotificationById_AcceptedStatus_SendsEmail() {
+            testQuotation.setStatus(QuotationStatus.ACCEPTED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
+            given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
+            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
+            given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
+                    .willReturn("<html>Email Content</html>");
+
+            quotationEmailService.sendRevisionNotification(1L);
+
+            verify(mailSender).send(mimeMessage);
+        }
 
         @Test
         @DisplayName("should throw ResourceNotFoundException when customer not found")
-        void sendRevisionNotification_CustomerNotFound_ThrowsException() {
+        void sendRevisionNotificationById_CustomerNotFound_ThrowsException() {
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
             given(customerRepository.findById(100L)).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(testQuotation))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Customer not found");
         }
 
         @Test
         @DisplayName("should throw BusinessException when customer has no email")
-        void sendRevisionNotification_NoEmail_ThrowsException() {
+        void sendRevisionNotificationById_NoEmail_ThrowsException() {
             Customer customerNoEmail = Customer.builder()
                     .id(100L)
                     .name("Test Customer")
@@ -162,16 +260,18 @@ class QuotationEmailServiceTest {
                     .email(null)
                     .address("Seoul, Korea")
                     .build();
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
             given(customerRepository.findById(100L)).willReturn(Optional.of(customerNoEmail));
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(testQuotation))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("email address");
         }
 
         @Test
         @DisplayName("should throw BusinessException when customer email is blank")
-        void sendRevisionNotification_BlankEmail_ThrowsException() {
+        void sendRevisionNotificationById_BlankEmail_ThrowsException() {
             Customer customerBlankEmail = Customer.builder()
                     .id(100L)
                     .name("Test Customer")
@@ -180,45 +280,36 @@ class QuotationEmailServiceTest {
                     .email("   ")
                     .address("Seoul, Korea")
                     .build();
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
             given(customerRepository.findById(100L)).willReturn(Optional.of(customerBlankEmail));
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(testQuotation))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(1L))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("email address");
         }
 
         @Test
-        @DisplayName("should generate PDF and send email with attachment")
-        void sendRevisionNotification_ValidQuotation_SendsEmailWithPdf() {
-            given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
-            given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
-            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
-            given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
-                    .willReturn("<html>Email Content</html>");
-
-            quotationEmailService.sendRevisionNotification(testQuotation);
-
-            verify(quotationPdfService).generatePdf(testQuotation);
-            verify(mailSender).send(mimeMessage);
-        }
-
-        @Test
         @DisplayName("should use Korean email template")
-        void sendRevisionNotification_ValidQuotation_UsesKoreanTemplate() {
+        void sendRevisionNotificationById_ValidQuotation_UsesKoreanTemplate() {
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
             given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
             given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
-            quotationEmailService.sendRevisionNotification(testQuotation);
+            quotationEmailService.sendRevisionNotification(1L);
 
             verify(templateEngine).process(eq("quotation-email-ko"), any(Context.class));
         }
 
         @Test
         @DisplayName("should include correct context variables for email template")
-        void sendRevisionNotification_ValidQuotation_IncludesCorrectContext() {
+        void sendRevisionNotificationById_ValidQuotation_IncludesCorrectContext() {
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
             given(customerRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(quotationPdfService.generatePdf(testQuotation)).willReturn(new byte[]{1, 2, 3});
             given(mailSender.createMimeMessage()).willReturn(mimeMessage);
@@ -232,7 +323,7 @@ class QuotationEmailServiceTest {
                         return "<html>Email Content</html>";
                     });
 
-            quotationEmailService.sendRevisionNotification(testQuotation);
+            quotationEmailService.sendRevisionNotification(1L);
 
             verify(templateEngine).process(eq("quotation-email-ko"), any(Context.class));
         }
@@ -435,6 +526,146 @@ class QuotationEmailServiceTest {
 
             // Format: "[웰코리아(주)] 견적서 안내 - WK2K25-0001-1219 (V12)"
             assertThat(sentMessage.getSubject()).contains("(V12)");
+        }
+    }
+
+    @Nested
+    @DisplayName("canSendEmail")
+    class CanSendEmailTests {
+
+        @Test
+        @DisplayName("should return false when quotation not found")
+        void canSendEmail_QuotationNotFound_ReturnsFalse() {
+            given(quotationRepository.findById(999L)).willReturn(Optional.empty());
+
+            boolean result = quotationEmailService.canSendEmail(999L);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should return false when quotation is in DRAFT status")
+        void canSendEmail_DraftStatus_ReturnsFalse() {
+            testQuotation.setStatus(QuotationStatus.DRAFT);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.canSendEmail(1L);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should return false when quotation is in PENDING status")
+        void canSendEmail_PendingStatus_ReturnsFalse() {
+            testQuotation.setStatus(QuotationStatus.PENDING);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.canSendEmail(1L);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should return false when quotation is in REJECTED status")
+        void canSendEmail_RejectedStatus_ReturnsFalse() {
+            testQuotation.setStatus(QuotationStatus.REJECTED);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.canSendEmail(1L);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should return true when quotation is in APPROVED status")
+        void canSendEmail_ApprovedStatus_ReturnsTrue() {
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.canSendEmail(1L);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("should return true when quotation is in SENT status")
+        void canSendEmail_SentStatus_ReturnsTrue() {
+            testQuotation.setStatus(QuotationStatus.SENT);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.canSendEmail(1L);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("should return true when quotation is in ACCEPTED status")
+        void canSendEmail_AcceptedStatus_ReturnsTrue() {
+            testQuotation.setStatus(QuotationStatus.ACCEPTED);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.canSendEmail(1L);
+
+            assertThat(result).isTrue();
+        }
+    }
+
+    @Nested
+    @DisplayName("needsStatusUpdateBeforeSend")
+    class NeedsStatusUpdateBeforeSendTests {
+
+        @Test
+        @DisplayName("should return false when quotation not found")
+        void needsStatusUpdateBeforeSend_QuotationNotFound_ReturnsFalse() {
+            given(quotationRepository.findById(999L)).willReturn(Optional.empty());
+
+            boolean result = quotationEmailService.needsStatusUpdateBeforeSend(999L);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should return true when quotation is in APPROVED status")
+        void needsStatusUpdateBeforeSend_ApprovedStatus_ReturnsTrue() {
+            testQuotation.setStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.needsStatusUpdateBeforeSend(1L);
+
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("should return false when quotation is in SENT status")
+        void needsStatusUpdateBeforeSend_SentStatus_ReturnsFalse() {
+            testQuotation.setStatus(QuotationStatus.SENT);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.needsStatusUpdateBeforeSend(1L);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should return false when quotation is in ACCEPTED status")
+        void needsStatusUpdateBeforeSend_AcceptedStatus_ReturnsFalse() {
+            testQuotation.setStatus(QuotationStatus.ACCEPTED);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.needsStatusUpdateBeforeSend(1L);
+
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("should return false when quotation is in DRAFT status")
+        void needsStatusUpdateBeforeSend_DraftStatus_ReturnsFalse() {
+            testQuotation.setStatus(QuotationStatus.DRAFT);
+            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
+
+            boolean result = quotationEmailService.needsStatusUpdateBeforeSend(1L);
+
+            assertThat(result).isFalse();
         }
     }
 }

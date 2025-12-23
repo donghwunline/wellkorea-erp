@@ -3,6 +3,8 @@ package com.wellkorea.backend.quotation.application;
 import com.wellkorea.backend.customer.domain.Customer;
 import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
 import com.wellkorea.backend.quotation.domain.Quotation;
+import com.wellkorea.backend.quotation.domain.QuotationStatus;
+import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
@@ -22,10 +24,12 @@ import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Service for sending quotation-related emails.
  * Handles revision notifications and other quotation communications.
+ * Self-contained: handles its own data access and validation.
  */
 @Service
 public class QuotationEmailService {
@@ -33,19 +37,26 @@ public class QuotationEmailService {
     private static final Logger log = LoggerFactory.getLogger(QuotationEmailService.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,###");
+    private static final Set<QuotationStatus> SENDABLE_STATUSES = Set.of(
+            QuotationStatus.APPROVED,
+            QuotationStatus.SENT,
+            QuotationStatus.ACCEPTED
+    );
 
+    private final QuotationRepository quotationRepository;
     private final JavaMailSender mailSender;
     private final CustomerRepository customerRepository;
     private final CompanyProperties companyProperties;
     private final TemplateEngine templateEngine;
     private final QuotationPdfService quotationPdfService;
 
-    public QuotationEmailService(
-            JavaMailSender mailSender,
-            CustomerRepository customerRepository,
-            CompanyProperties companyProperties,
-            TemplateEngine templateEngine,
-            QuotationPdfService quotationPdfService) {
+    public QuotationEmailService(QuotationRepository quotationRepository,
+                                 JavaMailSender mailSender,
+                                 CustomerRepository customerRepository,
+                                 CompanyProperties companyProperties,
+                                 TemplateEngine templateEngine,
+                                 QuotationPdfService quotationPdfService) {
+        this.quotationRepository = quotationRepository;
         this.mailSender = mailSender;
         this.customerRepository = customerRepository;
         this.companyProperties = companyProperties;
@@ -53,7 +64,56 @@ public class QuotationEmailService {
         this.quotationPdfService = quotationPdfService;
     }
 
-    public void sendRevisionNotification(Quotation quotation) {
+    /**
+     * Send revision notification email for a quotation by ID.
+     * Fetches the quotation, validates status (must be APPROVED, SENT, or ACCEPTED),
+     * and sends the email with PDF attachment.
+     *
+     * @param quotationId The quotation ID
+     * @throws ResourceNotFoundException if quotation not found
+     * @throws BusinessException         if quotation status is not sendable
+     */
+    public void sendRevisionNotification(Long quotationId) {
+        Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+
+        validateSendableStatus(quotation);
+        sendRevisionNotificationInternal(quotation);
+    }
+
+    /**
+     * Check if quotation can have email sent (APPROVED, SENT, or ACCEPTED status).
+     *
+     * @param quotationId The quotation ID
+     * @return true if email can be sent
+     */
+    public boolean canSendEmail(Long quotationId) {
+        return quotationRepository.findById(quotationId)
+                .map(q -> SENDABLE_STATUSES.contains(q.getStatus()))
+                .orElse(false);
+    }
+
+    /**
+     * Check if quotation needs status update to SENT before sending email.
+     *
+     * @param quotationId The quotation ID
+     * @return true if quotation is currently APPROVED (needs to be marked as SENT)
+     */
+    public boolean needsStatusUpdateBeforeSend(Long quotationId) {
+        return quotationRepository.findById(quotationId)
+                .map(q -> q.getStatus() == QuotationStatus.APPROVED)
+                .orElse(false);
+    }
+
+    private void validateSendableStatus(Quotation quotation) {
+        if (!SENDABLE_STATUSES.contains(quotation.getStatus())) {
+            throw new BusinessException(
+                    "Email can only be sent for APPROVED, SENT, or ACCEPTED quotations. Current status: "
+                            + quotation.getStatus());
+        }
+    }
+
+    private void sendRevisionNotificationInternal(Quotation quotation) {
         Customer customer = findCustomerOrThrow(quotation);
         validateCustomerEmail(customer);
 
