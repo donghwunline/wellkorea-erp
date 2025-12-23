@@ -133,3 +133,19 @@ export const PRODUCT_ENDPOINTS = {
   /** GET /products/search - Search products */
   search: '/products/search',
 } as const;
+
+// ============================================================================
+// Company Endpoints
+// ============================================================================
+
+export const COMPANY_ENDPOINTS = {
+  /** Base path for company operations */
+  BASE: '/companies',
+
+  /** GET/PUT/DELETE /companies/:id */
+  byId: (id: number) => `/companies/${id}`,
+  /** POST /companies/:id/roles - Add role to company */
+  roles: (id: number) => `/companies/${id}/roles`,
+  /** DELETE /companies/:id/roles/:roleId - Remove role from company */
+  role: (id: number, roleId: number) => `/companies/${id}/roles/${roleId}`,
+} as const;
