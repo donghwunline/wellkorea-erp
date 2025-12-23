@@ -1,14 +1,13 @@
 package com.wellkorea.backend.company.api;
 
 import com.wellkorea.backend.company.api.dto.command.AddRoleRequest;
+import com.wellkorea.backend.company.api.dto.command.CompanyCommandResult;
 import com.wellkorea.backend.company.api.dto.command.CreateCompanyRequest;
 import com.wellkorea.backend.company.api.dto.command.UpdateCompanyRequest;
 import com.wellkorea.backend.company.api.dto.query.CompanyDetailView;
-import com.wellkorea.backend.company.api.dto.query.CompanyRoleView;
 import com.wellkorea.backend.company.api.dto.query.CompanySummaryView;
-import com.wellkorea.backend.company.application.CompanyService;
-import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.domain.CompanyRole;
+import com.wellkorea.backend.company.application.CompanyCommandService;
+import com.wellkorea.backend.company.application.CompanyQueryService;
 import com.wellkorea.backend.company.domain.RoleType;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -21,7 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * REST API controller for company management.
- * Provides endpoints for CRUD operations on companies and their roles.
+ * Follows CQRS pattern - uses separate Command and Query services.
+ * Command endpoints return only IDs; clients fetch fresh data via query endpoints.
  * <p>
  * RBAC Rules:
  * - Admin, Finance, Sales: Full CRUD access
@@ -31,10 +31,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/companies")
 public class CompanyController {
 
-    private final CompanyService companyService;
+    private final CompanyCommandService commandService;
+    private final CompanyQueryService queryService;
 
-    public CompanyController(CompanyService companyService) {
-        this.companyService = companyService;
+    public CompanyController(CompanyCommandService commandService, CompanyQueryService queryService) {
+        this.commandService = commandService;
+        this.queryService = queryService;
     }
 
     // ========== QUERY ENDPOINTS ==========
@@ -57,20 +59,19 @@ public class CompanyController {
             @RequestParam(required = false) String search,
             Pageable pageable) {
 
-        Page<Company> companiesPage;
+        Page<CompanySummaryView> companiesPage;
 
         if (roleType != null && search != null && !search.isBlank()) {
-            companiesPage = companyService.findByRoleTypeAndSearch(roleType, search, pageable);
+            companiesPage = queryService.findByRoleTypeAndSearch(roleType, search, pageable);
         } else if (roleType != null) {
-            companiesPage = companyService.findByRoleType(roleType, pageable);
+            companiesPage = queryService.findByRoleType(roleType, pageable);
         } else if (search != null && !search.isBlank()) {
-            companiesPage = companyService.findBySearch(search, pageable);
+            companiesPage = queryService.findBySearch(search, pageable);
         } else {
-            companiesPage = companyService.findAll(pageable);
+            companiesPage = queryService.listCompanies(pageable);
         }
 
-        Page<CompanySummaryView> responsePage = companiesPage.map(CompanySummaryView::from);
-        return ResponseEntity.ok(ApiResponse.success(responsePage));
+        return ResponseEntity.ok(ApiResponse.success(companiesPage));
     }
 
     /**
@@ -85,9 +86,8 @@ public class CompanyController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CompanyDetailView>> getCompany(@PathVariable Long id) {
-        Company company = companyService.getById(id);
-        CompanyDetailView response = CompanyDetailView.from(company);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        CompanyDetailView company = queryService.getCompanyDetail(id);
+        return ResponseEntity.ok(ApiResponse.success(company));
     }
 
     // ========== COMMAND ENDPOINTS ==========
@@ -100,21 +100,19 @@ public class CompanyController {
      * Access: ADMIN, FINANCE, SALES
      *
      * @param request Create company request
-     * @return Created company with 201 status
+     * @return Created company ID with 201 status
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<CompanyDetailView>> createCompany(
+    public ResponseEntity<ApiResponse<CompanyCommandResult>> createCompany(
             @Valid @RequestBody CreateCompanyRequest request) {
 
-        Company company = companyService.createCompany(request.toCommand());
-        // Reload to get roles
-        Company reloaded = companyService.getById(company.getId());
-        CompanyDetailView response = CompanyDetailView.from(reloaded);
+        Long companyId = commandService.createCompany(request.toCommand());
+        CompanyCommandResult result = CompanyCommandResult.created(companyId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
+                .body(ApiResponse.success(result));
     }
 
     /**
@@ -126,17 +124,18 @@ public class CompanyController {
      *
      * @param id      Company ID
      * @param request Update request
-     * @return Updated company
+     * @return Updated company ID
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<CompanyDetailView>> updateCompany(
+    public ResponseEntity<ApiResponse<CompanyCommandResult>> updateCompany(
             @PathVariable Long id,
             @Valid @RequestBody UpdateCompanyRequest request) {
 
-        Company company = companyService.updateCompany(id, request.toCommand());
-        CompanyDetailView response = CompanyDetailView.from(company);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        Long companyId = commandService.updateCompany(id, request.toCommand());
+        CompanyCommandResult result = CompanyCommandResult.updated(companyId);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -152,7 +151,7 @@ public class CompanyController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCompany(@PathVariable Long id) {
-        companyService.deactivateCompany(id);
+        commandService.deactivateCompany(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -167,20 +166,20 @@ public class CompanyController {
      *
      * @param id      Company ID
      * @param request Add role request
-     * @return Created role with 201 status
+     * @return Created role ID with 201 status
      */
     @PostMapping("/{id}/roles")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<CompanyRoleView>> addRole(
+    public ResponseEntity<ApiResponse<CompanyCommandResult>> addRole(
             @PathVariable Long id,
             @Valid @RequestBody AddRoleRequest request) {
 
-        CompanyRole role = companyService.addRole(id, request.toCommand());
-        CompanyRoleView response = CompanyRoleView.from(role);
+        Long roleId = commandService.addRole(id, request.toCommand());
+        CompanyCommandResult result = CompanyCommandResult.roleAdded(roleId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
+                .body(ApiResponse.success(result));
     }
 
     /**
@@ -200,7 +199,7 @@ public class CompanyController {
             @PathVariable Long id,
             @PathVariable Long roleId) {
 
-        companyService.removeRole(id, roleId);
+        commandService.removeRole(id, roleId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -93,6 +93,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
+            // CQRS pattern: command endpoints return only ID and message
             mockMvc.perform(post(COMPANIES_URL)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -101,10 +102,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.id").isNumber())
-                    .andExpect(jsonPath("$.data.name").value("Samsung Electronics"))
-                    .andExpect(jsonPath("$.data.registrationNumber").value("123-45-67890"))
-                    .andExpect(jsonPath("$.data.roles", hasSize(1)))
-                    .andExpect(jsonPath("$.data.roles[0].roleType").value("CUSTOMER"));
+                    .andExpect(jsonPath("$.data.message").value("Company created successfully"));
         }
 
         @Test
@@ -121,14 +119,15 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
+            // CQRS pattern: command endpoints return only ID and message
             mockMvc.perform(post(COMPANIES_URL)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.roles", hasSize(2)))
-                    .andExpect(jsonPath("$.data.roles[*].roleType", containsInAnyOrder("CUSTOMER", "VENDOR")));
+                    .andExpect(jsonPath("$.data.id").isNumber())
+                    .andExpect(jsonPath("$.data.message").value("Company created successfully"));
         }
 
         @Test
@@ -393,16 +392,15 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
+            // CQRS pattern: command endpoints return only ID and message
             mockMvc.perform(put(COMPANIES_URL + "/200")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updateRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.name").value("Updated Company Name"))
-                    .andExpect(jsonPath("$.data.contactPerson").value("New Contact"))
-                    .andExpect(jsonPath("$.data.phone").value("02-9999-8888"))
-                    .andExpect(jsonPath("$.data.email").value("updated@company.com"));
+                    .andExpect(jsonPath("$.data.id").value(200))
+                    .andExpect(jsonPath("$.data.message").value("Company updated successfully"));
         }
 
         @Test
@@ -497,15 +495,15 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
+            // CQRS pattern: command endpoints return only ID and message
             mockMvc.perform(post(COMPANIES_URL + "/300/roles")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(addRoleRequest))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.roleType").value("VENDOR"))
-                    .andExpect(jsonPath("$.data.creditLimit").value(10000000.00))
-                    .andExpect(jsonPath("$.data.defaultPaymentDays").value(30));
+                    .andExpect(jsonPath("$.data.id").isNumber())
+                    .andExpect(jsonPath("$.data.message").value("Role added successfully"));
         }
 
         @Test
@@ -518,12 +516,14 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
+            // CQRS pattern: command endpoints return only ID and message
             mockMvc.perform(post(COMPANIES_URL + "/300/roles")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(addRoleRequest))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.data.roleType").value("OUTSOURCE"));
+                    .andExpect(jsonPath("$.data.id").isNumber())
+                    .andExpect(jsonPath("$.data.message").value("Role added successfully"));
         }
 
         @Test

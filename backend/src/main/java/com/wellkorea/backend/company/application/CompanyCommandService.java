@@ -7,40 +7,34 @@ import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepositor
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRoleRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
 /**
- * Service for managing companies and their roles.
- * Handles business logic for the unified Company domain.
+ * Command service for company write operations.
+ * Part of CQRS pattern - handles all create/update/delete operations.
+ * Returns only entity IDs - clients should fetch fresh data via CompanyQueryService.
  */
 @Service
-public class CompanyService {
+@Transactional
+public class CompanyCommandService {
 
     private final CompanyRepository companyRepository;
     private final CompanyRoleRepository companyRoleRepository;
 
-    public CompanyService(CompanyRepository companyRepository, CompanyRoleRepository companyRoleRepository) {
+    public CompanyCommandService(CompanyRepository companyRepository, CompanyRoleRepository companyRoleRepository) {
         this.companyRepository = companyRepository;
         this.companyRoleRepository = companyRoleRepository;
     }
-
-    // ========== COMMAND OPERATIONS ==========
 
     /**
      * Create a new company with initial roles.
      *
      * @param command The creation command
-     * @return The created company
+     * @return ID of the created company
      * @throws BusinessException if registration number is duplicate or no roles specified
      */
-    @Transactional
-    public Company createCompany(CreateCompanyCommand command) {
+    public Long createCompany(CreateCompanyCommand command) {
         // Validate at least one role
         if (command.roles() == null || command.roles().isEmpty()) {
             throw new BusinessException("At least one role must be specified for a company");
@@ -80,7 +74,7 @@ public class CompanyService {
         }
 
         // Save again to persist roles through cascade
-        return companyRepository.save(savedCompany);
+        return companyRepository.save(savedCompany).getId();
     }
 
     /**
@@ -88,12 +82,11 @@ public class CompanyService {
      *
      * @param companyId The company ID
      * @param command   The update command
-     * @return The updated company
+     * @return ID of the updated company
      * @throws ResourceNotFoundException if company not found
      * @throws BusinessException         if new registration number is duplicate
      */
-    @Transactional
-    public Company updateCompany(Long companyId, UpdateCompanyCommand command) {
+    public Long updateCompany(Long companyId, UpdateCompanyCommand command) {
         Company company = companyRepository.findByIdAndIsActiveTrue(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
@@ -118,7 +111,7 @@ public class CompanyService {
                 command.paymentTerms()
         );
 
-        return companyRepository.save(company);
+        return companyRepository.save(company).getId();
     }
 
     /**
@@ -126,12 +119,11 @@ public class CompanyService {
      *
      * @param companyId The company ID
      * @param command   The role to add
-     * @return The created role
+     * @return ID of the created role
      * @throws ResourceNotFoundException if company not found
      * @throws BusinessException         if company already has this role
      */
-    @Transactional
-    public CompanyRole addRole(Long companyId, AddRoleCommand command) {
+    public Long addRole(Long companyId, AddRoleCommand command) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
@@ -148,7 +140,7 @@ public class CompanyService {
                 .notes(command.notes())
                 .build();
 
-        return companyRoleRepository.save(role);
+        return companyRoleRepository.save(role).getId();
     }
 
     /**
@@ -159,7 +151,6 @@ public class CompanyService {
      * @throws ResourceNotFoundException if role not found
      * @throws BusinessException         if this is the last role
      */
-    @Transactional
     public void removeRole(Long companyId, Long roleId) {
         CompanyRole role = companyRoleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("CompanyRole", roleId));
@@ -184,115 +175,11 @@ public class CompanyService {
      * @param companyId The company ID
      * @throws ResourceNotFoundException if company not found
      */
-    @Transactional
     public void deactivateCompany(Long companyId) {
         Company company = companyRepository.findByIdAndIsActiveTrue(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
         company.deactivate();
         companyRepository.save(company);
-    }
-
-    // ========== QUERY OPERATIONS ==========
-
-    /**
-     * Find a company by ID.
-     *
-     * @param companyId The company ID
-     * @return The company if found
-     */
-    @Transactional(readOnly = true)
-    public Optional<Company> findById(Long companyId) {
-        return companyRepository.findByIdAndIsActiveTrue(companyId);
-    }
-
-    /**
-     * Get a company by ID, throwing exception if not found.
-     * Eagerly loads roles.
-     *
-     * @param companyId The company ID
-     * @return The company with roles loaded
-     * @throws ResourceNotFoundException if company not found
-     */
-    @Transactional(readOnly = true)
-    public Company getById(Long companyId) {
-        return companyRepository.findByIdWithRoles(companyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
-    }
-
-    /**
-     * Find all active companies with pagination.
-     *
-     * @param pageable Pagination parameters
-     * @return Page of companies
-     */
-    @Transactional(readOnly = true)
-    public Page<Company> findAll(Pageable pageable) {
-        return companyRepository.findByIsActiveTrue(pageable);
-    }
-
-    /**
-     * Find companies by name search.
-     *
-     * @param search   Search term
-     * @param pageable Pagination parameters
-     * @return Page of matching companies
-     */
-    @Transactional(readOnly = true)
-    public Page<Company> findBySearch(String search, Pageable pageable) {
-        if (search == null || search.isBlank()) {
-            return findAll(pageable);
-        }
-        return companyRepository.findByNameContainingIgnoreCase(search, pageable);
-    }
-
-    /**
-     * Find companies by role type.
-     *
-     * @param roleType The role type to filter by
-     * @param pageable Pagination parameters
-     * @return Page of companies with the specified role
-     */
-    @Transactional(readOnly = true)
-    public Page<Company> findByRoleType(RoleType roleType, Pageable pageable) {
-        return companyRepository.findByRoleType(roleType, pageable);
-    }
-
-    /**
-     * Find companies by role type with search.
-     *
-     * @param roleType The role type to filter by
-     * @param search   Search term
-     * @param pageable Pagination parameters
-     * @return Page of matching companies
-     */
-    @Transactional(readOnly = true)
-    public Page<Company> findByRoleTypeAndSearch(RoleType roleType, String search, Pageable pageable) {
-        if (search == null || search.isBlank()) {
-            return findByRoleType(roleType, pageable);
-        }
-        return companyRepository.findByRoleTypeAndNameContaining(roleType, search, pageable);
-    }
-
-    /**
-     * Get roles for a company.
-     *
-     * @param companyId The company ID
-     * @return List of roles
-     */
-    @Transactional(readOnly = true)
-    public List<CompanyRole> getRoles(Long companyId) {
-        return companyRoleRepository.findByCompany_Id(companyId);
-    }
-
-    /**
-     * Check if a company exists and is active.
-     *
-     * @param companyId The company ID
-     * @return true if the company exists and is active
-     */
-    @Transactional(readOnly = true)
-    public boolean existsAndActive(Long companyId) {
-        return companyRepository.existsByIdAndIsActiveTrue(companyId);
     }
 }
