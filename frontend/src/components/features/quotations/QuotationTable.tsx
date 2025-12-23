@@ -50,6 +50,8 @@ export interface QuotationTableProps {
   onCreateVersion?: (quotation: QuotationDetails) => void;
   /** Called when user clicks download PDF (only for non-DRAFT) */
   onDownloadPdf?: (quotation: QuotationDetails) => void;
+  /** Called when user clicks send email (only for APPROVED or SENT) */
+  onSendEmail?: (quotation: QuotationDetails) => void;
   /** Called when an error occurs */
   onError?: (error: string) => void;
 }
@@ -69,6 +71,7 @@ export function QuotationTable({
   onSubmit,
   onCreateVersion,
   onDownloadPdf,
+  onSendEmail,
   onError,
 }: Readonly<QuotationTableProps>) {
   // Server State (Tier 3) - managed here in feature component
@@ -234,6 +237,17 @@ export function QuotationTable({
                           title="Download PDF"
                         >
                           <Icon name="document-arrow-down" className="h-4 w-4" />
+                        </IconButton>
+                      )}
+
+                      {/* Send email - only for APPROVED or SENT */}
+                      {['APPROVED', 'SENT'].includes(quotation.status) && onSendEmail && (
+                        <IconButton
+                          onClick={() => onSendEmail(quotation)}
+                          aria-label="Send email"
+                          title="Send email"
+                        >
+                          <Icon name="envelope" className="h-4 w-4" />
                         </IconButton>
                       )}
 

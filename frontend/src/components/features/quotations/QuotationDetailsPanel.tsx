@@ -13,8 +13,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Badge, Button, Card, ConfirmationModal, Icon, Spinner } from '@/components/ui';
-import { quotationService } from '@/services';
 import type { QuotationDetails } from '@/services';
+import { quotationService } from '@/services';
 import { EmailNotificationModal } from './EmailNotificationModal';
 import { useQuotationActions } from './hooks';
 import { QuotationInfoCard } from './QuotationInfoCard';
@@ -119,17 +119,20 @@ export function QuotationDetailsPanel({
   }, [projectId, onError]);
 
   // Load full quotation details (with line items)
-  const loadQuotationDetails = useCallback(async (quotationId: number) => {
-    setIsLoadingDetails(true);
-    try {
-      const details = await quotationService.getQuotation(quotationId);
-      setCurrentQuotation(details);
-    } catch {
-      onError?.('Failed to load quotation details');
-    } finally {
-      setIsLoadingDetails(false);
-    }
-  }, [onError]);
+  const loadQuotationDetails = useCallback(
+    async (quotationId: number) => {
+      setIsLoadingDetails(true);
+      try {
+        const details = await quotationService.getQuotation(quotationId);
+        setCurrentQuotation(details);
+      } catch {
+        onError?.('Failed to load quotation details');
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    },
+    [onError]
+  );
 
   // Load on mount and when projectId changes
   useEffect(() => {
@@ -227,7 +230,15 @@ export function QuotationDetailsPanel({
     } catch {
       onError?.('Failed to send email notification');
     }
-  }, [quotation, sendRevisionNotification, loadQuotations, loadQuotationDetails, onDataChange, onError, showSuccess]);
+  }, [
+    quotation,
+    sendRevisionNotification,
+    loadQuotations,
+    loadQuotationDetails,
+    onDataChange,
+    onError,
+    showSuccess,
+  ]);
 
   // Handle create new quotation
   const handleCreate = useCallback(() => {
@@ -373,7 +384,7 @@ export function QuotationDetailsPanel({
               disabled={isActing}
               size={'sm'}
             >
-              <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
+              <Icon name="envelope" className="mr-2 h-4 w-4" />
               Send Email
             </Button>
           )}

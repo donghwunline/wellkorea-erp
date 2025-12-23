@@ -17,7 +17,7 @@ import { useCallback, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, ConfirmationModal, Icon, PageHeader, SearchBar } from '@/components/ui';
 import { FilterBar } from '@/components/ui/navigation/FilterBar';
-import { QuotationTable, useQuotationActions } from '@/components/features/quotations';
+import { EmailNotificationModal, QuotationTable, useQuotationActions } from '@/components/features/quotations';
 import { usePaginatedSearch } from '@/shared/hooks';
 import type { QuotationDetails, QuotationStatus } from '@/services';
 
@@ -57,9 +57,10 @@ export function QuotationListPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitConfirm, setSubmitConfirm] = useState<QuotationDetails | null>(null);
   const [versionConfirm, setVersionConfirm] = useState<QuotationDetails | null>(null);
+  const [emailConfirm, setEmailConfirm] = useState<QuotationDetails | null>(null);
 
   // Actions hook
-  const { submitForApproval, createNewVersion, downloadPdf } = useQuotationActions();
+  const { isLoading: isActing, submitForApproval, createNewVersion, downloadPdf, sendRevisionNotification } = useQuotationActions();
 
   // Clear messages after delay
   const showSuccess = useCallback((message: string) => {
@@ -124,6 +125,25 @@ export function QuotationListPage() {
     },
     [downloadPdf]
   );
+
+  // Handle send email - show confirmation modal
+  const handleSendEmail = useCallback((quotation: QuotationDetails) => {
+    setEmailConfirm(quotation);
+  }, []);
+
+  // Confirm send email
+  const handleEmailConfirm = useCallback(async () => {
+    if (!emailConfirm) return;
+
+    try {
+      await sendRevisionNotification(emailConfirm.id);
+      showSuccess(`Email notification sent for "${emailConfirm.jobCode}"`);
+      setEmailConfirm(null);
+      triggerRefresh();
+    } catch {
+      setError('Failed to send email notification');
+    }
+  }, [emailConfirm, sendRevisionNotification, showSuccess]);
 
   // Handle filter change
   const handleStatusFilterChange = useCallback(
@@ -196,6 +216,7 @@ export function QuotationListPage() {
         onSubmit={handleSubmit}
         onCreateVersion={handleCreateVersion}
         onDownloadPdf={handleDownloadPdf}
+        onSendEmail={handleSendEmail}
         onError={setError}
       />
 
@@ -219,6 +240,15 @@ export function QuotationListPage() {
         onConfirm={handleVersionConfirm}
         onClose={() => setVersionConfirm(null)}
         variant="warning"
+      />
+
+      {/* Send Email Confirmation Modal */}
+      <EmailNotificationModal
+        isOpen={!!emailConfirm}
+        onClose={() => setEmailConfirm(null)}
+        onSend={handleEmailConfirm}
+        quotationInfo={emailConfirm ? { jobCode: emailConfirm.jobCode, version: emailConfirm.version } : undefined}
+        isLoading={isActing}
       />
     </div>
   );
