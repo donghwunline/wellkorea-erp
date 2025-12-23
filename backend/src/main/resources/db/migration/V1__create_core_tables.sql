@@ -114,7 +114,8 @@ CREATE TABLE service_categories
     name        VARCHAR(100) NOT NULL UNIQUE,                           -- "CNC 가공", "에칭", "도장", "레이저 컷팅"
     description TEXT,
     is_active   BOOLEAN      NOT NULL DEFAULT true,
-    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Vendor service offerings (maps vendors to service categories with pricing)
