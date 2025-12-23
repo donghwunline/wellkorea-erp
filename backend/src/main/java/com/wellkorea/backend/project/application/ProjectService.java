@@ -1,7 +1,7 @@
 package com.wellkorea.backend.project.application;
 
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
+import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
 import com.wellkorea.backend.project.domain.Project;
@@ -32,17 +32,17 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final JobCodeGenerator jobCodeGenerator;
-    private final CustomerRepository customerRepository;
+    private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
 
     public ProjectService(
             ProjectRepository projectRepository,
             JobCodeGenerator jobCodeGenerator,
-            CustomerRepository customerRepository,
+            CompanyRepository companyRepository,
             UserRepository userRepository) {
         this.projectRepository = projectRepository;
         this.jobCodeGenerator = jobCodeGenerator;
-        this.customerRepository = customerRepository;
+        this.companyRepository = companyRepository;
         this.userRepository = userRepository;
     }
 
@@ -232,10 +232,10 @@ public class ProjectService {
     }
 
     /**
-     * Check if customer exists and is not deleted.
+     * Check if company exists and is active (used for customer validation).
      */
     private boolean customerExists(Long customerId) {
-        return customerRepository.existsByIdAndIsDeletedFalse(customerId);
+        return companyRepository.existsByIdAndIsActiveTrue(customerId);
     }
 
     /**

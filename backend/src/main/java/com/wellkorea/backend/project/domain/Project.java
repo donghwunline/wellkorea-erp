@@ -32,8 +32,8 @@ public class Project {
     @Column(name = "job_code", nullable = false, unique = true, length = 20)
     private String jobCode;
 
-    @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+    @Column(name = "customer_company_id", nullable = false)
+    private Long customerId;  // References companies table (company with CUSTOMER role)
 
     @Column(name = "project_name", nullable = false, length = 255)
     private String projectName;
