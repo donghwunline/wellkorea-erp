@@ -55,10 +55,9 @@ public class ProductController {
      * @return Paginated list of products
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ProductSummaryView>>> listProducts(
-            @RequestParam(required = false) Long productTypeId,
-            @RequestParam(required = false) String search,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<ProductSummaryView>>> listProducts(@RequestParam(required = false) Long productTypeId,
+                                                                              @RequestParam(required = false) String search,
+                                                                              Pageable pageable) {
 
         Page<ProductSummaryView> productsPage;
 
@@ -120,8 +119,7 @@ public class ProductController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
-    public ResponseEntity<ApiResponse<ProductCommandResult>> createProduct(
-            @Valid @RequestBody CreateProductRequest request) {
+    public ResponseEntity<ApiResponse<ProductCommandResult>> createProduct(@Valid @RequestBody CreateProductRequest request) {
 
         Long productId = commandService.createProduct(request.toCommand());
         ProductCommandResult result = ProductCommandResult.created(productId);
@@ -144,9 +142,8 @@ public class ProductController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
-    public ResponseEntity<ApiResponse<ProductCommandResult>> updateProduct(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateProductRequest request) {
+    public ResponseEntity<ApiResponse<ProductCommandResult>> updateProduct(@PathVariable Long id,
+                                                                           @Valid @RequestBody UpdateProductRequest request) {
 
         Long productId = commandService.updateProduct(id, request.toCommand());
         ProductCommandResult result = ProductCommandResult.updated(productId);

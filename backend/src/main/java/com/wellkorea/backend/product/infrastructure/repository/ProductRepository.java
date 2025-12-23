@@ -45,4 +45,28 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "(LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(p.sku) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Product> searchProducts(@Param("search") String search, Pageable pageable);
+
+    /**
+     * Find active products by product type with pagination.
+     */
+    @Query("SELECT p FROM Product p WHERE p.productType.id = :productTypeId AND p.active = true")
+    Page<Product> findByProductTypeIdAndActive(@Param("productTypeId") Long productTypeId, Pageable pageable);
+
+    /**
+     * Find products by product type with search.
+     */
+    @Query("SELECT p FROM Product p WHERE p.productType.id = :productTypeId AND p.active = true AND " +
+            "(LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(p.sku) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Product> findByProductTypeIdAndSearch(@Param("productTypeId") Long productTypeId, @Param("search") String search, Pageable pageable);
+
+    /**
+     * Check if SKU exists.
+     */
+    boolean existsBySku(String sku);
+
+    /**
+     * Check if SKU exists excluding a specific product.
+     */
+    boolean existsBySkuAndIdNot(String sku, Long id);
 }

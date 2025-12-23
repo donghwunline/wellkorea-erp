@@ -64,9 +64,8 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
         salesToken = jwtTokenProvider.generateToken(SALES_USERNAME, Role.SALES.getAuthority(), 4L);
         productionToken = jwtTokenProvider.generateToken(PRODUCTION_USERNAME, Role.PRODUCTION.getAuthority(), 3L);
 
-        // Insert test product types
-        insertTestProductType(1L, "Electronics");
-        insertTestProductType(2L, "Machinery");
+        // Product types are already seeded by V5__seed_initial_data.sql
+        // IDs 1-4: "Sheet Metal Parts", "Machined Components", "Welded Assemblies", "Custom Enclosures"
     }
 
     // ==========================================================================
@@ -276,9 +275,10 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
 
         @BeforeEach
         void setUpProducts() {
-            insertTestProduct(1L, "SKU-A001", "Alpha Product", 1L);
-            insertTestProduct(2L, "SKU-B002", "Beta Product", 1L);
-            insertTestProduct(3L, "SKU-M001", "Machine Part", 2L);
+            // Use IDs 100+ to avoid conflicts with seeded data (IDs 1-20 are used in V5__seed_initial_data.sql)
+            insertTestProduct(101L, "SKU-A001", "Alpha Product", 1L);
+            insertTestProduct(102L, "SKU-B002", "Beta Product", 1L);
+            insertTestProduct(103L, "SKU-M001", "Machine Part", 2L);
         }
 
         @Test
@@ -323,7 +323,7 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))))
-                    .andExpect(jsonPath("$.data.content[*].productTypeName", everyItem(equalTo("Machinery"))));
+                    .andExpect(jsonPath("$.data.content[*].productTypeName", everyItem(equalTo("Machined Components"))));
         }
 
         @Test
@@ -405,7 +405,7 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
                     .andExpect(jsonPath("$.data.id").value(100))
                     .andExpect(jsonPath("$.data.sku").value("SKU-100"))
                     .andExpect(jsonPath("$.data.name").value("Detail Product"))
-                    .andExpect(jsonPath("$.data.productTypeName").value("Electronics"));
+                    .andExpect(jsonPath("$.data.productTypeName").value("Sheet Metal Parts"));
         }
 
         @Test
@@ -449,8 +449,8 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data", hasSize(greaterThanOrEqualTo(2))))
-                    .andExpect(jsonPath("$.data[*].name", hasItem("Electronics")))
-                    .andExpect(jsonPath("$.data[*].name", hasItem("Machinery")));
+                    .andExpect(jsonPath("$.data[*].name", hasItem("Sheet Metal Parts")))
+                    .andExpect(jsonPath("$.data[*].name", hasItem("Machined Components")));
         }
 
         @Test
@@ -623,10 +623,11 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isNoContent());
 
-            // Verify product is deactivated (not returned in list)
+            // Verify product is deactivated (soft-delete sets isActive=false)
             mockMvc.perform(get(PRODUCTS_URL + "/300")
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.isActive").value(false));
         }
 
         @Test
