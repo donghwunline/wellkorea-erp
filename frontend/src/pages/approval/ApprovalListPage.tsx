@@ -128,11 +128,11 @@ export function ApprovalListPage() {
   );
 
   // Check if current user can act on approval
+  // Note: When using myPending=true filter, the backend already returns only
+  // approvals where the current user is the expected approver at the current level.
+  // So we only need to check if the approval status is PENDING.
   const canActOnApproval = useCallback((approval: ApprovalDetails): boolean => {
-    // User can act if the current level decision is PENDING
-    const levels = approval.levels ?? [];
-    const currentLevelDecision = levels.find(l => l.levelOrder === approval.currentLevel);
-    return currentLevelDecision?.decision === 'PENDING';
+    return approval.status === 'PENDING';
   }, []);
 
   return (

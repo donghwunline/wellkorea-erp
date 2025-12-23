@@ -90,7 +90,7 @@ export function ApprovalRequestCard({
             <h4 className="mb-2 text-sm font-medium text-steel-400">Approval Progress</h4>
             <div className="flex items-center gap-2">
               {levels.map((level, index) => (
-                <div key={level.id} className="flex items-center gap-2">
+                <div key={level.levelOrder} className="flex items-center gap-2">
                   {/* Level indicator */}
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium ${
@@ -131,7 +131,7 @@ export function ApprovalRequestCard({
             {/* Level details */}
             <div className="mt-2 text-xs text-steel-500">
               {levels.map(level => (
-                <span key={level.id} className="mr-4">
+                <span key={level.levelOrder} className="mr-4">
                   L{level.levelOrder}: {level.decidedByName || level.expectedApproverName}
                   {level.decidedAt && ` (${formatDateTime(level.decidedAt)})`}
                 </span>
@@ -150,7 +150,7 @@ export function ApprovalRequestCard({
                   .filter(l => l.comments)
                   .slice(-1)
                   .map(level => (
-                    <div key={level.id}>
+                    <div key={level.levelOrder}>
                       <span className="text-steel-400">
                         {level.decidedByName || level.expectedApproverName}:{' '}
                       </span>

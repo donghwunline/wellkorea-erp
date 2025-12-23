@@ -84,13 +84,12 @@ describe('approvalService', () => {
       const mockApproval = createMockApproval({
         levels: [
           {
-            id: 1,
             levelOrder: 1,
             levelName: '  팀장  ',
-            expectedApproverId: 10,
+            expectedApproverUserId: 10,
             expectedApproverName: '  Team Lead  ',
             decision: 'APPROVED',
-            decidedById: 10,
+            decidedByUserId: 10,
             decidedByName: '  Team Lead  ',
             decidedAt: '2025-01-15T10:00:00Z',
             comments: '  Approved  ',
