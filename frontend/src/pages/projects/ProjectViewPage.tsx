@@ -20,7 +20,7 @@
  * ├──────────────────────────────────────────────────┤
  * │ KPI Strip (진행률, 결재대기, 문서누락, 미수금)    │
  * ├──────────────────────────────────────────────────┤
- * │ Tabs: [개요] [견적/결재] [공정] [외주] [More ▾] │
+ * │ Tabs: [개요] [견적] [공정] [외주] [More ▾] │
  * ├──────────────────────────────────────────────────┤
  * │ Tab Content Area                                 │
  * └──────────────────────────────────────────────────┘
@@ -31,18 +31,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails, ProjectSection } from '@/services';
 import { useAuth } from '@/shared/hooks';
 import type { RoleName } from '@/shared/types';
-import {
-  Alert,
-  Card,
-  Icon,
-  PageHeader,
-  Spinner,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
-  TabOverflow,
-} from '@/components/ui';
+import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabOverflow, TabPanel, Tabs, } from '@/components/ui';
 import {
   ProjectDetailsCard,
   ProjectKPIStrip,
@@ -80,7 +69,7 @@ interface TabConfig {
 
 const ALL_TABS: TabConfig[] = [
   { id: 'overview', label: '개요' },
-  { id: 'quotation', label: '견적/결재', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
+  { id: 'quotation', label: '견적', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
   { id: 'process', label: '공정/진행률' },
   { id: 'outsource', label: '외주관리' },
   { id: 'delivery', label: '출고관리' },
@@ -172,9 +161,12 @@ export function ProjectViewPage() {
   const handleEdit = () => navigate(`/projects/${id}/edit`);
 
   // Handle section card click (switch to that tab)
-  const handleSectionClick = useCallback((section: ProjectSection) => {
-    handleTabChange(section);
-  }, [handleTabChange]);
+  const handleSectionClick = useCallback(
+    (section: ProjectSection) => {
+      handleTabChange(section);
+    },
+    [handleTabChange]
+  );
 
   // Loading state
   if (isProjectLoading) {
@@ -280,20 +272,12 @@ export function ProjectViewPage() {
         <Tabs defaultTab="overview" hash={true} onTabChange={handleTabChange}>
           <TabList className="mt-6">
             {primaryTabs.map(tab => (
-              <Tab
-                key={tab.id}
-                id={tab.id}
-                badge={getBadgeCount(tab.id)}
-                badgeVariant="warning"
-              >
+              <Tab key={tab.id} id={tab.id} badge={getBadgeCount(tab.id)} badgeVariant="warning">
                 {tab.label}
               </Tab>
             ))}
             {overflowTabs.length > 0 && (
-              <TabOverflow
-                activeTab={activeTab}
-                onTabSelect={handleTabChange}
-              >
+              <TabOverflow activeTab={activeTab} onTabSelect={handleTabChange}>
                 {overflowTabs.map(tab => (
                   <TabOverflow.Item
                     key={tab.id}
@@ -318,10 +302,7 @@ export function ProjectViewPage() {
 
           {/* Quotation Tab */}
           <TabPanel id="quotation">
-            <QuotationDetailsPanel
-              projectId={project.id}
-              onDataChange={triggerKpiRefresh}
-            />
+            <QuotationDetailsPanel projectId={project.id} onDataChange={triggerKpiRefresh} />
           </TabPanel>
 
           {/* Process Tab (Placeholder) */}

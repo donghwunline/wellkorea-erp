@@ -21,7 +21,7 @@ function createMockSectionSummary(
 ): ProjectSectionSummary {
   return {
     section: 'quotation',
-    label: '견적/결재',
+    label: '견적',
     totalCount: 5,
     pendingCount: 2,
     lastUpdated: '2025-01-15T10:30:00Z',
@@ -50,9 +50,9 @@ describe('ProjectSummaryCard', () => {
 
   describe('basic rendering', () => {
     it('should render section label', () => {
-      renderCard(1, createMockSectionSummary({ label: '견적/결재' }));
+      renderCard(1, createMockSectionSummary({ label: '견적' }));
 
-      expect(screen.getByText('견적/결재')).toBeInTheDocument();
+      expect(screen.getByText('견적')).toBeInTheDocument();
     });
 
     it('should render total count', () => {

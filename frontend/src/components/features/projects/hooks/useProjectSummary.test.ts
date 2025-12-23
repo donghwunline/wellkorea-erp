@@ -3,11 +3,11 @@
  * Tests data fetching, loading states, error handling, and refetch functionality.
  */
 
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useProjectSummary } from './useProjectSummary';
-import { projectSummaryService } from '@/services';
 import type { ProjectSummary } from '@/services';
+import { projectSummaryService } from '@/services';
 
 // Mock the services module
 vi.mock('@/services', () => ({
@@ -23,7 +23,7 @@ function createMockSummary(projectId: number): ProjectSummary {
     sections: [
       {
         section: 'quotation',
-        label: '견적/결재',
+        label: '견적',
         totalCount: 3,
         pendingCount: 1,
         value: 15000000,
@@ -226,9 +226,7 @@ describe('useProjectSummary', () => {
 
   describe('enabled option', () => {
     it('should not fetch when enabled is false', async () => {
-      const { result } = renderHook(() =>
-        useProjectSummary({ projectId: 1, enabled: false })
-      );
+      const { result } = renderHook(() => useProjectSummary({ projectId: 1, enabled: false }));
 
       // Give it time to potentially make a call
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -266,10 +264,9 @@ describe('useProjectSummary', () => {
         Promise.resolve(createMockSummary(id))
       );
 
-      const { result, rerender } = renderHook(
-        ({ projectId }) => useProjectSummary({ projectId }),
-        { initialProps: { projectId: 1 } }
-      );
+      const { result, rerender } = renderHook(({ projectId }) => useProjectSummary({ projectId }), {
+        initialProps: { projectId: 1 },
+      });
 
       await waitFor(() => {
         expect(result.current.summary?.projectId).toBe(1);

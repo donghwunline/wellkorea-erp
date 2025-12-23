@@ -10,7 +10,7 @@
  * 3. Ensure response matches ProjectSummary interface
  */
 
-import type { ProjectSummary, ProjectSectionSummary, ProjectKPI } from './types';
+import type { ProjectKPI, ProjectSectionSummary, ProjectSummary } from './types';
 
 // ============================================================================
 // Stub Implementation (Mock Data)
@@ -32,7 +32,7 @@ function generateMockSummary(projectId: number): ProjectSummary {
   const sections: ProjectSectionSummary[] = [
     {
       section: 'quotation',
-      label: '견적/결재',
+      label: '견적',
       totalCount: baseMultiplier,
       pendingCount: Math.max(0, baseMultiplier - 2),
       value: 15000000 * baseMultiplier,

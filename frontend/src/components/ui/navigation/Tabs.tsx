@@ -9,7 +9,7 @@
  * <Tabs defaultTab="overview" hash={true}>
  *   <TabList>
  *     <Tab id="overview">개요</Tab>
- *     <Tab id="quotation" badge={2} badgeVariant="warning">견적/결재</Tab>
+ *     <Tab id="quotation" badge={2} badgeVariant="warning">견적</Tab>
  *   </TabList>
  *   <TabPanel id="overview">Overview content</TabPanel>
  *   <TabPanel id="quotation">Quotation content</TabPanel>
@@ -19,13 +19,13 @@
 
 import {
   createContext,
+  type KeyboardEvent,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
-  type KeyboardEvent,
-  type ReactNode,
 } from 'react';
 import { Badge, type BadgeVariant } from '@/components/ui/primitives/Badge';
 import { Icon, type IconName } from '@/components/ui/primitives/Icon';
@@ -226,10 +226,7 @@ export function TabList({ children, className }: Readonly<TabListProps>) {
     <div
       role="tablist"
       onKeyDown={handleKeyDown}
-      className={cn(
-        'flex items-center gap-1 border-b border-steel-700/50',
-        className
-      )}
+      className={cn('flex items-center gap-1 border-b border-steel-700/50', className)}
     >
       {children}
     </div>
@@ -278,9 +275,7 @@ export function Tab({
       className={cn(
         'group relative flex items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium',
         'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper-500/50',
-        isActive
-          ? 'text-white'
-          : 'text-steel-400 hover:text-steel-200',
+        isActive ? 'text-white' : 'text-steel-400 hover:text-steel-200',
         disabled && 'cursor-not-allowed opacity-50',
         className
       )}
@@ -293,9 +288,7 @@ export function Tab({
         </Badge>
       )}
       {/* Active indicator */}
-      {isActive && (
-        <span className="absolute inset-x-0 -bottom-px h-0.5 bg-copper-500" />
-      )}
+      {isActive && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-copper-500" />}
     </button>
   );
 }

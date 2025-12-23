@@ -3,11 +3,12 @@
  * Tests loading states, error handling, role-based filtering, and grid rendering.
  */
 
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ProjectRelatedNavigationGrid } from './ProjectRelatedNavigationGrid';
-import type { ProjectSummary, ProjectSectionSummary } from '@/services';
+import type { ProjectSectionSummary, ProjectSummary } from '@/services';
+import { useProjectSummary } from './hooks';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
@@ -29,8 +30,6 @@ vi.mock('./hooks', () => ({
   useProjectSummary: vi.fn(),
 }));
 
-import { useProjectSummary } from './hooks';
-
 const mockUseProjectSummary = useProjectSummary as Mock;
 
 // Helper to create mock section summary
@@ -39,7 +38,7 @@ function createMockSectionSummary(
   overrides: Partial<ProjectSectionSummary> = {}
 ): ProjectSectionSummary {
   const labels: Record<string, string> = {
-    quotation: '견적/결재',
+    quotation: '견적',
     process: '공정/진행률',
     outsource: '외주',
     delivery: '납품',
@@ -206,7 +205,7 @@ describe('ProjectRelatedNavigationGrid', () => {
 
       renderGrid();
 
-      expect(screen.getByText('견적/결재')).toBeInTheDocument();
+      expect(screen.getByText('견적')).toBeInTheDocument();
       expect(screen.getByText('공정/진행률')).toBeInTheDocument();
       expect(screen.getByText('외주')).toBeInTheDocument();
       expect(screen.getByText('납품')).toBeInTheDocument();
@@ -268,7 +267,7 @@ describe('ProjectRelatedNavigationGrid', () => {
       renderGrid();
 
       // Quotation and finance should be hidden (they require ROLE_FINANCE or ROLE_SALES)
-      expect(screen.queryByText('견적/결재')).not.toBeInTheDocument();
+      expect(screen.queryByText('견적')).not.toBeInTheDocument();
       expect(screen.queryByText('정산')).not.toBeInTheDocument();
 
       // Other sections should be visible
