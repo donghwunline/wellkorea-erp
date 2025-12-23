@@ -90,7 +90,7 @@ describe('ProjectListPage', () => {
     it('should render page header with title', () => {
       renderProjectListPage();
 
-      expect(screen.getByText('Projects')).toBeInTheDocument();
+      expect(screen.getByText('프로젝트')).toBeInTheDocument();
     });
 
     it('should render page description', () => {
@@ -246,7 +246,7 @@ describe('ProjectListPage', () => {
     it('should have accessible page heading', () => {
       renderProjectListPage();
 
-      expect(screen.getByRole('heading', { name: /projects/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /프로젝트/i })).toBeInTheDocument();
     });
 
     it('should have accessible New Project button', () => {

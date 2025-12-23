@@ -15,18 +15,21 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProjectViewPage } from './ProjectViewPage';
 import type { ProjectDetails } from '@/services';
 
-// Helper to create mock project
+// Helper to create mock project (now includes resolved names from backend CQRS pattern)
 function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
   return {
     id: 42,
     jobCode: 'WK2-2025-042-0120',
     customerId: 1,
+    customerName: 'Samsung Electronics',
     projectName: 'Test Project',
     requesterName: 'John Doe',
     dueDate: '2025-02-15',
     internalOwnerId: 2,
+    internalOwnerName: 'Kim Minjun',
     status: 'ACTIVE',
     createdById: 1,
+    createdByName: 'Lee Jiwon',
     createdAt: '2025-01-15T10:30:00Z',
     updatedAt: '2025-01-16T14:45:00Z',
     ...overrides,

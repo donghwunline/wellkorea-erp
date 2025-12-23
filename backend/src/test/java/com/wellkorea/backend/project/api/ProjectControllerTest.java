@@ -87,8 +87,8 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """.formatted(futureDate);
 
-            // When & Then
-            mockMvc.perform(post(PROJECTS_URL)
+            // When - Create project (CQRS: returns only ID)
+            String response = mockMvc.perform(post(PROJECTS_URL)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -96,6 +96,14 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.id").isNumber())
+                    .andExpect(jsonPath("$.data.message").value("Project created successfully"))
+                    .andReturn().getResponse().getContentAsString();
+
+            // Then - Fetch the created project to verify details
+            Long projectId = objectMapper.readTree(response).at("/data/id").asLong();
+            mockMvc.perform(get(PROJECTS_URL + "/" + projectId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.jobCode").isString())
                     .andExpect(jsonPath("$.data.jobCode", matchesPattern("^WK2K\\d{2}-\\d{4}-\\d{4}$")))
                     .andExpect(jsonPath("$.data.projectName").value("Custom Enclosure Project"))
@@ -116,13 +124,21 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """.formatted(futureDate);
 
-            // When & Then
-            mockMvc.perform(post(PROJECTS_URL)
+            // When - Create project (CQRS: returns only ID)
+            String response = mockMvc.perform(post(PROJECTS_URL)
                             .header("Authorization", "Bearer " + salesToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").isNumber())
+                    .andReturn().getResponse().getContentAsString();
+
+            // Then - Fetch the created project to verify JobCode format
+            Long projectId = objectMapper.readTree(response).at("/data/id").asLong();
+            mockMvc.perform(get(PROJECTS_URL + "/" + projectId)
+                            .header("Authorization", "Bearer " + salesToken))
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.jobCode", matchesPattern("^WK2K\\d{2}-\\d{4}-\\d{4}$")));
         }
 
@@ -418,12 +434,20 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """.formatted(futureDate);
 
+            // When - Update project (CQRS: returns only ID)
             mockMvc.perform(put(PROJECTS_URL + "/200")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updateRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").value(200))
+                    .andExpect(jsonPath("$.data.message").value("Project updated successfully"));
+
+            // Then - Fetch the updated project to verify details
+            mockMvc.perform(get(PROJECTS_URL + "/200")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.projectName").value("Updated Project Name"))
                     .andExpect(jsonPath("$.data.requesterName").value("Updated Requester"))
                     .andExpect(jsonPath("$.data.status").value("ACTIVE"));
@@ -438,11 +462,17 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
-            // Verify JobCode remains unchanged after update
+            // When - Update project (CQRS: returns only ID)
             mockMvc.perform(put(PROJECTS_URL + "/200")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updateRequest))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.id").value(200));
+
+            // Then - Verify JobCode remains unchanged after update
+            mockMvc.perform(get(PROJECTS_URL + "/200")
+                            .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.jobCode", matchesPattern("^WK2K\\d{2}-0200-\\d{4}$")));
         }
@@ -528,11 +558,20 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """.formatted(futureDate);
 
-            mockMvc.perform(post(PROJECTS_URL)
+            // When - Create project (CQRS: returns only ID)
+            String response = mockMvc.perform(post(PROJECTS_URL)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
                     .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.data.id").isNumber())
+                    .andReturn().getResponse().getContentAsString();
+
+            // Then - Fetch the created project to verify JobCode format
+            Long projectId = objectMapper.readTree(response).at("/data/id").asLong();
+            mockMvc.perform(get(PROJECTS_URL + "/" + projectId)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.jobCode", matchesPattern("^WK2K\\d{2}-\\d{4}-\\d{4}$")));
         }
 
@@ -549,13 +588,14 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
-            // Create first project
+            // Create first project (CQRS: returns only ID)
             String response1 = mockMvc.perform(post(PROJECTS_URL)
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest.formatted(1, futureDate)))
                     .andExpect(status().isCreated())
                     .andReturn().getResponse().getContentAsString();
+            Long projectId1 = objectMapper.readTree(response1).at("/data/id").asLong();
 
             // Create second project
             String response2 = mockMvc.perform(post(PROJECTS_URL)
@@ -564,10 +604,22 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                             .content(createRequest.formatted(2, futureDate)))
                     .andExpect(status().isCreated())
                     .andReturn().getResponse().getContentAsString();
+            Long projectId2 = objectMapper.readTree(response2).at("/data/id").asLong();
+
+            // Fetch the projects to get JobCodes
+            String getResponse1 = mockMvc.perform(get(PROJECTS_URL + "/" + projectId1)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            String getResponse2 = mockMvc.perform(get(PROJECTS_URL + "/" + projectId2)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
 
             // Extract JobCodes and verify sequence increment
-            String jobCode1 = objectMapper.readTree(response1).at("/data/jobCode").asText();
-            String jobCode2 = objectMapper.readTree(response2).at("/data/jobCode").asText();
+            String jobCode1 = objectMapper.readTree(getResponse1).at("/data/jobCode").asText();
+            String jobCode2 = objectMapper.readTree(getResponse2).at("/data/jobCode").asText();
 
             // Extract sequence numbers (format: WK2K{YY}-{SSSS}-{MMDD})
             // Position: WK2K (4) + YY (2) + dash (1) = 7, then SSSS (4)

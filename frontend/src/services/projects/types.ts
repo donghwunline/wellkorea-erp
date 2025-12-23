@@ -22,20 +22,48 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
 };
 
 /**
- * Full project details from API response.
+ * Full project details from API response (ProjectDetailView).
+ * Includes resolved names for customer, internal owner, and created by user.
  */
 export interface ProjectDetails {
   id: number;
   jobCode: string;
   customerId: number;
+  customerName: string | null;
   projectName: string;
   requesterName: string | null;
   dueDate: string; // ISO date string (YYYY-MM-DD)
   internalOwnerId: number;
+  internalOwnerName: string | null;
   status: ProjectStatus;
   createdById: number;
+  createdByName: string | null;
   createdAt: string; // ISO datetime string
   updatedAt: string; // ISO datetime string
+}
+
+/**
+ * Project summary for list views (ProjectSummaryView).
+ * Optimized for pagination - includes essential fields and customer name.
+ */
+export interface ProjectListItem {
+  id: number;
+  jobCode: string;
+  customerId: number;
+  customerName: string | null;
+  projectName: string;
+  dueDate: string; // ISO date string (YYYY-MM-DD)
+  status: ProjectStatus;
+  createdAt: string; // ISO datetime string
+  updatedAt: string; // ISO datetime string
+}
+
+/**
+ * Command result for project create/update operations.
+ */
+export interface ProjectCommandResult {
+  id: number;
+  message: string;
 }
 
 /**
@@ -73,7 +101,7 @@ export interface ProjectListParams {
 /**
  * Paginated project list response.
  */
-export type PaginatedProjects = Paginated<ProjectDetails>;
+export type PaginatedProjects = Paginated<ProjectListItem>;
 
 // ============================================================================
 // Project Summary Types (for Navigation Grid)

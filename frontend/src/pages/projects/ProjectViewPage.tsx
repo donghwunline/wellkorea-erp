@@ -52,22 +52,6 @@ import {
 } from '@/components/features/projects';
 import { QuotationDetailsPanel } from '@/components/features/quotations';
 
-// Mock data for resolving names (to be replaced with real API)
-const MOCK_CUSTOMERS: Record<number, string> = {
-  1: 'Samsung Electronics',
-  2: 'LG Display',
-  3: 'SK Hynix',
-  4: 'Hyundai Motor',
-  5: 'POSCO',
-};
-
-const MOCK_USERS: Record<number, string> = {
-  1: 'Kim Minjun (Admin)',
-  2: 'Lee Jiwon (Sales)',
-  3: 'Park Seohyun (Finance)',
-  4: 'Choi Daehyun (Production)',
-};
-
 // Tab configuration with role requirements
 interface TabConfig {
   id: string;
@@ -98,7 +82,7 @@ export function ProjectViewPage() {
   const { hasAnyRole } = useAuth();
   const { getProject, isLoading: isProjectLoading, error: projectError } = useProjectActions();
 
-  // Project data
+  // Project data (now includes resolved names from backend)
   const [project, setProject] = useState<ProjectDetails | null>(null);
 
   // Refresh triggers for child components
@@ -153,7 +137,7 @@ export function ProjectViewPage() {
     [summary]
   );
 
-  // Fetch project data
+  // Fetch project data (now includes resolved names from backend CQRS pattern)
   useEffect(() => {
     const fetchProject = async () => {
       if (!projectId) return;
@@ -266,9 +250,9 @@ export function ProjectViewPage() {
         {/* Project Details Card */}
         <ProjectDetailsCard
           project={project}
-          customerName={MOCK_CUSTOMERS[project.customerId]}
-          internalOwnerName={MOCK_USERS[project.internalOwnerId]}
-          createdByName={MOCK_USERS[project.createdById]}
+          customerName={project.customerName ?? undefined}
+          internalOwnerName={project.internalOwnerName ?? undefined}
+          createdByName={project.createdByName ?? undefined}
           onEdit={handleEdit}
         />
 

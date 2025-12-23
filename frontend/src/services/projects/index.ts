@@ -7,7 +7,9 @@ export { projectSummaryService } from './projectSummaryService';
 export type {
   CreateProjectRequest,
   PaginatedProjects,
+  ProjectCommandResult,
   ProjectDetails,
+  ProjectListItem,
   ProjectListParams,
   ProjectStatus,
   UpdateProjectRequest,

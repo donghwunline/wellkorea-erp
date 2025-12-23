@@ -4,10 +4,12 @@ import com.wellkorea.backend.auth.application.CustomerAssignmentService;
 import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
-import com.wellkorea.backend.project.api.dto.ProjectResponse;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
-import com.wellkorea.backend.project.application.ProjectService;
-import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.project.api.dto.command.ProjectCommandResult;
+import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
+import com.wellkorea.backend.project.api.dto.query.ProjectSummaryView;
+import com.wellkorea.backend.project.application.ProjectCommandService;
+import com.wellkorea.backend.project.application.ProjectQueryService;
 import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -24,7 +26,7 @@ import java.util.List;
 
 /**
  * REST API controller for project management.
- * Provides endpoints for CRUD operations on projects and job codes.
+ * Follows CQRS pattern with separate query and command services.
  * <p>
  * RBAC Rules:
  * - Admin, Finance, Sales: Full CRUD access
@@ -34,38 +36,21 @@ import java.util.List;
 @RequestMapping("/api/projects")
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectQueryService queryService;
+    private final ProjectCommandService commandService;
     private final CustomerAssignmentService customerAssignmentService;
 
-    public ProjectController(ProjectService projectService, CustomerAssignmentService customerAssignmentService) {
-        this.projectService = projectService;
+    public ProjectController(
+            ProjectQueryService queryService,
+            ProjectCommandService commandService,
+            CustomerAssignmentService customerAssignmentService
+    ) {
+        this.queryService = queryService;
+        this.commandService = commandService;
         this.customerAssignmentService = customerAssignmentService;
     }
 
-    /**
-     * Create a new project with auto-generated JobCode.
-     * <p>
-     * POST /api/projects
-     * <p>
-     * Access: ADMIN, FINANCE, SALES
-     *
-     * @param request     Create project request
-     * @param currentUser Authenticated user from Spring Security
-     * @return Created project with 201 status
-     */
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ProjectResponse>> createProject(@Valid @RequestBody CreateProjectRequest request,
-                                                                      @AuthenticationPrincipal AuthenticatedUser currentUser) {
-
-        Long currentUserId = currentUser.getUserId();
-        Project project = projectService.createProject(request, currentUserId);
-        ProjectResponse response = ProjectResponse.from(project);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
-    }
+    // ========== QUERY ENDPOINTS ==========
 
     /**
      * Get project by ID.
@@ -75,13 +60,12 @@ public class ProjectController {
      * Access: All authenticated users
      *
      * @param id Project ID
-     * @return Project details
+     * @return Project detail view with resolved names
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProjectResponse>> getProject(@PathVariable Long id) {
-        Project project = projectService.getProject(id);
-        ProjectResponse response = ProjectResponse.from(project);
-        return ResponseEntity.ok(ApiResponse.success(response));
+    public ResponseEntity<ApiResponse<ProjectDetailView>> getProject(@PathVariable Long id) {
+        ProjectDetailView detail = queryService.getProjectDetail(id);
+        return ResponseEntity.ok(ApiResponse.success(detail));
     }
 
     /**
@@ -97,15 +81,16 @@ public class ProjectController {
      * @param search      Optional search term (JobCode or project name)
      * @param pageable    Pagination parameters
      * @param currentUser Authenticated user from Spring Security
-     * @return Paginated list of projects
+     * @return Paginated list of project summary views
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ProjectResponse>>> listProjects(@RequestParam(required = false) String status,
-                                                                           @RequestParam(required = false) String search,
-                                                                           Pageable pageable,
-                                                                           @AuthenticationPrincipal AuthenticatedUser currentUser) {
-
-        Page<Project> projectsPage;
+    public ResponseEntity<ApiResponse<Page<ProjectSummaryView>>> listProjects(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search,
+            Pageable pageable,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ) {
+        Page<ProjectSummaryView> projectsPage;
 
         // Check if user is Sales role (needs customer filtering)
         boolean isSalesOnly = isSalesRoleOnly(currentUser);
@@ -117,29 +102,56 @@ public class ProjectController {
             if (status != null && !status.isBlank()) {
                 ProjectStatus projectStatus = ProjectStatus.fromString(status);
                 if (projectStatus != null) {
-                    projectsPage = projectService.listProjectsByCustomersAndStatus(
+                    projectsPage = queryService.listProjectsByCustomersAndStatus(
                             customerIds, projectStatus, pageable);
                 } else {
-                    projectsPage = projectService.listProjectsByCustomers(customerIds, pageable);
+                    projectsPage = queryService.listProjectsByCustomers(customerIds, pageable);
                 }
             } else {
-                projectsPage = projectService.listProjectsByCustomers(customerIds, pageable);
+                projectsPage = queryService.listProjectsByCustomers(customerIds, pageable);
             }
         } else if (search != null && !search.isBlank()) {
-            projectsPage = projectService.searchProjects(search, pageable);
+            projectsPage = queryService.searchProjects(search, pageable);
         } else if (status != null && !status.isBlank()) {
             ProjectStatus projectStatus = ProjectStatus.fromString(status);
             if (projectStatus != null) {
-                projectsPage = projectService.listProjectsByStatus(projectStatus, pageable);
+                projectsPage = queryService.listProjectsByStatus(projectStatus, pageable);
             } else {
-                projectsPage = projectService.listProjects(pageable);
+                projectsPage = queryService.listProjects(pageable);
             }
         } else {
-            projectsPage = projectService.listProjects(pageable);
+            projectsPage = queryService.listProjects(pageable);
         }
 
-        Page<ProjectResponse> responsePage = projectsPage.map(ProjectResponse::from);
-        return ResponseEntity.ok(ApiResponse.success(responsePage));
+        return ResponseEntity.ok(ApiResponse.success(projectsPage));
+    }
+
+    // ========== COMMAND ENDPOINTS ==========
+
+    /**
+     * Create a new project with auto-generated JobCode.
+     * <p>
+     * POST /api/projects
+     * <p>
+     * Access: ADMIN, FINANCE, SALES
+     *
+     * @param request     Create project request
+     * @param currentUser Authenticated user from Spring Security
+     * @return Command result with created project ID
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    public ResponseEntity<ApiResponse<ProjectCommandResult>> createProject(
+            @Valid @RequestBody CreateProjectRequest request,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ) {
+        Long currentUserId = currentUser.getUserId();
+        Long projectId = commandService.createProject(request, currentUserId);
+        ProjectCommandResult result = ProjectCommandResult.created(projectId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(result));
     }
 
     /**
@@ -154,28 +166,29 @@ public class ProjectController {
      * @param id          Project ID
      * @param request     Update request
      * @param currentUser Authenticated user from Spring Security
-     * @return Updated project
+     * @return Command result with updated project ID
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ProjectResponse>> updateProject(@PathVariable Long id,
-                                                                      @Valid @RequestBody UpdateProjectRequest request,
-                                                                      @AuthenticationPrincipal AuthenticatedUser currentUser) {
-
+    public ResponseEntity<ApiResponse<ProjectCommandResult>> updateProject(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateProjectRequest request,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ) {
         // Check if Sales user can access this project's customer (FR-062)
         if (isSalesRoleOnly(currentUser)) {
             Long userId = currentUser.getUserId();
-            Project existingProject = projectService.getProject(id);
+            ProjectDetailView existingProject = queryService.getProjectDetail(id);
             List<Long> assignedCustomerIds = customerAssignmentService.getAssignedCustomerIds(userId);
 
-            if (!assignedCustomerIds.contains(existingProject.getCustomerId())) {
+            if (!assignedCustomerIds.contains(existingProject.customerId())) {
                 throw new AccessDeniedException("You are not authorized to update this project");
             }
         }
 
-        Project project = projectService.updateProject(id, request);
-        ProjectResponse response = ProjectResponse.from(project);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        Long projectId = commandService.updateProject(id, request);
+        ProjectCommandResult result = ProjectCommandResult.updated(projectId);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -191,9 +204,11 @@ public class ProjectController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-        projectService.deleteProject(id);
+        commandService.deleteProject(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ========== HELPER METHODS ==========
 
     /**
      * Check if user has only Sales role (not Admin or Finance).
