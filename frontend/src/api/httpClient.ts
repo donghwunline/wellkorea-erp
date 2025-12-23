@@ -202,6 +202,15 @@ export class HttpClient {
   }
 
   /**
+   * Make HTTP request and return raw response data without ApiResponse unwrapping.
+   * Use for binary responses (PDF, images) or non-standard API endpoints.
+   */
+  async requestRaw<T>(config: AxiosRequestConfig): Promise<T> {
+    const response = await this.client.request<T>(config);
+    return response.data;
+  }
+
+  /**
    * Convenience method: GET request
    */
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
