@@ -15,7 +15,7 @@ import java.util.Objects;
 @Entity
 @Table(
         name = "customer_assignments",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "customer_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "company_id"})
 )
 public class CustomerAssignment {
 
@@ -26,8 +26,8 @@ public class CustomerAssignment {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "customer_id", nullable = false)
-    private Long customerId;
+    @Column(name = "company_id", nullable = false)
+    private Long customerId;  // References companies table (company with CUSTOMER role)
 
     @Column(name = "assigned_at", nullable = false, updatable = false)
     private LocalDateTime assignedAt;
