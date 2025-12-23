@@ -1,7 +1,7 @@
 package com.wellkorea.backend.quotation.application;
 
-import com.wellkorea.backend.customer.domain.Customer;
-import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
+import com.wellkorea.backend.company.domain.Company;
+import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
@@ -45,20 +45,20 @@ public class QuotationEmailService {
 
     private final QuotationRepository quotationRepository;
     private final JavaMailSender mailSender;
-    private final CustomerRepository customerRepository;
+    private final CompanyRepository companyRepository;
     private final CompanyProperties companyProperties;
     private final TemplateEngine templateEngine;
     private final QuotationPdfService quotationPdfService;
 
     public QuotationEmailService(QuotationRepository quotationRepository,
                                  JavaMailSender mailSender,
-                                 CustomerRepository customerRepository,
+                                 CompanyRepository companyRepository,
                                  CompanyProperties companyProperties,
                                  TemplateEngine templateEngine,
                                  QuotationPdfService quotationPdfService) {
         this.quotationRepository = quotationRepository;
         this.mailSender = mailSender;
-        this.customerRepository = customerRepository;
+        this.companyRepository = companyRepository;
         this.companyProperties = companyProperties;
         this.templateEngine = templateEngine;
         this.quotationPdfService = quotationPdfService;
@@ -114,7 +114,7 @@ public class QuotationEmailService {
     }
 
     private void sendRevisionNotificationInternal(Quotation quotation) {
-        Customer customer = findCustomerOrThrow(quotation);
+        Company customer = findCustomerOrThrow(quotation);
         validateCustomerEmail(customer);
 
         try {
@@ -143,7 +143,7 @@ public class QuotationEmailService {
     }
 
     public void sendSimpleNotification(Quotation quotation) {
-        Customer customer = findCustomerOrThrow(quotation);
+        Company customer = findCustomerOrThrow(quotation);
         validateCustomerEmail(customer);
 
         SimpleMailMessage message = new SimpleMailMessage();
@@ -159,15 +159,15 @@ public class QuotationEmailService {
                 customer.getEmail());
     }
 
-    private Customer findCustomerOrThrow(Quotation quotation) {
-        return customerRepository.findById(quotation.getProject().getCustomerId())
+    private Company findCustomerOrThrow(Quotation quotation) {
+        return companyRepository.findById(quotation.getProject().getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Customer not found with ID: " + quotation.getProject().getCustomerId()));
+                        "Company not found with ID: " + quotation.getProject().getCustomerId()));
     }
 
-    private void validateCustomerEmail(Customer customer) {
+    private void validateCustomerEmail(Company customer) {
         if (customer.getEmail() == null || customer.getEmail().isBlank()) {
-            throw new BusinessException("Customer does not have an email address configured");
+            throw new BusinessException("Company does not have an email address configured");
         }
     }
 
@@ -178,7 +178,7 @@ public class QuotationEmailService {
                 quotation.getVersion());
     }
 
-    private String buildEmailBody(Quotation quotation, Customer customer) {
+    private String buildEmailBody(Quotation quotation, Company customer) {
         Context context = new Context();
 
         context.setVariable("company", buildCompanyMap());
@@ -206,7 +206,7 @@ public class QuotationEmailService {
         return company;
     }
 
-    private String buildPlainTextBody(Quotation quotation, Customer customer) {
+    private String buildPlainTextBody(Quotation quotation, Company customer) {
         StringBuilder text = new StringBuilder();
 
         String greeting = customer.getContactPerson() != null

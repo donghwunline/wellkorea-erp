@@ -1,8 +1,8 @@
 package com.wellkorea.backend.quotation.application;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
-import com.wellkorea.backend.customer.domain.Customer;
-import com.wellkorea.backend.customer.infrastructure.repository.CustomerRepository;
+import com.wellkorea.backend.company.domain.Company;
+import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
@@ -35,16 +35,16 @@ public class QuotationPdfService {
     private static final BigDecimal VAT_RATE = new BigDecimal("0.10");
 
     private final QuotationRepository quotationRepository;
-    private final CustomerRepository customerRepository;
+    private final CompanyRepository companyRepository;
     private final CompanyProperties companyProperties;
     private final TemplateEngine templateEngine;
 
     public QuotationPdfService(QuotationRepository quotationRepository,
-                               CustomerRepository customerRepository,
+                               CompanyRepository companyRepository,
                                CompanyProperties companyProperties,
                                TemplateEngine templateEngine) {
         this.quotationRepository = quotationRepository;
-        this.customerRepository = customerRepository;
+        this.companyRepository = companyRepository;
         this.companyProperties = companyProperties;
         this.templateEngine = templateEngine;
     }
@@ -81,9 +81,9 @@ public class QuotationPdfService {
     }
 
     private byte[] generatePdfFromEntity(Quotation quotation) {
-        Customer customer = customerRepository.findById(quotation.getProject().getCustomerId())
+        Company customer = companyRepository.findById(quotation.getProject().getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Customer not found with ID: " + quotation.getProject().getCustomerId()));
+                        "Company not found with ID: " + quotation.getProject().getCustomerId()));
 
         try {
             Context context = buildTemplateContext(quotation, customer);
@@ -94,7 +94,7 @@ public class QuotationPdfService {
         }
     }
 
-    private Context buildTemplateContext(Quotation quotation, Customer customer) throws IOException {
+    private Context buildTemplateContext(Quotation quotation, Company customer) throws IOException {
         Context context = new Context();
 
         context.setVariable("company", buildCompanyMap());
@@ -121,7 +121,7 @@ public class QuotationPdfService {
         return company;
     }
 
-    private Map<String, String> buildCustomerMap(Customer customer) {
+    private Map<String, String> buildCustomerMap(Company customer) {
         Map<String, String> customerMap = new HashMap<>();
         customerMap.put("name", customer.getName());
         customerMap.put("contactPerson", customer.getContactPerson());
