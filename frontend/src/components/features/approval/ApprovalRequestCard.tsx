@@ -164,21 +164,23 @@ export function ApprovalRequestCard({
         )}
 
         {/* Actions */}
-        <div className="flex gap-3">
-          {onViewEntity && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onViewEntity(approval)}
-              disabled={isActing}
-            >
-              <Icon name="eye" className="mr-2 h-4 w-4" />
-              View Details
-            </Button>
-          )}
+        <div className="flex items-center justify-between">
+          <div>
+            {onViewEntity && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onViewEntity(approval)}
+                disabled={isActing}
+              >
+                <Icon name="eye" className="mr-2 h-4 w-4" />
+                View Details
+              </Button>
+            )}
+          </div>
 
           {canAct && (
-            <>
+            <div className="flex gap-3">
               <Button
                 variant="primary"
                 size="sm"
@@ -201,7 +203,7 @@ export function ApprovalRequestCard({
                 <Icon name="x-mark" className="mr-2 h-4 w-4" />
                 Reject
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>
