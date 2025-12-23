@@ -26,7 +26,14 @@ public record ApprovalDetailView(
         LocalDateTime createdAt,
         List<LevelDecisionView> levels
 ) {
-    public static ApprovalDetailView from(ApprovalRequest request) {
+    /**
+     * Create an ApprovalDetailView from ApprovalRequest with pre-built level views.
+     * Level views should be built by the query service with user names resolved.
+     *
+     * @param request    The approval request entity
+     * @param levelViews The pre-built level decision views with user names
+     */
+    public static ApprovalDetailView from(ApprovalRequest request, List<LevelDecisionView> levelViews) {
         return new ApprovalDetailView(
                 request.getId(),
                 request.getEntityType(),
@@ -40,9 +47,7 @@ public record ApprovalDetailView(
                 request.getSubmittedAt(),
                 request.getCompletedAt(),
                 request.getCreatedAt(),
-                request.getLevelDecisions().stream()
-                        .map(LevelDecisionView::from)
-                        .toList()
+                levelViews
         );
     }
 }

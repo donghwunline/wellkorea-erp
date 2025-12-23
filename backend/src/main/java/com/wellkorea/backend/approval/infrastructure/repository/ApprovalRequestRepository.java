@@ -27,12 +27,13 @@ public interface ApprovalRequestRepository extends JpaRepository<ApprovalRequest
     /**
      * Find pending approvals for a specific approver at their current level.
      * This finds requests where the user is the expected approver at the current level.
+     * Uses embeddable field: ld.expectedApproverUserId
      */
     @Query("SELECT ar FROM ApprovalRequest ar " +
             "JOIN ar.levelDecisions ld " +
             "WHERE ar.status = 'PENDING' " +
             "AND ld.levelOrder = ar.currentLevel " +
-            "AND ld.expectedApprover.id = :userId " +
+            "AND ld.expectedApproverUserId = :userId " +
             "AND ld.decision = 'PENDING'")
     Page<ApprovalRequest> findPendingByApproverUserId(@Param("userId") Long userId, Pageable pageable);
 
@@ -59,12 +60,13 @@ public interface ApprovalRequestRepository extends JpaRepository<ApprovalRequest
 
     /**
      * Count pending approvals for a user.
+     * Uses embeddable field: ld.expectedApproverUserId
      */
     @Query("SELECT COUNT(ar) FROM ApprovalRequest ar " +
             "JOIN ar.levelDecisions ld " +
             "WHERE ar.status = 'PENDING' " +
             "AND ld.levelOrder = ar.currentLevel " +
-            "AND ld.expectedApprover.id = :userId " +
+            "AND ld.expectedApproverUserId = :userId " +
             "AND ld.decision = 'PENDING'")
     long countPendingByApproverUserId(@Param("userId") Long userId);
 

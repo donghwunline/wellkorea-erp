@@ -169,6 +169,7 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
 
     /**
      * Helper to create an approval request for a quotation.
+     * Note: level_name is denormalized from chain template at creation time (snapshot).
      */
     private Long createApprovalRequest(Long quotationId, Long chainTemplateId) {
         // Generate unique ID using quotation ID to avoid conflicts
@@ -178,16 +179,17 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
         jdbcTemplate.update("DELETE FROM approval_level_decisions WHERE approval_request_id = ?", approvalRequestId);
         jdbcTemplate.update("DELETE FROM approval_requests WHERE id = ?", approvalRequestId);
 
+        // No chain_template_id FK - level decisions capture template data at creation
         jdbcTemplate.update(
-                "INSERT INTO approval_requests (id, entity_type, entity_id, entity_description, chain_template_id, current_level, total_levels, status, submitted_by_id) " +
-                        "VALUES (?, 'QUOTATION', ?, '견적서 v1', ?, 1, 2, 'PENDING', ?)",
-                approvalRequestId, quotationId, chainTemplateId, SALES_USER_ID
+                "INSERT INTO approval_requests (id, entity_type, entity_id, entity_description, current_level, total_levels, status, submitted_by_id) " +
+                        "VALUES (?, 'QUOTATION', ?, '견적서 v1', 1, 2, 'PENDING', ?)",
+                approvalRequestId, quotationId, SALES_USER_ID
         );
 
-        // Insert level decisions (initially all PENDING)
+        // Insert level decisions with denormalized level_name (initially all PENDING)
         jdbcTemplate.update(
-                "INSERT INTO approval_level_decisions (approval_request_id, level_order, expected_approver_id, decision) " +
-                        "VALUES (?, 1, ?, 'PENDING'), (?, 2, ?, 'PENDING')",
+                "INSERT INTO approval_level_decisions (approval_request_id, level_order, level_name, expected_approver_id, decision) " +
+                        "VALUES (?, 1, '팀장', ?, 'PENDING'), (?, 2, '부서장', ?, 'PENDING')",
                 approvalRequestId, FINANCE_USER_ID, approvalRequestId, ADMIN_USER_ID
         );
 

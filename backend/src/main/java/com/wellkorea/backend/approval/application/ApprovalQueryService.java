@@ -6,6 +6,7 @@ import com.wellkorea.backend.approval.domain.ApprovalHistory;
 import com.wellkorea.backend.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
+import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalHistoryRepository;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Query service for approval read operations.
@@ -50,13 +52,13 @@ public class ApprovalQueryService {
 
     /**
      * Get approval detail by ID.
-     * Returns full detail view including level decisions.
+     * Returns full detail view including level decisions with user names resolved.
      */
     public ApprovalDetailView getApprovalDetail(Long approvalRequestId) {
         ApprovalRequest request = approvalRequestRepository.findByIdWithLevelDecisions(approvalRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Approval request not found with ID: " + approvalRequestId));
-        return ApprovalDetailView.from(request);
+        return toApprovalDetailViewWithUserNames(request);
     }
 
     /**
@@ -120,6 +122,35 @@ public class ApprovalQueryService {
      */
     public boolean exists(Long approvalRequestId) {
         return approvalRequestRepository.existsById(approvalRequestId);
+    }
+
+    /**
+     * Convert ApprovalRequest to ApprovalDetailView with user names resolved for all level decisions.
+     */
+    private ApprovalDetailView toApprovalDetailViewWithUserNames(ApprovalRequest request) {
+        List<ApprovalLevelDecision> decisions = request.getLevelDecisions();
+
+        // Collect all user IDs from level decisions (expected approvers and decided by)
+        List<Long> userIds = decisions.stream()
+                .flatMap(d -> Stream.of(d.getExpectedApproverUserId(), d.getDecidedByUserId()))
+                .filter(id -> id != null)
+                .distinct()
+                .toList();
+
+        // Batch fetch users
+        Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        // Build level decision views with user names (level names are now stored in decisions)
+        List<LevelDecisionView> levelViews = decisions.stream()
+                .map(decision -> LevelDecisionView.from(
+                        decision,
+                        usersById.get(decision.getExpectedApproverUserId()),
+                        usersById.get(decision.getDecidedByUserId())
+                ))
+                .toList();
+
+        return ApprovalDetailView.from(request, levelViews);
     }
 
     /**

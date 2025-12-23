@@ -3,6 +3,7 @@ package com.wellkorea.backend.approval.application;
 import com.wellkorea.backend.approval.domain.*;
 import com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent;
 import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
+import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.repository.*;
 import com.wellkorea.backend.auth.domain.Role;
@@ -23,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -54,9 +54,6 @@ class ApprovalCommandServiceTest {
     private ApprovalRequestRepository approvalRequestRepository;
 
     @Mock
-    private ApprovalLevelDecisionRepository levelDecisionRepository;
-
-    @Mock
     private ApprovalHistoryRepository historyRepository;
 
     @Mock
@@ -81,8 +78,6 @@ class ApprovalCommandServiceTest {
     private ApprovalChainLevel level1;
     private ApprovalChainLevel level2;
     private ApprovalRequest approvalRequest;
-    private ApprovalLevelDecision level1Decision;
-    private ApprovalLevelDecision level2Decision;
 
     @BeforeEach
     void setUp() {
@@ -128,35 +123,20 @@ class ApprovalCommandServiceTest {
         // Use aggregate method to set levels
         chainTemplate.replaceAllLevels(List.of(level1, level2));
 
-        // Set up approval request
+        // Set up approval request with embedded level decisions
         approvalRequest = new ApprovalRequest();
         approvalRequest.setId(1L);
         approvalRequest.setEntityType(EntityType.QUOTATION);
         approvalRequest.setEntityId(100L);
         approvalRequest.setEntityDescription("견적서 v1 - WK2K25-0001-1219");
-        approvalRequest.setChainTemplate(chainTemplate);
         approvalRequest.setCurrentLevel(1);
-        approvalRequest.setTotalLevels(2);
         approvalRequest.setStatus(ApprovalStatus.PENDING);
         approvalRequest.setSubmittedBy(submitter);
         approvalRequest.setSubmittedAt(LocalDateTime.now());
 
-        // Set up level decisions
-        level1Decision = new ApprovalLevelDecision();
-        level1Decision.setId(1L);
-        level1Decision.setApprovalRequest(approvalRequest);
-        level1Decision.setLevelOrder(1);
-        level1Decision.setExpectedApprover(level1Approver);
-        level1Decision.setDecision(DecisionStatus.PENDING);
-
-        level2Decision = new ApprovalLevelDecision();
-        level2Decision.setId(2L);
-        level2Decision.setApprovalRequest(approvalRequest);
-        level2Decision.setLevelOrder(2);
-        level2Decision.setExpectedApprover(level2Approver);
-        level2Decision.setDecision(DecisionStatus.PENDING);
-
-        approvalRequest.setLevelDecisions(new ArrayList<>(List.of(level1Decision, level2Decision)));
+        // Use factory method from chain template to create level decisions
+        List<ApprovalLevelDecision> levelDecisions = chainTemplate.createLevelDecisions();
+        approvalRequest.initializeLevelDecisions(levelDecisions);
     }
 
     @Nested
@@ -170,9 +150,9 @@ class ApprovalCommandServiceTest {
             given(chainTemplateRepository.findByEntityTypeWithLevels(EntityType.QUOTATION))
                     .willReturn(Optional.of(chainTemplate));
             given(userRepository.findById(4L)).willReturn(Optional.of(submitter));
-            // Mock approver user lookups for each level
-            given(userRepository.findById(2L)).willReturn(Optional.of(level1Approver));
-            given(userRepository.findById(1L)).willReturn(Optional.of(level2Approver));
+            // Mock approver user existence checks
+            given(userRepository.existsById(2L)).willReturn(true);
+            given(userRepository.existsById(1L)).willReturn(true);
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> {
                         ApprovalRequest ar = invocation.getArgument(0);
@@ -196,6 +176,7 @@ class ApprovalCommandServiceTest {
             assertThat(savedRequest.getCurrentLevel()).isEqualTo(1);
             assertThat(savedRequest.getTotalLevels()).isEqualTo(2);
             assertThat(savedRequest.getStatus()).isEqualTo(ApprovalStatus.PENDING);
+            assertThat(savedRequest.getLevelDecisions()).hasSize(2);
             verify(historyRepository).save(any(ApprovalHistory.class));
         }
 
@@ -217,7 +198,7 @@ class ApprovalCommandServiceTest {
         @DisplayName("should throw exception when chain has no levels configured")
         void createApprovalRequest_NoLevels_ThrowsException() {
             // Given
-            chainTemplate.replaceAllLevels(new ArrayList<>());
+            chainTemplate.replaceAllLevels(List.of());
             given(chainTemplateRepository.findByEntityTypeWithLevels(EntityType.QUOTATION))
                     .willReturn(Optional.of(chainTemplate));
 
@@ -239,7 +220,6 @@ class ApprovalCommandServiceTest {
             // Given
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
             given(userRepository.findById(2L)).willReturn(Optional.of(level1Approver));
-            given(levelDecisionRepository.save(any(ApprovalLevelDecision.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(historyRepository.save(any(ApprovalHistory.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
@@ -251,23 +231,22 @@ class ApprovalCommandServiceTest {
             assertThat(result).isEqualTo(1L);
             assertThat(approvalRequest.getCurrentLevel()).isEqualTo(2);
             assertThat(approvalRequest.getStatus()).isEqualTo(ApprovalStatus.PENDING);
+            // Check level 1 decision was approved
+            ApprovalLevelDecision level1Decision = approvalRequest.getLevelDecision(1).orElseThrow();
             assertThat(level1Decision.getDecision()).isEqualTo(DecisionStatus.APPROVED);
-            assertThat(level1Decision.getDecidedBy()).isEqualTo(level1Approver);
+            assertThat(level1Decision.getDecidedByUserId()).isEqualTo(2L);
             verify(historyRepository).save(any(ApprovalHistory.class));
         }
 
         @Test
         @DisplayName("should complete approval when final level approves and return ID")
         void approve_AtFinalLevel_ReturnsIdAndPublishesEvent() {
-            // Given
+            // Given - Simulate Level 1 already approved, now at Level 2
             approvalRequest.setCurrentLevel(2);
-            level1Decision.setDecision(DecisionStatus.APPROVED);
-            level1Decision.setDecidedBy(level1Approver);
-            level1Decision.setDecidedAt(LocalDateTime.now());
+            approvalRequest.getLevelDecision(1).ifPresent(d -> d.approve(2L, "Level 1 approved"));
 
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
             given(userRepository.findById(1L)).willReturn(Optional.of(level2Approver));
-            given(levelDecisionRepository.save(any(ApprovalLevelDecision.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(historyRepository.save(any(ApprovalHistory.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
@@ -279,6 +258,8 @@ class ApprovalCommandServiceTest {
             assertThat(result).isEqualTo(1L);
             assertThat(approvalRequest.getStatus()).isEqualTo(ApprovalStatus.APPROVED);
             assertThat(approvalRequest.getCompletedAt()).isNotNull();
+            // Check level 2 decision was approved
+            ApprovalLevelDecision level2Decision = approvalRequest.getLevelDecision(2).orElseThrow();
             assertThat(level2Decision.getDecision()).isEqualTo(DecisionStatus.APPROVED);
             // Verify event was published for entity-specific handlers
             verify(eventPublisher).publish(any(ApprovalCompletedEvent.class));
@@ -344,7 +325,6 @@ class ApprovalCommandServiceTest {
             // Given
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
             given(userRepository.findById(2L)).willReturn(Optional.of(level1Approver));
-            given(levelDecisionRepository.save(any(ApprovalLevelDecision.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(historyRepository.save(any(ApprovalHistory.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(commentRepository.save(any(ApprovalComment.class))).willAnswer(invocation -> invocation.getArgument(0));
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
@@ -357,6 +337,8 @@ class ApprovalCommandServiceTest {
             assertThat(result).isEqualTo(1L);
             assertThat(approvalRequest.getStatus()).isEqualTo(ApprovalStatus.REJECTED);
             assertThat(approvalRequest.getCompletedAt()).isNotNull();
+            // Check level 1 decision was rejected
+            ApprovalLevelDecision level1Decision = approvalRequest.getLevelDecision(1).orElseThrow();
             assertThat(level1Decision.getDecision()).isEqualTo(DecisionStatus.REJECTED);
             verify(historyRepository).save(any(ApprovalHistory.class));
             verify(commentRepository).save(any(ApprovalComment.class));

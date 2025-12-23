@@ -1,17 +1,19 @@
 package com.wellkorea.backend.approval.domain;
 
+import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.auth.domain.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
- * ApprovalRequest tracks the approval workflow for a specific entity.
- * Manages the multi-level sequential approval process.
+ * ApprovalRequest is the aggregate root for approval workflow instances.
+ * It tracks the multi-level sequential approval process for a specific entity.
+ * <p>
+ * This aggregate manages the lifecycle of its ApprovalLevelDecision collection elements.
+ * Decisions cannot exist independently and are always accessed through the request.
  */
 @Entity
 @Table(name = "approval_requests")
@@ -30,10 +32,6 @@ public class ApprovalRequest {
 
     @Column(name = "entity_description", length = 500)
     private String entityDescription;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chain_template_id", nullable = false)
-    private ApprovalChainTemplate chainTemplate;
 
     @Column(name = "current_level", nullable = false)
     private Integer currentLevel = 1;
@@ -61,7 +59,16 @@ public class ApprovalRequest {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "approvalRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    /**
+     * Ordered list of level decisions in this approval request.
+     * Persisted to approval_level_decisions table via @ElementCollection.
+     * JPA automatically manages the collection table for CRUD operations.
+     */
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "approval_level_decisions",
+            joinColumns = @JoinColumn(name = "approval_request_id")
+    )
     @OrderBy("levelOrder ASC")
     private List<ApprovalLevelDecision> levelDecisions = new ArrayList<>();
 
@@ -79,49 +86,148 @@ public class ApprovalRequest {
         updatedAt = LocalDateTime.now();
     }
 
-    // Business methods
+    // ==================== AGGREGATE BUSINESS METHODS ====================
+
+    /**
+     * Check if the request is pending approval.
+     */
     public boolean isPending() {
         return status == ApprovalStatus.PENDING;
     }
 
+    /**
+     * Check if the request is completed (approved or rejected).
+     */
     public boolean isCompleted() {
         return status == ApprovalStatus.APPROVED || status == ApprovalStatus.REJECTED;
     }
 
+    /**
+     * Check if the request is at the final approval level.
+     */
     public boolean isAtFinalLevel() {
         return currentLevel.equals(totalLevels);
     }
 
+    /**
+     * Move to the next approval level.
+     */
     public void moveToNextLevel() {
         if (currentLevel < totalLevels) {
             currentLevel++;
         }
     }
 
+    /**
+     * Complete the approval request with final status.
+     *
+     * @param finalStatus The final status (APPROVED or REJECTED)
+     */
     public void complete(ApprovalStatus finalStatus) {
         this.status = finalStatus;
         this.completedAt = LocalDateTime.now();
     }
 
+    /**
+     * Get the decision for the current level.
+     *
+     * @return Optional containing the current level decision, or empty if not found
+     */
     public Optional<ApprovalLevelDecision> getCurrentLevelDecision() {
         return levelDecisions.stream()
                 .filter(d -> d.getLevelOrder().equals(currentLevel))
                 .findFirst();
     }
 
+    /**
+     * Get the decision for a specific level.
+     *
+     * @param levelOrder The level order (1-based)
+     * @return Optional containing the level decision, or empty if not found
+     */
     public Optional<ApprovalLevelDecision> getLevelDecision(int levelOrder) {
         return levelDecisions.stream()
                 .filter(d -> d.getLevelOrder().equals(levelOrder))
                 .findFirst();
     }
 
+    /**
+     * Check if a user is the expected approver at the current level.
+     *
+     * @param userId The user ID to check
+     * @return true if the user is the expected approver at current level
+     */
     public boolean isExpectedApprover(Long userId) {
         return getCurrentLevelDecision()
-                .map(d -> d.getExpectedApprover().getId().equals(userId))
+                .map(d -> d.getExpectedApproverUserId().equals(userId))
                 .orElse(false);
     }
 
-    // Getters and Setters
+    /**
+     * Check if a user is an approver at any level.
+     *
+     * @param userId The user ID to check
+     * @return true if the user is an approver at any level
+     */
+    public boolean isApproverAtAnyLevel(Long userId) {
+        return levelDecisions.stream()
+                .anyMatch(d -> d.getExpectedApproverUserId().equals(userId));
+    }
+
+    /**
+     * Initialize level decisions from pre-built decisions (created by ApprovalChainTemplate factory).
+     * This is the only way to add decisions - enforcing aggregate boundary.
+     *
+     * @param decisions List of level decisions created by ApprovalChainTemplate.createLevelDecisions()
+     * @throws IllegalArgumentException if decisions is null or empty
+     */
+    public void initializeLevelDecisions(List<ApprovalLevelDecision> decisions) {
+        Objects.requireNonNull(decisions, "Level decisions cannot be null");
+        if (decisions.isEmpty()) {
+            throw new IllegalArgumentException("At least one level decision is required");
+        }
+
+        this.levelDecisions.clear();
+        this.levelDecisions.addAll(decisions);
+        this.totalLevels = decisions.size();
+    }
+
+    /**
+     * Approve at the current level.
+     *
+     * @param approverUserId The user ID performing the approval
+     * @param comments       Optional comments
+     * @throws IllegalStateException if current level decision is not found
+     */
+    public void approveAtCurrentLevel(Long approverUserId, String comments) {
+        ApprovalLevelDecision decision = getCurrentLevelDecision()
+                .orElseThrow(() -> new IllegalStateException("No decision found for current level"));
+        decision.approve(approverUserId, comments);
+    }
+
+    /**
+     * Reject at the current level.
+     *
+     * @param approverUserId The user ID performing the rejection
+     * @param comments       Optional comments
+     * @throws IllegalStateException if current level decision is not found
+     */
+    public void rejectAtCurrentLevel(Long approverUserId, String comments) {
+        ApprovalLevelDecision decision = getCurrentLevelDecision()
+                .orElseThrow(() -> new IllegalStateException("No decision found for current level"));
+        decision.reject(approverUserId, comments);
+    }
+
+    /**
+     * Get unmodifiable view of level decisions.
+     * Clients cannot modify the decisions directly - must use aggregate methods.
+     */
+    public List<ApprovalLevelDecision> getLevelDecisions() {
+        return Collections.unmodifiableList(levelDecisions);
+    }
+
+    // ==================== GETTERS AND SETTERS ====================
+
     public Long getId() {
         return id;
     }
@@ -152,14 +258,6 @@ public class ApprovalRequest {
 
     public void setEntityDescription(String entityDescription) {
         this.entityDescription = entityDescription;
-    }
-
-    public ApprovalChainTemplate getChainTemplate() {
-        return chainTemplate;
-    }
-
-    public void setChainTemplate(ApprovalChainTemplate chainTemplate) {
-        this.chainTemplate = chainTemplate;
     }
 
     public Integer getCurrentLevel() {
@@ -216,13 +314,5 @@ public class ApprovalRequest {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
-    }
-
-    public List<ApprovalLevelDecision> getLevelDecisions() {
-        return levelDecisions;
-    }
-
-    public void setLevelDecisions(List<ApprovalLevelDecision> levelDecisions) {
-        this.levelDecisions = levelDecisions;
     }
 }

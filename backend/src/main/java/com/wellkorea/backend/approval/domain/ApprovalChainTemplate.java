@@ -1,6 +1,7 @@
 package com.wellkorea.backend.approval.domain;
 
 import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
+import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import jakarta.persistence.*;
 
@@ -119,6 +120,28 @@ public class ApprovalChainTemplate {
                 .map(ApprovalChainLevel::getApproverUserId)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * Factory method to create level decisions from this template's chain levels.
+     * This is the preferred way to initialize ApprovalRequest's level decisions,
+     * as it encapsulates the snapshot of template data (level names, approver IDs).
+     *
+     * @return List of ApprovalLevelDecision value objects ready to be assigned to an ApprovalRequest
+     * @throws IllegalStateException if template has no levels configured
+     */
+    public List<ApprovalLevelDecision> createLevelDecisions() {
+        if (!hasLevels()) {
+            throw new IllegalStateException("Cannot create level decisions: template has no levels configured");
+        }
+
+        return levels.stream()
+                .map(level -> new ApprovalLevelDecision(
+                        level.getLevelOrder(),
+                        level.getLevelName(),
+                        level.getApproverUserId()
+                ))
+                .toList();
     }
 
     private void validateLevelOrders(List<ApprovalChainLevel> levelsToValidate) {

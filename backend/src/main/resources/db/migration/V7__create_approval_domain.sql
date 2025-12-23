@@ -41,15 +41,15 @@ CREATE TABLE approval_chain_levels
 -- =====================================================================
 
 -- Approval requests (tracks approval workflow for a specific entity)
+-- Note: No FK to chain_template - level decisions capture template data at creation time
 CREATE TABLE approval_requests
 (
     id                 BIGSERIAL PRIMARY KEY,
     entity_type        VARCHAR(50) NOT NULL,          -- QUOTATION, PURCHASE_ORDER
     entity_id          BIGINT      NOT NULL,          -- ID of the entity being approved
     entity_description VARCHAR(500),                   -- Human-readable: "견적서 v3 - WK2K25-0001-0104"
-    chain_template_id  BIGINT      NOT NULL REFERENCES approval_chain_templates (id),
     current_level      INT         NOT NULL DEFAULT 1, -- Which level we're currently at
-    total_levels       INT         NOT NULL,           -- Total levels in chain (copied from template)
+    total_levels       INT         NOT NULL,           -- Total levels in chain (snapshot from template)
     status             VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
     submitted_by_id    BIGINT      NOT NULL REFERENCES users (id),
     submitted_at       TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -64,22 +64,22 @@ CREATE TABLE approval_requests
     CONSTRAINT uq_approval_entity UNIQUE (entity_type, entity_id) -- One active approval per entity
 );
 
--- Approval level decisions (tracks each level's decision in the chain)
+-- Approval level decisions (embeddable collection within ApprovalRequest aggregate)
+-- JPA @ElementCollection - no separate ID column, identified by approval_request_id + level_order
+-- Note: level_name is denormalized from chain template at creation time (snapshot)
 CREATE TABLE approval_level_decisions
 (
-    id                  BIGSERIAL PRIMARY KEY,
-    approval_request_id BIGINT      NOT NULL REFERENCES approval_requests (id) ON DELETE CASCADE,
-    level_order         INT         NOT NULL,          -- Which level this decision is for
-    expected_approver_id BIGINT     NOT NULL REFERENCES users (id), -- Who should approve at this level
-    decision            VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
-    decided_by_id       BIGINT REFERENCES users (id),  -- Who actually made the decision (should match expected_approver_id)
-    decided_at          TIMESTAMP,
-    comments            TEXT,
-    created_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    approval_request_id  BIGINT       NOT NULL REFERENCES approval_requests (id) ON DELETE CASCADE,
+    level_order          INT          NOT NULL,          -- Which level this decision is for
+    level_name           VARCHAR(100) NOT NULL,          -- Display name: "팀장", "부서장" (snapshot from template)
+    expected_approver_id BIGINT       NOT NULL REFERENCES users (id), -- Who should approve at this level
+    decision             VARCHAR(20)  NOT NULL DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
+    decided_by_id        BIGINT REFERENCES users (id),   -- Who actually made the decision
+    decided_at           TIMESTAMP,
+    comments             TEXT,
 
-    CONSTRAINT chk_level_decision CHECK (decision IN ('PENDING', 'APPROVED', 'REJECTED')),
-    CONSTRAINT uq_request_level UNIQUE (approval_request_id, level_order)
+    CONSTRAINT pk_approval_level_decisions PRIMARY KEY (approval_request_id, level_order),
+    CONSTRAINT chk_level_decision CHECK (decision IN ('PENDING', 'APPROVED', 'REJECTED'))
 );
 
 -- Approval history (audit trail of all approval actions)
@@ -124,10 +124,8 @@ CREATE INDEX idx_approval_requests_status ON approval_requests (status);
 CREATE INDEX idx_approval_requests_current_level ON approval_requests (current_level);
 CREATE INDEX idx_approval_requests_submitted_by ON approval_requests (submitted_by_id);
 CREATE INDEX idx_approval_requests_submitted_at ON approval_requests (submitted_at);
-CREATE INDEX idx_approval_requests_chain_template ON approval_requests (chain_template_id);
 
--- Approval level decisions indexes
-CREATE INDEX idx_approval_level_decisions_request_id ON approval_level_decisions (approval_request_id);
+-- Approval level decisions indexes (composite primary key already indexed)
 CREATE INDEX idx_approval_level_decisions_expected_approver ON approval_level_decisions (expected_approver_id);
 CREATE INDEX idx_approval_level_decisions_decided_by ON approval_level_decisions (decided_by_id) WHERE decided_by_id IS NOT NULL;
 CREATE INDEX idx_approval_level_decisions_decision ON approval_level_decisions (decision);
@@ -180,8 +178,9 @@ COMMENT ON COLUMN approval_requests.current_level IS 'Which level the request is
 COMMENT ON COLUMN approval_requests.total_levels IS 'Total number of levels in the chain';
 COMMENT ON COLUMN approval_requests.status IS 'PENDING until all levels approve, APPROVED when complete, REJECTED if any level rejects';
 
-COMMENT ON TABLE approval_level_decisions IS 'Tracks the decision at each level of the approval chain';
-COMMENT ON COLUMN approval_level_decisions.expected_approver_id IS 'The user who should make this decision (from chain config)';
+COMMENT ON TABLE approval_level_decisions IS 'Embeddable collection tracking decisions at each level (part of ApprovalRequest aggregate). No separate ID - identified by approval_request_id + level_order.';
+COMMENT ON COLUMN approval_level_decisions.level_name IS 'Display name snapshotted from chain template at creation time (팀장, 부서장, etc.)';
+COMMENT ON COLUMN approval_level_decisions.expected_approver_id IS 'The user who should make this decision (snapshotted from chain config)';
 COMMENT ON COLUMN approval_level_decisions.decided_by_id IS 'The user who actually made the decision';
 COMMENT ON COLUMN approval_level_decisions.decision IS 'PENDING (waiting), APPROVED, REJECTED';
 

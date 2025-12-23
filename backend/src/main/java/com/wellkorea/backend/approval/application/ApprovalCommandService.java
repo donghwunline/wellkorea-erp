@@ -2,8 +2,12 @@ package com.wellkorea.backend.approval.application;
 
 import com.wellkorea.backend.approval.domain.*;
 import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
+import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
-import com.wellkorea.backend.approval.infrastructure.repository.*;
+import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
+import com.wellkorea.backend.approval.infrastructure.repository.ApprovalCommentRepository;
+import com.wellkorea.backend.approval.infrastructure.repository.ApprovalHistoryRepository;
+import com.wellkorea.backend.approval.infrastructure.repository.ApprovalRequestRepository;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
@@ -25,23 +29,19 @@ import java.util.List;
 public class ApprovalCommandService {
 
     private final ApprovalRequestRepository approvalRequestRepository;
-    private final ApprovalLevelDecisionRepository levelDecisionRepository;
     private final ApprovalHistoryRepository historyRepository;
     private final ApprovalCommentRepository commentRepository;
     private final ApprovalChainTemplateRepository chainTemplateRepository;
     private final UserRepository userRepository;
     private final DomainEventPublisher eventPublisher;
 
-    public ApprovalCommandService(
-            ApprovalRequestRepository approvalRequestRepository,
-            ApprovalLevelDecisionRepository levelDecisionRepository,
-            ApprovalHistoryRepository historyRepository,
-            ApprovalCommentRepository commentRepository,
-            ApprovalChainTemplateRepository chainTemplateRepository,
-            UserRepository userRepository,
-            DomainEventPublisher eventPublisher) {
+    public ApprovalCommandService(ApprovalRequestRepository approvalRequestRepository,
+                                  ApprovalHistoryRepository historyRepository,
+                                  ApprovalCommentRepository commentRepository,
+                                  ApprovalChainTemplateRepository chainTemplateRepository,
+                                  UserRepository userRepository,
+                                  DomainEventPublisher eventPublisher) {
         this.approvalRequestRepository = approvalRequestRepository;
-        this.levelDecisionRepository = levelDecisionRepository;
         this.historyRepository = historyRepository;
         this.commentRepository = commentRepository;
         this.chainTemplateRepository = chainTemplateRepository;
@@ -54,14 +54,12 @@ public class ApprovalCommandService {
      *
      * @return ID of the created approval request
      */
-    public Long createApprovalRequest(
-            EntityType entityType,
-            Long entityId,
-            String entityDescription,
-            Long submittedByUserId) {
+    public Long createApprovalRequest(EntityType entityType,
+                                      Long entityId,
+                                      String entityDescription,
+                                      Long submittedByUserId) {
 
-        ApprovalChainTemplate chainTemplate = chainTemplateRepository
-                .findByEntityTypeWithLevels(entityType)
+        ApprovalChainTemplate chainTemplate = chainTemplateRepository.findByEntityTypeWithLevels(entityType)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No approval chain template found for entity type: " + entityType));
 
@@ -72,30 +70,30 @@ public class ApprovalCommandService {
         User submittedBy = userRepository.findById(submittedByUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + submittedByUserId));
 
+        // Validate all approver users exist
+        List<Long> approverUserIds = chainTemplate.getLevels().stream()
+                .map(ApprovalChainLevel::getApproverUserId)
+                .toList();
+
+        for (Long approverUserId : approverUserIds) {
+            if (!userRepository.existsById(approverUserId)) {
+                throw new ResourceNotFoundException("Approver user not found with ID: " + approverUserId);
+            }
+        }
+
+        // Create level decisions via factory method (captures level names at creation time)
+        List<ApprovalLevelDecision> levelDecisions = chainTemplate.createLevelDecisions();
+
         ApprovalRequest request = new ApprovalRequest();
         request.setEntityType(entityType);
         request.setEntityId(entityId);
         request.setEntityDescription(entityDescription);
-        request.setChainTemplate(chainTemplate);
         request.setCurrentLevel(1);
-        request.setTotalLevels(chainTemplate.getTotalLevels());
         request.setStatus(ApprovalStatus.PENDING);
         request.setSubmittedBy(submittedBy);
 
-        // Create level decisions for each level in the chain
-        for (ApprovalChainLevel level : chainTemplate.getLevels()) {
-            // Resolve the User for expected approver
-            User expectedApprover = userRepository.findById(level.getApproverUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Approver user not found with ID: " + level.getApproverUserId()));
-
-            ApprovalLevelDecision decision = new ApprovalLevelDecision();
-            decision.setApprovalRequest(request);
-            decision.setLevelOrder(level.getLevelOrder());
-            decision.setExpectedApprover(expectedApprover);
-            decision.setDecision(DecisionStatus.PENDING);
-            request.getLevelDecisions().add(decision);
-        }
+        // Use aggregate method to initialize level decisions
+        request.initializeLevelDecisions(levelDecisions);
 
         ApprovalRequest savedRequest = approvalRequestRepository.save(request);
 
@@ -120,13 +118,8 @@ public class ApprovalCommandService {
         User approver = userRepository.findById(approverUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + approverUserId));
 
-        // Get current level decision
-        ApprovalLevelDecision currentDecision = request.getCurrentLevelDecision()
-                .orElseThrow(() -> new BusinessException("No decision found for current level"));
-
-        // Approve at current level
-        currentDecision.approve(approver, comments);
-        levelDecisionRepository.save(currentDecision);
+        // Use aggregate method to approve at current level
+        request.approveAtCurrentLevel(approverUserId, comments);
 
         // Record history
         historyRepository.save(ApprovalHistory.approved(request, request.getCurrentLevel(), approver, comments));
@@ -175,13 +168,8 @@ public class ApprovalCommandService {
         User approver = userRepository.findById(approverUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + approverUserId));
 
-        // Get current level decision
-        ApprovalLevelDecision currentDecision = request.getCurrentLevelDecision()
-                .orElseThrow(() -> new BusinessException("No decision found for current level"));
-
-        // Reject at current level
-        currentDecision.reject(approver, comments);
-        levelDecisionRepository.save(currentDecision);
+        // Use aggregate method to reject at current level
+        request.rejectAtCurrentLevel(approverUserId, comments);
 
         // Record history
         historyRepository.save(ApprovalHistory.rejected(request, request.getCurrentLevel(), approver, reason));
@@ -253,10 +241,7 @@ public class ApprovalCommandService {
         // Check if user is the expected approver at current level
         if (!request.isExpectedApprover(userId)) {
             // Check if user is trying to approve out of order
-            boolean isApproverAtAnyLevel = request.getLevelDecisions().stream()
-                    .anyMatch(d -> d.getExpectedApprover().getId().equals(userId));
-
-            if (isApproverAtAnyLevel) {
+            if (request.isApproverAtAnyLevel(userId)) {
                 throw new BusinessException("Cannot approve out of order - not at current level");
             } else {
                 throw new AccessDeniedException("User is not authorized to approve this request");
