@@ -605,13 +605,12 @@ export const mockQuotations = {
  */
 export function createMockLevelDecision(overrides?: Partial<LevelDecision>): LevelDecision {
   return {
-    id: 1,
     levelOrder: 1,
     levelName: '팀장',
-    expectedApproverId: 10,
+    expectedApproverUserId: 10,
     expectedApproverName: 'Team Lead',
     decision: 'PENDING' as ApprovalStatus,
-    decidedById: null,
+    decidedByUserId: null,
     decidedByName: null,
     decidedAt: null,
     comments: null,
@@ -637,8 +636,8 @@ export function createMockApproval(overrides?: Partial<ApprovalDetails>): Approv
     completedAt: null,
     createdAt: '2025-01-15T10:00:00Z',
     levels: [
-      createMockLevelDecision({ id: 1, levelOrder: 1, levelName: '팀장' }),
-      createMockLevelDecision({ id: 2, levelOrder: 2, levelName: '부서장', expectedApproverId: 20, expectedApproverName: 'Dept Head' }),
+      createMockLevelDecision({ levelOrder: 1, levelName: '팀장' }),
+      createMockLevelDecision({ levelOrder: 2, levelName: '부서장', expectedApproverUserId: 20, expectedApproverName: 'Dept Head' }),
     ],
     ...overrides,
   };
@@ -654,8 +653,8 @@ export const mockApprovals = {
     status: 'APPROVED',
     completedAt: '2025-01-16T10:00:00Z',
     levels: [
-      createMockLevelDecision({ id: 1, levelOrder: 1, decision: 'APPROVED', decidedById: 10, decidedByName: 'Team Lead', decidedAt: '2025-01-15T14:00:00Z' }),
-      createMockLevelDecision({ id: 2, levelOrder: 2, decision: 'APPROVED', decidedById: 20, decidedByName: 'Dept Head', decidedAt: '2025-01-16T10:00:00Z' }),
+      createMockLevelDecision({ levelOrder: 1, decision: 'APPROVED', decidedByUserId: 10, decidedByName: 'Team Lead', decidedAt: '2025-01-15T14:00:00Z' }),
+      createMockLevelDecision({ levelOrder: 2, decision: 'APPROVED', decidedByUserId: 20, decidedByName: 'Dept Head', decidedAt: '2025-01-16T10:00:00Z' }),
     ],
   }),
   rejected: createMockApproval({
@@ -663,7 +662,7 @@ export const mockApprovals = {
     status: 'REJECTED',
     completedAt: '2025-01-15T15:00:00Z',
     levels: [
-      createMockLevelDecision({ id: 1, levelOrder: 1, decision: 'REJECTED', decidedById: 10, decidedByName: 'Team Lead', decidedAt: '2025-01-15T15:00:00Z', comments: 'Rejected reason' }),
+      createMockLevelDecision({ levelOrder: 1, decision: 'REJECTED', decidedByUserId: 10, decidedByName: 'Team Lead', decidedAt: '2025-01-15T15:00:00Z', comments: 'Rejected reason' }),
     ],
   }),
 };

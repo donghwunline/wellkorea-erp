@@ -106,9 +106,10 @@ export const quotationService = {
   /**
    * Generate PDF for quotation.
    * Returns PDF as Blob for download.
+   * Uses requestRaw to bypass ApiResponse unwrapping (backend returns raw bytes).
    */
   async generatePdf(id: number): Promise<Blob> {
-    const response = await httpClient.request<ArrayBuffer>({
+    const response = await httpClient.requestRaw<ArrayBuffer>({
       method: 'POST',
       url: QUOTATION_ENDPOINTS.pdf(id),
       responseType: 'arraybuffer',

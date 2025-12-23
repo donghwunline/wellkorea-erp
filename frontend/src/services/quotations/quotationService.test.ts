@@ -22,6 +22,7 @@ vi.mock('@/api', () => ({
     delete: vi.fn(),
     request: vi.fn(),
     requestWithMeta: vi.fn(),
+    requestRaw: vi.fn(),
   },
   QUOTATION_ENDPOINTS: {
     BASE: '/quotations',
@@ -338,14 +339,14 @@ describe('quotationService', () => {
     it('should generate PDF and return blob', async () => {
       // Given: Mock PDF response
       const mockPdfBuffer = new ArrayBuffer(100);
-      vi.mocked(httpClient.request).mockResolvedValue(mockPdfBuffer);
+      vi.mocked(httpClient.requestRaw).mockResolvedValue(mockPdfBuffer);
 
       // When: Generate PDF
       const result = await quotationService.generatePdf(10);
 
-      // Then: Calls httpClient.request with correct params
-      expect(httpClient.request).toHaveBeenCalledOnce();
-      expect(httpClient.request).toHaveBeenCalledWith({
+      // Then: Calls httpClient.requestRaw (bypasses ApiResponse unwrapping)
+      expect(httpClient.requestRaw).toHaveBeenCalledOnce();
+      expect(httpClient.requestRaw).toHaveBeenCalledWith({
         method: 'POST',
         url: '/quotations/10/pdf',
         responseType: 'arraybuffer',
@@ -358,7 +359,7 @@ describe('quotationService', () => {
 
     it('should propagate errors', async () => {
       // Given: Error generating PDF
-      vi.mocked(httpClient.request).mockRejectedValue(mockApiErrors.serverError);
+      vi.mocked(httpClient.requestRaw).mockRejectedValue(mockApiErrors.serverError);
 
       // When/Then: Propagates error
       await expect(quotationService.generatePdf(1)).rejects.toEqual(mockApiErrors.serverError);
@@ -369,7 +370,7 @@ describe('quotationService', () => {
     it('should trigger download with default filename', async () => {
       // Given: Mock PDF response and DOM elements
       const mockPdfBuffer = new ArrayBuffer(100);
-      vi.mocked(httpClient.request).mockResolvedValue(mockPdfBuffer);
+      vi.mocked(httpClient.requestRaw).mockResolvedValue(mockPdfBuffer);
 
       const mockLink = {
         href: '',
@@ -394,7 +395,7 @@ describe('quotationService', () => {
     it('should trigger download with custom filename', async () => {
       // Given: Mock PDF response
       const mockPdfBuffer = new ArrayBuffer(100);
-      vi.mocked(httpClient.request).mockResolvedValue(mockPdfBuffer);
+      vi.mocked(httpClient.requestRaw).mockResolvedValue(mockPdfBuffer);
 
       const mockLink = {
         href: '',

@@ -234,7 +234,7 @@ export function QuotationDetailPage() {
     const currentLevel = approval.levels?.find(l => l.levelOrder === approval.currentLevel);
 
     // Check if current user is the expected approver for this level
-    return currentLevel?.expectedApproverId === user.id;
+    return currentLevel?.expectedApproverUserId === user.id;
   }, [approval, user]);
 
   // Render loading state

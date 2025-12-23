@@ -172,15 +172,15 @@ export type EntityType = 'QUOTATION' | 'PURCHASE_ORDER';
 
 /**
  * Level decision in an approval request.
+ * Note: No id field - decisions are identified by levelOrder within the request.
  */
 export interface LevelDecision {
-  id: number;
   levelOrder: number;
   levelName: string;
-  expectedApproverId: number;
+  expectedApproverUserId: number;
   expectedApproverName: string;
   decision: ApprovalStatus;
-  decidedById: number | null;
+  decidedByUserId: number | null;
   decidedByName: string | null;
   decidedAt: string | null;
   comments: string | null;
