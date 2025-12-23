@@ -13,8 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Service for authentication operations.
@@ -32,18 +30,13 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    // Simple in-memory token blacklist for logout
-    // In production, use Redis or database-backed blacklist
-    private final Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();
-
-    public AuthenticationService(
-            UserRepository userRepository,
-            JwtTokenProvider jwtTokenProvider,
-            PasswordEncoder passwordEncoder) {
+    public AuthenticationService(UserRepository userRepository, JwtTokenProvider jwtTokenProvider, PasswordEncoder passwordEncoder, TokenBlacklistService tokenBlacklistService) {
         this.userRepository = userRepository;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = passwordEncoder;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     /**
@@ -99,8 +92,8 @@ public class AuthenticationService {
             throw new AuthenticationException("Invalid token", e);
         }
 
-        // Add to blacklist (token will be rejected on future requests)
-        tokenBlacklist.add(token);
+        // Add to blacklist (token will be rejected by JwtAuthenticationFilter)
+        tokenBlacklistService.blacklistToken(token);
     }
 
     /**
@@ -120,9 +113,9 @@ public class AuthenticationService {
             throw new AuthenticationException("Invalid or expired token", e);
         }
 
-        if (isTokenBlacklisted(token)) {
-            throw new AuthenticationException("Token has been invalidated");
-        }
+        // Note: Blacklist check is now performed by JwtAuthenticationFilter
+        // This method is called from a controller endpoint which requires valid authentication
+        // So if we reach here, the token is not blacklisted
 
         String username = jwtTokenProvider.getUsername(token);
         User user = userRepository.findByUsername(username)
@@ -132,12 +125,14 @@ public class AuthenticationService {
             throw new AuthenticationException("User is not active");
         }
 
+        // CRITICAL: Blacklist old token BEFORE generating new token to prevent race condition
+        // If we blacklisted after generation, an attacker could make concurrent refresh requests
+        // to generate multiple valid tokens from a single compromised token (token amplification attack)
+        tokenBlacklistService.blacklistToken(token);
+
         // Generate new token with current roles
         String roles = user.getRolesAsString();
         String newToken = jwtTokenProvider.generateToken(username, roles, user.getId());
-
-        // Blacklist old token
-        tokenBlacklist.add(token);
 
         return LoginResponse.of(newToken, toUserInfo(user));
     }
@@ -158,25 +153,13 @@ public class AuthenticationService {
             throw new AuthenticationException("Invalid token", e);
         }
 
-        if (isTokenBlacklisted(token)) {
-            throw new AuthenticationException("Token has been invalidated");
-        }
+        // Note: Blacklist check is performed by JwtAuthenticationFilter
 
         String username = jwtTokenProvider.getUsername(token);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AuthenticationException("User not found"));
 
         return toUserInfo(user);
-    }
-
-    /**
-     * Check if a token has been blacklisted (logged out).
-     *
-     * @param token JWT token to check
-     * @return true if token is blacklisted
-     */
-    public boolean isTokenBlacklisted(String token) {
-        return tokenBlacklist.contains(token);
     }
 
     // ==================== Helper Methods ====================

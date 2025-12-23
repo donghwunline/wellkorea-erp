@@ -3,6 +3,7 @@ package com.wellkorea.backend.auth.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.BaseIntegrationTest;
 import com.wellkorea.backend.auth.api.dto.LoginRequest;
+import com.wellkorea.backend.auth.application.TokenBlacklistService;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.shared.ratelimit.RateLimiter;
 import com.wellkorea.backend.shared.test.DatabaseTestHelper;
@@ -55,10 +56,15 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
     @Autowired
     private RateLimiter rateLimiter;
 
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
     @BeforeEach
     void setUp() {
         // Clear rate limiter state between tests
         rateLimiter.clearAll();
+        // Clear token blacklist state between tests (prevents cross-test contamination)
+        tokenBlacklistService.clearAll();
         // Insert test users with roles (password: TEST_PASSWORD)
         DatabaseTestHelper.insertTestUsersWithRoles(jdbcTemplate);
     }

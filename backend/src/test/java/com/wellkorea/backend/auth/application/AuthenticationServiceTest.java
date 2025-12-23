@@ -44,6 +44,9 @@ class AuthenticationServiceTest implements TestFixtures {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
+
     @InjectMocks
     private AuthenticationService authenticationService;
 
@@ -197,16 +200,15 @@ class AuthenticationServiceTest implements TestFixtures {
     class LogoutTests {
 
         @Test
-        @DisplayName("should invalidate token on logout")
-        void logout_ValidToken_InvalidatesToken() {
+        @DisplayName("should blacklist token on logout")
+        void logout_ValidToken_BlacklistsToken() {
             String validToken = "valid.jwt.token";
             // validateToken() is void - no need to mock (default behavior is do nothing)
 
             authenticationService.logout(validToken);
 
             verify(jwtTokenProvider).validateToken(validToken);
-            // Token should be blacklisted - verified by isTokenBlacklisted
-            assertThat(authenticationService.isTokenBlacklisted(validToken)).isTrue();
+            verify(tokenBlacklistService).blacklistToken(validToken);
         }
 
         @Test
@@ -258,7 +260,7 @@ class AuthenticationServiceTest implements TestFixtures {
             assertThat(result).isNotNull();
             assertThat(result.accessToken()).isEqualTo(newToken);
             // Old token should be blacklisted
-            assertThat(authenticationService.isTokenBlacklisted(oldToken)).isTrue();
+            verify(tokenBlacklistService).blacklistToken(oldToken);
         }
 
         @Test
