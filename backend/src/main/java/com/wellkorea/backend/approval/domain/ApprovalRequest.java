@@ -1,7 +1,9 @@
 package com.wellkorea.backend.approval.domain;
 
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.auth.domain.User;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

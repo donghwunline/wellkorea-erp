@@ -110,13 +110,11 @@ SELECT setval('quotation_line_items_id_seq', (SELECT COALESCE(MAX(id), 1) FROM q
 -- Update QUOTATION approval chain with actual approvers (uses users from V5)
 -- Level 1: Finance Manager (user ID 2) - 팀장
 -- Level 2: Admin (user ID 1) - 사장 (CEO)
-INSERT INTO approval_chain_levels (id, chain_template_id, level_order, level_name, approver_user_id, is_required)
-VALUES (1, 1, 1, '팀장 (Finance Manager)', 2, true),
-       (2, 1, 2, '사장 (CEO)', 1, true)
+-- Note: No id column - this is now an @ElementCollection (composite PK: chain_template_id, level_order)
+INSERT INTO approval_chain_levels (chain_template_id, level_order, level_name, approver_user_id, is_required)
+VALUES (1, 1, '팀장 (Finance Manager)', 2, true),
+       (1, 2, '사장 (CEO)', 1, true)
 ON CONFLICT (chain_template_id, level_order) DO NOTHING;
-
--- Reset sequence
-SELECT setval('approval_chain_levels_id_seq', (SELECT COALESCE(MAX(id), 1) FROM approval_chain_levels));
 
 -- =====================================================================
 -- COMMENTS

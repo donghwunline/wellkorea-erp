@@ -2,7 +2,7 @@ package com.wellkorea.backend.approval.infrastructure.repository;
 
 import com.wellkorea.backend.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
-import com.wellkorea.backend.approval.domain.EntityType;
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

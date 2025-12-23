@@ -1,12 +1,17 @@
 package com.wellkorea.backend.approval.application;
 
-import com.wellkorea.backend.approval.api.dto.query.ApprovalDetailView;
-import com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView;
-import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
-import com.wellkorea.backend.approval.domain.*;
+import com.wellkorea.backend.approval.api.dto.query.*;
+import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
+import com.wellkorea.backend.approval.domain.ApprovalHistory;
+import com.wellkorea.backend.approval.domain.ApprovalRequest;
+import com.wellkorea.backend.approval.domain.ApprovalStatus;
+import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalHistoryRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalRequestRepository;
+import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Query service for approval read operations.
@@ -27,14 +35,17 @@ public class ApprovalQueryService {
     private final ApprovalRequestRepository approvalRequestRepository;
     private final ApprovalHistoryRepository historyRepository;
     private final ApprovalChainTemplateRepository chainTemplateRepository;
+    private final UserRepository userRepository;
 
     public ApprovalQueryService(
             ApprovalRequestRepository approvalRequestRepository,
             ApprovalHistoryRepository historyRepository,
-            ApprovalChainTemplateRepository chainTemplateRepository) {
+            ApprovalChainTemplateRepository chainTemplateRepository,
+            UserRepository userRepository) {
         this.approvalRequestRepository = approvalRequestRepository;
         this.historyRepository = historyRepository;
         this.chainTemplateRepository = chainTemplateRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -84,19 +95,24 @@ public class ApprovalQueryService {
 
     /**
      * List all chain templates (for admin).
-     * Returns raw entities as they are already optimized for admin views.
+     * Returns view DTOs for API consumption with user names resolved.
      */
-    public List<ApprovalChainTemplate> listChainTemplates() {
-        return chainTemplateRepository.findAll();
+    public List<ChainTemplateView> listChainTemplates() {
+        List<ApprovalChainTemplate> templates = chainTemplateRepository.findAll();
+        return templates.stream()
+                .map(this::toChainTemplateViewWithUserNames)
+                .toList();
     }
 
     /**
      * Get chain template by ID.
+     * Returns view DTO for API consumption with user names resolved.
      */
-    public ApprovalChainTemplate getChainTemplate(Long chainTemplateId) {
-        return chainTemplateRepository.findByIdWithLevels(chainTemplateId)
+    public ChainTemplateView getChainTemplate(Long chainTemplateId) {
+        ApprovalChainTemplate template = chainTemplateRepository.findByIdWithLevels(chainTemplateId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Chain template not found with ID: " + chainTemplateId));
+        return toChainTemplateViewWithUserNames(template);
     }
 
     /**
@@ -104,5 +120,32 @@ public class ApprovalQueryService {
      */
     public boolean exists(Long approvalRequestId) {
         return approvalRequestRepository.existsById(approvalRequestId);
+    }
+
+    /**
+     * Convert template to view with user names resolved for all levels.
+     */
+    private ChainTemplateView toChainTemplateViewWithUserNames(ApprovalChainTemplate template) {
+        List<ApprovalChainLevel> levels = template.getLevels();
+
+        if (levels.isEmpty()) {
+            return ChainTemplateView.from(template);
+        }
+
+        // Collect all user IDs and batch fetch users
+        List<Long> userIds = levels.stream()
+                .map(ApprovalChainLevel::getApproverUserId)
+                .distinct()
+                .toList();
+
+        Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+
+        // Build level views with user names
+        List<ChainLevelView> levelViews = levels.stream()
+                .map(level -> ChainLevelView.from(level, usersById.get(level.getApproverUserId())))
+                .toList();
+
+        return ChainTemplateView.from(template, levelViews);
     }
 }

@@ -2,6 +2,8 @@ package com.wellkorea.backend.approval.application;
 
 import com.wellkorea.backend.approval.domain.*;
 import com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent;
+import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.repository.*;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
@@ -9,7 +11,10 @@ import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -23,9 +28,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
 
 /**
  * Unit tests for ApprovalCommandService.
@@ -57,9 +64,6 @@ class ApprovalCommandServiceTest {
 
     @Mock
     private ApprovalChainTemplateRepository chainTemplateRepository;
-
-    @Mock
-    private ApprovalChainLevelRepository chainLevelRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -117,24 +121,12 @@ class ApprovalCommandServiceTest {
         chainTemplate.setName("견적서 결재");
         chainTemplate.setActive(true);
 
-        // Set up chain levels
-        level1 = new ApprovalChainLevel();
-        level1.setId(1L);
-        level1.setChainTemplate(chainTemplate);
-        level1.setLevelOrder(1);
-        level1.setLevelName("팀장");
-        level1.setApproverUser(level1Approver);
-        level1.setRequired(true);
+        // Set up chain levels using @Embeddable constructor
+        level1 = new ApprovalChainLevel(1, "팀장", 2L, true);
+        level2 = new ApprovalChainLevel(2, "부서장", 1L, true);
 
-        level2 = new ApprovalChainLevel();
-        level2.setId(2L);
-        level2.setChainTemplate(chainTemplate);
-        level2.setLevelOrder(2);
-        level2.setLevelName("부서장");
-        level2.setApproverUser(level2Approver);
-        level2.setRequired(true);
-
-        chainTemplate.setLevels(new ArrayList<>(List.of(level1, level2)));
+        // Use aggregate method to set levels
+        chainTemplate.replaceAllLevels(List.of(level1, level2));
 
         // Set up approval request
         approvalRequest = new ApprovalRequest();
@@ -178,6 +170,9 @@ class ApprovalCommandServiceTest {
             given(chainTemplateRepository.findByEntityTypeWithLevels(EntityType.QUOTATION))
                     .willReturn(Optional.of(chainTemplate));
             given(userRepository.findById(4L)).willReturn(Optional.of(submitter));
+            // Mock approver user lookups for each level
+            given(userRepository.findById(2L)).willReturn(Optional.of(level1Approver));
+            given(userRepository.findById(1L)).willReturn(Optional.of(level2Approver));
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> {
                         ApprovalRequest ar = invocation.getArgument(0);
@@ -222,7 +217,7 @@ class ApprovalCommandServiceTest {
         @DisplayName("should throw exception when chain has no levels configured")
         void createApprovalRequest_NoLevels_ThrowsException() {
             // Given
-            chainTemplate.setLevels(new ArrayList<>());
+            chainTemplate.replaceAllLevels(new ArrayList<>());
             given(chainTemplateRepository.findByEntityTypeWithLevels(EntityType.QUOTATION))
                     .willReturn(Optional.of(chainTemplate));
 
@@ -414,8 +409,8 @@ class ApprovalCommandServiceTest {
             );
 
             given(chainTemplateRepository.findById(1L)).willReturn(Optional.of(chainTemplate));
-            given(userRepository.findById(2L)).willReturn(Optional.of(level1Approver));
-            given(userRepository.findById(1L)).willReturn(Optional.of(level2Approver));
+            given(userRepository.existsById(2L)).willReturn(true);
+            given(userRepository.existsById(1L)).willReturn(true);
             given(chainTemplateRepository.save(any(ApprovalChainTemplate.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -424,8 +419,9 @@ class ApprovalCommandServiceTest {
 
             // Then
             assertThat(result).isEqualTo(1L);
-            verify(chainLevelRepository).deleteAllByChainTemplateId(1L);
             verify(chainTemplateRepository).save(any(ApprovalChainTemplate.class));
+            // Verify the aggregate has 3 levels after update
+            assertThat(chainTemplate.getTotalLevels()).isEqualTo(3);
         }
 
         @Test
@@ -438,10 +434,12 @@ class ApprovalCommandServiceTest {
             );
 
             given(chainTemplateRepository.findById(1L)).willReturn(Optional.of(chainTemplate));
+            given(userRepository.existsById(2L)).willReturn(true);
+            given(userRepository.existsById(1L)).willReturn(true);
 
             // When/Then
             assertThatThrownBy(() -> commandService.updateChainLevels(1L, commands))
-                    .isInstanceOf(BusinessException.class)
+                    .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("sequential");
         }
 
@@ -454,7 +452,7 @@ class ApprovalCommandServiceTest {
             );
 
             given(chainTemplateRepository.findById(1L)).willReturn(Optional.of(chainTemplate));
-            given(userRepository.findById(999L)).willReturn(Optional.empty());
+            given(userRepository.existsById(999L)).willReturn(false);
 
             // When/Then
             assertThatThrownBy(() -> commandService.updateChainLevels(1L, commands))

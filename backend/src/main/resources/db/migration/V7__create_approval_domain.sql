@@ -22,19 +22,17 @@ CREATE TABLE approval_chain_templates
     CONSTRAINT chk_template_entity_type CHECK (entity_type IN ('QUOTATION', 'PURCHASE_ORDER'))
 );
 
--- Approval levels within a chain (ordered sequence of specific approvers)
--- Each level references a specific user who can approve at that level
+-- Approval chain levels (embeddable collection within template aggregate)
+-- JPA @ElementCollection - no separate ID column, identified by chain_template_id + level_order
 CREATE TABLE approval_chain_levels
 (
-    id                BIGSERIAL PRIMARY KEY,
     chain_template_id BIGINT       NOT NULL REFERENCES approval_chain_templates (id) ON DELETE CASCADE,
     level_order       INT          NOT NULL,            -- 1, 2, 3... (execution order: 1=팀장, 2=부서장, 3=사장)
     level_name        VARCHAR(100) NOT NULL,            -- Display name: "팀장", "부서장", "사장"
     approver_user_id  BIGINT       NOT NULL REFERENCES users (id), -- Specific user who can approve at this level
     is_required       BOOLEAN      NOT NULL DEFAULT true, -- Can this level be skipped?
-    created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT uq_chain_level_order UNIQUE (chain_template_id, level_order),
+    CONSTRAINT pk_approval_chain_levels PRIMARY KEY (chain_template_id, level_order),
     CONSTRAINT chk_level_order_positive CHECK (level_order > 0)
 );
 
@@ -117,8 +115,7 @@ CREATE TABLE approval_comments
 CREATE INDEX idx_approval_chain_templates_entity_type ON approval_chain_templates (entity_type);
 CREATE INDEX idx_approval_chain_templates_is_active ON approval_chain_templates (is_active);
 
--- Approval chain levels indexes
-CREATE INDEX idx_approval_chain_levels_template_id ON approval_chain_levels (chain_template_id);
+-- Approval chain levels indexes (composite primary key already indexed)
 CREATE INDEX idx_approval_chain_levels_approver ON approval_chain_levels (approver_user_id);
 
 -- Approval requests indexes
@@ -173,7 +170,7 @@ VALUES ('PURCHASE_ORDER', '발주서 결재',
 COMMENT ON TABLE approval_chain_templates IS 'Defines approval chains per entity type (견적서, 발주서 등)';
 COMMENT ON COLUMN approval_chain_templates.entity_type IS 'Entity type: QUOTATION, PURCHASE_ORDER';
 
-COMMENT ON TABLE approval_chain_levels IS 'Ordered sequence of approvers in a chain (팀장 → 부서장 → 사장)';
+COMMENT ON TABLE approval_chain_levels IS 'Embeddable collection of approvers in a chain (팀장 → 부서장 → 사장). No separate ID - part of template aggregate.';
 COMMENT ON COLUMN approval_chain_levels.level_order IS 'Execution order: 1 = first approver (팀장), 2 = second (부서장), etc.';
 COMMENT ON COLUMN approval_chain_levels.level_name IS 'Position title: 팀장, 부서장, 사장';
 COMMENT ON COLUMN approval_chain_levels.approver_user_id IS 'Specific user ID who can approve at this level';

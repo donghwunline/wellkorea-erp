@@ -1,7 +1,7 @@
 package com.wellkorea.backend.approval.infrastructure.repository;
 
 import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
-import com.wellkorea.backend.approval.domain.EntityType;
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

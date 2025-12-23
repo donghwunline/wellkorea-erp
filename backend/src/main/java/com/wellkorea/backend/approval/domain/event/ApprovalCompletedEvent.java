@@ -1,7 +1,7 @@
 package com.wellkorea.backend.approval.domain.event;
 
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
-import com.wellkorea.backend.approval.domain.EntityType;
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.shared.event.DomainEvent;
 
 /**

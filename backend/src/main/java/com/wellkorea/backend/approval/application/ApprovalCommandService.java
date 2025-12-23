@@ -1,6 +1,8 @@
 package com.wellkorea.backend.approval.application;
 
 import com.wellkorea.backend.approval.domain.*;
+import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.repository.*;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
@@ -27,7 +29,6 @@ public class ApprovalCommandService {
     private final ApprovalHistoryRepository historyRepository;
     private final ApprovalCommentRepository commentRepository;
     private final ApprovalChainTemplateRepository chainTemplateRepository;
-    private final ApprovalChainLevelRepository chainLevelRepository;
     private final UserRepository userRepository;
     private final DomainEventPublisher eventPublisher;
 
@@ -37,7 +38,6 @@ public class ApprovalCommandService {
             ApprovalHistoryRepository historyRepository,
             ApprovalCommentRepository commentRepository,
             ApprovalChainTemplateRepository chainTemplateRepository,
-            ApprovalChainLevelRepository chainLevelRepository,
             UserRepository userRepository,
             DomainEventPublisher eventPublisher) {
         this.approvalRequestRepository = approvalRequestRepository;
@@ -45,13 +45,13 @@ public class ApprovalCommandService {
         this.historyRepository = historyRepository;
         this.commentRepository = commentRepository;
         this.chainTemplateRepository = chainTemplateRepository;
-        this.chainLevelRepository = chainLevelRepository;
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
     }
 
     /**
      * Create an approval request for an entity.
+     *
      * @return ID of the created approval request
      */
     public Long createApprovalRequest(
@@ -84,10 +84,15 @@ public class ApprovalCommandService {
 
         // Create level decisions for each level in the chain
         for (ApprovalChainLevel level : chainTemplate.getLevels()) {
+            // Resolve the User for expected approver
+            User expectedApprover = userRepository.findById(level.getApproverUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Approver user not found with ID: " + level.getApproverUserId()));
+
             ApprovalLevelDecision decision = new ApprovalLevelDecision();
             decision.setApprovalRequest(request);
             decision.setLevelOrder(level.getLevelOrder());
-            decision.setExpectedApprover(level.getApproverUser());
+            decision.setExpectedApprover(expectedApprover);
             decision.setDecision(DecisionStatus.PENDING);
             request.getLevelDecisions().add(decision);
         }
@@ -102,6 +107,7 @@ public class ApprovalCommandService {
 
     /**
      * Approve at the current level.
+     *
      * @return ID of the approval request
      */
     public Long approve(Long approvalRequestId, Long approverUserId, String comments) {
@@ -152,6 +158,7 @@ public class ApprovalCommandService {
 
     /**
      * Reject at the current level (requires mandatory reason).
+     *
      * @return ID of the approval request
      */
     public Long reject(Long approvalRequestId, Long approverUserId, String reason, String comments) {
@@ -202,6 +209,8 @@ public class ApprovalCommandService {
 
     /**
      * Update chain levels (admin only).
+     * Uses the aggregate's replaceAllLevels method to enforce encapsulation.
+     *
      * @return ID of the updated chain template
      */
     public Long updateChainLevels(Long chainTemplateId, List<ChainLevelCommand> commands) {
@@ -209,27 +218,24 @@ public class ApprovalCommandService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Chain template not found with ID: " + chainTemplateId));
 
-        // Validate sequential level orders
-        validateLevelOrders(commands);
-
-        // Delete existing levels
-        chainLevelRepository.deleteAllByChainTemplateId(chainTemplateId);
-        template.getLevels().clear();
-
-        // Create new levels
+        // Validate that all approver users exist
         for (ChainLevelCommand cmd : commands) {
-            User approver = userRepository.findById(cmd.approverUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "User not found with ID: " + cmd.approverUserId()));
-
-            ApprovalChainLevel level = new ApprovalChainLevel();
-            level.setChainTemplate(template);
-            level.setLevelOrder(cmd.levelOrder());
-            level.setLevelName(cmd.levelName());
-            level.setApproverUser(approver);
-            level.setRequired(cmd.isRequired());
-            template.getLevels().add(level);
+            if (!userRepository.existsById(cmd.approverUserId())) {
+                throw new ResourceNotFoundException("User not found with ID: " + cmd.approverUserId());
+            }
         }
+
+        // Convert commands to embeddable levels
+        List<ApprovalChainLevel> newLevels = commands.stream()
+                .map(cmd -> new ApprovalChainLevel(
+                        cmd.levelOrder(),
+                        cmd.levelName(),
+                        cmd.approverUserId(),
+                        cmd.isRequired()))
+                .toList();
+
+        // Use aggregate method to replace levels (validates ordering internally)
+        template.replaceAllLevels(newLevels);
 
         ApprovalChainTemplate saved = chainTemplateRepository.save(template);
         return saved.getId();
@@ -254,24 +260,6 @@ public class ApprovalCommandService {
                 throw new BusinessException("Cannot approve out of order - not at current level");
             } else {
                 throw new AccessDeniedException("User is not authorized to approve this request");
-            }
-        }
-    }
-
-    private void validateLevelOrders(List<ChainLevelCommand> commands) {
-        if (commands == null || commands.isEmpty()) {
-            throw new BusinessException("At least one approval level is required");
-        }
-
-        // Sort by level order and check for sequential numbering starting from 1
-        List<Integer> orders = commands.stream()
-                .map(ChainLevelCommand::levelOrder)
-                .sorted()
-                .toList();
-
-        for (int i = 0; i < orders.size(); i++) {
-            if (orders.get(i) != i + 1) {
-                throw new BusinessException("Level orders must be sequential starting from 1");
             }
         }
     }

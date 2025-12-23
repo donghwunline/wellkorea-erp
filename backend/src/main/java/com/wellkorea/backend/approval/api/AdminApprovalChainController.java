@@ -6,7 +6,6 @@ import com.wellkorea.backend.approval.api.dto.query.ChainTemplateView;
 import com.wellkorea.backend.approval.application.ApprovalCommandService;
 import com.wellkorea.backend.approval.application.ApprovalQueryService;
 import com.wellkorea.backend.approval.application.ChainLevelCommand;
-import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -41,12 +40,8 @@ public class AdminApprovalChainController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<List<ChainTemplateView>>> listChainTemplates() {
-        var templates = queryService.listChainTemplates();
-        var response = templates.stream()
-                .map(ChainTemplateView::from)
-                .toList();
-
-        return ResponseEntity.ok(ApiResponse.success(response));
+        List<ChainTemplateView> templates = queryService.listChainTemplates();
+        return ResponseEntity.ok(ApiResponse.success(templates));
     }
 
     /**
@@ -55,8 +50,8 @@ public class AdminApprovalChainController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ChainTemplateView>> getChainTemplate(@PathVariable Long id) {
-        ApprovalChainTemplate template = queryService.getChainTemplate(id);
-        return ResponseEntity.ok(ApiResponse.success(ChainTemplateView.from(template)));
+        ChainTemplateView template = queryService.getChainTemplate(id);
+        return ResponseEntity.ok(ApiResponse.success(template));
     }
 
     // ==================== COMMAND ENDPOINTS ====================

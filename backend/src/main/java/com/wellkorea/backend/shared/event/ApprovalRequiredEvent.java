@@ -1,6 +1,6 @@
 package com.wellkorea.backend.shared.event;
 
-import com.wellkorea.backend.approval.domain.EntityType;
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 
 /**
  * Base interface for domain events that require approval workflow.

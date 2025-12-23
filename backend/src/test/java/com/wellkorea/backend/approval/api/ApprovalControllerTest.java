@@ -93,17 +93,16 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                         "ON CONFLICT (id) DO NOTHING"
         );
 
-        // Insert chain levels
+        // Insert chain levels (no id column - @ElementCollection with composite PK)
         jdbcTemplate.update(
-                "INSERT INTO approval_chain_levels (id, chain_template_id, level_order, level_name, approver_user_id, is_required) " +
-                        "VALUES (1, 1, 1, '팀장', 2, true), " +  // Level 1: Finance (팀장)
-                        "       (2, 1, 2, '부서장', 1, true) " +  // Level 2: Admin (부서장)
-                        "ON CONFLICT (id) DO NOTHING"
+                "INSERT INTO approval_chain_levels (chain_template_id, level_order, level_name, approver_user_id, is_required) " +
+                        "VALUES (1, 1, '팀장', 2, true), " +  // Level 1: Finance (팀장)
+                        "       (1, 2, '부서장', 1, true) " +  // Level 2: Admin (부서장)
+                        "ON CONFLICT (chain_template_id, level_order) DO NOTHING"
         );
 
-        // Reset sequences
+        // Reset sequence for templates only (levels table has no sequence - composite PK)
         jdbcTemplate.execute("SELECT setval('approval_chain_templates_id_seq', (SELECT COALESCE(MAX(id), 0) FROM approval_chain_templates))");
-        jdbcTemplate.execute("SELECT setval('approval_chain_levels_id_seq', (SELECT COALESCE(MAX(id), 0) FROM approval_chain_levels))");
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.wellkorea.backend.quotation.application;
 
-import com.wellkorea.backend.approval.domain.EntityType;
 import com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent;
+import com.wellkorea.backend.approval.domain.vo.EntityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,8 +35,7 @@ public class QuotationApprovalEventHandler {
             return;
         }
 
-        log.debug("Handling approval completed event: quotationId={}, status={}",
-                event.entityId(), event.finalStatus());
+        log.debug("Handling approval completed event: quotationId={}, status={}", event.entityId(), event.finalStatus());
 
         if (event.isApproved()) {
             commandService.approveQuotation(event.entityId(), event.approverUserId());
