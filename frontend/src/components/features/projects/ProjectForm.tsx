@@ -10,6 +10,50 @@ import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from 
 import { Button, DatePicker, ErrorAlert, FormField } from '@/components/ui';
 import { CompanyCombobox, UserCombobox } from '@/components/features/shared/selectors';
 
+interface ProjectFormData {
+  customerId: number | null;
+  projectName: string;
+  requesterName: string;
+  dueDate: string;
+  internalOwnerId: number | null;
+}
+
+const EMPTY_FORM_DATA: ProjectFormData = {
+  customerId: null,
+  projectName: '',
+  requesterName: '',
+  dueDate: '',
+  internalOwnerId: null,
+};
+
+function toFormData(data: ProjectDetails): ProjectFormData {
+  return {
+    customerId: data.customerId,
+    projectName: data.projectName,
+    requesterName: data.requesterName ?? '',
+    dueDate: data.dueDate,
+    internalOwnerId: data.internalOwnerId,
+  };
+}
+
+function toCreateRequest(data: ProjectFormData): CreateProjectRequest {
+  return {
+    customerId: data.customerId!,
+    projectName: data.projectName.trim(),
+    requesterName: data.requesterName.trim() || undefined,
+    dueDate: data.dueDate,
+    internalOwnerId: data.internalOwnerId!,
+  };
+}
+
+function toUpdateRequest(data: ProjectFormData): UpdateProjectRequest {
+  return {
+    projectName: data.projectName.trim(),
+    requesterName: data.requesterName.trim() || undefined,
+    dueDate: data.dueDate,
+  };
+}
+
 export interface ProjectFormProps {
   /** Form mode: 'create' or 'edit' */
   mode: 'create' | 'edit';
@@ -39,46 +83,15 @@ export function ProjectForm({
   error,
   onDismissError,
 }: Readonly<ProjectFormProps>) {
-  // Form state - initialize from initialData if editing (form is only rendered after data loads)
-  const [formData, setFormData] = useState(() => {
-    if (mode === 'edit' && initialData) {
-      return {
-        customerId: initialData.customerId as number | null,
-        projectName: initialData.projectName,
-        requesterName: initialData.requesterName || '',
-        dueDate: initialData.dueDate,
-        internalOwnerId: initialData.internalOwnerId as number | null,
-      };
-    }
-    return {
-      customerId: null as number | null,
-      projectName: '',
-      requesterName: '',
-      dueDate: '',
-      internalOwnerId: null as number | null,
-    };
-  });
+  // Form state - initialize from initialData if editing, otherwise use empty defaults
+  const [formData, setFormData] = useState<ProjectFormData>(
+    initialData ? toFormData(initialData) : EMPTY_FORM_DATA
+  );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    if (mode === 'create') {
-      const request: CreateProjectRequest = {
-        customerId: formData.customerId!,
-        projectName: formData.projectName.trim(),
-        requesterName: formData.requesterName.trim() || undefined,
-        dueDate: formData.dueDate,
-        internalOwnerId: formData.internalOwnerId!,
-      };
-      await onSubmit(request);
-    } else {
-      const request: UpdateProjectRequest = {
-        projectName: formData.projectName.trim(),
-        requesterName: formData.requesterName.trim() || undefined,
-        dueDate: formData.dueDate,
-      };
-      await onSubmit(request);
-    }
+    const request = mode === 'create' ? toCreateRequest(formData) : toUpdateRequest(formData);
+    await onSubmit(request);
   };
 
   // Validation helpers
@@ -166,7 +179,7 @@ export function ProjectForm({
       {/* Job Code (read-only in edit mode) */}
       {mode === 'edit' && initialData && (
         <div>
-          <label className="mb-2 block text-sm font-medium text-steel-300">Job Code</label>
+          <span className="mb-2 block text-sm font-medium text-steel-300">Job Code</span>
           <div className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-4 py-2.5">
             <span className="font-mono text-copper-400">{initialData.jobCode}</span>
           </div>
