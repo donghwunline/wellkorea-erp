@@ -1,11 +1,6 @@
 package com.wellkorea.backend.catalog.api;
 
-import com.wellkorea.backend.catalog.api.dto.command.CreateServiceCategoryRequest;
-import com.wellkorea.backend.catalog.api.dto.command.CreateVendorOfferingRequest;
-import com.wellkorea.backend.catalog.api.dto.command.ServiceCategoryCommandResult;
-import com.wellkorea.backend.catalog.api.dto.command.UpdateServiceCategoryRequest;
-import com.wellkorea.backend.catalog.api.dto.command.UpdateVendorOfferingRequest;
-import com.wellkorea.backend.catalog.api.dto.command.VendorOfferingCommandResult;
+import com.wellkorea.backend.catalog.api.dto.command.*;
 import com.wellkorea.backend.catalog.api.dto.query.ServiceCategoryDetailView;
 import com.wellkorea.backend.catalog.api.dto.query.ServiceCategorySummaryView;
 import com.wellkorea.backend.catalog.api.dto.query.VendorServiceOfferingView;
@@ -38,9 +33,8 @@ public class ServiceCategoryController {
     private final ServiceCategoryCommandService commandService;
     private final ServiceCategoryQueryService queryService;
 
-    public ServiceCategoryController(
-            ServiceCategoryCommandService commandService,
-            ServiceCategoryQueryService queryService) {
+    public ServiceCategoryController(ServiceCategoryCommandService commandService,
+                                     ServiceCategoryQueryService queryService) {
         this.commandService = commandService;
         this.queryService = queryService;
     }
@@ -59,9 +53,8 @@ public class ServiceCategoryController {
      * @return Paginated list of service categories
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ServiceCategorySummaryView>>> listServiceCategories(
-            @RequestParam(required = false) String search,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<ServiceCategorySummaryView>>> listServiceCategories(@RequestParam(required = false) String search,
+                                                                                               Pageable pageable) {
 
         Page<ServiceCategorySummaryView> categoriesPage;
 
@@ -119,15 +112,12 @@ public class ServiceCategoryController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
-    public ResponseEntity<ApiResponse<ServiceCategoryCommandResult>> createServiceCategory(
-            @Valid @RequestBody CreateServiceCategoryRequest request) {
+    public ResponseEntity<ApiResponse<ServiceCategoryCommandResult>> createServiceCategory(@Valid @RequestBody CreateServiceCategoryRequest request) {
 
         Long categoryId = commandService.createServiceCategory(request.toCommand());
         ServiceCategoryCommandResult result = ServiceCategoryCommandResult.created(categoryId);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(result));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(result));
     }
 
     /**
@@ -143,9 +133,8 @@ public class ServiceCategoryController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
-    public ResponseEntity<ApiResponse<ServiceCategoryCommandResult>> updateServiceCategory(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateServiceCategoryRequest request) {
+    public ResponseEntity<ApiResponse<ServiceCategoryCommandResult>> updateServiceCategory(@PathVariable Long id,
+                                                                                           @Valid @RequestBody UpdateServiceCategoryRequest request) {
 
         Long categoryId = commandService.updateServiceCategory(id, request.toCommand());
         ServiceCategoryCommandResult result = ServiceCategoryCommandResult.updated(categoryId);
@@ -184,9 +173,8 @@ public class ServiceCategoryController {
      * @return Paginated list of vendor offerings
      */
     @GetMapping("/{id}/offerings")
-    public ResponseEntity<ApiResponse<Page<VendorServiceOfferingView>>> getOfferingsForCategory(
-            @PathVariable Long id,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<VendorServiceOfferingView>>> getOfferingsForCategory(@PathVariable Long id,
+                                                                                                Pageable pageable) {
 
         Page<VendorServiceOfferingView> offerings = queryService.getOfferingsForServiceCategory(id, pageable);
         return ResponseEntity.ok(ApiResponse.success(offerings));
@@ -204,8 +192,7 @@ public class ServiceCategoryController {
      * @return List of current vendor offerings
      */
     @GetMapping("/{id}/offerings/current")
-    public ResponseEntity<ApiResponse<List<VendorServiceOfferingView>>> getCurrentOfferingsForCategory(
-            @PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<VendorServiceOfferingView>>> getCurrentOfferingsForCategory(@PathVariable Long id) {
 
         List<VendorServiceOfferingView> offerings = queryService.getCurrentOfferingsForServiceCategory(id);
         return ResponseEntity.ok(ApiResponse.success(offerings));

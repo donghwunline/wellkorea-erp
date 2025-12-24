@@ -25,10 +25,9 @@ public class ServiceCategoryCommandService {
     private final VendorServiceOfferingRepository vendorOfferingRepository;
     private final CompanyRepository companyRepository;
 
-    public ServiceCategoryCommandService(
-            ServiceCategoryRepository serviceCategoryRepository,
-            VendorServiceOfferingRepository vendorOfferingRepository,
-            CompanyRepository companyRepository) {
+    public ServiceCategoryCommandService(ServiceCategoryRepository serviceCategoryRepository,
+                                         VendorServiceOfferingRepository vendorOfferingRepository,
+                                         CompanyRepository companyRepository) {
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.vendorOfferingRepository = vendorOfferingRepository;
         this.companyRepository = companyRepository;

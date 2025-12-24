@@ -28,9 +28,8 @@ public class ServiceCategoryQueryService {
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final VendorServiceOfferingRepository vendorOfferingRepository;
 
-    public ServiceCategoryQueryService(
-            ServiceCategoryRepository serviceCategoryRepository,
-            VendorServiceOfferingRepository vendorOfferingRepository) {
+    public ServiceCategoryQueryService(ServiceCategoryRepository serviceCategoryRepository,
+                                       VendorServiceOfferingRepository vendorOfferingRepository) {
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.vendorOfferingRepository = vendorOfferingRepository;
     }
@@ -120,8 +119,7 @@ public class ServiceCategoryQueryService {
      * @return List of current vendor offering views
      */
     public List<VendorServiceOfferingView> getCurrentOfferingsForServiceCategory(Long serviceCategoryId) {
-        List<VendorServiceOffering> offerings = vendorOfferingRepository
-                .findCurrentOfferingsByServiceCategory(serviceCategoryId, LocalDate.now());
+        List<VendorServiceOffering> offerings = vendorOfferingRepository.findCurrentOfferingsByServiceCategory(serviceCategoryId, LocalDate.now());
         return offerings.stream()
                 .map(VendorServiceOfferingView::from)
                 .toList();
