@@ -95,4 +95,85 @@
         ORDER BY li.sequence
     </select>
 
+    <!-- QuotationSummaryView result map for list queries -->
+    <resultMap id="QuotationSummaryViewResult" type="com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="project_name" javaType="String"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="version" javaType="Integer"/>
+            <arg column="status" javaType="com.wellkorea.backend.quotation.domain.QuotationStatus"/>
+            <arg column="quotation_date" javaType="java.time.LocalDate"/>
+            <arg column="validity_days" javaType="Integer"/>
+            <arg column="expiry_date" javaType="java.time.LocalDate"/>
+            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="created_by_id" javaType="Long"/>
+            <arg column="created_by_name" javaType="String"/>
+            <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
+            <arg column="approved_at" javaType="java.time.LocalDateTime"/>
+            <arg column="approved_by_id" javaType="Long"/>
+            <arg column="approved_by_name" javaType="String"/>
+            <arg column="rejection_reason" javaType="String"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find quotations with filters -->
+    <select id="findWithFilters" resultMap="QuotationSummaryViewResult">
+        SELECT
+            q.id,
+            q.project_id,
+            p.project_name,
+            p.job_code,
+            q.version,
+            q.status,
+            q.quotation_date,
+            q.validity_days,
+            q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
+            q.total_amount,
+            q.notes,
+            q.created_by_id,
+            cu.full_name AS created_by_name,
+            q.submitted_at,
+            q.approved_at,
+            q.approved_by_id,
+            au.full_name AS approved_by_name,
+            q.rejection_reason,
+            q.created_at,
+            q.updated_at
+        FROM quotations q
+        INNER JOIN projects p ON q.project_id = p.id
+        INNER JOIN users cu ON q.created_by_id = cu.id
+        LEFT JOIN users au ON q.approved_by_id = au.id
+        <where>
+            q.is_deleted = false
+            <if test="status != null">
+                AND q.status = #{status}
+            </if>
+            <if test="projectId != null">
+                AND q.project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY q.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count for pagination -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM quotations q
+        <where>
+            q.is_deleted = false
+            <if test="status != null">
+                AND q.status = #{status}
+            </if>
+            <if test="projectId != null">
+                AND q.project_id = #{projectId}
+            </if>
+        </where>
+    </select>
+
 </mapper>
