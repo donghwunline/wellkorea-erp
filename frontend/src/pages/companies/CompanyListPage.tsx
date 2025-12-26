@@ -15,9 +15,18 @@ import { Alert, Button, Icon, PageHeader, SearchBar, Tab, TabList, Tabs } from '
 import { CompanyTable } from '@/components/features/companies';
 import { usePaginatedSearch } from '@/shared/hooks';
 import type { RoleType } from '@/services';
-import { ROLE_TYPE_LABELS } from '@/services';
 
 type RoleFilter = RoleType | 'ALL';
+
+/**
+ * Human-readable labels for role types.
+ * Defined locally to avoid importing value from services layer.
+ */
+const ROLE_TYPE_LABELS: Record<RoleType, string> = {
+  CUSTOMER: '고객사',
+  VENDOR: '협력업체',
+  OUTSOURCE: '외주업체',
+};
 
 const ROLE_TABS: { id: RoleFilter; label: string }[] = [
   { id: 'ALL', label: '전체' },
