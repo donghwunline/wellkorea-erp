@@ -1,7 +1,5 @@
 package com.wellkorea.backend.product.api.dto.query;
 
-import com.wellkorea.backend.product.domain.ProductType;
-
 import java.time.LocalDateTime;
 
 /**
@@ -13,15 +11,4 @@ public record ProductTypeView(
         String description,
         LocalDateTime createdAt
 ) {
-    /**
-     * Create from entity.
-     */
-    public static ProductTypeView from(ProductType productType) {
-        return new ProductTypeView(
-                productType.getId(),
-                productType.getName(),
-                productType.getDescription(),
-                productType.getCreatedAt()
-        );
-    }
 }

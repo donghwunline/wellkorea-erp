@@ -32,7 +32,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * Used by CommandService for duplicate validation on update.
      *
      * @param sku SKU to check
-     * @param id Product ID to exclude
+     * @param id  Product ID to exclude
      * @return true if SKU exists for another product
      */
     boolean existsBySkuAndIdNot(String sku, Long id);

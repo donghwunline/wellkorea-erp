@@ -1,6 +1,7 @@
 package com.wellkorea.backend.product.domain;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

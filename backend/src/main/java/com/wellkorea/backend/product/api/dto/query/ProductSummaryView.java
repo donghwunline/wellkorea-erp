@@ -1,7 +1,5 @@
 package com.wellkorea.backend.product.api.dto.query;
 
-import com.wellkorea.backend.product.domain.Product;
-
 import java.math.BigDecimal;
 
 /**
@@ -18,20 +16,4 @@ public record ProductSummaryView(
         String unit,
         boolean isActive
 ) {
-    /**
-     * Create from entity.
-     */
-    public static ProductSummaryView from(Product product) {
-        return new ProductSummaryView(
-                product.getId(),
-                product.getSku(),
-                product.getName(),
-                product.getDescription(),
-                product.getProductType().getId(),
-                product.getProductType().getName(),
-                product.getBaseUnitPrice(),
-                product.getUnit(),
-                product.isActive()
-        );
-    }
 }
