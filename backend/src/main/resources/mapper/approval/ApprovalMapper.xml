@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.approval.infrastructure.mapper.ApprovalMapper">
+
+    <!-- ApprovalSummaryView result map for record -->
+    <resultMap id="ApprovalSummaryViewResult" type="com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="entity_type" javaType="com.wellkorea.backend.approval.domain.vo.EntityType"/>
+            <arg column="entity_id" javaType="Long"/>
+            <arg column="entity_description" javaType="String"/>
+            <arg column="current_level" javaType="Integer"/>
+            <arg column="total_levels" javaType="Integer"/>
+            <arg column="status" javaType="com.wellkorea.backend.approval.domain.ApprovalStatus"/>
+            <arg column="submitted_by_id" javaType="Long"/>
+            <arg column="submitted_by_name" javaType="String"/>
+            <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
+            <arg column="completed_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Common SELECT columns -->
+    <sql id="approvalSummaryColumns">
+        ar.id,
+        ar.entity_type,
+        ar.entity_id,
+        ar.entity_description,
+        ar.current_level,
+        ar.total_levels,
+        ar.status,
+        ar.submitted_by_id,
+        u.full_name AS submitted_by_name,
+        ar.submitted_at,
+        ar.completed_at,
+        ar.created_at
+    </sql>
+
+    <!-- Find all approvals with filters - eliminates N+1 on submittedBy -->
+    <select id="findAllWithFilters" resultMap="ApprovalSummaryViewResult">
+        SELECT
+            <include refid="approvalSummaryColumns"/>
+        FROM approval_requests ar
+        INNER JOIN users u ON ar.submitted_by_id = u.id
+        <where>
+            <if test="entityType != null">
+                AND ar.entity_type = #{entityType}
+            </if>
+            <if test="status != null">
+                AND ar.status = #{status}
+            </if>
+        </where>
+        ORDER BY ar.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count for pagination -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM approval_requests ar
+        <where>
+            <if test="entityType != null">
+                AND ar.entity_type = #{entityType}
+            </if>
+            <if test="status != null">
+                AND ar.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- Find pending approvals for approver - eliminates N+1 on submittedBy -->
+    <select id="findPendingByApproverUserId" resultMap="ApprovalSummaryViewResult">
+        SELECT
+            <include refid="approvalSummaryColumns"/>
+        FROM approval_requests ar
+        INNER JOIN users u ON ar.submitted_by_id = u.id
+        INNER JOIN approval_level_decisions ld ON ar.id = ld.approval_request_id
+        WHERE ar.status = 'PENDING'
+          AND ld.level_order = ar.current_level
+          AND ld.expected_approver_id = #{userId}
+          AND ld.decision = 'PENDING'
+        ORDER BY ar.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count pending approvals for pagination -->
+    <select id="countPendingByApproverUserId" resultType="long">
+        SELECT COUNT(*)
+        FROM approval_requests ar
+        INNER JOIN approval_level_decisions ld ON ar.id = ld.approval_request_id
+        WHERE ar.status = 'PENDING'
+          AND ld.level_order = ar.current_level
+          AND ld.expected_approver_id = #{userId}
+          AND ld.decision = 'PENDING'
+    </select>
+
+</mapper>

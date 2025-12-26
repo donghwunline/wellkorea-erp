@@ -104,6 +104,15 @@ company:
   logo-path: classpath:assets/logo.png
   seal-path: classpath:assets/seal.png
 
+# MyBatis Configuration (for CQRS query side - complex reads)
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.wellkorea.backend
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+
 # Logging Configuration
 logging:
   level:

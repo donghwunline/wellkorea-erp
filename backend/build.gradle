@@ -38,6 +38,9 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
+    // MyBatis (for complex queries in QueryServices - CQRS read side)
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+
     // Security & JWT (MVP implementation - will be replaced by Keycloak tokens)
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -70,6 +73,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     // Testing
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
