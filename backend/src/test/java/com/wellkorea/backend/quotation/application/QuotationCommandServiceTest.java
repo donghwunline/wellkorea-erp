@@ -241,7 +241,7 @@ class QuotationCommandServiceTest {
             lineItem.setQuantity(BigDecimal.TEN);
             lineItem.setUnitPrice(BigDecimal.valueOf(50000));
             lineItem.setLineTotal(BigDecimal.valueOf(500000));
-            testQuotation.getLineItems().add(lineItem);
+            testQuotation.addLineItem(lineItem);
             testQuotation.setId(1L);
 
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));

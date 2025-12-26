@@ -108,7 +108,7 @@ public class QuotationCommandService {
             // Clear existing line items - orphanRemoval=true will handle deletion
             // We need to flush after clearing to ensure deletes are executed before inserts
             // This avoids unique constraint violation on (quotation_id, sequence)
-            quotation.getLineItems().clear();
+            quotation.clearLineItems();
             quotationRepository.flush();
 
             addLineItemsFromCommands(quotation, command.lineItems());

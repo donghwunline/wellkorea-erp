@@ -262,10 +262,17 @@ public class Quotation {
     }
 
     public List<QuotationLineItem> getLineItems() {
-        return lineItems;
+        if (lineItems == null) {
+            return List.of();
+        }
+        return new ArrayList<>(lineItems);
     }
 
     public void setLineItems(List<QuotationLineItem> lineItems) {
-        this.lineItems = lineItems;
+        if (lineItems == null) {
+            this.lineItems = null;
+        } else {
+            this.lineItems = new ArrayList<>(lineItems);
+        }
     }
 }
