@@ -8,6 +8,7 @@ import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
 import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
+import com.wellkorea.backend.approval.infrastructure.mapper.ApprovalMapper;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalHistoryRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalRequestRepository;
@@ -15,6 +16,7 @@ import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,9 @@ import java.util.stream.Stream;
  * Query service for approval read operations.
  * Part of CQRS pattern - handles all read/query operations.
  * All methods are read-only and return view DTOs optimized for specific use cases.
+ *
+ * <p>Uses MyBatis for list queries with filters to avoid N+1 issues on submittedBy.
+ * Uses JPA repository for detail queries with level decisions (batch fetching).
  */
 @Service
 @Transactional(readOnly = true)
@@ -38,16 +43,19 @@ public class ApprovalQueryService {
     private final ApprovalHistoryRepository historyRepository;
     private final ApprovalChainTemplateRepository chainTemplateRepository;
     private final UserRepository userRepository;
+    private final ApprovalMapper approvalMapper;
 
     public ApprovalQueryService(
             ApprovalRequestRepository approvalRequestRepository,
             ApprovalHistoryRepository historyRepository,
             ApprovalChainTemplateRepository chainTemplateRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            ApprovalMapper approvalMapper) {
         this.approvalRequestRepository = approvalRequestRepository;
         this.historyRepository = historyRepository;
         this.chainTemplateRepository = chainTemplateRepository;
         this.userRepository = userRepository;
+        this.approvalMapper = approvalMapper;
     }
 
     /**
@@ -64,19 +72,32 @@ public class ApprovalQueryService {
     /**
      * List pending approvals for a user.
      * Returns summary views optimized for list display (no level decisions).
+     *
+     * <p>Uses MyBatis mapper to avoid N+1 queries on submittedBy user.
      */
     public Page<ApprovalSummaryView> listPendingApprovals(Long userId, Pageable pageable) {
-        Page<ApprovalRequest> requests = approvalRequestRepository.findPendingByApproverUserId(userId, pageable);
-        return requests.map(ApprovalSummaryView::from);
+        List<ApprovalSummaryView> content = approvalMapper.findPendingByApproverUserId(
+                userId,
+                pageable.getPageSize(),
+                pageable.getOffset());
+        long total = approvalMapper.countPendingByApproverUserId(userId);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
      * List all approvals with filters.
      * Returns summary views optimized for list display (no level decisions).
+     *
+     * <p>Uses MyBatis mapper to avoid N+1 queries on submittedBy user.
      */
     public Page<ApprovalSummaryView> listAllApprovals(EntityType entityType, ApprovalStatus status, Pageable pageable) {
-        Page<ApprovalRequest> requests = approvalRequestRepository.findAllWithFilters(entityType, status, pageable);
-        return requests.map(ApprovalSummaryView::from);
+        List<ApprovalSummaryView> content = approvalMapper.findAllWithFilters(
+                entityType,
+                status,
+                pageable.getPageSize(),
+                pageable.getOffset());
+        long total = approvalMapper.countWithFilters(entityType, status);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
