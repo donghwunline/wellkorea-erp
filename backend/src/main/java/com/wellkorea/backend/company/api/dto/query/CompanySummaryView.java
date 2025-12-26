@@ -1,7 +1,5 @@
 package com.wellkorea.backend.company.api.dto.query;
 
-import com.wellkorea.backend.company.domain.Company;
-
 import java.util.List;
 
 /**
@@ -16,22 +14,4 @@ public record CompanySummaryView(
         String email,
         List<CompanyRoleView> roles
 ) {
-    /**
-     * Create from entity with roles.
-     */
-    public static CompanySummaryView from(Company company) {
-        List<CompanyRoleView> roleViews = company.getRoles().stream()
-                .map(CompanyRoleView::from)
-                .toList();
-
-        return new CompanySummaryView(
-                company.getId(),
-                company.getName(),
-                company.getRegistrationNumber(),
-                company.getContactPerson(),
-                company.getPhone(),
-                company.getEmail(),
-                roleViews
-        );
-    }
 }

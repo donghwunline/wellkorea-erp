@@ -45,7 +45,7 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
      * Used by CommandService for duplicate validation on update.
      *
      * @param registrationNumber Registration number to check
-     * @param id Company ID to exclude
+     * @param id                 Company ID to exclude
      * @return true if registration number exists for another company
      */
     boolean existsByRegistrationNumberAndIdNot(String registrationNumber, Long id);

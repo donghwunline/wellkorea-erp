@@ -25,7 +25,7 @@ public interface CompanyRoleRepository extends JpaRepository<CompanyRole, Long> 
      * Used by CommandService to prevent duplicate role assignment.
      *
      * @param companyId Company ID
-     * @param roleType Role type to check
+     * @param roleType  Role type to check
      * @return true if company already has this role type
      */
     boolean existsByCompany_IdAndRoleType(Long companyId, RoleType roleType);
