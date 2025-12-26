@@ -206,8 +206,8 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} />);
 
       // Fill in all required fields
-      // Select customer
-      const customerInput = screen.getAllByRole('textbox')[0];
+      // Select customer (first combobox)
+      const customerInput = screen.getAllByRole('combobox')[0];
       await user.click(customerInput);
       await user.click(screen.getByText('Samsung Electronics'));
 
@@ -233,8 +233,8 @@ describe('ProjectForm', () => {
       const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
       await user.click(day15Button);
 
-      // Select internal owner (index 3: customer=0, projectName=1, requester=2, owner=3)
-      const ownerInput = screen.getAllByRole('textbox')[3];
+      // Select internal owner (second combobox)
+      const ownerInput = screen.getAllByRole('combobox')[1];
       await user.click(ownerInput);
       await user.click(screen.getByText('Lee Jiwon (Sales)'));
 
@@ -261,8 +261,8 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
 
       // Fill form
-      // Select customer
-      const customerInput = screen.getAllByRole('textbox')[0];
+      // Select customer (first combobox)
+      const customerInput = screen.getAllByRole('combobox')[0];
       await user.click(customerInput);
       await user.click(screen.getByText('Samsung Electronics'));
 
@@ -289,8 +289,8 @@ describe('ProjectForm', () => {
       const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
       await user.click(day15Button);
 
-      // Select internal owner
-      const ownerInput = screen.getAllByRole('textbox')[3];
+      // Select internal owner (second combobox)
+      const ownerInput = screen.getAllByRole('combobox')[1];
       await user.click(ownerInput);
       await user.click(screen.getByText('Lee Jiwon (Sales)'));
 
@@ -345,7 +345,7 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
 
       // Fill form with spaces
-      const customerInput = screen.getAllByRole('textbox')[0];
+      const customerInput = screen.getAllByRole('combobox')[0];
       await user.click(customerInput);
       await user.click(screen.getByText('Samsung Electronics'));
 
@@ -368,7 +368,7 @@ describe('ProjectForm', () => {
       const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
       await user.click(day15Button);
 
-      const ownerInput = screen.getAllByRole('textbox')[3];
+      const ownerInput = screen.getAllByRole('combobox')[1];
       await user.click(ownerInput);
       await user.click(screen.getByText('Lee Jiwon (Sales)'));
 
@@ -390,7 +390,7 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
 
       // Fill form without requester
-      const customerInput = screen.getAllByRole('textbox')[0];
+      const customerInput = screen.getAllByRole('combobox')[0];
       await user.click(customerInput);
       await user.click(screen.getByText('Samsung Electronics'));
 
@@ -413,7 +413,7 @@ describe('ProjectForm', () => {
       const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel2, 'i') });
       await user.click(day15Button);
 
-      const ownerInput = screen.getAllByRole('textbox')[3];
+      const ownerInput = screen.getAllByRole('combobox')[1];
       await user.click(ownerInput);
       await user.click(screen.getByText('Lee Jiwon (Sales)'));
 
@@ -447,8 +447,14 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} isSubmitting />);
 
       // Combobox inputs should be disabled
-      const inputs = screen.getAllByRole('textbox');
-      inputs.forEach(input => {
+      const comboboxes = screen.getAllByRole('combobox');
+      comboboxes.forEach(input => {
+        expect(input).toBeDisabled();
+      });
+
+      // Text inputs should be disabled
+      const textboxes = screen.getAllByRole('textbox');
+      textboxes.forEach(input => {
         expect(input).toBeDisabled();
       });
     });
@@ -558,17 +564,17 @@ describe('ProjectForm', () => {
     it('should disable customer field in edit mode', () => {
       render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
 
-      const customerInputs = screen.getAllByRole('textbox');
-      expect(customerInputs[0]).toBeDisabled();
+      // Customer is the first combobox
+      const comboboxes = screen.getAllByRole('combobox');
+      expect(comboboxes[0]).toBeDisabled();
     });
 
     it('should disable internal owner field in edit mode', () => {
       render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
 
-      // Internal owner is the third textbox (after customer and project name)
-      const textboxes = screen.getAllByRole('textbox');
-      // Customer, ProjectName, Requester, InternalOwner
-      expect(textboxes[3]).toBeDisabled();
+      // Internal owner is the second combobox
+      const comboboxes = screen.getAllByRole('combobox');
+      expect(comboboxes[1]).toBeDisabled();
     });
   });
 });
