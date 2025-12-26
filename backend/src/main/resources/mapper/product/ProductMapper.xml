@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.product.infrastructure.mapper.ProductMapper">
+
+    <!-- ProductDetailView result map for record -->
+    <resultMap id="ProductDetailViewResult" type="com.wellkorea.backend.product.api.dto.query.ProductDetailView">
+        <constructor>
+            <arg column="id" javaType="java.lang.Long"/>
+            <arg column="sku" javaType="java.lang.String"/>
+            <arg column="name" javaType="java.lang.String"/>
+            <arg column="description" javaType="java.lang.String"/>
+            <arg column="product_type_id" javaType="java.lang.Long"/>
+            <arg column="product_type_name" javaType="java.lang.String"/>
+            <arg column="base_unit_price" javaType="java.math.BigDecimal"/>
+            <arg column="unit" javaType="java.lang.String"/>
+            <arg column="is_active" javaType="_boolean"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- ProductSummaryView result map for record -->
+    <resultMap id="ProductSummaryViewResult" type="com.wellkorea.backend.product.api.dto.query.ProductSummaryView">
+        <constructor>
+            <arg column="id" javaType="java.lang.Long"/>
+            <arg column="sku" javaType="java.lang.String"/>
+            <arg column="name" javaType="java.lang.String"/>
+            <arg column="description" javaType="java.lang.String"/>
+            <arg column="product_type_id" javaType="java.lang.Long"/>
+            <arg column="product_type_name" javaType="java.lang.String"/>
+            <arg column="base_unit_price" javaType="java.math.BigDecimal"/>
+            <arg column="unit" javaType="java.lang.String"/>
+            <arg column="is_active" javaType="_boolean"/>
+        </constructor>
+    </resultMap>
+
+    <!-- ProductTypeView result map for record -->
+    <resultMap id="ProductTypeViewResult" type="com.wellkorea.backend.product.api.dto.query.ProductTypeView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="name" javaType="String"/>
+            <arg column="description" javaType="String"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Common SELECT columns for product -->
+    <sql id="productColumns">
+        p.id,
+        p.sku,
+        p.name,
+        p.description,
+        p.product_type_id,
+        pt.name AS product_type_name,
+        p.base_unit_price,
+        p.unit,
+        p.is_active,
+        p.created_at,
+        p.updated_at
+    </sql>
+
+    <!-- Find product detail by ID -->
+    <select id="findDetailById" resultMap="ProductDetailViewResult">
+        SELECT
+            <include refid="productColumns"/>
+        FROM products p
+        INNER JOIN product_types pt ON p.product_type_id = pt.id
+        WHERE p.id = #{id}
+    </select>
+
+    <!-- Find products with filters - eliminates N+1 on ProductType -->
+    <select id="findWithFilters" resultMap="ProductSummaryViewResult">
+        SELECT
+            p.id,
+            p.sku,
+            p.name,
+            p.description,
+            p.product_type_id,
+            pt.name AS product_type_name,
+            p.base_unit_price,
+            p.unit,
+            p.is_active
+        FROM products p
+        INNER JOIN product_types pt ON p.product_type_id = pt.id
+        <where>
+            p.is_active = true
+            <if test="productTypeId != null">
+                AND p.product_type_id = #{productTypeId}
+            </if>
+            <if test="search != null and search != ''">
+                AND (
+                    LOWER(p.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                    OR LOWER(p.sku) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                )
+            </if>
+        </where>
+        ORDER BY p.name
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count for pagination -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM products p
+        <where>
+            p.is_active = true
+            <if test="productTypeId != null">
+                AND p.product_type_id = #{productTypeId}
+            </if>
+            <if test="search != null and search != ''">
+                AND (
+                    LOWER(p.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                    OR LOWER(p.sku) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                )
+            </if>
+        </where>
+    </select>
+
+    <!-- Check if product exists and is active -->
+    <select id="existsByIdAndActiveTrue" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM products p
+            WHERE p.id = #{id} AND p.is_active = true
+        )
+    </select>
+
+    <!-- Find all product types -->
+    <select id="findAllProductTypes" resultMap="ProductTypeViewResult">
+        SELECT
+            id,
+            name,
+            description,
+            created_at
+        FROM product_types
+        ORDER BY name
+    </select>
+
+    <!-- Find product type by ID -->
+    <select id="findProductTypeById" resultMap="ProductTypeViewResult">
+        SELECT
+            id,
+            name,
+            description,
+            created_at
+        FROM product_types
+        WHERE id = #{id}
+    </select>
+
+</mapper>

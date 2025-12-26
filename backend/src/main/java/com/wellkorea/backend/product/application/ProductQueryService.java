@@ -3,12 +3,10 @@ package com.wellkorea.backend.product.application;
 import com.wellkorea.backend.product.api.dto.query.ProductDetailView;
 import com.wellkorea.backend.product.api.dto.query.ProductSummaryView;
 import com.wellkorea.backend.product.api.dto.query.ProductTypeView;
-import com.wellkorea.backend.product.domain.Product;
-import com.wellkorea.backend.product.domain.ProductType;
-import com.wellkorea.backend.product.infrastructure.repository.ProductRepository;
-import com.wellkorea.backend.product.infrastructure.repository.ProductTypeRepository;
+import com.wellkorea.backend.product.infrastructure.mapper.ProductMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +17,17 @@ import java.util.List;
  * Query service for product read operations.
  * Part of CQRS pattern - handles all read/query operations.
  * All methods are read-only and return view DTOs optimized for specific use cases.
+ *
+ * <p>Uses MyBatis for all queries to avoid N+1 issues on ProductType entity.
  */
 @Service
 @Transactional(readOnly = true)
 public class ProductQueryService {
 
-    private final ProductRepository productRepository;
-    private final ProductTypeRepository productTypeRepository;
+    private final ProductMapper productMapper;
 
-    public ProductQueryService(ProductRepository productRepository, ProductTypeRepository productTypeRepository) {
-        this.productRepository = productRepository;
-        this.productTypeRepository = productTypeRepository;
+    public ProductQueryService(ProductMapper productMapper) {
+        this.productMapper = productMapper;
     }
 
     // ========== PRODUCT QUERIES ==========
@@ -42,9 +40,8 @@ public class ProductQueryService {
      * @throws ResourceNotFoundException if product not found
      */
     public ProductDetailView getProductDetail(Long productId) {
-        Product product = productRepository.findById(productId)
+        return productMapper.findDetailById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", productId));
-        return ProductDetailView.from(product);
     }
 
     /**
@@ -54,8 +51,10 @@ public class ProductQueryService {
      * @return Page of product summary views
      */
     public Page<ProductSummaryView> listProducts(Pageable pageable) {
-        Page<Product> products = productRepository.findByActiveTrue(pageable);
-        return products.map(ProductSummaryView::from);
+        List<ProductSummaryView> content = productMapper.findWithFilters(
+                null, null, pageable.getPageSize(), pageable.getOffset());
+        long total = productMapper.countWithFilters(null, null);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -66,11 +65,11 @@ public class ProductQueryService {
      * @return Page of matching product summary views
      */
     public Page<ProductSummaryView> searchProducts(String search, Pageable pageable) {
-        if (search == null || search.isBlank()) {
-            return listProducts(pageable);
-        }
-        Page<Product> products = productRepository.searchProducts(search, pageable);
-        return products.map(ProductSummaryView::from);
+        String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
+        List<ProductSummaryView> content = productMapper.findWithFilters(
+                null, searchTerm, pageable.getPageSize(), pageable.getOffset());
+        long total = productMapper.countWithFilters(null, searchTerm);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -81,8 +80,10 @@ public class ProductQueryService {
      * @return Page of product summary views
      */
     public Page<ProductSummaryView> findByProductType(Long productTypeId, Pageable pageable) {
-        Page<Product> products = productRepository.findByProductTypeIdAndActive(productTypeId, pageable);
-        return products.map(ProductSummaryView::from);
+        List<ProductSummaryView> content = productMapper.findWithFilters(
+                productTypeId, null, pageable.getPageSize(), pageable.getOffset());
+        long total = productMapper.countWithFilters(productTypeId, null);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -94,11 +95,11 @@ public class ProductQueryService {
      * @return Page of matching product summary views
      */
     public Page<ProductSummaryView> findByProductTypeAndSearch(Long productTypeId, String search, Pageable pageable) {
-        if (search == null || search.isBlank()) {
-            return findByProductType(productTypeId, pageable);
-        }
-        Page<Product> products = productRepository.findByProductTypeIdAndSearch(productTypeId, search, pageable);
-        return products.map(ProductSummaryView::from);
+        String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
+        List<ProductSummaryView> content = productMapper.findWithFilters(
+                productTypeId, searchTerm, pageable.getPageSize(), pageable.getOffset());
+        long total = productMapper.countWithFilters(productTypeId, searchTerm);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -108,9 +109,7 @@ public class ProductQueryService {
      * @return true if the product exists and is active
      */
     public boolean existsAndActive(Long productId) {
-        return productRepository.findById(productId)
-                .map(Product::isActive)
-                .orElse(false);
+        return productMapper.existsByIdAndActiveTrue(productId);
     }
 
     // ========== PRODUCT TYPE QUERIES ==========
@@ -121,10 +120,7 @@ public class ProductQueryService {
      * @return List of product type views
      */
     public List<ProductTypeView> getAllProductTypes() {
-        List<ProductType> productTypes = productTypeRepository.findAll();
-        return productTypes.stream()
-                .map(ProductTypeView::from)
-                .toList();
+        return productMapper.findAllProductTypes();
     }
 
     /**
@@ -135,8 +131,7 @@ public class ProductQueryService {
      * @throws ResourceNotFoundException if product type not found
      */
     public ProductTypeView getProductType(Long productTypeId) {
-        ProductType productType = productTypeRepository.findById(productTypeId)
+        return productMapper.findProductTypeById(productTypeId)
                 .orElseThrow(() -> new ResourceNotFoundException("ProductType", productTypeId));
-        return ProductTypeView.from(productType);
     }
 }
