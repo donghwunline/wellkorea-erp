@@ -1,6 +1,8 @@
 package com.wellkorea.backend.company.api.dto.command;
 
 import com.wellkorea.backend.company.application.UpdateCompanyCommand;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -28,6 +30,8 @@ public record UpdateCompanyRequest(
         @Size(max = 20, message = "Phone must be at most 20 characters")
         String phone,
 
+        @NotBlank(message = "Email is required")
+        @Email(message = "Invalid email format")
         @Size(max = 255, message = "Email must be at most 255 characters")
         String email,
 

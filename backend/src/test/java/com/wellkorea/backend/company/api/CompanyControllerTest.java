@@ -138,6 +138,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                         "name": "LG Display",
                         "registrationNumber": "345-67-89012",
                         "contactPerson": "이영희",
+                        "email": "contact@lgdisplay.com",
                         "roles": ["VENDOR"]
                     }
                     """;
@@ -156,6 +157,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
             String createRequest = """
                     {
                         "name": "Test Company",
+                        "email": "test@company.com",
                         "roles": ["CUSTOMER"]
                     }
                     """;
@@ -190,6 +192,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
             String createRequest = """
                     {
                         "name": "No Role Company",
+                        "email": "norole@company.com",
                         "roles": []
                     }
                     """;
@@ -211,6 +214,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     {
                         "name": "Duplicate RegNum Company",
                         "registrationNumber": "111-22-33333",
+                        "email": "duplicate@regnum.com",
                         "roles": ["CUSTOMER"]
                     }
                     """;
@@ -228,6 +232,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
             String createRequest = """
                     {
                         "name": "Unauthorized Company",
+                        "email": "unauthorized@company.com",
                         "roles": ["CUSTOMER"]
                     }
                     """;
@@ -408,7 +413,8 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
         void updateCompany_AsProduction_Returns403() throws Exception {
             String updateRequest = """
                     {
-                        "name": "Attempted Update"
+                        "name": "Attempted Update",
+                        "email": "attempted@update.com"
                     }
                     """;
 
@@ -424,7 +430,8 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
         void updateCompany_NonExistent_Returns404() throws Exception {
             String updateRequest = """
                     {
-                        "name": "Updated Name"
+                        "name": "Updated Name",
+                        "email": "updated@name.com"
                     }
                     """;
 
@@ -443,7 +450,8 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
 
             String updateRequest = """
                     {
-                        "registrationNumber": "777-66-55544"
+                        "registrationNumber": "777-66-55544",
+                        "email": "duplicate@regnum.com"
                     }
                     """;
 
@@ -459,7 +467,8 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
         void updateCompany_WithoutAuth_Returns401() throws Exception {
             String updateRequest = """
                     {
-                        "name": "Updated Name"
+                        "name": "Updated Name",
+                        "email": "updated@name.com"
                     }
                     """;
 
