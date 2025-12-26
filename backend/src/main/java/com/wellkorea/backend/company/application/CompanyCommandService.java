@@ -67,10 +67,9 @@ public class CompanyCommandService {
         // Create roles and add to company
         for (RoleType roleType : command.roles()) {
             CompanyRole role = CompanyRole.builder()
-                    .company(savedCompany)
                     .roleType(roleType)
                     .build();
-            savedCompany.getRoles().add(role);
+            savedCompany.addRole(role);
         }
 
         // Save again to persist roles through cascade
