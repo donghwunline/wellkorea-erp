@@ -33,6 +33,21 @@ const SECTION_ICONS: Record<ProjectSection, IconName> = {
 };
 
 /**
+ * Get progress color class based on percentage.
+ */
+function getProgressTextColor(percent: number): string {
+  if (percent >= 80) return 'text-green-400';
+  if (percent >= 50) return 'text-yellow-400';
+  return 'text-steel-300';
+}
+
+function getProgressBarColor(percent: number): string {
+  if (percent >= 80) return 'bg-green-500';
+  if (percent >= 50) return 'bg-yellow-500';
+  return 'bg-copper-500';
+}
+
+/**
  * Format relative time (e.g., "2h ago", "3d ago").
  */
 function formatRelativeTime(dateStr: string | null): string {
@@ -107,14 +122,7 @@ export function ProjectSummaryCard({
             <div className="flex items-center justify-between text-sm">
               <span className="text-steel-500">Progress</span>
               <span
-                className={cn(
-                  'font-medium',
-                  summary.progressPercent >= 80
-                    ? 'text-green-400'
-                    : summary.progressPercent >= 50
-                      ? 'text-yellow-400'
-                      : 'text-steel-300'
-                )}
+                className={cn('font-medium', getProgressTextColor(summary.progressPercent))}
               >
                 {summary.progressPercent}%
               </span>
@@ -123,11 +131,7 @@ export function ProjectSummaryCard({
               <div
                 className={cn(
                   'h-full rounded-full transition-all',
-                  summary.progressPercent >= 80
-                    ? 'bg-green-500'
-                    : summary.progressPercent >= 50
-                      ? 'bg-yellow-500'
-                      : 'bg-copper-500'
+                  getProgressBarColor(summary.progressPercent)
                 )}
                 style={{ width: `${Math.min(100, summary.progressPercent)}%` }}
               />

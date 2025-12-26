@@ -5,7 +5,7 @@
  * Notifies parent via onSuccess callback after successful update.
  */
 
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { type UserDetails, userService } from '@/services';
 import { Button, ErrorAlert, FormField, Modal } from '@/components/ui';
 
@@ -27,14 +27,14 @@ export function UserEditForm({ isOpen, user, onClose, onSuccess }: Readonly<User
   const [error, setError] = useState<string | null>(null);
 
   // Update form when user prop changes
-  useState(() => {
+  useEffect(() => {
     if (user) {
       setFormData({
         email: user.email,
         fullName: user.fullName,
       });
     }
-  });
+  }, [user]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

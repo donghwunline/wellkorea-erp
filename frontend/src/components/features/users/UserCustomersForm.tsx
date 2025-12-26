@@ -107,9 +107,9 @@ export function UserCustomersForm({
           </div>
         ) : (
           <div>
-            <label className="mb-3 block text-sm font-medium text-steel-300">
+            <span className="mb-3 block text-sm font-medium text-steel-300">
               Select Customers
-            </label>
+            </span>
             <div className="max-h-64 space-y-2 overflow-y-auto">
               {availableCustomers.map(customer => (
                 <button

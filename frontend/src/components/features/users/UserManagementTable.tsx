@@ -11,8 +11,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { userService } from '@/services';
-import { ROLE_LABELS, type RoleName, type UserDetails } from '@/shared/types';
+import { ROLE_LABELS, type RoleName, type UserDetails, userService } from '@/services';
 import { formatDateTime } from '@/shared/utils';
 import type { PaginationMetadata } from '@/api/types';
 import {
