@@ -2,6 +2,7 @@ package com.wellkorea.backend.catalog.domain;
 
 import com.wellkorea.backend.company.domain.Company;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

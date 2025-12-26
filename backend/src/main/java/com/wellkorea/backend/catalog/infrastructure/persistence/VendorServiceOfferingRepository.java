@@ -26,9 +26,9 @@ public interface VendorServiceOfferingRepository extends JpaRepository<VendorSer
      * Check for duplicate offering (same vendor, service, effective date).
      * Used by CommandService for duplicate validation on create.
      *
-     * @param vendorId Vendor ID
+     * @param vendorId          Vendor ID
      * @param serviceCategoryId Service category ID
-     * @param effectiveFrom Effective start date
+     * @param effectiveFrom     Effective start date
      * @return true if duplicate offering exists
      */
     @Query("SELECT COUNT(vso) > 0 FROM VendorServiceOffering vso " +
@@ -44,10 +44,10 @@ public interface VendorServiceOfferingRepository extends JpaRepository<VendorSer
      * Check for duplicate offering excluding a specific ID.
      * Used by CommandService for duplicate validation on update.
      *
-     * @param vendorId Vendor ID
+     * @param vendorId          Vendor ID
      * @param serviceCategoryId Service category ID
-     * @param effectiveFrom Effective start date
-     * @param id Offering ID to exclude
+     * @param effectiveFrom     Effective start date
+     * @param id                Offering ID to exclude
      * @return true if duplicate offering exists for another record
      */
     @Query("SELECT COUNT(vso) > 0 FROM VendorServiceOffering vso " +

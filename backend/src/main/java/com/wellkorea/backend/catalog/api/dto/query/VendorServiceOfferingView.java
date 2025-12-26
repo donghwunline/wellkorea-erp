@@ -1,7 +1,5 @@
 package com.wellkorea.backend.catalog.api.dto.query;
 
-import com.wellkorea.backend.catalog.domain.VendorServiceOffering;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,28 +26,4 @@ public record VendorServiceOfferingView(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    /**
-     * Create from entity.
-     */
-    public static VendorServiceOfferingView from(VendorServiceOffering offering) {
-        return new VendorServiceOfferingView(
-                offering.getId(),
-                offering.getVendor().getId(),
-                offering.getVendor().getName(),
-                offering.getServiceCategory().getId(),
-                offering.getServiceCategory().getName(),
-                offering.getVendorServiceCode(),
-                offering.getVendorServiceName(),
-                offering.getUnitPrice(),
-                offering.getCurrency(),
-                offering.getLeadTimeDays(),
-                offering.getMinOrderQuantity(),
-                offering.getEffectiveFrom(),
-                offering.getEffectiveTo(),
-                offering.isPreferred(),
-                offering.getNotes(),
-                offering.getCreatedAt(),
-                offering.getUpdatedAt()
-        );
-    }
 }

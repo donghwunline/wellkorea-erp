@@ -32,7 +32,7 @@ public interface ServiceCategoryRepository extends JpaRepository<ServiceCategory
      * Used by CommandService for duplicate validation on update.
      *
      * @param name Name to check
-     * @param id ServiceCategory ID to exclude
+     * @param id   ServiceCategory ID to exclude
      * @return true if name exists for another category
      */
     boolean existsByNameAndIdNot(String name, Long id);
