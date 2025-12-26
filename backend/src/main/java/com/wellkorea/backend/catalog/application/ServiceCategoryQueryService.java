@@ -3,12 +3,10 @@ package com.wellkorea.backend.catalog.application;
 import com.wellkorea.backend.catalog.api.dto.query.ServiceCategoryDetailView;
 import com.wellkorea.backend.catalog.api.dto.query.ServiceCategorySummaryView;
 import com.wellkorea.backend.catalog.api.dto.query.VendorServiceOfferingView;
-import com.wellkorea.backend.catalog.domain.ServiceCategory;
-import com.wellkorea.backend.catalog.domain.VendorServiceOffering;
-import com.wellkorea.backend.catalog.infrastructure.persistence.ServiceCategoryRepository;
-import com.wellkorea.backend.catalog.infrastructure.persistence.VendorServiceOfferingRepository;
+import com.wellkorea.backend.catalog.infrastructure.mapper.ServiceCategoryMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,18 +18,18 @@ import java.util.List;
  * Query service for service category and vendor offering read operations.
  * Part of CQRS pattern - handles all read/query operations.
  * All methods are read-only and return view DTOs optimized for specific use cases.
+ *
+ * <p>Uses MyBatis for all queries. Eliminates N+1 queries by using subquery COUNT
+ * for vendorCount and explicit JOINs for vendor/category names.
  */
 @Service
 @Transactional(readOnly = true)
 public class ServiceCategoryQueryService {
 
-    private final ServiceCategoryRepository serviceCategoryRepository;
-    private final VendorServiceOfferingRepository vendorOfferingRepository;
+    private final ServiceCategoryMapper serviceCategoryMapper;
 
-    public ServiceCategoryQueryService(ServiceCategoryRepository serviceCategoryRepository,
-                                       VendorServiceOfferingRepository vendorOfferingRepository) {
-        this.serviceCategoryRepository = serviceCategoryRepository;
-        this.vendorOfferingRepository = vendorOfferingRepository;
+    public ServiceCategoryQueryService(ServiceCategoryMapper serviceCategoryMapper) {
+        this.serviceCategoryMapper = serviceCategoryMapper;
     }
 
     // ========== SERVICE CATEGORY QUERIES ==========
@@ -44,10 +42,8 @@ public class ServiceCategoryQueryService {
      * @throws ResourceNotFoundException if category not found
      */
     public ServiceCategoryDetailView getServiceCategoryDetail(Long categoryId) {
-        ServiceCategory category = serviceCategoryRepository.findById(categoryId)
+        return serviceCategoryMapper.findDetailById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("ServiceCategory", categoryId));
-        int vendorCount = (int) vendorOfferingRepository.countByServiceCategory_Id(categoryId);
-        return ServiceCategoryDetailView.from(category, vendorCount);
     }
 
     /**
@@ -57,11 +53,9 @@ public class ServiceCategoryQueryService {
      * @return Page of service category summary views
      */
     public Page<ServiceCategorySummaryView> listServiceCategories(Pageable pageable) {
-        Page<ServiceCategory> categories = serviceCategoryRepository.findByActiveTrue(pageable);
-        return categories.map(cat -> {
-            int vendorCount = (int) vendorOfferingRepository.countByServiceCategory_Id(cat.getId());
-            return ServiceCategorySummaryView.from(cat, vendorCount);
-        });
+        List<ServiceCategorySummaryView> content = serviceCategoryMapper.findWithFilters(null, pageable.getPageSize(), pageable.getOffset());
+        long total = serviceCategoryMapper.countWithFilters(null);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -72,14 +66,11 @@ public class ServiceCategoryQueryService {
      * @return Page of matching service category summary views
      */
     public Page<ServiceCategorySummaryView> searchServiceCategories(String search, Pageable pageable) {
-        if (search == null || search.isBlank()) {
-            return listServiceCategories(pageable);
-        }
-        Page<ServiceCategory> categories = serviceCategoryRepository.searchByName(search, pageable);
-        return categories.map(cat -> {
-            int vendorCount = (int) vendorOfferingRepository.countByServiceCategory_Id(cat.getId());
-            return ServiceCategorySummaryView.from(cat, vendorCount);
-        });
+        String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
+        List<ServiceCategorySummaryView> content = serviceCategoryMapper.findWithFilters(
+                searchTerm, pageable.getPageSize(), pageable.getOffset());
+        long total = serviceCategoryMapper.countWithFilters(searchTerm);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -88,13 +79,7 @@ public class ServiceCategoryQueryService {
      * @return List of all active service categories
      */
     public List<ServiceCategorySummaryView> getAllServiceCategories() {
-        List<ServiceCategory> categories = serviceCategoryRepository.findByActiveTrue();
-        return categories.stream()
-                .map(cat -> {
-                    int vendorCount = (int) vendorOfferingRepository.countByServiceCategory_Id(cat.getId());
-                    return ServiceCategorySummaryView.from(cat, vendorCount);
-                })
-                .toList();
+        return serviceCategoryMapper.findAllActive();
     }
 
     // ========== VENDOR OFFERING QUERIES ==========
@@ -107,8 +92,9 @@ public class ServiceCategoryQueryService {
      * @return Page of vendor offering views
      */
     public Page<VendorServiceOfferingView> getOfferingsForServiceCategory(Long serviceCategoryId, Pageable pageable) {
-        Page<VendorServiceOffering> offerings = vendorOfferingRepository.findByServiceCategory_Id(serviceCategoryId, pageable);
-        return offerings.map(VendorServiceOfferingView::from);
+        List<VendorServiceOfferingView> content = serviceCategoryMapper.findOfferingsByServiceCategoryId(serviceCategoryId, pageable.getPageSize(), pageable.getOffset());
+        long total = serviceCategoryMapper.countOfferingsByServiceCategoryId(serviceCategoryId);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -119,10 +105,7 @@ public class ServiceCategoryQueryService {
      * @return List of current vendor offering views
      */
     public List<VendorServiceOfferingView> getCurrentOfferingsForServiceCategory(Long serviceCategoryId) {
-        List<VendorServiceOffering> offerings = vendorOfferingRepository.findCurrentOfferingsByServiceCategory(serviceCategoryId, LocalDate.now());
-        return offerings.stream()
-                .map(VendorServiceOfferingView::from)
-                .toList();
+        return serviceCategoryMapper.findCurrentOfferingsByServiceCategoryId(serviceCategoryId, LocalDate.now());
     }
 
     /**
@@ -133,8 +116,9 @@ public class ServiceCategoryQueryService {
      * @return Page of vendor offering views
      */
     public Page<VendorServiceOfferingView> getOfferingsForVendor(Long vendorId, Pageable pageable) {
-        Page<VendorServiceOffering> offerings = vendorOfferingRepository.findByVendor_Id(vendorId, pageable);
-        return offerings.map(VendorServiceOfferingView::from);
+        List<VendorServiceOfferingView> content = serviceCategoryMapper.findOfferingsByVendorId(vendorId, pageable.getPageSize(), pageable.getOffset());
+        long total = serviceCategoryMapper.countOfferingsByVendorId(vendorId);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -145,8 +129,7 @@ public class ServiceCategoryQueryService {
      * @throws ResourceNotFoundException if offering not found
      */
     public VendorServiceOfferingView getVendorOffering(Long offeringId) {
-        VendorServiceOffering offering = vendorOfferingRepository.findById(offeringId)
+        return serviceCategoryMapper.findOfferingById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("VendorServiceOffering", offeringId));
-        return VendorServiceOfferingView.from(offering);
     }
 }
