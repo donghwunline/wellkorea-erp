@@ -1,25 +1,34 @@
 package com.wellkorea.backend.approval.infrastructure.mapper;
 
-import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
+import com.wellkorea.backend.approval.api.dto.query.*;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * MyBatis mapper for complex approval queries.
- * Used alongside JPA repository (JPA handles commands, MyBatis handles complex reads).
+ * MyBatis mapper for approval queries.
+ * Handles all read operations for approvals with optimized JOINs.
  *
- * <p>This mapper eliminates N+1 queries by using explicit JOINs.
+ * <p>This mapper eliminates N+1 queries by using explicit JOINs and nested result mapping.
  */
 @Mapper
 public interface ApprovalMapper {
 
     /**
+     * Find approval detail by ID with all level decisions.
+     * Returns full detail view including level decisions with user names resolved.
+     *
+     * @param id The approval request ID
+     * @return ApprovalDetailView with nested level decisions
+     */
+    Optional<ApprovalDetailView> findDetailById(@Param("id") Long id);
+
+    /**
      * Find all approvals with filters.
-     * Replaces JPA findAllWithFilters() which had N+1 issue on submittedBy user.
      *
      * @param entityType Optional filter by entity type
      * @param status     Optional filter by status
@@ -42,7 +51,6 @@ public interface ApprovalMapper {
 
     /**
      * Find pending approvals for a specific approver.
-     * Replaces JPA findPendingByApproverUserId() which had N+1 issue on submittedBy user.
      *
      * @param userId Approver's user ID
      * @param limit  Page size
@@ -58,4 +66,32 @@ public interface ApprovalMapper {
      * Count pending approvals for a user (for pagination).
      */
     long countPendingByApproverUserId(@Param("userId") Long userId);
+
+    /**
+     * Find approval history for a request.
+     *
+     * @param approvalRequestId The approval request ID
+     * @return List of ApprovalHistoryView with actor names resolved
+     */
+    List<ApprovalHistoryView> findHistoryByRequestId(@Param("approvalRequestId") Long approvalRequestId);
+
+    /**
+     * Find all chain templates.
+     *
+     * @return List of ChainTemplateView with nested levels
+     */
+    List<ChainTemplateView> findAllChainTemplates();
+
+    /**
+     * Find chain template by ID.
+     *
+     * @param id The chain template ID
+     * @return ChainTemplateView with nested levels
+     */
+    Optional<ChainTemplateView> findChainTemplateById(@Param("id") Long id);
+
+    /**
+     * Check if approval request exists.
+     */
+    boolean existsById(@Param("id") Long id);
 }

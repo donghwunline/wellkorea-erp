@@ -96,4 +96,178 @@
           AND ld.decision = 'PENDING'
     </select>
 
+    <!-- LevelDecisionView result map for nested select -->
+    <resultMap id="LevelDecisionViewResult" type="com.wellkorea.backend.approval.api.dto.query.LevelDecisionView">
+        <constructor>
+            <arg column="level_order" javaType="Integer"/>
+            <arg column="level_name" javaType="String"/>
+            <arg column="expected_approver_id" javaType="Long"/>
+            <arg column="expected_approver_name" javaType="String"/>
+            <arg column="decision" javaType="com.wellkorea.backend.approval.domain.DecisionStatus"/>
+            <arg column="decided_by_id" javaType="Long"/>
+            <arg column="decided_by_name" javaType="String"/>
+            <arg column="decided_at" javaType="java.time.LocalDateTime"/>
+            <arg column="comments" javaType="String"/>
+        </constructor>
+    </resultMap>
+
+    <!-- ApprovalDetailView result map with nested select for level decisions -->
+    <resultMap id="ApprovalDetailViewResult" type="com.wellkorea.backend.approval.api.dto.query.ApprovalDetailView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="entity_type" javaType="com.wellkorea.backend.approval.domain.vo.EntityType"/>
+            <arg column="entity_id" javaType="Long"/>
+            <arg column="entity_description" javaType="String"/>
+            <arg column="current_level" javaType="Integer"/>
+            <arg column="total_levels" javaType="Integer"/>
+            <arg column="status" javaType="com.wellkorea.backend.approval.domain.ApprovalStatus"/>
+            <arg column="submitted_by_id" javaType="Long"/>
+            <arg column="submitted_by_name" javaType="String"/>
+            <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
+            <arg column="completed_at" javaType="java.time.LocalDateTime"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="id" javaType="java.util.List" select="findLevelDecisionsByRequestId"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find approval detail by ID -->
+    <select id="findDetailById" resultMap="ApprovalDetailViewResult" flushCache="true">
+        SELECT
+            ar.id,
+            ar.entity_type,
+            ar.entity_id,
+            ar.entity_description,
+            ar.current_level,
+            ar.total_levels,
+            ar.status,
+            ar.submitted_by_id,
+            u.full_name AS submitted_by_name,
+            ar.submitted_at,
+            ar.completed_at,
+            ar.created_at
+        FROM approval_requests ar
+        INNER JOIN users u ON ar.submitted_by_id = u.id
+        WHERE ar.id = #{id}
+    </select>
+
+    <!-- Find level decisions for approval request (nested select) -->
+    <select id="findLevelDecisionsByRequestId" resultMap="LevelDecisionViewResult" flushCache="true">
+        SELECT
+            ld.level_order,
+            ld.level_name,
+            ld.expected_approver_id,
+            eu.full_name AS expected_approver_name,
+            ld.decision,
+            ld.decided_by_id,
+            du.full_name AS decided_by_name,
+            ld.decided_at,
+            ld.comments
+        FROM approval_level_decisions ld
+        INNER JOIN users eu ON ld.expected_approver_id = eu.id
+        LEFT JOIN users du ON ld.decided_by_id = du.id
+        WHERE ld.approval_request_id = #{approvalRequestId}
+        ORDER BY ld.level_order
+    </select>
+
+    <!-- ApprovalHistoryView result map -->
+    <resultMap id="ApprovalHistoryViewResult" type="com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="level_order" javaType="Integer"/>
+            <arg column="action" javaType="com.wellkorea.backend.approval.domain.ApprovalAction"/>
+            <arg column="actor_id" javaType="Long"/>
+            <arg column="actor_name" javaType="String"/>
+            <arg column="comments" javaType="String"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find approval history by request ID -->
+    <select id="findHistoryByRequestId" resultMap="ApprovalHistoryViewResult">
+        SELECT
+            ah.id,
+            ah.level_order,
+            ah.action,
+            ah.actor_id,
+            u.full_name AS actor_name,
+            ah.comments,
+            ah.created_at
+        FROM approval_history ah
+        INNER JOIN users u ON ah.actor_id = u.id
+        WHERE ah.approval_request_id = #{approvalRequestId}
+        ORDER BY ah.created_at ASC
+    </select>
+
+    <!-- ChainLevelView result map for nested select -->
+    <resultMap id="ChainLevelViewResult" type="com.wellkorea.backend.approval.api.dto.query.ChainLevelView">
+        <constructor>
+            <arg column="level_order" javaType="Integer"/>
+            <arg column="level_name" javaType="String"/>
+            <arg column="approver_user_id" javaType="Long"/>
+            <arg column="approver_user_name" javaType="String"/>
+            <arg column="required" javaType="_boolean"/>
+        </constructor>
+    </resultMap>
+
+    <!-- ChainTemplateView result map with nested select for levels -->
+    <resultMap id="ChainTemplateViewResult" type="com.wellkorea.backend.approval.api.dto.query.ChainTemplateView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="entity_type" javaType="com.wellkorea.backend.approval.domain.vo.EntityType"/>
+            <arg column="name" javaType="String"/>
+            <arg column="description" javaType="String"/>
+            <arg column="is_active" javaType="_boolean"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="id" javaType="java.util.List" select="findChainLevelsByTemplateId"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find all chain templates -->
+    <select id="findAllChainTemplates" resultMap="ChainTemplateViewResult">
+        SELECT
+            ct.id,
+            ct.entity_type,
+            ct.name,
+            ct.description,
+            ct.is_active,
+            ct.created_at
+        FROM approval_chain_templates ct
+        ORDER BY ct.name
+    </select>
+
+    <!-- Find chain template by ID -->
+    <select id="findChainTemplateById" resultMap="ChainTemplateViewResult" flushCache="true">
+        SELECT
+            ct.id,
+            ct.entity_type,
+            ct.name,
+            ct.description,
+            ct.is_active,
+            ct.created_at
+        FROM approval_chain_templates ct
+        WHERE ct.id = #{id}
+    </select>
+
+    <!-- Find chain levels for template (nested select) -->
+    <select id="findChainLevelsByTemplateId" resultMap="ChainLevelViewResult" flushCache="true">
+        SELECT
+            cl.level_order,
+            cl.level_name,
+            cl.approver_user_id,
+            u.full_name AS approver_user_name,
+            cl.is_required AS required
+        FROM approval_chain_levels cl
+        INNER JOIN users u ON cl.approver_user_id = u.id
+        WHERE cl.chain_template_id = #{chainTemplateId}
+        ORDER BY cl.level_order
+    </select>
+
+    <!-- Check if approval request exists -->
+    <select id="existsById" resultType="_boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM approval_requests ar
+            WHERE ar.id = #{id}
+        )
+    </select>
+
 </mapper>
