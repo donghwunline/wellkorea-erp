@@ -9,4 +9,5 @@ public record UpdateQuotationCommand(
         Integer validityDays,
         String notes,
         List<LineItemCommand> lineItems
-) {}
+) {
+}

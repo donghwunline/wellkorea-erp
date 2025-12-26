@@ -3,6 +3,7 @@ package com.wellkorea.backend.quotation.api.dto.command;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
+
 import java.util.List;
 
 /**
@@ -17,4 +18,5 @@ public record UpdateQuotationRequest(
         @NotEmpty(message = "At least one line item is required")
         @Valid
         List<LineItemRequest> lineItems
-) {}
+) {
+}

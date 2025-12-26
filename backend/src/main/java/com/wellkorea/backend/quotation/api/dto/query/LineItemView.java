@@ -1,7 +1,5 @@
 package com.wellkorea.backend.quotation.api.dto.query;
 
-import com.wellkorea.backend.quotation.domain.QuotationLineItem;
-
 import java.math.BigDecimal;
 
 /**
@@ -19,17 +17,4 @@ public record LineItemView(
         BigDecimal lineTotal,
         String notes
 ) {
-    public static LineItemView from(QuotationLineItem lineItem) {
-        return new LineItemView(
-                lineItem.getId(),
-                lineItem.getProduct().getId(),
-                lineItem.getProduct().getSku(),
-                lineItem.getProduct().getName(),
-                lineItem.getSequence(),
-                lineItem.getQuantity(),
-                lineItem.getUnitPrice(),
-                lineItem.getLineTotal(),
-                lineItem.getNotes()
-        );
-    }
 }

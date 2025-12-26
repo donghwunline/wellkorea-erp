@@ -10,4 +10,5 @@ public record LineItemCommand(
         BigDecimal quantity,
         BigDecimal unitPrice,
         String notes
-) {}
+) {
+}

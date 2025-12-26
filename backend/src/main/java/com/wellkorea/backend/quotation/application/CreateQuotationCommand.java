@@ -10,4 +10,5 @@ public record CreateQuotationCommand(
         Integer validityDays,
         String notes,
         List<LineItemCommand> lineItems
-) {}
+) {
+}

@@ -3,6 +3,7 @@ package com.wellkorea.backend.quotation.api.dto.command;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+
 import java.math.BigDecimal;
 
 /**
@@ -21,4 +22,5 @@ public record LineItemRequest(
         BigDecimal unitPrice,
 
         String notes
-) {}
+) {
+}
