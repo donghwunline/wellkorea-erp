@@ -1,72 +1,45 @@
 package com.wellkorea.backend.quotation.infrastructure.repository;
 
 import com.wellkorea.backend.quotation.domain.Quotation;
-import com.wellkorea.backend.quotation.domain.QuotationStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository for Quotation entity.
+ * Repository for Quotation entity write operations (CQRS Command side).
+ *
+ * <p>For read operations, use {@code QuotationMapper} (MyBatis) via {@code QuotationQueryService}.
+ *
+ * <p>This repository provides:
+ * <ul>
+ *   <li>Save/update/delete operations (inherited from JpaRepository)</li>
+ *   <li>Eager loading for entity modification</li>
+ *   <li>Version number generation for new quotations</li>
+ * </ul>
  */
 @Repository
 public interface QuotationRepository extends JpaRepository<Quotation, Long> {
 
     /**
-     * Find quotations by project ID.
-     */
-    List<Quotation> findByProjectIdAndDeletedFalseOrderByVersionDesc(Long projectId);
-
-    /**
      * Find the latest version for a project.
+     * Used by CommandService to determine next version number.
+     *
+     * @param projectId Project ID
+     * @return Optional containing the latest version number, or empty if no quotations exist
      */
     @Query("SELECT MAX(q.version) FROM Quotation q WHERE q.project.id = :projectId AND q.deleted = false")
     Optional<Integer> findLatestVersionByProjectId(@Param("projectId") Long projectId);
 
     /**
-     * Find quotation by project ID and version.
-     */
-    Optional<Quotation> findByProjectIdAndVersionAndDeletedFalse(Long projectId, Integer version);
-
-    /**
-     * Find all quotations with filters.
-     * Uses JOIN FETCH to avoid N+1 queries when accessing project and createdBy.
-     */
-    @Query("SELECT q FROM Quotation q " +
-            "LEFT JOIN FETCH q.project " +
-            "LEFT JOIN FETCH q.createdBy " +
-            "WHERE q.deleted = false " +
-            "AND (:status IS NULL OR q.status = :status) " +
-            "AND (:projectId IS NULL OR q.project.id = :projectId)")
-    Page<Quotation> findAllWithFilters(
-            @Param("status") QuotationStatus status,
-            @Param("projectId") Long projectId,
-            Pageable pageable);
-
-    /**
-     * Find quotations by status.
-     */
-    Page<Quotation> findByStatusAndDeletedFalse(QuotationStatus status, Pageable pageable);
-
-    /**
-     * Find quotations created by a user.
-     */
-    Page<Quotation> findByCreatedByIdAndDeletedFalse(Long userId, Pageable pageable);
-
-    /**
-     * Count quotations by status.
-     */
-    long countByStatusAndDeletedFalse(QuotationStatus status);
-
-    /**
      * Find quotation with line items eagerly loaded.
+     * Used by CommandService, PdfService, and EmailService to load entity for modification or rendering.
      * Also fetches project and createdBy to avoid N+1 queries.
+     *
+     * @param id Quotation ID
+     * @return Optional containing the quotation with line items loaded
      */
     @Query("SELECT q FROM Quotation q " +
             "LEFT JOIN FETCH q.lineItems " +
