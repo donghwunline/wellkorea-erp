@@ -27,7 +27,8 @@ public class ProjectCommandService {
     /**
      * Result of project creation containing both ID and generated JobCode.
      */
-    public record CreateProjectResult(Long id, String jobCode) {}
+    public record CreateProjectResult(Long id, String jobCode) {
+    }
 
     private final ProjectRepository projectRepository;
     private final JobCodeGenerator jobCodeGenerator;
@@ -49,7 +50,7 @@ public class ProjectCommandService {
     /**
      * Create a new project with auto-generated JobCode.
      *
-     * @param request Create project request
+     * @param request     Create project request
      * @param createdById ID of the user creating the project
      * @return Result containing both ID and generated jobCode
      * @throws BusinessException if customer or internal owner doesn't exist
@@ -87,11 +88,11 @@ public class ProjectCommandService {
     /**
      * Update an existing project.
      *
-     * @param id Project ID
+     * @param id      Project ID
      * @param request Update request
      * @return ID of the updated project
      * @throws ResourceNotFoundException if project not found
-     * @throws BusinessException if project is not editable or status is invalid
+     * @throws BusinessException         if project is not editable or status is invalid
      */
     public Long updateProject(Long id, UpdateProjectRequest request) {
         Project project = projectRepository.findByIdAndIsDeletedFalse(id)

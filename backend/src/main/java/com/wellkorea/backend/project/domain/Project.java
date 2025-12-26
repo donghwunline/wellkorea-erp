@@ -176,10 +176,10 @@ public class Project {
      * Create a copy with updated fields.
      * JobCode cannot be changed.
      *
-     * @param newProjectName New project name
+     * @param newProjectName   New project name
      * @param newRequesterName New requester name
-     * @param newDueDate New due date
-     * @param newStatus New status
+     * @param newDueDate       New due date
+     * @param newStatus        New status
      * @return New Project instance with updated fields
      */
     public Project withUpdatedFields(String newProjectName, String newRequesterName,
@@ -206,7 +206,7 @@ public class Project {
      * @param newStatus New project status
      * @return New Project instance with updated status
      * @throws IllegalArgumentException if newStatus is null
-     * @throws IllegalStateException if status transition is not allowed
+     * @throws IllegalStateException    if status transition is not allowed
      */
     public Project withStatus(@Nonnull ProjectStatus newStatus) {
         if (newStatus == null) {

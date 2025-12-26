@@ -72,7 +72,7 @@ public class ProjectQueryService {
     /**
      * List projects by status (paginated).
      *
-     * @param status Project status filter
+     * @param status   Project status filter
      * @param pageable Pagination parameters
      * @return Page of project summary views
      */
@@ -87,7 +87,7 @@ public class ProjectQueryService {
      * List projects for specific customers (for Sales role filtering).
      *
      * @param customerIds List of customer IDs
-     * @param pageable Pagination parameters
+     * @param pageable    Pagination parameters
      * @return Page of project summary views
      */
     public Page<ProjectSummaryView> listProjectsByCustomers(List<Long> customerIds, Pageable pageable) {
@@ -104,8 +104,8 @@ public class ProjectQueryService {
      * List projects for specific customers with status filter.
      *
      * @param customerIds List of customer IDs
-     * @param status Project status filter
-     * @param pageable Pagination parameters
+     * @param status      Project status filter
+     * @param pageable    Pagination parameters
      * @return Page of project summary views
      */
     public Page<ProjectSummaryView> listProjectsByCustomersAndStatus(
@@ -123,7 +123,7 @@ public class ProjectQueryService {
      * Search projects by JobCode or project name.
      *
      * @param searchTerm Search term
-     * @param pageable Pagination parameters
+     * @param pageable   Pagination parameters
      * @return Page of project summary views
      */
     public Page<ProjectSummaryView> searchProjects(String searchTerm, Pageable pageable) {
