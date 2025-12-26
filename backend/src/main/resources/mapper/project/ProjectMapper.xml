@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.project.infrastructure.mapper.ProjectMapper">
+
+    <!-- ProjectDetailView result map for record -->
+    <resultMap id="ProjectDetailViewResult" type="com.wellkorea.backend.project.api.dto.query.ProjectDetailView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="customer_id" javaType="Long"/>
+            <arg column="customer_name" javaType="String"/>
+            <arg column="project_name" javaType="String"/>
+            <arg column="requester_name" javaType="String"/>
+            <arg column="due_date" javaType="java.time.LocalDate"/>
+            <arg column="internal_owner_id" javaType="Long"/>
+            <arg column="internal_owner_name" javaType="String"/>
+            <arg column="status" javaType="com.wellkorea.backend.project.domain.ProjectStatus"/>
+            <arg column="created_by_id" javaType="Long"/>
+            <arg column="created_by_name" javaType="String"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+            <arg column="updated_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
+    <!-- ProjectSummaryView result map for record -->
+    <resultMap id="ProjectSummaryViewResult" type="com.wellkorea.backend.project.api.dto.query.ProjectSummaryView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="customer_id" javaType="Long"/>
+            <arg column="customer_name" javaType="String"/>
+            <arg column="project_name" javaType="String"/>
+            <arg column="due_date" javaType="java.time.LocalDate"/>
+            <arg column="status" javaType="com.wellkorea.backend.project.domain.ProjectStatus"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+            <arg column="updated_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Common SELECT columns for detail view -->
+    <sql id="projectDetailColumns">
+        p.id,
+        p.job_code,
+        p.customer_company_id AS customer_id,
+        c.name AS customer_name,
+        p.project_name,
+        p.requester_name,
+        p.due_date,
+        p.internal_owner_id,
+        io.full_name AS internal_owner_name,
+        p.status,
+        p.created_by_id,
+        cb.full_name AS created_by_name,
+        p.created_at,
+        p.updated_at
+    </sql>
+
+    <!-- Common SELECT columns for summary view -->
+    <sql id="projectSummaryColumns">
+        p.id,
+        p.job_code,
+        p.customer_company_id AS customer_id,
+        c.name AS customer_name,
+        p.project_name,
+        p.due_date,
+        p.status,
+        p.created_at,
+        p.updated_at
+    </sql>
+
+    <!-- Find project detail by ID -->
+    <select id="findDetailById" resultMap="ProjectDetailViewResult">
+        SELECT
+            <include refid="projectDetailColumns"/>
+        FROM projects p
+        LEFT JOIN companies c ON p.customer_company_id = c.id
+        LEFT JOIN users io ON p.internal_owner_id = io.id
+        LEFT JOIN users cb ON p.created_by_id = cb.id
+        WHERE p.id = #{id} AND p.is_deleted = false
+    </select>
+
+    <!-- Find project detail by JobCode -->
+    <select id="findDetailByJobCode" resultMap="ProjectDetailViewResult">
+        SELECT
+            <include refid="projectDetailColumns"/>
+        FROM projects p
+        LEFT JOIN companies c ON p.customer_company_id = c.id
+        LEFT JOIN users io ON p.internal_owner_id = io.id
+        LEFT JOIN users cb ON p.created_by_id = cb.id
+        WHERE p.job_code = #{jobCode} AND p.is_deleted = false
+    </select>
+
+    <!-- Find projects with filters - eliminates N+1 on customer -->
+    <select id="findWithFilters" resultMap="ProjectSummaryViewResult">
+        SELECT
+            <include refid="projectSummaryColumns"/>
+        FROM projects p
+        LEFT JOIN companies c ON p.customer_company_id = c.id
+        <where>
+            p.is_deleted = false
+            <if test="status != null">
+                AND p.status = #{status}
+            </if>
+            <if test="customerIds != null and !customerIds.isEmpty()">
+                AND p.customer_company_id IN
+                <foreach collection="customerIds" item="customerId" open="(" separator="," close=")">
+                    #{customerId}
+                </foreach>
+            </if>
+            <if test="search != null and search != ''">
+                AND (
+                    LOWER(p.job_code) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                    OR LOWER(p.project_name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                )
+            </if>
+        </where>
+        ORDER BY p.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count for pagination -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM projects p
+        <where>
+            p.is_deleted = false
+            <if test="status != null">
+                AND p.status = #{status}
+            </if>
+            <if test="customerIds != null and !customerIds.isEmpty()">
+                AND p.customer_company_id IN
+                <foreach collection="customerIds" item="customerId" open="(" separator="," close=")">
+                    #{customerId}
+                </foreach>
+            </if>
+            <if test="search != null and search != ''">
+                AND (
+                    LOWER(p.job_code) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                    OR LOWER(p.project_name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                )
+            </if>
+        </where>
+    </select>
+
+</mapper>

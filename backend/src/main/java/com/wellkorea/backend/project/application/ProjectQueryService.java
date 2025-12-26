@@ -1,47 +1,33 @@
 package com.wellkorea.backend.project.application;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSummaryView;
-import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.domain.ProjectStatus;
-import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
+import com.wellkorea.backend.project.infrastructure.mapper.ProjectMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Query service for project read operations.
  * Part of CQRS pattern - handles all read/query operations.
  * All methods are read-only and return view DTOs optimized for specific use cases.
+ *
+ * <p>Uses MyBatis for all queries to avoid N+1 issues on Company and User entities.
  */
 @Service
 @Transactional(readOnly = true)
 public class ProjectQueryService {
 
-    private final ProjectRepository projectRepository;
-    private final CompanyRepository companyRepository;
-    private final UserRepository userRepository;
+    private final ProjectMapper projectMapper;
 
-    public ProjectQueryService(
-            ProjectRepository projectRepository,
-            CompanyRepository companyRepository,
-            UserRepository userRepository
-    ) {
-        this.projectRepository = projectRepository;
-        this.companyRepository = companyRepository;
-        this.userRepository = userRepository;
+    public ProjectQueryService(ProjectMapper projectMapper) {
+        this.projectMapper = projectMapper;
     }
 
     /**
@@ -53,14 +39,8 @@ public class ProjectQueryService {
      * @throws ResourceNotFoundException if project not found
      */
     public ProjectDetailView getProjectDetail(Long projectId) {
-        Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
+        return projectMapper.findDetailById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
-
-        Company customer = companyRepository.findById(project.getCustomerId()).orElse(null);
-        User internalOwner = userRepository.findById(project.getInternalOwnerId()).orElse(null);
-        User createdBy = userRepository.findById(project.getCreatedById()).orElse(null);
-
-        return ProjectDetailView.from(project, customer, internalOwner, createdBy);
     }
 
     /**
@@ -71,15 +51,8 @@ public class ProjectQueryService {
      * @throws ResourceNotFoundException if project not found
      */
     public ProjectDetailView getProjectDetailByJobCode(String jobCode) {
-        Project project = projectRepository.findByJobCode(jobCode)
-                .filter(p -> !p.isDeleted())
+        return projectMapper.findDetailByJobCode(jobCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Project with JobCode: " + jobCode));
-
-        Company customer = companyRepository.findById(project.getCustomerId()).orElse(null);
-        User internalOwner = userRepository.findById(project.getInternalOwnerId()).orElse(null);
-        User createdBy = userRepository.findById(project.getCreatedById()).orElse(null);
-
-        return ProjectDetailView.from(project, customer, internalOwner, createdBy);
     }
 
     /**
@@ -90,8 +63,10 @@ public class ProjectQueryService {
      * @return Page of project summary views
      */
     public Page<ProjectSummaryView> listProjects(Pageable pageable) {
-        Page<Project> projects = projectRepository.findByIsDeletedFalse(pageable);
-        return mapToSummaryViews(projects);
+        List<ProjectSummaryView> content = projectMapper.findWithFilters(
+                null, null, null, pageable.getPageSize(), pageable.getOffset());
+        long total = projectMapper.countWithFilters(null, null, null);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -102,8 +77,10 @@ public class ProjectQueryService {
      * @return Page of project summary views
      */
     public Page<ProjectSummaryView> listProjectsByStatus(ProjectStatus status, Pageable pageable) {
-        Page<Project> projects = projectRepository.findByStatusAndIsDeletedFalse(status, pageable);
-        return mapToSummaryViews(projects);
+        List<ProjectSummaryView> content = projectMapper.findWithFilters(
+                status, null, null, pageable.getPageSize(), pageable.getOffset());
+        long total = projectMapper.countWithFilters(status, null, null);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -117,8 +94,10 @@ public class ProjectQueryService {
         if (customerIds == null || customerIds.isEmpty()) {
             return Page.empty(pageable);
         }
-        Page<Project> projects = projectRepository.findByCustomerIdInAndIsDeletedFalse(customerIds, pageable);
-        return mapToSummaryViews(projects);
+        List<ProjectSummaryView> content = projectMapper.findWithFilters(
+                null, customerIds, null, pageable.getPageSize(), pageable.getOffset());
+        long total = projectMapper.countWithFilters(null, customerIds, null);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -134,9 +113,10 @@ public class ProjectQueryService {
         if (customerIds == null || customerIds.isEmpty()) {
             return Page.empty(pageable);
         }
-        Page<Project> projects = projectRepository.findByCustomerIdInAndStatusAndIsDeletedFalse(
-                customerIds, status, pageable);
-        return mapToSummaryViews(projects);
+        List<ProjectSummaryView> content = projectMapper.findWithFilters(
+                status, customerIds, null, pageable.getPageSize(), pageable.getOffset());
+        long total = projectMapper.countWithFilters(status, customerIds, null);
+        return new PageImpl<>(content, pageable, total);
     }
 
     /**
@@ -147,44 +127,10 @@ public class ProjectQueryService {
      * @return Page of project summary views
      */
     public Page<ProjectSummaryView> searchProjects(String searchTerm, Pageable pageable) {
-        if (searchTerm == null || searchTerm.isBlank()) {
-            return listProjects(pageable);
-        }
-        Page<Project> projects = projectRepository.searchByJobCodeOrProjectName(searchTerm.trim(), pageable);
-        return mapToSummaryViews(projects);
-    }
-
-    /**
-     * Map projects to summary views with resolved customer names.
-     * Batch loads customer names to avoid N+1 queries.
-     */
-    private Page<ProjectSummaryView> mapToSummaryViews(Page<Project> projects) {
-        if (projects.isEmpty()) {
-            return Page.empty(projects.getPageable());
-        }
-
-        // Collect all unique customer IDs
-        Set<Long> customerIds = projects.getContent().stream()
-                .map(Project::getCustomerId)
-                .collect(Collectors.toSet());
-
-        // Batch load companies
-        Map<Long, Company> companyMap = companyRepository.findAllById(customerIds).stream()
-                .collect(Collectors.toMap(Company::getId, Function.identity()));
-
-        return projects.map(project -> {
-            Company customer = companyMap.get(project.getCustomerId());
-            return ProjectSummaryView.of(
-                    project.getId(),
-                    project.getJobCode(),
-                    project.getCustomerId(),
-                    customer != null ? customer.getName() : null,
-                    project.getProjectName(),
-                    project.getDueDate(),
-                    project.getStatus(),
-                    project.getCreatedAt(),
-                    project.getUpdatedAt()
-            );
-        });
+        String search = (searchTerm == null || searchTerm.isBlank()) ? null : searchTerm.trim();
+        List<ProjectSummaryView> content = projectMapper.findWithFilters(
+                null, null, search, pageable.getPageSize(), pageable.getOffset());
+        long total = projectMapper.countWithFilters(null, null, search);
+        return new PageImpl<>(content, pageable, total);
     }
 }
