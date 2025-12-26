@@ -70,6 +70,15 @@ export function QuotationEditPage() {
     loadQuotation();
   }, [quotationId, getQuotation]);
 
+  // Navigate back to appropriate page
+  const navigateBack = useCallback(() => {
+    if (projectId) {
+      navigate(`/projects/${projectId}/quotation`);
+    } else {
+      navigate('/quotations');
+    }
+  }, [navigate, projectId]);
+
   // Handle form submission
   const handleSubmit = useCallback(async (data: UpdateQuotationRequest) => {
     if (!quotationId) return;
@@ -80,16 +89,7 @@ export function QuotationEditPage() {
     } catch {
       // Error is handled by the hook
     }
-  }, [quotationId, updateQuotation]);
-
-  // Navigate back to appropriate page
-  const navigateBack = useCallback(() => {
-    if (projectId) {
-      navigate(`/projects/${projectId}/quotation`);
-    } else {
-      navigate('/quotations');
-    }
-  }, [navigate, projectId]);
+  }, [quotationId, updateQuotation, navigateBack]);
 
   // Handle cancel
   const handleCancel = useCallback(() => {
