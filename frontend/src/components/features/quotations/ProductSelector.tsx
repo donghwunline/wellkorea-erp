@@ -210,7 +210,7 @@ export function ProductSelector({
                   min="1"
                   value={quantity}
                   onChange={e => setQuantity(e.target.value)}
-                  disabled={disabled || !selectedProduct}
+                  disabled={!selectedProduct}
                 />
               </FormField>
             </div>
@@ -223,7 +223,7 @@ export function ProductSelector({
                   min="0"
                   value={unitPrice}
                   onChange={e => setUnitPrice(e.target.value)}
-                  disabled={disabled || !selectedProduct}
+                  disabled={!selectedProduct}
                 />
               </FormField>
             </div>
@@ -235,7 +235,7 @@ export function ProductSelector({
                   value={note}
                   onChange={e => setNote(e.target.value)}
                   placeholder="Optional"
-                  disabled={disabled || !selectedProduct}
+                  disabled={!selectedProduct}
                 />
               </FormField>
             </div>
@@ -244,7 +244,7 @@ export function ProductSelector({
             <div className="flex items-end md:col-span-1">
               <Button
                 onClick={handleAddProduct}
-                disabled={disabled || !canAdd}
+                disabled={!canAdd}
                 className="w-full"
               >
                 <Icon name="plus" className="h-4 w-4" />
