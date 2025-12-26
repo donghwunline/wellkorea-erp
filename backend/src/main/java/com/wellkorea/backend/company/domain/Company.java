@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -155,7 +156,7 @@ public class Company {
     }
 
     public List<CompanyRole> getRoles() {
-        return roles;
+        return Collections.unmodifiableList(roles);
     }
 
     // ========== Domain Methods ==========
