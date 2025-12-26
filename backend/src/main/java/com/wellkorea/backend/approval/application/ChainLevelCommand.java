@@ -8,4 +8,5 @@ public record ChainLevelCommand(
         String levelName,
         Long approverUserId,
         boolean isRequired
-) {}
+) {
+}

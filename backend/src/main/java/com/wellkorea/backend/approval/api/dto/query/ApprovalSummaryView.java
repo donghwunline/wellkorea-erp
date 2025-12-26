@@ -1,6 +1,5 @@
 package com.wellkorea.backend.approval.api.dto.query;
 
-import com.wellkorea.backend.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 
@@ -24,20 +23,4 @@ public record ApprovalSummaryView(
         LocalDateTime completedAt,
         LocalDateTime createdAt
 ) {
-    public static ApprovalSummaryView from(ApprovalRequest request) {
-        return new ApprovalSummaryView(
-                request.getId(),
-                request.getEntityType(),
-                request.getEntityId(),
-                request.getEntityDescription(),
-                request.getCurrentLevel(),
-                request.getTotalLevels(),
-                request.getStatus(),
-                request.getSubmittedBy().getId(),
-                request.getSubmittedBy().getFullName(),
-                request.getSubmittedAt(),
-                request.getCompletedAt(),
-                request.getCreatedAt()
-        );
-    }
 }

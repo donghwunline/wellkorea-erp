@@ -2,6 +2,7 @@ package com.wellkorea.backend.approval.domain;
 
 import com.wellkorea.backend.auth.domain.User;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 /**

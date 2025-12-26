@@ -1,6 +1,5 @@
 package com.wellkorea.backend.approval.api.dto.query;
 
-import com.wellkorea.backend.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 
@@ -26,28 +25,4 @@ public record ApprovalDetailView(
         LocalDateTime createdAt,
         List<LevelDecisionView> levels
 ) {
-    /**
-     * Create an ApprovalDetailView from ApprovalRequest with pre-built level views.
-     * Level views should be built by the query service with user names resolved.
-     *
-     * @param request    The approval request entity
-     * @param levelViews The pre-built level decision views with user names
-     */
-    public static ApprovalDetailView from(ApprovalRequest request, List<LevelDecisionView> levelViews) {
-        return new ApprovalDetailView(
-                request.getId(),
-                request.getEntityType(),
-                request.getEntityId(),
-                request.getEntityDescription(),
-                request.getCurrentLevel(),
-                request.getTotalLevels(),
-                request.getStatus(),
-                request.getSubmittedBy().getId(),
-                request.getSubmittedBy().getFullName(),
-                request.getSubmittedAt(),
-                request.getCompletedAt(),
-                request.getCreatedAt(),
-                levelViews
-        );
-    }
 }

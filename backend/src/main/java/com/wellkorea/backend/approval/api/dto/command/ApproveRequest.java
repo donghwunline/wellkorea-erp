@@ -5,4 +5,5 @@ package com.wellkorea.backend.approval.api.dto.command;
  */
 public record ApproveRequest(
         String comments
-) {}
+) {
+}

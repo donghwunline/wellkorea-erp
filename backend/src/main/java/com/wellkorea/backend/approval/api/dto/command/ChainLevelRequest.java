@@ -18,4 +18,5 @@ public record ChainLevelRequest(
         Long approverUserId,
 
         boolean isRequired
-) {}
+) {
+}

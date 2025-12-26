@@ -1,6 +1,9 @@
 package com.wellkorea.backend.approval.infrastructure.mapper;
 
-import com.wellkorea.backend.approval.api.dto.query.*;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalDetailView;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView;
+import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
+import com.wellkorea.backend.approval.api.dto.query.ChainTemplateView;
 import com.wellkorea.backend.approval.domain.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import org.apache.ibatis.annotations.Mapper;

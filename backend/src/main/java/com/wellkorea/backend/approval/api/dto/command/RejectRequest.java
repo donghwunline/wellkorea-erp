@@ -10,4 +10,5 @@ public record RejectRequest(
         String reason,
 
         String comments
-) {}
+) {
+}
