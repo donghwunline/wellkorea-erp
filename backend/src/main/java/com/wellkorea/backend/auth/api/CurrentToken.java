@@ -37,9 +37,9 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * @deprecated Use {@code @AuthenticationPrincipal AuthenticatedUser} instead.
- *             Only kept for AuthenticationController where raw token access is required.
  * @see AuthenticatedUser
+ * @deprecated Use {@code @AuthenticationPrincipal AuthenticatedUser} instead.
+ * Only kept for AuthenticationController where raw token access is required.
  */
 @Deprecated(since = "1.0", forRemoval = false)
 @Target(ElementType.PARAMETER)
