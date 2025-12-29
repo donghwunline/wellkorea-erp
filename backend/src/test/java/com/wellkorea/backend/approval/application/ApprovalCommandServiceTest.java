@@ -191,7 +191,7 @@ class ApprovalCommandServiceTest {
             assertThatThrownBy(() ->
                     commandService.createApprovalRequest(EntityType.QUOTATION, 100L, "Test", 4L))
                     .isInstanceOf(ResourceNotFoundException.class)
-                    .hasMessageContaining("chain template");
+                    .hasMessageContaining("ApprovalChainTemplate");
         }
 
         @Test
@@ -440,7 +440,7 @@ class ApprovalCommandServiceTest {
             // When/Then
             assertThatThrownBy(() -> commandService.updateChainLevels(999L, commands))
                     .isInstanceOf(ResourceNotFoundException.class)
-                    .hasMessageContaining("Chain template");
+                    .hasMessageContaining("ApprovalChainTemplate");
         }
     }
 }
