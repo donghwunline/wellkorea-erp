@@ -4,47 +4,33 @@
 
 <mapper namespace="com.wellkorea.backend.company.infrastructure.mapper.CompanyMapper">
 
-    <!-- CompanyRoleView result map for record -->
+    <!-- CompanyRoleView result map for nested select -->
     <resultMap id="CompanyRoleViewResult" type="com.wellkorea.backend.company.api.dto.query.CompanyRoleView">
         <constructor>
-            <arg column="id" javaType="Long"/>
             <arg column="role_type" javaType="com.wellkorea.backend.company.domain.RoleType"/>
             <arg column="credit_limit" javaType="java.math.BigDecimal"/>
             <arg column="default_payment_days" javaType="Integer"/>
             <arg column="notes" javaType="String"/>
             <arg column="created_at" javaType="java.time.Instant"/>
         </constructor>
-    </resultMap>
-
-    <!-- CompanyRoleView with company_id for batch loading -->
-    <resultMap id="CompanyRoleWithCompanyIdResult" type="com.wellkorea.backend.company.api.dto.query.CompanyRoleView">
-        <constructor>
-            <arg column="id" javaType="Long"/>
-            <arg column="role_type" javaType="com.wellkorea.backend.company.domain.RoleType"/>
-            <arg column="credit_limit" javaType="java.math.BigDecimal"/>
-            <arg column="default_payment_days" javaType="Integer"/>
-            <arg column="notes" javaType="String"/>
-            <arg column="created_at" javaType="java.time.Instant"/>
-        </constructor>
-        <result column="company_id" property="companyId" javaType="Long"/>
     </resultMap>
 
     <!-- CompanyDetailView result map with nested select for roles -->
     <resultMap id="CompanyDetailViewResult" type="com.wellkorea.backend.company.api.dto.query.CompanyDetailView">
         <constructor>
-            <idArg column="id" javaType="java.lang.Long"/>
-            <arg column="name" javaType="java.lang.String"/>
-            <arg column="registration_number" javaType="java.lang.String"/>
-            <arg column="representative" javaType="java.lang.String"/>
-            <arg column="business_type" javaType="java.lang.String"/>
-            <arg column="business_category" javaType="java.lang.String"/>
-            <arg column="contact_person" javaType="java.lang.String"/>
-            <arg column="phone" javaType="java.lang.String"/>
-            <arg column="email" javaType="java.lang.String"/>
-            <arg column="address" javaType="java.lang.String"/>
-            <arg column="bank_account" javaType="java.lang.String"/>
-            <arg column="payment_terms" javaType="java.lang.String"/>
-            <arg column="is_active" javaType="_boolean"/>
+            <idArg column="id" javaType="Long"/>
+            <arg column="name" javaType="String"/>
+            <arg column="registration_number" javaType="String"/>
+            <arg column="representative" javaType="String"/>
+            <arg column="business_type" javaType="String"/>
+            <arg column="business_category" javaType="String"/>
+            <arg column="contact_person" javaType="String"/>
+            <arg column="phone" javaType="String"/>
+            <arg column="email" javaType="String"/>
+            <arg column="address" javaType="String"/>
+            <arg column="bank_account" javaType="String"/>
+            <arg column="payment_terms" javaType="String"/>
+            <arg column="is_active" javaType="Boolean"/>
             <arg column="created_at" javaType="java.time.Instant"/>
             <arg column="updated_at" javaType="java.time.Instant"/>
             <arg column="id" javaType="java.util.List" select="findRolesByCompanyId"/>
@@ -64,47 +50,44 @@
         </constructor>
     </resultMap>
 
-    <!-- Find company detail by ID
-         flushCache=true ensures we read fresh data even within same transaction -->
+    <!-- Nested select to load roles for a company -->
+    <select id="findRolesByCompanyId" resultMap="CompanyRoleViewResult">
+        SELECT
+            role_type,
+            credit_limit,
+            default_payment_days,
+            notes,
+            created_at
+        FROM company_roles
+        WHERE company_id = #{id}
+        ORDER BY role_type
+    </select>
+
+    <!-- Find company detail by ID -->
     <select id="findDetailById" resultMap="CompanyDetailViewResult" flushCache="true">
         SELECT
-            c.id,
-            c.name,
-            c.registration_number,
-            c.representative,
-            c.business_type,
-            c.business_category,
-            c.contact_person,
-            c.phone,
-            c.email,
-            c.address,
-            c.bank_account,
-            c.payment_terms,
-            c.is_active,
-            c.created_at,
-            c.updated_at
-        FROM companies c
-        WHERE c.id = #{id}
+            id,
+            name,
+            registration_number,
+            representative,
+            business_type,
+            business_category,
+            contact_person,
+            phone,
+            email,
+            address,
+            bank_account,
+            payment_terms,
+            is_active,
+            created_at,
+            updated_at
+        FROM companies
+        WHERE id = #{id}
     </select>
 
-    <!-- Find roles by company ID (for nested select)
-         flushCache=true ensures we read fresh data even within same transaction -->
-    <select id="findRolesByCompanyId" resultMap="CompanyRoleViewResult" flushCache="true">
-        SELECT
-            cr.id,
-            cr.role_type,
-            cr.credit_limit,
-            cr.default_payment_days,
-            cr.notes,
-            cr.created_at
-        FROM company_roles cr
-        WHERE cr.company_id = #{companyId}
-        ORDER BY cr.role_type
-    </select>
-
-    <!-- Find companies with filters - uses nested select for roles -->
+    <!-- Find companies with filters (roles loaded via nested select) -->
     <select id="findWithFilters" resultMap="CompanySummaryViewResult">
-        SELECT DISTINCT
+        SELECT
             c.id,
             c.name,
             c.registration_number,
@@ -112,17 +95,16 @@
             c.phone,
             c.email
         FROM companies c
+        WHERE c.is_active = true
         <if test="roleType != null">
-            INNER JOIN company_roles cr ON c.id = cr.company_id AND cr.role_type = #{roleType}
+            AND c.id IN (
+                SELECT company_id FROM company_roles WHERE role_type = #{roleType}
+            )
         </if>
-        <where>
-            c.is_active = true
-            <if test="search != null and search != ''">
-                AND LOWER(c.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
-            </if>
-        </where>
+        <if test="search != null and search != ''">
+            AND LOWER(c.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+        </if>
         ORDER BY c.name
-        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- Count for pagination -->
@@ -138,24 +120,6 @@
                 AND LOWER(c.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
             </if>
         </where>
-    </select>
-
-    <!-- Batch load roles for multiple companies -->
-    <select id="findRolesByCompanyIds" resultMap="CompanyRoleWithCompanyIdResult">
-        SELECT
-            cr.id,
-            cr.company_id,
-            cr.role_type,
-            cr.credit_limit,
-            cr.default_payment_days,
-            cr.notes,
-            cr.created_at
-        FROM company_roles cr
-        WHERE cr.company_id IN
-        <foreach collection="companyIds" item="companyId" open="(" separator="," close=")">
-            #{companyId}
-        </foreach>
-        ORDER BY cr.company_id, cr.role_type
     </select>
 
     <!-- Check if company exists and is active -->
