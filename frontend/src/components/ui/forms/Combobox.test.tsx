@@ -12,6 +12,21 @@ import { Combobox, type ComboboxOption } from './Combobox';
 // Mock scrollIntoView since JSDOM doesn't implement it
 Element.prototype.scrollIntoView = vi.fn();
 
+// Mock getBoundingClientRect for portal positioning
+const mockRect = {
+  bottom: 100,
+  height: 40,
+  left: 0,
+  right: 200,
+  top: 60,
+  width: 200,
+  x: 0,
+  y: 60,
+  toJSON: () => ({}),
+};
+
+Element.prototype.getBoundingClientRect = vi.fn(() => mockRect);
+
 // Mock options for testing
 const mockOptions: ComboboxOption[] = [
   { id: 1, label: 'Samsung Electronics' },
@@ -93,7 +108,7 @@ describe('Combobox', () => {
       const user = userEvent.setup();
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       expect(screen.getByText('Samsung Electronics')).toBeInTheDocument();
@@ -104,7 +119,7 @@ describe('Combobox', () => {
       const user = userEvent.setup();
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       expect(screen.getByText('Samsung Electronics')).toBeInTheDocument();
@@ -120,7 +135,7 @@ describe('Combobox', () => {
       );
 
       // Open dropdown
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
       expect(screen.getByText('Samsung Electronics')).toBeInTheDocument();
 
       // Click outside
@@ -137,7 +152,7 @@ describe('Combobox', () => {
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} />);
 
       // Open dropdown
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
       expect(screen.getByText('Samsung Electronics')).toBeInTheDocument();
 
       // Press Escape
@@ -151,7 +166,7 @@ describe('Combobox', () => {
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} />);
 
       // Open dropdown
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
       expect(screen.getByText('Samsung Electronics')).toBeInTheDocument();
 
       // Press Tab
@@ -168,7 +183,7 @@ describe('Combobox', () => {
       render(<Combobox value={null} onChange={handleChange} options={mockOptions} />);
 
       // Open dropdown
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
 
       // Click option
       await user.click(screen.getByText('LG Display'));
@@ -181,7 +196,7 @@ describe('Combobox', () => {
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} />);
 
       // Open dropdown
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
 
       // Click option
       await user.click(screen.getByText('LG Display'));
@@ -194,7 +209,7 @@ describe('Combobox', () => {
       render(<Combobox value={2} onChange={vi.fn()} options={mockOptions} />);
 
       // Open dropdown
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
 
       // Find LG Display option - it should have selected styling
       const option = screen.getByText('LG Display').closest('li');
@@ -206,7 +221,7 @@ describe('Combobox', () => {
       render(<Combobox value={2} onChange={vi.fn()} options={mockOptions} />);
 
       // Open dropdown
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
 
       // Selected option should have checkmark (SVG)
       const option = screen.getByText('LG Display').closest('li');
@@ -242,19 +257,20 @@ describe('Combobox', () => {
   describe('filtering', () => {
     it('should filter options as user types', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.type(input, 'LG');
 
       // Check that only LG Display is in the list (text is split by <mark>)
-      const listItems = container.querySelectorAll('li');
+      // Portal renders to document.body
+      const listItems = document.body.querySelectorAll('li');
       expect(listItems).toHaveLength(1);
       expect(listItems[0].textContent).toContain('LG Display');
-      expect(container.textContent).not.toContain('Samsung Electronics');
+      expect(screen.queryByText('Samsung Electronics')).not.toBeInTheDocument();
     });
 
     it('should show no results message when no matches', async () => {
@@ -268,7 +284,7 @@ describe('Combobox', () => {
         />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.type(input, 'xyz');
 
@@ -277,16 +293,17 @@ describe('Combobox', () => {
 
     it('should filter by description if provided', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.type(input, 'Steel');
 
       // POSCO has "Steel manufacturer" as description
-      const listItems = container.querySelectorAll('li');
+      // Portal renders to document.body
+      const listItems = document.body.querySelectorAll('li');
       expect(listItems).toHaveLength(1);
       expect(listItems[0].textContent).toContain('POSCO');
       expect(listItems[0].textContent).toContain('Steel manufacturer');
@@ -296,7 +313,7 @@ describe('Combobox', () => {
       const user = userEvent.setup();
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.type(input, 'Sam');
 
@@ -311,7 +328,7 @@ describe('Combobox', () => {
       const user = userEvent.setup();
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       input.focus();
       await user.keyboard('{ArrowDown}');
 
@@ -320,31 +337,31 @@ describe('Combobox', () => {
 
     it('should navigate down with ArrowDown', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       // First option should be highlighted by default
-      let highlighted = container.querySelector('[data-highlighted="true"]');
+      let highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('Samsung Electronics');
 
       // Navigate down
       await user.keyboard('{ArrowDown}');
 
-      highlighted = container.querySelector('[data-highlighted="true"]');
+      highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('LG Display');
     });
 
     it('should navigate up with ArrowUp', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       // Navigate to third option
@@ -354,7 +371,7 @@ describe('Combobox', () => {
       // Navigate back up
       await user.keyboard('{ArrowUp}');
 
-      const highlighted = container.querySelector('[data-highlighted="true"]');
+      const highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('LG Display');
     });
 
@@ -363,7 +380,7 @@ describe('Combobox', () => {
       const handleChange = vi.fn();
       render(<Combobox value={null} onChange={handleChange} options={mockOptions} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       // Navigate to second option
@@ -375,11 +392,11 @@ describe('Combobox', () => {
 
     it('should not navigate past last option', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       // Navigate past all options
@@ -387,23 +404,23 @@ describe('Combobox', () => {
         await user.keyboard('{ArrowDown}');
       }
 
-      const highlighted = container.querySelector('[data-highlighted="true"]');
+      const highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('POSCO');
     });
 
     it('should not navigate before first option', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       // Try to navigate up from first option
       await user.keyboard('{ArrowUp}');
 
-      const highlighted = container.querySelector('[data-highlighted="true"]');
+      const highlighted = document.body.querySelector('[data-highlighted="true"]');
       expect(highlighted?.textContent).toContain('Samsung Electronics');
     });
   });
@@ -423,7 +440,7 @@ describe('Combobox', () => {
         />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       await waitFor(() => {
@@ -436,7 +453,7 @@ describe('Combobox', () => {
       const loadOptions = vi.fn().mockResolvedValue(mockOptions);
       render(<Combobox value={null} onChange={vi.fn()} loadOptions={loadOptions} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       await waitFor(() => {
@@ -449,7 +466,7 @@ describe('Combobox', () => {
       const loadOptions = vi.fn().mockResolvedValue([]);
       render(<Combobox value={null} onChange={vi.fn()} loadOptions={loadOptions} debounceMs={0} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.type(input, 'test');
 
@@ -472,7 +489,7 @@ describe('Combobox', () => {
         />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.type(input, 'New Company');
 
@@ -491,7 +508,7 @@ describe('Combobox', () => {
         />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.type(input, 'Samsung Electronics');
 
@@ -510,7 +527,7 @@ describe('Combobox', () => {
         />
       );
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.type(input, 'New Company');
       await user.click(screen.getByText(/Create "New Company"/));
@@ -524,7 +541,7 @@ describe('Combobox', () => {
       const user = userEvent.setup();
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} disabled />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       expect(input).toBeDisabled();
 
       await user.click(input);
@@ -558,7 +575,7 @@ describe('Combobox', () => {
       ];
       render(<Combobox value={null} onChange={handleChange} options={optionsWithDisabled} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
       await user.click(screen.getByText('Disabled Option'));
 
@@ -573,7 +590,7 @@ describe('Combobox', () => {
       ];
       render(<Combobox value={null} onChange={vi.fn()} options={optionsWithDisabled} />);
 
-      const input = screen.getByRole('textbox');
+      const input = screen.getByRole('combobox');
       await user.click(input);
 
       const disabledOption = screen.getByText('Disabled Option').closest('li');
@@ -604,14 +621,14 @@ describe('Combobox', () => {
 
     it('should have list element for dropdown', async () => {
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <Combobox value={null} onChange={vi.fn()} options={mockOptions} />
       );
 
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
 
-      // Dropdown uses ul element
-      const list = container.querySelector('ul');
+      // Dropdown uses ul element (portal renders to document.body)
+      const list = document.body.querySelector('ul');
       expect(list).toBeInTheDocument();
     });
   });
@@ -630,7 +647,7 @@ describe('Combobox', () => {
       const user = userEvent.setup();
       render(<Combobox value={null} onChange={vi.fn()} options={mockOptions} />);
 
-      await user.click(screen.getByRole('textbox'));
+      await user.click(screen.getByRole('combobox'));
 
       expect(screen.getByText('Steel manufacturer')).toBeInTheDocument();
     });

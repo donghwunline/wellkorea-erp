@@ -77,7 +77,7 @@ describe('projectSummaryService', () => {
       const result = await projectSummaryService.getProjectSummary(1);
 
       const expectedLabels: Record<string, string> = {
-        quotation: '견적/결재',
+        quotation: '견적',
         process: '공정/진행률',
         outsource: '외주',
         delivery: '납품',

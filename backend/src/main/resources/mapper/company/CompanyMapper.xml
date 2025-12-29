@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.company.infrastructure.mapper.CompanyMapper">
+
+    <!-- CompanyRoleView result map for nested select -->
+    <resultMap id="CompanyRoleViewResult" type="com.wellkorea.backend.company.api.dto.query.CompanyRoleView">
+        <constructor>
+            <arg column="role_type" javaType="com.wellkorea.backend.company.domain.RoleType"/>
+            <arg column="credit_limit" javaType="java.math.BigDecimal"/>
+            <arg column="default_payment_days" javaType="Integer"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
+    <!-- CompanyDetailView result map with nested select for roles -->
+    <resultMap id="CompanyDetailViewResult" type="com.wellkorea.backend.company.api.dto.query.CompanyDetailView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="name" javaType="String"/>
+            <arg column="registration_number" javaType="String"/>
+            <arg column="representative" javaType="String"/>
+            <arg column="business_type" javaType="String"/>
+            <arg column="business_category" javaType="String"/>
+            <arg column="contact_person" javaType="String"/>
+            <arg column="phone" javaType="String"/>
+            <arg column="email" javaType="String"/>
+            <arg column="address" javaType="String"/>
+            <arg column="bank_account" javaType="String"/>
+            <arg column="payment_terms" javaType="String"/>
+            <arg column="is_active" javaType="Boolean"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+            <arg column="updated_at" javaType="java.time.Instant"/>
+            <arg column="id" javaType="java.util.List" select="findRolesByCompanyId"/>
+        </constructor>
+    </resultMap>
+
+    <!-- CompanySummaryView result map with nested select for roles -->
+    <resultMap id="CompanySummaryViewResult" type="com.wellkorea.backend.company.api.dto.query.CompanySummaryView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="name" javaType="String"/>
+            <arg column="registration_number" javaType="String"/>
+            <arg column="contact_person" javaType="String"/>
+            <arg column="phone" javaType="String"/>
+            <arg column="email" javaType="String"/>
+            <arg column="id" javaType="java.util.List" select="findRolesByCompanyId"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Nested select to load roles for a company -->
+    <select id="findRolesByCompanyId" resultMap="CompanyRoleViewResult">
+        SELECT
+            role_type,
+            credit_limit,
+            default_payment_days,
+            notes,
+            created_at
+        FROM company_roles
+        WHERE company_id = #{id}
+        ORDER BY role_type
+    </select>
+
+    <!-- Find company detail by ID -->
+    <select id="findDetailById" resultMap="CompanyDetailViewResult">
+        SELECT
+            id,
+            name,
+            registration_number,
+            representative,
+            business_type,
+            business_category,
+            contact_person,
+            phone,
+            email,
+            address,
+            bank_account,
+            payment_terms,
+            is_active,
+            created_at,
+            updated_at
+        FROM companies
+        WHERE id = #{id}
+    </select>
+
+    <!-- Find companies with filters (roles loaded via nested select) -->
+    <select id="findWithFilters" resultMap="CompanySummaryViewResult">
+        SELECT
+            c.id,
+            c.name,
+            c.registration_number,
+            c.contact_person,
+            c.phone,
+            c.email
+        FROM companies c
+        WHERE c.is_active = true
+        <if test="roleType != null">
+            AND c.id IN (
+                SELECT company_id FROM company_roles WHERE role_type = #{roleType}
+            )
+        </if>
+        <if test="search != null and search != ''">
+            AND LOWER(c.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+        </if>
+        ORDER BY c.name
+    </select>
+
+    <!-- Count for pagination -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(DISTINCT c.id)
+        FROM companies c
+        <if test="roleType != null">
+            INNER JOIN company_roles cr ON c.id = cr.company_id AND cr.role_type = #{roleType}
+        </if>
+        <where>
+            c.is_active = true
+            <if test="search != null and search != ''">
+                AND LOWER(c.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <!-- Check if company exists and is active -->
+    <select id="existsByIdAndIsActiveTrue" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1 FROM companies c
+            WHERE c.id = #{id} AND c.is_active = true
+        )
+    </select>
+
+</mapper>

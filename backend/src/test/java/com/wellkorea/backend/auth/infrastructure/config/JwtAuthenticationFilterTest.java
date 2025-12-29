@@ -1,5 +1,7 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
+import com.wellkorea.backend.auth.application.TokenBlacklistService;
+import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for JwtAuthenticationFilter.
- * Tests JWT token extraction, validation, and SecurityContext population.
+ * Tests JWT token extraction, validation, blacklist checking, and SecurityContext population.
  */
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +29,9 @@ class JwtAuthenticationFilterTest {
 
     @Mock
     private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
+    private TokenBlacklistService tokenBlacklistService;
 
     @Mock
     private CustomAuthenticationEntryPoint authenticationEntryPoint;
@@ -44,7 +49,8 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
-        jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider, authenticationEntryPoint);
+        jwtAuthenticationFilter = new JwtAuthenticationFilter(
+                jwtTokenProvider, tokenBlacklistService, authenticationEntryPoint);
         SecurityContextHolder.clearContext();
     }
 
@@ -60,17 +66,22 @@ class JwtAuthenticationFilterTest {
         // Given: Valid JWT token in Authorization header
         String token = "valid.jwt.token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        // validateToken() is void - no need to mock (default behavior is do nothing)
+        when(tokenBlacklistService.isBlacklisted(token)).thenReturn(false);
         when(jwtTokenProvider.getUsername(token)).thenReturn("testuser");
-        when(jwtTokenProvider.getRoles(token)).thenReturn("ROLE_ADMIN,ROLE_FINANCE");
+        when(jwtTokenProvider.getUserId(token)).thenReturn(1L);
+        when(jwtTokenProvider.getRoles(token)).thenReturn(new String[]{"ROLE_ADMIN", "ROLE_FINANCE"});
 
         // When: Filter processes request
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then: SecurityContext populated with authentication
+        // Then: SecurityContext populated with AuthenticatedUser
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication).isNotNull();
-        assertThat(authentication.getName()).isEqualTo("testuser");
+        assertThat(authentication.getPrincipal()).isInstanceOf(AuthenticatedUser.class);
+
+        AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
+        assertThat(user.getUsername()).isEqualTo("testuser");
+        assertThat(user.getUserId()).isEqualTo(1L);
         assertThat(authentication.getAuthorities())
                 .hasSize(2)
                 .extracting("authority")
@@ -86,22 +97,75 @@ class JwtAuthenticationFilterTest {
         // Given: Token with single role
         String token = "valid.jwt.token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        // validateToken() is void - no need to mock
+        when(tokenBlacklistService.isBlacklisted(token)).thenReturn(false);
         when(jwtTokenProvider.getUsername(token)).thenReturn("sales");
-        when(jwtTokenProvider.getRoles(token)).thenReturn("ROLE_SALES");
+        when(jwtTokenProvider.getUserId(token)).thenReturn(2L);
+        when(jwtTokenProvider.getRoles(token)).thenReturn(new String[]{"ROLE_SALES"});
 
         // When: Filter processes request
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        // Then: Authentication has single authority
+        // Then: Authentication has single authority and correct userId
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         assertThat(authentication).isNotNull();
+
+        AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
+        assertThat(user.getUserId()).isEqualTo(2L);
         assertThat(authentication.getAuthorities())
                 .hasSize(1)
                 .extracting("authority")
                 .containsExactly("ROLE_SALES");
 
         verify(filterChain).doFilter(request, response);
+    }
+
+    // ========== Blacklist Tests ==========
+
+    @Test
+    void shouldRejectBlacklistedToken() throws Exception {
+        // Given: Token that has been blacklisted (logged out)
+        String token = "blacklisted.jwt.token";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(tokenBlacklistService.isBlacklisted(token)).thenReturn(true);
+
+        // When: Filter processes request
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        // Then: Entry point is called with InvalidJwtAuthenticationException
+        verify(authenticationEntryPoint).commence(eq(request), eq(response), any(InvalidJwtAuthenticationException.class));
+
+        // SecurityContext remains empty
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(authentication).isNull();
+
+        // Filter chain does NOT continue
+        verify(filterChain, never()).doFilter(request, response);
+    }
+
+    // ========== Missing UserId Tests ==========
+
+    @Test
+    void shouldRejectTokenWithMissingUserId() throws Exception {
+        // Given: Token without userId claim (old token format)
+        String token = "old.token.no.userid";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(tokenBlacklistService.isBlacklisted(token)).thenReturn(false);
+        when(jwtTokenProvider.getUsername(token)).thenReturn("olduser");
+        when(jwtTokenProvider.getUserId(token)).thenReturn(null);
+        when(jwtTokenProvider.getRoles(token)).thenReturn(new String[]{"ROLE_ADMIN"});
+
+        // When: Filter processes request
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        // Then: Entry point is called with InvalidJwtAuthenticationException
+        verify(authenticationEntryPoint).commence(eq(request), eq(response), any(InvalidJwtAuthenticationException.class));
+
+        // SecurityContext remains empty
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(authentication).isNull();
+
+        // Filter chain does NOT continue
+        verify(filterChain, never()).doFilter(request, response);
     }
 
     // ========== Invalid Token Tests ==========
@@ -246,7 +310,7 @@ class JwtAuthenticationFilterTest {
         // Given: Username extraction throws exception (after validation)
         String token = "valid.token.bad.claims";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        // validateToken() succeeds (no exception thrown)
+        when(tokenBlacklistService.isBlacklisted(token)).thenReturn(false);
         when(jwtTokenProvider.getUsername(token)).thenThrow(new RuntimeException("Missing subject claim"));
 
         // When: Filter processes request

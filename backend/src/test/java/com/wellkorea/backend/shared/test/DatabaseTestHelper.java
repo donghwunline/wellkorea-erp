@@ -43,21 +43,31 @@ public final class DatabaseTestHelper {
     }
 
     /**
-     * Inserts standard test customer (idempotent).
+     * Inserts standard test company (idempotent).
      * Used for foreign key constraints in project tests.
+     * Creates a company with CUSTOMER role.
      *
      * @param jdbcTemplate Spring JDBC template
      */
     public static void insertTestCustomer(JdbcTemplate jdbcTemplate) {
+        // Insert company
         jdbcTemplate.update(
-                "INSERT INTO customers (id, name, contact_person, phone, email) " +
-                        "VALUES (?, ?, ?, ?, ?) " +
+                "INSERT INTO companies (id, name, contact_person, phone, email, is_active) " +
+                        "VALUES (?, ?, ?, ?, ?, true) " +
                         "ON CONFLICT (id) DO NOTHING",
                 TestFixtures.TEST_CUSTOMER_ID,
                 "Test Customer",
                 "John Doe",
                 "123-456-7890",
                 "customer@example.com"
+        );
+
+        // Insert CUSTOMER role for the company
+        jdbcTemplate.update(
+                "INSERT INTO company_roles (company_id, role_type) " +
+                        "VALUES (?, 'CUSTOMER') " +
+                        "ON CONFLICT (company_id, role_type) DO NOTHING",
+                TestFixtures.TEST_CUSTOMER_ID
         );
     }
 
@@ -110,10 +120,10 @@ public final class DatabaseTestHelper {
         );
 
         // Insert customer assignments (FR-062: Sales role customer filtering)
-        // sales user (id=4) -> Samsung, Hyundai, LG
-        // sales2 user (id=5) -> SK Hynix, Doosan, POSCO
+        // sales user (id=4) -> Samsung, Hyundai, LG (company IDs 1, 2, 3)
+        // sales2 user (id=5) -> SK Hynix, Doosan, POSCO (company IDs 4, 5, 6)
         jdbcTemplate.update(
-                "INSERT INTO customer_assignments (user_id, customer_id) " +
+                "INSERT INTO customer_assignments (user_id, company_id) " +
                         "VALUES (4, 1), (4, 2), (4, 3), (5, 4), (5, 5), (5, 6) " +
                         "ON CONFLICT DO NOTHING"
         );
@@ -140,6 +150,28 @@ public final class DatabaseTestHelper {
     public static void insertCompleteTestData(JdbcTemplate jdbcTemplate) {
         insertTestUsersWithRoles(jdbcTemplate);
         insertTestCustomer(jdbcTemplate);
+    }
+
+    /**
+     * Inserts test products for quotation tests.
+     * Products created:
+     * - Product 1: Control Panel - Sheet Metal Parts (Type 1) - Base price 50000.00
+     * - Product 2: L-Bracket - Sheet Metal Parts (Type 1) - Base price 3500.00
+     * - Product 3: Enclosure - Custom Enclosures (Type 4) - Base price 150000.00
+     *
+     * @param jdbcTemplate Spring JDBC template
+     */
+    public static void insertTestProducts(JdbcTemplate jdbcTemplate) {
+        jdbcTemplate.update(
+                "INSERT INTO products (id, sku, name, product_type_id, base_unit_price, unit) " +
+                        "VALUES (1, 'SM-PANEL-001', 'Control Panel', 1, 50000.00, 'EA'), " +
+                        "       (2, 'SM-BRACKET-001', 'L-Bracket', 1, 3500.00, 'EA'), " +
+                        "       (3, 'SM-ENCLOSURE-001', 'Enclosure', 4, 150000.00, 'EA') " +
+                        "ON CONFLICT (id) DO NOTHING"
+        );
+
+        // Reset sequence
+        jdbcTemplate.execute("SELECT setval('products_id_seq', (SELECT COALESCE(MAX(id), 0) FROM products))");
     }
 
     /**

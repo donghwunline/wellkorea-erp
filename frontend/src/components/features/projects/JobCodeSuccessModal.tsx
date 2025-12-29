@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { Button, Icon, Modal } from '@/components/ui';
+import { Button, Icon, Modal, ModalActions } from '@/components/ui';
 
 export interface JobCodeSuccessModalProps {
   /** Whether modal is open */
@@ -36,15 +36,8 @@ export function JobCodeSuccessModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for browsers without clipboard API
-      const textArea = document.createElement('textarea');
-      textArea.value = jobCode;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      // Clipboard API failed - likely due to permissions or insecure context
+      console.warn('Failed to copy to clipboard');
     }
   };
 
@@ -87,7 +80,7 @@ export function JobCodeSuccessModal({
         </p>
 
         {/* Actions */}
-        <div className="flex justify-center gap-3">
+        <ModalActions align="center">
           <Button variant="secondary" onClick={onClose}>
             Back to List
           </Button>
@@ -95,7 +88,7 @@ export function JobCodeSuccessModal({
             <Icon name="eye" className="mr-2 h-4 w-4" />
             View Project
           </Button>
-        </div>
+        </ModalActions>
       </div>
     </Modal>
   );

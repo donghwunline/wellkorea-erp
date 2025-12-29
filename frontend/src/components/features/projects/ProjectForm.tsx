@@ -2,16 +2,56 @@
  * Project Form Component
  *
  * Reusable form for creating and editing projects.
- * Receives customer/user options as props (supports mock data).
+ * Uses CompanyCombobox (filtered by CUSTOMER role) and UserCombobox for async data loading.
  */
 
-import { type FormEvent, useMemo, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
-import { Button, Combobox, type ComboboxOption, DatePicker, ErrorAlert, FormField } from '@/components/ui';
+import { Button, DatePicker, ErrorAlert, FormField } from '@/components/ui';
+import { CompanyCombobox, UserCombobox } from '@/components/features/shared/selectors';
 
-export interface SelectOption {
-  id: number;
-  name: string;
+interface ProjectFormData {
+  customerId: number | null;
+  projectName: string;
+  requesterName: string;
+  dueDate: string;
+  internalOwnerId: number | null;
+}
+
+const EMPTY_FORM_DATA: ProjectFormData = {
+  customerId: null,
+  projectName: '',
+  requesterName: '',
+  dueDate: '',
+  internalOwnerId: null,
+};
+
+function toFormData(data: ProjectDetails): ProjectFormData {
+  return {
+    customerId: data.customerId,
+    projectName: data.projectName,
+    requesterName: data.requesterName ?? '',
+    dueDate: data.dueDate,
+    internalOwnerId: data.internalOwnerId,
+  };
+}
+
+function toCreateRequest(data: ProjectFormData): CreateProjectRequest {
+  return {
+    customerId: data.customerId!,
+    projectName: data.projectName.trim(),
+    requesterName: data.requesterName.trim() || undefined,
+    dueDate: data.dueDate,
+    internalOwnerId: data.internalOwnerId!,
+  };
+}
+
+function toUpdateRequest(data: ProjectFormData): UpdateProjectRequest {
+  return {
+    projectName: data.projectName.trim(),
+    requesterName: data.requesterName.trim() || undefined,
+    dueDate: data.dueDate,
+  };
 }
 
 export interface ProjectFormProps {
@@ -19,10 +59,6 @@ export interface ProjectFormProps {
   mode: 'create' | 'edit';
   /** Initial data for edit mode */
   initialData?: ProjectDetails | null;
-  /** Available customers for dropdown */
-  customers: SelectOption[];
-  /** Available users for internal owner dropdown */
-  users: SelectOption[];
   /** Called when form is submitted */
   onSubmit: (data: CreateProjectRequest | UpdateProjectRequest) => Promise<void>;
   /** Called when cancel is clicked */
@@ -41,65 +77,21 @@ export interface ProjectFormProps {
 export function ProjectForm({
   mode,
   initialData,
-  customers,
-  users,
   onSubmit,
   onCancel,
   isSubmitting,
   error,
   onDismissError,
 }: Readonly<ProjectFormProps>) {
-  // Form state - initialize from initialData if editing (form is only rendered after data loads)
-  const [formData, setFormData] = useState(() => {
-    if (mode === 'edit' && initialData) {
-      return {
-        customerId: initialData.customerId as number | null,
-        projectName: initialData.projectName,
-        requesterName: initialData.requesterName || '',
-        dueDate: initialData.dueDate,
-        internalOwnerId: initialData.internalOwnerId as number | null,
-      };
-    }
-    return {
-      customerId: null as number | null,
-      projectName: '',
-      requesterName: '',
-      dueDate: '',
-      internalOwnerId: null as number | null,
-    };
-  });
-
-  // Convert SelectOption to ComboboxOption for use with Combobox
-  const customerOptions: ComboboxOption[] = useMemo(
-    () => customers.map(c => ({ id: c.id, label: c.name })),
-    [customers]
-  );
-
-  const userOptions: ComboboxOption[] = useMemo(
-    () => users.map(u => ({ id: u.id, label: u.name })),
-    [users]
+  // Form state - initialize from initialData if editing, otherwise use empty defaults
+  const [formData, setFormData] = useState<ProjectFormData>(
+    initialData ? toFormData(initialData) : EMPTY_FORM_DATA
   );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    if (mode === 'create') {
-      const request: CreateProjectRequest = {
-        customerId: formData.customerId!,
-        projectName: formData.projectName.trim(),
-        requesterName: formData.requesterName.trim() || undefined,
-        dueDate: formData.dueDate,
-        internalOwnerId: formData.internalOwnerId!,
-      };
-      await onSubmit(request);
-    } else {
-      const request: UpdateProjectRequest = {
-        projectName: formData.projectName.trim(),
-        requesterName: formData.requesterName.trim() || undefined,
-        dueDate: formData.dueDate,
-      };
-      await onSubmit(request);
-    }
+    const request = mode === 'create' ? toCreateRequest(formData) : toUpdateRequest(formData);
+    await onSubmit(request);
   };
 
   // Validation helpers
@@ -125,16 +117,16 @@ export function ProjectForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <ErrorAlert message={error} onDismiss={onDismissError} />}
 
-      {/* Customer Selection */}
-      <Combobox
+      {/* Customer Selection (Company with CUSTOMER role) */}
+      <CompanyCombobox
         label="Customer"
         value={formData.customerId}
-        onChange={(value) => setFormData(prev => ({ ...prev, customerId: value as number | null }))}
-        options={customerOptions}
-        placeholder="Search or select a customer..."
+        onChange={value => setFormData(prev => ({ ...prev, customerId: value }))}
+        roleType="CUSTOMER"
         required
         disabled={isSubmitting || mode === 'edit'}
         helpText={mode === 'edit' ? 'Customer cannot be changed after creation' : undefined}
+        initialLabel={initialData?.customerName}
       />
 
       {/* Project Name */}
@@ -173,21 +165,21 @@ export function ProjectForm({
       />
 
       {/* Internal Owner Selection */}
-      <Combobox
+      <UserCombobox
         label="Internal Owner"
         value={formData.internalOwnerId}
-        onChange={(value) => setFormData(prev => ({ ...prev, internalOwnerId: value as number | null }))}
-        options={userOptions}
+        onChange={value => setFormData(prev => ({ ...prev, internalOwnerId: value }))}
         placeholder="Search or select internal owner..."
         required
         disabled={isSubmitting || mode === 'edit'}
         helpText={mode === 'edit' ? 'Internal owner cannot be changed after creation' : undefined}
+        initialLabel={initialData?.internalOwnerName}
       />
 
       {/* Job Code (read-only in edit mode) */}
       {mode === 'edit' && initialData && (
         <div>
-          <label className="mb-2 block text-sm font-medium text-steel-300">Job Code</label>
+          <span className="mb-2 block text-sm font-medium text-steel-300">Job Code</span>
           <div className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-4 py-2.5">
             <span className="font-mono text-copper-400">{initialData.jobCode}</span>
           </div>

@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { projectService, PROJECT_STATUS_LABELS } from '@/services';
 import type { ProjectDetails, ProjectStatus } from '@/services';
 import type { PaginationMetadata } from '@/api/types';
+import { formatDate } from '@/shared/utils';
 import {
   Badge,
   type BadgeVariant,
@@ -91,16 +92,6 @@ export function ProjectTable({
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects, refreshTrigger]);
-
-  // Format date utility
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-  };
 
   // Render loading state
   if (isLoading) {

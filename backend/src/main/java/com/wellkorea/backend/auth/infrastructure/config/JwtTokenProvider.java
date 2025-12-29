@@ -9,14 +9,11 @@ import io.jsonwebtoken.security.SecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 /**
  * JWT token provider for generating and validating JWT tokens.
@@ -48,38 +45,28 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Generate JWT token from Authentication object.
-     *
-     * @param authentication Spring Security Authentication
-     * @return JWT token string
-     */
-    public String generateToken(Authentication authentication) {
-        String username = authentication.getName();
-        String roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        return generateToken(username, roles);
-    }
-
-    /**
-     * Generate JWT token from username and roles.
+     * Generate JWT token from username, roles, and user ID.
      *
      * @param username Username
      * @param roles    Comma-separated roles (e.g., "ROLE_ADMIN,ROLE_FINANCE")
+     * @param userId   User ID (required for production use, can be null for testing)
      * @return JWT token string
      */
-    public String generateToken(String username, String roles) {
+    public String generateToken(String username, String roles, Long userId) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(username)
                 .claim("roles", roles)
                 .issuedAt(now)
-                .expiration(validity)
-                .signWith(secretKey, Jwts.SIG.HS256)
-                .compact();
+                .expiration(validity);
+
+        if (userId != null) {
+            builder.claim("userId", userId);
+        }
+
+        return builder.signWith(secretKey, Jwts.SIG.HS256).compact();
     }
 
     /**
@@ -92,16 +79,28 @@ public class JwtTokenProvider {
         return getClaims(token).getSubject();
     }
 
-    // TODO Consider changing it return List<String>
-
     /**
      * Extract roles from JWT token.
      *
      * @param token JWT token
-     * @return Comma-separated roles string
+     * @return Array of role strings (e.g., ["ROLE_ADMIN", "ROLE_FINANCE"])
      */
-    public String getRoles(String token) {
-        return getClaims(token).get("roles", String.class);
+    public String[] getRoles(String token) {
+        String rolesString = getClaims(token).get("roles", String.class);
+        if (rolesString == null || rolesString.isEmpty()) {
+            return new String[0];
+        }
+        return rolesString.split(",");
+    }
+
+    /**
+     * Extract user ID from JWT token.
+     *
+     * @param token JWT token
+     * @return User ID, or null if not present in token
+     */
+    public Long getUserId(String token) {
+        return getClaims(token).get("userId", Long.class);
     }
 
     /**
@@ -147,19 +146,5 @@ public class JwtTokenProvider {
             log.error("Unexpected error during token validation", e);
             throw new InvalidJwtAuthenticationException("Token validation failed", e);
         }
-    }
-
-
-    /**
-     * Extract token from Authorization header.
-     *
-     * @param authorizationHeader Authorization header value
-     * @return JWT token string, or null if not found
-     */
-    public String extractTokenFromHeader(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        }
-        return null;
     }
 }

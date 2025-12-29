@@ -6,24 +6,49 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { ProjectForm, type SelectOption } from './ProjectForm';
+import { ProjectForm } from './ProjectForm';
 import type { ProjectDetails } from '@/services';
 
 // Mock scrollIntoView since JSDOM doesn't implement it
 Element.prototype.scrollIntoView = vi.fn();
 
-// Mock customers and users
-const mockCustomers: SelectOption[] = [
-  { id: 1, name: 'Samsung Electronics' },
-  { id: 2, name: 'LG Display' },
-  { id: 3, name: 'SK Hynix' },
-];
-
-const mockUsers: SelectOption[] = [
-  { id: 1, name: 'Kim Minjun (Admin)' },
-  { id: 2, name: 'Lee Jiwon (Sales)' },
-  { id: 3, name: 'Park Seohyun (Finance)' },
-];
+// Mock the services used by the Combobox components
+vi.mock('@/services', async importOriginal => {
+  const original = await importOriginal<typeof import('@/services')>();
+  return {
+    ...original,
+    companyService: {
+      getCompanies: vi.fn().mockResolvedValue({
+        data: [
+          { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com', roles: [{ id: 1, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
+          { id: 2, name: 'LG Display', email: 'contact@lgdisplay.com', roles: [{ id: 2, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
+          { id: 3, name: 'SK Hynix', email: 'contact@skhynix.com', roles: [{ id: 3, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
+        ],
+        pagination: {
+          page: 0,
+          size: 20,
+          totalElements: 3,
+          totalPages: 1,
+          first: true,
+          last: true,
+        },
+      }),
+    },
+    userService: {
+      getUsers: vi.fn().mockResolvedValue({
+        data: [
+          { id: 1, username: 'minjun', fullName: 'Kim Minjun (Admin)', email: 'minjun@test.com', roles: [] },
+          { id: 2, username: 'jiwon', fullName: 'Lee Jiwon (Sales)', email: 'jiwon@test.com', roles: [] },
+          { id: 3, username: 'seohyun', fullName: 'Park Seohyun (Finance)', email: 'seohyun@test.com', roles: [] },
+        ],
+        page: 0,
+        size: 20,
+        totalElements: 3,
+        totalPages: 1,
+      }),
+    },
+  };
+});
 
 // Helper to create mock project for edit mode
 function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
@@ -46,8 +71,6 @@ function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDeta
 describe('ProjectForm', () => {
   const defaultProps = {
     mode: 'create' as const,
-    customers: mockCustomers,
-    users: mockUsers,
     onSubmit: vi.fn(),
     onCancel: vi.fn(),
     isSubmitting: false,
@@ -183,8 +206,8 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} />);
 
       // Fill in all required fields
-      // Select customer
-      const customerInput = screen.getAllByRole('textbox')[0];
+      // Select customer (first combobox)
+      const customerInput = screen.getAllByRole('combobox')[0];
       await user.click(customerInput);
       await user.click(screen.getByText('Samsung Electronics'));
 
@@ -192,13 +215,26 @@ describe('ProjectForm', () => {
       const projectNameInput = screen.getByPlaceholderText('Enter project name');
       await user.type(projectNameInput, 'New Project');
 
-      // Select due date - click the button to open, then select a date
+      // Select due date - click the button to open, then select a future date
       const dateButton = screen.getByRole('button', { name: /select due date/i });
       await user.click(dateButton);
-      await user.click(screen.getByRole('button', { name: '20' }));
+      // Navigate to next month to ensure dates are in the future
+      const nextMonthButton = screen.getByRole('button', { name: /next month/i });
+      await user.click(nextMonthButton);
+      // Click day 15 - find by aria-label containing "15," (e.g., "January 15, 2026")
+      const nextMonthDate = new Date();
+      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+      nextMonthDate.setDate(15);
+      const expectedLabel = nextMonthDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
+      await user.click(day15Button);
 
-      // Select internal owner (index 3: customer=0, projectName=1, requester=2, owner=3)
-      const ownerInput = screen.getAllByRole('textbox')[3];
+      // Select internal owner (second combobox)
+      const ownerInput = screen.getAllByRole('combobox')[1];
       await user.click(ownerInput);
       await user.click(screen.getByText('Lee Jiwon (Sales)'));
 
@@ -225,8 +261,8 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
 
       // Fill form
-      // Select customer
-      const customerInput = screen.getAllByRole('textbox')[0];
+      // Select customer (first combobox)
+      const customerInput = screen.getAllByRole('combobox')[0];
       await user.click(customerInput);
       await user.click(screen.getByText('Samsung Electronics'));
 
@@ -236,25 +272,40 @@ describe('ProjectForm', () => {
       // Enter requester name
       await user.type(screen.getByPlaceholderText('Enter requester name (optional)'), 'John');
 
-      // Select due date
+      // Select due date - navigate to next month and pick day 15
       const dateButton = screen.getByRole('button', { name: /select due date/i });
       await user.click(dateButton);
-      await user.click(screen.getByRole('button', { name: '20' }));
+      const nextMonthButton = screen.getByRole('button', { name: /next month/i });
+      await user.click(nextMonthButton);
+      // Click day 15 - dynamically calculate next month's date
+      const nextMonthDate = new Date();
+      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+      nextMonthDate.setDate(15);
+      const expectedLabel = nextMonthDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
+      await user.click(day15Button);
 
-      // Select internal owner
-      const ownerInput = screen.getAllByRole('textbox')[3];
+      // Select internal owner (second combobox)
+      const ownerInput = screen.getAllByRole('combobox')[1];
       await user.click(ownerInput);
       await user.click(screen.getByText('Lee Jiwon (Sales)'));
 
       // Submit
       await user.click(screen.getByRole('button', { name: /create project/i }));
 
+      // Calculate expected due date string (YYYY-MM-15)
+      const expectedDueDate = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}-15`;
+
       await waitFor(() => {
         expect(onSubmit).toHaveBeenCalledWith({
           customerId: 1,
           projectName: 'New Project',
           requesterName: 'John',
-          dueDate: expect.stringMatching(/^\d{4}-\d{2}-20$/), // Day 20 of current month
+          dueDate: expectedDueDate,
           internalOwnerId: 2,
         });
       });
@@ -294,17 +345,30 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
 
       // Fill form with spaces
-      const customerInput = screen.getAllByRole('textbox')[0];
+      const customerInput = screen.getAllByRole('combobox')[0];
       await user.click(customerInput);
       await user.click(screen.getByText('Samsung Electronics'));
 
       await user.type(screen.getByPlaceholderText('Enter project name'), '  New Project  ');
 
+      // Select due date - navigate to next month and pick day 15
       const dateButton = screen.getByRole('button', { name: /select due date/i });
       await user.click(dateButton);
-      await user.click(screen.getByRole('button', { name: '20' }));
+      const nextMonthButton = screen.getByRole('button', { name: /next month/i });
+      await user.click(nextMonthButton);
+      // Click day 15 - dynamically calculate next month's date
+      const nextMonthDate = new Date();
+      nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+      nextMonthDate.setDate(15);
+      const expectedLabel = nextMonthDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel, 'i') });
+      await user.click(day15Button);
 
-      const ownerInput = screen.getAllByRole('textbox')[3];
+      const ownerInput = screen.getAllByRole('combobox')[1];
       await user.click(ownerInput);
       await user.click(screen.getByText('Lee Jiwon (Sales)'));
 
@@ -326,17 +390,30 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} onSubmit={onSubmit} />);
 
       // Fill form without requester
-      const customerInput = screen.getAllByRole('textbox')[0];
+      const customerInput = screen.getAllByRole('combobox')[0];
       await user.click(customerInput);
       await user.click(screen.getByText('Samsung Electronics'));
 
       await user.type(screen.getByPlaceholderText('Enter project name'), 'Project');
 
+      // Select due date - navigate to next month and pick day 15
       const dateButton = screen.getByRole('button', { name: /select due date/i });
       await user.click(dateButton);
-      await user.click(screen.getByRole('button', { name: '20' }));
+      const nextMonthButton = screen.getByRole('button', { name: /next month/i });
+      await user.click(nextMonthButton);
+      // Click day 15 - dynamically calculate next month's date
+      const nextMonthDate2 = new Date();
+      nextMonthDate2.setMonth(nextMonthDate2.getMonth() + 1);
+      nextMonthDate2.setDate(15);
+      const expectedLabel2 = nextMonthDate2.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const day15Button = screen.getByRole('button', { name: new RegExp(expectedLabel2, 'i') });
+      await user.click(day15Button);
 
-      const ownerInput = screen.getAllByRole('textbox')[3];
+      const ownerInput = screen.getAllByRole('combobox')[1];
       await user.click(ownerInput);
       await user.click(screen.getByText('Lee Jiwon (Sales)'));
 
@@ -370,8 +447,14 @@ describe('ProjectForm', () => {
       render(<ProjectForm {...defaultProps} isSubmitting />);
 
       // Combobox inputs should be disabled
-      const inputs = screen.getAllByRole('textbox');
-      inputs.forEach(input => {
+      const comboboxes = screen.getAllByRole('combobox');
+      comboboxes.forEach(input => {
+        expect(input).toBeDisabled();
+      });
+
+      // Text inputs should be disabled
+      const textboxes = screen.getAllByRole('textbox');
+      textboxes.forEach(input => {
         expect(input).toBeDisabled();
       });
     });
@@ -481,17 +564,17 @@ describe('ProjectForm', () => {
     it('should disable customer field in edit mode', () => {
       render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
 
-      const customerInputs = screen.getAllByRole('textbox');
-      expect(customerInputs[0]).toBeDisabled();
+      // Customer is the first combobox
+      const comboboxes = screen.getAllByRole('combobox');
+      expect(comboboxes[0]).toBeDisabled();
     });
 
     it('should disable internal owner field in edit mode', () => {
       render(<ProjectForm {...defaultProps} mode="edit" initialData={createMockProject()} />);
 
-      // Internal owner is the third textbox (after customer and project name)
-      const textboxes = screen.getAllByRole('textbox');
-      // Customer, ProjectName, Requester, InternalOwner
-      expect(textboxes[3]).toBeDisabled();
+      // Internal owner is the second combobox
+      const comboboxes = screen.getAllByRole('combobox');
+      expect(comboboxes[1]).toBeDisabled();
     });
   });
 });

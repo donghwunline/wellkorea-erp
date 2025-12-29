@@ -37,14 +37,14 @@ const QUICK_STATS = [
 
 const MODULES: ModuleCard[] = [
   {
-    title: 'Projects',
+    title: '프로젝트',
     phase: 'Phase 4',
     description: 'Job lifecycle management',
     icon: 'clipboard',
     path: '/projects',
   },
   {
-    title: 'Quotations',
+    title: '견적',
     phase: 'Phase 5',
     description: 'Quote creation & approval',
     icon: 'document',
@@ -52,7 +52,7 @@ const MODULES: ModuleCard[] = [
     hideFromRoles: ['ROLE_PRODUCTION'], // Production cannot see quotations
   },
   {
-    title: 'Products',
+    title: '아이템',
     phase: 'Phase 6',
     description: 'Product catalog & pricing',
     icon: 'box',
@@ -60,7 +60,7 @@ const MODULES: ModuleCard[] = [
     hideFromRoles: ['ROLE_PRODUCTION'], // Production cannot see pricing
   },
   {
-    title: 'Production',
+    title: '공정',
     phase: 'Phase 7',
     description: 'Work progress tracking',
     icon: 'cog',
@@ -74,7 +74,7 @@ const MODULES: ModuleCard[] = [
     path: '/delivery',
   },
   {
-    title: 'Invoices',
+    title: '정산',
     phase: 'Phase 9',
     description: 'Billing & AR management',
     icon: 'cash',
@@ -109,7 +109,7 @@ export function DashboardPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-white">대시보드</h1>
         <p className="mt-1 text-steel-400">Welcome back, {user?.fullName || user?.username}</p>
       </div>
 

@@ -98,13 +98,21 @@ export interface ErrorResponse {
 }
 
 /**
- * Normalized API error structure (frontend representation).
+ * Normalized API error class (frontend representation).
+ * Extends Error to provide proper stack traces and instanceof checks.
  */
-export interface ApiError {
-  status: number;
-  errorCode?: string;
-  message: string;
-  details?: unknown;
+export class ApiError extends Error {
+  readonly status: number;
+  readonly errorCode?: string;
+  readonly details?: unknown;
+
+  constructor(status: number, message: string, errorCode?: string, details?: unknown) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.errorCode = errorCode;
+    this.details = details;
+  }
 }
 
 // ============================================================================

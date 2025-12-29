@@ -18,3 +18,7 @@ export type { UsePaginatedSearchOptions, UsePaginatedSearchReturn } from './useP
 export { useFocusTrap } from './useFocusTrap';
 export type { UseFocusTrapOptions } from './useFocusTrap';
 export { useBodyScrollLock } from './useBodyScrollLock';
+
+// Service action hooks (loading/error state for async operations)
+export { useServiceAction, useServiceActions } from './useServiceAction';
+export type { UseServiceActionReturn, UseServiceActionsReturn } from './useServiceAction';

@@ -13,25 +13,14 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { ProjectCreatePage } from './ProjectCreatePage';
-import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
+import type { CreateProjectRequest, ProjectCommandResult, UpdateProjectRequest } from '@/services';
 
-// Helper to create mock project
-function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
-  return {
-    id: 42,
-    jobCode: 'WK2-2025-042-0120',
-    customerId: 1,
-    projectName: 'Test Project',
-    requesterName: 'John Doe',
-    dueDate: '2025-02-15',
-    internalOwnerId: 2,
-    status: 'ACTIVE',
-    createdById: 1,
-    createdAt: '2025-01-15T10:30:00Z',
-    updatedAt: '2025-01-16T14:45:00Z',
-    ...overrides,
-  };
-}
+// Default mock command result for project creation
+const DEFAULT_COMMAND_RESULT: ProjectCommandResult = {
+  id: 42,
+  message: 'Project created successfully',
+  jobCode: 'WK2-2025-042-0120',
+};
 
 // Track props passed to mocked components
 let formProps: Record<string, unknown> = {};
@@ -125,7 +114,7 @@ describe('ProjectCreatePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     formProps = {};
-    mockCreateProject.mockResolvedValue(createMockProject());
+    mockCreateProject.mockResolvedValue(DEFAULT_COMMAND_RESULT);
 
     // Reset the mock to default state
     vi.mocked(useProjectActions).mockReturnValue({
@@ -185,20 +174,6 @@ describe('ProjectCreatePage', () => {
       expect(screen.getByTestId('form-mode')).toHaveTextContent('create');
     });
 
-    it('should pass customers to form', () => {
-      renderProjectCreatePage();
-
-      expect(formProps.customers).toBeDefined();
-      expect(Array.isArray(formProps.customers)).toBe(true);
-    });
-
-    it('should pass users to form', () => {
-      renderProjectCreatePage();
-
-      expect(formProps.users).toBeDefined();
-      expect(Array.isArray(formProps.users)).toBe(true);
-    });
-
     it('should pass isSubmitting from hook', () => {
       renderProjectCreatePage();
 
@@ -246,8 +221,10 @@ describe('ProjectCreatePage', () => {
 
     it('should show success modal after successful creation', async () => {
       const user = userEvent.setup();
-      const createdProject = createMockProject({ jobCode: 'WK2-2025-099-0131' });
-      mockCreateProject.mockResolvedValue(createdProject);
+      mockCreateProject.mockResolvedValue({
+        ...DEFAULT_COMMAND_RESULT,
+        jobCode: 'WK2-2025-099-0131',
+      });
 
       renderProjectCreatePage();
 
@@ -260,8 +237,10 @@ describe('ProjectCreatePage', () => {
 
     it('should pass created job code to success modal', async () => {
       const user = userEvent.setup();
-      const createdProject = createMockProject({ jobCode: 'WK2-2025-099-0131' });
-      mockCreateProject.mockResolvedValue(createdProject);
+      mockCreateProject.mockResolvedValue({
+        ...DEFAULT_COMMAND_RESULT,
+        jobCode: 'WK2-2025-099-0131',
+      });
 
       renderProjectCreatePage();
 
@@ -294,7 +273,7 @@ describe('ProjectCreatePage', () => {
 
     it('should navigate to projects list when modal close is clicked', async () => {
       const user = userEvent.setup();
-      mockCreateProject.mockResolvedValue(createMockProject());
+      mockCreateProject.mockResolvedValue(DEFAULT_COMMAND_RESULT);
 
       renderProjectCreatePage();
 
@@ -313,7 +292,7 @@ describe('ProjectCreatePage', () => {
 
     it('should navigate to project view when View Project is clicked', async () => {
       const user = userEvent.setup();
-      mockCreateProject.mockResolvedValue(createMockProject({ id: 42 }));
+      mockCreateProject.mockResolvedValue(DEFAULT_COMMAND_RESULT);
 
       renderProjectCreatePage();
 
@@ -392,26 +371,6 @@ describe('ProjectCreatePage', () => {
 
       const card = container.querySelector('.rounded-xl');
       expect(card).toBeInTheDocument();
-    });
-  });
-
-  describe('mock data', () => {
-    it('should provide mock customers', () => {
-      renderProjectCreatePage();
-
-      const customers = formProps.customers as Array<{ id: number; name: string }>;
-      expect(customers.length).toBeGreaterThan(0);
-      expect(customers[0]).toHaveProperty('id');
-      expect(customers[0]).toHaveProperty('name');
-    });
-
-    it('should provide mock users', () => {
-      renderProjectCreatePage();
-
-      const users = formProps.users as Array<{ id: number; name: string }>;
-      expect(users.length).toBeGreaterThan(0);
-      expect(users[0]).toHaveProperty('id');
-      expect(users[0]).toHaveProperty('name');
     });
   });
 });

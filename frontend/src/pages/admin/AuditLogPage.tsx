@@ -20,15 +20,7 @@
 
 import { useState } from 'react';
 import type { AuditLogEntry } from '@/services';
-import {
-  Alert,
-  Badge,
-  type BadgeVariant,
-  Button,
-  FilterBar,
-  Modal,
-  PageHeader,
-} from '@/components/ui';
+import { Alert, Badge, type BadgeVariant, Button, FilterBar, Modal, PageHeader, } from '@/components/ui';
 import { AuditLogTable, useAuditLogPage } from '@/components/features/audit';
 
 type AuditAction =
@@ -106,7 +98,7 @@ export function AuditLogPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="Audit Logs" description="System activity and security events" />
+        <PageHeader.Title title="이력 관리" description="System activity and security events" />
       </PageHeader>
 
       {/* Filters */}

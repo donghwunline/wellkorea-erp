@@ -67,3 +67,107 @@ export const PROJECT_ENDPOINTS = {
   /** GET /projects/jobcode/:jobCode */
   byJobCode: (jobCode: string) => `/projects/jobcode/${jobCode}`,
 } as const;
+
+// ============================================================================
+// Quotation Endpoints
+// ============================================================================
+
+export const QUOTATION_ENDPOINTS = {
+  /** Base path for quotation operations */
+  BASE: '/quotations',
+
+  /** GET/PUT /quotations/:id */
+  byId: (id: number) => `/quotations/${id}`,
+  /** POST /quotations/:id/submit - Submit for approval */
+  submit: (id: number) => `/quotations/${id}/submit`,
+  /** POST /quotations/:id/versions - Create new version */
+  versions: (id: number) => `/quotations/${id}/versions`,
+  /** POST /quotations/:id/pdf - Generate PDF */
+  pdf: (id: number) => `/quotations/${id}/pdf`,
+  /** POST /quotations/:id/send-revision-notification - Send email notification */
+  sendNotification: (id: number) => `/quotations/${id}/send-revision-notification`,
+} as const;
+
+// ============================================================================
+// Approval Endpoints
+// ============================================================================
+
+export const APPROVAL_ENDPOINTS = {
+  /** Base path for approval operations */
+  BASE: '/approvals',
+
+  /** GET /approvals/:id */
+  byId: (id: number) => `/approvals/${id}`,
+  /** POST /approvals/:id/approve */
+  approve: (id: number) => `/approvals/${id}/approve`,
+  /** POST /approvals/:id/reject */
+  reject: (id: number) => `/approvals/${id}/reject`,
+  /** GET /approvals/:id/history */
+  history: (id: number) => `/approvals/${id}/history`,
+} as const;
+
+// ============================================================================
+// Admin Approval Chain Endpoints
+// ============================================================================
+
+export const APPROVAL_CHAIN_ENDPOINTS = {
+  /** Base path for admin approval chain operations */
+  BASE: '/admin/approval-chains',
+
+  /** GET /admin/approval-chains/:id */
+  byId: (id: number) => `/admin/approval-chains/${id}`,
+  /** PUT /admin/approval-chains/:id/levels */
+  levels: (id: number) => `/admin/approval-chains/${id}/levels`,
+} as const;
+
+// ============================================================================
+// Product Endpoints
+// ============================================================================
+
+export const PRODUCT_ENDPOINTS = {
+  /** Base path for product operations */
+  BASE: '/products',
+
+  /** GET /products/:id */
+  byId: (id: number) => `/products/${id}`,
+  /** GET /products/types - Get all product types */
+  types: '/products/types',
+} as const;
+
+// ============================================================================
+// Service Category Endpoints (Catalog)
+// ============================================================================
+
+export const SERVICE_CATEGORY_ENDPOINTS = {
+  /** Base path for service category operations */
+  BASE: '/service-categories',
+
+  /** GET/PUT/DELETE /service-categories/:id */
+  byId: (id: number) => `/service-categories/${id}`,
+  /** GET /service-categories/all - Get all categories for dropdown */
+  all: '/service-categories/all',
+  /** GET /service-categories/:id/offerings - Get vendor offerings for category */
+  offerings: (id: number) => `/service-categories/${id}/offerings`,
+  /** GET /service-categories/:id/offerings/current - Get current offerings */
+  currentOfferings: (id: number) => `/service-categories/${id}/offerings/current`,
+  /** POST/PUT/DELETE /service-categories/offerings/:id */
+  offering: (id: number) => `/service-categories/offerings/${id}`,
+  /** POST /service-categories/offerings - Create offering */
+  createOffering: '/service-categories/offerings',
+} as const;
+
+// ============================================================================
+// Company Endpoints
+// ============================================================================
+
+export const COMPANY_ENDPOINTS = {
+  /** Base path for company operations */
+  BASE: '/companies',
+
+  /** GET/PUT/DELETE /companies/:id */
+  byId: (id: number) => `/companies/${id}`,
+  /** POST /companies/:id/roles - Add role to company */
+  roles: (id: number) => `/companies/${id}/roles`,
+  /** DELETE /companies/:id/roles/:roleId - Remove role from company */
+  role: (id: number, roleId: number) => `/companies/${id}/roles/${roleId}`,
+} as const;

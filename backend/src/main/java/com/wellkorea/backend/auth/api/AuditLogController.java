@@ -32,12 +32,11 @@ public class AuditLogController {
      * List audit logs with optional filters.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<AuditLogResponse>>> listAuditLogs(
-            @RequestParam(required = false) String entityType,
-            @RequestParam(required = false) String action,
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) Long entityId,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<AuditLogResponse>>> listAuditLogs(@RequestParam(required = false) String entityType,
+                                                                             @RequestParam(required = false) String action,
+                                                                             @RequestParam(required = false) Long userId,
+                                                                             @RequestParam(required = false) Long entityId,
+                                                                             Pageable pageable) {
 
         Page<AuditLogResponse> logs;
 

@@ -126,8 +126,8 @@ describe('DatePicker', () => {
       // Open calendar
       await user.click(screen.getByRole('button'));
 
-      // Click on day 20
-      const day20 = screen.getByRole('button', { name: '20' });
+      // Click on day 20 (aria-label format: "January 20, 2025")
+      const day20 = screen.getByRole('button', { name: /january 20, 2025/i });
       await user.click(day20);
 
       expect(handleChange).toHaveBeenCalledWith('2025-01-20');
@@ -136,14 +136,15 @@ describe('DatePicker', () => {
     it('should close dropdown after selecting a date', async () => {
       vi.useRealTimers();
       const user = userEvent.setup();
-      render(<DatePicker value="" onChange={vi.fn()} />);
+      // Provide a January date so calendar opens to January
+      render(<DatePicker value="2025-01-01" onChange={vi.fn()} />);
 
       // Open calendar
       await user.click(screen.getByRole('button'));
       expect(screen.getByRole('button', { name: /previous month/i })).toBeInTheDocument();
 
-      // Select a date
-      await user.click(screen.getByRole('button', { name: '15' }));
+      // Select a date (aria-label format: "January 15, 2025")
+      await user.click(screen.getByRole('button', { name: /january 15, 2025/i }));
 
       // Calendar should be closed
       expect(screen.queryByRole('button', { name: /previous month/i })).not.toBeInTheDocument();
@@ -157,8 +158,8 @@ describe('DatePicker', () => {
       // Open calendar
       await user.click(screen.getByRole('button'));
 
-      // Find day 15 button and check it has selected styling
-      const day15 = screen.getByRole('button', { name: '15' });
+      // Find day 15 button and check it has selected styling (aria-label format: "January 15, 2025")
+      const day15 = screen.getByRole('button', { name: /january 15, 2025/i });
       expect(day15).toHaveClass('bg-copper-500');
     });
   });
@@ -212,7 +213,7 @@ describe('DatePicker', () => {
       await user.click(screen.getByRole('button'));
 
       // Day 10 should have disabled styling (opacity and cursor-not-allowed)
-      const day10 = screen.getByRole('button', { name: '10' });
+      const day10 = screen.getByRole('button', { name: /january 10, 2025/i });
       expect(day10).toHaveClass('opacity-50');
       expect(day10).toHaveClass('cursor-not-allowed');
     });
@@ -227,7 +228,7 @@ describe('DatePicker', () => {
       await user.click(screen.getByRole('button'));
 
       // Day 25 should have disabled styling
-      const day25 = screen.getByRole('button', { name: '25' });
+      const day25 = screen.getByRole('button', { name: /january 25, 2025/i });
       expect(day25).toHaveClass('opacity-50');
     });
 
@@ -242,7 +243,7 @@ describe('DatePicker', () => {
       await user.click(screen.getByRole('button'));
 
       // Try to click disabled day 10 - it has disabled attribute
-      const day10 = screen.getByRole('button', { name: '10' });
+      const day10 = screen.getByRole('button', { name: /january 10, 2025/i });
       // The button is disabled via the disabled attribute
       expect(day10).toBeDisabled();
 
@@ -286,10 +287,11 @@ describe('DatePicker', () => {
     it('should not close calendar after selecting a date in inline mode', async () => {
       vi.useRealTimers();
       const user = userEvent.setup();
-      render(<DatePicker display="inline" value="" onChange={vi.fn()} />);
+      // Provide a January value so calendar shows January
+      render(<DatePicker display="inline" value="2025-01-01" onChange={vi.fn()} />);
 
-      // Select a date
-      await user.click(screen.getByRole('button', { name: '15' }));
+      // Select a date (aria-label format: "January 15, 2025")
+      await user.click(screen.getByRole('button', { name: /january 15, 2025/i }));
 
       // Calendar should still be visible
       expect(screen.getByRole('button', { name: /previous month/i })).toBeInTheDocument();
@@ -315,7 +317,7 @@ describe('DatePicker', () => {
 
       // Open calendar and select a different start date (this will reset range)
       await user.click(screen.getByRole('button'));
-      await user.click(screen.getByRole('button', { name: '10' }));
+      await user.click(screen.getByRole('button', { name: /january 10, 2025/i }));
 
       // Since there's already a start without end, clicking completes the range
       expect(handleChange).toHaveBeenCalledWith({ start: '2025-01-01', end: '2025-01-10' });
@@ -330,7 +332,7 @@ describe('DatePicker', () => {
 
       // Open calendar and select end date
       await user.click(screen.getByRole('button'));
-      await user.click(screen.getByRole('button', { name: '20' }));
+      await user.click(screen.getByRole('button', { name: /january 20, 2025/i }));
 
       expect(handleChange).toHaveBeenCalledWith({ start: '2025-01-10', end: '2025-01-20' });
     });
@@ -344,7 +346,7 @@ describe('DatePicker', () => {
 
       // Open calendar and select date before start
       await user.click(screen.getByRole('button'));
-      await user.click(screen.getByRole('button', { name: '10' }));
+      await user.click(screen.getByRole('button', { name: /january 10, 2025/i }));
 
       expect(handleChange).toHaveBeenCalledWith({ start: '2025-01-10', end: '2025-01-20' });
     });
@@ -398,8 +400,13 @@ describe('DatePicker', () => {
       await user.click(screen.getByRole('button'));
 
       // Today should have ring-1 class (today indicator)
-      // Find the button for today's date
-      const todayDay = screen.getByRole('button', { name: String(today.getDate()) });
+      // Find the button for today's date using aria-label format (e.g., "December 21, 2025")
+      const todayLabel = today.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      const todayDay = screen.getByRole('button', { name: new RegExp(todayLabel, 'i') });
       expect(todayDay).toHaveClass('ring-1');
     });
   });

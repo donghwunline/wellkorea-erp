@@ -6,7 +6,7 @@
  */
 
 import { useAuth } from '@/shared/hooks';
-import { Alert, Button, Card, Icon } from '@/components/ui';
+import { Alert, Button, Card, Icon, Spinner } from '@/components/ui';
 import type { RoleName } from '@/shared/types';
 import type { ProjectSection } from '@/services';
 import { useProjectSummary } from './hooks';
@@ -15,6 +15,8 @@ import { ProjectSummaryCard } from './ProjectSummaryCard';
 export interface ProjectRelatedNavigationGridProps {
   /** Project ID to display sections for */
   projectId: number;
+  /** Optional callback when a section card is clicked (instead of navigation) */
+  onSectionClick?: (section: ProjectSection) => void;
 }
 
 /**
@@ -32,6 +34,7 @@ const SECTION_ROLE_REQUIREMENTS: Partial<Record<ProjectSection, RoleName[]>> = {
  */
 export function ProjectRelatedNavigationGrid({
   projectId,
+  onSectionClick,
 }: Readonly<ProjectRelatedNavigationGridProps>) {
   const { hasAnyRole } = useAuth();
   const { summary, isLoading, error, refetch } = useProjectSummary({ projectId });
@@ -49,7 +52,7 @@ export function ProjectRelatedNavigationGrid({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-steel-600 border-t-copper-500" />
+        <Spinner size="lg" label="Loading project summary" />
         <span className="ml-3 text-steel-400">Loading project summary...</span>
       </div>
     );
@@ -91,6 +94,7 @@ export function ProjectRelatedNavigationGrid({
           key={section.section}
           projectId={projectId}
           summary={section}
+          onSectionClick={onSectionClick}
         />
       ))}
     </div>

@@ -43,11 +43,11 @@ class RBACIntegrationTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Generate tokens for each role
-        adminToken = jwtTokenProvider.generateToken(TestFixtures.ADMIN_USERNAME, Role.ADMIN.getAuthority());
-        financeToken = jwtTokenProvider.generateToken(TestFixtures.FINANCE_USERNAME, Role.FINANCE.getAuthority());
-        salesToken = jwtTokenProvider.generateToken(TestFixtures.SALES_USERNAME, Role.SALES.getAuthority());
-        productionToken = jwtTokenProvider.generateToken(TestFixtures.PRODUCTION_USERNAME, Role.PRODUCTION.getAuthority());
+        // Generate tokens for each role (userId is required for approval workflows)
+        adminToken = jwtTokenProvider.generateToken(TestFixtures.ADMIN_USERNAME, Role.ADMIN.getAuthority(), TestFixtures.TEST_USER_ID);
+        financeToken = jwtTokenProvider.generateToken(TestFixtures.FINANCE_USERNAME, Role.FINANCE.getAuthority(), 2L);
+        salesToken = jwtTokenProvider.generateToken(TestFixtures.SALES_USERNAME, Role.SALES.getAuthority(), 4L);
+        productionToken = jwtTokenProvider.generateToken(TestFixtures.PRODUCTION_USERNAME, Role.PRODUCTION.getAuthority(), 3L);
     }
 
     @Nested

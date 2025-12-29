@@ -14,6 +14,7 @@ import { transformPagedResponse } from '@/services/shared';
 import type {
   CreateProjectRequest,
   PaginatedProjects,
+  ProjectCommandResult,
   ProjectDetails,
   ProjectListParams,
   UpdateProjectRequest,
@@ -71,18 +72,17 @@ export const projectService = {
 
   /**
    * Create a new project.
-   * Returns created project with auto-generated JobCode.
+   * Returns command result with ID and auto-generated JobCode.
    */
-  async createProject(request: CreateProjectRequest): Promise<ProjectDetails> {
-    const project = await httpClient.post<ProjectDetails>(PROJECT_ENDPOINTS.BASE, request);
-    return transformProjectDetails(project);
+  async createProject(request: CreateProjectRequest): Promise<ProjectCommandResult> {
+    return httpClient.post<ProjectCommandResult>(PROJECT_ENDPOINTS.BASE, request);
   },
 
   /**
    * Update an existing project.
+   * Returns command result with ID.
    */
-  async updateProject(id: number, request: UpdateProjectRequest): Promise<ProjectDetails> {
-    const project = await httpClient.put<ProjectDetails>(PROJECT_ENDPOINTS.byId(id), request);
-    return transformProjectDetails(project);
+  async updateProject(id: number, request: UpdateProjectRequest): Promise<ProjectCommandResult> {
+    return httpClient.put<ProjectCommandResult>(PROJECT_ENDPOINTS.byId(id), request);
   },
 };

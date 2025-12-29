@@ -22,20 +22,51 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
 };
 
 /**
- * Full project details from API response.
+ * Full project details from API response (ProjectDetailView).
+ * Includes resolved names for customer, internal owner, and created by user.
  */
 export interface ProjectDetails {
   id: number;
   jobCode: string;
   customerId: number;
+  customerName: string | null;
   projectName: string;
   requesterName: string | null;
   dueDate: string; // ISO date string (YYYY-MM-DD)
   internalOwnerId: number;
+  internalOwnerName: string | null;
   status: ProjectStatus;
   createdById: number;
+  createdByName: string | null;
   createdAt: string; // ISO datetime string
   updatedAt: string; // ISO datetime string
+}
+
+/**
+ * Project summary for list views (ProjectSummaryView).
+ * Optimized for pagination - includes essential fields and customer name.
+ */
+export interface ProjectListItem {
+  id: number;
+  jobCode: string;
+  customerId: number;
+  customerName: string | null;
+  projectName: string;
+  dueDate: string; // ISO date string (YYYY-MM-DD)
+  status: ProjectStatus;
+  createdAt: string; // ISO datetime string
+  updatedAt: string; // ISO datetime string
+}
+
+/**
+ * Command result for project create/update operations.
+ * For create operations, includes the generated jobCode.
+ */
+export interface ProjectCommandResult {
+  id: number;
+  message: string;
+  /** Generated jobCode (only present for create operations) */
+  jobCode: string | null;
 }
 
 /**
@@ -73,7 +104,7 @@ export interface ProjectListParams {
 /**
  * Paginated project list response.
  */
-export type PaginatedProjects = Paginated<ProjectDetails>;
+export type PaginatedProjects = Paginated<ProjectListItem>;
 
 // ============================================================================
 // Project Summary Types (for Navigation Grid)
@@ -116,4 +147,23 @@ export interface ProjectSectionSummary {
 export interface ProjectSummary {
   projectId: number;
   sections: ProjectSectionSummary[];
+}
+
+// ============================================================================
+// Project KPI Types (for Dashboard Strip)
+// ============================================================================
+
+/**
+ * Key performance indicators for a project.
+ * Displayed in the KPI strip at the top of the project hub page.
+ */
+export interface ProjectKPI {
+  /** Overall progress percentage (0-100) */
+  progressPercent: number;
+  /** Number of pending approval requests */
+  pendingApprovals: number;
+  /** Number of missing required documents */
+  missingDocuments: number;
+  /** Accounts receivable amount (KRW) */
+  accountsReceivable: number;
 }

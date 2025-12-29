@@ -9,13 +9,15 @@ import { useNavigate } from 'react-router-dom';
 import { Card, Icon } from '@/components/ui';
 import type { IconName } from '@/components/ui/primitives/Icon';
 import type { ProjectSection, ProjectSectionSummary } from '@/services';
-import { cn } from '@/shared/utils';
+import { cn, formatCurrency } from '@/shared/utils';
 
 export interface ProjectSummaryCardProps {
   /** Project ID for navigation */
   projectId: number;
   /** Section summary data */
   summary: ProjectSectionSummary;
+  /** Optional callback when card is clicked (overrides default navigation) */
+  onSectionClick?: (section: ProjectSection) => void;
 }
 
 /**
@@ -31,14 +33,18 @@ const SECTION_ICONS: Record<ProjectSection, IconName> = {
 };
 
 /**
- * Format currency in KRW.
+ * Get progress color class based on percentage.
  */
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency: 'KRW',
-    maximumFractionDigits: 0,
-  }).format(value);
+function getProgressTextColor(percent: number): string {
+  if (percent >= 80) return 'text-green-400';
+  if (percent >= 50) return 'text-yellow-400';
+  return 'text-steel-300';
+}
+
+function getProgressBarColor(percent: number): string {
+  if (percent >= 80) return 'bg-green-500';
+  if (percent >= 50) return 'bg-yellow-500';
+  return 'bg-copper-500';
 }
 
 /**
@@ -65,11 +71,19 @@ function formatRelativeTime(dateStr: string | null): string {
 /**
  * Card displaying section summary with click navigation.
  */
-export function ProjectSummaryCard({ projectId, summary }: Readonly<ProjectSummaryCardProps>) {
+export function ProjectSummaryCard({
+  projectId,
+  summary,
+  onSectionClick,
+}: Readonly<ProjectSummaryCardProps>) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/projects/${projectId}/${summary.section}`);
+    if (onSectionClick) {
+      onSectionClick(summary.section);
+    } else {
+      navigate(`/projects/${projectId}/${summary.section}`);
+    }
   };
 
   const iconName = SECTION_ICONS[summary.section];
@@ -108,14 +122,7 @@ export function ProjectSummaryCard({ projectId, summary }: Readonly<ProjectSumma
             <div className="flex items-center justify-between text-sm">
               <span className="text-steel-500">Progress</span>
               <span
-                className={cn(
-                  'font-medium',
-                  summary.progressPercent >= 80
-                    ? 'text-green-400'
-                    : summary.progressPercent >= 50
-                      ? 'text-yellow-400'
-                      : 'text-steel-300'
-                )}
+                className={cn('font-medium', getProgressTextColor(summary.progressPercent))}
               >
                 {summary.progressPercent}%
               </span>
@@ -124,11 +131,7 @@ export function ProjectSummaryCard({ projectId, summary }: Readonly<ProjectSumma
               <div
                 className={cn(
                   'h-full rounded-full transition-all',
-                  summary.progressPercent >= 80
-                    ? 'bg-green-500'
-                    : summary.progressPercent >= 50
-                      ? 'bg-yellow-500'
-                      : 'bg-copper-500'
+                  getProgressBarColor(summary.progressPercent)
                 )}
                 style={{ width: `${Math.min(100, summary.progressPercent)}%` }}
               />

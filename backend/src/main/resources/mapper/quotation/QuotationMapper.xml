@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.quotation.infrastructure.mapper.QuotationMapper">
+
+    <!-- LineItemView result map for record -->
+    <resultMap id="LineItemViewResult" type="com.wellkorea.backend.quotation.api.dto.query.LineItemView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="product_id" javaType="Long"/>
+            <arg column="product_sku" javaType="String"/>
+            <arg column="product_name" javaType="String"/>
+            <arg column="sequence" javaType="Integer"/>
+            <arg column="quantity" javaType="java.math.BigDecimal"/>
+            <arg column="unit_price" javaType="java.math.BigDecimal"/>
+            <arg column="line_total" javaType="java.math.BigDecimal"/>
+            <arg column="notes" javaType="String"/>
+        </constructor>
+    </resultMap>
+
+    <!-- QuotationDetailView result map with nested select for line items -->
+    <resultMap id="QuotationDetailViewResult" type="com.wellkorea.backend.quotation.api.dto.query.QuotationDetailView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="project_name" javaType="String"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="version" javaType="Integer"/>
+            <arg column="status" javaType="com.wellkorea.backend.quotation.domain.QuotationStatus"/>
+            <arg column="quotation_date" javaType="java.time.LocalDate"/>
+            <arg column="validity_days" javaType="Integer"/>
+            <arg column="expiry_date" javaType="java.time.LocalDate"/>
+            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="created_by_id" javaType="Long"/>
+            <arg column="created_by_name" javaType="String"/>
+            <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
+            <arg column="approved_at" javaType="java.time.LocalDateTime"/>
+            <arg column="approved_by_id" javaType="Long"/>
+            <arg column="approved_by_name" javaType="String"/>
+            <arg column="rejection_reason" javaType="String"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+            <arg column="id" javaType="java.util.List" select="findLineItemsByQuotationId"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Main query: Find quotation detail by ID -->
+    <select id="findDetailById" resultMap="QuotationDetailViewResult">
+        SELECT
+            q.id,
+            q.project_id,
+            p.project_name,
+            p.job_code,
+            q.version,
+            q.status,
+            q.quotation_date,
+            q.validity_days,
+            q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
+            q.total_amount,
+            q.notes,
+            q.created_by_id,
+            cu.full_name AS created_by_name,
+            q.submitted_at,
+            q.approved_at,
+            q.approved_by_id,
+            au.full_name AS approved_by_name,
+            q.rejection_reason,
+            q.created_at,
+            q.updated_at
+        FROM quotations q
+        INNER JOIN projects p ON q.project_id = p.id
+        INNER JOIN users cu ON q.created_by_id = cu.id
+        LEFT JOIN users au ON q.approved_by_id = au.id
+        WHERE q.id = #{id} AND q.is_deleted = false
+    </select>
+
+    <!-- Nested select: Find line items for a quotation (called once per quotation, not N times) -->
+    <select id="findLineItemsByQuotationId" resultMap="LineItemViewResult">
+        SELECT
+            li.id,
+            li.product_id,
+            prod.sku AS product_sku,
+            prod.name AS product_name,
+            li.sequence,
+            li.quantity,
+            li.unit_price,
+            li.line_total,
+            li.notes
+        FROM quotation_line_items li
+        INNER JOIN products prod ON li.product_id = prod.id
+        WHERE li.quotation_id = #{quotationId}
+        ORDER BY li.sequence
+    </select>
+
+    <!-- QuotationSummaryView result map for list queries -->
+    <resultMap id="QuotationSummaryViewResult" type="com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="project_name" javaType="String"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="version" javaType="Integer"/>
+            <arg column="status" javaType="com.wellkorea.backend.quotation.domain.QuotationStatus"/>
+            <arg column="quotation_date" javaType="java.time.LocalDate"/>
+            <arg column="validity_days" javaType="Integer"/>
+            <arg column="expiry_date" javaType="java.time.LocalDate"/>
+            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="created_by_id" javaType="Long"/>
+            <arg column="created_by_name" javaType="String"/>
+            <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
+            <arg column="approved_at" javaType="java.time.LocalDateTime"/>
+            <arg column="approved_by_id" javaType="Long"/>
+            <arg column="approved_by_name" javaType="String"/>
+            <arg column="rejection_reason" javaType="String"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find quotations with filters -->
+    <select id="findWithFilters" resultMap="QuotationSummaryViewResult">
+        SELECT
+            q.id,
+            q.project_id,
+            p.project_name,
+            p.job_code,
+            q.version,
+            q.status,
+            q.quotation_date,
+            q.validity_days,
+            q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
+            q.total_amount,
+            q.notes,
+            q.created_by_id,
+            cu.full_name AS created_by_name,
+            q.submitted_at,
+            q.approved_at,
+            q.approved_by_id,
+            au.full_name AS approved_by_name,
+            q.rejection_reason,
+            q.created_at,
+            q.updated_at
+        FROM quotations q
+        INNER JOIN projects p ON q.project_id = p.id
+        INNER JOIN users cu ON q.created_by_id = cu.id
+        LEFT JOIN users au ON q.approved_by_id = au.id
+        <where>
+            q.is_deleted = false
+            <if test="status != null">
+                AND q.status = #{status}
+            </if>
+            <if test="projectId != null">
+                AND q.project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY q.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count for pagination -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM quotations q
+        <where>
+            q.is_deleted = false
+            <if test="status != null">
+                AND q.status = #{status}
+            </if>
+            <if test="projectId != null">
+                AND q.project_id = #{projectId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

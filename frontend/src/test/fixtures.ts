@@ -19,6 +19,18 @@
 // Import UserDetails for the fixture factory
 import type { RoleName, User, UserDetails } from '@/shared/types/auth';
 import type { AuthStore } from '@/stores/authStore';
+import type {
+  QuotationDetails,
+  QuotationLineItem,
+  QuotationStatus,
+  ApprovalDetails,
+  ApprovalStatus,
+  LevelDecision,
+  ApprovalHistoryEntry,
+  ChainTemplate,
+  ChainLevel,
+} from '@/services/quotations/types';
+import type { ProductSummary } from '@/services/products/types';
 
 /**
  * Authentication state for test fixtures.
@@ -512,6 +524,226 @@ export const mockAuditLogs = {
     changes: null,
     metadata: null,
   }),
+};
+
+// ============================================================================
+// Quotation Fixtures
+// ============================================================================
+
+/**
+ * Factory function to create a mock QuotationLineItem.
+ */
+export function createMockLineItem(overrides?: Partial<QuotationLineItem>): QuotationLineItem {
+  return {
+    id: 1,
+    productId: 100,
+    productSku: 'SKU-001',
+    productName: 'Test Product',
+    sequence: 1,
+    quantity: 10,
+    unitPrice: 50000,
+    lineTotal: 500000,
+    notes: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Factory function to create a mock QuotationDetails.
+ */
+export function createMockQuotation(overrides?: Partial<QuotationDetails>): QuotationDetails {
+  return {
+    id: 1,
+    projectId: 1,
+    projectName: 'Test Project',
+    jobCode: 'WK22025-000001-20250101',
+    version: 1,
+    status: 'DRAFT' as QuotationStatus,
+    quotationDate: '2025-01-15',
+    validityDays: 30,
+    expiryDate: '2025-02-14',
+    totalAmount: 1500000,
+    notes: null,
+    createdById: 1,
+    createdByName: 'Test User',
+    submittedAt: null,
+    approvedAt: null,
+    approvedById: null,
+    approvedByName: null,
+    rejectionReason: null,
+    createdAt: '2025-01-15T00:00:00Z',
+    updatedAt: '2025-01-15T00:00:00Z',
+    lineItems: [createMockLineItem()],
+    ...overrides,
+  };
+}
+
+/**
+ * Pre-configured quotation fixtures.
+ */
+export const mockQuotations = {
+  draft: createMockQuotation({ id: 1, status: 'DRAFT' }),
+  pending: createMockQuotation({ id: 2, status: 'PENDING', submittedAt: '2025-01-15T10:00:00Z' }),
+  approved: createMockQuotation({
+    id: 3,
+    status: 'APPROVED',
+    submittedAt: '2025-01-15T10:00:00Z',
+    approvedAt: '2025-01-16T10:00:00Z',
+    approvedById: 2,
+    approvedByName: 'Approver User',
+  }),
+  rejected: createMockQuotation({
+    id: 4,
+    status: 'REJECTED',
+    submittedAt: '2025-01-15T10:00:00Z',
+    rejectionReason: 'Price too high',
+  }),
+};
+
+/**
+ * Factory function to create a mock LevelDecision.
+ */
+export function createMockLevelDecision(overrides?: Partial<LevelDecision>): LevelDecision {
+  return {
+    levelOrder: 1,
+    levelName: '팀장',
+    expectedApproverUserId: 10,
+    expectedApproverName: 'Team Lead',
+    decision: 'PENDING' as ApprovalStatus,
+    decidedByUserId: null,
+    decidedByName: null,
+    decidedAt: null,
+    comments: null,
+    ...overrides,
+  };
+}
+
+/**
+ * Factory function to create a mock ApprovalDetails.
+ */
+export function createMockApproval(overrides?: Partial<ApprovalDetails>): ApprovalDetails {
+  return {
+    id: 1,
+    entityType: 'QUOTATION',
+    entityId: 1,
+    entityDescription: 'Quotation #1',
+    currentLevel: 1,
+    totalLevels: 2,
+    status: 'PENDING' as ApprovalStatus,
+    submittedById: 1,
+    submittedByName: 'Submitter User',
+    submittedAt: '2025-01-15T10:00:00Z',
+    completedAt: null,
+    createdAt: '2025-01-15T10:00:00Z',
+    levels: [
+      createMockLevelDecision({ levelOrder: 1, levelName: '팀장' }),
+      createMockLevelDecision({ levelOrder: 2, levelName: '부서장', expectedApproverUserId: 20, expectedApproverName: 'Dept Head' }),
+    ],
+    ...overrides,
+  };
+}
+
+/**
+ * Pre-configured approval fixtures.
+ */
+export const mockApprovals = {
+  pending: createMockApproval(),
+  approved: createMockApproval({
+    id: 2,
+    status: 'APPROVED',
+    completedAt: '2025-01-16T10:00:00Z',
+    levels: [
+      createMockLevelDecision({ levelOrder: 1, decision: 'APPROVED', decidedByUserId: 10, decidedByName: 'Team Lead', decidedAt: '2025-01-15T14:00:00Z' }),
+      createMockLevelDecision({ levelOrder: 2, decision: 'APPROVED', decidedByUserId: 20, decidedByName: 'Dept Head', decidedAt: '2025-01-16T10:00:00Z' }),
+    ],
+  }),
+  rejected: createMockApproval({
+    id: 3,
+    status: 'REJECTED',
+    completedAt: '2025-01-15T15:00:00Z',
+    levels: [
+      createMockLevelDecision({ levelOrder: 1, decision: 'REJECTED', decidedByUserId: 10, decidedByName: 'Team Lead', decidedAt: '2025-01-15T15:00:00Z', comments: 'Rejected reason' }),
+    ],
+  }),
+};
+
+/**
+ * Factory function to create a mock ApprovalHistoryEntry.
+ */
+export function createMockHistoryEntry(overrides?: Partial<ApprovalHistoryEntry>): ApprovalHistoryEntry {
+  return {
+    id: 1,
+    levelOrder: 1,
+    levelName: '팀장',
+    action: 'SUBMITTED',
+    actorId: 1,
+    actorName: 'Submitter User',
+    comments: null,
+    createdAt: '2025-01-15T10:00:00Z',
+    ...overrides,
+  };
+}
+
+/**
+ * Factory function to create a mock ChainLevel.
+ */
+export function createMockChainLevel(overrides?: Partial<ChainLevel>): ChainLevel {
+  return {
+    id: 1,
+    levelOrder: 1,
+    levelName: '팀장',
+    approverUserId: 10,
+    approverUserName: 'Team Lead',
+    isRequired: true,
+    ...overrides,
+  };
+}
+
+/**
+ * Factory function to create a mock ChainTemplate.
+ */
+export function createMockChainTemplate(overrides?: Partial<ChainTemplate>): ChainTemplate {
+  return {
+    id: 1,
+    entityType: 'QUOTATION',
+    name: 'Quotation Approval Chain',
+    description: 'Default approval chain for quotations',
+    isActive: true,
+    levels: [
+      createMockChainLevel({ id: 1, levelOrder: 1, levelName: '팀장' }),
+      createMockChainLevel({ id: 2, levelOrder: 2, levelName: '부서장', approverUserId: 20, approverUserName: 'Dept Head' }),
+    ],
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
+/**
+ * Factory function to create a mock ProductSummary.
+ */
+export function createMockProduct(overrides?: Partial<ProductSummary>): ProductSummary {
+  return {
+    id: 1,
+    sku: 'SKU-001',
+    name: 'Test Product',
+    description: 'A test product description',
+    productTypeId: 1,
+    productTypeName: 'Electronics',
+    baseUnitPrice: 50000,
+    unit: 'EA',
+    isActive: true,
+    ...overrides,
+  };
+}
+
+/**
+ * Pre-configured product fixtures.
+ */
+export const mockProducts = {
+  active: createMockProduct(),
+  inactive: createMockProduct({ id: 2, sku: 'SKU-002', name: 'Inactive Product', isActive: false }),
+  withoutPrice: createMockProduct({ id: 3, sku: 'SKU-003', name: 'Custom Product', baseUnitPrice: null }),
 };
 
 // ============================================================================

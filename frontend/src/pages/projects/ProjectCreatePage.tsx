@@ -7,30 +7,9 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
+import type { CreateProjectRequest, ProjectCommandResult, UpdateProjectRequest } from '@/services';
 import { Card, Icon, PageHeader } from '@/components/ui';
-import {
-  JobCodeSuccessModal,
-  ProjectForm,
-  type SelectOption,
-  useProjectActions,
-} from '@/components/features/projects';
-
-// Mock data for customer/user dropdowns (to be replaced with real API)
-const MOCK_CUSTOMERS: SelectOption[] = [
-  { id: 1, name: 'Samsung Electronics' },
-  { id: 2, name: 'LG Display' },
-  { id: 3, name: 'SK Hynix' },
-  { id: 4, name: 'Hyundai Motor' },
-  { id: 5, name: 'POSCO' },
-];
-
-const MOCK_USERS: SelectOption[] = [
-  { id: 1, name: 'Kim Minjun (Admin)' },
-  { id: 2, name: 'Lee Jiwon (Sales)' },
-  { id: 3, name: 'Park Seohyun (Finance)' },
-  { id: 4, name: 'Choi Daehyun (Production)' },
-];
+import { JobCodeSuccessModal, ProjectForm, useProjectActions } from '@/components/features/projects';
 
 export function ProjectCreatePage() {
   const navigate = useNavigate();
@@ -38,13 +17,13 @@ export function ProjectCreatePage() {
 
   // Local UI State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [createdProject, setCreatedProject] = useState<ProjectDetails | null>(null);
+  const [createdResult, setCreatedResult] = useState<ProjectCommandResult | null>(null);
 
   const handleSubmit = async (data: CreateProjectRequest | UpdateProjectRequest) => {
     try {
       // In create mode, the form always provides CreateProjectRequest
-      const project = await createProject(data as CreateProjectRequest);
-      setCreatedProject(project);
+      const result = await createProject(data as CreateProjectRequest);
+      setCreatedResult(result);
       setShowSuccessModal(true);
     } catch {
       // Error is handled by the hook
@@ -61,8 +40,8 @@ export function ProjectCreatePage() {
   };
 
   const handleViewProject = () => {
-    if (createdProject) {
-      navigate(`/projects/${createdProject.id}`);
+    if (createdResult) {
+      navigate(`/projects/${createdResult.id}`);
     }
   };
 
@@ -91,8 +70,6 @@ export function ProjectCreatePage() {
           <h2 className="mb-6 text-lg font-semibold text-white">Project Details</h2>
           <ProjectForm
             mode="create"
-            customers={MOCK_CUSTOMERS}
-            users={MOCK_USERS}
             onSubmit={handleSubmit}
             onCancel={handleCancel}
             isSubmitting={isLoading}
@@ -103,10 +80,10 @@ export function ProjectCreatePage() {
       </Card>
 
       {/* Success Modal */}
-      {createdProject && (
+      {createdResult?.jobCode && (
         <JobCodeSuccessModal
           isOpen={showSuccessModal}
-          jobCode={createdProject.jobCode}
+          jobCode={createdResult.jobCode}
           onClose={handleSuccessClose}
           onViewProject={handleViewProject}
         />

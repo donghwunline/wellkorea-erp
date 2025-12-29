@@ -3,6 +3,7 @@ package com.wellkorea.backend.auth.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.BaseIntegrationTest;
 import com.wellkorea.backend.auth.api.dto.LoginRequest;
+import com.wellkorea.backend.auth.application.TokenBlacklistService;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.shared.ratelimit.RateLimiter;
 import com.wellkorea.backend.shared.test.DatabaseTestHelper;
@@ -55,10 +56,15 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
     @Autowired
     private RateLimiter rateLimiter;
 
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
     @BeforeEach
     void setUp() {
         // Clear rate limiter state between tests
         rateLimiter.clearAll();
+        // Clear token blacklist state between tests (prevents cross-test contamination)
+        tokenBlacklistService.clearAll();
         // Insert test users with roles (password: TEST_PASSWORD)
         DatabaseTestHelper.insertTestUsersWithRoles(jdbcTemplate);
     }
@@ -183,8 +189,8 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
         @Test
         @DisplayName("should return 200 on valid token")
         void logout_WithValidToken_Returns200() throws Exception {
-            // Given - Generate valid token
-            String token = jwtTokenProvider.generateToken(ADMIN_USERNAME, "ROLE_ADMIN");
+            // Given - Generate valid token (userId=1 for admin)
+            String token = jwtTokenProvider.generateToken(ADMIN_USERNAME, "ROLE_ADMIN", TEST_USER_ID);
 
             // When & Then
             mockMvc.perform(post(LOGOUT_URL)
@@ -230,8 +236,8 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
         @Test
         @DisplayName("should return 200 with new token on valid token")
         void refresh_WithValidToken_Returns200WithNewToken() throws Exception {
-            // Given - Generate valid token
-            String token = jwtTokenProvider.generateToken(ADMIN_USERNAME, "ROLE_ADMIN");
+            // Given - Generate valid token (userId=1 for admin)
+            String token = jwtTokenProvider.generateToken(ADMIN_USERNAME, "ROLE_ADMIN", 1L);
 
             // When & Then
             mockMvc.perform(post(REFRESH_URL)
@@ -280,8 +286,8 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
         @Test
         @DisplayName("should return 200 with user info on valid token")
         void me_WithValidToken_Returns200WithUserInfo() throws Exception {
-            // Given - Generate valid token
-            String token = jwtTokenProvider.generateToken(ADMIN_USERNAME, "ROLE_ADMIN");
+            // Given - Generate valid token (userId=1 for admin)
+            String token = jwtTokenProvider.generateToken(ADMIN_USERNAME, "ROLE_ADMIN", 1L);
 
             // When & Then
             mockMvc.perform(get(ME_URL)
@@ -296,8 +302,8 @@ class AuthenticationControllerTest extends BaseIntegrationTest implements TestFi
         @Test
         @DisplayName("should return user with correct roles")
         void me_WithValidToken_ReturnsCorrectRoles() throws Exception {
-            // Given - Generate valid token for finance user
-            String token = jwtTokenProvider.generateToken(FINANCE_USERNAME, "ROLE_FINANCE");
+            // Given - Generate valid token for finance user (userId=2)
+            String token = jwtTokenProvider.generateToken(FINANCE_USERNAME, "ROLE_FINANCE", 2L);
 
             // When & Then
             mockMvc.perform(get(ME_URL)

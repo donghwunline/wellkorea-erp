@@ -5,7 +5,7 @@
  * Notifies parent via onSuccess callback after successful role assignment.
  */
 
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { type UserDetails, userService } from '@/services';
 import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/shared/types/auth';
 import { Badge, Button, ErrorAlert, Modal } from '@/components/ui';
@@ -24,11 +24,11 @@ export function UserRolesForm({ isOpen, user, onClose, onSuccess }: Readonly<Use
   const [error, setError] = useState<string | null>(null);
 
   // Update selected roles when user changes
-  useState(() => {
+  useEffect(() => {
     if (user) {
       setSelectedRoles([...user.roles]);
     }
-  });
+  }, [user]);
 
   const toggleRole = (role: RoleName) => {
     setSelectedRoles(prev =>
@@ -79,7 +79,7 @@ export function UserRolesForm({ isOpen, user, onClose, onSuccess }: Readonly<Use
         </div>
 
         <div>
-          <label className="mb-3 block text-sm font-medium text-steel-300">Select Roles</label>
+          <span className="mb-3 block text-sm font-medium text-steel-300">Select Roles</span>
           <div className="grid grid-cols-2 gap-3">
             {ALL_ROLES.map(role => (
               <button

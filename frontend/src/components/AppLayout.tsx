@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon, type IconName } from '@/components/ui';
 import { useAuth } from '@/shared/hooks';
-import type { RoleName } from '@/services';
+import type { RoleName } from '@/shared/types/auth.ts';
 
 interface NavItem {
   label: string;
@@ -24,44 +24,66 @@ interface NavItem {
   hideFromRoles?: RoleName[];
 }
 
-const NAV_ITEMS: NavItem[] = [
+// Operations - Main workflow menus
+const OPERATIONS_NAV_ITEMS: NavItem[] = [
   {
-    label: 'Dashboard',
+    label: '대시보드',
     path: '/',
     icon: 'home',
   },
   {
-    label: 'Projects',
+    label: '프로젝트',
     path: '/projects',
     icon: 'clipboard',
   },
   {
-    label: 'Quotations',
+    label: '견적',
     path: '/quotations',
     icon: 'document',
     hideFromRoles: ['ROLE_PRODUCTION'], // Production users cannot see quotations
   },
   {
-    label: 'Products',
-    path: '/products',
-    icon: 'box',
-  },
-  {
-    label: 'Production',
+    label: '공정',
     path: '/production',
     icon: 'cog',
   },
   {
-    label: 'Delivery',
+    label: '출고',
     path: '/delivery',
     icon: 'truck',
   },
   {
-    label: 'Invoices',
+    label: '정산',
     path: '/invoices',
     icon: 'cash',
     roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance can see invoices
   },
+];
+
+// Master Data - Reference/catalog data management
+const MASTER_DATA_NAV_ITEMS: NavItem[] = [
+  {
+    label: '아이템',
+    path: '/items',
+    icon: 'box',
+    roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance can manage items
+  },
+  {
+    label: 'CRM',
+    path: '/companies',
+    icon: 'building-office',
+    roles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'],
+  },
+  {
+    label: '조달',
+    path: '/procurement',
+    icon: 'shopping-cart',
+    roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance can manage procurement
+  },
+];
+
+// Reports
+const REPORTS_NAV_ITEMS: NavItem[] = [
   {
     label: 'AR/AP Reports',
     path: '/reports',
@@ -70,15 +92,29 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+const APPROVAL_NAV_ITEMS: NavItem[] = [
+  {
+    label: '결재 대기 문서',
+    path: '/approvals',
+    icon: 'check-circle',
+  },
+  {
+    label: '결재 설정',
+    path: '/admin/approval-chains',
+    icon: 'cog',
+    roles: ['ROLE_ADMIN'],
+  },
+];
+
 const ADMIN_NAV_ITEMS: NavItem[] = [
   {
-    label: 'User Management',
+    label: '사용자 관리',
     path: '/admin/users',
     icon: 'users',
     roles: ['ROLE_ADMIN'],
   },
   {
-    label: 'Audit Logs',
+    label: '이력 확인',
     path: '/admin/audit',
     icon: 'document',
     roles: ['ROLE_ADMIN'],
@@ -111,7 +147,10 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
     });
   };
 
-  const visibleNavItems = filterNavItems(NAV_ITEMS);
+  const visibleOperationsItems = filterNavItems(OPERATIONS_NAV_ITEMS);
+  const visibleMasterDataItems = filterNavItems(MASTER_DATA_NAV_ITEMS);
+  const visibleReportsItems = filterNavItems(REPORTS_NAV_ITEMS);
+  const visibleApprovalItems = filterNavItems(APPROVAL_NAV_ITEMS);
   const visibleAdminItems = filterNavItems(ADMIN_NAV_ITEMS);
 
   const handleLogout = () => {
@@ -156,8 +195,9 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
 
         {/* Main Navigation */}
         <nav className="flex-1 overflow-y-auto p-3">
+          {/* Operations Section */}
           <ul className="space-y-1">
-            {visibleNavItems.map(item => (
+            {visibleOperationsItems.map(item => (
               <li key={item.path}>
                 <Link
                   to={item.path}
@@ -174,6 +214,97 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
               </li>
             ))}
           </ul>
+
+          {/* Master Data Section */}
+          {visibleMasterDataItems.length > 0 && (
+            <>
+              <div className="my-4 border-t border-steel-800/50" />
+              {!sidebarCollapsed && (
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-steel-500">
+                  Master Data
+                </p>
+              )}
+              <ul className="space-y-1">
+                {visibleMasterDataItems.map(item => (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                        isActive(item.path) ||
+                        (item.path === '/items' && location.pathname.startsWith('/items'))
+                          ? 'bg-copper-500/10 text-copper-400'
+                          : 'text-steel-400 hover:bg-steel-800 hover:text-white'
+                      }`}
+                      title={sidebarCollapsed ? item.label : undefined}
+                    >
+                      <Icon name={item.icon} className="h-5 w-5 shrink-0" />
+                      {!sidebarCollapsed && <span>{item.label}</span>}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {/* Reports Section */}
+          {visibleReportsItems.length > 0 && (
+            <>
+              <div className="my-4 border-t border-steel-800/50" />
+              {!sidebarCollapsed && (
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-steel-500">
+                  Reports
+                </p>
+              )}
+              <ul className="space-y-1">
+                {visibleReportsItems.map(item => (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                        isActive(item.path)
+                          ? 'bg-copper-500/10 text-copper-400'
+                          : 'text-steel-400 hover:bg-steel-800 hover:text-white'
+                      }`}
+                      title={sidebarCollapsed ? item.label : undefined}
+                    >
+                      <Icon name={item.icon} className="h-5 w-5 shrink-0" />
+                      {!sidebarCollapsed && <span>{item.label}</span>}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {/* Approval Section */}
+          {visibleApprovalItems.length > 0 && (
+            <>
+              <div className="my-4 border-t border-steel-800/50" />
+              {!sidebarCollapsed && (
+                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-steel-500">
+                  Approval
+                </p>
+              )}
+              <ul className="space-y-1">
+                {visibleApprovalItems.map(item => (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                        isActive(item.path)
+                          ? 'bg-copper-500/10 text-copper-400'
+                          : 'text-steel-400 hover:bg-steel-800 hover:text-white'
+                      }`}
+                      title={sidebarCollapsed ? item.label : undefined}
+                    >
+                      <Icon name={item.icon} className="h-5 w-5 shrink-0" />
+                      {!sidebarCollapsed && <span>{item.label}</span>}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           {/* Admin Section */}
           {visibleAdminItems.length > 0 && (

@@ -8,24 +8,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails, UpdateProjectRequest } from '@/services';
-import { Alert, Card, Icon, PageHeader } from '@/components/ui';
-import { ProjectForm, type SelectOption, useProjectActions } from '@/components/features/projects';
-
-// Mock data for customer/user dropdowns (to be replaced with real API)
-const MOCK_CUSTOMERS: SelectOption[] = [
-  { id: 1, name: 'Samsung Electronics' },
-  { id: 2, name: 'LG Display' },
-  { id: 3, name: 'SK Hynix' },
-  { id: 4, name: 'Hyundai Motor' },
-  { id: 5, name: 'POSCO' },
-];
-
-const MOCK_USERS: SelectOption[] = [
-  { id: 1, name: 'Kim Minjun (Admin)' },
-  { id: 2, name: 'Lee Jiwon (Sales)' },
-  { id: 3, name: 'Park Seohyun (Finance)' },
-  { id: 4, name: 'Choi Daehyun (Production)' },
-];
+import { Alert, Card, Icon, PageHeader, Spinner } from '@/components/ui';
+import { ProjectForm, useProjectActions } from '@/components/features/projects';
 
 export function ProjectEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -89,7 +73,7 @@ export function ProjectEditPage() {
         </PageHeader>
         <Card className="mx-auto max-w-2xl">
           <div className="flex items-center justify-center p-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-steel-600 border-t-copper-500" />
+            <Spinner size="lg" label="Loading project" />
             <span className="ml-3 text-steel-400">Loading project...</span>
           </div>
         </Card>
@@ -169,8 +153,6 @@ export function ProjectEditPage() {
           <ProjectForm
             mode="edit"
             initialData={project}
-            customers={MOCK_CUSTOMERS}
-            users={MOCK_USERS}
             onSubmit={handleSubmit}
             onCancel={handleCancel}
             isSubmitting={isLoading}

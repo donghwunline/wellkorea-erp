@@ -26,7 +26,6 @@ export default defineConfig({
         '**/dist/**',
         '**/*.test.{ts,tsx}',
         '**/*.spec.{ts,tsx}',
-        'src/pages/projects/{ProjectDeliveryPage,ProjectDocumentsPage,ProjectFinancePage,ProjectOutsourcePage,ProjectProcessPage,ProjectQuotationPage}.{ts,tsx}',
       ],
       thresholds: {
         lines: 70,

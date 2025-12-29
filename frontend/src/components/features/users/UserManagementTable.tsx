@@ -11,9 +11,8 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { userService } from '@/services';
-import type { UserDetails } from '@/shared/types';
-import { ROLE_LABELS, type RoleName } from '@/shared/types';
+import { ROLE_LABELS, type RoleName, type UserDetails, userService } from '@/services';
+import { formatDateTime } from '@/shared/utils';
 import type { PaginationMetadata } from '@/api/types';
 import {
   Badge,
@@ -131,18 +130,6 @@ export function UserManagementTable({
     [fetchUsers, onError]
   );
 
-  // Format date utility
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   // Render loading state
   if (isLoading) {
     return (
@@ -227,7 +214,7 @@ export function UserManagementTable({
                       {user.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell className="text-steel-400">{formatDate(user.lastLoginAt)}</Table.Cell>
+                  <Table.Cell className="text-steel-400">{formatDateTime(user.lastLoginAt)}</Table.Cell>
                   <Table.Cell>
                     <div className="flex justify-end gap-2">
                       <IconButton

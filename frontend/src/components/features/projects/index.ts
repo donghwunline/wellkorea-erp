@@ -6,7 +6,7 @@ export { ProjectTable } from './ProjectTable';
 export type { ProjectTableProps } from './ProjectTable';
 
 export { ProjectForm } from './ProjectForm';
-export type { ProjectFormProps, SelectOption } from './ProjectForm';
+export type { ProjectFormProps } from './ProjectForm';
 
 export { ProjectDetailsCard } from './ProjectDetailsCard';
 export type { ProjectDetailsCardProps } from './ProjectDetailsCard';
@@ -19,6 +19,9 @@ export type { ProjectSummaryCardProps } from './ProjectSummaryCard';
 
 export { ProjectRelatedNavigationGrid } from './ProjectRelatedNavigationGrid';
 export type { ProjectRelatedNavigationGridProps } from './ProjectRelatedNavigationGrid';
+
+export { ProjectKPIStrip } from './ProjectKPIStrip';
+export type { ProjectKPIStripProps } from './ProjectKPIStrip';
 
 // Hooks
 export { useProjectActions, useProjectSummary } from './hooks';

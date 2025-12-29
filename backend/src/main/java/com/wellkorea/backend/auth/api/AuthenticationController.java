@@ -27,13 +27,9 @@ public class AuthenticationController {
      * Authenticate user and return JWT token.
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(
-            @Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
 
-        LoginResponse response = authenticationService.login(
-                request.username(),
-                request.password()
-        );
+        LoginResponse response = authenticationService.login(request.username(), request.password());
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

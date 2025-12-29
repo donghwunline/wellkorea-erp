@@ -12,13 +12,17 @@ import type { Paginated } from '@/api/types';
 import type { UserDetails } from '@/shared/types/auth';
 import { userService } from '@/services';
 
-// Mock userService
-vi.mock('@/services', () => ({
-  userService: {
-    getUsers: vi.fn(),
-    activateUser: vi.fn(),
-  },
-}));
+// Mock userService while preserving other exports
+vi.mock('@/services', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/services')>();
+  return {
+    ...actual,
+    userService: {
+      getUsers: vi.fn(),
+      activateUser: vi.fn(),
+    },
+  };
+});
 
 // Helper to create paginated response
 function createPaginatedUsers(

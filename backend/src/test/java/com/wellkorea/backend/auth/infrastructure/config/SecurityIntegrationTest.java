@@ -36,10 +36,10 @@ class SecurityIntegrationTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Generate test tokens for different roles using TestFixtures and Role enum
-        validAdminToken = jwtTokenProvider.generateToken(TestFixtures.ADMIN_USERNAME, Role.ADMIN.getAuthority());
-        validFinanceToken = jwtTokenProvider.generateToken(TestFixtures.FINANCE_USERNAME, Role.FINANCE.getAuthority());
-        validSalesToken = jwtTokenProvider.generateToken(TestFixtures.SALES_USERNAME, Role.SALES.getAuthority());
+        // Generate test tokens for different roles using TestFixtures and Role enum (userId required for approval workflows)
+        validAdminToken = jwtTokenProvider.generateToken(TestFixtures.ADMIN_USERNAME, Role.ADMIN.getAuthority(), TestFixtures.TEST_USER_ID);
+        validFinanceToken = jwtTokenProvider.generateToken(TestFixtures.FINANCE_USERNAME, Role.FINANCE.getAuthority(), 2L);
+        validSalesToken = jwtTokenProvider.generateToken(TestFixtures.SALES_USERNAME, Role.SALES.getAuthority(), 4L);
     }
 
     // ========== Public Endpoint Tests ==========
@@ -144,7 +144,7 @@ class SecurityIntegrationTest extends BaseIntegrationTest {
                 TestFixtures.JWT_SECRET,
                 1L
         );
-        String expiredToken = shortLivedProvider.generateToken(TestFixtures.TEST_USERNAME, Role.ADMIN.getAuthority());
+        String expiredToken = shortLivedProvider.generateToken(TestFixtures.TEST_USERNAME, Role.ADMIN.getAuthority(), 1L);
 
         // Wait for expiration
         Thread.sleep(10);

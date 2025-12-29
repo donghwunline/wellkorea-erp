@@ -91,6 +91,28 @@ management:
     health:
       show-details: when-authorized
 
+# Company Information (for quotations, invoices, emails)
+company:
+  name: 웰코리아(주)
+  name-en: WellKorea Co., Ltd.
+  registration-number: 123-45-67890
+  address: 대전광역시 유성구 테크노11로 44 (관평동)
+  phone: (042) 933-8115
+  fax: (042) 935-8115
+  design-dept-phone: (042) 934-8115
+  email: info@wellkorea.com
+  logo-path: classpath:assets/logo.png
+  seal-path: classpath:assets/seal.png
+
+# MyBatis Configuration (for CQRS query side - complex reads)
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.wellkorea.backend
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+
 # Logging Configuration
 logging:
   level:

@@ -13,25 +13,37 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProjectEditPage } from './ProjectEditPage';
-import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
+import type {
+  CreateProjectRequest,
+  ProjectCommandResult,
+  ProjectDetails,
+  UpdateProjectRequest,
+} from '@/services';
 
-// Helper to create mock project
-function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
-  return {
-    id: 42,
-    jobCode: 'WK2-2025-042-0120',
-    customerId: 1,
-    projectName: 'Test Project',
-    requesterName: 'John Doe',
-    dueDate: '2025-02-15',
-    internalOwnerId: 2,
-    status: 'ACTIVE',
-    createdById: 1,
-    createdAt: '2025-01-15T10:30:00Z',
-    updatedAt: '2025-01-16T14:45:00Z',
-    ...overrides,
-  };
-}
+// Default mock project details for getProject
+const DEFAULT_PROJECT: ProjectDetails = {
+  id: 42,
+  jobCode: 'WK2-2025-042-0120',
+  customerId: 1,
+  customerName: 'Test Customer',
+  projectName: 'Test Project',
+  requesterName: 'John Doe',
+  dueDate: '2025-02-15',
+  internalOwnerId: 2,
+  internalOwnerName: 'Test Owner',
+  status: 'ACTIVE',
+  createdById: 1,
+  createdByName: 'Test Creator',
+  createdAt: '2025-01-15T10:30:00Z',
+  updatedAt: '2025-01-16T14:45:00Z',
+};
+
+// Default mock command result for updateProject
+const DEFAULT_UPDATE_RESULT: ProjectCommandResult = {
+  id: 42,
+  message: 'Project updated successfully',
+  jobCode: null,
+};
 
 // Track props passed to mocked components
 let formProps: Record<string, unknown> = {};
@@ -111,7 +123,7 @@ describe('ProjectEditPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     formProps = {};
-    mockGetProject.mockResolvedValue(createMockProject());
+    mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
     // Reset the mock to default state
     vi.mocked(useProjectActions).mockReturnValue({
@@ -142,7 +154,7 @@ describe('ProjectEditPage', () => {
 
       // Resolve and wait for loading to complete
       await waitFor(() => {
-        resolvePromise!(createMockProject());
+        resolvePromise!(DEFAULT_PROJECT);
       });
     });
 
@@ -161,7 +173,7 @@ describe('ProjectEditPage', () => {
       expect(spinner).toBeInTheDocument();
 
       await waitFor(() => {
-        resolvePromise!(createMockProject());
+        resolvePromise!(DEFAULT_PROJECT);
       });
     });
   });
@@ -273,7 +285,7 @@ describe('ProjectEditPage', () => {
 
   describe('successful render', () => {
     it('should display Edit Project header', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -283,7 +295,7 @@ describe('ProjectEditPage', () => {
     });
 
     it('should display job code in header description', async () => {
-      mockGetProject.mockResolvedValue(createMockProject({ jobCode: 'WK2-2025-099-0131' }));
+      mockGetProject.mockResolvedValue({ ...DEFAULT_PROJECT, jobCode: 'WK2-2025-099-0131' });
 
       renderProjectEditPage();
 
@@ -293,7 +305,7 @@ describe('ProjectEditPage', () => {
     });
 
     it('should render Edit Project Details heading', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -303,7 +315,7 @@ describe('ProjectEditPage', () => {
     });
 
     it('should render ProjectForm', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -313,7 +325,7 @@ describe('ProjectEditPage', () => {
     });
 
     it('should render Back to Project link', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -325,7 +337,7 @@ describe('ProjectEditPage', () => {
 
   describe('form props', () => {
     it('should pass mode="edit" to form', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -335,7 +347,7 @@ describe('ProjectEditPage', () => {
     });
 
     it('should pass initialData to form', async () => {
-      mockGetProject.mockResolvedValue(createMockProject({ projectName: 'My Existing Project' }));
+      mockGetProject.mockResolvedValue({ ...DEFAULT_PROJECT, projectName: 'My Existing Project' });
 
       renderProjectEditPage();
 
@@ -344,30 +356,8 @@ describe('ProjectEditPage', () => {
       });
     });
 
-    it('should pass customers to form', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectEditPage();
-
-      await waitFor(() => {
-        expect(formProps.customers).toBeDefined();
-        expect(Array.isArray(formProps.customers)).toBe(true);
-      });
-    });
-
-    it('should pass users to form', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectEditPage();
-
-      await waitFor(() => {
-        expect(formProps.users).toBeDefined();
-        expect(Array.isArray(formProps.users)).toBe(true);
-      });
-    });
-
     it('should pass isSubmitting from hook', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -377,7 +367,7 @@ describe('ProjectEditPage', () => {
     });
 
     it('should pass clearError as onDismissError', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -390,8 +380,8 @@ describe('ProjectEditPage', () => {
   describe('form submission', () => {
     it('should call updateProject when form is submitted', async () => {
       const user = userEvent.setup();
-      mockGetProject.mockResolvedValue(createMockProject({ id: 42 }));
-      mockUpdateProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
+      mockUpdateProject.mockResolvedValue(DEFAULT_UPDATE_RESULT);
 
       renderProjectEditPage('42');
 
@@ -411,8 +401,8 @@ describe('ProjectEditPage', () => {
 
     it('should navigate to project view after successful update', async () => {
       const user = userEvent.setup();
-      mockGetProject.mockResolvedValue(createMockProject({ id: 42 }));
-      mockUpdateProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
+      mockUpdateProject.mockResolvedValue(DEFAULT_UPDATE_RESULT);
 
       renderProjectEditPage('42');
 
@@ -429,7 +419,7 @@ describe('ProjectEditPage', () => {
 
     it('should not navigate when update fails', async () => {
       const user = userEvent.setup();
-      mockGetProject.mockResolvedValue(createMockProject({ id: 42 }));
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
       mockUpdateProject.mockRejectedValue(new Error('Update failed'));
 
       renderProjectEditPage('42');
@@ -451,7 +441,7 @@ describe('ProjectEditPage', () => {
   describe('navigation', () => {
     it('should navigate to project view when Back to Project is clicked', async () => {
       const user = userEvent.setup();
-      mockGetProject.mockResolvedValue(createMockProject({ id: 42 }));
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage('42');
 
@@ -466,7 +456,7 @@ describe('ProjectEditPage', () => {
 
     it('should navigate to project view when form cancel is clicked', async () => {
       const user = userEvent.setup();
-      mockGetProject.mockResolvedValue(createMockProject({ id: 42 }));
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage('42');
 
@@ -482,7 +472,7 @@ describe('ProjectEditPage', () => {
 
   describe('data fetching', () => {
     it('should call getProject with project id from URL', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage('99');
 
@@ -495,7 +485,7 @@ describe('ProjectEditPage', () => {
       // This test verifies the component has correct dependencies for refetching.
       // Note: Testing actual route changes requires integration tests with real routing.
       // The component's useEffect depends on `id`, so it will refetch when id changes.
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage('1');
 
@@ -515,7 +505,7 @@ describe('ProjectEditPage', () => {
 
   describe('loading state during submission', () => {
     it('should pass isLoading to form as isSubmitting', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       vi.mocked(useProjectActions).mockReturnValue({
         getProject: mockGetProject,
@@ -536,7 +526,7 @@ describe('ProjectEditPage', () => {
 
   describe('error handling during edit', () => {
     it('should pass error to form', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       vi.mocked(useProjectActions).mockReturnValue({
         getProject: mockGetProject,
@@ -557,7 +547,7 @@ describe('ProjectEditPage', () => {
 
   describe('accessibility', () => {
     it('should have accessible page heading', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -568,7 +558,7 @@ describe('ProjectEditPage', () => {
     });
 
     it('should have accessible section heading', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       renderProjectEditPage();
 
@@ -580,7 +570,7 @@ describe('ProjectEditPage', () => {
 
   describe('layout', () => {
     it('should render with proper background styling', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       const { container } = renderProjectEditPage();
 
@@ -594,7 +584,7 @@ describe('ProjectEditPage', () => {
     });
 
     it('should render form in a Card', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockGetProject.mockResolvedValue(DEFAULT_PROJECT);
 
       const { container } = renderProjectEditPage();
 
@@ -607,31 +597,4 @@ describe('ProjectEditPage', () => {
     });
   });
 
-  describe('mock data', () => {
-    it('should provide mock customers', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectEditPage();
-
-      await waitFor(() => {
-        const customers = formProps.customers as Array<{ id: number; name: string }>;
-        expect(customers.length).toBeGreaterThan(0);
-        expect(customers[0]).toHaveProperty('id');
-        expect(customers[0]).toHaveProperty('name');
-      });
-    });
-
-    it('should provide mock users', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectEditPage();
-
-      await waitFor(() => {
-        const users = formProps.users as Array<{ id: number; name: string }>;
-        expect(users.length).toBeGreaterThan(0);
-        expect(users[0]).toHaveProperty('id');
-        expect(users[0]).toHaveProperty('name');
-      });
-    });
-  });
 });

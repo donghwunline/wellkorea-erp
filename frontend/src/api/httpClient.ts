@@ -10,7 +10,8 @@
  */
 
 import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
-import type { ApiError, ApiResponse, Tokens, TokenStore } from './types';
+import { ApiError } from './types';
+import type { ApiResponse, Tokens, TokenStore } from './types';
 import { AUTH_ENDPOINTS } from './endpoints';
 
 /**
@@ -22,19 +23,19 @@ interface PendingRequest {
 }
 
 /**
- * Normalize Axios error to ApiError interface.
+ * Normalize Axios error to ApiError class instance.
  */
 function normalizeAxiosError(err: unknown): ApiError {
   const axiosError = err as AxiosError<{ errorCode?: string; message?: string }>;
   const status = axiosError.response?.status ?? 0;
   const data = axiosError.response?.data;
 
-  return {
+  return new ApiError(
     status,
-    errorCode: data?.errorCode,
-    message: data?.message ?? axiosError.message ?? 'Request failed',
-    details: data ?? axiosError.toJSON?.(),
-  };
+    data?.message ?? axiosError.message ?? 'Request failed',
+    data?.errorCode,
+    data ?? axiosError.toJSON?.()
+  );
 }
 
 /**
@@ -96,7 +97,7 @@ export class HttpClient {
 
         // Cannot retry if not 401
         if (!originalRequest || !is401) {
-          return Promise.reject(apiError);
+          throw apiError;
         }
 
         // Only refresh token if it's expired (AUTH_003), not for authentication failures (AUTH_001)
@@ -104,12 +105,12 @@ export class HttpClient {
         const shouldRefreshToken = apiError.errorCode === 'AUTH_003';
 
         if (!shouldRefreshToken) {
-          return Promise.reject(apiError);
+          throw apiError;
         }
 
         // Prevent infinite retry loop
         if (originalRequest._retry) {
-          return Promise.reject(apiError);
+          throw apiError;
         }
         originalRequest._retry = true;
 
@@ -118,7 +119,7 @@ export class HttpClient {
         if (!tokens?.accessToken) {
           this.tokenStore.clear();
           this.onUnauthorized?.();
-          return Promise.reject(apiError);
+          throw apiError;
         }
 
         // Queue requests if refresh is in progress
@@ -149,7 +150,7 @@ export class HttpClient {
           this.pendingQueue.forEach(p => p.reject(normalized));
           this.pendingQueue = [];
 
-          return Promise.reject(normalized);
+          throw normalized;
         } finally {
           this.isRefreshing = false;
         }
@@ -198,6 +199,15 @@ export class HttpClient {
    */
   async requestWithMeta<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await this.client.request<ApiResponse<T>>(config);
+    return response.data;
+  }
+
+  /**
+   * Make HTTP request and return raw response data without ApiResponse unwrapping.
+   * Use for binary responses (PDF, images) or non-standard API endpoints.
+   */
+  async requestRaw<T>(config: AxiosRequestConfig): Promise<T> {
+    const response = await this.client.request<T>(config);
     return response.data;
   }
 

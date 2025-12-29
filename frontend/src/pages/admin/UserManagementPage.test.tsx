@@ -206,7 +206,7 @@ describe('UserManagementPage', () => {
     it('should render page header with title and description', () => {
       renderUserManagementPage();
 
-      expect(screen.getByText('User Management')).toBeInTheDocument();
+      expect(screen.getByText('사용자 관리')).toBeInTheDocument();
       expect(screen.getByText('Manage system users and their roles')).toBeInTheDocument();
     });
 
@@ -592,7 +592,7 @@ describe('UserManagementPage', () => {
     it('should have accessible page heading', () => {
       renderUserManagementPage();
 
-      expect(screen.getByRole('heading', { name: /user management/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /사용자 관리/i })).toBeInTheDocument();
     });
 
     it('should have accessible Add User button', () => {

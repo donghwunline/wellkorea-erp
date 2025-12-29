@@ -10,19 +10,23 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { AuditLogPage } from './pages/admin/AuditLogPage';
+import { ApprovalChainConfigPage } from './pages/approval/ApprovalChainConfigPage.tsx';
+import { ApprovalListPage } from './pages/approval/ApprovalListPage.tsx';
 import {
-  ProjectListPage,
   ProjectCreatePage,
-  ProjectViewPage,
   ProjectEditPage,
-  // Project sub-pages
-  ProjectQuotationPage,
-  ProjectProcessPage,
-  ProjectOutsourcePage,
-  ProjectDeliveryPage,
-  ProjectDocumentsPage,
-  ProjectFinancePage,
+  ProjectListPage,
+  ProjectViewPage,
 } from './pages/projects';
+import {
+  QuotationCreatePage,
+  QuotationDetailPage,
+  QuotationEditPage,
+  QuotationListPage,
+} from './pages/quotations';
+import { CompanyListPage, CompanyDetailPage, CreateCompanyPage } from './pages/companies';
+import { ItemsPage } from './pages/items';
+import { ProcurementPage } from './pages/procurement';
 
 const NotFoundPage = () => (
   <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-steel-950">
@@ -132,89 +136,159 @@ function App() {
             }
           />
 
-          {/* Project sub-pages */}
+          {/* Project quotation sub-routes */}
           <Route
-            path="/projects/:id/quotation"
+            path="/projects/:projectId/quotations/create"
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <ProjectQuotationPage />
+                  <QuotationCreatePage />
                 </AppLayout>
               </ProtectedRoute>
             }
           />
           <Route
-            path="/projects/:id/process"
+            path="/projects/:projectId/quotations/:id"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <QuotationDetailPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/quotations/:id/edit"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <QuotationEditPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Quotation routes */}
+          <Route
+            path="/quotations"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <QuotationListPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quotations/create"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <QuotationCreatePage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quotations/:id"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <QuotationDetailPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quotations/:id/edit"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <QuotationEditPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Approval routes */}
+          <Route
+            path="/approvals"
             element={
               <ProtectedRoute>
                 <AppLayout>
-                  <ProjectProcessPage />
+                  <ApprovalListPage />
                 </AppLayout>
               </ProtectedRoute>
             }
           />
+
+          {/* Company routes */}
           <Route
-            path="/projects/:id/outsource"
+            path="/companies"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <ProjectOutsourcePage />
+                  <CompanyListPage />
                 </AppLayout>
               </ProtectedRoute>
             }
           />
           <Route
-            path="/projects/:id/delivery"
-            element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <ProjectDeliveryPage />
-                </AppLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/projects/:id/documents"
-            element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <ProjectDocumentsPage />
-                </AppLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/projects/:id/finance"
+            path="/companies/new"
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
                 <AppLayout>
-                  <ProjectFinancePage />
+                  <CreateCompanyPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/companies/:id"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
+                <AppLayout>
+                  <CompanyDetailPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/companies/:id/edit"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <PlaceholderPage title="Edit Company" />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Items route (Products + Purchased Items tabs) */}
+          <Route
+            path="/items"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <ItemsPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Procurement route */}
+          <Route
+            path="/procurement"
+            element={
+              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']}>
+                <AppLayout>
+                  <ProcurementPage />
                 </AppLayout>
               </ProtectedRoute>
             }
           />
 
           {/* Other module routes (placeholders) */}
-          <Route
-            path="/quotations"
-            element={
-              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
-                <AppLayout>
-                  <PlaceholderPage title="Quotations" />
-                </AppLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/products"
-            element={
-              <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
-                <AppLayout>
-                  <PlaceholderPage title="Products" />
-                </AppLayout>
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/production"
             element={
@@ -277,7 +351,16 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/admin/approval-chains"
+            element={
+              <ProtectedRoute requiredRole="ROLE_ADMIN">
+                <AppLayout>
+                  <ApprovalChainConfigPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
           {/* Catch-all route */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

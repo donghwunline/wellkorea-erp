@@ -205,7 +205,7 @@ describe('HttpClient', () => {
       } as AxiosError;
 
       // When: Error interceptor runs
-      await expect(responseInterceptorError(axiosError)).rejects.toEqual({
+      await expect(responseInterceptorError(axiosError)).rejects.toMatchObject({
         status: 404,
         errorCode: 'RES_001',
         message: 'Resource not found',
@@ -225,7 +225,7 @@ describe('HttpClient', () => {
       } as AxiosError;
 
       // When: Error interceptor runs
-      await expect(responseInterceptorError(axiosError)).rejects.toEqual({
+      await expect(responseInterceptorError(axiosError)).rejects.toMatchObject({
         status: 0,
         errorCode: undefined,
         message: 'Network Error',
@@ -332,7 +332,7 @@ describe('HttpClient', () => {
       vi.mocked(mockRefreshAxiosInstance.post).mockRejectedValue(refreshError);
 
       // When: Error interceptor runs
-      await expect(responseInterceptorError(axiosError)).rejects.toEqual({
+      await expect(responseInterceptorError(axiosError)).rejects.toMatchObject({
         status: 401,
         errorCode: 'AUTH_002',
         message: 'Invalid token',
@@ -365,7 +365,7 @@ describe('HttpClient', () => {
       } as AxiosError;
 
       // When: Error interceptor runs
-      await expect(responseInterceptorError(axiosError)).rejects.toEqual({
+      await expect(responseInterceptorError(axiosError)).rejects.toMatchObject({
         status: 401,
         errorCode: 'AUTH_001',
         message: 'Invalid credentials',
@@ -390,7 +390,7 @@ describe('HttpClient', () => {
       } as AxiosError;
 
       // When: Error interceptor runs
-      await expect(responseInterceptorError(axiosError)).rejects.toEqual({
+      await expect(responseInterceptorError(axiosError)).rejects.toMatchObject({
         status: 401,
         errorCode: 'AUTH_002',
         message: 'Invalid token',

@@ -7,7 +7,9 @@ export { projectSummaryService } from './projectSummaryService';
 export type {
   CreateProjectRequest,
   PaginatedProjects,
+  ProjectCommandResult,
   ProjectDetails,
+  ProjectListItem,
   ProjectListParams,
   ProjectStatus,
   UpdateProjectRequest,
@@ -15,5 +17,7 @@ export type {
   ProjectSection,
   ProjectSectionSummary,
   ProjectSummary,
+  // Project KPI types
+  ProjectKPI,
 } from './types';
 export { PROJECT_STATUS_LABELS } from './types';

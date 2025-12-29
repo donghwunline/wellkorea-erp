@@ -1,14 +1,16 @@
 package com.wellkorea.backend.project.api;
 
 import com.wellkorea.backend.auth.application.CustomerAssignmentService;
-import com.wellkorea.backend.auth.application.UserService;
+import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.auth.domain.Role;
-import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
-import com.wellkorea.backend.project.api.dto.ProjectResponse;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
-import com.wellkorea.backend.project.application.ProjectService;
-import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.project.api.dto.command.ProjectCommandResult;
+import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
+import com.wellkorea.backend.project.api.dto.query.ProjectSummaryView;
+import com.wellkorea.backend.project.application.ProjectCommandService;
+import com.wellkorea.backend.project.application.ProjectCommandService.CreateProjectResult;
+import com.wellkorea.backend.project.application.ProjectQueryService;
 import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -19,14 +21,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
  * REST API controller for project management.
- * Provides endpoints for CRUD operations on projects and job codes.
+ * Follows CQRS pattern with separate query and command services.
  * <p>
  * RBAC Rules:
  * - Admin, Finance, Sales: Full CRUD access
@@ -36,44 +37,21 @@ import java.util.List;
 @RequestMapping("/api/projects")
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectQueryService queryService;
+    private final ProjectCommandService commandService;
     private final CustomerAssignmentService customerAssignmentService;
-    private final UserService userService;
 
     public ProjectController(
-            ProjectService projectService,
-            CustomerAssignmentService customerAssignmentService,
-            UserService userService) {
-        this.projectService = projectService;
+            ProjectQueryService queryService,
+            ProjectCommandService commandService,
+            CustomerAssignmentService customerAssignmentService
+    ) {
+        this.queryService = queryService;
+        this.commandService = commandService;
         this.customerAssignmentService = customerAssignmentService;
-        this.userService = userService;
     }
 
-    /**
-     * Create a new project with auto-generated JobCode.
-     * <p>
-     * POST /api/projects
-     * <p>
-     * Access: ADMIN, FINANCE, SALES
-     *
-     * @param request     Create project request
-     * @param currentUser Authenticated user from Spring Security
-     * @return Created project with 201 status
-     */
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ProjectResponse>> createProject(
-            @Valid @RequestBody CreateProjectRequest request,
-            @AuthenticationPrincipal UserDetails currentUser) {
-
-        Long currentUserId = getUserId(currentUser);
-        Project project = projectService.createProject(request, currentUserId);
-        ProjectResponse response = ProjectResponse.from(project);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(response));
-    }
+    // ========== QUERY ENDPOINTS ==========
 
     /**
      * Get project by ID.
@@ -83,13 +61,12 @@ public class ProjectController {
      * Access: All authenticated users
      *
      * @param id Project ID
-     * @return Project details
+     * @return Project detail view with resolved names
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProjectResponse>> getProject(@PathVariable Long id) {
-        Project project = projectService.getProject(id);
-        ProjectResponse response = ProjectResponse.from(project);
-        return ResponseEntity.ok(ApiResponse.success(response));
+    public ResponseEntity<ApiResponse<ProjectDetailView>> getProject(@PathVariable Long id) {
+        ProjectDetailView detail = queryService.getProjectDetail(id);
+        return ResponseEntity.ok(ApiResponse.success(detail));
     }
 
     /**
@@ -105,50 +82,77 @@ public class ProjectController {
      * @param search      Optional search term (JobCode or project name)
      * @param pageable    Pagination parameters
      * @param currentUser Authenticated user from Spring Security
-     * @return Paginated list of projects
+     * @return Paginated list of project summary views
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ProjectResponse>>> listProjects(
+    public ResponseEntity<ApiResponse<Page<ProjectSummaryView>>> listProjects(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
             Pageable pageable,
-            @AuthenticationPrincipal UserDetails currentUser) {
-
-        Page<Project> projectsPage;
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ) {
+        Page<ProjectSummaryView> projectsPage;
 
         // Check if user is Sales role (needs customer filtering)
         boolean isSalesOnly = isSalesRoleOnly(currentUser);
 
         if (isSalesOnly) {
-            Long userId = getUserId(currentUser);
+            Long userId = currentUser.getUserId();
             List<Long> customerIds = customerAssignmentService.getAssignedCustomerIds(userId);
 
             if (status != null && !status.isBlank()) {
                 ProjectStatus projectStatus = ProjectStatus.fromString(status);
                 if (projectStatus != null) {
-                    projectsPage = projectService.listProjectsByCustomersAndStatus(
+                    projectsPage = queryService.listProjectsByCustomersAndStatus(
                             customerIds, projectStatus, pageable);
                 } else {
-                    projectsPage = projectService.listProjectsByCustomers(customerIds, pageable);
+                    projectsPage = queryService.listProjectsByCustomers(customerIds, pageable);
                 }
             } else {
-                projectsPage = projectService.listProjectsByCustomers(customerIds, pageable);
+                projectsPage = queryService.listProjectsByCustomers(customerIds, pageable);
             }
         } else if (search != null && !search.isBlank()) {
-            projectsPage = projectService.searchProjects(search, pageable);
+            projectsPage = queryService.searchProjects(search, pageable);
         } else if (status != null && !status.isBlank()) {
             ProjectStatus projectStatus = ProjectStatus.fromString(status);
             if (projectStatus != null) {
-                projectsPage = projectService.listProjectsByStatus(projectStatus, pageable);
+                projectsPage = queryService.listProjectsByStatus(projectStatus, pageable);
             } else {
-                projectsPage = projectService.listProjects(pageable);
+                projectsPage = queryService.listProjects(pageable);
             }
         } else {
-            projectsPage = projectService.listProjects(pageable);
+            projectsPage = queryService.listProjects(pageable);
         }
 
-        Page<ProjectResponse> responsePage = projectsPage.map(ProjectResponse::from);
-        return ResponseEntity.ok(ApiResponse.success(responsePage));
+        return ResponseEntity.ok(ApiResponse.success(projectsPage));
+    }
+
+    // ========== COMMAND ENDPOINTS ==========
+
+    /**
+     * Create a new project with auto-generated JobCode.
+     * <p>
+     * POST /api/projects
+     * <p>
+     * Access: ADMIN, FINANCE, SALES
+     *
+     * @param request     Create project request
+     * @param currentUser Authenticated user from Spring Security
+     * @return Command result with created project ID
+     */
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    public ResponseEntity<ApiResponse<ProjectCommandResult>> createProject(
+            @Valid @RequestBody CreateProjectRequest request,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ) {
+        Long currentUserId = currentUser.getUserId();
+        CreateProjectResult createResult = commandService.createProject(request, currentUserId);
+        ProjectCommandResult result = ProjectCommandResult.created(createResult.id(), createResult.jobCode());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(result));
     }
 
     /**
@@ -163,29 +167,29 @@ public class ProjectController {
      * @param id          Project ID
      * @param request     Update request
      * @param currentUser Authenticated user from Spring Security
-     * @return Updated project
+     * @return Command result with updated project ID
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<ProjectResponse>> updateProject(
+    public ResponseEntity<ApiResponse<ProjectCommandResult>> updateProject(
             @PathVariable Long id,
             @Valid @RequestBody UpdateProjectRequest request,
-            @AuthenticationPrincipal UserDetails currentUser) {
-
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ) {
         // Check if Sales user can access this project's customer (FR-062)
         if (isSalesRoleOnly(currentUser)) {
-            Long userId = getUserId(currentUser);
-            Project existingProject = projectService.getProject(id);
+            Long userId = currentUser.getUserId();
+            ProjectDetailView existingProject = queryService.getProjectDetail(id);
             List<Long> assignedCustomerIds = customerAssignmentService.getAssignedCustomerIds(userId);
 
-            if (!assignedCustomerIds.contains(existingProject.getCustomerId())) {
+            if (!assignedCustomerIds.contains(existingProject.customerId())) {
                 throw new AccessDeniedException("You are not authorized to update this project");
             }
         }
 
-        Project project = projectService.updateProject(id, request);
-        ProjectResponse response = ProjectResponse.from(project);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        Long projectId = commandService.updateProject(id, request);
+        ProjectCommandResult result = ProjectCommandResult.updated(projectId);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**
@@ -201,33 +205,21 @@ public class ProjectController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-        projectService.deleteProject(id);
+        commandService.deleteProject(id);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Get user ID from Spring Security principal.
-     * Looks up the user by username from the authenticated principal.
-     *
-     * @param userDetails Authenticated user details
-     * @return User ID
-     * @throws AccessDeniedException if user cannot be identified
-     */
-    private Long getUserId(UserDetails userDetails) {
-        return userService.findByUsername(userDetails.getUsername())
-                .map(User::getId)
-                .orElseThrow(() -> new AccessDeniedException("Unable to identify current user"));
-    }
+    // ========== HELPER METHODS ==========
 
     /**
      * Check if user has only Sales role (not Admin or Finance).
      * These users need customer assignment filtering (FR-062).
      *
-     * @param userDetails Authenticated user details
+     * @param currentUser Authenticated user
      * @return true if user has only Sales role
      */
-    private boolean isSalesRoleOnly(UserDetails userDetails) {
-        var authorities = userDetails.getAuthorities();
+    private boolean isSalesRoleOnly(AuthenticatedUser currentUser) {
+        var authorities = currentUser.getAuthorities();
         boolean hasSales = authorities.stream()
                 .anyMatch(a -> a.getAuthority().equals(Role.SALES.getAuthority()));
         boolean hasAdmin = authorities.stream()

@@ -38,20 +38,106 @@ export type {
 export { auditService } from './audit/auditService';
 export type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './audit/types';
 
+// Company service (unified Customer + Vendor + Outsource)
+export { companyService, ROLE_TYPE_LABELS } from './companies';
+export type {
+  RoleType,
+  CompanyRole,
+  AddRoleRequest,
+  CompanySummary,
+  CompanyDetails,
+  CreateCompanyRequest,
+  UpdateCompanyRequest,
+  CompanyCommandResult,
+  CompanyListParams,
+  PaginatedCompanies,
+} from './companies';
+
 // Project service
 export { projectService, projectSummaryService, PROJECT_STATUS_LABELS } from './projects';
 export type {
   ProjectDetails,
+  ProjectListItem,
   ProjectListParams,
   PaginatedProjects,
   CreateProjectRequest,
   UpdateProjectRequest,
+  ProjectCommandResult,
   ProjectStatus,
   // Project summary types
   ProjectSection,
   ProjectSectionSummary,
   ProjectSummary,
 } from './projects';
+
+// Quotation services
+export {
+  quotationService,
+  approvalService,
+  approvalChainService,
+  QUOTATION_STATUS_LABELS,
+  QUOTATION_STATUS_COLORS,
+  APPROVAL_STATUS_LABELS,
+} from './quotations';
+export type {
+  // CQRS types
+  CommandResult,
+  // Quotation types
+  QuotationStatus,
+  QuotationLineItem,
+  QuotationDetails,
+  LineItemRequest,
+  CreateQuotationRequest,
+  UpdateQuotationRequest,
+  QuotationListParams,
+  PaginatedQuotations,
+  // Approval types
+  ApprovalStatus,
+  EntityType,
+  LevelDecision,
+  ApprovalDetails,
+  ApprovalHistoryEntry,
+  ApproveRequest,
+  RejectRequest,
+  ApprovalListParams,
+  PaginatedApprovals,
+  // Approval chain types
+  ChainLevel,
+  ChainTemplate,
+  ChainLevelRequest,
+  UpdateChainLevelsRequest,
+} from './quotations';
+
+// Product service (Items → Products tab)
+export { productService } from './products';
+export type {
+  ProductType,
+  ProductSummary,
+  ProductDetails,
+  CreateProductRequest,
+  UpdateProductRequest,
+  ProductCommandResult,
+  ProductListParams,
+  PaginatedProducts,
+} from './products';
+
+// Catalog service (Items → Purchased Items tab)
+export { serviceCategoryService } from './catalog';
+export type {
+  ServiceCategorySummary,
+  ServiceCategoryDetails,
+  CreateServiceCategoryRequest,
+  UpdateServiceCategoryRequest,
+  ServiceCategoryCommandResult,
+  ServiceCategoryListParams,
+  PaginatedServiceCategories,
+  VendorServiceOffering,
+  CreateVendorOfferingRequest,
+  UpdateVendorOfferingRequest,
+  VendorOfferingCommandResult,
+  VendorOfferingListParams,
+  PaginatedVendorOfferings,
+} from './catalog';
 
 // Error utilities (re-exported from @/shared/utils for convenience)
 export {

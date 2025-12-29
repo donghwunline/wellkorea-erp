@@ -9,10 +9,10 @@ The UI components are organized by functional categories for better findability 
 ```
 ui/
 ├── primitives/      # Atomic building blocks (Button, Input, Badge, Spinner, Icon, IconButton)
-├── forms/           # Form-specific components (FormField)
+├── forms/           # Form-specific components (FormField, DatePicker, Combobox)
 ├── feedback/        # User feedback and status (Alert, ErrorAlert, LoadingState, EmptyState)
 ├── data-display/    # Data presentation (Table, Card, StatCard)
-├── navigation/      # Navigation and filtering (Pagination, SearchBar, FilterBar)
+├── navigation/      # Navigation and filtering (Pagination, SearchBar, FilterBar, Tabs, TabOverflow)
 ├── modals/          # Modal dialogs (Modal, ConfirmationModal, ModalActions)
 └── layout/          # Page structure (PageHeader)
 ```
@@ -27,7 +27,7 @@ ui/
 All components are exported through a single barrel export:
 
 ```typescript
-import { Button, Table, Modal, Alert, Icon } from '@/components/ui';
+import { Button, Table, Modal, Alert, Icon, Combobox, DatePicker, Tabs } from '@/components/ui';
 ```
 
 For hooks and utilities, import from shared modules:
@@ -43,12 +43,14 @@ import { cn } from '@/shared/utils';
 
 **Purpose**: Atomic, self-contained building blocks with minimal dependencies.
 
-- `Button` - Action button with variants, sizes, and loading state
-- `Input` - Text input with label and error handling
-- `Icon` - SVG icon component with named icons (Heroicons outline style)
-- `IconButton` - Icon-only button variant
-- `Badge` - Status indicators and labels
-- `Spinner` - Loading indicator
+| Component | Description |
+|-----------|-------------|
+| `Button` | Action button with variants, sizes, and loading state |
+| `Input` | Text input with label and error handling |
+| `Icon` | SVG icon component with named icons (Heroicons outline style) |
+| `IconButton` | Icon-only button variant |
+| `Badge` | Status indicators and labels |
+| `Spinner` | Loading indicator |
 
 **Example**:
 
@@ -62,11 +64,15 @@ import { cn } from '@/shared/utils';
 
 ### Forms
 
-**Purpose**: Form-specific components for data entry.
+**Purpose**: Form-specific components for data entry and validation.
 
-- `FormField` - Input wrapper with label and error display
+| Component | Description |
+|-----------|-------------|
+| `FormField` | Input wrapper with label and error display |
+| `DatePicker` | Calendar-based date picker with single/range modes |
+| `Combobox` | Searchable dropdown with local/async filtering |
 
-**Example**:
+#### FormField
 
 ```tsx
 <FormField
@@ -79,14 +85,80 @@ import { cn } from '@/shared/utils';
 />
 ```
 
+#### DatePicker
+
+A beautiful, accessible date picker with calendar popover. Supports single date and range selection.
+
+```tsx
+// Single date
+<DatePicker
+  mode="single"
+  value={dueDate}
+  onChange={setDueDate}
+  min={new Date().toISOString().split('T')[0]}  // Today onwards
+  label="Due Date"
+  required
+/>
+
+// Date range
+<DatePicker
+  mode="range"
+  value={{ start: startDate, end: endDate }}
+  onChange={setDateRange}
+  label="Date Range"
+/>
+```
+
+#### Combobox
+
+A fully accessible, searchable dropdown supporting both local filtering and async data loading. Implements the WAI-ARIA Combobox pattern.
+
+**Two modes of operation:**
+
+```tsx
+// LOCAL MODE - Client-side filtering (small lists)
+<Combobox
+  options={[
+    { id: 1, label: 'Samsung Electronics' },
+    { id: 2, label: 'LG Display' },
+  ]}
+  value={customerId}
+  onChange={(id, option) => setCustomerId(id)}
+  label="Customer"
+/>
+
+// ASYNC MODE - Server-side search (large datasets)
+<Combobox
+  loadOptions={async (query) => {
+    const res = await fetch(`/api/customers?search=${query}`);
+    return res.json();
+  }}
+  value={customerId}
+  onChange={(id, option) => setCustomerId(id)}
+  initialLabel={customer?.name}  // Shows label before options load
+  label="Customer"
+/>
+
+// With "Create New" action
+<Combobox
+  options={customers}
+  value={customerId}
+  onChange={(id) => setCustomerId(id)}
+  onCreateNew={(name) => createCustomer(name)}
+  label="Customer"
+/>
+```
+
 ### Feedback
 
 **Purpose**: User feedback, status indicators, and state communication.
 
-- `Alert` - Contextual messages (info, success, warning, error)
-- `ErrorAlert` - Specialized error message display
-- `LoadingState` - Loading placeholders with variants
-- `EmptyState` - Empty data placeholders
+| Component | Description |
+|-----------|-------------|
+| `Alert` | Contextual messages (info, success, warning, error) |
+| `ErrorAlert` | Specialized error message display |
+| `LoadingState` | Loading placeholders with variants |
+| `EmptyState` | Empty data placeholders |
 
 **Example**:
 
@@ -94,15 +166,25 @@ import { cn } from '@/shared/utils';
 <Alert variant="success" onDismiss={() => setSuccess(null)}>
   User created successfully!
 </Alert>
+
+<LoadingState variant="table" />
+
+<EmptyState
+  icon="inbox"
+  title="No projects found"
+  description="Create your first project to get started."
+/>
 ```
 
 ### Data Display
 
 **Purpose**: Components for presenting structured data and content.
 
-- `Table` - Compound component for tabular data (Table.Header, Table.Body, Table.Row, etc.)
-- `Card` - Content containers with variants
-- `StatCard` - Dashboard statistics display
+| Component | Description |
+|-----------|-------------|
+| `Table` | Compound component for tabular data |
+| `Card` | Content containers with variants |
+| `StatCard` | Dashboard statistics display |
 
 **Example**:
 
@@ -123,17 +205,32 @@ import { cn } from '@/shared/utils';
     ))}
   </Table.Body>
 </Table>
+
+<Card variant="interactive" onClick={handleClick}>
+  Interactive card content
+</Card>
+
+<StatCard
+  title="Active Projects"
+  value={42}
+  icon="folder"
+  trend="+12%"
+/>
 ```
 
 ### Navigation
 
-**Purpose**: Navigation, search, filtering, and pagination components.
+**Purpose**: Navigation, search, filtering, pagination, and tabs.
 
-- `Pagination` - Page navigation controls
-- `SearchBar` - Search input with clear button
-- `FilterBar` - Compound component for filter controls (FilterBar.Field, FilterBar.Select)
+| Component | Description |
+|-----------|-------------|
+| `Pagination` | Page navigation controls |
+| `SearchBar` | Search input with clear button |
+| `FilterBar` | Compound component for filter controls |
+| `Tabs` | Tab navigation with URL hash routing support |
+| `TabOverflow` | Overflow tabs dropdown for narrow viewports |
 
-**Example**:
+#### FilterBar
 
 ```tsx
 <FilterBar>
@@ -151,17 +248,68 @@ import { cn } from '@/shared/utils';
 </FilterBar>
 ```
 
+#### Tabs (Compound Component)
+
+Tab navigation with optional URL hash routing and badge support.
+
+```tsx
+<Tabs defaultTab="overview" hash={true}>
+  <TabList>
+    <Tab id="overview" icon="home">Overview</Tab>
+    <Tab id="quotation" badge={2} badgeVariant="warning">Quotation</Tab>
+    <Tab id="process">Process</Tab>
+    <Tab id="delivery" disabled>Delivery</Tab>
+  </TabList>
+  <TabPanel id="overview">
+    <OverviewContent />
+  </TabPanel>
+  <TabPanel id="quotation">
+    <QuotationContent />
+  </TabPanel>
+  <TabPanel id="process">
+    <ProcessContent />
+  </TabPanel>
+</Tabs>
+```
+
+#### TabOverflow
+
+Displays overflow tabs in a dropdown menu for narrow viewports.
+
+```tsx
+<TabList>
+  <Tab id="overview">Overview</Tab>
+  <Tab id="quotation">Quotation</Tab>
+  <TabOverflow activeTab={activeTab} onTabSelect={setActiveTab}>
+    <TabOverflow.Item id="documents" icon="folder">Documents</TabOverflow.Item>
+    <TabOverflow.Item id="finance" badge={2}>Finance</TabOverflow.Item>
+  </TabOverflow>
+</TabList>
+```
+
 ### Modals
 
 **Purpose**: Modal dialogs and confirmations with accessibility features.
 
-- `Modal` - Base modal with focus trap, ESC handling, and scroll lock
-- `ConfirmationModal` - Pre-built confirmation dialog for dangerous actions
-- `ModalActions` - Standardized modal footer button layout
+| Component | Description |
+|-----------|-------------|
+| `Modal` | Base modal with focus trap, ESC handling, and scroll lock |
+| `ConfirmationModal` | Pre-built confirmation dialog for dangerous actions |
+| `ModalActions` | Standardized modal footer button layout |
 
 **Example**:
 
 ```tsx
+<Modal isOpen={isOpen} onClose={handleClose} title="Edit User">
+  <form>
+    {/* Form content */}
+  </form>
+  <ModalActions>
+    <Button variant="ghost" onClick={handleClose}>Cancel</Button>
+    <Button variant="primary" onClick={handleSave}>Save</Button>
+  </ModalActions>
+</Modal>
+
 <ConfirmationModal
   isOpen={isDeleteOpen}
   onClose={() => setDeleteOpen(false)}
@@ -177,7 +325,9 @@ import { cn } from '@/shared/utils';
 
 **Purpose**: Page-level structural components.
 
-- `PageHeader` - Compound component for page title and actions (PageHeader.Title, PageHeader.Actions)
+| Component | Description |
+|-----------|-------------|
+| `PageHeader` | Compound component for page title and actions |
 
 **Example**:
 
@@ -199,8 +349,10 @@ import { cn } from '@/shared/utils';
 
 UI primitive hooks are located in `@/shared/hooks`:
 
-- `useFocusTrap` - Traps keyboard focus within a container (for modals, dialogs)
-- `useBodyScrollLock` - Prevents body scrolling when overlays are open
+| Hook | Description |
+|------|-------------|
+| `useFocusTrap` | Traps keyboard focus within a container (for modals, dialogs) |
+| `useBodyScrollLock` | Prevents body scrolling when overlays are open |
 
 **Example**:
 
@@ -258,10 +410,12 @@ import { cn } from '@/shared/utils';
 
 Most components follow a consistent variant system:
 
-- **Button**: `primary` | `secondary` | `ghost` | `danger`
-- **Alert**: `info` | `success` | `warning` | `error`
-- **Badge**: `default` | `copper` | `success` | `info` | `danger` | `purple`
-- **Card**: `default` | `table` | `interactive` | `stat`
+| Component | Variants |
+|-----------|----------|
+| `Button` | `primary`, `secondary`, `ghost`, `danger` |
+| `Alert` | `info`, `success`, `warning`, `error` |
+| `Badge` | `default`, `copper`, `success`, `info`, `danger`, `purple` |
+| `Card` | `default`, `table`, `interactive`, `stat` |
 
 ### Sizes
 
@@ -281,6 +435,14 @@ All components are built with accessibility in mind:
 - **Semantic HTML**: Proper heading hierarchy, button types, form labels
 - **Screen reader support**: Meaningful labels, status announcements
 
+### WAI-ARIA Patterns Implemented
+
+| Component | Pattern |
+|-----------|---------|
+| `Combobox` | [WAI-ARIA Combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) |
+| `Tabs` | [WAI-ARIA Tabs](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/) |
+| `Modal` | [WAI-ARIA Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) |
+
 ## Testing
 
 All components have comprehensive test coverage:
@@ -293,7 +455,11 @@ All components have comprehensive test coverage:
 Run tests:
 
 ```bash
+# All UI component tests
 npm test src/components/ui
+
+# Specific component
+npm test src/components/ui/forms/Combobox
 ```
 
 ## Contributing
@@ -306,12 +472,49 @@ When adding new components:
 4. **Add tests**: Create corresponding `.test.tsx` file
 5. **Update category barrel**: Add exports to category `index.ts`
 6. **Document usage**: Add JSDoc comments with usage examples
+7. **Update this README**: Add component to appropriate section
 
-## Future Extensions
+## Component Architecture Patterns
 
-Potential additions as the ERP grows:
+### Compound Components
 
-- **visualizations/**: Charts, graphs for production tracking
-- **pickers/**: Date/time pickers for delivery scheduling
-- **uploads/**: File upload components for quotation attachments
-- **Advanced Table features**: Sorting hooks, selection hooks, filtering utilities
+Used for complex components with multiple related parts (Table, Tabs, FilterBar, PageHeader):
+
+```tsx
+// Definition
+const Table = Object.assign(TableRoot, {
+  Header: TableHeader,
+  Body: TableBody,
+  Row: TableRow,
+  Cell: TableCell,
+});
+
+// Usage
+<Table>
+  <Table.Header>...</Table.Header>
+  <Table.Body>...</Table.Body>
+</Table>
+```
+
+### Portal Rendering
+
+Used by Combobox and DatePicker dropdowns to escape parent overflow/backdrop-blur:
+
+```tsx
+createPortal(
+  <div className="dropdown">...</div>,
+  document.body
+)
+```
+
+### Controlled vs Uncontrolled
+
+Most form components support both patterns:
+
+```tsx
+// Controlled (value + onChange)
+<Combobox value={selected} onChange={setSelected} />
+
+// Uncontrolled with default (Tabs)
+<Tabs defaultTab="overview" onTabChange={handleChange} />
+```

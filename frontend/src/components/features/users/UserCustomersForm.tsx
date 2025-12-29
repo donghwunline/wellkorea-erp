@@ -5,8 +5,8 @@
  * Notifies parent via onSuccess callback after successful customer assignment.
  */
 
-import { type FormEvent, useEffect, useState } from 'react';
-import { type UserDetails, userService } from '@/services';
+import { type FormEvent, useCallback, useEffect, useState } from 'react';
+import { companyService, type CompanySummary, type UserDetails, userService } from '@/services';
 import { Button, ErrorAlert, LoadingState, Modal } from '@/components/ui';
 
 export interface UserCustomersFormProps {
@@ -16,46 +16,51 @@ export interface UserCustomersFormProps {
   onSuccess: () => void;
 }
 
-// Mock customer data (TODO: Replace with real customer service when implemented)
-const MOCK_CUSTOMERS = [
-  { id: 1, name: 'Samsung Electronics', code: 'SAMSUNG' },
-  { id: 2, name: 'LG Display', code: 'LG' },
-  { id: 3, name: 'Hyundai Motor', code: 'HYUNDAI' },
-  { id: 4, name: 'SK Hynix', code: 'SKHYNIX' },
-  { id: 5, name: 'POSCO', code: 'POSCO' },
-];
-
 export function UserCustomersForm({
   isOpen,
   user,
   onClose,
   onSuccess,
 }: Readonly<UserCustomersFormProps>) {
-  // Local UI State (Tier 1)
+  // Local UI State
   const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
+  const [availableCustomers, setAvailableCustomers] = useState<CompanySummary[]>([]);
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load user's current customers when modal opens
+  // Load available customers and user's current assignments when modal opens
+  const loadData = useCallback(async () => {
+    if (!user) return;
+
+    setIsLoadingCustomers(true);
+    setError(null);
+    try {
+      // Load all customers from companyService
+      const customersResult = await companyService.getCompanies({
+        roleType: 'CUSTOMER',
+        page: 0,
+        size: 100, // Load all customers for selection
+      });
+      setAvailableCustomers(customersResult.data);
+
+      // Load user's current customer assignments
+      const customerIds = await userService.getUserCustomers(user.id);
+      setSelectedCustomers(customerIds);
+    } catch {
+      setError('Failed to load customer data');
+      setAvailableCustomers([]);
+      setSelectedCustomers([]);
+    } finally {
+      setIsLoadingCustomers(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (isOpen && user) {
-      const loadCustomers = async () => {
-        setIsLoadingCustomers(true);
-        setError(null);
-        try {
-          const customerIds = await userService.getUserCustomers(user.id);
-          setSelectedCustomers(customerIds);
-        } catch {
-          setError('Failed to load customer assignments');
-          setSelectedCustomers([]);
-        } finally {
-          setIsLoadingCustomers(false);
-        }
-      };
-      loadCustomers();
+      loadData();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, loadData]);
 
   const toggleCustomer = (customerId: number) => {
     setSelectedCustomers(prev =>
@@ -95,14 +100,18 @@ export function UserCustomersForm({
         </div>
 
         {isLoadingCustomers ? (
-          <LoadingState message="Loading customer assignments..." />
+          <LoadingState message="Loading customers..." />
+        ) : availableCustomers.length === 0 ? (
+          <div className="rounded-lg bg-steel-800/50 p-4 text-center text-steel-400">
+            No customers available. Add companies with the Customer role first.
+          </div>
         ) : (
           <div>
-            <label className="mb-3 block text-sm font-medium text-steel-300">
+            <span className="mb-3 block text-sm font-medium text-steel-300">
               Select Customers
-            </label>
-            <div className="space-y-2">
-              {MOCK_CUSTOMERS.map(customer => (
+            </span>
+            <div className="max-h-64 space-y-2 overflow-y-auto">
+              {availableCustomers.map(customer => (
                 <button
                   key={customer.id}
                   type="button"
@@ -116,7 +125,9 @@ export function UserCustomersForm({
                 >
                   <div>
                     <div className="font-medium text-white">{customer.name}</div>
-                    <div className="text-xs text-steel-400">{customer.code}</div>
+                    {customer.email && (
+                      <div className="text-xs text-steel-400">{customer.email}</div>
+                    )}
                   </div>
                   {selectedCustomers.includes(customer.id) && (
                     <svg

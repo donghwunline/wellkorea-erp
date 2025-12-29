@@ -107,9 +107,9 @@ export function UserCreateForm({ isOpen, onClose, onSuccess }: Readonly<UserCrea
 
         {/* Role Selection */}
         <div>
-          <label className="mb-3 block text-sm font-medium text-steel-300">
+          <span className="mb-3 block text-sm font-medium text-steel-300">
             Roles <span className="text-red-400">*</span>
-          </label>
+          </span>
           <div className="grid grid-cols-2 gap-3">
             {ALL_ROLES.map(role => (
               <button

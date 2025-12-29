@@ -131,7 +131,7 @@ describe('AuditLogPage', () => {
     it('should render page header with title and description', () => {
       render(<AuditLogPage />);
 
-      expect(screen.getByText('Audit Logs')).toBeInTheDocument();
+      expect(screen.getByText('이력 관리')).toBeInTheDocument();
       expect(screen.getByText('System activity and security events')).toBeInTheDocument();
     });
 
@@ -526,7 +526,7 @@ describe('AuditLogPage', () => {
     it('should have accessible page heading', () => {
       render(<AuditLogPage />);
 
-      expect(screen.getByRole('heading', { name: /audit logs/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /이력 관리/i })).toBeInTheDocument();
     });
 
     it('should have accessible filter labels', () => {

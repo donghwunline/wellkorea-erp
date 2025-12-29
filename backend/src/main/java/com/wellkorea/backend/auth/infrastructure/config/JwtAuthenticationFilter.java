@@ -1,5 +1,7 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
+import com.wellkorea.backend.auth.application.TokenBlacklistService;
+import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,8 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -19,25 +20,36 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * JWT authentication filter that intercepts requests and validates JWT tokens.
  * Runs once per request to extract and validate the JWT token from the Authorization header.
- * <p>
- * TEMPORARY: This filter will be replaced with OAuth2 Resource Server filter chain
+ *
+ * <p>This filter performs:
+ * <ol>
+ *     <li>Token extraction from Authorization header</li>
+ *     <li>Token signature and expiration validation</li>
+ *     <li>Blacklist check (reject logged-out tokens)</li>
+ *     <li>Claims extraction (username, userId, roles)</li>
+ *     <li>SecurityContext population with {@link AuthenticatedUser} principal</li>
+ * </ol>
+ *
+ * <p>TEMPORARY: This filter will be replaced with OAuth2 Resource Server filter chain
  * when Keycloak integration is implemented. See docs/keycloak-migration.md.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final String HEADER_NAME = "Authorization";
     private static final String PREFIX = "Bearer ";
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, CustomAuthenticationEntryPoint authenticationEntryPoint) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, TokenBlacklistService tokenBlacklistService, CustomAuthenticationEntryPoint authenticationEntryPoint) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.tokenBlacklistService = tokenBlacklistService;
         this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
@@ -50,28 +62,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // If token is present, validate it (throws exception if invalid/expired)
             if (StringUtils.hasText(jwt)) {
+                // Step 1: Validate token signature and expiration
                 jwtTokenProvider.validateToken(jwt);
 
-                // Token is valid - set authentication in SecurityContext
+                // Step 2: Check if token is blacklisted (logged out)
+                if (tokenBlacklistService.isBlacklisted(jwt)) {
+                    throw new InvalidJwtAuthenticationException("Token has been invalidated");
+                }
+
+                // Step 3: Extract claims from validated token
+                Long userId = jwtTokenProvider.getUserId(jwt);
                 String username = jwtTokenProvider.getUsername(jwt);
-                String rolesString = jwtTokenProvider.getRoles(jwt);
+                String[] roles = jwtTokenProvider.getRoles(jwt);
 
-                // Convert comma-separated roles to GrantedAuthority list
-                // Handle null/empty roles gracefully
-                Collection<GrantedAuthority> authorities = (rolesString != null && !rolesString.isEmpty())
-                        ? Arrays.stream(rolesString.split(","))
-                        .filter(StringUtils::hasText)  // Filter out empty strings
+                // Step 4: Validate userId is present (required for authenticated operations)
+                if (userId == null || username == null) {
+                    throw new InvalidJwtAuthenticationException("Token missing userId claim, please re-login");
+                }
+
+                // Convert roles array to GrantedAuthority list
+                Collection<GrantedAuthority> authorities = Arrays.stream(roles)
+                        .filter(StringUtils::hasText)
                         .map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role))
-                        .toList()
-                        : Collections.emptyList();
+                        .toList();
 
-                // Create UserDetails for @AuthenticationPrincipal support
-                // This enables OAuth2-compatible principal injection in controllers
-                UserDetails userDetails = new User(username, "", authorities);
+                // Step 5: Create AuthenticatedUser for @AuthenticationPrincipal support
+                // This enables direct userId access in controllers without token parsing
+                AuthenticatedUser authenticatedUser = new AuthenticatedUser(userId, username, authorities);
 
-                // Create authentication token with UserDetails as principal
+                // Create authentication token with AuthenticatedUser as principal
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                        new UsernamePasswordAuthenticationToken(authenticatedUser, null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 // Set authentication in SecurityContext
@@ -99,7 +120,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @return JWT token string, or null if not found
      */
     private String getJwtFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
+        String bearerToken = request.getHeader(HEADER_NAME);
         if (bearerToken != null && bearerToken.startsWith(PREFIX)) {
             return bearerToken.substring(PREFIX.length());
         }
