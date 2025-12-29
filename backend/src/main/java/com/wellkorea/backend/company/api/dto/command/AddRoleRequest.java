@@ -3,6 +3,7 @@ package com.wellkorea.backend.company.api.dto.command;
 import com.wellkorea.backend.company.application.AddRoleCommand;
 import com.wellkorea.backend.company.domain.RoleType;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -17,6 +18,7 @@ public record AddRoleRequest(
 
         Integer defaultPaymentDays,
 
+        @Size(max = 500, message = "Notes must be at most 500 characters")
         String notes
 ) {
     /**

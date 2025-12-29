@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public record CreateQuotationRequest(
         @Positive(message = "Validity days must be positive")
         Integer validityDays,
 
+        @Size(max = 2000, message = "Notes must be at most 2000 characters")
         String notes,
 
         @NotEmpty(message = "At least one line item is required")

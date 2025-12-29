@@ -3,6 +3,7 @@ package com.wellkorea.backend.quotation.api.dto.command;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -21,6 +22,7 @@ public record LineItemRequest(
         @DecimalMin(value = "0", message = "Unit price cannot be negative")
         BigDecimal unitPrice,
 
+        @Size(max = 500, message = "Notes must be at most 500 characters")
         String notes
 ) {
 }
