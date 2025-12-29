@@ -127,22 +127,8 @@ class CompanyCommandServiceTest {
                     .hasMessageContaining("registration number");
         }
 
-        @Test
-        @DisplayName("should throw exception when roles set is empty")
-        void createCompany_EmptyRoles_ThrowsException() {
-            // Given
-            CreateCompanyCommand command = new CreateCompanyCommand(
-                    "No Role Company",
-                    "222-33-44444",
-                    null, null, null, null, null, null, null, null, null,
-                    Set.of() // Empty roles
-            );
-
-            // When & Then
-            assertThatThrownBy(() -> companyCommandService.createCompany(command))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("At least one role");
-        }
+        // Note: Role presence validation is now handled by @NotEmpty on CreateCompanyRequest DTO
+        // and tested in controller tests. Service layer trusts pre-validated input.
 
         @Test
         @DisplayName("should allow null registration number (not all companies have one)")

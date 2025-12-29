@@ -165,19 +165,8 @@ class QuotationCommandServiceTest {
                     .hasMessageContaining("Project");
         }
 
-        @Test
-        @DisplayName("should throw exception when line items are empty")
-        void createQuotation_EmptyLineItems_ThrowsException() {
-            // Given
-            CreateQuotationCommand command = new CreateQuotationCommand(
-                    1L, 30, null, List.of()
-            );
-
-            // When/Then
-            assertThatThrownBy(() -> commandService.createQuotation(command, 1L))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("line item");
-        }
+        // Note: Line item presence validation is now handled by @NotEmpty on CreateQuotationRequest DTO
+        // and tested in controller tests. Service layer trusts pre-validated input.
     }
 
     @Nested

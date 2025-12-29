@@ -346,23 +346,8 @@ class ApprovalCommandServiceTest {
             verify(eventPublisher).publish(any(ApprovalCompletedEvent.class));
         }
 
-        @Test
-        @DisplayName("should throw exception when rejecting without reason")
-        void reject_WithoutReason_ThrowsException() {
-            // When/Then - reason check is done before repository call
-            assertThatThrownBy(() -> commandService.reject(1L, 2L, null, null))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("reason");
-        }
-
-        @Test
-        @DisplayName("should throw exception when reason is empty")
-        void reject_EmptyReason_ThrowsException() {
-            // When/Then - reason check is done before repository call
-            assertThatThrownBy(() -> commandService.reject(1L, 2L, "", null))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("reason");
-        }
+        // Note: Reason validation (null/empty) is now handled by @NotBlank on RejectRequest DTO
+        // and tested in controller tests. Service layer trusts pre-validated input.
 
         @Test
         @DisplayName("should throw exception when wrong user tries to reject")
