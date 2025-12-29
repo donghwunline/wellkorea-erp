@@ -886,9 +886,9 @@ import {userService} from '@/services';  // WRONG!
 
 ## Further Reading
 
-- [CLAUDE.md](../CLAUDE.md) - Project conventions and patterns
-- [Service Layer Pattern](./src/services/README.md) - Service implementation guide
-- [Component Design System](./src/components/ui/README.md) - UI component guidelines
+- [CLAUDE.md](../../CLAUDE.md) - Project conventions and patterns
+- [Service Layer Pattern](../../frontend/src/services/README.md) - Service implementation guide
+- [Component Design System](../../frontend/src/components/ui/README.md) - UI component guidelines
 
 ---
 

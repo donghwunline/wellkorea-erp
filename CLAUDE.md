@@ -222,7 +222,7 @@ com/wellkorea/backend/
   - `{Domain}QueryService` - `@Transactional(readOnly = true)`, handles reads, returns **View DTOs**
 - **DTO Segregation**:
   - `api/dto/command/` - Request DTOs (`CreateXxxRequest`), Result DTOs (`XxxCommandResult`)
-  - `api/dto/query/` - View DTOs (`XxxDetailView`, `XxxSummaryView`) with static `from(Entity)` factory
+  - `api/dto/query/` - View DTOs (`XxxDetailView`, `XxxSummaryView`) populated by MyBatis mappers for optimized read performance
 - **Controller Pattern**:
   - Inject both `CommandService` and `QueryService`
   - Command endpoints return `CommandResult` (ID + message), clients fetch fresh data via query endpoints
@@ -251,7 +251,7 @@ GET /api/quotations/{id} → queryService.getQuotationDetail(id) → QuotationDe
 
 Frontend uses a layered service pattern with strict import boundaries enforced by ESLint.
 
-**IMPORTANT: See [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) for complete architecture documentation including:**
+**IMPORTANT: See [docs/architecture/frontend-architecture.md](docs/architecture/frontend-architecture.md) for complete architecture documentation including:**
 - Layer definitions (pages, features, ui, services, stores, hooks, api)
 - Dependency flow diagram and import rules matrix
 - ESLint rule configuration
