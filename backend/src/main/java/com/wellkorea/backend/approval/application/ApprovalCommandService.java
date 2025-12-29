@@ -150,15 +150,12 @@ public class ApprovalCommandService {
     }
 
     /**
-     * Reject at the current level (requires mandatory reason).
+     * Reject at the current level.
+     * Reason validation is handled by @NotBlank on RejectRequest DTO.
      *
      * @return ID of the approval request
      */
     public Long reject(Long approvalRequestId, Long approverUserId, String reason, String comments) {
-        if (reason == null || reason.trim().isEmpty()) {
-            throw new BusinessException("Rejection reason is mandatory");
-        }
-
         ApprovalRequest request = approvalRequestRepository.findByIdWithLevelDecisions(approvalRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Approval request not found with ID: " + approvalRequestId));

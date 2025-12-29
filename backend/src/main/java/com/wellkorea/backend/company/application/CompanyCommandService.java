@@ -26,17 +26,13 @@ public class CompanyCommandService {
 
     /**
      * Create a new company with initial roles.
+     * Role presence validation handled by @NotEmpty on CreateCompanyRequest DTO.
      *
      * @param command The creation command
      * @return ID of the created company
-     * @throws BusinessException if registration number is duplicate or no roles specified
+     * @throws BusinessException if registration number is duplicate
      */
     public Long createCompany(CreateCompanyCommand command) {
-        // Validate at least one role
-        if (command.roles() == null || command.roles().isEmpty()) {
-            throw new BusinessException("At least one role must be specified for a company");
-        }
-
         // Validate unique registration number
         if (command.registrationNumber() != null && !command.registrationNumber().isBlank()) {
             if (companyRepository.existsByRegistrationNumber(command.registrationNumber())) {

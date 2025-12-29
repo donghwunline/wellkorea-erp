@@ -17,7 +17,6 @@ import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -50,12 +49,11 @@ public class QuotationCommandService {
 
     /**
      * Create a new quotation with line items.
+     * Input validation (lineItems presence, quantity/price) handled by DTO annotations.
      *
      * @return ID of the created quotation
      */
     public Long createQuotation(CreateQuotationCommand command, Long createdByUserId) {
-        validateCreateCommand(command);
-
         Project project = projectRepository.findById(command.projectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + command.projectId()));
 
@@ -260,21 +258,6 @@ public class QuotationCommandService {
 
         Quotation saved = quotationRepository.save(quotation);
         return saved.getId();
-    }
-
-    private void validateCreateCommand(CreateQuotationCommand command) {
-        if (command.lineItems() == null || command.lineItems().isEmpty()) {
-            throw new BusinessException("Quotation must have at least one line item");
-        }
-
-        for (LineItemCommand item : command.lineItems()) {
-            if (item.quantity() == null || item.quantity().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new BusinessException("Line item quantity must be positive");
-            }
-            if (item.unitPrice() == null || item.unitPrice().compareTo(BigDecimal.ZERO) < 0) {
-                throw new BusinessException("Line item unit price cannot be negative");
-            }
-        }
     }
 
     /**
