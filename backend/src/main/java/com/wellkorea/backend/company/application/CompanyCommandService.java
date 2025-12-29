@@ -4,7 +4,6 @@ import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.company.domain.CompanyRole;
 import com.wellkorea.backend.company.domain.RoleType;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
-import com.wellkorea.backend.company.infrastructure.persistence.CompanyRoleRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -20,11 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class CompanyCommandService {
 
     private final CompanyRepository companyRepository;
-    private final CompanyRoleRepository companyRoleRepository;
 
-    public CompanyCommandService(CompanyRepository companyRepository, CompanyRoleRepository companyRoleRepository) {
+    public CompanyCommandService(CompanyRepository companyRepository) {
         this.companyRepository = companyRepository;
-        this.companyRoleRepository = companyRoleRepository;
     }
 
     /**
@@ -62,18 +59,15 @@ public class CompanyCommandService {
                 .paymentTerms(command.paymentTerms())
                 .build();
 
-        Company savedCompany = companyRepository.save(company);
-
-        // Create roles and add to company
+        // Add initial roles to company
         for (RoleType roleType : command.roles()) {
             CompanyRole role = CompanyRole.builder()
                     .roleType(roleType)
                     .build();
-            savedCompany.addRole(role);
+            company.addRole(role);
         }
 
-        // Save again to persist roles through cascade
-        return companyRepository.save(savedCompany).getId();
+        return companyRepository.save(company).getId();
     }
 
     /**
@@ -118,54 +112,46 @@ public class CompanyCommandService {
      *
      * @param companyId The company ID
      * @param command   The role to add
-     * @return ID of the created role
      * @throws ResourceNotFoundException if company not found
-     * @throws BusinessException         if company already has this role
+     * @throws BusinessException         if company already has this role or max roles reached
      */
-    public Long addRole(Long companyId, AddRoleCommand command) {
+    public void addRole(Long companyId, AddRoleCommand command) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
-        // Check for duplicate role
-        if (companyRoleRepository.existsByCompany_IdAndRoleType(companyId, command.roleType())) {
-            throw new BusinessException("Company already has role: " + command.roleType());
+        try {
+            CompanyRole role = CompanyRole.builder()
+                    .roleType(command.roleType())
+                    .creditLimit(command.creditLimit())
+                    .defaultPaymentDays(command.defaultPaymentDays())
+                    .notes(command.notes())
+                    .build();
+
+            company.addRole(role);
+            companyRepository.save(company);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new BusinessException(e.getMessage());
         }
-
-        CompanyRole role = CompanyRole.builder()
-                .company(company)
-                .roleType(command.roleType())
-                .creditLimit(command.creditLimit())
-                .defaultPaymentDays(command.defaultPaymentDays())
-                .notes(command.notes())
-                .build();
-
-        return companyRoleRepository.save(role).getId();
     }
 
     /**
      * Remove a role from a company.
      *
      * @param companyId The company ID
-     * @param roleId    The role ID to remove
-     * @throws ResourceNotFoundException if role not found
-     * @throws BusinessException         if this is the last role
+     * @param roleType  The role type to remove
+     * @throws ResourceNotFoundException if company not found
+     * @throws BusinessException         if this is the last role or role not found
      */
-    public void removeRole(Long companyId, Long roleId) {
-        CompanyRole role = companyRoleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("CompanyRole", roleId));
+    public void removeRole(Long companyId, RoleType roleType) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
-        // Verify role belongs to this company
-        if (!role.getCompanyId().equals(companyId)) {
-            throw new BusinessException("Role does not belong to this company");
+        try {
+            company.removeRole(roleType);
+            companyRepository.save(company);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            throw new BusinessException(e.getMessage());
         }
-
-        // Check if this is the last role
-        long roleCount = companyRoleRepository.countByCompany_Id(companyId);
-        if (roleCount <= 1) {
-            throw new BusinessException("Cannot remove the last role from a company");
-        }
-
-        companyRoleRepository.delete(role);
     }
 
     /**

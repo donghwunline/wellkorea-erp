@@ -18,7 +18,9 @@ import java.util.List;
  * Part of CQRS pattern - handles all read/query operations.
  * All methods are read-only and return view DTOs optimized for specific use cases.
  *
- * <p>Uses MyBatis for all queries with nested selects for roles.
+ * <p>Uses single JOIN queries to load companies with roles efficiently.
+ * Since companies have at most 5 roles, JOINs are more efficient than
+ * batch loading (1 query vs 2 queries).
  */
 @Service
 @Transactional(readOnly = true)
@@ -51,10 +53,7 @@ public class CompanyQueryService {
      * @return Page of company summary views
      */
     public Page<CompanySummaryView> listCompanies(Pageable pageable) {
-        List<CompanySummaryView> content = companyMapper.findWithFilters(
-                null, null, pageable.getPageSize(), pageable.getOffset());
-        long total = companyMapper.countWithFilters(null, null);
-        return new PageImpl<>(content, pageable, total);
+        return findCompanies(null, null, pageable);
     }
 
     /**
@@ -66,10 +65,7 @@ public class CompanyQueryService {
      */
     public Page<CompanySummaryView> findBySearch(String search, Pageable pageable) {
         String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
-        List<CompanySummaryView> content = companyMapper.findWithFilters(
-                null, searchTerm, pageable.getPageSize(), pageable.getOffset());
-        long total = companyMapper.countWithFilters(null, searchTerm);
-        return new PageImpl<>(content, pageable, total);
+        return findCompanies(null, searchTerm, pageable);
     }
 
     /**
@@ -80,10 +76,7 @@ public class CompanyQueryService {
      * @return Page of company summary views with the specified role
      */
     public Page<CompanySummaryView> findByRoleType(RoleType roleType, Pageable pageable) {
-        List<CompanySummaryView> content = companyMapper.findWithFilters(
-                roleType, null, pageable.getPageSize(), pageable.getOffset());
-        long total = companyMapper.countWithFilters(roleType, null);
-        return new PageImpl<>(content, pageable, total);
+        return findCompanies(roleType, null, pageable);
     }
 
     /**
@@ -96,10 +89,7 @@ public class CompanyQueryService {
      */
     public Page<CompanySummaryView> findByRoleTypeAndSearch(RoleType roleType, String search, Pageable pageable) {
         String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
-        List<CompanySummaryView> content = companyMapper.findWithFilters(
-                roleType, searchTerm, pageable.getPageSize(), pageable.getOffset());
-        long total = companyMapper.countWithFilters(roleType, searchTerm);
-        return new PageImpl<>(content, pageable, total);
+        return findCompanies(roleType, searchTerm, pageable);
     }
 
     /**
@@ -110,5 +100,18 @@ public class CompanyQueryService {
      */
     public boolean existsAndActive(Long companyId) {
         return companyMapper.existsByIdAndIsActiveTrue(companyId);
+    }
+
+    /**
+     * Find companies with filters using single JOIN query.
+     * MyBatis handles the collection grouping automatically.
+     */
+    private Page<CompanySummaryView> findCompanies(RoleType roleType, String search, Pageable pageable) {
+
+        List<CompanySummaryView> content = companyMapper.findWithFilters(
+                roleType, search, pageable.getPageSize(), pageable.getOffset());
+
+        long total = companyMapper.countWithFilters(roleType, search);
+        return new PageImpl<>(content, pageable, total);
     }
 }
