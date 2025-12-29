@@ -1,5 +1,7 @@
 package com.wellkorea.backend.company.api.dto.command;
 
+import com.wellkorea.backend.company.domain.RoleType;
+
 /**
  * Result of a company command operation.
  * Returns only the entity ID - clients should fetch fresh data via query endpoints.
@@ -17,11 +19,11 @@ public record CompanyCommandResult(
         return new CompanyCommandResult(id, "Company updated successfully");
     }
 
-    public static CompanyCommandResult roleAdded(Long roleId) {
-        return new CompanyCommandResult(roleId, "Role added successfully");
+    public static CompanyCommandResult roleAdded(Long id, RoleType roleType) {
+        return new CompanyCommandResult(id, "Role " + roleType + " added successfully");
     }
 
-    public static CompanyCommandResult roleRemoved(Long roleId) {
-        return new CompanyCommandResult(roleId, "Role removed successfully");
+    public static CompanyCommandResult roleRemoved(Long id, RoleType roleType) {
+        return new CompanyCommandResult(id, "Role " + roleType + " removed successfully");
     }
 }

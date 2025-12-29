@@ -19,7 +19,7 @@ public record CompanyDetailView(
         String address,
         String bankAccount,
         String paymentTerms,
-        boolean isActive,
+        Boolean isActive,
         Instant createdAt,
         Instant updatedAt,
         List<CompanyRoleView> roles

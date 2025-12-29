@@ -166,7 +166,7 @@ public class CompanyController {
      *
      * @param id      Company ID
      * @param request Add role request
-     * @return Created role ID with 201 status
+     * @return Success message with 201 status
      */
     @PostMapping("/{id}/roles")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
@@ -174,8 +174,8 @@ public class CompanyController {
             @PathVariable Long id,
             @Valid @RequestBody AddRoleRequest request) {
 
-        Long roleId = commandService.addRole(id, request.toCommand());
-        CompanyCommandResult result = CompanyCommandResult.roleAdded(roleId);
+        commandService.addRole(id, request.toCommand());
+        CompanyCommandResult result = CompanyCommandResult.roleAdded(id, request.roleType());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -185,21 +185,21 @@ public class CompanyController {
     /**
      * Remove a role from a company.
      * <p>
-     * DELETE /api/companies/{id}/roles/{roleId}
+     * DELETE /api/companies/{id}/roles/{roleType}
      * <p>
      * Access: ADMIN, FINANCE, SALES
      *
-     * @param id     Company ID
-     * @param roleId Role ID
+     * @param id       Company ID
+     * @param roleType Role type to remove (CUSTOMER, VENDOR, OUTSOURCE)
      * @return 204 No Content
      */
-    @DeleteMapping("/{id}/roles/{roleId}")
+    @DeleteMapping("/{id}/roles/{roleType}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
     public ResponseEntity<Void> removeRole(
             @PathVariable Long id,
-            @PathVariable Long roleId) {
+            @PathVariable RoleType roleType) {
 
-        commandService.removeRole(id, roleId);
+        commandService.removeRole(id, roleType);
         return ResponseEntity.noContent().build();
     }
 }
