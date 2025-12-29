@@ -78,9 +78,9 @@ CREATE UNIQUE INDEX idx_companies_registration_number_unique
 
 -- Company roles table (CUSTOMER, VENDOR, OUTSOURCE)
 -- A company can have multiple roles (e.g., same company is both customer and vendor)
+-- Uses composite primary key (company_id, role_type) - embeddable value object pattern
 CREATE TABLE company_roles
 (
-    id                   BIGSERIAL PRIMARY KEY,
     company_id           BIGINT      NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
     role_type            VARCHAR(20) NOT NULL,                          -- CUSTOMER, VENDOR, OUTSOURCE
     credit_limit         DECIMAL(15, 2),                                -- 여신한도 (role-specific)
@@ -88,8 +88,8 @@ CREATE TABLE company_roles
     notes                TEXT,                                          -- Role-specific notes
     created_at           TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_role_type CHECK (role_type IN ('CUSTOMER', 'VENDOR', 'OUTSOURCE')),
-    CONSTRAINT uq_company_role UNIQUE (company_id, role_type)           -- One role type per company
+    PRIMARY KEY (company_id, role_type),
+    CONSTRAINT chk_role_type CHECK (role_type IN ('CUSTOMER', 'VENDOR', 'OUTSOURCE'))
 );
 
 -- Customer assignment for Sales role (FR-062)
@@ -162,8 +162,7 @@ CREATE INDEX idx_users_is_active ON users (is_active);
 CREATE INDEX idx_companies_name ON companies (name);
 CREATE INDEX idx_companies_is_active ON companies (is_active);
 
--- Company roles indexes
-CREATE INDEX idx_company_roles_company_id ON company_roles (company_id);
+-- Company roles indexes (company_id covered by PK)
 CREATE INDEX idx_company_roles_role_type ON company_roles (role_type);
 
 -- Customer assignments indexes

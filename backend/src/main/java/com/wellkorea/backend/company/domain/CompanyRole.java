@@ -7,23 +7,20 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * CompanyRole entity - represents a business relationship type with a company.
+ * CompanyRole value object - represents a business relationship type with a company.
  * <p>
  * A company can have multiple roles (e.g., both CUSTOMER and VENDOR).
  * Each role can have role-specific attributes like credit limit.
+ * <p>
+ * As a value object (embeddable), CompanyRole:
+ * <ul>
+ *   <li>Has no independent identity - identified by roleType within a company</li>
+ *   <li>Is owned by Company aggregate - lifecycle managed through Company</li>
+ *   <li>Is compared by value (roleType) not by reference</li>
+ * </ul>
  */
-@Entity
-@Table(name = "company_roles",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"company_id", "role_type"}))
+@Embeddable
 public class CompanyRole {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", nullable = false)
-    private Company company;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role_type", nullable = false, length = 20)
@@ -38,7 +35,7 @@ public class CompanyRole {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     protected CompanyRole() {
@@ -46,9 +43,7 @@ public class CompanyRole {
     }
 
     private CompanyRole(Builder builder) {
-        this.id = builder.id;
-        this.company = builder.company;
-        this.roleType = builder.roleType;
+        this.roleType = Objects.requireNonNull(builder.roleType, "roleType is required");
         this.creditLimit = builder.creditLimit;
         this.defaultPaymentDays = builder.defaultPaymentDays;
         this.notes = builder.notes;
@@ -60,18 +55,6 @@ public class CompanyRole {
     }
 
     // ========== Getters ==========
-
-    public Long getId() {
-        return id;
-    }
-
-    public Company getCompany() {
-        return company;
-    }
-
-    public Long getCompanyId() {
-        return company != null ? company.getId() : null;
-    }
 
     public RoleType getRoleType() {
         return roleType;
@@ -93,79 +76,56 @@ public class CompanyRole {
         return createdAt;
     }
 
-    // ========== Setters (for JPA relationship management) ==========
-
-    void setCompany(Company company) {
-        this.company = company;
-    }
-
     // ========== Domain Methods ==========
 
     /**
      * Update role attributes.
+     * Returns a new CompanyRole with updated values (immutable-style).
      */
-    public void update(BigDecimal creditLimit, Integer defaultPaymentDays, String notes) {
-        if (creditLimit != null) this.creditLimit = creditLimit;
-        if (defaultPaymentDays != null) this.defaultPaymentDays = defaultPaymentDays;
-        if (notes != null) this.notes = notes;
+    public CompanyRole withUpdates(BigDecimal creditLimit, Integer defaultPaymentDays, String notes) {
+        return CompanyRole.builder()
+                .roleType(this.roleType)
+                .creditLimit(creditLimit != null ? creditLimit : this.creditLimit)
+                .defaultPaymentDays(defaultPaymentDays != null ? defaultPaymentDays : this.defaultPaymentDays)
+                .notes(notes != null ? notes : this.notes)
+                .createdAt(this.createdAt)
+                .build();
     }
 
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
-    }
-
+    /**
+     * Equals based on roleType (natural key for value object).
+     * Two roles are equal if they have the same roleType.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CompanyRole that = (CompanyRole) o;
-        return Objects.equals(id, that.id);
+        return roleType == that.roleType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(roleType);
     }
 
     @Override
     public String toString() {
         return "CompanyRole{" +
-                "id=" + id +
-                ", companyId=" + getCompanyId() +
-                ", roleType=" + roleType +
+                "roleType=" + roleType +
                 ", creditLimit=" + creditLimit +
+                ", defaultPaymentDays=" + defaultPaymentDays +
                 '}';
     }
 
     // ========== Builder ==========
 
     public static class Builder {
-        private Long id;
-        private Company company;
-        private Long companyId;
         private RoleType roleType;
         private BigDecimal creditLimit;
         private Integer defaultPaymentDays;
         private String notes;
         private Instant createdAt;
-
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder company(Company company) {
-            this.company = company;
-            return this;
-        }
-
-        public Builder companyId(Long companyId) {
-            this.companyId = companyId;
-            return this;
-        }
 
         public Builder roleType(RoleType roleType) {
             this.roleType = roleType;

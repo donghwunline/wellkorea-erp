@@ -64,7 +64,8 @@ public class Company {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "company_roles", joinColumns = @JoinColumn(name = "company_id"))
     private List<CompanyRole> roles = new ArrayList<>();
 
     protected Company() {
@@ -165,24 +166,36 @@ public class Company {
      * Add a role to this company.
      *
      * @param role The role to add
+     * @throws IllegalArgumentException if company already has this role type
+     * @throws IllegalStateException    if company already has maximum roles (5)
      */
     public void addRole(CompanyRole role) {
+        if (hasRole(role.getRoleType())) {
+            throw new IllegalArgumentException("Company already has role: " + role.getRoleType());
+        }
+        if (roles.size() >= 5) {
+            throw new IllegalStateException("Company cannot have more than 5 roles");
+        }
         roles.add(role);
-        role.setCompany(this);
     }
 
     /**
-     * Remove a role from this company.
+     * Remove a role from this company by role type.
      *
-     * @param role The role to remove
-     * @throws IllegalStateException if this is the last role
+     * @param roleType The role type to remove
+     * @throws IllegalArgumentException if company doesn't have this role
+     * @throws IllegalStateException    if this is the last role
      */
-    public void removeRole(CompanyRole role) {
+    public void removeRole(RoleType roleType) {
+        // First check if company has the role
+        if (!hasRole(roleType)) {
+            throw new IllegalArgumentException("Company does not have role: " + roleType);
+        }
+        // Then check if it's the last role
         if (roles.size() <= 1) {
             throw new IllegalStateException("Cannot remove the last role from a company");
         }
-        roles.remove(role);
-        role.setCompany(null);
+        roles.removeIf(r -> r.getRoleType() == roleType);
     }
 
     /**
