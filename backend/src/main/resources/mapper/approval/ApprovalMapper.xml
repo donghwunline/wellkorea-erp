@@ -131,7 +131,7 @@
     </resultMap>
 
     <!-- Find approval detail by ID -->
-    <select id="findDetailById" resultMap="ApprovalDetailViewResult" flushCache="true">
+    <select id="findDetailById" resultMap="ApprovalDetailViewResult">
         SELECT
             ar.id,
             ar.entity_type,
@@ -151,7 +151,7 @@
     </select>
 
     <!-- Find level decisions for approval request (nested select) -->
-    <select id="findLevelDecisionsByRequestId" resultMap="LevelDecisionViewResult" flushCache="true">
+    <select id="findLevelDecisionsByRequestId" resultMap="LevelDecisionViewResult">
         SELECT
             ld.level_order,
             ld.level_name,
@@ -236,7 +236,7 @@
     </select>
 
     <!-- Find chain template by ID -->
-    <select id="findChainTemplateById" resultMap="ChainTemplateViewResult" flushCache="true">
+    <select id="findChainTemplateById" resultMap="ChainTemplateViewResult">
         SELECT
             ct.id,
             ct.entity_type,
@@ -249,7 +249,7 @@
     </select>
 
     <!-- Find chain levels for template (nested select) -->
-    <select id="findChainLevelsByTemplateId" resultMap="ChainLevelViewResult" flushCache="true">
+    <select id="findChainLevelsByTemplateId" resultMap="ChainLevelViewResult">
         SELECT
             cl.level_order,
             cl.level_name,

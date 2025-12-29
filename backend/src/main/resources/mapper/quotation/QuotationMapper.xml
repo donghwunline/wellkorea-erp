@@ -46,9 +46,8 @@
         </constructor>
     </resultMap>
 
-    <!-- Main query: Find quotation detail by ID
-         flushCache=true ensures we read fresh data even within same transaction -->
-    <select id="findDetailById" resultMap="QuotationDetailViewResult" flushCache="true">
+    <!-- Main query: Find quotation detail by ID -->
+    <select id="findDetailById" resultMap="QuotationDetailViewResult">
         SELECT
             q.id,
             q.project_id,

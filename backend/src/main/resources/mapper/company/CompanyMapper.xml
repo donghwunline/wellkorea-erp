@@ -64,7 +64,7 @@
     </select>
 
     <!-- Find company detail by ID -->
-    <select id="findDetailById" resultMap="CompanyDetailViewResult" flushCache="true">
+    <select id="findDetailById" resultMap="CompanyDetailViewResult">
         SELECT
             id,
             name,
