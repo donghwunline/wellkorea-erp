@@ -43,9 +43,9 @@ class DatabaseJobCodeSequenceProviderTest extends BaseIntegrationTest {
                         "ON CONFLICT (id) DO NOTHING"
         );
         jdbcTemplate.update(
-                "INSERT INTO company_roles (id, company_id, role_type) " +
-                        "VALUES (1, 1, 'CUSTOMER') " +
-                        "ON CONFLICT (id) DO NOTHING"
+                "INSERT INTO company_roles (company_id, role_type) " +
+                        "VALUES (1, 'CUSTOMER') " +
+                        "ON CONFLICT (company_id, role_type) DO NOTHING"
         );
     }
 

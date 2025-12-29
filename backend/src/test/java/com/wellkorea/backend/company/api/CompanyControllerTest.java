@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <p>
  * T052a: GET /api/companies, POST /api/companies
  * T052b: PUT /api/companies/{id}, GET /api/companies/{id}
- * T052c: POST /api/companies/{id}/roles, DELETE /api/companies/{id}/roles/{roleId}
+ * T052c: POST /api/companies/{id}/roles, DELETE /api/companies/{id}/roles/{roleType}
  */
 @Tag("integration")
 @AutoConfigureMockMvc
@@ -505,15 +505,14 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
-            // CQRS pattern: command endpoints return only ID and message
+            // CQRS pattern: command endpoints return message (no roleId with embeddable)
             mockMvc.perform(post(COMPANIES_URL + "/300/roles")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(addRoleRequest))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.id").isNumber())
-                    .andExpect(jsonPath("$.data.message").value("Role added successfully"));
+                    .andExpect(jsonPath("$.data.message").value("Role VENDOR added successfully"));
         }
 
         @Test
@@ -526,14 +525,13 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
                     }
                     """;
 
-            // CQRS pattern: command endpoints return only ID and message
+            // CQRS pattern: command endpoints return message (no roleId with embeddable)
             mockMvc.perform(post(COMPANIES_URL + "/300/roles")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(addRoleRequest))
                     .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.data.id").isNumber())
-                    .andExpect(jsonPath("$.data.message").value("Role added successfully"));
+                    .andExpect(jsonPath("$.data.message").value("Role OUTSOURCE added successfully"));
         }
 
         @Test
@@ -601,31 +599,24 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
     }
 
     // ==========================================================================
-    // T052c: DELETE /api/companies/{id}/roles/{roleId} - Remove Role from Company
+    // T052c: DELETE /api/companies/{id}/roles/{roleType} - Remove Role from Company
     // ==========================================================================
 
     @Nested
-    @DisplayName("DELETE /api/companies/{id}/roles/{roleId} - T052c: Remove Role from Company")
+    @DisplayName("DELETE /api/companies/{id}/roles/{roleType} - T052c: Remove Role from Company")
     class RemoveRoleTests {
-
-        private Long companyRoleId;
 
         @BeforeEach
         void setUpCompanyWithMultipleRoles() {
             // Insert company with CUSTOMER and VENDOR roles
             insertTestCompanyWithId(400L, "Multi Role Company", "555-44-33322", "CUSTOMER", "VENDOR");
-            // Get the VENDOR role ID for deletion test
-            companyRoleId = jdbcTemplate.queryForObject(
-                    "SELECT id FROM company_roles WHERE company_id = 400 AND role_type = 'VENDOR'",
-                    Long.class
-            );
         }
 
         @Test
         @DisplayName("should return 204 when removing VENDOR role from dual-role company")
         void removeRole_FromDualRoleCompany_Returns204() throws Exception {
-            // When: Remove role - Command returns 204 No Content on success
-            mockMvc.perform(delete(COMPANIES_URL + "/400/roles/" + companyRoleId)
+            // When: Remove role by roleType - Command returns 204 No Content on success
+            mockMvc.perform(delete(COMPANIES_URL + "/400/roles/VENDOR")
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isNoContent());
             // Note: Side effect verification (role removal) is tested implicitly by other tests
@@ -637,20 +628,25 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
         void removeRole_LastRole_Returns400() throws Exception {
             // Create a company with single role
             insertTestCompanyWithId(401L, "Single Role", "444-33-22211", "CUSTOMER");
-            Long singleRoleId = jdbcTemplate.queryForObject(
-                    "SELECT id FROM company_roles WHERE company_id = 401",
-                    Long.class
-            );
 
-            mockMvc.perform(delete(COMPANIES_URL + "/401/roles/" + singleRoleId)
+            mockMvc.perform(delete(COMPANIES_URL + "/401/roles/CUSTOMER")
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isBadRequest());
         }
 
         @Test
-        @DisplayName("should return 404 when role does not exist")
-        void removeRole_NonExistentRole_Returns404() throws Exception {
-            mockMvc.perform(delete(COMPANIES_URL + "/400/roles/99999")
+        @DisplayName("should return 400 when role type does not exist on company")
+        void removeRole_RoleTypeNotOnCompany_Returns400() throws Exception {
+            // Company 400 has CUSTOMER and VENDOR, not OUTSOURCE
+            mockMvc.perform(delete(COMPANIES_URL + "/400/roles/OUTSOURCE")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 404 when company does not exist")
+        void removeRole_NonExistentCompany_Returns404() throws Exception {
+            mockMvc.perform(delete(COMPANIES_URL + "/99999/roles/VENDOR")
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isNotFound());
         }
@@ -658,7 +654,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
         @Test
         @DisplayName("should return 403 when Production removes role")
         void removeRole_AsProduction_Returns403() throws Exception {
-            mockMvc.perform(delete(COMPANIES_URL + "/400/roles/" + companyRoleId)
+            mockMvc.perform(delete(COMPANIES_URL + "/400/roles/VENDOR")
                             .header("Authorization", "Bearer " + productionToken))
                     .andExpect(status().isForbidden());
         }
@@ -666,7 +662,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
         @Test
         @DisplayName("should return 401 without authentication")
         void removeRole_WithoutAuth_Returns401() throws Exception {
-            mockMvc.perform(delete(COMPANIES_URL + "/400/roles/" + companyRoleId))
+            mockMvc.perform(delete(COMPANIES_URL + "/400/roles/VENDOR"))
                     .andExpect(status().isUnauthorized());
         }
     }
@@ -710,7 +706,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
             jdbcTemplate.update(
                     "INSERT INTO company_roles (company_id, role_type, created_at) " +
                             "VALUES (?, ?, CURRENT_TIMESTAMP) " +
-                            "ON CONFLICT DO NOTHING",
+                            "ON CONFLICT (company_id, role_type) DO NOTHING",
                     id, roleType
             );
         }

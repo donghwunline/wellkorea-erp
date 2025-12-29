@@ -728,7 +728,7 @@ class ServiceCategoryControllerTest extends BaseIntegrationTest implements TestF
         jdbcTemplate.update(
                 "INSERT INTO company_roles (company_id, role_type, created_at) " +
                         "VALUES (?, 'VENDOR', CURRENT_TIMESTAMP) " +
-                        "ON CONFLICT DO NOTHING",
+                        "ON CONFLICT (company_id, role_type) DO NOTHING",
                 id
         );
     }
@@ -746,7 +746,7 @@ class ServiceCategoryControllerTest extends BaseIntegrationTest implements TestF
         jdbcTemplate.update(
                 "INSERT INTO company_roles (company_id, role_type, created_at) " +
                         "VALUES (?, 'CUSTOMER', CURRENT_TIMESTAMP) " +
-                        "ON CONFLICT DO NOTHING",
+                        "ON CONFLICT (company_id, role_type) DO NOTHING",
                 id
         );
     }

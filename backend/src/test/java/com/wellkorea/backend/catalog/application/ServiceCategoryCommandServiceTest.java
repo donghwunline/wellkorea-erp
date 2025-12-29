@@ -622,8 +622,6 @@ class ServiceCategoryCommandServiceTest {
                 .build();
 
         CompanyRole role = CompanyRole.builder()
-                .id(id)
-                .company(company)
                 .roleType(roleType)
                 .build();
 

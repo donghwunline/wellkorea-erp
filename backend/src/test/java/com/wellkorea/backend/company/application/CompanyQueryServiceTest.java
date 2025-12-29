@@ -41,22 +41,22 @@ class CompanyQueryServiceTest {
     private Pageable pageable;
     private CompanyDetailView testDetailView;
     private CompanySummaryView testSummaryView;
+    private CompanyRoleView testRoleView;
 
     @BeforeEach
     void setUp() {
         pageable = PageRequest.of(0, 10);
 
-        // CompanyRoleView: (Long id, RoleType roleType, BigDecimal creditLimit,
+        // CompanyRoleView: (RoleType roleType, BigDecimal creditLimit,
         //                   Integer defaultPaymentDays, String notes, Instant createdAt)
-        CompanyRoleView roleView = new CompanyRoleView(
-                1L,
+        testRoleView = new CompanyRoleView(
                 RoleType.CUSTOMER,
                 BigDecimal.valueOf(10000000),
                 30,
                 "Primary customer role",
                 Instant.now()
         );
-        List<CompanyRoleView> roles = List.of(roleView);
+        List<CompanyRoleView> roles = List.of(testRoleView);
 
         // CompanyDetailView: (Long id, String name, String registrationNumber, String representative,
         //                     String businessType, String businessCategory, String contactPerson,
@@ -138,11 +138,11 @@ class CompanyQueryServiceTest {
     class ListCompaniesTests {
 
         @Test
-        @DisplayName("should return paginated results")
+        @DisplayName("should return paginated results with roles via JOIN")
         void listCompanies_WithPagination_ReturnsPage() {
-            // Given
-            List<CompanySummaryView> content = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(null, null, 10, 0L)).willReturn(content);
+            // Given - single JOIN query returns summaries with roles
+            List<CompanySummaryView> summaries = List.of(testSummaryView);
+            given(companyMapper.findWithFilters(null, null, 10, 0L)).willReturn(summaries);
             given(companyMapper.countWithFilters(null, null)).willReturn(1L);
 
             // When
@@ -151,8 +151,10 @@ class CompanyQueryServiceTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).roles()).hasSize(1);
             assertThat(result.getTotalElements()).isEqualTo(1L);
             assertThat(result.getTotalPages()).isEqualTo(1);
+            verify(companyMapper).findWithFilters(null, null, 10, 0L);
         }
 
         @Test
@@ -177,11 +179,11 @@ class CompanyQueryServiceTest {
     class FindBySearchTests {
 
         @Test
-        @DisplayName("should trim search term")
+        @DisplayName("should trim search term and return filtered results")
         void findBySearch_WithSearchTerm_ReturnsFilteredPage() {
             // Given
-            List<CompanySummaryView> content = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(null, "acme", 10, 0L)).willReturn(content);
+            List<CompanySummaryView> summaries = List.of(testSummaryView);
+            given(companyMapper.findWithFilters(null, "acme", 10, 0L)).willReturn(summaries);
             given(companyMapper.countWithFilters(null, "acme")).willReturn(1L);
 
             // When
@@ -232,8 +234,8 @@ class CompanyQueryServiceTest {
         @DisplayName("should filter by role type")
         void findByRoleType_WithRoleType_ReturnsFilteredPage() {
             // Given
-            List<CompanySummaryView> content = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.CUSTOMER, null, 10, 0L)).willReturn(content);
+            List<CompanySummaryView> summaries = List.of(testSummaryView);
+            given(companyMapper.findWithFilters(RoleType.CUSTOMER, null, 10, 0L)).willReturn(summaries);
             given(companyMapper.countWithFilters(RoleType.CUSTOMER, null)).willReturn(1L);
 
             // When
@@ -254,8 +256,8 @@ class CompanyQueryServiceTest {
         @DisplayName("should apply both filters")
         void findByRoleTypeAndSearch_WithBothFilters_ReturnsFilteredPage() {
             // Given
-            List<CompanySummaryView> content = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.VENDOR, "supplier", 10, 0L)).willReturn(content);
+            List<CompanySummaryView> summaries = List.of(testSummaryView);
+            given(companyMapper.findWithFilters(RoleType.VENDOR, "supplier", 10, 0L)).willReturn(summaries);
             given(companyMapper.countWithFilters(RoleType.VENDOR, "supplier")).willReturn(1L);
 
             // When
@@ -272,8 +274,8 @@ class CompanyQueryServiceTest {
         @DisplayName("should handle blank search with role type")
         void findByRoleTypeAndSearch_BlankSearch_PassesNullSearch() {
             // Given
-            List<CompanySummaryView> content = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.CUSTOMER, null, 10, 0L)).willReturn(content);
+            List<CompanySummaryView> summaries = List.of(testSummaryView);
+            given(companyMapper.findWithFilters(RoleType.CUSTOMER, null, 10, 0L)).willReturn(summaries);
             given(companyMapper.countWithFilters(RoleType.CUSTOMER, null)).willReturn(1L);
 
             // When

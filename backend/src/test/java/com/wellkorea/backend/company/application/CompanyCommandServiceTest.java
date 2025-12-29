@@ -4,7 +4,6 @@ import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.company.domain.CompanyRole;
 import com.wellkorea.backend.company.domain.RoleType;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
-import com.wellkorea.backend.company.infrastructure.persistence.CompanyRoleRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.*;
@@ -25,14 +24,11 @@ import static org.mockito.Mockito.*;
  * Unit tests for CompanyCommandService.
  * Tests validate company management business logic for write operations.
  * <p>
- * Test-First Development: These tests MUST be written FIRST and MUST FAIL initially.
- * Per Constitution Principle I (Test-First Development).
- * <p>
- * T052d: Unit tests for CompanyCommandService
+ * Tests cover:
  * - Create company with roles
- * - Add role to existing company
+ * - Add role to existing company (via Company aggregate)
  * - Dual-role validation (same company can be customer AND vendor)
- * - Remove role (cannot remove last role)
+ * - Remove role by type (cannot remove last role)
  * - Registration number uniqueness
  */
 @Tag("unit")
@@ -42,9 +38,6 @@ class CompanyCommandServiceTest {
 
     @Mock
     private CompanyRepository companyRepository;
-
-    @Mock
-    private CompanyRoleRepository companyRoleRepository;
 
     @InjectMocks
     private CompanyCommandService companyCommandService;
@@ -85,8 +78,7 @@ class CompanyCommandServiceTest {
 
             // Then
             assertThat(result).isEqualTo(1L);
-            // Company is saved twice: once initially, once after adding roles
-            verify(companyRepository, times(2)).save(any(Company.class));
+            verify(companyRepository).save(any(Company.class));
         }
 
         @Test
@@ -113,8 +105,7 @@ class CompanyCommandServiceTest {
 
             // Then
             assertThat(result).isEqualTo(2L);
-            // Company is saved twice: once initially, once after adding roles
-            verify(companyRepository, times(2)).save(any(Company.class));
+            verify(companyRepository).save(any(Company.class));
         }
 
         @Test
@@ -173,8 +164,7 @@ class CompanyCommandServiceTest {
             // Then
             assertThat(result).isEqualTo(3L);
             verify(companyRepository, never()).existsByRegistrationNumber(anyString());
-            // Company is saved twice: once initially, once after adding roles
-            verify(companyRepository, times(2)).save(any(Company.class));
+            verify(companyRepository).save(any(Company.class));
         }
     }
 
@@ -187,11 +177,11 @@ class CompanyCommandServiceTest {
     class AddRoleTests {
 
         @Test
-        @DisplayName("should add VENDOR role to existing CUSTOMER company")
-        void addRole_VendorToCustomer_ReturnsRoleId() {
+        @DisplayName("should add VENDOR role to existing company")
+        void addRole_VendorToCompany_Succeeds() {
             // Given
             Long companyId = 1L;
-            Company company = createCompanyEntity(companyId, "Customer Company", "111-22-33333");
+            Company company = createCompanyWithRole(companyId, "Customer Company", RoleType.CUSTOMER);
             AddRoleCommand command = new AddRoleCommand(
                     RoleType.VENDOR,
                     new BigDecimal("10000000"),
@@ -199,25 +189,23 @@ class CompanyCommandServiceTest {
                     "Added as vendor"
             );
 
-            CompanyRole savedRole = createCompanyRole(10L, companyId, RoleType.VENDOR);
             when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
-            when(companyRoleRepository.existsByCompany_IdAndRoleType(companyId, RoleType.VENDOR)).thenReturn(false);
-            when(companyRoleRepository.save(any(CompanyRole.class))).thenReturn(savedRole);
+            when(companyRepository.save(any(Company.class))).thenReturn(company);
 
-            // When
-            Long result = companyCommandService.addRole(companyId, command);
+            // When - no exception means success
+            companyCommandService.addRole(companyId, command);
 
             // Then
-            assertThat(result).isEqualTo(10L);
-            verify(companyRoleRepository).save(any(CompanyRole.class));
+            verify(companyRepository).save(company);
+            assertThat(company.hasRole(RoleType.VENDOR)).isTrue();
         }
 
         @Test
         @DisplayName("should add OUTSOURCE role with notes")
-        void addRole_Outsource_ReturnsRoleId() {
+        void addRole_Outsource_Succeeds() {
             // Given
             Long companyId = 2L;
-            Company company = createCompanyEntity(companyId, "Vendor Company", "222-33-44444");
+            Company company = createCompanyWithRole(companyId, "Vendor Company", RoleType.VENDOR);
             AddRoleCommand command = new AddRoleCommand(
                     RoleType.OUTSOURCE,
                     null,
@@ -225,16 +213,15 @@ class CompanyCommandServiceTest {
                     "외주 도장 업체"
             );
 
-            CompanyRole savedRole = createCompanyRole(11L, companyId, RoleType.OUTSOURCE);
             when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
-            when(companyRoleRepository.existsByCompany_IdAndRoleType(companyId, RoleType.OUTSOURCE)).thenReturn(false);
-            when(companyRoleRepository.save(any(CompanyRole.class))).thenReturn(savedRole);
+            when(companyRepository.save(any(Company.class))).thenReturn(company);
 
             // When
-            Long result = companyCommandService.addRole(companyId, command);
+            companyCommandService.addRole(companyId, command);
 
             // Then
-            assertThat(result).isEqualTo(11L);
+            verify(companyRepository).save(company);
+            assertThat(company.hasRole(RoleType.OUTSOURCE)).isTrue();
         }
 
         @Test
@@ -257,11 +244,10 @@ class CompanyCommandServiceTest {
         void addRole_DuplicateRole_ThrowsException() {
             // Given
             Long companyId = 1L;
-            Company company = createCompanyEntity(companyId, "Customer Company", "111-22-33333");
+            Company company = createCompanyWithRole(companyId, "Customer Company", RoleType.CUSTOMER);
             AddRoleCommand command = new AddRoleCommand(RoleType.CUSTOMER, null, null, null);
 
             when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
-            when(companyRoleRepository.existsByCompany_IdAndRoleType(companyId, RoleType.CUSTOMER)).thenReturn(true);
 
             // When & Then
             assertThatThrownBy(() -> companyCommandService.addRole(companyId, command))
@@ -283,17 +269,19 @@ class CompanyCommandServiceTest {
         void removeRole_FromDualRoleCompany_Succeeds() {
             // Given
             Long companyId = 1L;
-            Long roleId = 10L;
-            CompanyRole vendorRole = createCompanyRole(roleId, companyId, RoleType.VENDOR);
+            Company company = createCompanyWithRoles(companyId, "Dual Role Company",
+                    RoleType.CUSTOMER, RoleType.VENDOR);
 
-            when(companyRoleRepository.findById(roleId)).thenReturn(Optional.of(vendorRole));
-            when(companyRoleRepository.countByCompany_Id(companyId)).thenReturn(2L); // Has 2 roles
+            when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
+            when(companyRepository.save(any(Company.class))).thenReturn(company);
 
             // When
-            companyCommandService.removeRole(companyId, roleId);
+            companyCommandService.removeRole(companyId, RoleType.VENDOR);
 
             // Then
-            verify(companyRoleRepository).delete(vendorRole);
+            verify(companyRepository).save(company);
+            assertThat(company.hasRole(RoleType.VENDOR)).isFalse();
+            assertThat(company.hasRole(RoleType.CUSTOMER)).isTrue();
         }
 
         @Test
@@ -301,47 +289,43 @@ class CompanyCommandServiceTest {
         void removeRole_LastRole_ThrowsException() {
             // Given
             Long companyId = 1L;
-            Long roleId = 10L;
-            CompanyRole lastRole = createCompanyRole(roleId, companyId, RoleType.CUSTOMER);
+            Company company = createCompanyWithRole(companyId, "Single Role Company", RoleType.CUSTOMER);
 
-            when(companyRoleRepository.findById(roleId)).thenReturn(Optional.of(lastRole));
-            when(companyRoleRepository.countByCompany_Id(companyId)).thenReturn(1L); // Only 1 role
+            when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
 
             // When & Then
-            assertThatThrownBy(() -> companyCommandService.removeRole(companyId, roleId))
+            assertThatThrownBy(() -> companyCommandService.removeRole(companyId, RoleType.CUSTOMER))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("last role");
         }
 
         @Test
-        @DisplayName("should throw exception when role not found")
-        void removeRole_RoleNotFound_ThrowsException() {
+        @DisplayName("should throw exception when company not found")
+        void removeRole_CompanyNotFound_ThrowsException() {
             // Given
-            Long companyId = 1L;
-            Long roleId = 99999L;
+            Long companyId = 99999L;
 
-            when(companyRoleRepository.findById(roleId)).thenReturn(Optional.empty());
+            when(companyRepository.findById(companyId)).thenReturn(Optional.empty());
 
             // When & Then
-            assertThatThrownBy(() -> companyCommandService.removeRole(companyId, roleId))
+            assertThatThrownBy(() -> companyCommandService.removeRole(companyId, RoleType.VENDOR))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("not found");
         }
 
         @Test
-        @DisplayName("should throw exception when role belongs to different company")
-        void removeRole_RoleBelongsToDifferentCompany_ThrowsException() {
+        @DisplayName("should throw exception when role type not found on company")
+        void removeRole_RoleTypeNotFound_ThrowsException() {
             // Given
             Long companyId = 1L;
-            Long roleId = 10L;
-            CompanyRole roleFromOtherCompany = createCompanyRole(roleId, 2L, RoleType.VENDOR);
+            Company company = createCompanyWithRole(companyId, "Customer Company", RoleType.CUSTOMER);
 
-            when(companyRoleRepository.findById(roleId)).thenReturn(Optional.of(roleFromOtherCompany));
+            when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
 
             // When & Then
-            assertThatThrownBy(() -> companyCommandService.removeRole(companyId, roleId))
+            assertThatThrownBy(() -> companyCommandService.removeRole(companyId, RoleType.VENDOR))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("does not belong");
+                    .hasMessageContaining("does not have role");
         }
     }
 
@@ -448,8 +432,7 @@ class CompanyCommandServiceTest {
 
             // Then
             assertThat(result).isEqualTo(1L);
-            // Company is saved twice: once initially, once after adding roles
-            verify(companyRepository, times(2)).save(any(Company.class));
+            verify(companyRepository).save(any(Company.class));
         }
 
         @Test
@@ -472,8 +455,7 @@ class CompanyCommandServiceTest {
 
             // Then
             assertThat(result).isEqualTo(1L);
-            // Company is saved twice: once initially, once after adding roles
-            verify(companyRepository, times(2)).save(any(Company.class));
+            verify(companyRepository).save(any(Company.class));
         }
     }
 
@@ -490,12 +472,23 @@ class CompanyCommandServiceTest {
                 .build();
     }
 
-    private CompanyRole createCompanyRole(Long id, Long companyId, RoleType roleType) {
-        Company company = createCompanyEntity(companyId, "Test Company", null);
-        return CompanyRole.builder()
-                .id(id)
-                .company(company)
+    private Company createCompanyWithRole(Long id, String name, RoleType roleType) {
+        Company company = createCompanyEntity(id, name, null);
+        CompanyRole role = CompanyRole.builder()
                 .roleType(roleType)
                 .build();
+        company.addRole(role);
+        return company;
+    }
+
+    private Company createCompanyWithRoles(Long id, String name, RoleType... roleTypes) {
+        Company company = createCompanyEntity(id, name, null);
+        for (RoleType roleType : roleTypes) {
+            CompanyRole role = CompanyRole.builder()
+                    .roleType(roleType)
+                    .build();
+            company.addRole(role);
+        }
+        return company;
     }
 }
