@@ -38,7 +38,7 @@ public class QuotationQueryService {
      */
     public QuotationDetailView getQuotationDetail(Long quotationId) {
         return quotationMapper.findDetailById(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
     }
 
     /**

@@ -60,7 +60,7 @@ public class QuotationPdfService {
      */
     public byte[] generatePdf(Long quotationId) {
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         if (!quotation.canGeneratePdf()) {
             throw new BusinessException("PDF can only be generated for non-DRAFT quotations");

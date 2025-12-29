@@ -60,15 +60,14 @@ public class ApprovalCommandService {
                                       Long submittedByUserId) {
 
         ApprovalChainTemplate chainTemplate = chainTemplateRepository.findByEntityTypeWithLevels(entityType)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No approval chain template found for entity type: " + entityType));
+                .orElseThrow(() -> new ResourceNotFoundException("ApprovalChainTemplate", entityType));
 
         if (!chainTemplate.hasLevels()) {
             throw new BusinessException("Approval chain template has no levels configured");
         }
 
         User submittedBy = userRepository.findById(submittedByUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + submittedByUserId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", submittedByUserId));
 
         // Validate all approver users exist
         List<Long> approverUserIds = chainTemplate.getLevels().stream()
@@ -77,7 +76,7 @@ public class ApprovalCommandService {
 
         for (Long approverUserId : approverUserIds) {
             if (!userRepository.existsById(approverUserId)) {
-                throw new ResourceNotFoundException("Approver user not found with ID: " + approverUserId);
+                throw new ResourceNotFoundException("User", approverUserId);
             }
         }
 
@@ -110,13 +109,12 @@ public class ApprovalCommandService {
      */
     public Long approve(Long approvalRequestId, Long approverUserId, String comments) {
         ApprovalRequest request = approvalRequestRepository.findByIdWithLevelDecisions(approvalRequestId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Approval request not found with ID: " + approvalRequestId));
+                .orElseThrow(() -> new ResourceNotFoundException("ApprovalRequest", approvalRequestId));
 
         validateApprovalAction(request, approverUserId);
 
         User approver = userRepository.findById(approverUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + approverUserId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", approverUserId));
 
         // Use aggregate method to approve at current level
         request.approveAtCurrentLevel(approverUserId, comments);
@@ -157,13 +155,12 @@ public class ApprovalCommandService {
      */
     public Long reject(Long approvalRequestId, Long approverUserId, String reason, String comments) {
         ApprovalRequest request = approvalRequestRepository.findByIdWithLevelDecisions(approvalRequestId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Approval request not found with ID: " + approvalRequestId));
+                .orElseThrow(() -> new ResourceNotFoundException("ApprovalRequest", approvalRequestId));
 
         validateApprovalAction(request, approverUserId);
 
         User approver = userRepository.findById(approverUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + approverUserId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", approverUserId));
 
         // Use aggregate method to reject at current level
         request.rejectAtCurrentLevel(approverUserId, comments);
@@ -200,13 +197,12 @@ public class ApprovalCommandService {
      */
     public Long updateChainLevels(Long chainTemplateId, List<ChainLevelCommand> commands) {
         ApprovalChainTemplate template = chainTemplateRepository.findById(chainTemplateId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Chain template not found with ID: " + chainTemplateId));
+                .orElseThrow(() -> new ResourceNotFoundException("ApprovalChainTemplate", chainTemplateId));
 
         // Validate that all approver users exist
         for (ChainLevelCommand cmd : commands) {
             if (!userRepository.existsById(cmd.approverUserId())) {
-                throw new ResourceNotFoundException("User not found with ID: " + cmd.approverUserId());
+                throw new ResourceNotFoundException("User", cmd.approverUserId());
             }
         }
 

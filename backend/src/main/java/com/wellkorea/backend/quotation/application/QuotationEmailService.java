@@ -75,7 +75,7 @@ public class QuotationEmailService {
      */
     public void sendRevisionNotification(Long quotationId) {
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         validateSendableStatus(quotation);
         sendRevisionNotificationInternal(quotation);

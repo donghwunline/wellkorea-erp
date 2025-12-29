@@ -55,10 +55,10 @@ public class QuotationCommandService {
      */
     public Long createQuotation(CreateQuotationCommand command, Long createdByUserId) {
         Project project = projectRepository.findById(command.projectId())
-                .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + command.projectId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Project", command.projectId()));
 
         User createdBy = userRepository.findById(createdByUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + createdByUserId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", createdByUserId));
 
         // Determine version number
         int version = quotationRepository.findLatestVersionByProjectId(command.projectId())
@@ -88,7 +88,7 @@ public class QuotationCommandService {
      */
     public Long updateQuotation(Long quotationId, UpdateQuotationCommand command) {
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         if (!quotation.canBeEdited()) {
             throw new BusinessException("Quotation can only be edited in DRAFT status");
@@ -126,7 +126,7 @@ public class QuotationCommandService {
      */
     public Long submitForApproval(Long quotationId, Long submittedByUserId) {
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         if (!quotation.canBeSubmitted()) {
             throw new BusinessException("Quotation must be in DRAFT status with line items to submit for approval");
@@ -154,14 +154,14 @@ public class QuotationCommandService {
      */
     public Long createNewVersion(Long quotationId, Long createdByUserId) {
         Quotation original = quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         if (!original.canCreateNewVersion()) {
             throw new BusinessException("Can only create new version from APPROVED, REJECTED, SENT, or ACCEPTED quotation");
         }
 
         User createdBy = userRepository.findById(createdByUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + createdByUserId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", createdByUserId));
 
         int newVersion = quotationRepository.findLatestVersionByProjectId(original.getProject().getId())
                 .map(v -> v + 1)
@@ -202,14 +202,14 @@ public class QuotationCommandService {
      */
     public Long approveQuotation(Long quotationId, Long approvedByUserId) {
         Quotation quotation = quotationRepository.findById(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         if (quotation.getStatus() != QuotationStatus.PENDING) {
             throw new BusinessException("Only PENDING quotations can be approved");
         }
 
         User approvedBy = userRepository.findById(approvedByUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + approvedByUserId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", approvedByUserId));
 
         quotation.setStatus(QuotationStatus.APPROVED);
         quotation.setApprovedAt(LocalDateTime.now());
@@ -227,7 +227,7 @@ public class QuotationCommandService {
      */
     public Long rejectQuotation(Long quotationId, String rejectionReason) {
         Quotation quotation = quotationRepository.findById(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         if (quotation.getStatus() != QuotationStatus.PENDING) {
             throw new BusinessException("Only PENDING quotations can be rejected");
@@ -248,7 +248,7 @@ public class QuotationCommandService {
      */
     public Long markAsSent(Long quotationId) {
         Quotation quotation = quotationRepository.findById(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation not found with ID: " + quotationId));
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         if (quotation.getStatus() != QuotationStatus.APPROVED) {
             throw new BusinessException("Only APPROVED quotations can be marked as sent");
