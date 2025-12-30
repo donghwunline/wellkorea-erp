@@ -3,6 +3,7 @@
  */
 
 export { QuotationListPage } from './QuotationListPage';
+export { QuotationListPageV2 } from './QuotationListPageV2';
 export { QuotationCreatePage } from './QuotationCreatePage';
 export { QuotationEditPage } from './QuotationEditPage';
 export { QuotationDetailPage } from './QuotationDetailPage';

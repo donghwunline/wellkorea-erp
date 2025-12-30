@@ -8,6 +8,28 @@
  * - Create new version
  * - PDF generation
  * - Revision notification
+ *
+ * @deprecated This service is being replaced by FSD-Lite architecture.
+ * Use the following imports instead:
+ *
+ * **Reading data (queries):**
+ * ```typescript
+ * import { useQuotation, useQuotations } from '@/entities/quotation';
+ * ```
+ *
+ * **Writing data (mutations):**
+ * ```typescript
+ * import { useCreateQuotation } from '@/features/quotation/create';
+ * import { useUpdateQuotation } from '@/features/quotation/update';
+ * import { useSubmitQuotation } from '@/features/quotation/submit';
+ * ```
+ *
+ * **Domain types and rules:**
+ * ```typescript
+ * import { type Quotation, quotationRules } from '@/entities/quotation';
+ * ```
+ *
+ * This file will be removed once all consumers are migrated.
  */
 
 import { httpClient, QUOTATION_ENDPOINTS } from '@/api';

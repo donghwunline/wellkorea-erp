@@ -2,6 +2,28 @@
  * Quotation service types.
  *
  * API DTOs matching backend QuotationResponse, ApprovalRequestResponse, and related DTOs.
+ *
+ * @deprecated This file is being replaced by FSD-Lite architecture types.
+ * Use the following imports instead:
+ *
+ * **Domain types and rules:**
+ * ```typescript
+ * import {
+ *   type Quotation,
+ *   type QuotationListItem,
+ *   type LineItem,
+ *   type QuotationStatus,
+ *   quotationRules,
+ *   QuotationStatusConfig,
+ * } from '@/entities/quotation';
+ * ```
+ *
+ * **API DTOs (for low-level API calls only):**
+ * ```typescript
+ * import type { QuotationDetailsDTO, LineItemDTO } from '@/entities/quotation/api';
+ * ```
+ *
+ * This file will be removed once all consumers are migrated.
  */
 
 import type { Paginated } from '@/api/types';

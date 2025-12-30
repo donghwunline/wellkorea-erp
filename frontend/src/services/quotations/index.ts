@@ -1,6 +1,23 @@
 /**
  * Quotation services barrel export.
  * Exports all quotation-related services and types.
+ *
+ * @deprecated This module is being replaced by FSD-Lite architecture.
+ *
+ * **Migration guide:**
+ *
+ * ```typescript
+ * // OLD (deprecated)
+ * import { quotationService, type QuotationDetails } from '@/services/quotations';
+ *
+ * // NEW (FSD-Lite)
+ * import { useQuotation, useQuotations, type Quotation, quotationRules } from '@/entities/quotation';
+ * import { useCreateQuotation } from '@/features/quotation/create';
+ * import { useUpdateQuotation } from '@/features/quotation/update';
+ * import { useSubmitQuotation } from '@/features/quotation/submit';
+ * ```
+ *
+ * This module will be removed once all consumers are migrated.
  */
 
 // Services

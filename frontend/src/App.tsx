@@ -12,19 +12,9 @@ import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { AuditLogPage } from './pages/admin/AuditLogPage';
 import { ApprovalChainConfigPage } from './pages/approval/ApprovalChainConfigPage.tsx';
 import { ApprovalListPage } from './pages/approval/ApprovalListPage.tsx';
-import {
-  ProjectCreatePage,
-  ProjectEditPage,
-  ProjectListPage,
-  ProjectViewPage,
-} from './pages/projects';
-import {
-  QuotationCreatePage,
-  QuotationDetailPage,
-  QuotationEditPage,
-  QuotationListPage,
-} from './pages/quotations';
-import { CompanyListPage, CompanyDetailPage, CreateCompanyPage } from './pages/companies';
+import { ProjectCreatePage, ProjectEditPage, ProjectListPage, ProjectViewPage, } from './pages/projects';
+import { QuotationCreatePage, QuotationDetailPage, QuotationEditPage, QuotationListPage, } from './pages/quotations';
+import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from './pages/companies';
 import { ItemsPage } from './pages/items';
 import { ProcurementPage } from './pages/procurement';
 
