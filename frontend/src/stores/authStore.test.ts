@@ -164,6 +164,7 @@ describe('authStore', () => {
     it('should throw error on failed login and not update state', async () => {
       // Given: Login fails
       const apiError: ApiError = {
+        name: 'ApiError',
         status: 401,
         errorCode: 'AUTH_001',
         message: 'Invalid credentials',
@@ -220,6 +221,7 @@ describe('authStore', () => {
 
       // Server logout will fail
       const apiError: ApiError = {
+        name: 'ApiError',
         status: 500,
         errorCode: 'SERVER_001',
         message: 'Server error',

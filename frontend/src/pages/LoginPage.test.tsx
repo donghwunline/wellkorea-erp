@@ -271,6 +271,7 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
 
       const authError: ApiError = {
+        name: 'ApiError',
         status: 401,
         errorCode: 'AUTH_001',
         message: 'Invalid credentials',
@@ -300,6 +301,7 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
 
       const authError: ApiError = {
+        name: 'ApiError',
         status: 401,
         errorCode: 'AUTH_001',
         message: 'Invalid credentials',
@@ -334,6 +336,7 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
 
       const authError: ApiError = {
+        name: 'ApiError',
         status: 401,
         errorCode: 'AUTH_003',
         message: 'Token expired',
@@ -363,6 +366,7 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
 
       const authError: ApiError = {
+        name: 'ApiError',
         status: 401,
         errorCode: 'AUTH_001',
         message: 'Invalid credentials',
