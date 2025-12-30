@@ -24,11 +24,11 @@ vi.mock('@/services', () => ({
 
 // Mock customer data for tests
 const MOCK_CUSTOMERS: CompanySummary[] = [
-  { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com', phone: '02-1234-5678', address: 'Seoul', isActive: true, roles: [{ id: 1, roleType: 'CUSTOMER', notes: null }] },
-  { id: 2, name: 'LG Display', email: 'info@lgdisplay.com', phone: '02-2345-6789', address: 'Seoul', isActive: true, roles: [{ id: 2, roleType: 'CUSTOMER', notes: null }] },
-  { id: 3, name: 'Hyundai Motor', email: 'info@hyundai.com', phone: '02-3456-7890', address: 'Seoul', isActive: true, roles: [{ id: 3, roleType: 'CUSTOMER', notes: null }] },
-  { id: 4, name: 'SK Hynix', email: 'contact@skhynix.com', phone: '031-345-6789', address: 'Icheon', isActive: true, roles: [{ id: 4, roleType: 'CUSTOMER', notes: null }] },
-  { id: 5, name: 'POSCO', email: 'contact@posco.com', phone: '054-456-7890', address: 'Pohang', isActive: true, roles: [{ id: 5, roleType: 'CUSTOMER', notes: null }] },
+  { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com', phone: '02-1234-5678', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 1, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
+  { id: 2, name: 'LG Display', email: 'info@lgdisplay.com', phone: '02-2345-6789', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 2, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
+  { id: 3, name: 'Hyundai Motor', email: 'info@hyundai.com', phone: '02-3456-7890', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 3, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
+  { id: 4, name: 'SK Hynix', email: 'contact@skhynix.com', phone: '031-345-6789', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 4, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
+  { id: 5, name: 'POSCO', email: 'contact@posco.com', phone: '054-456-7890', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 5, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
 ];
 
 const MOCK_PAGINATED_CUSTOMERS: PaginatedCompanies = {
