@@ -1,17 +1,15 @@
 /**
  * Product Selector Component.
  *
- * Reusable component for selecting products and managing line items.
- * Used in quotation forms and other product selection contexts.
+ * Feature component for selecting products and managing quotation line items.
+ * Handles product search via API and line item CRUD operations.
  *
- * Shared Layer: Reusable UI component
- * - No feature-specific logic
- * - Pure UI with callbacks
+ * FSD Layer: features/quotation/line-items
  */
 
 import { useCallback, useState } from 'react';
 import { productService } from '@/services';
-import { formatCurrency } from '@/shared/utils';
+import { formatCurrency } from '@/shared';
 import {
   Button,
   Card,

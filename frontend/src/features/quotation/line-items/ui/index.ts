@@ -1,5 +1,7 @@
 /**
- * Product Selector - Public API.
+ * Line Items UI Components.
+ *
+ * FSD Layer: features/quotation/line-items/ui
  */
 
 export { ProductSelector } from './ProductSelector';
