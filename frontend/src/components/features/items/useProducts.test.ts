@@ -32,8 +32,8 @@ describe('useProducts', () => {
   const mockGetProductTypes = productService.getProductTypes as Mock;
 
   const mockProductTypes: ProductType[] = [
-    { id: 1, name: 'Electronics' },
-    { id: 2, name: 'Machinery' },
+    { id: 1, name: 'Electronics', createdAt: '2024-01-01T00:00:00Z' },
+    { id: 2, name: 'Machinery', createdAt: '2024-01-01T00:00:00Z' },
   ];
 
   const mockProducts: ProductSummary[] = [
@@ -41,6 +41,7 @@ describe('useProducts', () => {
       id: 1,
       sku: 'SKU-001',
       name: 'Product A',
+      productTypeId: 1,
       productTypeName: 'Electronics',
       baseUnitPrice: 10000,
       unit: 'EA',
@@ -50,6 +51,7 @@ describe('useProducts', () => {
       id: 2,
       sku: 'SKU-002',
       name: 'Product B',
+      productTypeId: 2,
       productTypeName: 'Machinery',
       baseUnitPrice: 25000,
       unit: 'SET',
@@ -63,7 +65,7 @@ describe('useProducts', () => {
       totalElements: 2,
       totalPages: 1,
       size: 20,
-      number: 0,
+      page: 0,
       first: true,
       last: true,
     },

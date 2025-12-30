@@ -42,12 +42,14 @@ describe('useServiceCategories', () => {
       name: 'Laser Cutting',
       description: 'Laser cutting services',
       isActive: true,
+      vendorCount: 3,
     },
     {
       id: 2,
       name: 'CNC Machining',
       description: 'CNC machining services',
       isActive: true,
+      vendorCount: 5,
     },
   ];
 
@@ -57,7 +59,7 @@ describe('useServiceCategories', () => {
       totalElements: 2,
       totalPages: 1,
       size: 20,
-      number: 0,
+      page: 0,
       first: true,
       last: true,
     },
@@ -71,10 +73,14 @@ describe('useServiceCategories', () => {
       vendorId: 10,
       vendorName: 'Vendor A',
       unitPrice: 5000,
+      currency: 'KRW',
       leadTimeDays: 3,
+      isPreferred: false,
       notes: 'Quality service',
-      validFrom: '2024-01-01',
-      validTo: '2024-12-31',
+      effectiveFrom: '2024-01-01',
+      effectiveTo: '2024-12-31',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
     },
   ];
 
