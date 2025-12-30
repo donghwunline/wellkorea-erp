@@ -24,7 +24,6 @@ import {
   quotationRules,
   useQuotation,
   useQuotations,
-  type Quotation,
 } from '@/entities/quotation';
 
 // Feature imports
@@ -83,6 +82,7 @@ export function QuotationDetailsPanel({
     error: listError,
     refetch: refetchList,
   } = useQuotations({
+    page: 0,
     projectId,
     size: 100, // Get all versions
   });
@@ -330,7 +330,7 @@ export function QuotationDetailsPanel({
           </div>
 
           {/* Status Badge */}
-          {quotation && <QuotationStatusBadge status={quotation.status} korean />}
+          {quotation && <QuotationStatusBadge status={quotation.status} />}
         </div>
 
         {/* Actions */}
