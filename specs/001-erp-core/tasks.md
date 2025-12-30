@@ -29,9 +29,50 @@
 ## Path Conventions
 
 - **Backend**: `backend/src/main/java/com/wellkorea/backend/`
-- **Frontend**: `frontend/src/`
+- **Frontend**: `frontend/src/` (FSD-Lite architecture)
+  - `app/` - Application setup (providers, router)
+  - `pages/` - Route-level components (assembly only)
+  - `widgets/` - Composite UI blocks (feature composition)
+  - `features/` - User actions/workflows (isolated units)
+  - `entities/` - Domain models (types + rules + queries + display UI)
+  - `shared/` - Cross-cutting concerns (api, ui, lib, types)
+  - `stores/` - Global state (minimal - auth only)
 - **Database**: `backend/src/main/resources/db/migration/`
 - **Tests**: `backend/src/test/java/com/wellkorea/backend/` and `frontend/tests/`
+
+---
+
+## Phase 0: Frontend Architecture Migration (FSD-Lite) - **NEW 2025-12-30**
+
+**Purpose**: Migrate frontend from current layered architecture to FSD-Lite (Feature-Sliced Design) aligned with backend DDD + CQS patterns.
+
+**Reference**: See [docs/architecture/frontend-architecture-analysis.md](../../docs/architecture/frontend-architecture-analysis.md) for complete architecture documentation.
+
+### Phase 0a: Infrastructure Setup (TanStack Query)
+
+- [ ] T000a [P] Install TanStack Query dependencies (`@tanstack/react-query`, `@tanstack/react-query-devtools`) in frontend/package.json
+- [ ] T000b [P] Create QueryProvider in frontend/src/app/providers/query-provider.tsx with default options (staleTime: 5min, gcTime: 30min)
+- [ ] T000c [P] Update frontend/src/main.tsx to wrap app with QueryProvider
+- [ ] T000d [P] Create shared date utilities in frontend/src/shared/lib/date.ts (parseLocalDate, parseLocalDateTime, formatDate, isPast, getNow)
+- [ ] T000e [P] Create shared money utilities in frontend/src/shared/lib/money.ts (Money.format, Money.parse)
+
+### Phase 0b: Directory Structure Setup
+
+- [ ] T000f Create FSD directory structure: app/, pages/, widgets/, features/, entities/, shared/, stores/
+- [ ] T000g [P] Move existing shared UI components to frontend/src/shared/ui/
+- [ ] T000h [P] Move existing httpClient to frontend/src/shared/api/http-client.ts
+- [ ] T000i [P] Move existing authStore to frontend/src/stores/auth/auth.store.ts
+- [ ] T000j [P] Create shared types in frontend/src/shared/types/ (pagination.ts, api-response.ts)
+
+### Phase 0c: ESLint Configuration
+
+- [ ] T000k Update frontend/eslint.config.js with FSD layer dependency rules:
+  - entities cannot import from features, widgets, pages
+  - features cannot import from other features, widgets, pages
+  - widgets cannot import from pages
+  - shared cannot import from any other layer
+
+**Checkpoint**: FSD-Lite infrastructure ready - entity/feature migration can begin
 
 ---
 
@@ -40,7 +81,7 @@
 **Purpose**: Project initialization and basic structure
 
 - [X] T001 Create backend directory structure following domain-oriented architecture (project/, quotation/, approval/, product/, production/, delivery/, invoice/, purchasing/, document/, security/, shared/)
-- [X] T002 Create frontend directory structure (components/, pages/, services/, contexts/, hooks/, types/)
+- [X] T002 Create frontend directory structure (FSD-Lite: app/, pages/, widgets/, features/, entities/, shared/, stores/) - **UPDATED 2025-12-30**
 - [X] T003 [P] Initialize Spring Boot 3.5.8 project with Gradle 8.11 in backend/build.gradle
 - [X] T004 [P] Initialize React 19 + TypeScript 5.9 project with Vite 7 in frontend/package.json
 - [X] T005 [P] Configure PostgreSQL 16 Docker service in docker-compose.yml
@@ -62,7 +103,7 @@
 
 ### Database Schema Foundation
 
-- [ ] T013 Create Flyway migration V1__create_core_tables.sql for User, Role, Company, CompanyRole tables (unified Customer/Vendor - **UPDATED 2025-12-23**)
+- [X] T013 Create Flyway migration V1__create_core_tables.sql for User, Role, Company, CompanyRole tables (unified Customer/Vendor - **UPDATED 2025-12-23**)
 - [X] T014 Create Flyway migration V2__create_project_tables.sql for Project (JobCode), Product, ProductType tables
 - [X] T015 Create indexes migration V3__create_core_indexes.sql for performance-critical queries
 - [X] T016 Create audit log migration V4__create_audit_log.sql for immutable audit trail
@@ -78,14 +119,16 @@
 - [X] T023 [P] Configure application.properties with database, MinIO, security settings in backend/src/main/resources/
 - [X] T024 [P] Implement JobCodeGenerator service with format WK2{year}-{sequence}-{date} in backend/src/main/java/com/wellkorea/backend/project/domain/
 
-### Frontend Core Infrastructure
+### Frontend Core Infrastructure (FSD-Lite)
 
-- [X] T025 [P] Implement authentication context (login/logout/JWT storage) in frontend/src/contexts/AuthContext.tsx
-- [X] T026 [P] Create API client with JWT interceptor in frontend/src/services/api.ts
-- [X] T027 [P] Create ProtectedRoute component for role-based routing in frontend/src/components/ProtectedRoute.tsx
-- [X] T028 [P] Create error handling utilities and error boundary in frontend/src/components/ErrorBoundary.tsx
-- [X] T029 [P] Setup React Router with main routes structure in frontend/src/App.tsx
-- [X] T030 [P] Create reusable UI component library (Button, Input, Table, Modal, etc.) in frontend/src/components/ui/
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+- [X] T025 [P] Implement authentication store (login/logout/JWT storage) in frontend/src/stores/auth/auth.store.ts
+- [X] T026 [P] Create API client with JWT interceptor in frontend/src/shared/api/http-client.ts
+- [X] T027 [P] Create ProtectedRoute component for role-based routing in frontend/src/shared/ui/ProtectedRoute.tsx
+- [X] T028 [P] Create error handling utilities and error boundary in frontend/src/shared/ui/ErrorBoundary.tsx
+- [X] T029 [P] Setup React Router with main routes structure in frontend/src/app/router/index.tsx
+- [X] T030 [P] Create reusable UI component library (Button, Input, Table, Modal, etc.) in frontend/src/shared/ui/
 
 ### Seed Data
 
@@ -132,12 +175,15 @@
 - [X] T048c [US9] Create UserController with user management endpoints (Admin only) in backend/src/main/java/com/wellkorea/backend/auth/api/UserController.java
 - [X] T049 [US9] Create AuditLogController with audit query endpoints (Admin only) in backend/src/main/java/com/wellkorea/backend/auth/api/AuditLogController.java
 - [X] T050 [US9] Add @PreAuthorize annotations to all sensitive endpoints (quotations, financial data)
-- [X] T045 [US9] Implement login page in frontend/src/pages/LoginPage.tsx
-- [X] T046 [US9] Implement user management UI (Admin only) in frontend/src/pages/admin/UserManagementPage.tsx
-- [X] T047 [US9] Implement audit log viewer (Admin only) in frontend/src/pages/admin/AuditLogPage.tsx
-- [X] T048 [US9] Add role-based UI rendering (hide quotations from Production users, hide AR/AP from Sales users) in frontend/src/components/AppLayout.tsx and frontend/src/pages/DashboardPage.tsx
+- [X] T045 [US9] Implement login feature in frontend/src/features/auth/login/ (LoginForm UI + useLogin hook) - **FSD-Lite**
+- [X] T045a [US9] Create login page in frontend/src/pages/login/LoginPage.tsx (assembly only, imports from features/auth/login) - **FSD-Lite**
+- [X] T046 [US9] Implement user entity in frontend/src/entities/user/ (model/, api/, query/, ui/) - **FSD-Lite**
+- [X] T046a [US9] Implement user management features in frontend/src/features/user/ (create/, assign-roles/, manage-customers/) - **FSD-Lite**
+- [X] T046b [US9] Create user management page in frontend/src/pages/admin/users/UserManagementPage.tsx (assembly only) - **FSD-Lite**
+- [X] T047 [US9] Create audit log entity in frontend/src/entities/audit/ and page in frontend/src/pages/admin/audit-log/AuditLogPage.tsx - **FSD-Lite**
+- [X] T048 [US9] Add role-based UI rendering in shared/ui/AppLayout.tsx and pages/dashboard/DashboardPage.tsx - **FSD-Lite**
 - [X] T048a [US9] Implement Sales role customer filtering: Add CustomerAssignment entity, repository, and project filtering service (table exists in V1__create_core_tables.sql) per FR-062
-- [X] T048b [US9] Add customer assignment UI in UserManagementPage (Admin can assign Sales users to specific customers) in frontend/src/pages/admin/UserManagementPage.tsx
+- [X] T048b [US9] Add customer assignment widget in frontend/src/widgets/user/CustomerAssignmentPanel.tsx (Admin can assign Sales users to specific customers) - **FSD-Lite**
 
 **Checkpoint**: RBAC and security foundation complete - quotations and financial data are now protected
 
@@ -171,7 +217,7 @@
 
 - [X] T050 [P] [US1] Create Project entity in backend/src/main/java/com/wellkorea/backend/project/domain/Project.java
 - [X] T051 [P] [US1] Create ProjectStatus enum in backend/src/main/java/com/wellkorea/backend/project/domain/ProjectStatus.java
-- [ ] T052 [P] [US1] Create Company and CompanyRole entities in backend/src/main/java/com/wellkorea/backend/company/domain/ (unified Customer/Vendor - **UPDATED 2025-12-23**)
+- [X] T052 [P] [US1] Create Company and CompanyRole entities in backend/src/main/java/com/wellkorea/backend/company/domain/ (unified Customer/Vendor - **UPDATED 2025-12-23**)
 - [X] T053 [US1] Create ProjectRepository in backend/src/main/java/com/wellkorea/backend/project/infrastructure/repository/ProjectRepository.java
 - [X] T054 [US1] Implement ProjectService with create, read, update, list operations in backend/src/main/java/com/wellkorea/backend/project/application/ProjectService.java
 - [X] T055 [US1] Implement JobCodeGenerator with sequence generation and uniqueness check in backend/src/main/java/com/wellkorea/backend/project/domain/JobCodeGenerator.java - implemented in Phase 2
@@ -180,15 +226,20 @@
 - [X] T058 [US1] Add validation for project creation (customer exists, project name non-empty, due date >= today)
 - [X] T059 [US1] Add audit logging for project creation and updates - using Spring auditing annotations
 
-### Frontend Implementation for User Story 1
+### Frontend Implementation for User Story 1 (FSD-Lite)
 
-- [X] T060 [US1] Create ProjectService API client in frontend/src/services/projectService.ts
-- [X] T061 [US1] Create ProjectListPage with table view in frontend/src/pages/projects/ProjectListPage.tsx
-- [X] T062 [US1] Create CreateProjectPage with form in frontend/src/pages/projects/CreateProjectPage.tsx
-- [X] T063 [US1] Create EditProjectPage with form in frontend/src/pages/projects/EditProjectPage.tsx
-- [X] T064 [US1] Create ProjectDetailPage showing all project information in frontend/src/pages/projects/ProjectViewPage.tsx
-- [X] T065 [US1] Add form validation (required fields, date validation)
-- [X] T066 [US1] Display generated JobCode prominently after creation
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+- [X] T060 [US1] Create project entity in frontend/src/entities/project/ (model/project.ts, api/project.api.ts, query/use-project.ts, query/use-projects.ts, ui/ProjectTable.tsx, ui/ProjectCard.tsx) - **FSD-Lite**
+- [X] T060a [US1] Create project domain rules in frontend/src/entities/project/model/project.ts (projectRules: canEdit, isOverdue, etc.) - **FSD-Lite**
+- [X] T061 [US1] Create project list page in frontend/src/pages/projects/list/ProjectListPage.tsx (assembly only) - **FSD-Lite**
+- [X] T062 [US1] Create project create feature in frontend/src/features/project/create/ (ui/CreateProjectForm.tsx, model/use-create-project.ts) - **FSD-Lite**
+- [X] T062a [US1] Create project create page in frontend/src/pages/projects/create/CreateProjectPage.tsx (assembly only) - **FSD-Lite**
+- [X] T063 [US1] Create project update feature in frontend/src/features/project/update/ (ui/EditProjectForm.tsx, model/use-update-project.ts) - **FSD-Lite**
+- [X] T063a [US1] Create project edit page in frontend/src/pages/projects/[id]/edit/EditProjectPage.tsx (assembly only) - **FSD-Lite**
+- [X] T064 [US1] Create project detail page in frontend/src/pages/projects/[id]/ProjectDetailPage.tsx (uses entities/project/ui/ProjectCard) - **FSD-Lite**
+- [X] T065 [US1] Add form validation in features/project/create/ and features/project/update/ (required fields, date validation)
+- [X] T066 [US1] Display generated JobCode prominently after creation in features/project/create/ui/CreateProjectForm.tsx
 
 **Checkpoint**: JobCode creation MVP complete - users can create and edit projects with auto-generated JobCodes
 
@@ -208,34 +259,39 @@
 
 > **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T052a [P] [US1] Write contract tests for GET /api/companies, POST /api/companies endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - MUST FAIL initially
-- [ ] T052b [P] [US1] Write contract tests for PUT /api/companies/{id}, GET /api/companies/{id} endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - MUST FAIL initially
-- [ ] T052c [P] [US1] Write contract tests for POST /api/companies/{id}/roles, DELETE /api/companies/{id}/roles/{roleId} endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - MUST FAIL initially
-- [ ] T052d [US1] Write unit tests for CompanyService (create company, add role, dual-role validation) in backend/src/test/java/com/wellkorea/backend/company/application/CompanyServiceTest.java - MUST FAIL initially
+- [X] T052a [P] [US1] Write contract tests for GET /api/companies, POST /api/companies endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - ✅ Tests written and passing
+- [X] T052b [P] [US1] Write contract tests for PUT /api/companies/{id}, GET /api/companies/{id} endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - ✅ Tests written and passing
+- [X] T052c [P] [US1] Write contract tests for POST /api/companies/{id}/roles, DELETE /api/companies/{id}/roles/{roleId} endpoints in backend/src/test/java/com/wellkorea/backend/company/api/CompanyControllerTest.java - ✅ Tests written and passing
+- [X] T052d [US1] Write unit tests for CompanyService (create company, add role, dual-role validation) in backend/src/test/java/com/wellkorea/backend/company/application/CompanyServiceTest.java - ✅ Tests written and passing
 
 ### Database Schema for Company Domain
 
-- [ ] T052e Create Flyway migration V__create_company_tables.sql for Company, CompanyRole tables with unique constraint on (company_id, role_type)
+- [X] T052e Create Flyway migration V__create_company_tables.sql for Company, CompanyRole tables with unique constraint on (company_id, role_type) - ✅ Included in V1__create_core_tables.sql
 
 ### Backend Implementation for Company Domain
 
-- [ ] T052f [P] [US1] Create Company entity in backend/src/main/java/com/wellkorea/backend/company/domain/Company.java
-- [ ] T052g [P] [US1] Create CompanyRole entity in backend/src/main/java/com/wellkorea/backend/company/domain/CompanyRole.java
-- [ ] T052h [P] [US1] Create RoleType enum (CUSTOMER, VENDOR, OUTSOURCE) in backend/src/main/java/com/wellkorea/backend/company/domain/RoleType.java
-- [ ] T052i [US1] Create CompanyRepository in backend/src/main/java/com/wellkorea/backend/company/infrastructure/persistence/CompanyRepository.java
-- [ ] T052j [US1] Create CompanyRoleRepository in backend/src/main/java/com/wellkorea/backend/company/infrastructure/persistence/CompanyRoleRepository.java
-- [ ] T052k [US1] Implement CompanyService with CRUD operations and role management in backend/src/main/java/com/wellkorea/backend/company/application/CompanyService.java
-- [ ] T052l [US1] Create CompanyController with REST endpoints in backend/src/main/java/com/wellkorea/backend/company/api/CompanyController.java
-- [ ] T052m [US1] Create DTOs (CreateCompanyRequest, AddRoleRequest, CompanyResponse, CompanyRoleResponse) in backend/src/main/java/com/wellkorea/backend/company/api/dto/
-- [ ] T052n [US1] Add validation (registration_number unique, role_type enum validation, at least one role required)
+- [X] T052f [P] [US1] Create Company entity in backend/src/main/java/com/wellkorea/backend/company/domain/Company.java - ✅ Implemented
+- [X] T052g [P] [US1] Create CompanyRole entity in backend/src/main/java/com/wellkorea/backend/company/domain/CompanyRole.java - ✅ Implemented
+- [X] T052h [P] [US1] Create RoleType enum (CUSTOMER, VENDOR, OUTSOURCE) in backend/src/main/java/com/wellkorea/backend/company/domain/RoleType.java - ✅ Implemented
+- [X] T052i [US1] Create CompanyRepository in backend/src/main/java/com/wellkorea/backend/company/infrastructure/persistence/CompanyRepository.java - ✅ Implemented
+- [X] T052j [US1] Create CompanyRoleRepository in backend/src/main/java/com/wellkorea/backend/company/infrastructure/persistence/CompanyRoleRepository.java - ✅ Not needed (CompanyRole is embedded value object)
+- [X] T052k [US1] Implement CompanyService with CRUD operations and role management in backend/src/main/java/com/wellkorea/backend/company/application/CompanyService.java - ✅ Implemented as CompanyCommandService + CompanyQueryService (CQRS)
+- [X] T052l [US1] Create CompanyController with REST endpoints in backend/src/main/java/com/wellkorea/backend/company/api/CompanyController.java - ✅ Implemented
+- [X] T052m [US1] Create DTOs (CreateCompanyRequest, AddRoleRequest, CompanyResponse, CompanyRoleResponse) in backend/src/main/java/com/wellkorea/backend/company/api/dto/ - ✅ Implemented
+- [X] T052n [US1] Add validation (registration_number unique, role_type enum validation, at least one role required) - ✅ Implemented in CompanyCommandService
 
-### Frontend Implementation for Company Domain
+### Frontend Implementation for Company Domain (FSD-Lite)
 
-- [ ] T052o [US1] Create CompanyService API client in frontend/src/services/companies/companyService.ts
-- [ ] T052p [US1] Create CompanyListPage with role filter in frontend/src/pages/companies/CompanyListPage.tsx
-- [ ] T052q [US1] Create CompanyDetailPage showing all roles in frontend/src/pages/companies/CompanyDetailPage.tsx
-- [ ] T052r [US1] Create CreateCompanyPage with role selection in frontend/src/pages/companies/CreateCompanyPage.tsx
-- [ ] T052s [US1] Update project creation form to use Company dropdown filtered by CUSTOMER role
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+- [X] T052o [US1] Create company entity in frontend/src/entities/company/ (model/company.ts, api/company.api.ts, query/use-company.ts, query/use-companies.ts, ui/CompanyTable.tsx, ui/CompanyCard.tsx) - **FSD-Lite** ✅ Implemented
+- [X] T052o1 [US1] Create company domain rules in frontend/src/entities/company/model/company.ts (companyRules: hasRole, isCustomer, isVendor, etc.) - **FSD-Lite**
+- [X] T052p [US1] Create company list page in frontend/src/pages/companies/list/CompanyListPage.tsx with role filter (assembly only) - **FSD-Lite** ✅ Implemented
+- [X] T052q [US1] Create company detail page in frontend/src/pages/companies/[id]/CompanyDetailPage.tsx showing all roles - **FSD-Lite** ✅ Implemented
+- [X] T052r [US1] Create company create feature in frontend/src/features/company/create/ (ui/CreateCompanyForm.tsx, model/use-create-company.ts) - **FSD-Lite** ✅ Implemented
+- [X] T052r1 [US1] Create company create page in frontend/src/pages/companies/create/CreateCompanyPage.tsx (assembly only) - **FSD-Lite** ✅ Implemented
+- [X] T052r2 [US1] Create add-role feature in frontend/src/features/company/add-role/ (ui/AddRoleDialog.tsx, model/use-add-role.ts) - **FSD-Lite**
+- [X] T052s [US1] Update project create feature to use entities/company/ui/CustomerCombobox filtered by CUSTOMER role - **FSD-Lite** ✅ Implemented
 
 **Checkpoint**: Company domain complete - unified customer/vendor management with dual-role support
 
@@ -360,22 +416,53 @@
   - Any level rejection → status = REJECTED, workflow stops
 - [X] T088 [US2] Integrate ApprovalService with QuotationService (quotation status changes on final approval/rejection) - ✅ Implemented via event-driven architecture (QuotationApprovalEventHandler)
 
-### Frontend Implementation for User Story 2
+### Frontend Implementation for User Story 2 (FSD-Lite)
 
-- [ ] T089 [US2] Create QuotationService API client in frontend/src/services/quotations/quotationService.ts ✅ (also created productService.ts for product search)
-- [ ] T090 [US2] Create ApprovalService API client in frontend/src/services/quotations/approvalService.ts
-- [ ] T091 [US2] Create QuotationListPage with table view (filtered by role) in frontend/src/pages/quotations/QuotationListPage.tsx ✅ (with QuotationTable feature component)
-- [ ] T092 [US2] Create CreateQuotationPage with product selection and line items in frontend/src/pages/quotations/QuotationCreatePage.tsx ✅ (with QuotationForm and ProductSelector components)
-- [ ] T093 [US2] Create EditQuotationPage with version management in frontend/src/pages/quotations/EditQuotationPage.tsx
-- [ ] T093a [US2] Add email notification checkbox in EditQuotationPage when creating new version (calls POST /api/quotations/{id}/send-revision-notification) in frontend/src/pages/quotations/EditQuotationPage.tsx
-- [ ] T094 [US2] Create QuotationDetailPage with approval history in frontend/src/pages/quotations/QuotationDetailPage.tsx
-- [ ] T095 [US2] Create ApprovalModal for approve/reject with comments in frontend/src/components/features/quotations/ApprovalRejectModal.tsx ✅ (implemented as ApprovalRejectModal + ApprovalRequestCard)
-- [ ] T095a [US2] Create ApprovalChainConfigPage (Admin only) to configure approval levels for entity types in frontend/src/pages/admin/ApprovalChainConfigPage.tsx
-- [ ] T095b [US2] Create ApprovalChainService API client (get chain, configure levels) in frontend/src/services/quotations/approvalChainService.ts
-- [ ] T095c [US2] Display multi-level approval progress in QuotationDetailPage (show current level, approver, decision status per level)
-- [ ] T096 [US2] Add PDF download button that fetches quotation PDF ✅ (downloadPdf in quotationService, button in QuotationTable)
-- [ ] T097 [US2] Add role-based visibility (Sales: read-only their quotations, Finance: all quotations)
-- [ ] T097a [US2] Filter quotations by assigned customers for Sales role in QuotationController (verify role and apply customer filter using customer_assignment from T048a) in backend/src/main/java/com/wellkorea/backend/quotation/api/QuotationController.java
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+#### Quotation Entity Layer
+- [X] T089 [US2] Create quotation entity in frontend/src/entities/quotation/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/quotation.ts (Quotation type + quotationRules: canEdit, canSubmit, calculateTotal, isExpired)
+  - model/line-item.ts (LineItem type + lineItemRules: getLineTotal)
+  - model/quotation-status.ts (QuotationStatus enum + display config)
+  - api/quotation.dto.ts (API DTOs)
+  - api/quotation.mapper.ts (DTO ↔ Domain mapping)
+  - api/quotation.api.ts (API functions)
+  - query/use-quotation.ts, use-quotations.ts, query-keys.ts, query-fns.ts
+  - ui/QuotationTable.tsx, QuotationCard.tsx, QuotationStatusBadge.tsx
+- [X] T089a [US2] Create product entity in frontend/src/entities/product/ for product selection - **FSD-Lite**
+
+#### Approval Entity Layer
+- [X] T090 [US2] Create approval entity in frontend/src/entities/approval/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/approval.ts (ApprovalRequest type + approvalRules: canApprove, canReject)
+  - api/approval.api.ts, approval.mapper.ts
+  - query/use-approval.ts, use-pending-approvals.ts
+  - ui/ApprovalRequestCard.tsx, ApprovalStatusBadge.tsx
+
+#### Quotation Features
+- [X] T091 [US2] Create quotation list page in frontend/src/pages/quotations/list/QuotationListPage.tsx (assembly only, uses entities/quotation/ui/QuotationTable) - **FSD-Lite**
+- [X] T092 [US2] Create quotation create feature in frontend/src/features/quotation/create/ (ui/CreateQuotationForm.tsx, ui/ProductSelector.tsx, model/use-create-quotation.ts) - **FSD-Lite**
+- [X] T092a [US2] Create quotation create page in frontend/src/pages/quotations/create/QuotationCreatePage.tsx (assembly only) - **FSD-Lite**
+- [X] T093 [US2] Create quotation update feature in frontend/src/features/quotation/update/ (model/use-update-quotation.ts) and page in frontend/src/pages/quotations/[id]/edit/QuotationEditPage.tsx - **FSD-Lite**
+- [ ] T093a [US2] Add email notification feature in frontend/src/features/quotation/send-revision-notification/ (calls POST /api/quotations/{id}/send-revision-notification) - **FSD-Lite**
+- [X] T094 [US2] Create quotation detail page in frontend/src/pages/quotations/[id]/QuotationDetailPage.tsx (uses entities/quotation/ui, widgets/quotation/QuotationDetailActionsPanel) - **FSD-Lite**
+
+#### Approval Features
+- [X] T095 [US2] Create approval features in frontend/src/features/quotation/approve/ and frontend/src/features/quotation/reject/ - **FSD-Lite**
+  - approve/ui/ApproveDialog.tsx, approve/model/use-approve-quotation.ts
+  - reject/ui/RejectDialog.tsx (with mandatory reason), reject/model/use-reject-quotation.ts
+- [X] T095a [US2] Create approval chain config feature in frontend/src/features/approval/configure-chain/ (Admin only) and page in frontend/src/pages/admin/approval-chains/ApprovalChainConfigPage.tsx - **FSD-Lite**
+- [X] T095b [US2] Create approval chain entity in frontend/src/entities/approval/ with chain template and level types - **FSD-Lite**
+
+#### Quotation Widgets
+- [X] T095c [US2] Create QuotationDetailActionsPanel widget in frontend/src/widgets/quotation/QuotationDetailActionsPanel.tsx (combines submit, approve, reject, generate-pdf features) - **FSD-Lite**
+- [X] T095d [US2] Create ApprovalProgressPanel widget in frontend/src/widgets/approval/ApprovalProgressPanel.tsx (displays multi-level approval progress) - **FSD-Lite**
+
+#### Additional Quotation Features
+- [X] T095e [US2] Create submit feature in frontend/src/features/quotation/submit/ (ui/SubmitButton.tsx, model/use-submit-quotation.ts) - **FSD-Lite**
+- [X] T096 [US2] Create generate-pdf feature in frontend/src/features/quotation/generate-pdf/ (ui/DownloadPdfButton.tsx, model/use-generate-pdf.ts) - **FSD-Lite**
+- [X] T097 [US2] Add role-based visibility using entities/quotation/query hooks with role-based filtering ✅ Implemented
+- [X] T097a [US2] Filter quotations by assigned customers for Sales role in backend QuotationController ✅ Implemented
 
 **Checkpoint**: Quotation creation and approval workflow complete - commercial documents can be created, approved, and exported as PDFs
 
@@ -415,14 +502,26 @@
 - [ ] T105 [US3] Add validation (SKU unique, name non-empty, base price >= 0)
 - [ ] T106 [US3] Implement product deactivation (is_active flag) while preserving in old quotations
 
-### Frontend Implementation for User Story 3
+### Frontend Implementation for User Story 3 (FSD-Lite)
 
-- [ ] T107 [US3] Create ProductService API client in frontend/src/services/productService.ts
-- [ ] T108 [US3] Create ProductListPage with search and filter in frontend/src/pages/products/ProductListPage.tsx
-- [ ] T109 [US3] Create CreateProductPage with form in frontend/src/pages/products/CreateProductPage.tsx
-- [ ] T110 [US3] Create EditProductPage with form in frontend/src/pages/products/EditProductPage.tsx
-- [ ] T111 [US3] Create ProductSearchComponent for quotation product selection in frontend/src/components/products/ProductSearch.tsx
-- [ ] T112 [US3] Add role-based access (Admin only can create/edit products)
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+#### Product Entity Layer
+- [ ] T107 [US3] Create product entity in frontend/src/entities/product/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/product.ts (Product type + productRules: isActive, canEdit, isDiscontinued)
+  - model/product-type.ts (ProductType type)
+  - api/product.api.ts, product.mapper.ts
+  - query/use-product.ts, use-products.ts, use-product-search.ts, query-keys.ts
+  - ui/ProductTable.tsx, ProductCard.tsx, ProductSearchCombobox.tsx
+
+#### Product Features
+- [ ] T108 [US3] Create product list page in frontend/src/pages/products/list/ProductListPage.tsx (assembly only, uses entities/product/ui/ProductTable) - **FSD-Lite**
+- [ ] T109 [US3] Create product create feature in frontend/src/features/product/create/ (ui/CreateProductForm.tsx, model/use-create-product.ts) - **FSD-Lite**
+- [ ] T109a [US3] Create product create page in frontend/src/pages/products/create/CreateProductPage.tsx (assembly only) - **FSD-Lite**
+- [ ] T110 [US3] Create product update feature in frontend/src/features/product/update/ (ui/EditProductForm.tsx, model/use-update-product.ts) - **FSD-Lite**
+- [ ] T110a [US3] Create product edit page in frontend/src/pages/products/[id]/edit/EditProductPage.tsx (assembly only) - **FSD-Lite**
+- [ ] T111 [US3] Create product detail page in frontend/src/pages/products/[id]/ProductDetailPage.tsx - **FSD-Lite**
+- [ ] T112 [US3] Add role-based access (Admin only can create/edit products) using entities/product/query hooks with role filtering
 
 **Checkpoint**: Product catalog complete - standardized product selection available for quotations
 
@@ -464,14 +563,26 @@
 - [ ] T122 [US4] Add validation (unique sheet per project-product, status progression, completed_by required on completion)
 - [ ] T123 [US4] Implement aggregated progress calculation (% complete per product)
 
-### Frontend Implementation for User Story 4
+### Frontend Implementation for User Story 4 (FSD-Lite)
 
-- [ ] T124 [US4] Create WorkProgressService API client in frontend/src/services/workProgressService.ts
-- [ ] T125 [US4] Create WorkProgressListPage showing all products for a project in frontend/src/pages/production/WorkProgressListPage.tsx
-- [ ] T126 [US4] Create WorkProgressDetailPage with step-by-step tracking in frontend/src/pages/production/WorkProgressDetailPage.tsx
-- [ ] T127 [US4] Create UpdateStepModal for updating step status, dates, remarks in frontend/src/components/production/UpdateStepModal.tsx
-- [ ] T128 [US4] Add aggregated progress display on project detail page
-- [ ] T129 [US4] Add role-based access (Production staff can update, Finance/Sales can view read-only)
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+#### Work Progress Entity Layer
+- [ ] T124 [US4] Create work-progress entity in frontend/src/entities/work-progress/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/work-progress.ts (WorkProgressSheet type + progressRules: getProgress, isComplete, getNextStep)
+  - model/work-step.ts (WorkProgressStep type + stepRules: isComplete, isInProgress)
+  - model/step-status.ts (StepStatus enum + display config)
+  - api/work-progress.api.ts, work-progress.mapper.ts
+  - query/use-work-progress.ts, use-work-progress-by-project.ts, query-keys.ts
+  - ui/WorkProgressTable.tsx, WorkProgressCard.tsx, StepStatusBadge.tsx, ProgressBar.tsx
+
+#### Work Progress Features
+- [ ] T125 [US4] Create work progress list page in frontend/src/pages/production/list/WorkProgressListPage.tsx (assembly only, uses entities/work-progress/ui/WorkProgressTable) - **FSD-Lite**
+- [ ] T126 [US4] Create work progress detail page in frontend/src/pages/production/[id]/WorkProgressDetailPage.tsx (uses widgets/production/StepTrackerPanel) - **FSD-Lite**
+- [ ] T127 [US4] Create update-step feature in frontend/src/features/work-progress/update-step/ (ui/UpdateStepDialog.tsx, model/use-update-step.ts) - **FSD-Lite**
+- [ ] T127a [US4] Create step-tracker widget in frontend/src/widgets/production/StepTrackerPanel.tsx (combines step display + update-step feature) - **FSD-Lite**
+- [ ] T128 [US4] Add aggregated progress widget in frontend/src/widgets/project/ProductionProgressPanel.tsx for project detail page - **FSD-Lite**
+- [ ] T129 [US4] Add role-based access (Production staff can update, Finance/Sales can view read-only) using entities/work-progress/query hooks
 
 **Checkpoint**: Production tracking complete - per-product work progress visible with real-time status updates
 
@@ -512,14 +623,26 @@
 - [ ] T138 [US5] Add validation (quantity_delivered <= quotation quantity, prevent over-delivery)
 - [ ] T139 [US5] Implement delivered quantity tracking to prevent double-invoicing
 
-### Frontend Implementation for User Story 5
+### Frontend Implementation for User Story 5 (FSD-Lite)
 
-- [ ] T140 [US5] Create DeliveryService API client in frontend/src/services/deliveryService.ts
-- [ ] T141 [US5] Create DeliveryListPage for a project in frontend/src/pages/deliveries/DeliveryListPage.tsx
-- [ ] T142 [US5] Create CreateDeliveryPage with product-quantity selection in frontend/src/pages/deliveries/CreateDeliveryPage.tsx
-- [ ] T143 [US5] Create DeliveryDetailPage with transaction statement download in frontend/src/pages/deliveries/DeliveryDetailPage.tsx
-- [ ] T144 [US5] Add delivery status display on project detail page
-- [ ] T145 [US5] Add role-based access (Finance can create deliveries, Sales can view read-only)
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+#### Delivery Entity Layer
+- [ ] T140 [US5] Create delivery entity in frontend/src/entities/delivery/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/delivery.ts (Delivery type + deliveryRules: getRemainingQuantity, canInvoice)
+  - model/delivery-line-item.ts (DeliveryLineItem type)
+  - api/delivery.api.ts, delivery.mapper.ts
+  - query/use-delivery.ts, use-deliveries-by-project.ts, query-keys.ts
+  - ui/DeliveryTable.tsx, DeliveryCard.tsx, DeliveryStatusBadge.tsx
+
+#### Delivery Features
+- [ ] T141 [US5] Create delivery list page in frontend/src/pages/deliveries/list/DeliveryListPage.tsx (assembly only, uses entities/delivery/ui/DeliveryTable) - **FSD-Lite**
+- [ ] T142 [US5] Create delivery create feature in frontend/src/features/delivery/create/ (ui/CreateDeliveryForm.tsx, ui/ProductQuantitySelector.tsx, model/use-create-delivery.ts) - **FSD-Lite**
+- [ ] T142a [US5] Create delivery create page in frontend/src/pages/deliveries/create/CreateDeliveryPage.tsx (assembly only) - **FSD-Lite**
+- [ ] T143 [US5] Create delivery detail page in frontend/src/pages/deliveries/[id]/DeliveryDetailPage.tsx (uses widgets/delivery/DeliveryActionsPanel) - **FSD-Lite**
+- [ ] T143a [US5] Create download-statement feature in frontend/src/features/delivery/download-statement/ (ui/DownloadStatementButton.tsx, model/use-download-statement.ts) - **FSD-Lite**
+- [ ] T144 [US5] Add delivery status widget in frontend/src/widgets/project/DeliveryStatusPanel.tsx for project detail page - **FSD-Lite**
+- [ ] T145 [US5] Add role-based access (Finance can create deliveries, Sales can view read-only) using entities/delivery/query hooks
 
 **Checkpoint**: Delivery tracking complete - granular delivery with transaction statements and double-billing prevention
 
@@ -568,17 +691,39 @@
 - [ ] T161 [US6] Add validation (invoice line items match delivery, payments <= invoice total, no negative amounts except refunds)
 - [ ] T162 [US6] Implement invoiced quantity tracking to prevent double-invoicing
 
-### Frontend Implementation for User Story 6
+### Frontend Implementation for User Story 6 (FSD-Lite)
 
-- [ ] T163 [US6] Create InvoiceService API client in frontend/src/services/invoiceService.ts
-- [ ] T164 [US6] Create PaymentService API client in frontend/src/services/paymentService.ts
-- [ ] T165 [US6] Create InvoiceListPage with filters (customer, status, date range) in frontend/src/pages/invoices/InvoiceListPage.tsx
-- [ ] T166 [US6] Create CreateInvoicePage with delivery auto-population in frontend/src/pages/invoices/CreateInvoicePage.tsx
-- [ ] T167 [US6] Create InvoiceDetailPage with payment history in frontend/src/pages/invoices/InvoiceDetailPage.tsx
-- [ ] T168 [US6] Create RecordPaymentModal in frontend/src/components/invoices/RecordPaymentModal.tsx
-- [ ] T169 [US6] Create ARReportPage with aging analysis and customer breakdown in frontend/src/pages/reports/ARReportPage.tsx
-- [ ] T170 [US6] Create APReportPage with supplier breakdown in frontend/src/pages/reports/APReportPage.tsx
-- [ ] T171 [US6] Add role-based access (Finance only for invoices and AR/AP reports)
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+#### Invoice Entity Layer
+- [ ] T163 [US6] Create invoice entity in frontend/src/entities/invoice/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/invoice.ts (TaxInvoice type + invoiceRules: getRemainingBalance, isPaid, isOverdue)
+  - model/invoice-status.ts (InvoiceStatus enum + display config)
+  - model/invoice-line-item.ts (InvoiceLineItem type)
+  - api/invoice.api.ts, invoice.mapper.ts
+  - query/use-invoice.ts, use-invoices.ts, query-keys.ts
+  - ui/InvoiceTable.tsx, InvoiceCard.tsx, InvoiceStatusBadge.tsx
+
+#### Payment Entity Layer
+- [ ] T164 [US6] Create payment entity in frontend/src/entities/payment/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/payment.ts (Payment type + paymentRules: isPartial, isFull)
+  - api/payment.api.ts, payment.mapper.ts
+  - query/use-payments-by-invoice.ts, query-keys.ts
+  - ui/PaymentHistoryTable.tsx
+
+#### Invoice Features
+- [ ] T165 [US6] Create invoice list page in frontend/src/pages/invoices/list/InvoiceListPage.tsx (assembly only, uses entities/invoice/ui/InvoiceTable) - **FSD-Lite**
+- [ ] T166 [US6] Create invoice create feature in frontend/src/features/invoice/create/ (ui/CreateInvoiceForm.tsx, model/use-create-invoice.ts) with delivery auto-population - **FSD-Lite**
+- [ ] T166a [US6] Create invoice create page in frontend/src/pages/invoices/create/CreateInvoicePage.tsx (assembly only) - **FSD-Lite**
+- [ ] T167 [US6] Create invoice detail page in frontend/src/pages/invoices/[id]/InvoiceDetailPage.tsx (uses widgets/invoice/InvoiceActionsPanel, entities/payment/ui/PaymentHistoryTable) - **FSD-Lite**
+- [ ] T168 [US6] Create record-payment feature in frontend/src/features/payment/record/ (ui/RecordPaymentDialog.tsx, model/use-record-payment.ts) - **FSD-Lite**
+
+#### AR/AP Report Widgets & Pages
+- [ ] T169 [US6] Create AR report entity in frontend/src/entities/report/ar/ (model/ar-report.ts, query/use-ar-report.ts) - **FSD-Lite**
+- [ ] T169a [US6] Create AR report page in frontend/src/pages/reports/ar/ARReportPage.tsx with aging analysis widget - **FSD-Lite**
+- [ ] T169b [US6] Create aging-analysis widget in frontend/src/widgets/report/AgingAnalysisPanel.tsx (30/60/90+ days breakdown) - **FSD-Lite**
+- [ ] T170 [US6] Create AP report entity and page in frontend/src/entities/report/ap/ and frontend/src/pages/reports/ap/APReportPage.tsx - **FSD-Lite**
+- [ ] T171 [US6] Add role-based access (Finance only for invoices and AR/AP reports) using entities/invoice/query and entities/report hooks
 
 **Checkpoint**: Invoicing and AR/AP tracking complete - financial visibility with aging analysis
 
@@ -620,14 +765,27 @@
 - [ ] T181 [US7] Implement document access audit logging (who accessed which documents)
 - [ ] T182 [US7] Implement virtual tree structure (owner_type + owner_id for polymorphic relationships)
 
-### Frontend Implementation for User Story 7
+### Frontend Implementation for User Story 7 (FSD-Lite)
 
-- [ ] T183 [US7] Create DocumentService API client in frontend/src/services/documentService.ts
-- [ ] T184 [US7] Create DocumentListPage with search and filters in frontend/src/pages/documents/DocumentListPage.tsx
-- [ ] T185 [US7] Create UploadDocumentModal with drag-and-drop in frontend/src/components/documents/UploadDocumentModal.tsx
-- [ ] T186 [US7] Create VirtualTreeView for hierarchical navigation in frontend/src/components/documents/VirtualTreeView.tsx
-- [ ] T187 [US7] Add document upload/view on project detail page
-- [ ] T188 [US7] Add role-based access (Production can upload/view work photos, Finance can view quotations)
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+#### Document Entity Layer
+- [ ] T183 [US7] Create document entity in frontend/src/entities/document/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/document.ts (Document type + documentRules: canDownload, canDelete, getOwner)
+  - model/document-type.ts (DocumentType enum + MIME type config)
+  - api/document.api.ts, document.mapper.ts
+  - query/use-document.ts, use-documents.ts, use-documents-search.ts, query-keys.ts
+  - ui/DocumentTable.tsx, DocumentCard.tsx, DocumentTypeBadge.tsx
+
+#### Document Features
+- [ ] T184 [US7] Create document list page in frontend/src/pages/documents/list/DocumentListPage.tsx (assembly only, uses entities/document/ui/DocumentTable) - **FSD-Lite**
+- [ ] T185 [US7] Create upload-document feature in frontend/src/features/document/upload/ (ui/UploadDocumentDialog.tsx, ui/DropZone.tsx, model/use-upload-document.ts) - **FSD-Lite**
+- [ ] T185a [US7] Create download-document feature in frontend/src/features/document/download/ (ui/DownloadButton.tsx, model/use-download-document.ts) - **FSD-Lite**
+- [ ] T186 [US7] Create virtual-tree widget in frontend/src/widgets/document/VirtualTreeView.tsx (hierarchical navigation: company → project → product → document) - **FSD-Lite**
+
+#### Document Integration
+- [ ] T187 [US7] Create document-panel widget in frontend/src/widgets/project/DocumentPanel.tsx for project detail page (upload + view) - **FSD-Lite**
+- [ ] T188 [US7] Add role-based access (Production can upload/view work photos, Finance can view quotations) using entities/document/query hooks
 
 **Checkpoint**: Document management complete - centralized storage with powerful search and virtual tree navigation
 
@@ -705,19 +863,61 @@
 - [ ] T222 [US8] Create DTOs for PurchaseOrder (CreatePurchaseOrderRequest, PurchaseOrderResponse) in backend/src/main/java/com/wellkorea/backend/purchasing/api/dto/
 - [ ] T223 [US8] Add validation (vendor must have VENDOR/OUTSOURCE role, service category exists, RFQItem selected before PO creation)
 
-### Frontend Implementation for User Story 8
+### Frontend Implementation for User Story 8 (FSD-Lite)
 
-- [ ] T224 [US8] Create ServiceCategoryService API client in frontend/src/services/purchasing/serviceCategoryService.ts
-- [ ] T225 [US8] Create VendorOfferingService API client in frontend/src/services/purchasing/vendorOfferingService.ts
-- [ ] T226 [US8] Create PurchaseRequestService API client in frontend/src/services/purchasing/purchaseRequestService.ts
-- [ ] T227 [US8] Create PurchaseOrderService API client in frontend/src/services/purchasing/purchaseOrderService.ts
-- [ ] T228 [US8] Create ServiceCategoryListPage (Admin) in frontend/src/pages/purchasing/ServiceCategoryListPage.tsx
-- [ ] T229 [US8] Create VendorOfferingListPage with "select service → show vendors" in frontend/src/pages/purchasing/VendorOfferingListPage.tsx
-- [ ] T230 [US8] Create CreatePurchaseRequestPage with vendor suggestions in frontend/src/pages/purchasing/CreatePurchaseRequestPage.tsx
-- [ ] T231 [US8] Create PurchaseRequestDetailPage with RFQ tracking in frontend/src/pages/purchasing/PurchaseRequestDetailPage.tsx
-- [ ] T232 [US8] Create PurchaseOrderListPage with filters in frontend/src/pages/purchasing/PurchaseOrderListPage.tsx
-- [ ] T233 [US8] Add purchasing display on project detail page with cost aggregation
-- [ ] T234 [US8] Add role-based access (Admin/Finance can manage service categories and vendor offerings)
+> **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+
+#### Service Catalog Entity Layer
+- [ ] T224 [US8] Create service-category entity in frontend/src/entities/service-category/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/service-category.ts (ServiceCategory type)
+  - api/service-category.api.ts, service-category.mapper.ts
+  - query/use-service-categories.ts, query-keys.ts
+  - ui/ServiceCategoryTable.tsx, ServiceCategorySelect.tsx
+
+- [ ] T225 [US8] Create vendor-offering entity in frontend/src/entities/vendor-offering/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/vendor-offering.ts (VendorServiceOffering type + offeringRules: getBestPrice, getVendorsByService)
+  - api/vendor-offering.api.ts, vendor-offering.mapper.ts
+  - query/use-vendor-offerings.ts, use-vendors-by-service.ts, query-keys.ts
+  - ui/VendorOfferingTable.tsx, VendorSuggestionList.tsx
+
+#### Purchase Request & RFQ Entity Layer
+- [ ] T226 [US8] Create purchase-request entity in frontend/src/entities/purchase-request/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/purchase-request.ts (PurchaseRequest type + requestRules: canSendRFQ, canSelectVendor)
+  - model/purchase-request-status.ts (PurchaseRequestStatus enum + display config)
+  - model/rfq-item.ts (RFQItem type + rfqRules: isAwaitingResponse, isSelected)
+  - api/purchase-request.api.ts, purchase-request.mapper.ts
+  - query/use-purchase-request.ts, use-purchase-requests.ts, query-keys.ts
+  - ui/PurchaseRequestTable.tsx, PurchaseRequestCard.tsx, RFQStatusBadge.tsx
+
+#### Purchase Order Entity Layer
+- [ ] T227 [US8] Create purchase-order entity in frontend/src/entities/purchase-order/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/purchase-order.ts (PurchaseOrder type + poRules: canConfirm, canReceive)
+  - model/purchase-order-status.ts (PurchaseOrderStatus enum + display config)
+  - api/purchase-order.api.ts, purchase-order.mapper.ts
+  - query/use-purchase-order.ts, use-purchase-orders.ts, query-keys.ts
+  - ui/PurchaseOrderTable.tsx, PurchaseOrderCard.tsx, POStatusBadge.tsx
+
+#### Service Catalog Features & Pages
+- [ ] T228 [US8] Create service-category list page in frontend/src/pages/admin/service-categories/ServiceCategoryListPage.tsx (Admin only) - **FSD-Lite**
+- [ ] T228a [US8] Create service-category create feature in frontend/src/features/service-category/create/ (ui/CreateServiceCategoryForm.tsx, model/use-create-service-category.ts) - **FSD-Lite**
+- [ ] T229 [US8] Create vendor-offering list page in frontend/src/pages/purchasing/vendor-offerings/VendorOfferingListPage.tsx with "select service → show vendors" - **FSD-Lite**
+- [ ] T229a [US8] Create vendor-offering create feature in frontend/src/features/vendor-offering/create/ (ui/CreateVendorOfferingForm.tsx, model/use-create-vendor-offering.ts) - **FSD-Lite**
+
+#### Purchase Request Features & Pages
+- [ ] T230 [US8] Create purchase-request create feature in frontend/src/features/purchase-request/create/ (ui/CreatePurchaseRequestForm.tsx, model/use-create-purchase-request.ts) with vendor suggestions widget - **FSD-Lite**
+- [ ] T230a [US8] Create purchase-request create page in frontend/src/pages/purchasing/requests/create/CreatePurchaseRequestPage.tsx (assembly only) - **FSD-Lite**
+- [ ] T230b [US8] Create vendor-suggestion widget in frontend/src/widgets/purchasing/VendorSuggestionPanel.tsx (uses entities/vendor-offering/ui/VendorSuggestionList) - **FSD-Lite**
+- [ ] T231 [US8] Create purchase-request detail page in frontend/src/pages/purchasing/requests/[id]/PurchaseRequestDetailPage.tsx (uses widgets/purchasing/RFQTrackingPanel) - **FSD-Lite**
+- [ ] T231a [US8] Create send-rfq feature in frontend/src/features/rfq/send/ (ui/SendRFQDialog.tsx, model/use-send-rfq.ts) - **FSD-Lite**
+- [ ] T231b [US8] Create rfq-tracking widget in frontend/src/widgets/purchasing/RFQTrackingPanel.tsx (displays RFQ status, responses) - **FSD-Lite**
+
+#### Purchase Order Features & Pages
+- [ ] T232 [US8] Create purchase-order list page in frontend/src/pages/purchasing/orders/list/PurchaseOrderListPage.tsx (assembly only) - **FSD-Lite**
+- [ ] T232a [US8] Create purchase-order create feature in frontend/src/features/purchase-order/create/ (from selected RFQItem) - **FSD-Lite**
+
+#### Purchasing Integration
+- [ ] T233 [US8] Create purchasing-summary widget in frontend/src/widgets/project/PurchasingSummaryPanel.tsx for project detail page with cost aggregation - **FSD-Lite**
+- [ ] T234 [US8] Add role-based access (Admin/Finance can manage service categories and vendor offerings) using entities/*/query hooks
 
 **Checkpoint**: Purchasing and vendor service management complete - "select service → get vendor/price list" functionality with RFQ workflow
 
@@ -914,27 +1114,35 @@ Stories integrate at natural boundaries (e.g., quotations use products from cata
 
 ## Summary
 
-**Total Tasks**: ~340 tasks (280 implementation + 60 test-first tasks)
-**MVP Tasks (P1)**: ~160 tasks (Setup + Foundational + US9 + US1 + Company Domain + US2 including test-first tasks + multi-level approval + FR-062 customer assignment)
-**P2 Tasks**: ~105 tasks (US3 + US4 + US5 + US6 including test-first tasks)
-**P3 Tasks**: ~52 tasks (US7 + US8 including test-first tasks)
+**Total Tasks**: ~380 tasks (305 implementation + 65 test-first tasks + 10 new FSD-Lite sub-tasks)
+**MVP Tasks (P1)**: ~175 tasks (Phase 0 FSD-Lite + Setup + Foundational + US9 + US1 + Company Domain + US2 including test-first tasks + multi-level approval + FR-062 customer assignment)
+**P2 Tasks**: ~120 tasks (US3 + US4 + US5 + US6 including test-first tasks, updated for FSD-Lite)
+**P3 Tasks**: ~62 tasks (US7 + US8 including test-first tasks, updated for FSD-Lite)
 **Polish Tasks**: ~23 tasks (Phase 12)
 
-**Constitution Compliance**: ✅ **Test-First Development enforced** - 60 test tasks explicitly marked "Write FIRST - MUST FAIL initially" across all 9 user stories + Company domain
+**Constitution Compliance**: ✅ **Test-First Development enforced** - 65 test tasks explicitly marked "Write FIRST - MUST FAIL initially" across all 9 user stories + Company domain
+
+**FSD-Lite Architecture Update (2025-12-30)**: All frontend tasks updated to use FSD-Lite structure:
+- `entities/` - Domain models with types, rules, queries, and display UI
+- `features/` - Isolated user actions/workflows (one feature = one action)
+- `widgets/` - Composite panels combining multiple features
+- `pages/` - Route-level assembly components (no business logic)
+- `shared/` - Cross-cutting concerns (api, ui, lib, types)
 
 **Task Distribution by User Story** (including test-first tasks):
+- **Phase 0 - FSD-Lite Migration**: 11 tasks **← NEW 2025-12-30**
 - Setup (Phase 1): 12 tasks
-- Foundational (Phase 2): 19 tasks
-- US9 - RBAC (Phase 3): 26 tasks (7 tests + 19 implementation)
-- US1 - JobCode (Phase 4): 22 tasks (5 tests + 17 implementation)
-- Company Domain (Phase 4a): 19 tasks (4 tests + 15 implementation) **← NEW 2025-12-23**
-- US2 - Quotation (Phase 5): 57 tasks (13 tests + 44 implementation) **← Multi-Level Approval (+14 tasks)**
-- US3 - Product Catalog (Phase 6): 19 tasks (4 tests + 15 implementation)
-- US4 - Production Tracking (Phase 7): 20 tasks (4 tests + 16 implementation)
-- US5 - Delivery (Phase 8): 20 tasks (4 tests + 16 implementation)
-- US6 - Invoicing (Phase 9): 30 tasks (5 tests + 25 implementation)
-- US7 - Documents (Phase 10): 20 tasks (4 tests + 16 implementation)
-- US8 - Purchasing (Phase 11): 46 tasks (8 tests + 38 implementation) **← UPDATED 2025-12-23**
+- Foundational (Phase 2): 19 tasks (updated for FSD-Lite paths)
+- US9 - RBAC (Phase 3): 30 tasks (7 tests + 23 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- US1 - JobCode (Phase 4): 26 tasks (5 tests + 21 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- Company Domain (Phase 4a): 22 tasks (4 tests + 18 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- US2 - Quotation (Phase 5): 65 tasks (13 tests + 52 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- US3 - Product Catalog (Phase 6): 22 tasks (4 tests + 18 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- US4 - Production Tracking (Phase 7): 22 tasks (4 tests + 18 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- US5 - Delivery (Phase 8): 22 tasks (4 tests + 18 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- US6 - Invoicing (Phase 9): 35 tasks (5 tests + 30 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- US7 - Documents (Phase 10): 20 tasks (4 tests + 16 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
+- US8 - Purchasing (Phase 11): 55 tasks (8 tests + 47 implementation, updated for FSD-Lite) **← UPDATED 2025-12-30**
 - Polish (Phase 12): 23 tasks (validation & deployment)
 
 **Company Unification & Purchasing Redesign (2025-12-23 Update)**:
