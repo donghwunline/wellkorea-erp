@@ -12,8 +12,18 @@ import { UserManagementPage } from './pages/admin/UserManagementPage';
 import { AuditLogPage } from './pages/admin/AuditLogPage';
 import { ApprovalChainConfigPage } from './pages/approval/ApprovalChainConfigPage.tsx';
 import { ApprovalListPage } from './pages/approval/ApprovalListPage.tsx';
-import { ProjectCreatePage, ProjectEditPage, ProjectListPage, ProjectViewPage, } from './pages/projects';
-import { QuotationCreatePage, QuotationDetailPage, QuotationEditPage, QuotationListPage, } from './pages/quotations';
+import {
+  ProjectCreatePage,
+  ProjectEditPage,
+  ProjectListPage,
+  ProjectViewPage,
+} from './pages/projects';
+import {
+  QuotationCreatePageV2,
+  QuotationDetailPageV2,
+  QuotationEditPageV2,
+  QuotationListPageV2,
+} from './pages/quotations';
 import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from './pages/companies';
 import { ItemsPage } from './pages/items';
 import { ProcurementPage } from './pages/procurement';
@@ -132,7 +142,7 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <QuotationCreatePage />
+                  <QuotationCreatePageV2 />
                 </AppLayout>
               </ProtectedRoute>
             }
@@ -142,7 +152,7 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <QuotationDetailPage />
+                  <QuotationDetailPageV2 />
                 </AppLayout>
               </ProtectedRoute>
             }
@@ -152,7 +162,7 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <QuotationEditPage />
+                  <QuotationEditPageV2 />
                 </AppLayout>
               </ProtectedRoute>
             }
@@ -164,7 +174,7 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <QuotationListPage />
+                  <QuotationListPageV2 />
                 </AppLayout>
               </ProtectedRoute>
             }
@@ -174,7 +184,7 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <QuotationCreatePage />
+                  <QuotationCreatePageV2 />
                 </AppLayout>
               </ProtectedRoute>
             }
@@ -184,7 +194,7 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <QuotationDetailPage />
+                  <QuotationDetailPageV2 />
                 </AppLayout>
               </ProtectedRoute>
             }
@@ -194,7 +204,7 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES']}>
                 <AppLayout>
-                  <QuotationEditPage />
+                  <QuotationEditPageV2 />
                 </AppLayout>
               </ProtectedRoute>
             }
