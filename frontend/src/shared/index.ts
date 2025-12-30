@@ -18,7 +18,3 @@ export * from './types';
 
 // Re-export all utils
 export * from './utils';
-
-// Re-export shared UI components
-export { ProductSelector } from './ui/ProductSelector';
-export type { ProductLineItem, ProductSelectorProps } from './ui/ProductSelector';
