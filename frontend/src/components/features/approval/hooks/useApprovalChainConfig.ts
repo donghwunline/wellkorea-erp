@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ChainLevelRequest, ChainTemplate } from '@/services';
 import { approvalChainService, userService } from '@/services';
-import type { ComboboxOption } from '@/components/ui/forms/Combobox.tsx';
+import type { ComboboxOption } from '@/shared/ui/forms/Combobox.tsx';
 
 export interface UseApprovalChainConfigReturn {
   templates: ChainTemplate[];

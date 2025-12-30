@@ -9,7 +9,7 @@
 
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Icon, PageHeader } from '@/components/ui';
+import { Alert, Button, Icon, PageHeader } from '@/shared/ui';
 import { CompanyDetailsCard } from '@/components/features/companies';
 import type { CompanyDetails } from '@/services';
 

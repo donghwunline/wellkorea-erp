@@ -8,7 +8,7 @@
 import { type FormEvent, useState } from 'react';
 import type { CreateCompanyRequest, CompanyDetails, UpdateCompanyRequest, RoleType } from '@/services';
 import { ROLE_TYPE_LABELS } from '@/services';
-import { Button, ErrorAlert, FormField } from '@/components/ui';
+import { Button, ErrorAlert, FormField } from '@/shared/ui';
 
 export interface CompanyFormProps {
   /** Form mode: 'create' or 'edit' */

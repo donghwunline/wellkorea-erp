@@ -8,7 +8,7 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { type UserDetails, userService } from '@/services';
 import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/shared/types/auth';
-import { Badge, Button, ErrorAlert, Modal } from '@/components/ui';
+import { Badge, Button, ErrorAlert, Modal } from '@/shared/ui';
 
 export interface UserRolesFormProps {
   isOpen: boolean;

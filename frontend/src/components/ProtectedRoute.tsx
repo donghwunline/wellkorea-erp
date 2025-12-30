@@ -41,7 +41,7 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks';
 import type { RoleName } from '@/services';
-import { Spinner } from '@/components/ui';
+import { Spinner } from '@/shared/ui';
 
 interface ProtectedRouteProps {
   children: ReactNode;

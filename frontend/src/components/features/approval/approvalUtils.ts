@@ -5,7 +5,7 @@
  * UI presentation constants are kept here (not in services layer).
  */
 
-import type { BadgeVariant } from '@/components/ui';
+import type { BadgeVariant } from '@/shared/ui';
 import type { ApprovalStatus } from '@/services';
 
 /**

@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Icon, PageHeader, SearchBar } from '@/components/ui';
+import { Alert, Button, Icon, PageHeader, SearchBar } from '@/shared/ui';
 import { ProjectTable } from '@/components/features/projects';
 import { usePaginatedSearch } from '@/shared/hooks';
 

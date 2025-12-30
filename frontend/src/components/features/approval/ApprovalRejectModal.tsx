@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { Alert, Button, FormField, Modal, ModalActions, Spinner } from '@/components/ui';
+import { Alert, Button, FormField, Modal, ModalActions, Spinner } from '@/shared/ui';
 
 export interface ApprovalRejectModalProps {
   /** Whether the modal is open */

@@ -11,7 +11,7 @@
  * - Receives all data via props
  */
 
-import { Card, Table, EmptyState } from '@/components/ui';
+import { Card, Table, EmptyState } from '@/shared/ui';
 import type { Quotation } from '../model';
 import { formatDate } from '@/shared/lib/date';
 import { Money } from '@/shared/lib/money';

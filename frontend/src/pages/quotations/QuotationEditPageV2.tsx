@@ -16,7 +16,7 @@
 
 import { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/components/ui';
+import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { useQuotation, quotationRules } from '@/entities/quotation';
 import { useUpdateQuotation, QuotationForm } from '@/features/quotation';
 import type { UpdateQuotationInput } from '@/entities/quotation';

@@ -6,7 +6,7 @@
  * - Purchased Items: Service categories I buy (with vendor offerings)
  */
 
-import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/components/ui';
+import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
 import { ProductsTab } from './ProductsTab';
 import { PurchasedItemsTab } from './PurchasedItemsTab';
 

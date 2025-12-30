@@ -12,14 +12,14 @@
  *
  * Import Policy:
  * - pages -> features: YES (via @/components/features/users)
- * - pages -> ui: YES (via @/components/ui)
+ * - pages -> ui: YES (via @/shared/ui)
  * - pages -> shared/hooks: YES (via @/shared/hooks)
  * - pages -> services: NO (feature components handle this)
  * - pages -> stores: NO (use shared hooks instead)
  */
 
 import { useReducer, useState } from 'react';
-import { Alert, Button, Icon, PageHeader, SearchBar } from '@/components/ui';
+import { Alert, Button, Icon, PageHeader, SearchBar } from '@/shared/ui';
 import {
   UserCreateForm,
   UserCustomersForm,

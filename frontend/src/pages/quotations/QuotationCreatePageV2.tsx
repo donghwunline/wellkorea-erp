@@ -16,7 +16,7 @@
 
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, Card, Icon, PageHeader, Spinner } from '@/components/ui';
+import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { ProjectCombobox } from '@/components/features/shared/selectors';
 import { useProject } from '@/entities/project';
 import { useCreateQuotation, QuotationForm } from '@/features/quotation';

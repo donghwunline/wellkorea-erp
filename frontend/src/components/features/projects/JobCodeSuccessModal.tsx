@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { Button, Icon, Modal, ModalActions } from '@/components/ui';
+import { Button, Icon, Modal, ModalActions } from '@/shared/ui';
 
 export interface JobCodeSuccessModalProps {
   /** Whether modal is open */

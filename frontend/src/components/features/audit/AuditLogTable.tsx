@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type AuditLogEntry, auditService } from '@/services';
 import type { PaginationMetadata } from '@/shared/api/types';
-import { Badge, type BadgeVariant, Card, IconButton, LoadingState, Pagination, Table, } from '@/components/ui';
+import { Badge, type BadgeVariant, Card, IconButton, LoadingState, Pagination, Table, } from '@/shared/ui';
 
 /** Known audit actions for badge styling. API may return unknown actions. */
 const ACTION_BADGE_VARIANTS: Record<string, BadgeVariant> = {

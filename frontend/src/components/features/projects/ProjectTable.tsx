@@ -25,7 +25,7 @@ import {
   LoadingState,
   Pagination,
   Table,
-} from '@/components/ui';
+} from '@/shared/ui';
 
 // Status badge variant mapping
 const STATUS_BADGE_VARIANTS: Record<ProjectStatus, BadgeVariant> = {

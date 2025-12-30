@@ -12,7 +12,7 @@
  *
  * Import Policy:
  * - pages -> features: YES (via @/components/features/audit)
- * - pages -> ui: YES (via @/components/ui)
+ * - pages -> ui: YES (via @/shared/ui)
  * - pages -> shared/hooks: YES (via @/shared/hooks)
  * - pages -> services: NO (use feature components instead)
  * - pages -> stores: NO (use shared hooks instead)
@@ -20,7 +20,7 @@
 
 import { useState } from 'react';
 import type { AuditLogEntry } from '@/services';
-import { Alert, Badge, type BadgeVariant, Button, FilterBar, Modal, PageHeader, } from '@/components/ui';
+import { Alert, Badge, type BadgeVariant, Button, FilterBar, Modal, PageHeader, } from '@/shared/ui';
 import { AuditLogTable, useAuditLogPage } from '@/components/features/audit';
 
 type AuditAction =

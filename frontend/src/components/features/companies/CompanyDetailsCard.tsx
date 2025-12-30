@@ -14,7 +14,7 @@ import {
   type BadgeVariant,
   Card,
   Spinner,
-} from '@/components/ui';
+} from '@/shared/ui';
 
 // Role type badge variant mapping
 const ROLE_BADGE_VARIANTS: Record<RoleType, BadgeVariant> = {

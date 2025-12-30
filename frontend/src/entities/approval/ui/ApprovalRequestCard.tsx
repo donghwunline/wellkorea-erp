@@ -11,7 +11,7 @@
  * - Actions delegated via callbacks
  */
 
-import { Badge, Button, Card, Icon, Spinner } from '@/components/ui';
+import { Badge, Button, Card, Icon, Spinner } from '@/shared/ui';
 import { formatDateTime } from '@/shared/utils';
 import type { Approval, ApprovalLevel } from '../model';
 import { ApprovalStatusConfig, EntityTypeConfigs } from '../model';

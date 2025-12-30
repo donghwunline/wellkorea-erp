@@ -26,7 +26,7 @@ import {
   PageHeader,
   Spinner,
   Table,
-} from '@/components/ui';
+} from '@/shared/ui';
 import { useApprovalChainConfig } from '@/components/features/approval';
 import { UserCombobox } from '@/components/features/shared/selectors';
 import type { ChainLevel, ChainLevelRequest, ChainTemplate } from '@/services';

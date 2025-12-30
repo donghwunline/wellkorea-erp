@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { CreateCompanyRequest, UpdateCompanyRequest } from '@/services';
-import { Alert, Card, Icon, PageHeader } from '@/components/ui';
+import { Alert, Card, Icon, PageHeader } from '@/shared/ui';
 import { CompanyForm, useCompanyActions } from '@/components/features/companies';
 
 export function CreateCompanyPage() {

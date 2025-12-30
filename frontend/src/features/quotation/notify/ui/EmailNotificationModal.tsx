@@ -8,7 +8,7 @@
  * Can import from: entities, shared
  */
 
-import { Button, Modal, ModalActions, Spinner } from '@/components/ui';
+import { Button, Modal, ModalActions, Spinner } from '@/shared/ui';
 
 export interface EmailNotificationModalProps {
   /** Whether the modal is open */

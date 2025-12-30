@@ -5,7 +5,7 @@
  * Follows FSD rules: no router deps, no mutations, no feature-specific actions.
  */
 
-import { Badge, type BadgeVariant } from '@/components/ui';
+import { Badge, type BadgeVariant } from '@/shared/ui';
 import type { ApprovalStatus } from '../model';
 import { ApprovalStatusConfig } from '../model';
 

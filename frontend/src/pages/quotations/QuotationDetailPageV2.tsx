@@ -16,7 +16,7 @@
 
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Card, ConfirmationModal, Icon, PageHeader, Spinner } from '@/components/ui';
+import { Alert, Button, Card, ConfirmationModal, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { useAuth } from '@/shared/hooks';
 import { formatDate } from '@/shared/lib/date';
 

@@ -6,8 +6,8 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { Card, Icon } from '@/components/ui';
-import type { IconName } from '@/components/ui/primitives/Icon';
+import { Card, Icon } from '@/shared/ui';
+import type { IconName } from '@/shared/ui/primitives/Icon';
 import type { ProjectSection, ProjectSectionSummary } from '@/services';
 import { cn, formatCurrency } from '@/shared/utils';
 

@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Card, ConfirmationModal, Icon, Spinner } from '@/components/ui';
+import { Alert, Button, Card, ConfirmationModal, Icon, Spinner } from '@/shared/ui';
 
 // Entity imports
 import {

@@ -42,7 +42,7 @@ import {
   TabOverflow,
   TabPanel,
   Tabs,
-} from '@/components/ui';
+} from '@/shared/ui';
 import {
   ProjectDetailsCard,
   ProjectKPIStrip,

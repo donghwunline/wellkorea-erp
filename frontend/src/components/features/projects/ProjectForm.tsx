@@ -7,7 +7,7 @@
 
 import { type FormEvent, useState } from 'react';
 import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
-import { Button, DatePicker, ErrorAlert, FormField } from '@/components/ui';
+import { Button, DatePicker, ErrorAlert, FormField } from '@/shared/ui';
 import { CompanyCombobox, UserCombobox } from '@/components/features/shared/selectors';
 
 interface ProjectFormData {

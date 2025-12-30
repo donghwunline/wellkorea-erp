@@ -4,7 +4,7 @@
  * Shows overview of modules with role-based visibility
  */
 
-import { Card, Icon, type IconName, StatCard } from '@/components/ui';
+import { Card, Icon, type IconName, StatCard } from '@/shared/ui';
 import { useAuth } from '@/shared/hooks';
 import type { RoleName } from '@/services';
 

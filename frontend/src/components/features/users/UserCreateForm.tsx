@@ -8,7 +8,7 @@
 import { type FormEvent, useState } from 'react';
 import { userService } from '@/services';
 import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/shared/types/auth';
-import { Button, ErrorAlert, FormField, Modal } from '@/components/ui';
+import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 
 export interface UserCreateFormProps {
   isOpen: boolean;

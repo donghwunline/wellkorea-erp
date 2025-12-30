@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { projectSummaryService } from '@/services/projects';
 import type { ProjectKPI } from '@/services/projects';
-import { Icon, StatCard } from '@/components/ui';
+import { Icon, StatCard } from '@/shared/ui';
 import { cn, formatCurrency } from '@/shared/utils';
 
 export interface ProjectKPIStripProps {

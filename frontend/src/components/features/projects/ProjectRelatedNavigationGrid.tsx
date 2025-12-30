@@ -6,7 +6,7 @@
  */
 
 import { useAuth } from '@/shared/hooks';
-import { Alert, Button, Card, Icon, Spinner } from '@/components/ui';
+import { Alert, Button, Card, Icon, Spinner } from '@/shared/ui';
 import type { RoleName } from '@/shared/types';
 import type { ProjectSection } from '@/services';
 import { useProjectSummary } from './hooks';

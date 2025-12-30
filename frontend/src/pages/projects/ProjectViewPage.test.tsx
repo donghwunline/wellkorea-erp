@@ -106,8 +106,8 @@ vi.mock('@/widgets', () => ({
 }));
 
 // Mock UI tab components to simplify testing
-vi.mock('@/components/ui', async () => {
-  const actual = await vi.importActual('@/components/ui');
+vi.mock('@/shared/ui', async () => {
+  const actual = await vi.importActual('@/shared/ui');
   return {
     ...actual,
     Tabs: vi.fn(({ children, defaultTab }: { children: React.ReactNode; defaultTab?: string }) => (

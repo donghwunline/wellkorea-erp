@@ -10,7 +10,7 @@
  */
 
 import type { ApprovalDetails, LevelDecision } from '@/services';
-import { Badge, Button, Card, Icon, Spinner } from '@/components/ui';
+import { Badge, Button, Card, Icon, Spinner } from '@/shared/ui';
 import { formatDateTime } from '@/shared/utils';
 import { APPROVAL_STATUS_LABELS, APPROVAL_STATUS_BADGE_VARIANTS } from './approvalUtils';
 

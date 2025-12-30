@@ -7,7 +7,7 @@
 
 import { type FormEvent, useState } from 'react';
 import { type UserDetails, userService } from '@/services';
-import { Button, ErrorAlert, FormField, Modal } from '@/components/ui';
+import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 
 export interface UserPasswordFormProps {
   isOpen: boolean;

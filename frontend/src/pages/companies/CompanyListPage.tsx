@@ -11,7 +11,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Icon, PageHeader, SearchBar, Tab, TabList, Tabs } from '@/components/ui';
+import { Alert, Button, Icon, PageHeader, SearchBar, Tab, TabList, Tabs } from '@/shared/ui';
 import { CompanyTable } from '@/components/features/companies';
 import { usePaginatedSearch } from '@/shared/hooks';
 import type { RoleType } from '@/services';

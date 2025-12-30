@@ -10,7 +10,7 @@
  * - Receives all data via props
  */
 
-import { Alert, Card, Table } from '@/components/ui';
+import { Alert, Card, Table } from '@/shared/ui';
 import type { Quotation } from '../model';
 import { lineItemRules } from '../model';
 import { formatDate } from '@/shared/lib/date';

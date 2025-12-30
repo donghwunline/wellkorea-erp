@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { CreateProjectRequest, ProjectCommandResult, UpdateProjectRequest } from '@/services';
-import { Card, Icon, PageHeader } from '@/components/ui';
+import { Card, Icon, PageHeader } from '@/shared/ui';
 import { JobCodeSuccessModal, ProjectForm, useProjectActions } from '@/components/features/projects';
 
 export function ProjectCreatePage() {

@@ -13,7 +13,7 @@
 import { useCallback, useState } from 'react';
 import type { CreateQuotationInput, LineItemInput, Quotation, UpdateQuotationInput } from '@/entities/quotation';
 import { type ProductLineItem, ProductSelector } from '../../line-items';
-import { Alert, Button, Card, FormField, Input, Spinner } from '@/components/ui';
+import { Alert, Button, Card, FormField, Input, Spinner } from '@/shared/ui';
 
 /**
  * Props for QuotationForm.

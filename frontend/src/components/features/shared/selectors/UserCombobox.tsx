@@ -17,7 +17,7 @@
 
 import { useCallback } from 'react';
 import { userService } from '@/services';
-import { Combobox, type ComboboxOption } from '@/components/ui';
+import { Combobox, type ComboboxOption } from '@/shared/ui';
 
 export interface UserComboboxProps {
   /** Currently selected user ID */

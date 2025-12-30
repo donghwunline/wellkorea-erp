@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { type UserDetails, userService } from '@/services';
-import { ConfirmationModal } from '@/components/ui';
+import { ConfirmationModal } from '@/shared/ui';
 
 export interface UserDeactivateModalProps {
   isOpen: boolean;

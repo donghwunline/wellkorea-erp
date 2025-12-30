@@ -15,7 +15,7 @@
 
 import { useCallback, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Card, FilterBar, LoadingState, PageHeader, Pagination } from '@/components/ui';
+import { Alert, Card, FilterBar, LoadingState, PageHeader, Pagination } from '@/shared/ui';
 import {
   ApprovalRejectModal,
   ApprovalRequestCard,

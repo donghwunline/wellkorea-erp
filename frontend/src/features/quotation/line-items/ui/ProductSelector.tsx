@@ -20,7 +20,7 @@ import {
   IconButton,
   Input,
   Table,
-} from '@/components/ui';
+} from '@/shared/ui';
 import type { ProductLineItem, ProductSelectorProps } from './types';
 
 interface SelectedProduct {

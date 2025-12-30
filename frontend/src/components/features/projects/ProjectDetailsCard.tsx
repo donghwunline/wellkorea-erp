@@ -7,7 +7,7 @@
 
 import type { ProjectDetails, ProjectStatus } from '@/services';
 import { PROJECT_STATUS_LABELS } from '@/services';
-import { Badge, type BadgeVariant, Card, Icon, IconButton } from '@/components/ui';
+import { Badge, type BadgeVariant, Card, Icon, IconButton } from '@/shared/ui';
 import { formatDate, formatDateTime } from '@/shared/utils';
 
 // Status badge variant mapping

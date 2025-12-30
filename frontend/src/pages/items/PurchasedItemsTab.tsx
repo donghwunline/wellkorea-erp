@@ -17,7 +17,7 @@ import {
   ErrorAlert,
   Icon,
   Modal,
-} from '@/components/ui';
+} from '@/shared/ui';
 import { useServiceCategories } from '@/components/features/items';
 import type { ServiceCategorySummary, VendorServiceOffering } from '@/services';
 import { useAuth } from '@/shared/hooks';

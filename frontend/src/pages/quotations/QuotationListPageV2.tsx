@@ -15,8 +15,8 @@
 
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, ConfirmationModal, Icon, PageHeader, Pagination, SearchBar } from '@/components/ui';
-import { FilterBar } from '@/components/ui/navigation/FilterBar';
+import { Alert, Button, ConfirmationModal, Icon, PageHeader, Pagination, SearchBar } from '@/shared/ui';
+import { FilterBar } from '@/shared/ui/navigation/FilterBar';
 import { usePaginatedSearch } from '@/shared/hooks';
 
 // Entity imports - domain model and UI
@@ -37,7 +37,7 @@ import {
   EmailNotificationModal,
 } from '@/features/quotation';
 
-import { Icon as ActionIcon, IconButton } from '@/components/ui';
+import { Icon as ActionIcon, IconButton } from '@/shared/ui';
 
 // Status filter options
 const STATUS_OPTIONS = [

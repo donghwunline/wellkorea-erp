@@ -27,7 +27,7 @@ ui/
 All components are exported through a single barrel export:
 
 ```typescript
-import { Button, Table, Modal, Alert, Icon, Combobox, DatePicker, Tabs } from '@/components/ui';
+import { Button, Table, Modal, Alert, Icon, Combobox, DatePicker, Tabs } from '@/shared/ui';
 ```
 
 For hooks and utilities, import from shared modules:

@@ -27,8 +27,8 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Badge, type BadgeVariant } from '@/components/ui/primitives/Badge';
-import { Icon, type IconName } from '@/components/ui/primitives/Icon';
+import { Badge, type BadgeVariant } from '../primitives/Badge';
+import { Icon, type IconName } from '../primitives/Icon';
 import { cn } from '@/shared/utils';
 
 // ============================================================================

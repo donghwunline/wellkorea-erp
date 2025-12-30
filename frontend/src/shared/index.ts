@@ -5,6 +5,7 @@
  * - api: HTTP client, token storage, endpoint constants
  * - hooks: Shared React hooks (useAuth, usePaginatedSearch)
  * - types: TypeScript type definitions
+ * - ui: Design system components (Button, Modal, Table, etc.)
  * - utils: Pure utility functions
  *
  * This is the "lowest layer" in the architecture.
@@ -19,6 +20,9 @@ export * from './hooks';
 
 // Re-export all types
 export * from './types';
+
+// Re-export UI components
+export * from './ui';
 
 // Re-export all utils
 export * from './utils';

@@ -24,7 +24,7 @@ import {
   LoadingState,
   Pagination,
   Table,
-} from '@/components/ui';
+} from '@/shared/ui';
 
 // Role badge variant mapping
 const ROLE_BADGE_VARIANTS: Record<RoleName, BadgeVariant> = {

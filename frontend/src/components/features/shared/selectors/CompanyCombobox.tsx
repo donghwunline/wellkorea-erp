@@ -19,7 +19,7 @@
 import { useCallback } from 'react';
 import { companyService, ROLE_TYPE_LABELS } from '@/services';
 import type { RoleType } from '@/services';
-import { Combobox, type ComboboxOption } from '@/components/ui';
+import { Combobox, type ComboboxOption } from '@/shared/ui';
 
 export interface CompanyComboboxProps {
   /** Currently selected company ID */

@@ -21,7 +21,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks';
 import { getErrorMessage } from '@/shared/utils';
 import type { ApiError } from '@/shared/api/types';
-import { ErrorAlert, FormField, Spinner } from '@/components/ui';
+import { ErrorAlert, FormField, Spinner } from '@/shared/ui';
 
 interface LocationState {
   from?: { pathname: string };

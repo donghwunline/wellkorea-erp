@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails, UpdateProjectRequest } from '@/services';
-import { Alert, Card, Icon, PageHeader, Spinner } from '@/components/ui';
+import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { ProjectForm, useProjectActions } from '@/components/features/projects';
 
 export function ProjectEditPage() {

@@ -10,7 +10,7 @@
  * - Receives all data via props
  */
 
-import { Badge } from '@/components/ui';
+import { Badge } from '@/shared/ui';
 import { type QuotationStatus, QuotationStatusConfig } from '../model';
 
 export interface QuotationStatusBadgeProps {

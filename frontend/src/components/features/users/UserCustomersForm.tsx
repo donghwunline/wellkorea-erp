@@ -7,7 +7,7 @@
 
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { companyService, type CompanySummary, type UserDetails, userService } from '@/services';
-import { Button, ErrorAlert, LoadingState, Modal } from '@/components/ui';
+import { Button, ErrorAlert, LoadingState, Modal } from '@/shared/ui';
 
 export interface UserCustomersFormProps {
   isOpen: boolean;
