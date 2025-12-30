@@ -11,8 +11,8 @@
  */
 
 import { useCallback, useState } from 'react';
-import type { Quotation, CreateQuotationInput, UpdateQuotationInput, LineItemInput } from '@/entities/quotation';
-import { ProductSelector, type ProductLineItem } from '../../../line-items';
+import type { CreateQuotationInput, LineItemInput, Quotation, UpdateQuotationInput } from '@/entities/quotation';
+import { type ProductLineItem, ProductSelector } from '../../line-items';
 import { Alert, Button, Card, FormField, Input, Spinner } from '@/components/ui';
 
 /**
