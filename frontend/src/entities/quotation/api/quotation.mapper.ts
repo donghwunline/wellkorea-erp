@@ -24,6 +24,7 @@ export const lineItemMapper = {
       sequence: dto.sequence,
       quantity: dto.quantity,
       unitPrice: dto.unitPrice,
+      lineTotal: dto.lineTotal,
       notes: dto.notes?.trim() ?? null,
     };
   },

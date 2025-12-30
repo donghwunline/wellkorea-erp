@@ -40,7 +40,7 @@ export interface StatusConfig {
  */
 export const QuotationStatusConfig: Record<QuotationStatus, StatusConfig> = {
   DRAFT: { label: 'Draft', labelKo: '작성중', color: 'steel' },
-  PENDING: { label: 'Pending Approval', labelKo: '결재중', color: 'warning' },
+  PENDING: { label: 'Pending', labelKo: '결재중', color: 'warning' },
   APPROVED: { label: 'Approved', labelKo: '승인됨', color: 'info' },
   SENT: { label: 'Sent', labelKo: '발송완료', color: 'purple' },
   ACCEPTED: { label: 'Accepted', labelKo: '수락됨', color: 'success' },

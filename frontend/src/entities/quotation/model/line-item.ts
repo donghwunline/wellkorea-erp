@@ -20,6 +20,7 @@ export interface LineItem {
   readonly sequence: number;
   readonly quantity: number;
   readonly unitPrice: number;
+  readonly lineTotal: number;
   readonly notes: string | null;
 }
 

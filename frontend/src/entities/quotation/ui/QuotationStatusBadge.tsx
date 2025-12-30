@@ -11,7 +11,7 @@
  */
 
 import { Badge } from '@/components/ui';
-import { QuotationStatusConfig, type QuotationStatus } from '../model';
+import { type QuotationStatus, QuotationStatusConfig } from '../model';
 
 export interface QuotationStatusBadgeProps {
   /**
@@ -47,7 +47,7 @@ export function QuotationStatusBadge({
 
   return (
     <Badge variant={config.color} size={size} className={className}>
-      {config.label}
+      {config.labelKo}
     </Badge>
   );
 }
