@@ -247,72 +247,110 @@ GET /api/quotations/{id} → queryService.getQuotationDetail(id) → QuotationDe
 - **Audit Logging**: `AuditLogger` with `AuditContextHolder` for request context tracking
 - **Domain Events**: Use `DomainEventPublisher` for cross-domain communication (e.g., approval workflow)
 
-### Frontend Architecture (Layered Service Pattern)
+### Frontend Architecture (FSD-Lite: Feature-Sliced Design)
 
-Frontend uses a layered service pattern with strict import boundaries enforced by ESLint.
+**IMPORTANT: See [docs/architecture/frontend-architecture-analysis.md](docs/architecture/frontend-architecture-analysis.md) for complete architecture documentation.**
 
-**IMPORTANT: See [docs/architecture/frontend-architecture.md](docs/architecture/frontend-architecture.md) for complete architecture documentation including:**
-- Layer definitions (pages, features, ui, services, stores, hooks, api)
-- Dependency flow diagram and import rules matrix
-- ESLint rule configuration
-- Code examples and anti-patterns
+Frontend follows **FSD-Lite (Feature-Sliced Design)** aligned with backend's DDD + CQS patterns:
 
 ```
 frontend/src/
-├── pages/               # Route-level components (orchestration layer)
-├── components/
-│   ├── ui/             # Dumb components (Button, Modal, Table)
-│   └── features/       # Smart components (data fetching, stores)
-│       └── users/      # User management forms
-├── stores/              # Global state (Zustand)
-│   └── authStore.ts    # Authentication state
-├── hooks/               # Custom React hooks
-├── services/            # Business logic services
-│   ├── auth/           # Authentication service
-│   ├── users/          # User management service
-│   ├── audit/          # Audit logging service
-│   └── shared/         # Shared utilities (pagination)
-├── api/                 # HTTP client layer
-│   ├── httpClient.ts   # Axios wrapper with token refresh
-│   ├── tokenStore.ts   # Token persistence
-│   └── types.ts        # API types
-├── types/               # Shared TypeScript types
-└── utils/               # Pure utility functions
+├── app/                      # Application setup (providers, router, styles)
+├── pages/                    # Route-level components (ASSEMBLY ONLY)
+├── widgets/                  # Composite UI blocks (FEATURE COMPOSITION)
+├── features/                 # User actions/workflows (ISOLATED UNITS)
+│   └── {domain}/{action}/   # e.g., quotation/create/, quotation/approve/
+│       ├── ui/              # Feature UI components
+│       ├── model/           # useMutation hooks
+│       └── index.ts         # Public barrel export
+├── entities/                 # Domain models (TYPES + RULES + QUERIES)
+│   └── {domain}/            # e.g., quotation/, project/, company/
+│       ├── model/           # Domain types + pure functions (quotationRules)
+│       ├── api/             # DTOs, mappers, API functions
+│       ├── query/           # TanStack Query hooks + query keys
+│       ├── ui/              # Entity display components (read-only)
+│       └── index.ts         # Public barrel export
+├── shared/                   # Cross-cutting concerns
+│   ├── api/                 # HTTP client, error handling
+│   ├── ui/                  # Design system components
+│   ├── lib/                 # Pure utilities (date, money, validation)
+│   └── types/               # Shared types (pagination, api-response)
+└── stores/                   # Global state (minimal - auth only)
 ```
 
-**Import Rules** (enforced by ESLint):
-- ❌ `pages/` → Nobody imports from pages (top-level orchestration)
-- ❌ `components/ui/` → No services/stores (dumb components only)
-- ❌ `components/stores/pages/hooks` → No `@/api` (use services)
-- ✅ `stores/` → Can use `services/` (orchestration pattern)
-- ✅ `components/features/` → Can use `services/stores/` (smart components)
+**Dependency Rules** (enforced by ESLint):
+```
+pages → widgets, features, entities, shared
+widgets → features, entities, shared
+features → entities, shared (NOT other features - use widgets)
+entities → shared ONLY
+shared → NOTHING (base layer)
 ```
 
-**Key Patterns**:
-- **Service Layer**: All API calls go through feature services (never call `httpClient` directly from components)
-- **HttpClient Auto-Refresh**: Token refresh with request queueing (prevents race conditions during concurrent 401s)
-- **Type Imports**: Use `import type` for TypeScript types to reduce bundle size
-- **Barrel Exports**: Each feature exports through `index.ts` for clean imports
-- **Zustand State**: Minimal global state (auth only), prefer component state + React Query for server state
-- **Protected Routes**: RBAC with `ProtectedRoute` wrapper checking user roles
+**Key Architecture Decisions:**
 
-**HTTP Client Example**:
+1. **Domain Models = Plain Objects + Pure Functions** (not classes)
+   ```typescript
+   // entities/quotation/model/quotation.ts
+   export interface Quotation { readonly id: number; readonly status: QuotationStatus; ... }
+   export const quotationRules = {
+     canEdit(q: Quotation): boolean { return q.status === 'DRAFT'; },
+     calculateTotal(q: Quotation): number { ... },
+   };
+   ```
+
+2. **TanStack Query for Query/Command Separation**
+   - `entities/*/query/` - Read operations (useQuery hooks, query keys)
+   - `features/*/model/` - Write operations (useMutation hooks)
+   - Query hooks always return domain models (map DTOs via mapper)
+
+3. **Cache Data Format = Always Domain Models**
+   - All `useQuery`, `prefetchQuery`, `setQueryData` work with domain types
+   - Use `quotationQueryFns` for consistent DTO→Domain mapping
+
+4. **Query Key Stability = Primitives Only**
+   ```typescript
+   // Use individual primitives, NOT objects
+   list: (page, size, search, status) => [...keys.lists(), page, size, search, status]
+   ```
+
+5. **Dates = ISO Strings** (not Date objects) for React Query serialization
+
+**Component Placement Quick Reference:**
+
+| Type | Layer | Indicator |
+|------|-------|-----------|
+| Single entity display (read-only) | `entities/*/ui` | Displays ONE entity, no mutations |
+| User action button/form | `features/*/ui` | Triggers mutation, contains action logic |
+| Multi-feature composition | `widgets/*` | Combines 2+ features |
+| Route-level view | `pages/*` | URL params + layout assembly only |
+
+**entities/ui/ Rules** (keep components reusable):
+- ❌ No router dependencies (`useNavigate`, `Link`)
+- ❌ No feature-specific buttons ("Approve", "Submit")
+- ❌ No mutation hooks
+- ✅ Delegate via callback props (`onRowClick`, `renderActions`)
+
+**features/ Rules** (isolated workflows):
+- One feature = one user action
+- Features do NOT import other features (use widgets for composition)
+- UX side-effects (`toast()`, `navigate()`) belong here, NOT in entities
+
+**Two-Step Command Mapping:**
 ```typescript
-// DON'T: Call httpClient directly from components
-const users = await httpClient.get('/users');
-
-// DO: Use feature services
-import { userService } from '@/services';
-const users = await userService.getUsers();
+// Feature input → Command (validation) → API DTO
+const command = quotationCommandMapper.toCommand(input);
+quotationValidation.validateCreate(command);
+quotationApi.create(quotationCommandMapper.toCreateDto(command));
 ```
 
 **Authentication Flow**:
 1. User logs in → `authService.login()` stores tokens in localStorage
 2. HttpClient auto-injects token in `Authorization: Bearer {token}` header
-3. On 401 response → HttpClient automatically refreshes token using refresh endpoint
+3. On 401 response → HttpClient automatically refreshes token
 4. Concurrent 401s are queued (prevents multiple refresh calls)
-5. If refresh fails → Clear tokens, redirect to login via `onUnauthorized` callback
-6. Zustand `authStore` syncs authentication state across components
+5. If refresh fails → Clear tokens, redirect to login
+6. Zustand `authStore` syncs authentication state
 
 ## CI/CD Pipeline
 
