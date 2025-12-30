@@ -17,4 +17,3 @@ export { UserCombobox, type UserComboboxProps } from './UserCombobox';
 export { CustomerCombobox, type CustomerComboboxProps } from './CustomerCombobox';
 export { CompanyCombobox, type CompanyComboboxProps } from './CompanyCombobox';
 export { ProjectCombobox, type ProjectComboboxProps } from './ProjectCombobox';
-export { ProductCombobox, type ProductComboboxProps } from './ProductCombobox';
