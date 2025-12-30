@@ -1,27 +1,18 @@
 /**
  * Quotation feature components barrel export.
+ *
+ * Note: Many components have been migrated to FSD layers:
+ * - QuotationDetailsPanel → @/widgets/quotation-details-panel
+ * - EmailNotificationModal → @/features/quotation/notify
+ * - useQuotationActions → @/features/quotation (various hooks)
+ * - useProjectDetails → @/entities/project (useProject hook)
+ * - quotationUtils → @/entities/quotation (quotationRules, formatters)
  */
 
-// Feature components
+// Legacy components (to be migrated to FSD layers)
 export { QuotationTable, type QuotationTableProps } from './QuotationTable';
 export { QuotationForm, type QuotationFormProps } from './QuotationForm';
-export { QuotationDetailsPanel, type QuotationDetailsPanelProps } from './QuotationDetailsPanel';
-export { QuotationInfoCard, type QuotationInfoCardProps } from './QuotationInfoCard';
-export {
-  QUOTATION_STATUS_LABELS,
-  QUOTATION_STATUS_BADGE_VARIANTS,
-  formatQuotationDate,
-  formatQuotationCurrency,
-} from './quotationUtils';
 export { ProductSelector, type ProductSelectorProps, type LineItemWithName } from './ProductSelector';
-export { EmailNotificationModal, type EmailNotificationModalProps } from './EmailNotificationModal';
 
-// Hooks
-export {
-  useQuotationActions,
-  type UseQuotationActionsReturn,
-  useProjectSearch,
-  type UseProjectSearchReturn,
-  useProjectDetails,
-  type UseProjectDetailsReturn,
-} from './hooks';
+// Legacy hooks (to be migrated to FSD layers)
+export { useProjectSearch, type UseProjectSearchReturn } from './hooks';
