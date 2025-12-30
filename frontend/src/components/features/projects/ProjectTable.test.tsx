@@ -8,7 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ProjectTable } from './ProjectTable';
 import { projectService } from '@/services';
-import type { ProjectDetails } from '@/services';
+import type { ProjectListItem } from '@/services';
 import type { PaginationMetadata } from '@/shared/api/types';
 
 // Mock the project service
@@ -24,18 +24,17 @@ vi.mock('@/services', () => ({
   },
 }));
 
-// Helper to create mock project
-function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
+// Helper to create mock project list item
+function createMockProject(overrides: Partial<ProjectListItem> = {}): ProjectListItem {
   return {
     id: 1,
     jobCode: 'WK2-2025-001-0115',
     customerId: 1,
+    customerName: 'Test Customer',
     projectName: 'Test Project',
-    requesterName: 'John Doe',
+    requesterName: null,
     dueDate: '2025-02-15',
-    internalOwnerId: 2,
     status: 'ACTIVE',
-    createdById: 1,
     createdAt: '2025-01-15T10:30:00Z',
     updatedAt: '2025-01-16T14:45:00Z',
     ...overrides,
@@ -44,7 +43,7 @@ function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDeta
 
 // Helper to create mock paginated response
 function createMockPagedResponse(
-  projects: ProjectDetails[],
+  projects: ProjectListItem[],
   pagination: Partial<PaginationMetadata> = {}
 ) {
   return {

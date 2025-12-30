@@ -52,6 +52,7 @@ export interface ProjectListItem {
   customerId: number;
   customerName: string | null;
   projectName: string;
+  requesterName: string | null;
   dueDate: string; // ISO date string (YYYY-MM-DD)
   status: ProjectStatus;
   createdAt: string; // ISO datetime string

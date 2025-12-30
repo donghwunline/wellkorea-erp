@@ -7,7 +7,12 @@ import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useProjectActions } from './useProjectActions';
 import { projectService } from '@/services';
-import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
+import type {
+  CreateProjectRequest,
+  ProjectCommandResult,
+  ProjectDetails,
+  UpdateProjectRequest,
+} from '@/services';
 
 // Mock the project service
 vi.mock('@/services', () => ({
@@ -18,20 +23,35 @@ vi.mock('@/services', () => ({
   },
 }));
 
-// Helper to create mock project
+// Helper to create mock project details
 function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
   return {
     id: 1,
     jobCode: 'WK2-2025-001-0115',
     customerId: 1,
+    customerName: 'Test Customer',
     projectName: 'Test Project',
     requesterName: 'John Doe',
     dueDate: '2025-02-15',
     internalOwnerId: 2,
+    internalOwnerName: 'Internal Owner',
     status: 'ACTIVE',
     createdById: 1,
+    createdByName: 'Creator',
     createdAt: '2025-01-15T10:30:00Z',
     updatedAt: '2025-01-16T14:45:00Z',
+    ...overrides,
+  };
+}
+
+// Helper to create mock command result
+function createMockCommandResult(
+  overrides: Partial<ProjectCommandResult> = {}
+): ProjectCommandResult {
+  return {
+    id: 1,
+    message: 'Project created successfully',
+    jobCode: 'WK2-2025-001-0115',
     ...overrides,
   };
 }
@@ -70,10 +90,10 @@ describe('useProjectActions', () => {
 
   describe('createProject', () => {
     it('should set isLoading true during creation', async () => {
-      let resolvePromise: (value: ProjectDetails) => void;
+      let resolvePromise: (value: ProjectCommandResult) => void;
       mockCreateProject.mockImplementation(
         () =>
-          new Promise<ProjectDetails>(resolve => {
+          new Promise<ProjectCommandResult>(resolve => {
             resolvePromise = resolve;
           })
       );
@@ -92,15 +112,15 @@ describe('useProjectActions', () => {
       expect(result.current.isLoading).toBe(true);
 
       await act(async () => {
-        resolvePromise(createMockProject());
+        resolvePromise(createMockCommandResult());
       });
 
       expect(result.current.isLoading).toBe(false);
     });
 
     it('should call projectService.createProject with data', async () => {
-      const mockProject = createMockProject();
-      mockCreateProject.mockResolvedValue(mockProject);
+      const mockCommandResult = createMockCommandResult();
+      mockCreateProject.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useProjectActions());
 
@@ -118,15 +138,15 @@ describe('useProjectActions', () => {
       expect(mockCreateProject).toHaveBeenCalledWith(createData);
     });
 
-    it('should return created project', async () => {
-      const mockProject = createMockProject({ jobCode: 'WK2-2025-042-0120' });
-      mockCreateProject.mockResolvedValue(mockProject);
+    it('should return command result', async () => {
+      const mockCommandResult = createMockCommandResult({ jobCode: 'WK2-2025-042-0120' });
+      mockCreateProject.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useProjectActions());
 
-      let createdProject: ProjectDetails | undefined;
+      let commandResult: ProjectCommandResult | undefined;
       await act(async () => {
-        createdProject = await result.current.createProject({
+        commandResult = await result.current.createProject({
           customerId: 1,
           projectName: 'New Project',
           dueDate: '2025-02-15',
@@ -134,7 +154,7 @@ describe('useProjectActions', () => {
         });
       });
 
-      expect(createdProject).toEqual(mockProject);
+      expect(commandResult).toEqual(mockCommandResult);
     });
 
     it('should set error on failure', async () => {
@@ -199,7 +219,7 @@ describe('useProjectActions', () => {
 
     it('should clear error before new request', async () => {
       mockCreateProject.mockRejectedValueOnce(new Error('First error'));
-      mockCreateProject.mockResolvedValueOnce(createMockProject());
+      mockCreateProject.mockResolvedValueOnce(createMockCommandResult());
 
       const { result } = renderHook(() => useProjectActions());
 
@@ -235,10 +255,10 @@ describe('useProjectActions', () => {
 
   describe('updateProject', () => {
     it('should set isLoading true during update', async () => {
-      let resolvePromise: (value: ProjectDetails) => void;
+      let resolvePromise: (value: ProjectCommandResult) => void;
       mockUpdateProject.mockImplementation(
         () =>
-          new Promise<ProjectDetails>(resolve => {
+          new Promise<ProjectCommandResult>(resolve => {
             resolvePromise = resolve;
           })
       );
@@ -252,15 +272,15 @@ describe('useProjectActions', () => {
       expect(result.current.isLoading).toBe(true);
 
       await act(async () => {
-        resolvePromise(createMockProject());
+        resolvePromise(createMockCommandResult({ message: 'Project updated' }));
       });
 
       expect(result.current.isLoading).toBe(false);
     });
 
     it('should call projectService.updateProject with id and data', async () => {
-      const mockProject = createMockProject();
-      mockUpdateProject.mockResolvedValue(mockProject);
+      const mockCommandResult = createMockCommandResult({ message: 'Project updated' });
+      mockUpdateProject.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useProjectActions());
 
@@ -276,18 +296,18 @@ describe('useProjectActions', () => {
       expect(mockUpdateProject).toHaveBeenCalledWith(42, updateData);
     });
 
-    it('should return updated project', async () => {
-      const mockProject = createMockProject({ projectName: 'Updated Project' });
-      mockUpdateProject.mockResolvedValue(mockProject);
+    it('should return command result', async () => {
+      const mockCommandResult = createMockCommandResult({ message: 'Project updated' });
+      mockUpdateProject.mockResolvedValue(mockCommandResult);
 
       const { result } = renderHook(() => useProjectActions());
 
-      let updatedProject: ProjectDetails | undefined;
+      let commandResult: ProjectCommandResult | undefined;
       await act(async () => {
-        updatedProject = await result.current.updateProject(1, { projectName: 'Updated' });
+        commandResult = await result.current.updateProject(1, { projectName: 'Updated' });
       });
 
-      expect(updatedProject).toEqual(mockProject);
+      expect(commandResult).toEqual(mockCommandResult);
     });
 
     it('should set error on failure', async () => {

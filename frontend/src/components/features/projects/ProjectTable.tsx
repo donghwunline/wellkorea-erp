@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { projectService, PROJECT_STATUS_LABELS } from '@/services';
-import type { ProjectDetails, ProjectStatus } from '@/services';
+import type { ProjectListItem, ProjectStatus } from '@/services';
 import type { PaginationMetadata } from '@/shared/api/types';
 import { formatDate } from '@/shared/utils';
 import {
@@ -45,7 +45,7 @@ export interface ProjectTableProps {
   /** Called when page changes */
   onPageChange: (page: number) => void;
   /** Called when user clicks view */
-  onView: (project: ProjectDetails) => void;
+  onView: (project: ProjectListItem) => void;
   /** Called when an error occurs */
   onError?: (error: string) => void;
 }
@@ -62,7 +62,7 @@ export function ProjectTable({
   onError,
 }: Readonly<ProjectTableProps>) {
   // Server State (Tier 3) - managed here in feature component
-  const [projects, setProjects] = useState<ProjectDetails[]>([]);
+  const [projects, setProjects] = useState<ProjectListItem[]>([]);
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
