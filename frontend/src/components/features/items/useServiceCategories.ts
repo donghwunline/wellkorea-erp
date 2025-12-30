@@ -7,7 +7,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { serviceCategoryService } from '@/services';
 import type { ServiceCategorySummary, VendorServiceOffering } from '@/services';
-import type { ApiError } from '@/api/types';
+import type { ApiError } from '@/shared/api/types';
 import { getErrorMessage } from '@/shared/utils';
 
 interface UseServiceCategoriesOptions {

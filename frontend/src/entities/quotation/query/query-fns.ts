@@ -9,7 +9,7 @@
 import type { Quotation } from '../model';
 import type { QuotationStatus } from '../model';
 import { quotationApi, quotationMapper } from '../api';
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 /**
  * Parameters for list query.

@@ -8,7 +8,7 @@
  * - Update chain levels
  */
 
-import { httpClient, APPROVAL_CHAIN_ENDPOINTS } from '@/api';
+import { httpClient, APPROVAL_CHAIN_ENDPOINTS } from '@/shared/api';
 import type { ChainLevelRequest, ChainTemplate, CommandResult, UpdateChainLevelsRequest } from './types';
 
 /**

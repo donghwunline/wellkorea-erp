@@ -5,7 +5,7 @@
  * These types are internal to the API layer - use domain models externally.
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 /**
  * Command result from CQRS command endpoints.

@@ -8,10 +8,10 @@ import { authService } from './authService';
 import { createMockUser, mockUsers, mockApiErrors } from '@/test/fixtures';
 import type { LoginRequest, LoginResponse } from './types';
 // Import mocked module
-import { httpClient } from '@/api';
+import { httpClient } from '@/shared/api';
 
 // Mock httpClient with inline factory (vi.mock is hoisted, so can't use imported functions)
-vi.mock('@/api', () => ({
+vi.mock('@/shared/api', () => ({
   httpClient: {
     get: vi.fn(),
     post: vi.fn(),

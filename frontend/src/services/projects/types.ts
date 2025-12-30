@@ -4,7 +4,7 @@
  * API DTOs are defined here matching backend ProjectResponse and request DTOs.
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 /**
  * Project lifecycle status.

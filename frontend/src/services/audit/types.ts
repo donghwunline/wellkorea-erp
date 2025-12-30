@@ -4,7 +4,7 @@
  * Field names match backend AuditLogResponse.java
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 export interface AuditLogEntry {
   id: number;

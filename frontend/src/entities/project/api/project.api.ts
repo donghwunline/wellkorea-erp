@@ -7,7 +7,7 @@
  * FSD Layer: entities/project/api
  */
 
-import { httpClient, PROJECT_ENDPOINTS } from '@/api';
+import { httpClient, PROJECT_ENDPOINTS } from '@/shared/api';
 import type { ProjectDetailsDTO } from './project.dto';
 
 /**

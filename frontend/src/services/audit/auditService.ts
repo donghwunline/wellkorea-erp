@@ -8,8 +8,8 @@
  * - Type narrowing (string → number for entityId)
  */
 
-import { httpClient, AUDIT_ENDPOINTS } from '@/api';
-import type { PagedResponse } from '@/api/types';
+import { httpClient, AUDIT_ENDPOINTS } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { transformPagedResponse } from '@/services/shared';
 import type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './types';
 

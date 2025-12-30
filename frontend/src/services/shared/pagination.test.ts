@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { createEmptyPaginated, transformPagedResponse } from './pagination';
-import type { PagedResponse, Paginated, PaginationMetadata } from '@/api/types';
+import type { PagedResponse, Paginated, PaginationMetadata } from '@/shared/api/types';
 
 describe('pagination utilities', () => {
   describe('transformPagedResponse', () => {

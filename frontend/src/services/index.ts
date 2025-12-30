@@ -154,7 +154,7 @@ export {
 } from '@/shared/utils';
 
 // Re-export common types from API layer for convenience
-export type { PaginationMetadata, Paginated, ApiError, ErrorResponse } from '@/api/types';
+export type { PaginationMetadata, Paginated, ApiError, ErrorResponse } from '@/shared/api/types';
 
 // Re-export auth constants for component use
 export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/shared/types/auth';

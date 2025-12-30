@@ -9,7 +9,7 @@ import { userEvent } from '@testing-library/user-event';
 import { ProjectTable } from './ProjectTable';
 import { projectService } from '@/services';
 import type { ProjectDetails } from '@/services';
-import type { PaginationMetadata } from '@/api/types';
+import type { PaginationMetadata } from '@/shared/api/types';
 
 // Mock the project service
 vi.mock('@/services', () => ({

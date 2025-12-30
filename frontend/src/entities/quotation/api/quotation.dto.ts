@@ -5,7 +5,7 @@
  * Separate from domain models to decouple from API changes.
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 /**
  * Command result from CQRS command endpoints.

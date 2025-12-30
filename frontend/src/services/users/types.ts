@@ -4,7 +4,7 @@
  * API DTOs are defined here. Shared domain types are re-exported from @/shared/types.
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 import type { RoleName, UserDetails } from '@/shared/types/auth';
 
 // Re-export shared domain types for convenience

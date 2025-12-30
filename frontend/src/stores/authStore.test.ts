@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStore } from './authStore';
 import { mockAuthStates, mockUsers } from '@/test/fixtures';
 import type { LoginResponse } from '@/services/auth/types';
-import type { ApiError } from '@/api/types';
+import type { ApiError } from '@/shared/api/types';
 // Import mocked modules
 import { authEvents, authService } from '@/services/auth/authService';
 import { authStorage } from '@/shared/utils';

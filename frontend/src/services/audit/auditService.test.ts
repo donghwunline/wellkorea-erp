@@ -7,10 +7,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { auditService } from './auditService';
 import { createMockAuditLog, mockApiErrors } from '@/test/fixtures';
 import type { AuditLogListParams } from './types';
-import { httpClient } from '@/api';
+import { httpClient } from '@/shared/api';
 
 // Mock httpClient with inline factory (vi.mock is hoisted, so can't use imported functions)
-vi.mock('@/api', () => ({
+vi.mock('@/shared/api', () => ({
   httpClient: {
     get: vi.fn(),
     post: vi.fn(),

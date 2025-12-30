@@ -8,8 +8,8 @@
  * - CQRS pattern: commands return IDs, queries return full data
  */
 
-import { httpClient, SERVICE_CATEGORY_ENDPOINTS } from '@/api';
-import type { PagedResponse } from '@/api/types';
+import { httpClient, SERVICE_CATEGORY_ENDPOINTS } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { transformPagedResponse } from '@/services/shared';
 import type {
   CreateServiceCategoryRequest,

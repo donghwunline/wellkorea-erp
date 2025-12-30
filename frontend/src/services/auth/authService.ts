@@ -9,7 +9,7 @@
  * - Event emitters for decoupled state updates
  */
 
-import { httpClient, AUTH_ENDPOINTS } from '@/api';
+import { httpClient, AUTH_ENDPOINTS } from '@/shared/api';
 import type { LoginRequest, LoginResponse, User } from './types';
 
 /**

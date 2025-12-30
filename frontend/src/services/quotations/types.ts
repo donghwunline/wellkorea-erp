@@ -26,7 +26,7 @@
  * This file will be removed once all consumers are migrated.
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 // ============================================================================
 // CQRS Command Result Types

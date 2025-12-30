@@ -8,8 +8,8 @@
  * - Approval history retrieval
  */
 
-import { httpClient, APPROVAL_ENDPOINTS } from '@/api';
-import type { PagedResponse } from '@/api/types';
+import { httpClient, APPROVAL_ENDPOINTS } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { transformPagedResponse } from '@/services/shared';
 import type {
   ApprovalDetails,

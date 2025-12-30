@@ -9,8 +9,8 @@
  * - Role-based filtering (CUSTOMER, VENDOR, OUTSOURCE)
  */
 
-import { httpClient, COMPANY_ENDPOINTS } from '@/api';
-import type { PagedResponse } from '@/api/types';
+import { httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { transformPagedResponse } from '@/services/shared';
 import type {
   AddRoleRequest,

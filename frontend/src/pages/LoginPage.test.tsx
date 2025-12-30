@@ -8,7 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './LoginPage';
-import type { ApiError } from '@/api/types';
+import type { ApiError } from '@/shared/api/types';
 // Import mocked modules
 import { useAuth } from '@/shared/hooks';
 import { getErrorMessage } from '@/shared/utils';

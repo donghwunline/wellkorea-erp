@@ -3,7 +3,7 @@
  * Matches backend Company domain DTOs.
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 // ============================================================================
 // Role Types

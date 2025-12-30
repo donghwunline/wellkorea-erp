@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ROLE_LABELS, type RoleName, type UserDetails, userService } from '@/services';
 import { formatDateTime } from '@/shared/utils';
-import type { PaginationMetadata } from '@/api/types';
+import type { PaginationMetadata } from '@/shared/api/types';
 import {
   Badge,
   type BadgeVariant,

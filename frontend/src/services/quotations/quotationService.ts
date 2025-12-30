@@ -32,8 +32,8 @@
  * This file will be removed once all consumers are migrated.
  */
 
-import { httpClient, QUOTATION_ENDPOINTS } from '@/api';
-import type { PagedResponse } from '@/api/types';
+import { httpClient, QUOTATION_ENDPOINTS } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { transformPagedResponse } from '@/services/shared';
 import type {
   CommandResult,

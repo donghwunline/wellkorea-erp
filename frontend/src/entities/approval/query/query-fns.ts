@@ -8,7 +8,7 @@
 
 import type { Approval, ApprovalHistory, ApprovalStatus, EntityType } from '../model';
 import { approvalApi, approvalMapper, approvalHistoryMapper } from '../api';
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 /**
  * Parameters for list query.

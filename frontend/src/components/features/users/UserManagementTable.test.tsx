@@ -8,7 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserManagementTable } from './UserManagementTable';
 import { createMockUserDetails, mockUserDetails } from '@/test/fixtures';
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 import type { UserDetails } from '@/shared/types/auth';
 import { userService } from '@/services';
 

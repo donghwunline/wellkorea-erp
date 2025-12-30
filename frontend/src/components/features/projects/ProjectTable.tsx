@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { projectService, PROJECT_STATUS_LABELS } from '@/services';
 import type { ProjectDetails, ProjectStatus } from '@/services';
-import type { PaginationMetadata } from '@/api/types';
+import type { PaginationMetadata } from '@/shared/api/types';
 import { formatDate } from '@/shared/utils';
 import {
   Badge,

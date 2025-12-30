@@ -3,7 +3,7 @@
  * Matches backend Product domain DTOs.
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 // ============================================================================
 // Product Types

@@ -3,7 +3,7 @@
  * Matches backend Catalog domain DTOs (ServiceCategory, VendorServiceOffering).
  */
 
-import type { Paginated } from '@/api/types';
+import type { Paginated } from '@/shared/api/types';
 
 // ============================================================================
 // Service Category Types

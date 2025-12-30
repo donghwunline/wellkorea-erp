@@ -8,8 +8,8 @@
  * - Data normalization (dates, emails, etc.)
  */
 
-import { httpClient, USER_ENDPOINTS } from '@/api';
-import type { PagedResponse } from '@/api/types';
+import { httpClient, USER_ENDPOINTS } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { transformPagedResponse } from '@/services/shared';
 import type {
   AssignRolesRequest,
