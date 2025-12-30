@@ -6,13 +6,13 @@
  *
  * Features Layer: Quotation form workflow
  * - Contains form state management
- * - Uses shared ProductSelector
+ * - Uses ProductSelector from line-items feature
  * - Delegates mutations to parent via callbacks
  */
 
 import { useCallback, useState } from 'react';
 import type { Quotation, CreateQuotationInput, UpdateQuotationInput, LineItemInput } from '@/entities/quotation';
-import { ProductSelector, type ProductLineItem } from '@/shared';
+import { ProductSelector, type ProductLineItem } from '../../../line-items';
 import { Alert, Button, Card, FormField, Input, Spinner } from '@/components/ui';
 
 /**

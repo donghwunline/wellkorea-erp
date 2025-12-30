@@ -38,3 +38,10 @@ export {
 
 // Form UI component
 export { QuotationForm, type QuotationFormProps } from './form';
+
+// Line items management
+export {
+  ProductSelector,
+  type ProductLineItem,
+  type ProductSelectorProps,
+} from './line-items';
