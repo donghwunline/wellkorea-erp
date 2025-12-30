@@ -26,11 +26,15 @@ export { useSubmitQuotation, type UseSubmitQuotationOptions } from './submit';
 export { useCreateVersion, type UseCreateVersionOptions } from './version';
 
 // Download PDF
-export {
-  useDownloadPdf,
-  type UseDownloadPdfOptions,
-  type DownloadPdfParams,
-} from './download-pdf';
+export { useDownloadPdf, type UseDownloadPdfOptions, type DownloadPdfParams } from './download-pdf';
 
 // Send notification
-export { useSendNotification, type UseSendNotificationOptions } from './notify';
+export {
+  useSendNotification,
+  type UseSendNotificationOptions,
+  EmailNotificationModal,
+  type EmailNotificationModalProps,
+} from './notify';
+
+// Form UI component
+export { QuotationForm, type QuotationFormProps } from './form';
