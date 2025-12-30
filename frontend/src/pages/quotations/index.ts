@@ -1,10 +1,11 @@
 /**
  * Quotation pages barrel export.
+ *
+ * FSD-Lite architecture - pages are route-level assembly components
+ * that compose entities, features, and widgets.
  */
 
-export { QuotationListPage } from './QuotationListPage';
 export { QuotationListPageV2 } from './QuotationListPageV2';
-export { QuotationCreatePage } from './QuotationCreatePage';
-export { QuotationEditPage } from './QuotationEditPage';
-export { QuotationDetailPage } from './QuotationDetailPage';
-// export { ApprovalListPage } from './ApprovalListPage';
+export { QuotationCreatePageV2 } from './QuotationCreatePageV2';
+export { QuotationEditPageV2 } from './QuotationEditPageV2';
+export { QuotationDetailPageV2 } from './QuotationDetailPageV2';

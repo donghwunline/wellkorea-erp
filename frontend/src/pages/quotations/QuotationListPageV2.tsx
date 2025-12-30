@@ -17,7 +17,6 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, ConfirmationModal, Icon, PageHeader, Pagination, SearchBar } from '@/components/ui';
 import { FilterBar } from '@/components/ui/navigation/FilterBar';
-import { EmailNotificationModal } from '@/components/features/quotations';
 import { usePaginatedSearch } from '@/shared/hooks';
 
 // Entity imports - domain model and UI
@@ -35,6 +34,7 @@ import {
   useCreateVersion,
   useDownloadPdf,
   useSendNotification,
+  EmailNotificationModal,
 } from '@/features/quotation';
 
 import { Icon as ActionIcon, IconButton } from '@/components/ui';
