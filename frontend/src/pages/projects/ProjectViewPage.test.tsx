@@ -100,8 +100,8 @@ vi.mock('@/components/features/projects', () => ({
   ProjectKPIStrip: vi.fn(() => <div data-testid="kpi-strip">KPI Strip</div>),
 }));
 
-// Mock quotation feature components
-vi.mock('@/components/features/quotations', () => ({
+// Mock quotation widget
+vi.mock('@/widgets', () => ({
   QuotationDetailsPanel: vi.fn(() => <div data-testid="quotation-panel">Quotation Panel</div>),
 }));
 

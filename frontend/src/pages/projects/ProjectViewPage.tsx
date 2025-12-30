@@ -50,7 +50,7 @@ import {
   useProjectActions,
   useProjectSummary,
 } from '@/components/features/projects';
-import { QuotationDetailsPanel } from '@/components/features/quotations';
+import { QuotationDetailsPanel } from '@/widgets';
 
 // Tab configuration with role requirements
 interface TabConfig {
