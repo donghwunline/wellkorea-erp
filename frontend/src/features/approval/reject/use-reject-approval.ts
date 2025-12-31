@@ -6,7 +6,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { approvalApi, approvalQueryKeys } from '@/entities/approval';
-import { quotationQueryKeys } from '@/entities/quotation';
+import { quotationQueries } from '@/entities/quotation';
 import type { CommandResult } from '@/entities/approval';
 
 /**
@@ -110,8 +110,8 @@ export function useRejectApproval(options: UseRejectApprovalOptions = {}) {
 
       // Invalidate related quotation cache if entityId provided
       if (entityId) {
-        queryClient.invalidateQueries({ queryKey: quotationQueryKeys.detail(entityId) });
-        queryClient.invalidateQueries({ queryKey: quotationQueryKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: quotationQueries.details() });
+        queryClient.invalidateQueries({ queryKey: quotationQueries.lists() });
       }
 
       onSuccess?.(result);
