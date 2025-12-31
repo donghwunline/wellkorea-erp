@@ -20,20 +20,24 @@
  */
 
 // Internal imports - these are not part of entity public API
+// Note: This file is a legacy compatibility layer and deliberately imports from internal paths
 import { authApi } from '@/entities/auth/api';
 import { authEvents as entityAuthEvents, type AuthEvent as EntityAuthEvent } from '@/entities/auth';
 import {
-  type AssignRolesRequestDTO,
-  type ChangePasswordRequestDTO,
-  type CreateUserRequestDTO,
-  type PaginatedUsersDTO,
   type RoleName as EntityRoleName,
-  type UpdateUserRequestDTO,
   type User as EntityUser,
-  userApi,
   type UserDetails as EntityUserDetails,
-  type UserListParamsDTO,
+  userApi,
 } from '@/entities/user';
+// DTO imports from internal path (needed for legacy type aliases)
+import type {
+  AssignRolesRequestDTO,
+  ChangePasswordRequestDTO,
+  CreateUserRequestDTO,
+  UpdateUserRequestDTO,
+  UserListParamsDTO,
+} from '@/entities/user/api';
+import type { PaginatedUsers as PaginatedUsersDTO } from '@/entities/user/query';
 
 // ============================================================================
 // AUTH SERVICE - Compatibility layer
