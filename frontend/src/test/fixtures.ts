@@ -20,16 +20,17 @@
 import type { RoleName, User, UserDetails } from '@/entities/user';
 import type { AuthStore } from '@/entities/auth';
 import type {
-  QuotationDetails,
-  QuotationLineItem,
-  QuotationStatus,
-  ApprovalDetails,
-  ApprovalStatus,
-  LevelDecision,
-  ApprovalHistoryEntry,
-  ChainTemplate,
-  ChainLevel,
-} from '@/services/quotations/types';
+  QuotationDetailsDTO as QuotationDetails,
+  LineItemDTO as QuotationLineItem,
+} from '@/entities/quotation/api/quotation.dto';
+import { QuotationStatus } from '@/entities/quotation';
+import type {
+  ApprovalDetailsDTO as ApprovalDetails,
+  LevelDecisionDTO as LevelDecision,
+  ApprovalHistoryDTO as ApprovalHistoryEntry,
+} from '@/entities/approval/api/approval.dto';
+import type { ApprovalStatus } from '@/entities/approval';
+import type { ChainTemplateDTO as ChainTemplate, ChainLevelDTO as ChainLevel } from '@/entities/approval-chain';
 import type { ProductSummary } from '@/services/products/types';
 
 /**
