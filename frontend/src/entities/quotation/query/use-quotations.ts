@@ -8,7 +8,7 @@
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import type { QuotationStatus } from '../model';
 import { quotationQueryKeys } from './query-keys';
-import { quotationQueryFns, type PaginatedQuotations } from './query-fns';
+import { type PaginatedQuotations, quotationQueryFns } from './query-fns';
 
 /**
  * Parameters for useQuotations hook.
@@ -44,7 +44,8 @@ export interface UseQuotationsParams {
  * Hook options for useQuotations.
  */
 export interface UseQuotationsOptions
-  extends Omit<
+  extends
+    Omit<
       UseQueryOptions<
         PaginatedQuotations,
         Error,
@@ -64,6 +65,11 @@ export interface UseQuotationsOptions
  * - Deduplicates concurrent requests
  * - Supports filtering and pagination
  *
+ * @param page
+ * @param size
+ * @param search
+ * @param status
+ * @param projectId
  * @param options - Hook options with pagination/filter params
  *
  * @example
