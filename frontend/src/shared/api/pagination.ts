@@ -5,7 +5,7 @@
  * to frontend Paginated format with normalized pagination metadata.
  */
 
-import type { PagedResponse, Paginated, PaginationMetadata } from '@/shared/api/types';
+import type { PagedResponse, Paginated, PaginationMetadata } from './types';
 
 /**
  * Transform backend PagedResponse to frontend Paginated format.

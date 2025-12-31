@@ -9,7 +9,7 @@
  * - Business errors (BUS_*): Context-dependent (inline or toast)
  */
 
-import type { ApiError, ErrorResponse } from '@/shared/api/types';
+import type { ApiError, ErrorResponse } from './types';
 
 /**
  * Mapping of backend error codes to user-friendly messages.

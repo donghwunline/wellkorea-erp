@@ -5,7 +5,7 @@
 
 import { HttpClient } from './httpClient';
 import { tokenStore } from './tokenStore';
-import { navigation } from '@/shared/utils';
+import { navigation } from './navigation';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
@@ -42,6 +42,35 @@ export const httpClient = new HttpClient(BASE_URL, tokenStore, onUnauthorized);
 export type { Tokens, ApiError } from './types';
 export { HttpClient } from './httpClient';
 export { tokenStore } from './tokenStore';
+
+// Error message utilities
+export {
+  errorMessages,
+  getErrorMessage,
+  getErrorDisplayStrategy,
+  isValidationError,
+  isAuthenticationError,
+  isAuthorizationError,
+  isAuthError,
+  isBusinessError,
+  isServerError,
+  isNotFoundError,
+} from './errorMessages';
+
+// Domain error utilities
+export {
+  DomainValidationError,
+  isDomainValidationError,
+  normalizeApiErrors,
+  extractErrorMessage,
+} from './errors';
+
+// Pagination utilities
+export { transformPagedResponse, createEmptyPaginated } from './pagination';
+
+// Storage and navigation utilities
+export { storage, authStorage } from './storage';
+export { navigation } from './navigation';
 
 // Re-export endpoint constants
 export {
