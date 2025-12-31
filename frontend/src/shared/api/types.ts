@@ -3,10 +3,15 @@
  *
  * Defines all API-related interfaces:
  * - Request/Response structures (ApiResponse, ErrorResponse)
- * - Pagination (PaginationMetadata, PaginationParams)
+ * - Backend pagination (PagedResponse)
  * - Authentication (Tokens, TokenStore)
  * - Errors (ApiError, ErrorResponse)
+ *
+ * Note: Paginated<T> and PaginationMetadata are in @/shared/pagination
  */
+
+// Re-export pagination types for backward compatibility
+export type { Paginated, PaginationMetadata } from '@/shared/pagination';
 
 // ============================================================================
 // Authentication & Token Types
@@ -141,94 +146,4 @@ export interface PagedResponse<T> {
   totalPages: number;
   first: boolean;
   last: boolean;
-}
-
-/**
- * Pagination metadata structure used in ApiResponse.metadata field.
- * Matches Spring Data Page structure from backend.
- */
-export interface PaginationMetadata {
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  first: boolean;
-  last: boolean;
-}
-
-/**
- * Common pagination request parameters for list endpoints.
- *
- * @example
- * const params: PaginationParams = {
- *   page: 0,
- *   size: 20,
- *   sort: 'createdAt,desc'
- * };
- */
-export interface PaginationParams {
-  page?: number;
-  size?: number;
-  sort?: string;
-}
-
-/**
- * Generic paginated response wrapper.
- * Combines data array with pagination metadata.
- * Used by services that return paginated lists.
- *
- * @example
- * const users: Paginated<UserDetails> = await userService.getUsers();
- * const logs: Paginated<AuditLogEntry> = await auditService.getAuditLogs();
- */
-export interface Paginated<T> {
-  data: T[];
-  pagination: PaginationMetadata;
-}
-
-// ============================================================================
-// Type Guards & Utilities
-// ============================================================================
-
-/**
- * Type guard to check if a response has pagination metadata.
- * Validates both existence and types of all required pagination fields.
- *
- * @param response ApiResponse to check
- * @returns true if response has valid pagination metadata with correct types
- */
-export function hasPaginationMetadata(
-  response: ApiResponse<unknown>
-): response is ApiResponse<unknown> & { metadata: PaginationMetadata } {
-  const meta = response.metadata;
-  return (
-    meta !== undefined &&
-    meta !== null &&
-    typeof meta === 'object' &&
-    'page' in meta &&
-    typeof meta.page === 'number' &&
-    'size' in meta &&
-    typeof meta.size === 'number' &&
-    'totalElements' in meta &&
-    typeof meta.totalElements === 'number' &&
-    'totalPages' in meta &&
-    typeof meta.totalPages === 'number' &&
-    'first' in meta &&
-    typeof meta.first === 'boolean' &&
-    'last' in meta &&
-    typeof meta.last === 'boolean'
-  );
-}
-
-/**
- * Extract pagination metadata from ApiResponse, with fallback for non-paginated responses.
- *
- * @param response ApiResponse that may contain pagination metadata
- * @returns PaginationMetadata or null if not present
- */
-export function getPaginationMetadata(response: ApiResponse<unknown>): PaginationMetadata | null {
-  if (hasPaginationMetadata(response)) {
-    return response.metadata as PaginationMetadata;
-  }
-  return null;
 }
