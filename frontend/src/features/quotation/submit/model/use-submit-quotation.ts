@@ -10,8 +10,11 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { quotationApi, quotationQueryKeys } from '@/entities/quotation';
-import type { CommandResult } from '@/entities/quotation/api/quotation.dto';
+import {
+  submitQuotation,
+  quotationQueries,
+  type CommandResult,
+} from '@/entities/quotation';
 
 export interface UseSubmitQuotationOptions {
   /**
@@ -51,14 +54,12 @@ export function useSubmitQuotation(options: UseSubmitQuotationOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (quotationId: number) => {
-      return quotationApi.submitForApproval(quotationId);
-    },
+    mutationFn: (quotationId: number) => submitQuotation(quotationId),
 
-    onSuccess: (result, quotationId) => {
+    onSuccess: (result) => {
       // Invalidate both the detail and list queries
-      queryClient.invalidateQueries({ queryKey: quotationQueryKeys.detail(quotationId) });
-      queryClient.invalidateQueries({ queryKey: quotationQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: quotationQueries.details() });
+      queryClient.invalidateQueries({ queryKey: quotationQueries.lists() });
       options.onSuccess?.(result);
     },
 

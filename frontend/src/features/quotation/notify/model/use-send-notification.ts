@@ -10,7 +10,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { quotationApi, quotationQueryKeys } from '@/entities/quotation';
+import { sendQuotationNotification, quotationQueries } from '@/entities/quotation';
 
 export interface UseSendNotificationOptions {
   /**
@@ -51,15 +51,13 @@ export function useSendNotification(options: UseSendNotificationOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (quotationId: number) => {
-      await quotationApi.sendRevisionNotification(quotationId);
-    },
+    mutationFn: (quotationId: number) => sendQuotationNotification(quotationId),
 
-    onSuccess: (_, quotationId) => {
+    onSuccess: () => {
       // Invalidate detail (status may change to SENT)
-      queryClient.invalidateQueries({ queryKey: quotationQueryKeys.detail(quotationId) });
+      queryClient.invalidateQueries({ queryKey: quotationQueries.details() });
       // Invalidate lists (status column may update)
-      queryClient.invalidateQueries({ queryKey: quotationQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: quotationQueries.lists() });
       options.onSuccess?.();
     },
 

@@ -1,8 +1,7 @@
 /**
  * Create Quotation Mutation Hook.
  *
- * Handles creating a new quotation with optimistic updates
- * and cache invalidation.
+ * Handles creating a new quotation with cache invalidation.
  *
  * Features Layer: Isolated user action
  * - Contains mutation logic
@@ -12,13 +11,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  quotationApi,
-  quotationCommandMapper,
-  quotationQueryKeys,
-  quotationValidation,
+  createQuotation,
+  quotationQueries,
   type CreateQuotationInput,
+  type CommandResult,
 } from '@/entities/quotation';
-import type { CommandResult } from '@/entities/quotation/api/quotation.dto';
 
 export interface UseCreateQuotationOptions {
   /**
@@ -58,17 +55,11 @@ export function useCreateQuotation(options: UseCreateQuotationOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CreateQuotationInput) => {
-      // Two-step command mapping: Input → Command (validation) → DTO
-      const command = quotationCommandMapper.toCreateCommand(input);
-      quotationValidation.validateCreate(command);
-      const dto = quotationCommandMapper.toCreateDto(command);
-      return quotationApi.create(dto);
-    },
+    mutationFn: (input: CreateQuotationInput) => createQuotation(input),
 
     onSuccess: result => {
       // Invalidate list queries to refetch
-      queryClient.invalidateQueries({ queryKey: quotationQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: quotationQueries.lists() });
       options.onSuccess?.(result);
     },
 

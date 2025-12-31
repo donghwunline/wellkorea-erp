@@ -1,8 +1,7 @@
 /**
  * Update Quotation Mutation Hook.
  *
- * Handles updating an existing quotation with optimistic updates
- * and cache invalidation.
+ * Handles updating an existing quotation with cache invalidation.
  *
  * Features Layer: Isolated user action
  * - Contains mutation logic
@@ -12,13 +11,11 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  quotationApi,
-  quotationCommandMapper,
-  quotationQueryKeys,
-  quotationValidation,
+  updateQuotation,
+  quotationQueries,
   type UpdateQuotationInput,
+  type CommandResult,
 } from '@/entities/quotation';
-import type { CommandResult } from '@/entities/quotation/api/quotation.dto';
 
 export interface UseUpdateQuotationOptions {
   /**
@@ -43,7 +40,7 @@ export interface UpdateQuotationParams {
  * @example
  * ```tsx
  * function EditQuotationPage({ id }: { id: number }) {
- *   const { data: quotation } = useQuotation({ id });
+ *   const { data: quotation } = useQuery(quotationQueries.detail(id));
  *   const navigate = useNavigate();
  *
  *   const { mutate, isPending, error } = useUpdateQuotation({
@@ -65,18 +62,12 @@ export function useUpdateQuotation(options: UseUpdateQuotationOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, input }: UpdateQuotationParams) => {
-      // Two-step command mapping: Input → Command (validation) → DTO
-      const command = quotationCommandMapper.toUpdateCommand(input);
-      quotationValidation.validateUpdate(command);
-      const dto = quotationCommandMapper.toUpdateDto(command);
-      return quotationApi.update(id, dto);
-    },
+    mutationFn: ({ id, input }: UpdateQuotationParams) => updateQuotation(id, input),
 
-    onSuccess: (result, variables) => {
+    onSuccess: (result) => {
       // Invalidate both the detail and list queries
-      queryClient.invalidateQueries({ queryKey: quotationQueryKeys.detail(variables.id) });
-      queryClient.invalidateQueries({ queryKey: quotationQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: quotationQueries.details() });
+      queryClient.invalidateQueries({ queryKey: quotationQueries.lists() });
       options.onSuccess?.(result);
     },
 

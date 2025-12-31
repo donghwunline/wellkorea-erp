@@ -10,7 +10,7 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
-import { quotationApi } from '@/entities/quotation';
+import { downloadQuotationPdf } from '@/entities/quotation';
 
 export interface UseDownloadPdfOptions {
   /**
@@ -60,7 +60,7 @@ export interface DownloadPdfParams {
 export function useDownloadPdf(options: UseDownloadPdfOptions = {}) {
   return useMutation({
     mutationFn: async ({ quotationId, filename }: DownloadPdfParams) => {
-      await quotationApi.downloadPdf(quotationId, filename);
+      await downloadQuotationPdf(quotationId, filename);
     },
 
     onSuccess: () => {
