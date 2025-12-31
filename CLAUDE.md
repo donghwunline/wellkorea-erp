@@ -249,7 +249,9 @@ GET /api/quotations/{id} → queryService.getQuotationDetail(id) → QuotationDe
 
 ### Frontend Architecture (FSD-Lite: Feature-Sliced Design)
 
-**IMPORTANT: See [docs/architecture/frontend-architecture-analysis.md](docs/architecture/frontend-architecture-analysis.md) for complete architecture documentation.**
+**IMPORTANT: See these architecture documents:**
+- [frontend/docs/architecture/fsd-public-api-guidelines.md](frontend/docs/architecture/fsd-public-api-guidelines.md) - Entity public API patterns (Query Factory, Command Functions)
+- [docs/architecture/frontend-architecture-analysis.md](docs/architecture/frontend-architecture-analysis.md) - Complete architecture documentation
 
 Frontend follows **FSD-Lite (Feature-Sliced Design)** aligned with backend's DDD + CQS patterns:
 
@@ -266,8 +268,12 @@ frontend/src/
 ├── entities/                 # Domain models (TYPES + RULES + QUERIES)
 │   └── {domain}/            # e.g., quotation/, project/, company/
 │       ├── model/           # Domain types + pure functions (quotationRules)
-│       ├── api/             # DTOs, mappers, API functions
-│       ├── query/           # TanStack Query hooks + query keys
+│       ├── api/             # Query factory + Command functions
+│       │   ├── {entity}.dto.ts        # *Request/*Response types (internal)
+│       │   ├── {entity}.mapper.ts     # Response → Domain mapping (internal)
+│       │   ├── {entity}.queries.ts    # Query factory with queryOptions()
+│       │   ├── create-{entity}.ts     # Command: Input + validation + POST
+│       │   └── update-{entity}.ts     # Command: Input + validation + PUT
 │       ├── ui/              # Entity display components (read-only)
 │       └── index.ts         # Public barrel export
 ├── shared/                   # Cross-cutting concerns
@@ -299,14 +305,16 @@ shared → NOTHING (base layer)
    };
    ```
 
-2. **TanStack Query for Query/Command Separation**
-   - `entities/*/query/` - Read operations (useQuery hooks, query keys)
-   - `features/*/model/` - Write operations (useMutation hooks)
-   - Query hooks always return domain models (map DTOs via mapper)
+2. **TanStack Query v5 with Query Factory Pattern**
+   - `entities/*/api/{entity}.queries.ts` - Query factory using `queryOptions()`
+   - Direct usage: `useQuery(quotationQueries.detail(id))` - no custom hooks needed
+   - `entities/*/api/create-{entity}.ts` - Command functions with built-in validation
+   - `features/*/model/` - Mutation hooks wrapping entity command functions
+   - All queries return domain models (DTOs mapped via internal mapper)
 
 3. **Cache Data Format = Always Domain Models**
    - All `useQuery`, `prefetchQuery`, `setQueryData` work with domain types
-   - Use `quotationQueryFns` for consistent DTO→Domain mapping
+   - Query factory handles DTO→Domain mapping internally
 
 4. **Query Key Stability = Primitives Only**
    ```typescript
@@ -336,12 +344,21 @@ shared → NOTHING (base layer)
 - Features do NOT import other features (use widgets for composition)
 - UX side-effects (`toast()`, `navigate()`) belong here, NOT in entities
 
-**Two-Step Command Mapping:**
+**Command Function Pattern:**
 ```typescript
-// Feature input → Command (validation) → API DTO
-const command = quotationCommandMapper.toCommand(input);
-quotationValidation.validateCreate(command);
-quotationApi.create(quotationCommandMapper.toCreateDto(command));
+// Command functions have built-in validation + mapping
+// entities/quotation/api/create-quotation.ts
+export async function createQuotation(input: CreateQuotationInput): Promise<CommandResult> {
+  validateCreateInput(input);           // Throws DomainValidationError
+  const request = toCreateRequest(input); // Input → Request mapping
+  return httpClient.post(QUOTATION_ENDPOINTS.BASE, request);
+}
+
+// Usage in features/quotation/create/model/use-create-quotation.ts
+const mutation = useMutation({
+  mutationFn: createQuotation,
+  onSuccess: () => queryClient.invalidateQueries({ queryKey: quotationQueries.lists() }),
+});
 ```
 
 **Authentication Flow**:
@@ -507,4 +524,5 @@ From feature spec `001-erp-core`:
 - Keycloak (optional SSO)
 
 ## Recent Changes
+- 001-erp-core: Frontend entity pattern updated - Query Factory Pattern with `queryOptions()`, Command Functions with built-in validation (see `quotation/` as reference)
 - 001-erp-core: Added Java 21 (Spring Boot 3.5.8) + Spring Boot (Web, Data JPA, Security, Actuator), PostgreSQL driver, Apache POI (Excel), iText/PDFBox (PDF generation)
