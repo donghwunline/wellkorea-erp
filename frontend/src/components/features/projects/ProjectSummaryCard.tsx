@@ -8,7 +8,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, Icon } from '@/shared/ui';
 import type { IconName } from '@/shared/ui/primitives/Icon';
-import type { ProjectSection, ProjectSectionSummary } from '@/services';
+import type { ProjectSection, ProjectSectionSummary } from '@/entities/project';
 import { formatCurrency } from '@/shared/formatting';
 import { cn } from '@/shared/ui';
 

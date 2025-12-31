@@ -7,7 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ProjectDetailsCard } from './ProjectDetailsCard';
-import type { ProjectDetails } from '@/services';
+import type { Project } from '@/entities/project';
+
+// Alias for backward compatibility in tests
+type ProjectDetails = Project;
 
 // Helper to create mock project details
 function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {

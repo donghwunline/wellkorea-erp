@@ -6,20 +6,27 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useProjectActions } from './useProjectActions';
-import { projectService } from '@/services';
+import { projectApi } from '@/entities/project';
 import type {
   CreateProjectRequest,
+  Project,
   ProjectCommandResult,
-  ProjectDetails,
   UpdateProjectRequest,
-} from '@/services';
+} from '@/entities/project';
 
-// Mock the project service
-vi.mock('@/services', () => ({
-  projectService: {
-    createProject: vi.fn(),
-    updateProject: vi.fn(),
-    getProject: vi.fn(),
+// Alias for backward compatibility in tests
+type ProjectDetails = Project;
+
+// Mock the project entity
+vi.mock('@/entities/project', () => ({
+  projectApi: {
+    create: vi.fn(),
+    update: vi.fn(),
+    getById: vi.fn(),
+  },
+  projectMapper: {
+    toCommandResult: vi.fn((dto: unknown) => dto),
+    toDomain: vi.fn((dto: unknown) => dto),
   },
 }));
 
@@ -57,9 +64,9 @@ function createMockCommandResult(
 }
 
 describe('useProjectActions', () => {
-  const mockCreateProject = projectService.createProject as Mock;
-  const mockUpdateProject = projectService.updateProject as Mock;
-  const mockGetProject = projectService.getProject as Mock;
+  const mockCreateProject = projectApi.create as Mock;
+  const mockUpdateProject = projectApi.update as Mock;
+  const mockGetProject = projectApi.getById as Mock;
 
   beforeEach(() => {
     vi.clearAllMocks();

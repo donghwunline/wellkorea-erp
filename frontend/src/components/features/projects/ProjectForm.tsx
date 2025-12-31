@@ -6,9 +6,12 @@
  */
 
 import { type FormEvent, useState } from 'react';
-import type { CreateProjectRequest, ProjectDetails, UpdateProjectRequest } from '@/services';
+import type { CreateProjectRequest, Project, UpdateProjectRequest } from '@/entities/project';
 import { Button, DatePicker, ErrorAlert, FormField } from '@/shared/ui';
 import { CompanyCombobox, UserCombobox } from '@/components/features/shared/selectors';
+
+// Alias for backward compatibility
+type ProjectDetails = Project;
 
 interface ProjectFormData {
   customerId: number | null;

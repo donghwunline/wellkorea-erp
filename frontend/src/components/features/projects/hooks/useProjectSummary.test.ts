@@ -6,13 +6,16 @@
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useProjectSummary } from './useProjectSummary';
-import type { ProjectSummary } from '@/services';
-import { projectSummaryService } from '@/services';
+import type { ProjectSectionsSummary } from '@/entities/project';
+import { projectSummaryApi } from '@/entities/project';
 
-// Mock the services module
-vi.mock('@/services', () => ({
-  projectSummaryService: {
-    getProjectSummary: vi.fn(),
+// Alias for backward compatibility in tests
+type ProjectSummary = ProjectSectionsSummary;
+
+// Mock the project entity
+vi.mock('@/entities/project', () => ({
+  projectSummaryApi: {
+    getSummary: vi.fn(),
   },
 }));
 
@@ -71,7 +74,7 @@ function createMockSummary(projectId: number): ProjectSummary {
 }
 
 describe('useProjectSummary', () => {
-  const mockGetProjectSummary = projectSummaryService.getProjectSummary as Mock;
+  const mockGetProjectSummary = projectSummaryApi.getSummary as Mock;
 
   beforeEach(() => {
     vi.clearAllMocks();

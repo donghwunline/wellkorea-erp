@@ -7,14 +7,17 @@ import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ProjectTable } from './ProjectTable';
-import { projectService } from '@/services';
-import type { ProjectListItem } from '@/services';
+import { projectApi } from '@/entities/project';
+import type { ProjectListItem } from '@/entities/project';
 import type { PaginationMetadata } from '@/shared/api/types';
 
-// Mock the project service
-vi.mock('@/services', () => ({
-  projectService: {
-    getProjects: vi.fn(),
+// Mock the project entity
+vi.mock('@/entities/project', () => ({
+  projectApi: {
+    getList: vi.fn(),
+  },
+  projectMapper: {
+    toListItem: vi.fn((dto: unknown) => dto),
   },
   PROJECT_STATUS_LABELS: {
     DRAFT: 'Draft',
@@ -61,7 +64,7 @@ function createMockPagedResponse(
 }
 
 describe('ProjectTable', () => {
-  const mockGetProjects = projectService.getProjects as Mock;
+  const mockGetProjects = projectApi.getList as Mock;
   const defaultProps = {
     page: 0,
     search: '',

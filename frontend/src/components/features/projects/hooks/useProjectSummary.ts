@@ -2,12 +2,11 @@
  * Project Summary Hook
  *
  * Fetches and manages project summary data for the navigation grid.
- * Encapsulates service calls and state management.
+ * Encapsulates API calls and state management.
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { projectSummaryService } from '@/services';
-import type { ProjectSummary } from '@/services';
+import { projectSummaryApi, type ProjectSectionsSummary } from '@/entities/project';
 
 export interface UseProjectSummaryOptions {
   /** Project ID to fetch summary for */
@@ -18,7 +17,7 @@ export interface UseProjectSummaryOptions {
 
 export interface UseProjectSummaryReturn {
   /** Project summary data */
-  summary: ProjectSummary | null;
+  summary: ProjectSectionsSummary | null;
   /** Loading state */
   isLoading: boolean;
   /** Error message if fetch failed */
@@ -44,7 +43,7 @@ export function useProjectSummary({
   projectId,
   enabled = true,
 }: UseProjectSummaryOptions): UseProjectSummaryReturn {
-  const [summary, setSummary] = useState<ProjectSummary | null>(null);
+  const [summary, setSummary] = useState<ProjectSectionsSummary | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +54,7 @@ export function useProjectSummary({
     setError(null);
 
     try {
-      const data = await projectSummaryService.getProjectSummary(projectId);
+      const data = await projectSummaryApi.getSummary(projectId);
       setSummary(data);
     } catch (err) {
       console.error('Failed to fetch project summary:', err);

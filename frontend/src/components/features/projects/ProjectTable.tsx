@@ -11,8 +11,13 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { projectService, PROJECT_STATUS_LABELS } from '@/services';
-import type { ProjectListItem, ProjectStatus } from '@/services';
+import {
+  projectApi,
+  projectMapper,
+  PROJECT_STATUS_LABELS,
+  type ProjectListItem,
+  type ProjectStatus,
+} from '@/entities/project';
 import type { PaginationMetadata } from '@/shared/api/types';
 import { formatDate } from '@/shared/formatting';
 import {
@@ -72,12 +77,12 @@ export function ProjectTable({
     setIsLoading(true);
     setError(null);
     try {
-      const result = await projectService.getProjects({
+      const result = await projectApi.getList({
         page,
         size: 10,
         search: search || undefined,
       });
-      setProjects(result.data);
+      setProjects(result.data.map(projectMapper.toListItem));
       setPagination(result.pagination);
     } catch {
       const errorMsg = 'Failed to load projects';

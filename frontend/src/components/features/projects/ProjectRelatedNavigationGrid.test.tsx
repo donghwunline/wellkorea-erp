@@ -7,8 +7,11 @@ import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ProjectRelatedNavigationGrid } from './ProjectRelatedNavigationGrid';
-import type { ProjectSectionSummary, ProjectSummary } from '@/services';
+import type { ProjectSectionSummary, ProjectSectionsSummary } from '@/entities/project';
 import { useProjectSummary } from './hooks';
+
+// Alias for backward compatibility in tests
+type ProjectSummary = ProjectSectionsSummary;
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();

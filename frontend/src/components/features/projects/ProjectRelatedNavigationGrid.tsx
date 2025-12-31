@@ -8,7 +8,7 @@
 import { useAuth } from '@/entities/auth';
 import { Alert, Button, Card, Icon, Spinner } from '@/shared/ui';
 import type { RoleName } from '@/entities/user';
-import type { ProjectSection } from '@/services';
+import type { ProjectSection } from '@/entities/project';
 import { useProjectSummary } from './hooks';
 import { ProjectSummaryCard } from './ProjectSummaryCard';
 

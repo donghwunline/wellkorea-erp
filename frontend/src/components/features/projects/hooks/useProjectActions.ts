@@ -1,14 +1,18 @@
 /**
  * Project Actions Hook
  *
- * Encapsulates project service calls for use by pages.
- * Following architecture rule: pages should not import services directly.
+ * Encapsulates project API calls for use by pages.
+ * Following architecture rule: pages should not import API directly.
  */
 
 import { useCallback, useMemo } from 'react';
 import { useServiceActions } from './useServiceAction';
-import { projectService } from '@/services';
-import type { CreateProjectRequest, UpdateProjectRequest } from '@/services';
+import {
+  projectApi,
+  projectMapper,
+  type CreateProjectRequest,
+  type UpdateProjectRequest,
+} from '@/entities/project';
 
 /**
  * Hook for project CRUD actions.
@@ -18,21 +22,29 @@ export function useProjectActions() {
 
   const createProject = useCallback(
     (data: CreateProjectRequest) =>
-      wrapAction(projectService.createProject, 'Failed to create project')(data),
+      wrapAction(
+        async (d: CreateProjectRequest) => projectMapper.toCommandResult(await projectApi.create(d)),
+        'Failed to create project'
+      )(data),
     [wrapAction]
   );
 
   const updateProject = useCallback(
     (id: number, data: UpdateProjectRequest) =>
       wrapAction(
-        (i: number, d: UpdateProjectRequest) => projectService.updateProject(i, d),
+        async (i: number, d: UpdateProjectRequest) =>
+          projectMapper.toCommandResult(await projectApi.update(i, d)),
         'Failed to update project'
       )(id, data),
     [wrapAction]
   );
 
   const getProject = useCallback(
-    (id: number) => wrapAction(projectService.getProject, 'Failed to load project')(id),
+    (id: number) =>
+      wrapAction(
+        async (i: number) => projectMapper.toDomain(await projectApi.getById(i)),
+        'Failed to load project'
+      )(id),
     [wrapAction]
   );
 

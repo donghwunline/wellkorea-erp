@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ProjectSummaryCard } from './ProjectSummaryCard';
-import type { ProjectSectionSummary } from '@/services';
+import type { ProjectSectionSummary } from '@/entities/project';
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();

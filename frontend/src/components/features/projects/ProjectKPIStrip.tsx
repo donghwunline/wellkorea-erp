@@ -16,8 +16,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { projectSummaryService } from '@/services/projects';
-import type { ProjectKPI } from '@/services/projects';
+import { projectSummaryApi, type ProjectKPI } from '@/entities/project';
 import { Icon, StatCard } from '@/shared/ui';
 import { formatCurrency } from '@/shared/formatting';
 import { cn } from '@/shared/ui';
@@ -47,7 +46,7 @@ export function ProjectKPIStrip({
     setIsLoading(true);
     setError(null);
     try {
-      const data = await projectSummaryService.getProjectKPIs(projectId);
+      const data = await projectSummaryApi.getKPIs(projectId);
       setKpis(data);
     } catch {
       setError('Failed to load KPIs');

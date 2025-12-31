@@ -16,7 +16,7 @@
  */
 
 import { useCallback } from 'react';
-import { projectService } from '@/services';
+import { projectApi, projectMapper } from '@/entities/project';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
 
 export interface ProjectComboboxProps {
@@ -56,20 +56,23 @@ export function ProjectCombobox({
 }: Readonly<ProjectComboboxProps>) {
   /**
    * Load projects from API based on search query.
-   * Transforms ProjectDetails to ComboboxOption format.
+   * Transforms ProjectListItem to ComboboxOption format.
    */
   const loadProjects = useCallback(async (query: string): Promise<ComboboxOption[]> => {
-    const result = await projectService.getProjects({
+    const result = await projectApi.getList({
       search: query,
       page: 0,
       size: 20,
     });
 
-    return result.data.map(project => ({
-      id: project.id,
-      label: project.projectName,
-      description: project.jobCode || undefined,
-    }));
+    return result.data.map(dto => {
+      const project = projectMapper.toListItem(dto);
+      return {
+        id: project.id,
+        label: project.projectName,
+        description: project.jobCode || undefined,
+      };
+    });
   }, []);
 
   /**

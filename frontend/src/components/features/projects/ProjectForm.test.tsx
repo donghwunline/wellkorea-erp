@@ -7,7 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { ProjectForm } from './ProjectForm';
-import type { ProjectDetails } from '@/services';
+import type { Project } from '@/entities/project';
+
+// Alias for backward compatibility in tests
+type ProjectDetails = Project;
 
 // Mock scrollIntoView since JSDOM doesn't implement it
 Element.prototype.scrollIntoView = vi.fn();

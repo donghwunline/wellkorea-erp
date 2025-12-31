@@ -5,10 +5,12 @@
  * Used in the project view page.
  */
 
-import type { ProjectDetails, ProjectStatus } from '@/services';
-import { PROJECT_STATUS_LABELS } from '@/services';
+import { PROJECT_STATUS_LABELS, type Project, type ProjectStatus } from '@/entities/project';
 import { Badge, type BadgeVariant, Card, Icon, IconButton } from '@/shared/ui';
 import { formatDate, formatDateTime } from '@/shared/formatting';
+
+// Alias for backward compatibility
+type ProjectDetails = Project;
 
 // Status badge variant mapping
 const STATUS_BADGE_VARIANTS: Record<ProjectStatus, BadgeVariant> = {
