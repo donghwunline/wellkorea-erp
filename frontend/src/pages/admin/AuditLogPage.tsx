@@ -19,7 +19,7 @@
  */
 
 import { useState } from 'react';
-import type { AuditLogEntry } from '@/services';
+import type { AuditLog } from '@/entities/audit';
 import { Alert, Badge, type BadgeVariant, Button, FilterBar, Modal, PageHeader, } from '@/shared/ui';
 import { AuditLogTable, useAuditLogPage } from '@/components/features/audit';
 
@@ -68,7 +68,7 @@ export function AuditLogPage() {
   const { page, setPage, filters, handleFilterChange, handleClearFilters } = useAuditLogPage();
 
   // Local UI State (Tier 1) - Detail modal and error
-  const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Utilities

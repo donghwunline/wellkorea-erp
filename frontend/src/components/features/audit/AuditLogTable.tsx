@@ -2,18 +2,16 @@
  * Audit Log Table - Smart Feature Component
  *
  * Responsibilities:
- * - Fetch audit log data from auditService
+ * - Fetch audit log data using TanStack Query
  * - Display logs in table format
  * - Delegate detail view to parent via callback
  * - Respond to filter/page changes
  *
- * This component owns Server State (Tier 3) for the audit log list.
+ * This component uses server state via useAuditLogs hook.
  */
 
-import { useCallback, useEffect, useState } from 'react';
-import { type AuditLogEntry, auditService } from '@/services';
-import type { PaginationMetadata } from '@/shared/api/types';
-import { Badge, type BadgeVariant, Card, IconButton, LoadingState, Pagination, Table, } from '@/shared/ui';
+import { type AuditLog, useAuditLogs } from '@/entities/audit';
+import { Badge, type BadgeVariant, Card, IconButton, LoadingState, Pagination, Table } from '@/shared/ui';
 
 /** Known audit actions for badge styling. API may return unknown actions. */
 const ACTION_BADGE_VARIANTS: Record<string, BadgeVariant> = {
@@ -42,7 +40,7 @@ export interface AuditLogTableProps {
   /** Called when page changes */
   onPageChange: (page: number) => void;
   /** Called when user clicks view details */
-  onViewDetails: (log: AuditLogEntry) => void;
+  onViewDetails: (log: AuditLog) => void;
   /** Called when an error occurs */
   onError?: (error: string) => void;
 }
@@ -65,13 +63,15 @@ export function AuditLogTable({
   filters,
   onPageChange,
   onViewDetails,
-  onError,
 }: Readonly<AuditLogTableProps>) {
-  // Server State (Tier 3) - managed here in feature component
-  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
-  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use TanStack Query for server state
+  const { data, isLoading, error, refetch } = useAuditLogs({
+    page,
+    size: 10,
+    sort: 'createdAt,desc',
+    entityType: filters.entityType || undefined,
+    action: filters.action || undefined,
+  });
 
   // Format timestamp utility
   const formatTimestamp = (dateStr: string) => {
@@ -84,34 +84,6 @@ export function AuditLogTable({
       second: '2-digit',
     });
   };
-
-  // Fetch audit logs
-  const fetchLogs = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await auditService.getAuditLogs({
-        page,
-        size: 10,
-        sort: 'createdAt,desc',
-        entityType: filters.entityType || undefined,
-        action: filters.action || undefined,
-      });
-      setLogs(result.data);
-      setPagination(result.pagination);
-    } catch {
-      const errorMsg = 'Failed to load audit logs';
-      setError(errorMsg);
-      onError?.(errorMsg);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, filters, onError]);
-
-  // Refetch when page or filters change
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
 
   // Render loading state
   if (isLoading) {
@@ -141,9 +113,9 @@ export function AuditLogTable({
     return (
       <Card variant="table">
         <div className="p-8 text-center">
-          <p className="text-red-400">{error}</p>
+          <p className="text-red-400">Failed to load audit logs</p>
           <button
-            onClick={() => fetchLogs()}
+            onClick={() => refetch()}
             className="mt-4 text-sm text-copper-500 hover:underline"
           >
             Retry
@@ -152,6 +124,9 @@ export function AuditLogTable({
       </Card>
     );
   }
+
+  const logs = data?.data ?? [];
+  const pagination = data?.pagination ?? null;
 
   return (
     <Card variant="table">

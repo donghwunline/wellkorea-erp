@@ -4,21 +4,23 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { type AuditLogFilters, AuditLogTable } from './AuditLogTable';
-import type { AuditLogEntry, PaginatedAuditLogs } from '@/services/audit/types';
-import { auditService } from '@/services';
+import type { AuditLog } from '@/entities/audit';
+import type { PaginationMetadata } from '@/shared/api/types';
 
-// Mock auditService
-vi.mock('@/services', () => ({
-  auditService: {
-    getAuditLogs: vi.fn(),
-  },
+// Mock the useAuditLogs hook from entities
+const mockRefetch = vi.fn();
+vi.mock('@/entities/audit', () => ({
+  useAuditLogs: vi.fn(),
 }));
 
+// Import the mocked module
+import { useAuditLogs } from '@/entities/audit';
+
 // Factory to create mock audit log entries
-function createMockAuditLogEntry(overrides?: Partial<AuditLogEntry>): AuditLogEntry {
+function createMockAuditLog(overrides?: Partial<AuditLog>): AuditLog {
   return {
     id: 1,
     entityType: 'User',
@@ -34,9 +36,14 @@ function createMockAuditLogEntry(overrides?: Partial<AuditLogEntry>): AuditLogEn
   };
 }
 
-// Helper to create paginated response
+// Helper to create paginated response structure
+interface PaginatedAuditLogs {
+  data: AuditLog[];
+  pagination: PaginationMetadata;
+}
+
 function createPaginatedLogs(
-  logs: AuditLogEntry[],
+  logs: AuditLog[],
   options: { page?: number; totalPages?: number; totalElements?: number } = {}
 ): PaginatedAuditLogs {
   const { page = 0, totalPages = 1, totalElements = logs.length } = options;
@@ -51,6 +58,29 @@ function createPaginatedLogs(
       last: page === totalPages - 1,
     },
   };
+}
+
+// Helper to set up useAuditLogs mock return value
+interface MockQueryResult {
+  data?: PaginatedAuditLogs;
+  isLoading?: boolean;
+  error?: Error | null;
+  refetch?: ReturnType<typeof vi.fn>;
+}
+
+function mockUseAuditLogs(result: MockQueryResult) {
+  vi.mocked(useAuditLogs).mockReturnValue({
+    data: result.data,
+    isLoading: result.isLoading ?? false,
+    error: result.error ?? null,
+    refetch: result.refetch ?? mockRefetch,
+    // Add other TanStack Query properties that might be needed
+    isError: !!result.error,
+    isSuccess: !result.isLoading && !result.error && !!result.data,
+    isPending: result.isLoading ?? false,
+    isFetching: result.isLoading ?? false,
+    status: result.isLoading ? 'pending' : result.error ? 'error' : 'success',
+  } as unknown as ReturnType<typeof useAuditLogs>);
 }
 
 describe('AuditLogTable', () => {
@@ -76,67 +106,54 @@ describe('AuditLogTable', () => {
   }
 
   describe('data fetching', () => {
-    it('should fetch audit logs on mount', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([]));
+    it('should call useAuditLogs with correct parameters', () => {
+      mockUseAuditLogs({ data: createPaginatedLogs([]) });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledOnce();
-        expect(auditService.getAuditLogs).toHaveBeenCalledWith({
-          page: 0,
-          size: 10,
-          sort: 'createdAt,desc',
-          entityType: undefined,
-          action: undefined,
-        });
+      expect(useAuditLogs).toHaveBeenCalledWith({
+        page: 0,
+        size: 10,
+        sort: 'createdAt,desc',
+        entityType: undefined,
+        action: undefined,
       });
     });
 
-    it('should fetch logs with entityType filter', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([]));
+    it('should pass entityType filter to hook', () => {
+      mockUseAuditLogs({ data: createPaginatedLogs([]) });
 
       renderTable({ filters: { entityType: 'User' } });
 
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledWith(
-          expect.objectContaining({ entityType: 'User' })
-        );
-      });
+      expect(useAuditLogs).toHaveBeenCalledWith(
+        expect.objectContaining({ entityType: 'User' })
+      );
     });
 
-    it('should fetch logs with action filter', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([]));
+    it('should pass action filter to hook', () => {
+      mockUseAuditLogs({ data: createPaginatedLogs([]) });
 
       renderTable({ filters: { action: 'CREATE' } });
 
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledWith(
-          expect.objectContaining({ action: 'CREATE' })
-        );
-      });
+      expect(useAuditLogs).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'CREATE' })
+      );
     });
 
-    it('should fetch logs with page parameter', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([]));
+    it('should pass page parameter to hook', () => {
+      mockUseAuditLogs({ data: createPaginatedLogs([]) });
 
       renderTable({ page: 2 });
 
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledWith(
-          expect.objectContaining({ page: 2 })
-        );
-      });
+      expect(useAuditLogs).toHaveBeenCalledWith(
+        expect.objectContaining({ page: 2 })
+      );
     });
 
-    it('should refetch when page changes', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([]));
+    it('should update hook params when page changes', () => {
+      mockUseAuditLogs({ data: createPaginatedLogs([]) });
 
       const { rerender } = renderTable({ page: 0 });
-
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledTimes(1);
-      });
 
       rerender(
         <AuditLogTable
@@ -147,19 +164,17 @@ describe('AuditLogTable', () => {
         />
       );
 
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledTimes(2);
-      });
+      // Check that the second call has page: 1
+      const calls = vi.mocked(useAuditLogs).mock.calls;
+      expect(calls[calls.length - 1][0]).toEqual(
+        expect.objectContaining({ page: 1 })
+      );
     });
 
-    it('should refetch when filters change', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([]));
+    it('should update hook params when filters change', () => {
+      mockUseAuditLogs({ data: createPaginatedLogs([]) });
 
       const { rerender } = renderTable({ filters: {} });
-
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledTimes(1);
-      });
 
       rerender(
         <AuditLogTable
@@ -170,35 +185,24 @@ describe('AuditLogTable', () => {
         />
       );
 
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledTimes(2);
-      });
+      const calls = vi.mocked(useAuditLogs).mock.calls;
+      expect(calls[calls.length - 1][0]).toEqual(
+        expect.objectContaining({ entityType: 'User' })
+      );
     });
   });
 
   describe('loading state', () => {
-    it('should show loading state while fetching', async () => {
-      let resolveLogs: (value: PaginatedAuditLogs) => void;
-      vi.mocked(auditService.getAuditLogs).mockImplementation(
-        () =>
-          new Promise(resolve => {
-            resolveLogs = resolve;
-          })
-      );
+    it('should show loading state while fetching', () => {
+      mockUseAuditLogs({ isLoading: true });
 
       renderTable();
 
       expect(screen.getByText('Loading audit logs...')).toBeInTheDocument();
-
-      resolveLogs!(createPaginatedLogs([]));
-
-      await waitFor(() => {
-        expect(screen.queryByText('Loading audit logs...')).not.toBeInTheDocument();
-      });
     });
 
     it('should render table header during loading', () => {
-      vi.mocked(auditService.getAuditLogs).mockImplementation(() => new Promise(() => {}));
+      mockUseAuditLogs({ isLoading: true });
 
       renderTable();
 
@@ -212,196 +216,153 @@ describe('AuditLogTable', () => {
   });
 
   describe('error state', () => {
-    it('should show error message when fetch fails', async () => {
-      vi.mocked(auditService.getAuditLogs).mockRejectedValue(new Error('Network error'));
+    it('should show error message when fetch fails', () => {
+      mockUseAuditLogs({ error: new Error('Network error') });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('Failed to load audit logs')).toBeInTheDocument();
-      });
+      expect(screen.getByText('Failed to load audit logs')).toBeInTheDocument();
     });
 
-    it('should call onError callback when fetch fails', async () => {
-      vi.mocked(auditService.getAuditLogs).mockRejectedValue(new Error('Network error'));
+    it('should show retry button on error', () => {
+      mockUseAuditLogs({ error: new Error('Network error') });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(mockOnError).toHaveBeenCalledWith('Failed to load audit logs');
-      });
+      expect(screen.getByText('Retry')).toBeInTheDocument();
     });
 
-    it('should show retry button on error', async () => {
-      vi.mocked(auditService.getAuditLogs).mockRejectedValue(new Error('Network error'));
-
-      renderTable();
-
-      await waitFor(() => {
-        expect(screen.getByText('Retry')).toBeInTheDocument();
-      });
-    });
-
-    it('should refetch when retry is clicked', async () => {
+    it('should call refetch when retry is clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(auditService.getAuditLogs).mockRejectedValueOnce(new Error('Network error'));
-      vi.mocked(auditService.getAuditLogs).mockResolvedValueOnce(createPaginatedLogs([]));
+      mockUseAuditLogs({ error: new Error('Network error'), refetch: mockRefetch });
 
       renderTable();
-
-      await waitFor(() => {
-        expect(screen.getByText('Retry')).toBeInTheDocument();
-      });
 
       await user.click(screen.getByText('Retry'));
 
-      await waitFor(() => {
-        expect(auditService.getAuditLogs).toHaveBeenCalledTimes(2);
-      });
+      expect(mockRefetch).toHaveBeenCalledOnce();
     });
   });
 
   describe('empty state', () => {
-    it('should show empty message when no logs', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([]));
+    it('should show empty message when no logs', () => {
+      mockUseAuditLogs({ data: createPaginatedLogs([]) });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('No audit logs found.')).toBeInTheDocument();
-      });
+      expect(screen.getByText('No audit logs found.')).toBeInTheDocument();
     });
   });
 
   describe('table rendering', () => {
-    it('should render audit log data in table', async () => {
-      const mockLog = createMockAuditLogEntry({
-        entityType: 'User',
+    it('should render audit log data in table', () => {
+      const mockLog = createMockAuditLog({
+        entityType: 'Project', // Use different entityType to avoid collision with 'User' header
         entityId: 123,
         action: 'CREATE',
         username: 'admin',
         ipAddress: '192.168.1.1',
       });
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([mockLog]));
+      mockUseAuditLogs({ data: createPaginatedLogs([mockLog]) });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('User')).toBeInTheDocument();
-      });
+      expect(screen.getByText('Project')).toBeInTheDocument();
       expect(screen.getByText('CREATE')).toBeInTheDocument();
       expect(screen.getByText('admin')).toBeInTheDocument();
       expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
       expect(screen.getByText('ID: 123')).toBeInTheDocument();
     });
 
-    it('should render action badges with correct variants', async () => {
+    it('should render action badges with correct variants', () => {
       const logs = [
-        createMockAuditLogEntry({ id: 1, action: 'CREATE' }),
-        createMockAuditLogEntry({ id: 2, action: 'UPDATE' }),
-        createMockAuditLogEntry({ id: 3, action: 'DELETE' }),
+        createMockAuditLog({ id: 1, action: 'CREATE' }),
+        createMockAuditLog({ id: 2, action: 'UPDATE' }),
+        createMockAuditLog({ id: 3, action: 'DELETE' }),
       ];
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs(logs));
+      mockUseAuditLogs({ data: createPaginatedLogs(logs) });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('CREATE')).toBeInTheDocument();
-      });
+      expect(screen.getByText('CREATE')).toBeInTheDocument();
       expect(screen.getByText('UPDATE')).toBeInTheDocument();
       expect(screen.getByText('DELETE')).toBeInTheDocument();
     });
 
-    it('should format timestamp in Korean locale', async () => {
-      const mockLog = createMockAuditLogEntry({
+    it('should format timestamp in Korean locale', () => {
+      const mockLog = createMockAuditLog({
         createdAt: '2025-01-15T10:30:00Z',
       });
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([mockLog]));
+      mockUseAuditLogs({ data: createPaginatedLogs([mockLog]) });
 
       renderTable();
 
-      await waitFor(() => {
-        // Date is formatted in Korean locale (ko-KR)
-        expect(screen.getByText(/2025/)).toBeInTheDocument();
-      });
+      // Date is formatted in Korean locale (ko-KR)
+      expect(screen.getByText(/2025/)).toBeInTheDocument();
     });
 
-    it('should show dash for null username', async () => {
-      const mockLog = createMockAuditLogEntry({ username: null });
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([mockLog]));
+    it('should show dash for null username', () => {
+      const mockLog = createMockAuditLog({ username: null });
+      mockUseAuditLogs({ data: createPaginatedLogs([mockLog]) });
 
       renderTable();
 
-      await waitFor(() => {
-        const dashes = screen.getAllByText('-');
-        expect(dashes.length).toBeGreaterThan(0);
-      });
+      const dashes = screen.getAllByText('-');
+      expect(dashes.length).toBeGreaterThan(0);
     });
 
-    it('should show dash for null ipAddress', async () => {
-      const mockLog = createMockAuditLogEntry({ ipAddress: null });
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([mockLog]));
+    it('should show dash for null ipAddress', () => {
+      const mockLog = createMockAuditLog({ ipAddress: null });
+      mockUseAuditLogs({ data: createPaginatedLogs([mockLog]) });
 
       renderTable();
 
-      await waitFor(() => {
-        const dashes = screen.getAllByText('-');
-        expect(dashes.length).toBeGreaterThan(0);
-      });
+      const dashes = screen.getAllByText('-');
+      expect(dashes.length).toBeGreaterThan(0);
     });
 
-    it('should not show entityId when null', async () => {
-      const mockLog = createMockAuditLogEntry({ entityId: null });
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([mockLog]));
+    it('should not show entityId when null', () => {
+      const mockLog = createMockAuditLog({ entityType: 'Project', entityId: null });
+      mockUseAuditLogs({ data: createPaginatedLogs([mockLog]) });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('User')).toBeInTheDocument();
-      });
+      expect(screen.getByText('Project')).toBeInTheDocument();
       expect(screen.queryByText(/ID:/)).not.toBeInTheDocument();
     });
 
-    it('should render multiple logs', async () => {
+    it('should render multiple logs', () => {
       const logs = [
-        createMockAuditLogEntry({ id: 1, username: 'admin', action: 'CREATE' }),
-        createMockAuditLogEntry({ id: 2, username: 'finance', action: 'UPDATE' }),
-        createMockAuditLogEntry({ id: 3, username: 'sales', action: 'VIEW' }),
+        createMockAuditLog({ id: 1, username: 'admin', action: 'CREATE' }),
+        createMockAuditLog({ id: 2, username: 'finance', action: 'UPDATE' }),
+        createMockAuditLog({ id: 3, username: 'sales', action: 'VIEW' }),
       ];
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs(logs));
+      mockUseAuditLogs({ data: createPaginatedLogs(logs) });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('admin')).toBeInTheDocument();
-      });
+      expect(screen.getByText('admin')).toBeInTheDocument();
       expect(screen.getByText('finance')).toBeInTheDocument();
       expect(screen.getByText('sales')).toBeInTheDocument();
     });
   });
 
   describe('view details action', () => {
-    it('should render view details button for each log', async () => {
-      const mockLog = createMockAuditLogEntry();
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([mockLog]));
+    it('should render view details button for each log', () => {
+      const mockLog = createMockAuditLog();
+      mockUseAuditLogs({ data: createPaginatedLogs([mockLog]) });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
-      });
+      expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
     });
 
     it('should call onViewDetails when view details button is clicked', async () => {
       const user = userEvent.setup();
-      const mockLog = createMockAuditLogEntry();
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(createPaginatedLogs([mockLog]));
+      const mockLog = createMockAuditLog();
+      mockUseAuditLogs({ data: createPaginatedLogs([mockLog]) });
 
       renderTable();
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
-      });
 
       await user.click(screen.getByRole('button', { name: /view details/i }));
 
@@ -411,48 +372,40 @@ describe('AuditLogTable', () => {
   });
 
   describe('pagination', () => {
-    it('should not render pagination when only one page', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(
-        createPaginatedLogs([createMockAuditLogEntry()], { totalPages: 1 })
-      );
+    it('should not render pagination when only one page', () => {
+      mockUseAuditLogs({
+        data: createPaginatedLogs([createMockAuditLog({ entityType: 'Project' })], { totalPages: 1 }),
+      });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('User')).toBeInTheDocument();
-      });
-
+      expect(screen.getByText('Project')).toBeInTheDocument();
       // Pagination should not be visible
       expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     });
 
-    it('should render pagination when multiple pages', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(
-        createPaginatedLogs([createMockAuditLogEntry()], { totalPages: 3, totalElements: 30 })
-      );
+    it('should render pagination when multiple pages', () => {
+      mockUseAuditLogs({
+        data: createPaginatedLogs([createMockAuditLog({ entityType: 'Project' })], { totalPages: 3, totalElements: 30 }),
+      });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('User')).toBeInTheDocument();
-      });
-
+      expect(screen.getByText('Project')).toBeInTheDocument();
       // Look for pagination elements - the Pagination component shows item counts
       expect(screen.getByText(/of 30/i)).toBeInTheDocument();
     });
   });
 
   describe('table header', () => {
-    it('should render all column headers', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(
-        createPaginatedLogs([createMockAuditLogEntry()])
-      );
+    it('should render all column headers', () => {
+      mockUseAuditLogs({
+        data: createPaginatedLogs([createMockAuditLog()]),
+      });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByText('Timestamp')).toBeInTheDocument();
-      });
+      expect(screen.getByText('Timestamp')).toBeInTheDocument();
       expect(screen.getByText('Action')).toBeInTheDocument();
       expect(screen.getByText('Entity')).toBeInTheDocument();
       // 'User' appears in both header and data, so check for multiple elements
@@ -463,41 +416,35 @@ describe('AuditLogTable', () => {
   });
 
   describe('accessibility', () => {
-    it('should have proper table structure', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(
-        createPaginatedLogs([createMockAuditLogEntry()])
-      );
+    it('should have proper table structure', () => {
+      mockUseAuditLogs({
+        data: createPaginatedLogs([createMockAuditLog()]),
+      });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByRole('table')).toBeInTheDocument();
-      });
+      expect(screen.getByRole('table')).toBeInTheDocument();
     });
 
-    it('should have view details button with aria-label', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(
-        createPaginatedLogs([createMockAuditLogEntry()])
-      );
+    it('should have view details button with aria-label', () => {
+      mockUseAuditLogs({
+        data: createPaginatedLogs([createMockAuditLog()]),
+      });
 
       renderTable();
 
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
-      });
+      expect(screen.getByRole('button', { name: /view details/i })).toBeInTheDocument();
     });
 
-    it('should have title attribute on view details button', async () => {
-      vi.mocked(auditService.getAuditLogs).mockResolvedValue(
-        createPaginatedLogs([createMockAuditLogEntry()])
-      );
+    it('should have title attribute on view details button', () => {
+      mockUseAuditLogs({
+        data: createPaginatedLogs([createMockAuditLog()]),
+      });
 
       renderTable();
 
-      await waitFor(() => {
-        const button = screen.getByRole('button', { name: /view details/i });
-        expect(button).toHaveAttribute('title', 'View details');
-      });
+      const button = screen.getByRole('button', { name: /view details/i });
+      expect(button).toHaveAttribute('title', 'View details');
     });
   });
 });

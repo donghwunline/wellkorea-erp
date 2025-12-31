@@ -12,12 +12,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { AuditLogPage } from './AuditLogPage';
-import type { AuditLogEntry } from '@/services';
+import type { AuditLog } from '@/entities/audit';
 // Import mocked hook for type-safe assertions
 import { useAuditLogPage } from '@/components/features/audit';
 
 // Sample audit log entry for testing
-const mockAuditLogEntry: AuditLogEntry = {
+const mockAuditLogEntry: AuditLog = {
   id: 1,
   action: 'CREATE',
   entityType: 'User',
@@ -30,7 +30,7 @@ const mockAuditLogEntry: AuditLogEntry = {
   createdAt: '2025-01-15T10:30:00Z',
 };
 
-const mockAuditLogEntryMinimal: AuditLogEntry = {
+const mockAuditLogEntryMinimal: AuditLog = {
   id: 2,
   action: 'LOGIN',
   entityType: 'Session',
@@ -79,14 +79,14 @@ vi.mock('@/components/features/audit', () => ({
       <div data-testid="audit-log-table">
         <button
           data-testid="trigger-view-details"
-          onClick={() => (props.onViewDetails as (entry: AuditLogEntry) => void)(mockAuditLogEntry)}
+          onClick={() => (props.onViewDetails as (entry: AuditLog) => void)(mockAuditLogEntry)}
         >
           View Details
         </button>
         <button
           data-testid="trigger-view-minimal"
           onClick={() =>
-            (props.onViewDetails as (entry: AuditLogEntry) => void)(mockAuditLogEntryMinimal)
+            (props.onViewDetails as (entry: AuditLog) => void)(mockAuditLogEntryMinimal)
           }
         >
           View Minimal
