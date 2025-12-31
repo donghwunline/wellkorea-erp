@@ -17,7 +17,7 @@ import type { Quotation, QuotationListItem } from '../model/quotation';
 import type { QuotationStatus } from '../model/quotation-status';
 import { quotationMapper } from './quotation.mapper';
 import { getQuotation, getQuotations } from './get-quotation';
-import type { Paginated } from '@/shared/api/types';
+import type { Paginated } from '@/shared/pagination';
 
 /**
  * Parameters for list query.
@@ -28,17 +28,6 @@ export interface QuotationListQueryParams {
   search: string;
   status: QuotationStatus | null;
   projectId: number | null;
-}
-
-/**
- * Paginated quotation list result with domain models.
- */
-export interface PaginatedQuotations extends Paginated<QuotationListItem> {
-  totalPages: number;
-  totalElements: number;
-  size: number;
-  first: boolean;
-  last: boolean;
 }
 
 /**
@@ -74,7 +63,7 @@ export const quotationQueries = {
         params.status,
         params.projectId,
       ] as const,
-      queryFn: async (): Promise<PaginatedQuotations> => {
+      queryFn: async (): Promise<Paginated<QuotationListItem>> => {
         const response = await getQuotations({
           page: params.page,
           size: params.size,
@@ -86,11 +75,6 @@ export const quotationQueries = {
         return {
           data: response.data.map(quotationMapper.responseToListItem),
           pagination: response.pagination,
-          totalPages: response.pagination.totalPages,
-          totalElements: response.pagination.totalElements,
-          size: response.pagination.size,
-          first: response.pagination.first,
-          last: response.pagination.last,
         };
       },
       placeholderData: keepPreviousData,

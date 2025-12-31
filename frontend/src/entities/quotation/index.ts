@@ -38,18 +38,18 @@ export { quotationRules } from './model/quotation';
 // Use with useQuery() directly - no custom hooks needed
 // =============================================================================
 
-export {
-  quotationQueries,
-  type QuotationListQueryParams,
-  type PaginatedQuotations,
-} from './api/quotation.queries';
+export { quotationQueries, type QuotationListQueryParams } from './api/quotation.queries';
 
 // =============================================================================
 // COMMAND FUNCTIONS (with validation)
 // Use with useMutation() directly
 // =============================================================================
 
-export { createQuotation, type CreateQuotationInput, type LineItemInput } from './api/create-quotation';
+export {
+  createQuotation,
+  type CreateQuotationInput,
+  type LineItemInput,
+} from './api/create-quotation';
 export { updateQuotation, type UpdateQuotationInput } from './api/update-quotation';
 export { submitQuotation } from './api/submit-quotation';
 export { createQuotationVersion } from './api/create-quotation-version';

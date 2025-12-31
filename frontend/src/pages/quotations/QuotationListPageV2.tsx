@@ -280,15 +280,15 @@ export function QuotationListPageV2() {
           />
 
           {/* Pagination */}
-          {data && data.totalPages > 1 && (
+          {data && data.pagination.totalPages > 1 && (
             <div className="mt-6">
               <Pagination
                 currentPage={page}
-                totalItems={data.totalElements}
-                itemsPerPage={data.size}
+                totalItems={data.pagination.totalElements}
+                itemsPerPage={data.pagination.size}
                 onPageChange={setPage}
-                isFirst={data.first}
-                isLast={data.last}
+                isFirst={data.pagination.first}
+                isLast={data.pagination.last}
                 itemLabel="quotations"
               />
             </div>
