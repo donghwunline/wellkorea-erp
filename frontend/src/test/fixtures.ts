@@ -20,18 +20,20 @@
 import type { RoleName, User, UserDetails } from '@/entities/user';
 import type { AuthStore } from '@/entities/auth';
 import type {
-  QuotationDetailsDTO as QuotationDetails,
-  LineItemDTO as QuotationLineItem,
+  LineItemResponse as QuotationLineItem,
+  QuotationDetailsResponse as QuotationDetails,
 } from '@/entities/quotation/api/quotation.dto';
 import { QuotationStatus } from '@/entities/quotation';
 import type {
   ApprovalDetailsDTO as ApprovalDetails,
-  LevelDecisionDTO as LevelDecision,
   ApprovalHistoryDTO as ApprovalHistoryEntry,
+  LevelDecisionDTO as LevelDecision,
 } from '@/entities/approval/api/approval.dto';
 import type { ApprovalStatus } from '@/entities/approval';
-import type { ChainTemplateDTO as ChainTemplate, ChainLevelDTO as ChainLevel } from '@/entities/approval-chain';
+// Import DTOs from internal path (needed for test fixture types)
+import type { ChainLevelDTO as ChainLevel, ChainTemplateDTO as ChainTemplate, } from '@/entities/approval-chain/api';
 import type { ProductSummary } from '@/services/products/types';
+import type { AuditLog } from '@/entities/audit';
 
 /**
  * Authentication state for test fixtures.
@@ -338,7 +340,13 @@ export const mockUserDetails = {
 export function createMockApiResponse<T>(
   data: T,
   metadata?: Record<string, unknown>
-): { success: boolean; message: string; data: T; timestamp: string; metadata?: Record<string, unknown> } {
+): {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
+  metadata?: Record<string, unknown>;
+} {
   return {
     success: true,
     message: 'Success',
@@ -438,8 +446,6 @@ export const mockApiErrors = {
 // ============================================================================
 // Audit Log Fixtures
 // ============================================================================
-
-import type { AuditLog } from '@/entities/audit';
 
 /**
  * Factory function to create a mock AuditLog.
@@ -624,7 +630,12 @@ export function createMockApproval(overrides?: Partial<ApprovalDetails>): Approv
     createdAt: '2025-01-15T10:00:00Z',
     levels: [
       createMockLevelDecision({ levelOrder: 1, levelName: '팀장' }),
-      createMockLevelDecision({ levelOrder: 2, levelName: '부서장', expectedApproverUserId: 20, expectedApproverName: 'Dept Head' }),
+      createMockLevelDecision({
+        levelOrder: 2,
+        levelName: '부서장',
+        expectedApproverUserId: 20,
+        expectedApproverName: 'Dept Head',
+      }),
     ],
     ...overrides,
   };
@@ -640,8 +651,20 @@ export const mockApprovals = {
     status: 'APPROVED',
     completedAt: '2025-01-16T10:00:00Z',
     levels: [
-      createMockLevelDecision({ levelOrder: 1, decision: 'APPROVED', decidedByUserId: 10, decidedByName: 'Team Lead', decidedAt: '2025-01-15T14:00:00Z' }),
-      createMockLevelDecision({ levelOrder: 2, decision: 'APPROVED', decidedByUserId: 20, decidedByName: 'Dept Head', decidedAt: '2025-01-16T10:00:00Z' }),
+      createMockLevelDecision({
+        levelOrder: 1,
+        decision: 'APPROVED',
+        decidedByUserId: 10,
+        decidedByName: 'Team Lead',
+        decidedAt: '2025-01-15T14:00:00Z',
+      }),
+      createMockLevelDecision({
+        levelOrder: 2,
+        decision: 'APPROVED',
+        decidedByUserId: 20,
+        decidedByName: 'Dept Head',
+        decidedAt: '2025-01-16T10:00:00Z',
+      }),
     ],
   }),
   rejected: createMockApproval({
@@ -649,7 +672,14 @@ export const mockApprovals = {
     status: 'REJECTED',
     completedAt: '2025-01-15T15:00:00Z',
     levels: [
-      createMockLevelDecision({ levelOrder: 1, decision: 'REJECTED', decidedByUserId: 10, decidedByName: 'Team Lead', decidedAt: '2025-01-15T15:00:00Z', comments: 'Rejected reason' }),
+      createMockLevelDecision({
+        levelOrder: 1,
+        decision: 'REJECTED',
+        decidedByUserId: 10,
+        decidedByName: 'Team Lead',
+        decidedAt: '2025-01-15T15:00:00Z',
+        comments: 'Rejected reason',
+      }),
     ],
   }),
 };
@@ -657,7 +687,9 @@ export const mockApprovals = {
 /**
  * Factory function to create a mock ApprovalHistoryEntry.
  */
-export function createMockHistoryEntry(overrides?: Partial<ApprovalHistoryEntry>): ApprovalHistoryEntry {
+export function createMockHistoryEntry(
+  overrides?: Partial<ApprovalHistoryEntry>
+): ApprovalHistoryEntry {
   return {
     id: 1,
     levelOrder: 1,
@@ -698,7 +730,13 @@ export function createMockChainTemplate(overrides?: Partial<ChainTemplate>): Cha
     isActive: true,
     levels: [
       createMockChainLevel({ id: 1, levelOrder: 1, levelName: '팀장' }),
-      createMockChainLevel({ id: 2, levelOrder: 2, levelName: '부서장', approverUserId: 20, approverUserName: 'Dept Head' }),
+      createMockChainLevel({
+        id: 2,
+        levelOrder: 2,
+        levelName: '부서장',
+        approverUserId: 20,
+        approverUserName: 'Dept Head',
+      }),
     ],
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
@@ -730,7 +768,12 @@ export function createMockProduct(overrides?: Partial<ProductSummary>): ProductS
 export const mockProducts = {
   active: createMockProduct(),
   inactive: createMockProduct({ id: 2, sku: 'SKU-002', name: 'Inactive Product', isActive: false }),
-  withoutPrice: createMockProduct({ id: 3, sku: 'SKU-003', name: 'Custom Product', baseUnitPrice: null }),
+  withoutPrice: createMockProduct({
+    id: 3,
+    sku: 'SKU-003',
+    name: 'Custom Product',
+    baseUnitPrice: null,
+  }),
 };
 
 // ============================================================================
