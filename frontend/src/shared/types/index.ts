@@ -1,10 +1,10 @@
 /**
  * Shared types barrel export.
  *
- * Only truly shared domain types belong here.
- * API DTOs (request/response) belong in service type files.
+ * NOTE: User and auth types have moved to @/entities/user.
+ * This re-exports for backwards compatibility.
+ * Prefer importing from @/entities/user directly.
  */
 
-export type { User, UserDetails, RoleName } from './auth';
-
-export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from './auth';
+export type { User, UserDetails, RoleName } from '@/entities/user';
+export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/entities/user';
