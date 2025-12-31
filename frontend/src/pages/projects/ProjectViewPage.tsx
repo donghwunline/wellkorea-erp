@@ -28,7 +28,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { ProjectDetails, ProjectSection } from '@/services';
+import type { Project, ProjectSection } from '@/entities/project';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import {
@@ -51,6 +51,9 @@ import {
   useProjectSummary,
 } from '@/components/features/projects';
 import { QuotationDetailsPanel } from '@/widgets';
+
+// Alias for backward compatibility
+type ProjectDetails = Project;
 
 // Tab configuration with role requirements
 interface TabConfig {

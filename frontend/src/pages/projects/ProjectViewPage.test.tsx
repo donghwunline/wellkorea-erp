@@ -13,7 +13,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProjectViewPage } from './ProjectViewPage';
-import type { ProjectDetails } from '@/services';
+import type { Project } from '@/entities/project';
+
+// Alias for backward compatibility in tests
+type ProjectDetails = Project;
 
 // Helper to create mock project (now includes resolved names from backend CQRS pattern)
 function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {

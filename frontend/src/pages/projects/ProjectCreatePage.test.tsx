@@ -13,7 +13,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { ProjectCreatePage } from './ProjectCreatePage';
-import type { CreateProjectRequest, ProjectCommandResult, UpdateProjectRequest } from '@/services';
+import type { CreateProjectRequest, ProjectCommandResult, UpdateProjectRequest } from '@/entities/project';
 
 // Default mock command result for project creation
 const DEFAULT_COMMAND_RESULT: ProjectCommandResult = {

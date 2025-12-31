@@ -15,10 +15,13 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProjectEditPage } from './ProjectEditPage';
 import type {
   CreateProjectRequest,
+  Project,
   ProjectCommandResult,
-  ProjectDetails,
   UpdateProjectRequest,
-} from '@/services';
+} from '@/entities/project';
+
+// Alias for backward compatibility in tests
+type ProjectDetails = Project;
 
 // Default mock project details for getProject
 const DEFAULT_PROJECT: ProjectDetails = {

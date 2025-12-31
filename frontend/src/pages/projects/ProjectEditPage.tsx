@@ -7,9 +7,12 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { ProjectDetails, UpdateProjectRequest } from '@/services';
+import type { Project, UpdateProjectRequest } from '@/entities/project';
 import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { ProjectForm, useProjectActions } from '@/components/features/projects';
+
+// Alias for backward compatibility
+type ProjectDetails = Project;
 
 export function ProjectEditPage() {
   const { id } = useParams<{ id: string }>();
