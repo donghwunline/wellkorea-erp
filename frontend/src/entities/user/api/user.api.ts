@@ -5,8 +5,8 @@
  * Returns DTOs, not domain models.
  */
 
-import { httpClient, USER_ENDPOINTS } from '@/shared/api';
-import type { PagedResponse, PaginationMetadata } from '@/shared/api/types';
+import { httpClient, USER_ENDPOINTS, transformPagedResponse } from '@/shared/api';
+import type { PagedResponse, Paginated } from '@/shared/api/types';
 import type {
   UserDetailsDTO,
   CreateUserRequestDTO,
@@ -18,38 +18,20 @@ import type {
 } from './user.dto';
 
 /**
- * Paginated users response from API.
- */
-export interface PaginatedUsersDTO {
-  data: UserDetailsDTO[];
-  pagination: PaginationMetadata;
-}
-
-/**
  * User API functions.
  */
 export const userApi = {
   /**
    * Get paginated list of users.
    */
-  async getList(params: UserListParamsDTO): Promise<PaginatedUsersDTO> {
+  async getList(params: UserListParamsDTO): Promise<Paginated<UserDetailsDTO>> {
     const response = await httpClient.requestWithMeta<PagedResponse<UserDetailsDTO>>({
       method: 'GET',
       url: USER_ENDPOINTS.BASE,
       params,
     });
 
-    return {
-      data: response.data.content,
-      pagination: {
-        page: response.data.number,
-        totalPages: response.data.totalPages,
-        totalElements: response.data.totalElements,
-        size: response.data.size,
-        first: response.data.first,
-        last: response.data.last,
-      },
-    };
+    return transformPagedResponse(response.data, response.metadata);
   },
 
   /**

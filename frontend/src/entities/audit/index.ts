@@ -14,7 +14,7 @@ export { auditLogRules } from './model';
 
 // API layer - For advanced use cases
 export { auditApi, auditLogMapper } from './api';
-export type { AuditLogDTO, AuditLogListParamsDTO, PaginatedAuditLogsDTO } from './api';
+export type { AuditLogDTO, AuditLogListParamsDTO } from './api';
 
 // Query layer - TanStack Query hooks
 export { auditQueryKeys, auditQueryFns, useAuditLogs, useAuditLog } from './query';

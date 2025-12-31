@@ -5,8 +5,6 @@
  * These types are internal to the API layer - use domain models externally.
  */
 
-import type { Paginated } from '@/shared/api/types';
-
 /**
  * Command result from CQRS command endpoints.
  * Commands return only ID - fetch fresh data via query endpoints.
@@ -90,7 +88,3 @@ export interface ApprovalListParamsDTO {
   myPending?: boolean;
 }
 
-/**
- * Paginated approval list response.
- */
-export type PaginatedApprovalsDTO = Paginated<ApprovalDetailsDTO>;

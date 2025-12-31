@@ -11,7 +11,6 @@ export type {
   CreateQuotationRequestDTO,
   UpdateQuotationRequestDTO,
   QuotationListParamsDTO,
-  PaginatedQuotationsDTO,
 } from './quotation.dto';
 
 // Mappers

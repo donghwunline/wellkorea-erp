@@ -4,8 +4,6 @@
  * Data transfer objects matching the backend API contract.
  */
 
-import type { Paginated } from '@/shared/api/types';
-
 /**
  * Audit log entry DTO from API response.
  * Matches backend AuditLogResponse.java
@@ -37,7 +35,3 @@ export interface AuditLogListParamsDTO {
   endDate?: string;
 }
 
-/**
- * Paginated audit log list response.
- */
-export type PaginatedAuditLogsDTO = Paginated<AuditLogDTO>;

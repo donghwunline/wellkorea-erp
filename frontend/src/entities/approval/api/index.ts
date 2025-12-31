@@ -13,7 +13,6 @@ export type {
   ApprovalListParamsDTO,
   ApproveRequestDTO,
   RejectRequestDTO,
-  PaginatedApprovalsDTO,
 } from './approval.dto';
 
 // Mappers

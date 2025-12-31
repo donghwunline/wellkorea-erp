@@ -4,10 +4,9 @@
  * Raw API calls for audit log operations.
  */
 
-import { httpClient, AUDIT_ENDPOINTS } from '@/shared/api';
-import type { PagedResponse } from '@/shared/api/types';
-import { transformPagedResponse } from '@/shared/api';
-import type { AuditLogDTO, AuditLogListParamsDTO, PaginatedAuditLogsDTO } from './audit.dto';
+import { httpClient, AUDIT_ENDPOINTS, transformPagedResponse } from '@/shared/api';
+import type { PagedResponse, Paginated } from '@/shared/api/types';
+import type { AuditLogDTO, AuditLogListParamsDTO } from './audit.dto';
 
 /**
  * Audit log API functions.
@@ -17,7 +16,7 @@ export const auditApi = {
    * Get paginated list of audit logs.
    * Returns raw DTOs - callers should map to domain models.
    */
-  async getList(params?: AuditLogListParamsDTO): Promise<PaginatedAuditLogsDTO> {
+  async getList(params?: AuditLogListParamsDTO): Promise<Paginated<AuditLogDTO>> {
     const response = await httpClient.requestWithMeta<PagedResponse<AuditLogDTO>>({
       method: 'GET',
       url: AUDIT_ENDPOINTS.BASE,

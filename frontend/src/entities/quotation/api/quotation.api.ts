@@ -6,11 +6,10 @@
  */
 
 import { httpClient, QUOTATION_ENDPOINTS, transformPagedResponse } from '@/shared/api';
-import type { PagedResponse } from '@/shared/api/types';
+import type { PagedResponse, Paginated } from '@/shared/api/types';
 import type {
   CommandResult,
   CreateQuotationRequestDTO,
-  PaginatedQuotationsDTO,
   QuotationDetailsDTO,
   QuotationListParamsDTO,
   UpdateQuotationRequestDTO,
@@ -24,7 +23,7 @@ export const quotationApi = {
    * Get paginated list of quotations.
    * Returns raw DTOs - callers should map to domain models.
    */
-  async getList(params?: QuotationListParamsDTO): Promise<PaginatedQuotationsDTO> {
+  async getList(params?: QuotationListParamsDTO): Promise<Paginated<QuotationDetailsDTO>> {
     const response = await httpClient.requestWithMeta<PagedResponse<QuotationDetailsDTO>>({
       method: 'GET',
       url: QUOTATION_ENDPOINTS.BASE,

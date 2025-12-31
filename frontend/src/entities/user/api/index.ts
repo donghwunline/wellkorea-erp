@@ -36,4 +36,3 @@ export type {
 
 // API functions
 export { userApi } from './user.api';
-export type { PaginatedUsersDTO } from './user.api';

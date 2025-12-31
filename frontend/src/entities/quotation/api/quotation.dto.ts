@@ -5,8 +5,6 @@
  * Separate from domain models to decouple from API changes.
  */
 
-import type { Paginated } from '@/shared/api/types';
-
 /**
  * Command result from CQRS command endpoints.
  */
@@ -97,7 +95,3 @@ export interface QuotationListParamsDTO {
   search?: string;
 }
 
-/**
- * Paginated quotation list response.
- */
-export type PaginatedQuotationsDTO = Paginated<QuotationDetailsDTO>;

@@ -66,7 +66,7 @@ export type {
 } from './api';
 
 // API functions
-export { userApi, type PaginatedUsersDTO } from './api';
+export { userApi } from './api';
 
 // ==================== QUERY ====================
 // Query keys
