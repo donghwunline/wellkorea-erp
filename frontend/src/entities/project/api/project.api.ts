@@ -7,8 +7,16 @@
  * FSD Layer: entities/project/api
  */
 
-import { httpClient, PROJECT_ENDPOINTS } from '@/shared/api';
-import type { ProjectDetailsDTO } from './project.dto';
+import { httpClient, PROJECT_ENDPOINTS, transformPagedResponse } from '@/shared/api';
+import type { PagedResponse, Paginated } from '@/shared/api/types';
+import type {
+  ProjectDetailsDTO,
+  ProjectListItemDTO,
+  ProjectCommandResultDTO,
+  CreateProjectRequestDTO,
+  UpdateProjectRequestDTO,
+  ProjectListParamsDTO,
+} from './project.dto';
 
 /**
  * Project API functions.
@@ -17,9 +25,19 @@ import type { ProjectDetailsDTO } from './project.dto';
  */
 export const projectApi = {
   /**
+   * Get paginated list of projects.
+   */
+  async getList(params?: ProjectListParamsDTO): Promise<Paginated<ProjectListItemDTO>> {
+    const response = await httpClient.requestWithMeta<PagedResponse<ProjectListItemDTO>>({
+      method: 'GET',
+      url: PROJECT_ENDPOINTS.BASE,
+      params,
+    });
+    return transformPagedResponse(response.data, response.metadata);
+  },
+
+  /**
    * Get project by ID.
-   *
-   * @param id - Project ID
    */
   async getById(id: number): Promise<ProjectDetailsDTO> {
     return httpClient.get<ProjectDetailsDTO>(PROJECT_ENDPOINTS.byId(id));
@@ -27,10 +45,23 @@ export const projectApi = {
 
   /**
    * Get project by JobCode.
-   *
-   * @param jobCode - Project job code
    */
   async getByJobCode(jobCode: string): Promise<ProjectDetailsDTO> {
     return httpClient.get<ProjectDetailsDTO>(PROJECT_ENDPOINTS.byJobCode(jobCode));
+  },
+
+  /**
+   * Create a new project.
+   * Returns command result with ID and auto-generated JobCode.
+   */
+  async create(request: CreateProjectRequestDTO): Promise<ProjectCommandResultDTO> {
+    return httpClient.post<ProjectCommandResultDTO>(PROJECT_ENDPOINTS.BASE, request);
+  },
+
+  /**
+   * Update an existing project.
+   */
+  async update(id: number, request: UpdateProjectRequestDTO): Promise<ProjectCommandResultDTO> {
+    return httpClient.put<ProjectCommandResultDTO>(PROJECT_ENDPOINTS.byId(id), request);
   },
 };

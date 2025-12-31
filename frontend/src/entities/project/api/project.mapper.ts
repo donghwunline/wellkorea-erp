@@ -6,8 +6,17 @@
  * FSD Layer: entities/project/api
  */
 
-import type { Project, ProjectSummary } from '../model';
-import type { ProjectDetailsDTO, ProjectSummaryDTO } from './project.dto';
+import type { Project, ProjectListItem } from '../model';
+import type { ProjectDetailsDTO, ProjectListItemDTO, ProjectCommandResultDTO } from './project.dto';
+
+/**
+ * Project command result (mapped from DTO).
+ */
+export interface ProjectCommandResult {
+  readonly id: number;
+  readonly message: string;
+  readonly jobCode: string | null;
+}
 
 /**
  * Project mapper.
@@ -36,19 +45,31 @@ export const projectMapper = {
   },
 
   /**
-   * Transform ProjectSummaryDTO to ProjectSummary domain model.
+   * Transform ProjectListItemDTO to ProjectListItem domain model.
    */
-  toSummary(dto: ProjectSummaryDTO): ProjectSummary {
+  toListItem(dto: ProjectListItemDTO): ProjectListItem {
     return {
       id: dto.id,
       jobCode: dto.jobCode,
       customerId: dto.customerId,
       customerName: dto.customerName,
       projectName: dto.projectName?.trim() ?? '',
+      requesterName: dto.requesterName?.trim() ?? null,
       dueDate: dto.dueDate,
       status: dto.status,
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
+    };
+  },
+
+  /**
+   * Transform ProjectCommandResultDTO to ProjectCommandResult.
+   */
+  toCommandResult(dto: ProjectCommandResultDTO): ProjectCommandResult {
+    return {
+      id: dto.id,
+      message: dto.message,
+      jobCode: dto.jobCode,
     };
   },
 };

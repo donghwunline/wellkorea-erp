@@ -29,16 +29,57 @@ export interface ProjectDetailsDTO {
 }
 
 /**
- * Project summary DTO from backend ProjectSummaryView.
+ * Project list item DTO from backend ProjectSummaryView.
  */
-export interface ProjectSummaryDTO {
+export interface ProjectListItemDTO {
   id: number;
   jobCode: string;
   customerId: number;
   customerName: string | null;
   projectName: string;
+  requesterName: string | null;
   dueDate: string;
   status: ProjectStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Command result DTO from backend.
+ */
+export interface ProjectCommandResultDTO {
+  id: number;
+  message: string;
+  jobCode: string | null;
+}
+
+/**
+ * Request DTO for creating a new project.
+ */
+export interface CreateProjectRequestDTO {
+  customerId: number;
+  projectName: string;
+  requesterName?: string;
+  dueDate: string;
+  internalOwnerId: number;
+}
+
+/**
+ * Request DTO for updating an existing project.
+ */
+export interface UpdateProjectRequestDTO {
+  projectName?: string;
+  requesterName?: string;
+  dueDate?: string;
+  status?: ProjectStatus;
+}
+
+/**
+ * Query parameters for listing projects.
+ */
+export interface ProjectListParamsDTO {
+  page?: number;
+  size?: number;
+  search?: string;
+  status?: ProjectStatus;
 }
