@@ -202,7 +202,7 @@ export default defineConfig([
               allowTypeImports: true,
             },
             {
-              group: ['@/stores', '@/stores/*', '@/stores/**'],
+              group: ['@/shared/stores', '@/shared/stores/*', '@/shared/stores/**'],
               message:
                 '⚠️ Migration: Use @/shared/hooks (e.g., useAuth) instead of stores directly.',
               allowTypeImports: true,
@@ -234,7 +234,7 @@ export default defineConfig([
                 '❌ UI components must receive data via props. Move to features/ for smart components.',
             },
             {
-              group: ['@/stores', '@/stores/*', '@/stores/**'],
+              group: ['@/shared/stores', '@/shared/stores/*', '@/shared/stores/**'],
               message:
                 '❌ UI components must receive data via props. Move to features/ for smart components.',
             },
