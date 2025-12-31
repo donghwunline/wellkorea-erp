@@ -6,23 +6,22 @@
  *
  * Route: /approvals
  *
- * 4-Tier State Separation:
- * - Tier 1 (Local UI State): Modal open/close, selected approval
- * - Tier 2 (Page UI State): Pagination/filters -> Local state
- * - Tier 3 (Server State): Approval list -> useApprovalList hook
- * - Tier 4 (App Global State): Not used directly here
+ * FSD Architecture:
+ * - Page layer: URL params + layout assembly
+ * - Uses entities/approval for query hooks and UI
+ * - Uses features/approval for mutations
  */
 
-import { useCallback, useReducer, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Card, FilterBar, LoadingState, PageHeader, Pagination } from '@/shared/ui';
 import {
-  ApprovalRejectModal,
+  type Approval,
+  type ApprovalStatus,
   ApprovalRequestCard,
-  useApprovalActions,
-  useApprovalList,
-} from '@/components/features/approval';
-import type { ApprovalDetails, ApprovalStatus } from '@/services';
+  useApprovals,
+} from '@/entities/approval';
+import { RejectModal, useApproveApproval, useRejectApproval } from '@/features/approval';
 
 // Status filter options
 const STATUS_OPTIONS = [
@@ -37,89 +36,98 @@ export function ApprovalListPage() {
 
   // Page state
   const [page, setPage] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<ApprovalStatus | undefined>(undefined);
-  const [refreshTrigger, triggerRefresh] = useReducer((x: number) => x + 1, 0);
+  const [statusFilter, setStatusFilter] = useState<ApprovalStatus | null>(null);
 
-  // Server state via hook
+  // Server state via TanStack Query
   const {
-    approvals,
-    pagination,
+    data: approvalsData,
     isLoading,
     error: fetchError,
-    refetch,
-  } = useApprovalList({ page, status: statusFilter, refreshTrigger });
+  } = useApprovals({
+    page,
+    size: 10,
+    status: statusFilter,
+    myPending: true,
+  });
+
+  const approvals = approvalsData?.data ?? [];
+  const pagination = approvalsData;
 
   // Local UI State
-  const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [rejectModal, setRejectModal] = useState<ApprovalDetails | null>(null);
+  const [rejectModal, setRejectModal] = useState<Approval | null>(null);
 
-  // Actions hook
+  // Mutation hooks
   const {
-    isLoading: isActing,
-    error: actionError,
-    approve,
-    reject,
-    clearError: clearActionError,
-  } = useApprovalActions();
+    mutate: approveApproval,
+    isPending: isApproving,
+    error: approveError,
+    reset: resetApproveError,
+  } = useApproveApproval({
+    onSuccess: () => showSuccess('Approval submitted successfully'),
+  });
+
+  const {
+    mutate: rejectApproval,
+    isPending: isRejecting,
+    error: rejectError,
+    reset: resetRejectError,
+  } = useRejectApproval({
+    onSuccess: () => {
+      showSuccess('Rejection submitted successfully');
+      setRejectModal(null);
+    },
+  });
+
+  const isActing = isApproving || isRejecting;
+  const actionError = approveError?.message ?? rejectError?.message ?? null;
 
   // Clear messages after delay
-  const showSuccess = useCallback((message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  }, []);
+  const showSuccess = useCallback(
+    (message: string) => {
+      setSuccessMessage(message);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    },
+    [setSuccessMessage]
+  );
 
   // Handle filter change
-  const handleStatusFilterChange = useCallback((value: string) => {
-    setStatusFilter(value ? (value as ApprovalStatus) : undefined);
-    setPage(0);
-  }, []);
-
-  // Handle approve
-  const handleApprove = useCallback(
-    async (id: number) => {
-      try {
-        await approve(id);
-        showSuccess('Approval submitted successfully');
-        triggerRefresh();
-      } catch {
-        setError('Failed to approve');
-      }
+  const handleStatusFilterChange = useCallback(
+    (value: string) => {
+      setStatusFilter(value ? (value as ApprovalStatus) : null);
+      setPage(0);
     },
-    [approve, showSuccess]
+    [setStatusFilter, setPage]
+  );
+
+  // Handle approve from card (receives approval via closure)
+  const handleApproveFromCard = useCallback(
+    (approval: Approval) => {
+      approveApproval({ id: approval.id });
+    },
+    [approveApproval]
   );
 
   // Handle reject - open modal
   const handleRejectClick = useCallback(
-    (id: number) => {
-      const approval = approvals.find(a => a.id === id);
-      if (approval) {
-        setRejectModal(approval);
-      }
+    (approval: Approval) => {
+      setRejectModal(approval);
     },
-    [approvals]
+    [setRejectModal]
   );
 
   // Handle reject confirm
   const handleRejectConfirm = useCallback(
-    async (reason: string) => {
+    (reason: string) => {
       if (!rejectModal) return;
-
-      try {
-        await reject(rejectModal.id, reason);
-        showSuccess('Rejection submitted successfully');
-        setRejectModal(null);
-        triggerRefresh();
-      } catch {
-        // Error displayed in modal via actionError
-      }
+      rejectApproval({ id: rejectModal.id, reason });
     },
-    [rejectModal, reject, showSuccess]
+    [rejectModal, rejectApproval]
   );
 
   // Handle view entity
   const handleViewEntity = useCallback(
-    (approval: ApprovalDetails) => {
+    (approval: Approval) => {
       if (approval.entityType === 'QUOTATION') {
         navigate(`/quotations/${approval.entityId}`);
       }
@@ -127,11 +135,17 @@ export function ApprovalListPage() {
     [navigate]
   );
 
+  // Clear action errors
+  const clearActionError = useCallback(() => {
+    resetApproveError();
+    resetRejectError();
+  }, [resetApproveError, resetRejectError]);
+
   // Check if current user can act on approval
   // Note: When using myPending=true filter, the backend already returns only
   // approvals where the current user is the expected approver at the current level.
   // So we only need to check if the approval status is PENDING.
-  const canActOnApproval = useCallback((approval: ApprovalDetails): boolean => {
+  const canActOnApproval = useCallback((approval: Approval): boolean => {
     return approval.status === 'PENDING';
   }, []);
 
@@ -167,16 +181,9 @@ export function ApprovalListPage() {
       )}
 
       {/* Error Message */}
-      {(error || actionError) && (
-        <Alert
-          variant="error"
-          className="mb-6"
-          onClose={() => {
-            setError(null);
-            clearActionError();
-          }}
-        >
-          {error || actionError}
+      {actionError && (
+        <Alert variant="error" className="mb-6" onClose={clearActionError}>
+          {actionError}
         </Alert>
       )}
 
@@ -190,13 +197,7 @@ export function ApprovalListPage() {
       {/* Error State */}
       {!isLoading && fetchError && (
         <Card className="p-8 text-center">
-          <p className="text-red-400">{fetchError}</p>
-          <button
-            onClick={() => refetch()}
-            className="mt-4 text-sm text-copper-500 hover:underline"
-          >
-            Retry
-          </button>
+          <p className="text-red-400">{fetchError.message}</p>
         </Card>
       )}
 
@@ -218,9 +219,9 @@ export function ApprovalListPage() {
                 approval={approval}
                 canAct={canActOnApproval(approval)}
                 isActing={isActing}
-                onApprove={handleApprove}
-                onReject={handleRejectClick}
-                onViewEntity={handleViewEntity}
+                onApprove={() => handleApproveFromCard(approval)}
+                onReject={() => handleRejectClick(approval)}
+                onViewEntity={() => handleViewEntity(approval)}
               />
             ))
           )}
@@ -243,14 +244,14 @@ export function ApprovalListPage() {
       )}
 
       {/* Reject Modal */}
-      <ApprovalRejectModal
+      <RejectModal
         isOpen={!!rejectModal}
         entityRef={rejectModal?.entityDescription ?? undefined}
-        isSubmitting={isActing}
-        error={actionError}
+        isSubmitting={isRejecting}
+        error={rejectError?.message}
         onClose={() => {
           setRejectModal(null);
-          clearActionError();
+          resetRejectError();
         }}
         onConfirm={handleRejectConfirm}
       />
