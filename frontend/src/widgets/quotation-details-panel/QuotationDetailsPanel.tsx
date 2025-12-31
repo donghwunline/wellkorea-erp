@@ -15,6 +15,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Card, ConfirmationModal, Icon, Spinner } from '@/shared/ui';
 
 // Entity imports
@@ -22,8 +23,7 @@ import {
   QuotationCard,
   QuotationStatusBadge,
   quotationRules,
-  useQuotation,
-  useQuotations,
+  quotationQueries,
 } from '@/entities/quotation';
 
 // Feature imports
@@ -81,11 +81,13 @@ export function QuotationDetailsPanel({
     isLoading: isLoadingList,
     error: listError,
     refetch: refetchList,
-  } = useQuotations({
+  } = useQuery(quotationQueries.list({
     page: 0,
-    projectId,
     size: 100, // Get all versions
-  });
+    search: '',
+    status: null,
+    projectId,
+  }));
 
   // Sort by version descending (latest first)
   const quotations = useMemo(() => {
@@ -101,8 +103,8 @@ export function QuotationDetailsPanel({
     data: quotation,
     isLoading: isLoadingDetails,
     refetch: refetchDetails,
-  } = useQuotation({
-    id: quotationFromList?.id ?? 0,
+  } = useQuery({
+    ...quotationQueries.detail(quotationFromList?.id ?? 0),
     enabled: quotationFromList !== null,
   });
 
