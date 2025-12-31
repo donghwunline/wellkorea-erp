@@ -1,17 +1,23 @@
 /**
  * Approval Entity - Public API.
  *
- * Complete FSD entity module for approvals.
+ * This is the ONLY entry point for importing from the approval entity.
+ * Internal modules (model/, api/, query/, ui/) should never be imported directly.
  *
- * Exports:
- * - Domain models and business rules
- * - Query hooks and keys
- * - UI components
+ * FSD Layer: entities
+ * Can import from: shared
+ * Cannot import from: features, widgets, pages
  *
  * Note: Mutations (approve, reject) are in features/approval/
+ *
+ * @see docs/architecture/fsd-public-api-guidelines.md
  */
 
-// Model layer (domain types + business rules)
+// =============================================================================
+// DOMAIN TYPES
+// Types that appear in component props, state, or function signatures
+// =============================================================================
+
 export type {
   ApprovalStatus,
   EntityType,
@@ -20,50 +26,39 @@ export type {
   ApprovalHistory,
 } from './model';
 
+// =============================================================================
+// BUSINESS RULES
+// Pure functions for domain logic
+// =============================================================================
+
+export { approvalRules } from './model';
+
+// =============================================================================
+// QUERY HOOKS
+// Main data access interface - prefer these over direct API calls
+// =============================================================================
+
+export { useApproval, useApprovals, useApprovalHistory } from './query';
+
+// Query keys for cache invalidation (used by features for mutations)
+export { approvalQueryKeys } from './query';
+
+// =============================================================================
+// UI COMPONENTS
+// Display-only components with no side effects
+// =============================================================================
+
 export {
-  ApprovalStatus as ApprovalStatusEnum,
-  ApprovalStatusConfig,
-  EntityType as EntityTypeEnum,
-  EntityTypeConfigs,
-  approvalLevelRules,
-  approvalRules,
-  approvalHistoryRules,
-} from './model';
-
-// API layer (for advanced use cases)
-export { approvalApi, approvalMapper, approvalLevelMapper, approvalHistoryMapper } from './api';
-export type {
-  ApprovalDetailsDTO,
-  LevelDecisionDTO,
-  ApprovalHistoryDTO,
-  ApprovalListParamsDTO,
-  ApproveRequestDTO,
-  RejectRequestDTO,
-  CommandResult,
-} from './api';
-
-// Query layer
-export {
-  approvalQueryKeys,
-  approvalQueryFns,
-  useApproval,
-  useApprovals,
-  useApprovalHistory,
-} from './query';
-export type {
-  ApprovalListParams,
-  PaginatedApprovals,
-  UseApprovalOptions,
-  UseApprovalsParams,
-  UseApprovalsOptions,
-  UseApprovalHistoryOptions,
-} from './query';
-
-// UI layer
-export { ApprovalStatusBadge, ApprovalProgressBar, ApprovalLevelList, ApprovalRequestCard } from './ui';
-export type {
-  ApprovalStatusBadgeProps,
-  ApprovalProgressBarProps,
-  ApprovalLevelListProps,
-  ApprovalRequestCardProps,
+  ApprovalStatusBadge,
+  ApprovalProgressBar,
+  ApprovalLevelList,
+  ApprovalRequestCard,
 } from './ui';
+
+// =============================================================================
+// API ACCESS (for features layer mutations only)
+// These are needed by features/approval/* for approve/reject operations
+// =============================================================================
+
+export { approvalApi } from './api';
+export type { CommandResult } from './api';

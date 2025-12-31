@@ -1,34 +1,43 @@
 /**
  * Auth Entity - Public API.
  *
- * Provides authentication state and actions for the application.
+ * This is the ONLY entry point for importing from the auth entity.
+ * Internal modules (hooks/, store/, model/) should never be imported directly.
  *
- * @example
- * ```tsx
- * import { useAuth, type LoginCredentials } from '@/entities/auth';
+ * Note: Auth entity uses hooks/ + store/ instead of model/api/query/
+ * because authentication is primarily about state management, not data fetching.
  *
- * function MyComponent() {
- *   const { user, isAuthenticated, hasRole } = useAuth();
+ * FSD Layer: entities
+ * Can import from: shared
+ * Cannot import from: features, widgets, pages
  *
- *   if (!isAuthenticated) return <LoginPage />;
- *   if (!hasRole('ROLE_ADMIN')) return <AccessDenied />;
- *
- *   return <Dashboard user={user} />;
- * }
- * ```
+ * @see docs/architecture/fsd-public-api-guidelines.md
  */
 
-// ==================== HOOKS ====================
+// =============================================================================
+// AUTH HOOK
 // Primary interface for consuming auth state
+// =============================================================================
+
 export { useAuth } from './hooks';
 
+// =============================================================================
+// AUTH STORE
 // Low-level store access (for features that need direct store manipulation)
+// =============================================================================
+
 export { useAuthStore } from './store';
 
-// ==================== TYPES ====================
+// =============================================================================
+// TYPES
 // Types needed by consumers
+// =============================================================================
+
 export type { LoginCredentials, AuthStore } from './model';
 
-// ==================== EVENTS ====================
+// =============================================================================
+// EVENTS
 // Auth events for cross-domain coordination (e.g., logout → clear cache)
+// =============================================================================
+
 export { authEvents, type AuthEvent } from './store';

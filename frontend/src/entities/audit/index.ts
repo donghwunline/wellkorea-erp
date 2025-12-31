@@ -1,27 +1,36 @@
 /**
  * Audit Entity - Public API.
  *
- * Exports all public types, rules, and hooks for audit logs.
+ * This is the ONLY entry point for importing from the audit entity.
+ * Internal modules (model/, api/, query/) should never be imported directly.
  *
  * FSD Layer: entities
  * Can import from: shared
  * Cannot import from: features, widgets, pages
+ *
+ * @see docs/architecture/fsd-public-api-guidelines.md
  */
 
-// Model layer - Domain types and business rules
+// =============================================================================
+// DOMAIN TYPES
+// Types that appear in component props, state, or function signatures
+// =============================================================================
+
 export type { AuditLog } from './model';
+
+// =============================================================================
+// BUSINESS RULES
+// Pure functions for domain logic
+// =============================================================================
+
 export { auditLogRules } from './model';
 
-// API layer - For advanced use cases
-export { auditApi, auditLogMapper } from './api';
-export type { AuditLogDTO, AuditLogListParamsDTO } from './api';
+// =============================================================================
+// QUERY HOOKS
+// Main data access interface - prefer these over direct API calls
+// =============================================================================
 
-// Query layer - TanStack Query hooks
-export { auditQueryKeys, auditQueryFns, useAuditLogs, useAuditLog } from './query';
-export type {
-  AuditLogListParams,
-  PaginatedAuditLogs,
-  UseAuditLogsOptions,
-  UseAuditLogsParams,
-  UseAuditLogOptions,
-} from './query';
+export { useAuditLogs, useAuditLog } from './query';
+
+// Query keys for cache invalidation
+export { auditQueryKeys } from './query';

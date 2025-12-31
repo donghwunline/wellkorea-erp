@@ -11,8 +11,7 @@
  * - API DTOs (exact backend contract)
  */
 
-import type { ProjectStatus } from '../model';
-import type { CreateProjectCommand, UpdateProjectCommand } from '../model/project-command';
+import type { CreateProjectCommand, ProjectStatus, UpdateProjectCommand } from '../model';
 import type { CreateProjectRequestDTO, UpdateProjectRequestDTO } from './project.dto';
 
 /**

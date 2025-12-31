@@ -1,34 +1,45 @@
 /**
  * Approval Chain Entity - Public API.
  *
- * Complete FSD entity module for approval chain templates.
+ * This is the ONLY entry point for importing from the approval-chain entity.
+ * Internal modules (model/, api/, query/) should never be imported directly.
  *
- * Exports:
- * - Domain models and business rules
- * - Query hooks and keys
- * - API layer (for advanced use cases)
+ * FSD Layer: entities
+ * Can import from: shared
+ * Cannot import from: features, widgets, pages
  *
  * Note: Mutations are in features/approval-chain/
+ *
+ * @see docs/architecture/fsd-public-api-guidelines.md
  */
 
-// Model layer
+// =============================================================================
+// DOMAIN TYPES
+// Types that appear in component props, state, or function signatures
+// =============================================================================
+
 export type { ChainLevel, ChainTemplate, ChainLevelInput } from './model';
+
+// =============================================================================
+// BUSINESS RULES
+// Pure functions for domain logic
+// =============================================================================
+
 export { chainTemplateRules } from './model';
 
-// API layer
-export { chainTemplateApi, chainTemplateMapper } from './api';
-export type {
-  ChainTemplateDTO,
-  ChainLevelDTO,
-  ChainLevelRequestDTO,
-  UpdateChainLevelsRequestDTO,
-} from './api';
+// =============================================================================
+// QUERY HOOKS
+// Main data access interface - prefer these over direct API calls
+// =============================================================================
 
-// Query layer
-export {
-  chainTemplateQueryKeys,
-  chainTemplateQueryFns,
-  useChainTemplates,
-  useChainTemplate,
-} from './query';
-export type { UseChainTemplatesOptions, UseChainTemplateOptions } from './query';
+export { useChainTemplates, useChainTemplate } from './query';
+
+// Query keys for cache invalidation (used by features for mutations)
+export { chainTemplateQueryKeys } from './query';
+
+// =============================================================================
+// API ACCESS (for features layer mutations only)
+// These are needed by features/approval-chain/* for CRUD operations
+// =============================================================================
+
+export { chainTemplateApi } from './api';

@@ -1,81 +1,64 @@
 /**
  * User Entity - Public API.
  *
- * Exports all user domain types, rules, API, and query hooks.
+ * This is the ONLY entry point for importing from the user entity.
+ * Internal modules (model/, api/, query/) should never be imported directly.
  *
- * @example
- * ```tsx
- * import { useUsers, userRules, type UserDetails, UserTable } from '@/entities/user';
+ * FSD Layer: entities
+ * Can import from: shared
+ * Cannot import from: features, widgets, pages
  *
- * function UserListPage() {
- *   const { data } = useUsers({ page: 0, search: '' });
- *   const users = data?.data ?? [];
- *
- *   return (
- *     <UserTable
- *       users={users}
- *       canEdit={(user) => userRules.canEdit(user)}
- *     />
- *   );
- * }
- * ```
+ * @see docs/architecture/fsd-public-api-guidelines.md
  */
 
-// ==================== MODEL ====================
-// Domain types
-export type { User, UserDetails, UserListItem } from './model';
+// =============================================================================
+// DOMAIN TYPES
+// Types that appear in component props, state, or function signatures
+// =============================================================================
 
-// Role types and constants
-export type { RoleName, RoleBadgeVariant } from './model';
-export {
-  ALL_ROLES,
-  ROLE_LABELS,
-  ROLE_DESCRIPTIONS,
-  ROLE_BADGE_VARIANTS,
-} from './model';
+export type { User, UserDetails, UserListItem, RoleName } from './model';
 
-// Business rules
+// =============================================================================
+// ROLE CONSTANTS
+// Role labels, descriptions, and configuration
+// =============================================================================
+
+export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from './model';
+
+// =============================================================================
+// BUSINESS RULES
+// Pure functions for domain logic
+// =============================================================================
+
 export { userRules } from './model';
 
-// ==================== API ====================
-// DTOs (for type compatibility if needed)
-export type {
-  UserDetailsDTO,
-  CreateUserRequestDTO,
-  UpdateUserRequestDTO,
-  AssignRolesRequestDTO,
-  ChangePasswordRequestDTO,
-  AssignCustomersRequestDTO,
-  UserListParamsDTO,
-  UserCommandResultDTO,
-} from './api';
+// =============================================================================
+// QUERY HOOKS
+// Main data access interface - prefer these over direct API calls
+// =============================================================================
 
-// Mappers
-export { userMapper, userCommandMapper } from './api';
-export type {
-  CreateUserInput,
-  CreateUserCommand,
-  UpdateUserInput,
-  UpdateUserCommand,
-  AssignRolesInput,
-  AssignRolesCommand,
-  ChangePasswordInput,
-  ChangePasswordCommand,
-  AssignCustomersInput,
-  AssignCustomersCommand,
-} from './api';
+export { useUser, useUsers, useUserCustomers } from './query';
 
-// API functions
-export { userApi } from './api';
-
-// ==================== QUERY ====================
-// Query keys
+// Query keys for cache invalidation (used by features for mutations)
 export { userQueryKeys } from './query';
 
-// Query functions
-export { userQueryFns, type UserListParams, type PaginatedUsers } from './query';
+// =============================================================================
+// FORM TYPES
+// Input types for forms (used by features layer)
+// =============================================================================
 
-// Query hooks
-export { useUser, type UseUserOptions } from './query';
-export { useUsers, type UseUsersOptions } from './query';
-export { useUserCustomers, type UseUserCustomersOptions } from './query';
+export type {
+  CreateUserInput,
+  UpdateUserInput,
+  AssignRolesInput,
+  ChangePasswordInput,
+  AssignCustomersInput,
+} from './api';
+
+// =============================================================================
+// API ACCESS (for features layer mutations only)
+// These are needed by features/user/* for CRUD operations
+// =============================================================================
+
+export { userApi } from './api';
+export { userMapper, userCommandMapper } from './api';
