@@ -13,7 +13,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { ProjectCreatePage } from './ProjectCreatePage';
-import type { CreateProjectRequest, ProjectCommandResult, UpdateProjectRequest } from '@/entities/project';
+import type {
+  CreateProjectRequest,
+  ProjectCommandResult,
+  UpdateProjectRequest,
+} from '@/entities/project';
+// Import mocked hook for assertions
+import { useProjectActions } from '@/components/features/projects';
 
 // Default mock command result for project creation
 const DEFAULT_COMMAND_RESULT: ProjectCommandResult = {
@@ -55,7 +61,9 @@ vi.mock('@/components/features/projects', () => ({
         <button
           data-testid="form-submit"
           onClick={() =>
-            (props.onSubmit as (data: CreateProjectRequest | UpdateProjectRequest) => Promise<void>)({
+            (
+              props.onSubmit as (data: CreateProjectRequest | UpdateProjectRequest) => Promise<void>
+            )({
               customerId: 1,
               projectName: 'New Project',
               dueDate: '2025-02-15',
@@ -65,10 +73,7 @@ vi.mock('@/components/features/projects', () => ({
         >
           Submit
         </button>
-        <button
-          data-testid="form-cancel"
-          onClick={() => (props.onCancel as () => void)()}
-        >
+        <button data-testid="form-cancel" onClick={() => (props.onCancel as () => void)()}>
           Cancel
         </button>
       </div>
@@ -80,10 +85,7 @@ vi.mock('@/components/features/projects', () => ({
     return props.isOpen ? (
       <div data-testid="success-modal">
         <span data-testid="modal-job-code">{props.jobCode as string}</span>
-        <button
-          data-testid="modal-close"
-          onClick={() => (props.onClose as () => void)()}
-        >
+        <button data-testid="modal-close" onClick={() => (props.onClose as () => void)()}>
           Close
         </button>
         <button
@@ -97,9 +99,6 @@ vi.mock('@/components/features/projects', () => ({
   }),
   SelectOption: {},
 }));
-
-// Import mocked hook for assertions
-import { useProjectActions } from '@/components/features/projects';
 
 // Helper to render with router
 function renderProjectCreatePage() {

@@ -17,8 +17,8 @@ import { useNavigate } from 'react-router-dom';
 import { Alert, Card, FilterBar, LoadingState, PageHeader, Pagination } from '@/shared/ui';
 import {
   type Approval,
-  type ApprovalStatus,
   ApprovalRequestCard,
+  type ApprovalStatus,
   useApprovals,
 } from '@/entities/approval';
 import { RejectModal, useApproveApproval, useRejectApproval } from '@/features/approval';

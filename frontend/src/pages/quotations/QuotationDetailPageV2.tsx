@@ -21,8 +21,9 @@ import { useAuth } from '@/entities/auth';
 import { formatDate } from '@/shared/formatting/date';
 
 // FSD imports - Entities (domain models, business rules, read-only UI)
+import { useQuery } from '@tanstack/react-query';
 import {
-  useQuotation,
+  quotationQueries,
   quotationRules,
   QuotationCard,
   QuotationStatusConfig,
@@ -56,8 +57,8 @@ export function QuotationDetailPageV2() {
     isLoading: isLoadingQuotation,
     error: quotationError,
     refetch: refetchQuotation,
-  } = useQuotation({
-    id: quotationId!,
+  } = useQuery({
+    ...quotationQueries.detail(quotationId!),
     enabled: quotationId !== null,
   });
 

@@ -45,8 +45,12 @@ export function QuotationCreatePageV2() {
     error: projectError,
   } = useProject({ id: selectedProjectId });
 
-  const { mutate: createQuotation, isPending: isSubmitting, error: mutationError } = useCreateQuotation({
-    onSuccess: (result) => {
+  const {
+    mutate: createQuotation,
+    isPending: isSubmitting,
+    error: mutationError,
+  } = useCreateQuotation({
+    onSuccess: result => {
       // Navigate to the created quotation
       if (routeProjectId) {
         navigate(`/projects/${routeProjectId}/quotations/${result.id}`);
@@ -57,12 +61,9 @@ export function QuotationCreatePageV2() {
   });
 
   // Handle project selection
-  const handleProjectSelect = useCallback(
-    (projectId: number | null) => {
-      setSelectedProjectId(projectId);
-    },
-    []
-  );
+  const handleProjectSelect = useCallback((projectId: number | null) => {
+    setSelectedProjectId(projectId);
+  }, []);
 
   // Handle form submission
   const handleCreateSubmit = useCallback(

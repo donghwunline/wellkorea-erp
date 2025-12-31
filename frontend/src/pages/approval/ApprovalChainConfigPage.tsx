@@ -42,11 +42,7 @@ interface EditingChain {
 
 export function ApprovalChainConfigPage() {
   // Server state via TanStack Query
-  const {
-    data: templates = [],
-    isLoading,
-    error: fetchError,
-  } = useChainTemplates();
+  const { data: templates = [], isLoading, error: fetchError } = useChainTemplates();
 
   // Mutation hook
   const {

@@ -63,9 +63,7 @@ vi.mock('@/components/features/projects', () => ({
       <div data-testid="project-table">
         <button
           data-testid="trigger-view"
-          onClick={() =>
-            (props.onView as (project: { id: number }) => void)({ id: 42 })
-          }
+          onClick={() => (props.onView as (project: { id: number }) => void)({ id: 42 })}
         >
           Trigger View
         </button>
@@ -108,7 +106,9 @@ describe('ProjectListPage', () => {
     it('should render search bar', () => {
       renderProjectListPage();
 
-      expect(screen.getByPlaceholderText(/search by job code or project name/i)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/search by job code or project name/i)
+      ).toBeInTheDocument();
     });
 
     it('should render Search button', () => {

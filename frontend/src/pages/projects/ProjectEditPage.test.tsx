@@ -19,6 +19,8 @@ import type {
   ProjectCommandResult,
   UpdateProjectRequest,
 } from '@/entities/project';
+// Import mocked hook for assertions
+import { useProjectActions } from '@/components/features/projects';
 
 // Alias for backward compatibility in tests
 type ProjectDetails = Project;
@@ -86,7 +88,9 @@ vi.mock('@/components/features/projects', () => ({
         <button
           data-testid="form-submit"
           onClick={() =>
-            (props.onSubmit as (data: CreateProjectRequest | UpdateProjectRequest) => Promise<void>)({
+            (
+              props.onSubmit as (data: CreateProjectRequest | UpdateProjectRequest) => Promise<void>
+            )({
               projectName: 'Updated Project',
               dueDate: '2025-03-01',
             })
@@ -94,10 +98,7 @@ vi.mock('@/components/features/projects', () => ({
         >
           Submit
         </button>
-        <button
-          data-testid="form-cancel"
-          onClick={() => (props.onCancel as () => void)()}
-        >
+        <button data-testid="form-cancel" onClick={() => (props.onCancel as () => void)()}>
           Cancel
         </button>
       </div>
@@ -105,9 +106,6 @@ vi.mock('@/components/features/projects', () => ({
   }),
   SelectOption: {},
 }));
-
-// Import mocked hook for assertions
-import { useProjectActions } from '@/components/features/projects';
 
 // Helper to render with route params
 function renderProjectEditPage(projectId = '42') {
@@ -254,9 +252,7 @@ describe('ProjectEditPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Project Not Found')).toBeInTheDocument();
-        expect(
-          screen.getByText('The requested project could not be found.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('The requested project could not be found.')).toBeInTheDocument();
       });
     });
 
@@ -599,5 +595,4 @@ describe('ProjectEditPage', () => {
       expect(card).toBeInTheDocument();
     });
   });
-
 });

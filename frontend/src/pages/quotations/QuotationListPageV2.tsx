@@ -15,29 +15,38 @@
 
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, ConfirmationModal, Icon, PageHeader, Pagination, SearchBar } from '@/shared/ui';
+import {
+  Alert,
+  Button,
+  ConfirmationModal,
+  Icon,
+  Icon as ActionIcon,
+  IconButton,
+  PageHeader,
+  Pagination,
+  SearchBar,
+} from '@/shared/ui';
 import { FilterBar } from '@/shared/ui/navigation/FilterBar';
 import { usePaginatedSearch } from '@/shared/pagination';
 
 // Entity imports - domain model and UI
+import { useQuery } from '@tanstack/react-query';
 import {
-  QuotationTable,
+  type QuotationListItem,
+  quotationQueries,
   quotationRules,
-  useQuotations,
   type QuotationStatus,
-  type Quotation,
+  QuotationTable,
 } from '@/entities/quotation';
 
 // Feature imports - user actions
 import {
-  useSubmitQuotation,
+  EmailNotificationModal,
   useCreateVersion,
   useDownloadPdf,
   useSendNotification,
-  EmailNotificationModal,
+  useSubmitQuotation,
 } from '@/features/quotation';
-
-import { Icon as ActionIcon, IconButton } from '@/shared/ui';
 
 // Status filter options
 const STATUS_OPTIONS = [
@@ -69,20 +78,20 @@ export function QuotationListPageV2() {
 
   // Local UI State - modals
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [submitConfirm, setSubmitConfirm] = useState<Quotation | null>(null);
-  const [versionConfirm, setVersionConfirm] = useState<Quotation | null>(null);
-  const [emailConfirm, setEmailConfirm] = useState<Quotation | null>(null);
+  const [submitConfirm, setSubmitConfirm] = useState<QuotationListItem | null>(null);
+  const [versionConfirm, setVersionConfirm] = useState<QuotationListItem | null>(null);
+  const [emailConfirm, setEmailConfirm] = useState<QuotationListItem | null>(null);
 
   // Query hook - fetches quotation list
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuotations({
-    page,
-    search,
-    status: statusFilter,
-  });
+  const { data, isLoading, error } = useQuery(
+    quotationQueries.list({
+      page,
+      size: 10,
+      search,
+      status: statusFilter,
+      projectId: null,
+    })
+  );
 
   // Mutation hooks - feature actions
   const submitMutation = useSubmitQuotation({
@@ -93,7 +102,7 @@ export function QuotationListPageV2() {
   });
 
   const versionMutation = useCreateVersion({
-    onSuccess: (result) => {
+    onSuccess: result => {
       showSuccess('New version created');
       setVersionConfirm(null);
       navigate(`/quotations/${result.id}/edit`);
@@ -129,7 +138,7 @@ export function QuotationListPageV2() {
 
   // Render action buttons for each quotation row
   const renderActions = useCallback(
-    (quotation: Quotation) => (
+    (quotation: QuotationListItem) => (
       <>
         {/* View - always available */}
         <IconButton
@@ -263,9 +272,11 @@ export function QuotationListPageV2() {
           {/* Quotations Table */}
           <QuotationTable
             quotations={data?.data ?? []}
-            onRowClick={(quotation) => navigate(`/quotations/${quotation.id}`)}
+            onRowClick={quotation => navigate(`/quotations/${quotation.id}`)}
             renderActions={renderActions}
-            emptyMessage={statusFilter ? 'No quotations found with selected status.' : 'No quotations found.'}
+            emptyMessage={
+              statusFilter ? 'No quotations found with selected status.' : 'No quotations found.'
+            }
           />
 
           {/* Pagination */}
@@ -291,7 +302,9 @@ export function QuotationListPageV2() {
         title="Submit for Approval"
         message={`Are you sure you want to submit "${submitConfirm?.jobCode}" for approval? This will start the approval workflow.`}
         confirmLabel="Submit"
-        onConfirm={() => { if (submitConfirm) submitMutation.mutate(submitConfirm.id); }}
+        onConfirm={() => {
+          if (submitConfirm) submitMutation.mutate(submitConfirm.id);
+        }}
         onClose={() => setSubmitConfirm(null)}
         variant="warning"
       />
@@ -302,7 +315,9 @@ export function QuotationListPageV2() {
         title="Create New Version"
         message={`Create a new version based on "${versionConfirm?.jobCode} v${versionConfirm?.version}"? The new version will be in DRAFT status.`}
         confirmLabel="Create Version"
-        onConfirm={() => { if (versionConfirm) versionMutation.mutate(versionConfirm.id); }}
+        onConfirm={() => {
+          if (versionConfirm) versionMutation.mutate(versionConfirm.id);
+        }}
         onClose={() => setVersionConfirm(null)}
         variant="warning"
       />
@@ -311,8 +326,14 @@ export function QuotationListPageV2() {
       <EmailNotificationModal
         isOpen={!!emailConfirm}
         onClose={() => setEmailConfirm(null)}
-        onSend={() => { if (emailConfirm) notifyMutation.mutate(emailConfirm.id); }}
-        quotationInfo={emailConfirm ? { jobCode: emailConfirm.jobCode, version: emailConfirm.version } : undefined}
+        onSend={() => {
+          if (emailConfirm) notifyMutation.mutate(emailConfirm.id);
+        }}
+        quotationInfo={
+          emailConfirm
+            ? { jobCode: emailConfirm.jobCode, version: emailConfirm.version }
+            : undefined
+        }
         isLoading={notifyMutation.isPending}
       />
     </div>

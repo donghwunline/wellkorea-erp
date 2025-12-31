@@ -65,11 +65,7 @@ export function CompanyDetailPage() {
       )}
 
       {/* Company Details */}
-      <CompanyDetailsCard
-        companyId={companyId}
-        onLoad={handleCompanyLoad}
-        onError={handleError}
-      />
+      <CompanyDetailsCard companyId={companyId} onLoad={handleCompanyLoad} onError={handleError} />
     </div>
   );
 }

@@ -20,7 +20,7 @@
 
 import { useState } from 'react';
 import type { AuditLog } from '@/entities/audit';
-import { Alert, Badge, type BadgeVariant, Button, FilterBar, Modal, PageHeader, } from '@/shared/ui';
+import { Alert, Badge, type BadgeVariant, Button, FilterBar, Modal, PageHeader } from '@/shared/ui';
 import { AuditLogTable, useAuditLogPage } from '@/components/features/audit';
 
 type AuditAction =

@@ -7,7 +7,7 @@
  * - Create/Edit/Delete products (Admin, Finance only)
  */
 
-import { Button, Card, Spinner, Pagination, SearchBar, ErrorAlert } from '@/shared/ui';
+import { Button, Card, ErrorAlert, Pagination, SearchBar, Spinner } from '@/shared/ui';
 import { useProducts } from '@/components/features/items';
 import { useAuth } from '@/entities/auth';
 

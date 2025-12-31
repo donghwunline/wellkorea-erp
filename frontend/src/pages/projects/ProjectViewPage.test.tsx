@@ -14,6 +14,8 @@ import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ProjectViewPage } from './ProjectViewPage';
 import type { Project } from '@/entities/project';
+// Import mocked hook for assertions
+import { useProjectActions } from '@/components/features/projects';
 
 // Alias for backward compatibility in tests
 type ProjectDetails = Project;
@@ -118,16 +120,24 @@ vi.mock('@/shared/ui', async () => {
   return {
     ...actual,
     Tabs: vi.fn(({ children, defaultTab }: { children: React.ReactNode; defaultTab?: string }) => (
-      <div data-testid="tabs" data-default-tab={defaultTab}>{children}</div>
+      <div data-testid="tabs" data-default-tab={defaultTab}>
+        {children}
+      </div>
     )),
     TabList: vi.fn(({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div role="tablist" className={className}>{children}</div>
+      <div role="tablist" className={className}>
+        {children}
+      </div>
     )),
     Tab: vi.fn(({ children, id }: { children: React.ReactNode; id: string }) => (
-      <button role="tab" id={`tab-${id}`}>{children}</button>
+      <button role="tab" id={`tab-${id}`}>
+        {children}
+      </button>
     )),
     TabPanel: vi.fn(({ children, id }: { children: React.ReactNode; id: string }) => (
-      <div role="tabpanel" id={`panel-${id}`}>{children}</div>
+      <div role="tabpanel" id={`panel-${id}`}>
+        {children}
+      </div>
     )),
     TabOverflow: Object.assign(
       vi.fn(({ children }: { children: React.ReactNode }) => (
@@ -141,9 +151,6 @@ vi.mock('@/shared/ui', async () => {
     ),
   };
 });
-
-// Import mocked hook for assertions
-import { useProjectActions } from '@/components/features/projects';
 
 // Helper to render with route params
 function renderProjectViewPage(projectId = '42') {
@@ -276,9 +283,7 @@ describe('ProjectViewPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Project Not Found')).toBeInTheDocument();
-        expect(
-          screen.getByText('The requested project could not be found.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('The requested project could not be found.')).toBeInTheDocument();
       });
     });
 

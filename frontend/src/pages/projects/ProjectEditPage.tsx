@@ -17,13 +17,7 @@ type ProjectDetails = Project;
 export function ProjectEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const {
-    getProject,
-    updateProject,
-    isLoading,
-    error,
-    clearError,
-  } = useProjectActions();
+  const { getProject, updateProject, isLoading, error, clearError } = useProjectActions();
 
   // Local State
   const [project, setProject] = useState<ProjectDetails | null>(null);
@@ -134,10 +128,7 @@ export function ProjectEditPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title="Edit Project"
-          description={`Job Code: ${project.jobCode}`}
-        />
+        <PageHeader.Title title="Edit Project" description={`Job Code: ${project.jobCode}`} />
         <PageHeader.Actions>
           <button
             onClick={handleCancel}

@@ -17,9 +17,9 @@
 import { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
-import { useQuotation, quotationRules } from '@/entities/quotation';
-import { useUpdateQuotation, QuotationForm } from '@/features/quotation';
-import type { UpdateQuotationInput } from '@/entities/quotation';
+import { useQuery } from '@tanstack/react-query';
+import { quotationQueries, quotationRules, type UpdateQuotationInput } from '@/entities/quotation';
+import { QuotationForm, useUpdateQuotation } from '@/features/quotation';
 
 export function QuotationEditPageV2() {
   const navigate = useNavigate();
@@ -31,13 +31,17 @@ export function QuotationEditPageV2() {
     data: quotation,
     isLoading: isLoadingQuotation,
     error: loadError,
-  } = useQuotation({
-    id: quotationId!,
+  } = useQuery({
+    ...quotationQueries.detail(quotationId!),
     enabled: quotationId !== null,
   });
 
   // Mutation hook for updating
-  const { mutate: updateQuotation, isPending: isSubmitting, error: mutationError } = useUpdateQuotation({
+  const {
+    mutate: updateQuotation,
+    isPending: isSubmitting,
+    error: mutationError,
+  } = useUpdateQuotation({
     onSuccess: () => {
       navigateBack();
     },
@@ -53,10 +57,13 @@ export function QuotationEditPageV2() {
   }, [navigate, projectId]);
 
   // Handle form submission
-  const handleUpdateSubmit = useCallback((data: UpdateQuotationInput) => {
-    if (!quotationId) return;
-    updateQuotation({ id: quotationId, input: data });
-  }, [quotationId, updateQuotation]);
+  const handleUpdateSubmit = useCallback(
+    (data: UpdateQuotationInput) => {
+      if (!quotationId) return;
+      updateQuotation({ id: quotationId, input: data });
+    },
+    [quotationId, updateQuotation]
+  );
 
   // Handle cancel
   const handleCancel = useCallback(() => {
@@ -65,12 +72,14 @@ export function QuotationEditPageV2() {
 
   // Check if quotation is editable
   const canEdit = quotation ? quotationRules.canEdit(quotation) : false;
-  const editError = quotation && !canEdit
-    ? `Cannot edit quotation in ${quotation.status} status. Only DRAFT quotations can be edited.`
-    : null;
+  const editError =
+    quotation && !canEdit
+      ? `Cannot edit quotation in ${quotation.status} status. Only DRAFT quotations can be edited.`
+      : null;
 
   // Error message
-  const error = mutationError?.message || editError || (loadError ? 'Failed to load quotation' : null);
+  const error =
+    mutationError?.message || editError || (loadError ? 'Failed to load quotation' : null);
 
   // Render loading state
   if (isLoadingQuotation) {
@@ -89,10 +98,7 @@ export function QuotationEditPageV2() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title
-            title="Edit Quotation"
-            description="Unable to edit quotation"
-          />
+          <PageHeader.Title title="Edit Quotation" description="Unable to edit quotation" />
           <PageHeader.Actions>
             <button
               onClick={handleCancel}

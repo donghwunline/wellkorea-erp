@@ -8,16 +8,7 @@
  */
 
 import { useState } from 'react';
-import {
-  Button,
-  Card,
-  Spinner,
-  Pagination,
-  SearchBar,
-  ErrorAlert,
-  Icon,
-  Modal,
-} from '@/shared/ui';
+import { Button, Card, ErrorAlert, Icon, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
 import { useServiceCategories } from '@/components/features/items';
 import type { ServiceCategorySummary, VendorServiceOffering } from '@/services';
 import { useAuth } from '@/entities/auth';
