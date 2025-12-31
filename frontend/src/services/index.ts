@@ -2,19 +2,20 @@
  * Services barrel export.
  * Exports all domain services and utilities.
  *
- * NOTE: User and Auth services have been migrated to FSD entities.
- * - New code should import from @/entities/user and @/entities/auth
+ * NOTE: User, Auth, and Audit services have been migrated to FSD entities.
+ * - New code should import from @/entities/user, @/entities/auth, @/entities/audit
  * - Legacy method names are provided here for backwards compatibility
  *
  * Usage:
  * ```typescript
- * import { userService, auditService } from '@/services';
+ * import { userService } from '@/services';
+ * import { useAuditLogs } from '@/entities/audit';
  *
  * // Get users (uses legacy method names for compatibility)
  * const { data: users, pagination } = await userService.getUsers({ page: 0, size: 10 });
  *
- * // Get audit logs
- * const { data: logs, pagination } = await auditService.getAuditLogs({ username: 'admin' });
+ * // Get audit logs (use TanStack Query hook)
+ * const { data } = useAuditLogs({ username: 'admin' });
  * ```
  */
 
@@ -145,10 +146,6 @@ export const userService = {
     return userApi.assignCustomers(id, { customerIds });
   },
 };
-
-// Audit service
-export { auditService } from './audit/auditService';
-export type { AuditLogEntry, AuditLogListParams, PaginatedAuditLogs } from './audit/types';
 
 // Company service (unified Customer + Vendor + Outsource)
 export { companyService, ROLE_TYPE_LABELS } from './companies';

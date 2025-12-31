@@ -1,0 +1,11 @@
+/**
+ * Audit API barrel export.
+ */
+
+export { auditApi } from './audit.api';
+export { auditLogMapper } from './audit.mapper';
+export type {
+  AuditLogDTO,
+  AuditLogListParamsDTO,
+  PaginatedAuditLogsDTO,
+} from './audit.dto';

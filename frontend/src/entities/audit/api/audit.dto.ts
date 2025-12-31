@@ -1,25 +1,32 @@
 /**
- * Audit service types (domain models).
+ * Audit API DTOs.
  *
- * Field names match backend AuditLogResponse.java
+ * Data transfer objects matching the backend API contract.
  */
 
 import type { Paginated } from '@/shared/api/types';
 
-export interface AuditLogEntry {
+/**
+ * Audit log entry DTO from API response.
+ * Matches backend AuditLogResponse.java
+ */
+export interface AuditLogDTO {
   id: number;
   entityType: string;
-  entityId: number | null; // Transformed from string to number
+  entityId: number | null;
   action: string;
   userId: number | null;
   username: string | null;
   ipAddress: string | null;
   changes: string | null;
   metadata: string | null;
-  createdAt: string; // ISO 8601 string from Instant
+  createdAt: string;
 }
 
-export interface AuditLogListParams {
+/**
+ * Query parameters for listing audit logs.
+ */
+export interface AuditLogListParamsDTO {
   page?: number;
   size?: number;
   sort?: string;
@@ -32,6 +39,5 @@ export interface AuditLogListParams {
 
 /**
  * Paginated audit log list response.
- * Uses generic Paginated<T> instead of custom interface.
  */
-export type PaginatedAuditLogs = Paginated<AuditLogEntry>;
+export type PaginatedAuditLogsDTO = Paginated<AuditLogDTO>;
