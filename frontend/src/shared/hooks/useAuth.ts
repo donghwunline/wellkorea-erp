@@ -16,7 +16,7 @@
  */
 
 import { useShallow } from 'zustand/react/shallow';
-import { useAuthStore } from '@/stores';
+import { useAuthStore } from '@/shared/stores';
 
 /**
  * Hook to access authentication state and actions.

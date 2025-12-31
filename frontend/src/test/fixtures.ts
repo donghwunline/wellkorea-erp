@@ -18,7 +18,7 @@
 
 // Import UserDetails for the fixture factory
 import type { RoleName, User, UserDetails } from '@/shared/types/auth';
-import type { AuthStore } from '@/stores/authStore';
+import type { AuthStore } from '@/shared/stores/authStore';
 import type {
   QuotationDetails,
   QuotationLineItem,

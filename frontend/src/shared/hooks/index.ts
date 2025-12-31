@@ -5,7 +5,7 @@
  * feature-specific dependencies (only stores, types).
  *
  * Categories:
- * - Auth: useAuth (store wrapper)
+ * - Auth: useAuth (store wrapper for authentication)
  * - UI Primitives: useFocusTrap, useBodyScrollLock (pure React hooks for accessibility)
  * - Pagination: usePaginatedSearch (generic pagination/search state)
  */
