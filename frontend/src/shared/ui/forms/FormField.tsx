@@ -20,7 +20,7 @@
 
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { forwardRef } from 'react';
-import { cn } from '@/shared/utils';
+import { cn } from '../lib';
 
 export interface FormFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;

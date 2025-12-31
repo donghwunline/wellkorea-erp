@@ -52,11 +52,15 @@ vi.mock('react-router-dom', async () => {
 });
 
 // Mock useAuth hook
-vi.mock('@/shared/hooks', () => ({
-  useAuth: () => ({
-    hasAnyRole: vi.fn(() => true),
-  }),
-}));
+vi.mock('@/entities/auth', async () => {
+  const actual = await vi.importActual('@/entities/auth');
+  return {
+    ...actual,
+    useAuth: () => ({
+      hasAnyRole: vi.fn(() => true),
+    }),
+  };
+});
 
 // Mock useProjectActions hook
 const mockGetProject = vi.fn();

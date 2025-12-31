@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { useServiceActions } from '@/shared/hooks';
+import { useServiceActions } from './useServiceAction';
 import { projectService } from '@/services';
 import type { CreateProjectRequest, UpdateProjectRequest } from '@/services';
 

@@ -8,7 +8,7 @@
  * This prevents entities from depending on feature types.
  */
 
-import { DomainValidationError } from '@/shared/lib/errors';
+import { DomainValidationError } from '@/shared/api';
 
 /**
  * Line item input for commands.

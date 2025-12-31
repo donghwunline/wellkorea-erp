@@ -17,7 +17,7 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Button, ConfirmationModal, Icon, PageHeader, Pagination, SearchBar } from '@/shared/ui';
 import { FilterBar } from '@/shared/ui/navigation/FilterBar';
-import { usePaginatedSearch } from '@/shared/hooks';
+import { usePaginatedSearch } from '@/shared/pagination';
 
 // Entity imports - domain model and UI
 import {

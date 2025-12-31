@@ -29,8 +29,8 @@ import {
   UserPasswordForm,
   UserRolesForm,
 } from '@/components/features/users';
-import { usePaginatedSearch } from '@/shared/hooks';
-import type { UserDetails } from '@/shared/types';
+import { usePaginatedSearch } from '@/shared/pagination';
+import type { UserDetails } from '@/entities/user';
 
 type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | 'customers' | null;
 

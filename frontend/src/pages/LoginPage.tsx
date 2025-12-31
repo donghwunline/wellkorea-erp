@@ -18,8 +18,8 @@
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/shared/hooks';
-import { getErrorMessage } from '@/shared/utils';
+import { useAuth } from '@/entities/auth';
+import { getErrorMessage } from '@/shared/api';
 import type { ApiError } from '@/shared/api/types';
 import { ErrorAlert, FormField, Spinner } from '@/shared/ui';
 

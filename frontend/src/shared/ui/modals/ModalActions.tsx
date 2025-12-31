@@ -6,7 +6,7 @@
  */
 
 import type { HTMLAttributes, ReactNode } from 'react';
-import { cn } from '@/shared/utils';
+import { cn } from '../lib';
 
 export interface ModalActionsProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;

@@ -14,7 +14,7 @@ import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { ProjectListPage } from './ProjectListPage';
 // Import mocked hook for type-safe assertions
-import { usePaginatedSearch } from '@/shared/hooks';
+import { usePaginatedSearch } from '@/shared/pagination';
 
 // Helper to render ProjectListPage with BrowserRouter
 function renderProjectListPage() {
@@ -43,7 +43,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@/shared/hooks', () => ({
+vi.mock('@/shared/pagination', () => ({
   usePaginatedSearch: vi.fn(() => ({
     page: 0,
     setPage: mockSetPage,

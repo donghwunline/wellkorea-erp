@@ -10,17 +10,21 @@ import { BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './LoginPage';
 import type { ApiError } from '@/shared/api/types';
 // Import mocked modules
-import { useAuth } from '@/shared/hooks';
-import { getErrorMessage } from '@/shared/utils';
+import { useAuth } from '@/entities/auth';
+import { getErrorMessage } from '@/shared/api';
 
 // Mock useAuth hook
-vi.mock('@/shared/hooks', () => ({
-  useAuth: vi.fn(),
-}));
+vi.mock('@/entities/auth', async () => {
+  const actual = await vi.importActual('@/entities/auth');
+  return {
+    ...actual,
+    useAuth: vi.fn(),
+  };
+});
 
-// Mock getErrorMessage utility from @/shared/utils
-vi.mock('@/shared/utils', async () => {
-  const actual = await vi.importActual('@/shared/utils');
+// Mock getErrorMessage utility from @/shared/api
+vi.mock('@/shared/api', async () => {
+  const actual = await vi.importActual('@/shared/api');
   return {
     ...actual,
     getErrorMessage: vi.fn((error: ApiError) => {

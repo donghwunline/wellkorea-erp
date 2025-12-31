@@ -20,7 +20,7 @@ import {
 } from '@/shared/ui';
 import { useServiceCategories } from '@/components/features/items';
 import type { ServiceCategorySummary, VendorServiceOffering } from '@/services';
-import { useAuth } from '@/shared/hooks';
+import { useAuth } from '@/entities/auth';
 
 const PAGE_SIZE = 20;
 

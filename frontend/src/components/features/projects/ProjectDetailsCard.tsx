@@ -8,7 +8,7 @@
 import type { ProjectDetails, ProjectStatus } from '@/services';
 import { PROJECT_STATUS_LABELS } from '@/services';
 import { Badge, type BadgeVariant, Card, Icon, IconButton } from '@/shared/ui';
-import { formatDate, formatDateTime } from '@/shared/utils';
+import { formatDate, formatDateTime } from '@/shared/formatting';
 
 // Status badge variant mapping
 const STATUS_BADGE_VARIANTS: Record<ProjectStatus, BadgeVariant> = {

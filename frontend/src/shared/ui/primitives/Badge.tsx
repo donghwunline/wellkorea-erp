@@ -15,7 +15,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { cn } from '@/shared/utils';
+import { cn } from '../lib';
 
 export type BadgeVariant =
   | 'steel'

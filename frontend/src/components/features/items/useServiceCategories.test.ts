@@ -21,15 +21,19 @@ vi.mock('@/services', () => ({
   },
 }));
 
-// Mock @/shared/utils
-vi.mock('@/shared/utils', () => ({
-  getErrorMessage: vi.fn((error: unknown) => {
-    if (error && typeof error === 'object' && 'message' in error) {
-      return (error as { message: string }).message;
-    }
-    return 'An error occurred';
-  }),
-}));
+// Mock @/shared/api
+vi.mock('@/shared/api', async () => {
+  const actual = await vi.importActual('@/shared/api');
+  return {
+    ...actual,
+    getErrorMessage: vi.fn((error: unknown) => {
+      if (error && typeof error === 'object' && 'message' in error) {
+        return (error as { message: string }).message;
+      }
+      return 'An error occurred';
+    }),
+  };
+});
 
 describe('useServiceCategories', () => {
   const mockGetServiceCategories = serviceCategoryService.getServiceCategories as Mock;

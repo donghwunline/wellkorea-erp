@@ -13,8 +13,8 @@
 import { Alert, Card, Table } from '@/shared/ui';
 import type { Quotation } from '../model';
 import { lineItemRules } from '../model';
-import { formatDate } from '@/shared/lib/date';
-import { Money } from '@/shared/lib/money';
+import { formatDate } from '@/shared/formatting/date';
+import { Money } from '@/shared/formatting/money';
 import { QuotationStatusBadge } from './QuotationStatusBadge';
 
 export interface QuotationCardProps {

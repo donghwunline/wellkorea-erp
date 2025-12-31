@@ -12,7 +12,7 @@
  */
 
 import { Badge, Button, Card, Icon, Spinner } from '@/shared/ui';
-import { formatDateTime } from '@/shared/utils';
+import { formatDateTime } from '@/shared/formatting';
 import type { Approval, ApprovalLevel } from '../model';
 import { ApprovalStatusConfig, EntityTypeConfigs } from '../model';
 

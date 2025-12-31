@@ -29,8 +29,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ProjectDetails, ProjectSection } from '@/services';
-import { useAuth } from '@/shared/hooks';
-import type { RoleName } from '@/shared/types';
+import { useAuth } from '@/entities/auth';
+import type { RoleName } from '@/entities/user';
 import {
   Alert,
   Card,

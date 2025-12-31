@@ -7,7 +7,7 @@
  */
 
 import type { HTMLAttributes, ReactNode } from 'react';
-import { cn } from '@/shared/utils';
+import { cn } from '../lib';
 
 export type EmptyStateVariant = 'default' | 'table';
 

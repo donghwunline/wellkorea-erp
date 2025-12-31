@@ -9,7 +9,7 @@
 
 import { useCallback, useState } from 'react';
 import { productService } from '@/services';
-import { formatCurrency } from '@/shared';
+import { formatCurrency } from '@/shared/formatting';
 import {
   Button,
   Card,

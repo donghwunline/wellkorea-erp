@@ -6,7 +6,7 @@
 
 import { httpClient, AUDIT_ENDPOINTS } from '@/shared/api';
 import type { PagedResponse } from '@/shared/api/types';
-import { transformPagedResponse } from '@/services/shared';
+import { transformPagedResponse } from '@/shared/api';
 import type { AuditLogDTO, AuditLogListParamsDTO, PaginatedAuditLogsDTO } from './audit.dto';
 
 /**

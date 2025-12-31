@@ -8,7 +8,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { serviceCategoryService } from '@/services';
 import type { ServiceCategorySummary, VendorServiceOffering } from '@/services';
 import type { ApiError } from '@/shared/api/types';
-import { getErrorMessage } from '@/shared/utils';
+import { getErrorMessage } from '@/shared/api';
 
 interface UseServiceCategoriesOptions {
   /** Initial page size */

@@ -17,8 +17,8 @@
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Card, ConfirmationModal, Icon, PageHeader, Spinner } from '@/shared/ui';
-import { useAuth } from '@/shared/hooks';
-import { formatDate } from '@/shared/lib/date';
+import { useAuth } from '@/entities/auth';
+import { formatDate } from '@/shared/formatting/date';
 
 // FSD imports - Entities (domain models, business rules, read-only UI)
 import {

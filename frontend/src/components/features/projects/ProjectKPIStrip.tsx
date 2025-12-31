@@ -19,7 +19,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { projectSummaryService } from '@/services/projects';
 import type { ProjectKPI } from '@/services/projects';
 import { Icon, StatCard } from '@/shared/ui';
-import { cn, formatCurrency } from '@/shared/utils';
+import { formatCurrency } from '@/shared/formatting';
+import { cn } from '@/shared/ui';
 
 export interface ProjectKPIStripProps {
   /** Project ID to fetch KPIs for */

@@ -9,7 +9,7 @@
 
 import { Button, Card, Spinner, Pagination, SearchBar, ErrorAlert } from '@/shared/ui';
 import { useProducts } from '@/components/features/items';
-import { useAuth } from '@/shared/hooks';
+import { useAuth } from '@/entities/auth';
 
 const PAGE_SIZE = 20;
 

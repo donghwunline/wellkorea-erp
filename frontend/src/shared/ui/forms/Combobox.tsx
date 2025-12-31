@@ -121,7 +121,7 @@ import {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from '@/shared/utils';
+import { cn } from '../lib';
 import { Spinner } from '../primitives/Spinner';
 
 // ============================================================================

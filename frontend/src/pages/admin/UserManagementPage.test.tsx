@@ -16,7 +16,7 @@ import { UserManagementPage } from './UserManagementPage';
 import { mockUserDetails } from '@/test/fixtures';
 import type { UserDetails } from '@/entities/user';
 // Import mocked hook for type-safe assertions
-import { usePaginatedSearch } from '@/shared/hooks';
+import { usePaginatedSearch } from '@/shared/pagination';
 
 // Helper to render UserManagementPage with BrowserRouter
 function renderUserManagementPage() {
@@ -37,7 +37,7 @@ const mockHandleSearchChange = vi.fn();
 const mockHandleSearchSubmit = vi.fn();
 const mockHandleClearSearch = vi.fn();
 
-vi.mock('@/shared/hooks', () => ({
+vi.mock('@/shared/pagination', () => ({
   usePaginatedSearch: vi.fn(() => ({
     page: 0,
     setPage: mockSetPage,

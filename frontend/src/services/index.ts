@@ -19,22 +19,20 @@
  * ```
  */
 
+// Internal imports - these are not part of entity public API
+import { authApi } from '@/entities/auth/api';
+import { authEvents as entityAuthEvents, type AuthEvent as EntityAuthEvent } from '@/entities/auth';
 import {
-  authApi,
-  authEvents as entityAuthEvents,
-  type AuthEvent as EntityAuthEvent,
-} from '@/entities/auth';
-import {
-  userApi,
-  type UserDetails as EntityUserDetails,
-  type User as EntityUser,
-  type RoleName as EntityRoleName,
-  type CreateUserRequestDTO,
-  type UpdateUserRequestDTO,
   type AssignRolesRequestDTO,
   type ChangePasswordRequestDTO,
-  type UserListParamsDTO,
+  type CreateUserRequestDTO,
   type PaginatedUsersDTO,
+  type RoleName as EntityRoleName,
+  type UpdateUserRequestDTO,
+  type User as EntityUser,
+  userApi,
+  type UserDetails as EntityUserDetails,
+  type UserListParamsDTO,
 } from '@/entities/user';
 
 // ============================================================================
@@ -222,7 +220,7 @@ export {
   isBusinessError,
   isServerError,
   isNotFoundError,
-} from '@/shared/utils';
+} from '@/shared/api';
 
 // Re-export common types from API layer for convenience
 export type { PaginationMetadata, Paginated, ApiError, ErrorResponse } from '@/shared/api/types';

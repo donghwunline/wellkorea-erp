@@ -9,7 +9,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { usePaginatedSearch } from '@/shared/hooks';
+import { usePaginatedSearch } from '@/shared/pagination';
 
 export interface AuditLogFilters {
   username: string;

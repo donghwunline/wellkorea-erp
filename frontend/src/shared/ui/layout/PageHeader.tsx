@@ -6,7 +6,7 @@
  */
 
 import type { HTMLAttributes, ReactNode } from 'react';
-import { cn } from '@/shared/utils';
+import { cn } from '../lib';
 
 export interface PageHeaderProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;

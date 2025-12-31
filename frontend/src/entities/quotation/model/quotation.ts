@@ -5,8 +5,8 @@
  * Dates are stored as ISO strings for React Query cache serialization.
  */
 
-import { isPast, daysBetween, getNow } from '@/shared/lib/date';
-import { Money } from '@/shared/lib/money';
+import { isPast, daysBetween, getNow } from '@/shared/formatting/date';
+import { Money } from '@/shared/formatting/money';
 import type { LineItem } from './line-item';
 import { lineItemRules } from './line-item';
 import { QuotationStatus, QuotationStatusConfig } from './quotation-status';

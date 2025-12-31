@@ -5,9 +5,9 @@
  * Smart component - fetches data and handles role-based visibility.
  */
 
-import { useAuth } from '@/shared/hooks';
+import { useAuth } from '@/entities/auth';
 import { Alert, Button, Card, Icon, Spinner } from '@/shared/ui';
-import type { RoleName } from '@/shared/types';
+import type { RoleName } from '@/entities/user';
 import type { ProjectSection } from '@/services';
 import { useProjectSummary } from './hooks';
 import { ProjectSummaryCard } from './ProjectSummaryCard';
