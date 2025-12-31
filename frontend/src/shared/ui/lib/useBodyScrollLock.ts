@@ -1,5 +1,6 @@
 /**
- * Body scroll lock hook for overlays
+ * Body scroll lock hook for overlays.
+ * Internal utility for Modal and overlay components.
  *
  * Prevents body scrolling when an overlay (modal, drawer, etc.) is open,
  * ensuring users can only scroll within the overlay content.
@@ -9,23 +10,6 @@
  * - Restores original overflow value when deactivated
  * - Handles multiple overlays (last one wins)
  * - Zero dependencies
- *
- * @example
- * ```tsx
- * function Modal({ isOpen }) {
- *   useBodyScrollLock(isOpen);
- *
- *   if (!isOpen) return null;
- *
- *   return (
- *     <div className="modal">
- *       <div className="modal-content">
- *         Content here
- *       </div>
- *     </div>
- *   );
- * }
- * ```
  */
 
 import { useEffect } from 'react';
@@ -37,12 +21,6 @@ import { useEffect } from 'react';
  * Automatically restores the original overflow style when deactivated.
  *
  * @param isLocked - Whether to lock body scroll
- *
- * @example
- * ```tsx
- * // Lock scroll when modal is open
- * useBodyScrollLock(isModalOpen);
- * ```
  */
 export function useBodyScrollLock(isLocked: boolean): void {
   useEffect(() => {

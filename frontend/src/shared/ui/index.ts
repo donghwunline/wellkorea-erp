@@ -3,16 +3,19 @@
  *
  * Organized by functional categories:
  * - primitives/    - Atomic building blocks (Button, Input, Badge, etc.)
- * - forms/         - Form-specific components (FormField)
+ * - forms/         - Form-specific components (FormField, DatePicker, Combobox)
  * - feedback/      - User feedback and status (Alert, LoadingState, etc.)
  * - data-display/  - Data presentation (Table, Card, StatCard)
  * - navigation/    - Navigation and filtering (Pagination, SearchBar, FilterBar)
  * - modals/        - Modal dialogs (Modal, ConfirmationModal)
  * - layout/        - Page structure (PageHeader)
  *
- * Note: UI hooks (useFocusTrap, useBodyScrollLock) are in @/shared/hooks
- * Note: cn utility is in @/shared/utils
+ * Internal utilities (lib/) are used internally by UI components.
+ * External consumers should import cn from @/shared/ui.
  */
+
+// Utility exports (for external use)
+export { cn } from './lib';
 
 // Primitives - Atomic building blocks
 export * from './primitives';

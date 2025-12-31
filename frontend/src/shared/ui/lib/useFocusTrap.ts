@@ -1,5 +1,6 @@
 /**
- * Focus trap hook for accessible overlays
+ * Focus trap hook for accessible overlays.
+ * Internal utility for Modal and overlay components.
  *
  * Traps keyboard focus within a container element, ensuring users can't
  * accidentally tab out of modal dialogs, drawers, or other overlay components.
@@ -9,22 +10,6 @@
  * - Traps Tab/Shift+Tab navigation within container
  * - Restores focus to previously focused element when deactivated
  * - Handles edge cases (no focusable elements, dynamic content)
- *
- * @example
- * ```tsx
- * function Dialog({ isOpen, onClose }) {
- *   const trapRef = useFocusTrap(isOpen);
- *
- *   if (!isOpen) return null;
- *
- *   return (
- *     <div ref={trapRef} role="dialog">
- *       <button onClick={onClose}>Close</button>
- *       <input type="text" />
- *     </div>
- *   );
- * }
- * ```
  */
 
 import { type RefObject, useEffect, useRef } from 'react';

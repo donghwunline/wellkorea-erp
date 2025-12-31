@@ -17,10 +17,14 @@ ui/
 └── layout/          # Page structure (PageHeader)
 ```
 
-**Related shared modules:**
+**Internal utilities:**
 
-- `@/shared/hooks` - UI primitive hooks (useFocusTrap, useBodyScrollLock)
-- `@/shared/utils` - Utility functions (cn for className merging)
+The `lib/` subdirectory contains internal utilities for UI components:
+- `cn` - className merging utility
+- `useFocusTrap` - Focus trap hook for modals/dialogs
+- `useBodyScrollLock` - Body scroll lock for overlays
+
+These are internal and should not be imported from outside `shared/ui/`.
 
 ## Usage
 
@@ -33,8 +37,8 @@ import { Button, Table, Modal, Alert, Icon, Combobox, DatePicker, Tabs } from '@
 For hooks and utilities, import from shared modules:
 
 ```typescript
-import { useFocusTrap, useBodyScrollLock } from '@/shared/hooks';
-import { cn } from '@/shared/utils';
+// Note: useFocusTrap and useBodyScrollLock are internal to shared/ui
+import { cn } from '@/shared/ui';
 ```
 
 ## Component Categories
@@ -357,7 +361,7 @@ UI primitive hooks are located in `@/shared/hooks`:
 **Example**:
 
 ```tsx
-import { useFocusTrap, useBodyScrollLock } from '@/shared/hooks';
+// Note: useFocusTrap and useBodyScrollLock are internal to shared/ui
 
 function CustomDialog({ isOpen, onClose }) {
   const dialogRef = useFocusTrap(isOpen, {
@@ -384,7 +388,7 @@ function CustomDialog({ isOpen, onClose }) {
 Located in `@/shared/utils`. Utility function for conditional className merging:
 
 ```typescript
-import { cn } from '@/shared/utils';
+import { cn } from '@/shared/ui';
 
 <div className={cn(
   'base-classes',
