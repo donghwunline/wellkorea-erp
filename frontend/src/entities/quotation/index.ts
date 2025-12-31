@@ -1,71 +1,77 @@
 /**
  * Quotation Entity - Public API.
  *
- * Exports all public types, rules, hooks, and UI components
- * for the quotation domain.
+ * This is the ONLY entry point for importing from the quotation entity.
+ * Internal modules (model/, api/, ui/) should never be imported directly.
  *
  * FSD Layer: entities
  * Can import from: shared
  * Cannot import from: features, widgets, pages
+ *
+ * @see docs/architecture/fsd-public-api-guidelines.md
  */
 
-// Domain Model - Types and Business Rules
-export type {
-  LineItem,
-  Quotation,
-  CreateQuotationCommand,
-  UpdateQuotationCommand,
-  LineItemCommand,
-} from './model';
+// =============================================================================
+// DOMAIN TYPES
+// Types that appear in component props, state, or function signatures
+// =============================================================================
+
+export type { Quotation, QuotationListItem } from './model/quotation';
+export type { LineItem } from './model/line-item';
+
+// =============================================================================
+// STATUS
+// Status enum and config for conditional rendering and business logic
+// =============================================================================
+
+export { QuotationStatus, QuotationStatusConfig } from './model/quotation-status';
+
+// =============================================================================
+// BUSINESS RULES
+// Pure functions for domain logic (canEdit, canSubmit, calculations)
+// =============================================================================
+
+export { quotationRules } from './model/quotation';
+
+// =============================================================================
+// QUERY FACTORY (TanStack Query v5)
+// Use with useQuery() directly - no custom hooks needed
+// =============================================================================
 
 export {
-  QuotationStatus,
-  QuotationStatusConfig,
-  getStatusLabel,
-  getStatusColor,
-  lineItemRules,
-  quotationRules,
-  quotationValidation,
-} from './model';
+  quotationQueries,
+  type QuotationListQueryParams,
+  type PaginatedQuotations,
+} from './api/quotation.queries';
 
-// API Layer - DTOs, Mappers, API functions
-export type {
-  CreateQuotationInput,
-  UpdateQuotationInput,
-  LineItemInput,
-} from './api';
+// =============================================================================
+// COMMAND FUNCTIONS (with validation)
+// Use with useMutation() directly
+// =============================================================================
 
-export {
-  quotationApi,
-  quotationMapper,
-  quotationCommandMapper,
-} from './api';
+export { createQuotation, type CreateQuotationInput, type LineItemInput } from './api/create-quotation';
+export { updateQuotation, type UpdateQuotationInput } from './api/update-quotation';
+export { submitQuotation } from './api/submit-quotation';
+export { createQuotationVersion } from './api/create-quotation-version';
 
-// Query Layer - TanStack Query hooks
-export type {
-  UseQuotationOptions,
-  UseQuotationsOptions,
-  UseQuotationsParams,
-  PaginatedQuotations,
-  QuotationListParams,
-} from './query';
+// =============================================================================
+// OTHER API FUNCTIONS
+// =============================================================================
 
-export {
-  quotationQueryKeys,
-  quotationQueryFns,
-  useQuotation,
-  useQuotations,
-} from './query';
+export { downloadQuotationPdf } from './api/quotation-pdf';
+export { sendQuotationNotification } from './api/send-quotation-notification';
 
-// UI Layer - Display components
-export type {
-  QuotationStatusBadgeProps,
-  QuotationCardProps,
-  QuotationTableProps,
-} from './ui';
+// =============================================================================
+// DTO TYPES (for features layer if needed)
+// =============================================================================
 
-export {
-  QuotationStatusBadge,
-  QuotationCard,
-  QuotationTable,
-} from './ui';
+export type { CommandResult } from './api/quotation.dto';
+
+// =============================================================================
+// UI COMPONENTS
+// Display-only components with no side effects
+// =============================================================================
+
+export { QuotationStatusBadge } from './ui/QuotationStatusBadge';
+export { QuotationCard } from './ui/QuotationCard';
+export { QuotationTable } from './ui/QuotationTable';

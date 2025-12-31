@@ -1,31 +1,33 @@
 /**
- * Quotation DTO to Domain model mappers.
+ * Quotation Response to Domain model mappers.
  *
- * Maps API DTOs to domain models (read-side).
+ * Maps API Response types to domain models (read-side).
  * Always returns plain objects (not class instances).
  */
 
-import { quotationRules, type Quotation, type QuotationListItem, type LineItem, type QuotationStatus } from '../model';
-import type { QuotationDetailsDTO, LineItemDTO } from './quotation.dto';
+import { type Quotation, type QuotationListItem, quotationRules } from '../model/quotation';
+import type { LineItem } from '../model/line-item';
+import type { QuotationStatus } from '../model/quotation-status';
+import type { LineItemResponse, QuotationDetailsResponse } from './quotation.dto';
 
 /**
  * Line item mapper.
  */
-export const lineItemMapper = {
+const lineItemMapper = {
   /**
-   * Map API DTO to domain model (plain object).
+   * Map API response to domain model (plain object).
    */
-  toDomain(dto: LineItemDTO): LineItem {
+  toDomain(response: LineItemResponse): LineItem {
     return {
-      id: dto.id,
-      productId: dto.productId,
-      productSku: dto.productSku,
-      productName: dto.productName,
-      sequence: dto.sequence,
-      quantity: dto.quantity,
-      unitPrice: dto.unitPrice,
-      lineTotal: dto.lineTotal,
-      notes: dto.notes?.trim() ?? null,
+      id: response.id,
+      productId: response.productId,
+      productSku: response.productSku,
+      productName: response.productName,
+      sequence: response.sequence,
+      quantity: response.quantity,
+      unitPrice: response.unitPrice,
+      lineTotal: response.lineTotal,
+      notes: response.notes?.trim() ?? null,
     };
   },
 };
@@ -35,33 +37,33 @@ export const lineItemMapper = {
  */
 export const quotationMapper = {
   /**
-   * Map API DTO to domain model (plain object).
+   * Map API response to domain model (plain object).
    * Dates kept as ISO strings for serialization compatibility.
    */
-  toDomain(dto: QuotationDetailsDTO): Quotation {
-    const lineItems = (dto.lineItems ?? []).map(lineItemMapper.toDomain);
+  toDomain(response: QuotationDetailsResponse): Quotation {
+    const lineItems = (response.lineItems ?? []).map(lineItemMapper.toDomain);
 
     return {
-      id: dto.id,
-      projectId: dto.projectId,
-      projectName: dto.projectName.trim(),
-      jobCode: dto.jobCode,
-      version: dto.version,
-      status: dto.status as QuotationStatus,
-      quotationDate: dto.quotationDate,
-      validityDays: dto.validityDays,
-      expiryDate: dto.expiryDate,
-      totalAmount: dto.totalAmount,
-      notes: dto.notes?.trim() ?? null,
-      createdById: dto.createdById,
-      createdByName: dto.createdByName.trim(),
-      submittedAt: dto.submittedAt,
-      approvedAt: dto.approvedAt,
-      approvedById: dto.approvedById,
-      approvedByName: dto.approvedByName?.trim() ?? null,
-      rejectionReason: dto.rejectionReason?.trim() ?? null,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      id: response.id,
+      projectId: response.projectId,
+      projectName: response.projectName.trim(),
+      jobCode: response.jobCode,
+      version: response.version,
+      status: response.status as QuotationStatus,
+      quotationDate: response.quotationDate,
+      validityDays: response.validityDays,
+      expiryDate: response.expiryDate,
+      totalAmount: response.totalAmount,
+      notes: response.notes?.trim() ?? null,
+      createdById: response.createdById,
+      createdByName: response.createdByName.trim(),
+      submittedAt: response.submittedAt,
+      approvedAt: response.approvedAt,
+      approvedById: response.approvedById,
+      approvedByName: response.approvedByName?.trim() ?? null,
+      rejectionReason: response.rejectionReason?.trim() ?? null,
+      createdAt: response.createdAt,
+      updatedAt: response.updatedAt,
       lineItems,
     };
   },
@@ -84,20 +86,20 @@ export const quotationMapper = {
   },
 
   /**
-   * Map DTO directly to list item (skipping full domain model).
+   * Map response directly to list item (skipping full domain model).
    * Useful when full model parsing is not needed.
    */
-  dtoToListItem(dto: QuotationDetailsDTO): QuotationListItem {
+  responseToListItem(response: QuotationDetailsResponse): QuotationListItem {
     return {
-      id: dto.id,
-      jobCode: dto.jobCode,
-      projectId: dto.projectId,
-      projectName: dto.projectName.trim(),
-      version: dto.version,
-      status: dto.status as QuotationStatus,
-      totalAmount: dto.totalAmount,
-      createdAt: dto.createdAt,
-      createdByName: dto.createdByName.trim(),
+      id: response.id,
+      jobCode: response.jobCode,
+      projectId: response.projectId,
+      projectName: response.projectName.trim(),
+      version: response.version,
+      status: response.status as QuotationStatus,
+      totalAmount: response.totalAmount,
+      createdAt: response.createdAt,
+      createdByName: response.createdByName.trim(),
     };
   },
 };

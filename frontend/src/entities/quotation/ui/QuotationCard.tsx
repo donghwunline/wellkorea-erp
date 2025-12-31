@@ -11,8 +11,8 @@
  */
 
 import { Alert, Card, Table } from '@/shared/ui';
-import type { Quotation } from '../model';
-import { lineItemRules } from '../model';
+import type { Quotation } from '../model/quotation';
+import { lineItemRules } from '../model/line-item';
 import { formatDate } from '@/shared/formatting/date';
 import { Money } from '@/shared/formatting/money';
 import { QuotationStatusBadge } from './QuotationStatusBadge';
@@ -69,7 +69,7 @@ export function QuotationCard({
   includeTimeInDates = false,
   className,
 }: Readonly<QuotationCardProps>) {
-  const dateFormat = includeTimeInDates ? 'YYYY-MM-DD HH:mm' as const : 'YYYY-MM-DD' as const;
+  const dateFormat = includeTimeInDates ? ('YYYY-MM-DD HH:mm' as const) : ('YYYY-MM-DD' as const);
 
   return (
     <div className={className}>

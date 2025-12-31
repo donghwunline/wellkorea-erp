@@ -11,28 +11,28 @@
  * - Receives all data via props
  */
 
-import { Card, Table, EmptyState } from '@/shared/ui';
-import type { Quotation } from '../model';
+import { Card, EmptyState, Table } from '@/shared/ui';
+import type { QuotationListItem } from '../model/quotation';
 import { formatDate } from '@/shared/formatting/date';
 import { Money } from '@/shared/formatting/money';
 import { QuotationStatusBadge } from './QuotationStatusBadge';
 
 export interface QuotationTableProps {
   /**
-   * Quotations to display.
+   * Quotations to display (list items, not full quotation details).
    */
-  quotations: readonly Quotation[];
+  quotations: readonly QuotationListItem[];
 
   /**
    * Called when a row is clicked.
    */
-  onRowClick?: (quotation: Quotation) => void;
+  onRowClick?: (quotation: QuotationListItem) => void;
 
   /**
    * Optional render function for action buttons.
    * Allows parent to inject feature-specific actions.
    */
-  renderActions?: (quotation: Quotation) => React.ReactNode;
+  renderActions?: (quotation: QuotationListItem) => React.ReactNode;
 
   /**
    * Empty state message when no quotations.
@@ -91,18 +91,12 @@ export function QuotationTable({
             <Table.HeaderCell>Status</Table.HeaderCell>
             <Table.HeaderCell>Total Amount</Table.HeaderCell>
             <Table.HeaderCell>Created</Table.HeaderCell>
-            {renderActions && (
-              <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
-            )}
+            {renderActions && <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>}
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {quotations.length === 0 ? (
-            <EmptyState
-              variant="table"
-              colspan={renderActions ? 6 : 5}
-              message={emptyMessage}
-            />
+            <EmptyState variant="table" colspan={renderActions ? 6 : 5} message={emptyMessage} />
           ) : (
             quotations.map(quotation => (
               <Table.Row
@@ -133,10 +127,7 @@ export function QuotationTable({
                 </Table.Cell>
                 {renderActions && (
                   <Table.Cell>
-                    <div
-                      className="flex justify-end gap-2"
-                      onClick={e => e.stopPropagation()}
-                    >
+                    <div className="flex justify-end gap-2" onClick={e => e.stopPropagation()}>
                       {renderActions(quotation)}
                     </div>
                   </Table.Cell>

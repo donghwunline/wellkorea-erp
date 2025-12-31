@@ -11,7 +11,7 @@
  */
 
 import { Badge } from '@/shared/ui';
-import { type QuotationStatus, QuotationStatusConfig } from '../model';
+import { type QuotationStatus, QuotationStatusConfig } from '../model/quotation-status';
 
 export interface QuotationStatusBadgeProps {
   /**

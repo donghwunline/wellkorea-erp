@@ -1,8 +1,11 @@
 /**
- * Quotation API DTOs.
+ * Quotation API types.
+ *
+ * Naming convention:
+ * - *Request: Types sent TO the API (create, update, params)
+ * - *Response: Types received FROM the API (details, list items)
  *
  * These types exactly match the backend API contract.
- * Separate from domain models to decouple from API changes.
  */
 
 /**
@@ -14,9 +17,9 @@ export interface CommandResult {
 }
 
 /**
- * Line item DTO from API response.
+ * Line item from API response.
  */
-export interface LineItemDTO {
+export interface LineItemResponse {
   id: number;
   productId: number;
   productSku: string;
@@ -29,9 +32,9 @@ export interface LineItemDTO {
 }
 
 /**
- * Full quotation details DTO from API response.
+ * Full quotation details from API response.
  */
-export interface QuotationDetailsDTO {
+export interface QuotationDetailsResponse {
   id: number;
   projectId: number;
   projectName: string;
@@ -52,13 +55,13 @@ export interface QuotationDetailsDTO {
   rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
-  lineItems: LineItemDTO[] | null;
+  lineItems: LineItemResponse[] | null;
 }
 
 /**
- * Line item request for creating/updating quotation.
+ * Line item for creating/updating quotation.
  */
-export interface LineItemRequestDTO {
+export interface LineItemRequest {
   productId: number;
   quantity: number;
   unitPrice: number;
@@ -66,32 +69,31 @@ export interface LineItemRequestDTO {
 }
 
 /**
- * Request DTO for creating a new quotation.
+ * Request for creating a new quotation.
  */
-export interface CreateQuotationRequestDTO {
+export interface CreateQuotationRequest {
   projectId: number;
   validityDays?: number;
   notes?: string;
-  lineItems: LineItemRequestDTO[];
+  lineItems: LineItemRequest[];
 }
 
 /**
- * Request DTO for updating an existing quotation.
+ * Request for updating an existing quotation.
  */
-export interface UpdateQuotationRequestDTO {
+export interface UpdateQuotationRequest {
   validityDays?: number;
   notes?: string;
-  lineItems: LineItemRequestDTO[];
+  lineItems: LineItemRequest[];
 }
 
 /**
  * Query parameters for listing quotations.
  */
-export interface QuotationListParamsDTO {
+export interface QuotationListParams {
   page?: number;
   size?: number;
   status?: string;
   projectId?: number;
   search?: string;
 }
-

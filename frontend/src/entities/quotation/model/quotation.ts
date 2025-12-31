@@ -5,12 +5,12 @@
  * Dates are stored as ISO strings for React Query cache serialization.
  */
 
-import { isPast, daysBetween, getNow } from '@/shared/formatting/date';
+import { daysBetween, getNow, isPast } from '@/shared/formatting/date';
 import { Money } from '@/shared/formatting/money';
 import type { LineItem } from './line-item';
 import { lineItemRules } from './line-item';
-import { QuotationStatus, QuotationStatusConfig } from './quotation-status';
 import type { StatusConfig } from './quotation-status';
+import { QuotationStatus, QuotationStatusConfig } from './quotation-status';
 
 /**
  * Quotation domain model (plain interface).
@@ -58,10 +58,28 @@ export interface QuotationListItem {
 }
 
 /**
+ * Common fields shared by Quotation and QuotationListItem.
+ * Used for type-safe rule functions that work with both.
+ */
+type QuotationBase = Pick<Quotation, 'id' | 'status' | 'version'>;
+
+/**
+ * Quotation with optional lineItems (for rules that check lineItems).
+ */
+type QuotationWithOptionalLineItems = QuotationBase & {
+  readonly lineItems?: readonly LineItem[];
+  readonly totalAmount?: number;
+  readonly expiryDate?: string;
+  readonly notes?: string | null;
+};
+
+/**
  * Quotation pure functions for business rules.
  *
  * All business logic as pure functions that operate on Quotation objects.
  * This keeps domain logic testable and separate from UI.
+ *
+ * Most rules work with both Quotation and QuotationListItem.
  */
 export const quotationRules = {
   // ==================== COMPUTED VALUES ====================
@@ -71,10 +89,7 @@ export const quotationRules = {
    * Returns 0 if no line items.
    */
   calculateTotal(quotation: Quotation): number {
-    return quotation.lineItems.reduce(
-      (sum, item) => sum + lineItemRules.getLineTotal(item),
-      0
-    );
+    return quotation.lineItems.reduce((sum, item) => sum + lineItemRules.getLineTotal(item), 0);
   },
 
   /**
@@ -130,44 +145,50 @@ export const quotationRules = {
   /**
    * Check if quotation can be edited.
    * Only DRAFT quotations can be edited.
+   * Works with both Quotation and QuotationListItem.
    */
-  canEdit(quotation: Quotation): boolean {
+  canEdit(quotation: QuotationBase): boolean {
     return quotation.status === QuotationStatus.DRAFT;
   },
 
   /**
    * Check if quotation can be submitted for approval.
    * Requires DRAFT status, at least one line item, and positive total.
+   * For QuotationListItem (no lineItems), returns true for DRAFT status.
    */
-  canSubmit(quotation: Quotation): boolean {
+  canSubmit(quotation: QuotationWithOptionalLineItems): boolean {
+    if (quotation.status !== QuotationStatus.DRAFT) return false;
+    // If lineItems not available (list view), allow based on status only
+    if (!quotation.lineItems) return true;
     return (
-      quotation.status === QuotationStatus.DRAFT &&
-      quotation.lineItems.length > 0 &&
-      quotationRules.calculateTotal(quotation) > 0
+      quotation.lineItems.length > 0 && quotationRules.calculateTotal(quotation as Quotation) > 0
     );
   },
 
   /**
    * Check if quotation can be approved (approver's perspective).
    * Only PENDING quotations can be approved.
+   * Works with both Quotation and QuotationListItem.
    */
-  canApprove(quotation: Quotation): boolean {
+  canApprove(quotation: QuotationBase): boolean {
     return quotation.status === QuotationStatus.PENDING;
   },
 
   /**
    * Check if quotation can be rejected (approver's perspective).
    * Only PENDING quotations can be rejected.
+   * Works with both Quotation and QuotationListItem.
    */
-  canReject(quotation: Quotation): boolean {
+  canReject(quotation: QuotationBase): boolean {
     return quotation.status === QuotationStatus.PENDING;
   },
 
   /**
    * Check if a new version can be created.
    * Available for APPROVED, REJECTED, or SENT quotations.
+   * Works with both Quotation and QuotationListItem.
    */
-  canCreateNewVersion(quotation: Quotation): boolean {
+  canCreateNewVersion(quotation: QuotationBase): boolean {
     const validStatuses: QuotationStatus[] = [
       QuotationStatus.APPROVED,
       QuotationStatus.REJECTED,
@@ -179,30 +200,39 @@ export const quotationRules = {
   /**
    * Check if quotation can be sent to customer.
    * Requires APPROVED status and not expired.
+   * For QuotationListItem (no expiryDate), returns true for APPROVED status.
    *
    * @param quotation - Quotation to check
    * @param now - Optional current date for testing
    */
-  canSend(quotation: Quotation, now: Date = getNow()): boolean {
-    return (
-      quotation.status === QuotationStatus.APPROVED &&
-      !quotationRules.isExpired(quotation, now)
-    );
+  canSend(quotation: QuotationWithOptionalLineItems, now: Date = getNow()): boolean {
+    if (quotation.status !== QuotationStatus.APPROVED) return false;
+    // If expiryDate not available (list view), allow based on status only
+    if (!quotation.expiryDate) return true;
+    return !quotationRules.isExpired(quotation as Quotation, now);
   },
 
   /**
    * Check if PDF can be generated.
-   * Requires at least one line item.
+   * For full Quotation: requires at least one line item.
+   * For QuotationListItem: assumes PDF can be generated (status-based).
+   * Works with both Quotation and QuotationListItem.
    */
-  canGeneratePdf(quotation: Quotation): boolean {
+  canGeneratePdf(quotation: QuotationWithOptionalLineItems): boolean {
+    // If lineItems not available (list view), check status instead
+    if (!quotation.lineItems) {
+      // PDF can be generated for any non-DRAFT quotation
+      return quotation.status !== QuotationStatus.DRAFT;
+    }
     return quotation.lineItems.length > 0;
   },
 
   /**
    * Check if revision notification can be sent.
    * Typically for SENT or later versions.
+   * Works with both Quotation and QuotationListItem.
    */
-  canSendNotification(quotation: Quotation): boolean {
+  canSendNotification(quotation: QuotationBase): boolean {
     const validStatuses: QuotationStatus[] = [QuotationStatus.APPROVED, QuotationStatus.SENT];
     return quotation.version > 1 && validStatuses.includes(quotation.status);
   },
@@ -210,16 +240,21 @@ export const quotationRules = {
   /**
    * Check if quotation is in a terminal state.
    * Terminal states: ACCEPTED, REJECTED (final)
+   * Works with both Quotation and QuotationListItem.
    */
-  isTerminal(quotation: Quotation): boolean {
-    const terminalStatuses: QuotationStatus[] = [QuotationStatus.ACCEPTED, QuotationStatus.REJECTED];
+  isTerminal(quotation: QuotationBase): boolean {
+    const terminalStatuses: QuotationStatus[] = [
+      QuotationStatus.ACCEPTED,
+      QuotationStatus.REJECTED,
+    ];
     return terminalStatuses.includes(quotation.status);
   },
 
   /**
    * Check if quotation is pending any action.
+   * Works with both Quotation and QuotationListItem.
    */
-  isPending(quotation: Quotation): boolean {
+  isPending(quotation: QuotationBase): boolean {
     return quotation.status === QuotationStatus.PENDING;
   },
 };
