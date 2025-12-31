@@ -1,45 +1,34 @@
 /**
  * Auth Entity - Public API.
  *
- * Exports auth domain types, store, and API.
+ * Provides authentication state and actions for the application.
  *
  * @example
  * ```tsx
- * import { useAuthStore, type LoginCredentials } from '@/entities/auth';
+ * import { useAuth, type LoginCredentials } from '@/entities/auth';
  *
- * function LoginForm() {
- *   const login = useAuthStore(state => state.login);
+ * function MyComponent() {
+ *   const { user, isAuthenticated, hasRole } = useAuth();
  *
- *   const handleSubmit = async (credentials: LoginCredentials) => {
- *     await login(credentials);
- *   };
+ *   if (!isAuthenticated) return <LoginPage />;
+ *   if (!hasRole('ROLE_ADMIN')) return <AccessDenied />;
  *
- *   return <form onSubmit={handleSubmit}>...</form>;
+ *   return <Dashboard user={user} />;
  * }
  * ```
  */
 
-// ==================== MODEL ====================
-export type {
-  AuthState,
-  AuthActions,
-  AuthStore,
-  LoginCredentials,
-} from './model';
+// ==================== HOOKS ====================
+// Primary interface for consuming auth state
+export { useAuth } from './hooks';
 
-// ==================== API ====================
-export type {
-  LoginRequestDTO,
-  LoginResponseDTO,
-  LoginUserDTO,
-} from './api';
-
-export { authMapper, type LoginResult } from './api';
-export { authApi } from './api';
-
-// ==================== STORE ====================
-export { authEvents, type AuthEvent } from './store';
+// Low-level store access (for features that need direct store manipulation)
 export { useAuthStore } from './store';
 
-// ==================== LIB ====================
-export { authStorage } from './lib';
+// ==================== TYPES ====================
+// Types needed by consumers
+export type { LoginCredentials, AuthStore } from './model';
+
+// ==================== EVENTS ====================
+// Auth events for cross-domain coordination (e.g., logout → clear cache)
+export { authEvents, type AuthEvent } from './store';
