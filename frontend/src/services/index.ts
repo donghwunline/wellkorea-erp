@@ -160,23 +160,6 @@ export type {
   PaginatedCompanies,
 } from './companies';
 
-// Project service
-export { projectService, projectSummaryService, PROJECT_STATUS_LABELS } from './projects';
-export type {
-  ProjectDetails,
-  ProjectListItem,
-  ProjectListParams,
-  PaginatedProjects,
-  CreateProjectRequest,
-  UpdateProjectRequest,
-  ProjectCommandResult,
-  ProjectStatus,
-  // Project summary types
-  ProjectSection,
-  ProjectSectionSummary,
-  ProjectSummary,
-} from './projects';
-
 // Product service (Items → Products tab)
 export { productService } from './products';
 export type {
