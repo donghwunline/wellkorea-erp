@@ -318,12 +318,18 @@ frontend/                                     # React application (FSD-Lite Arch
 │   │   └── user/                           # create/, assign-roles/, manage-customers/
 │   │
 │   ├── entities/                            # Domain models (TYPES + RULES + QUERIES)
-│   │   ├── quotation/
+│   │   ├── quotation/                       # Reference implementation
 │   │   │   ├── model/                      # quotation.ts, line-item.ts, quotation-status.ts
-│   │   │   ├── api/                        # quotation.dto.ts, quotation.mapper.ts, quotation.api.ts
-│   │   │   ├── query/                      # use-quotation.ts, use-quotations.ts, query-keys.ts
+│   │   │   ├── api/                        # Query factory + Command functions
+│   │   │   │   ├── quotation.dto.ts       # *Request/*Response types (internal)
+│   │   │   │   ├── quotation.mapper.ts    # Response → Domain mapping (internal)
+│   │   │   │   ├── quotation.queries.ts   # Query factory with queryOptions()
+│   │   │   │   ├── get-quotation.ts       # HTTP GET operations (internal)
+│   │   │   │   ├── create-quotation.ts    # Input + validation + POST
+│   │   │   │   ├── update-quotation.ts    # Input + validation + PUT
+│   │   │   │   └── submit-quotation.ts    # Other command functions
 │   │   │   ├── ui/                         # QuotationCard, QuotationTable, QuotationStatusBadge
-│   │   │   └── index.ts
+│   │   │   └── index.ts                    # Public API (minimal exports)
 │   │   ├── project/
 │   │   ├── company/
 │   │   ├── user/
@@ -370,7 +376,9 @@ frontend/                                     # React application (FSD-Lite Arch
 
 **Key Architectural Decisions (Frontend - FSD-Lite)**:
 - **FSD-Lite adoption (2025-12-30)**: Frontend migrated to Feature-Sliced Design aligned with backend DDD + CQS patterns
-- **TanStack Query**: Query/Command separation matching backend CQS (entities/query for reads, features/model for writes)
+- **Query Factory Pattern (2026-01-01)**: No `query/` folder - queries live in `api/quotation.queries.ts` using TanStack Query v5 `queryOptions()`
+- **Direct Query Usage**: `useQuery(quotationQueries.detail(id))` - no custom hook wrappers needed
+- **Command Functions**: Individual files (`create-quotation.ts`) combining Input types + validation + mapping + API call
 - **Domain Models = Plain Objects + Pure Functions**: `quotationRules.canEdit(q)` instead of classes, React Query serialization-compatible
 - **Cache Data Format = Always Domain Models**: All `useQuery`, `prefetchQuery`, `setQueryData` work with domain types, not DTOs
 - **Query Key Stability = Primitives Only**: Query keys use individual primitives (page, size, search, status) not objects
@@ -389,7 +397,7 @@ frontend/                                     # React application (FSD-Lite Arch
 | `pages/` | Route handling, layout, compose features | widgets, features, entities, shared | QuotationListPage, ProjectDetailPage |
 | `widgets/` | Composite UI blocks, multi-feature composition | features, entities, shared | QuotationDetailActionsPanel |
 | `features/` | User actions/workflows with mutation hooks | entities, shared (NOT other features) | CreateQuotationForm, useCreateQuotation |
-| `entities/` | Domain types + rules + query hooks + display UI | shared ONLY | Quotation, quotationRules, useQuotation, QuotationTable |
+| `entities/` | Domain types + rules + query factory + command fns + display UI | shared ONLY | Quotation, quotationRules, quotationQueries, createQuotation, QuotationTable |
 | `shared/` | Cross-cutting infrastructure and utilities | NOTHING (base layer) | httpClient, Button, formatDate |
 | `stores/` | Global state (minimal - auth only) | shared | authStore |
 
