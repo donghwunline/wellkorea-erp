@@ -439,31 +439,17 @@ export const mockApiErrors = {
 // Audit Log Fixtures
 // ============================================================================
 
-/**
- * Audit log entry for test fixtures.
- */
-export interface AuditLogEntry {
-  id: number;
-  entityType: string;
-  entityId: number | null;
-  action: string;
-  userId: number | null;
-  username: string | null;
-  ipAddress: string | null;
-  changes: string | null;
-  metadata: string | null;
-  createdAt: string;
-}
+import type { AuditLog } from '@/entities/audit';
 
 /**
- * Factory function to create a mock AuditLogEntry.
+ * Factory function to create a mock AuditLog.
  *
  * @example
  * ```typescript
  * const log = createMockAuditLog({ action: 'DELETE', entityType: 'User' });
  * ```
  */
-export function createMockAuditLog(overrides?: Partial<AuditLogEntry>): AuditLogEntry {
+export function createMockAuditLog(overrides?: Partial<AuditLog>): AuditLog {
   return {
     id: 1,
     entityType: 'User',
