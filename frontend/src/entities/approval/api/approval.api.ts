@@ -6,7 +6,8 @@
  */
 
 import { httpClient, APPROVAL_ENDPOINTS, transformPagedResponse } from '@/shared/api';
-import type { PagedResponse, Paginated } from '@/shared/api/types';
+import type { PagedResponse } from '@/shared/api/types';
+import type { Paginated } from '@/shared/pagination';
 import type {
   ApprovalDetailsDTO,
   ApprovalHistoryDTO,

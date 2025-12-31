@@ -6,7 +6,7 @@
  */
 
 import type { UserDetails } from '../model';
-import type { PaginationMetadata } from '@/shared/api/types';
+import type { PaginationMetadata } from '@/shared/pagination';
 import { userApi, userMapper } from '../api';
 
 /**

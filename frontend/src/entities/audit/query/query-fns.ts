@@ -5,7 +5,7 @@
  * Use these in query hooks and for prefetching.
  */
 
-import type { Paginated } from '@/shared/api/types';
+import type { Paginated } from '@/shared/pagination';
 import { auditApi } from '../api/audit.api';
 import { auditLogMapper } from '../api/audit.mapper';
 import type { AuditLog } from '../model';
