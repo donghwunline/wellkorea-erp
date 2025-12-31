@@ -14,7 +14,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { companyService, ROLE_TYPE_LABELS } from '@/services';
 import type { CompanySummary, RoleType } from '@/services';
-import type { PaginationMetadata } from '@/shared/api/types';
+import type { PaginationMetadata } from '@/shared/pagination';
 import { formatDate } from '@/shared/formatting';
 import {
   Badge,

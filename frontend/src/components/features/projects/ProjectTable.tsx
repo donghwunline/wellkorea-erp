@@ -18,7 +18,7 @@ import {
   type ProjectListItem,
   type ProjectStatus,
 } from '@/entities/project';
-import type { PaginationMetadata } from '@/shared/api/types';
+import type { PaginationMetadata } from '@/shared/pagination';
 import { formatDate } from '@/shared/formatting';
 import {
   Badge,
