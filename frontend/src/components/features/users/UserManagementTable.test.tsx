@@ -9,7 +9,7 @@ import { userEvent } from '@testing-library/user-event';
 import { UserManagementTable } from './UserManagementTable';
 import { createMockUserDetails, mockUserDetails } from '@/test/fixtures';
 import type { Paginated } from '@/shared/api/types';
-import type { UserDetails } from '@/shared/types/auth';
+import type { UserDetails } from '@/entities/user';
 import { userService } from '@/services';
 
 // Mock userService while preserving other exports

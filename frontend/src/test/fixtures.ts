@@ -16,9 +16,9 @@
  * ```
  */
 
-// Import UserDetails for the fixture factory
-import type { RoleName, User, UserDetails } from '@/shared/types/auth';
-import type { AuthStore } from '@/shared/stores/authStore';
+// Import user and auth types from entities
+import type { RoleName, User, UserDetails } from '@/entities/user';
+import type { AuthStore } from '@/entities/auth';
 import type {
   QuotationDetails,
   QuotationLineItem,

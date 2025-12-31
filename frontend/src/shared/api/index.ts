@@ -11,16 +11,16 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api
 
 /**
  * Callback when token refresh fails.
- * Emits unauthorized event via authService.
+ * Emits unauthorized event via authEvents.
  *
  * NOTE: Uses dynamic import to avoid circular dependency:
  * - api/httpClient.ts imports from api/index.ts
- * - services/auth/authService.ts imports httpClient from @/api
- * - If we statically import authService here, we get: httpClient ← authService ← httpClient
+ * - entities/auth/store imports httpClient from @/shared/api
+ * - If we statically import authEvents here, we get: httpClient ← authStore ← httpClient
  */
 const onUnauthorized = () => {
   // Emit unauthorized event (dynamic import prevents circular dependency)
-  import('@/services/auth/authService')
+  import('@/entities/auth')
     .then(({ authEvents }) => {
       authEvents.emit({ type: 'unauthorized' });
     })

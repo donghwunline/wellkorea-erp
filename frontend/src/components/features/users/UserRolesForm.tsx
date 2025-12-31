@@ -7,7 +7,7 @@
 
 import { type FormEvent, useEffect, useState } from 'react';
 import { type UserDetails, userService } from '@/services';
-import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/shared/types/auth';
+import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/entities/user';
 import { Badge, Button, ErrorAlert, Modal } from '@/shared/ui';
 
 export interface UserRolesFormProps {

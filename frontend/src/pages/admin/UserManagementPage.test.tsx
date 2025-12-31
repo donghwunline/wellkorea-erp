@@ -14,7 +14,7 @@ import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { UserManagementPage } from './UserManagementPage';
 import { mockUserDetails } from '@/test/fixtures';
-import type { UserDetails } from '@/shared/types/auth';
+import type { UserDetails } from '@/entities/user';
 // Import mocked hook for type-safe assertions
 import { usePaginatedSearch } from '@/shared/hooks';
 

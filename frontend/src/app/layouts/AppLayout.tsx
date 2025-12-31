@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon, type IconName } from '@/shared/ui';
 import { useAuth } from '@/shared/hooks';
-import type { RoleName } from '@/shared/types/auth.ts';
+import type { RoleName } from '@/entities/user';
 
 interface NavItem {
   label: string;
