@@ -393,13 +393,16 @@ describe('DatePicker', () => {
       const user = userEvent.setup();
       // Get today's date
       const today = new Date();
-      const todayValue = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+      // Select a DIFFERENT day to ensure today gets the ring indicator (not selected styling)
+      // If today is the 15th, select the 1st; otherwise select the 15th
+      const differentDay = today.getDate() === 15 ? 1 : 15;
+      const nonTodayValue = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(differentDay).padStart(2, '0')}`;
 
-      render(<DatePicker value={todayValue} onChange={vi.fn()} />);
+      render(<DatePicker value={nonTodayValue} onChange={vi.fn()} />);
 
       await user.click(screen.getByRole('button'));
 
-      // Today should have ring-1 class (today indicator)
+      // Today should have ring-1 class (today indicator) when NOT selected
       // Find the button for today's date using aria-label format (e.g., "December 21, 2025")
       const todayLabel = today.toLocaleDateString('en-US', {
         year: 'numeric',

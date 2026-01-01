@@ -37,7 +37,7 @@ const mockHandleSearchChange = vi.fn();
 const mockHandleSearchSubmit = vi.fn();
 const mockHandleClearSearch = vi.fn();
 
-vi.mock('@/shared/pagination', () => ({
+vi.mock('@/shared/lib/pagination', () => ({
   usePaginatedSearch: vi.fn(() => ({
     page: 0,
     setPage: mockSetPage,

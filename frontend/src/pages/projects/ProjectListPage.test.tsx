@@ -43,7 +43,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@/shared/pagination', () => ({
+vi.mock('@/shared/lib/pagination', () => ({
   usePaginatedSearch: vi.fn(() => ({
     page: 0,
     setPage: mockSetPage,
