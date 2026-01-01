@@ -12,8 +12,8 @@ export {
   formatCurrency,
   formatNumber,
   formatPercent,
-} from './formatters';
-export type { FormatDateOptions, FormatCurrencyOptions } from './formatters';
+} from './formatters.ts';
+export type { FormatDateOptions, FormatCurrencyOptions } from './formatters.ts';
 
 // Extended date utilities (for domain model date handling)
 export {
@@ -24,8 +24,8 @@ export {
   isPast,
   getNow,
   daysBetween,
-} from './date';
-export type { DateFormat } from './date';
+} from './date.ts';
+export type { DateFormat } from './date.ts';
 
 // Money utilities (alternative API)
-export { Money } from './money';
+export { Money } from './money.ts';

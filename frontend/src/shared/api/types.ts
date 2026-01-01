@@ -11,7 +11,7 @@
  */
 
 // Re-export pagination types for backward compatibility
-export type { Paginated, PaginationMetadata } from '@/shared/pagination';
+export type { Paginated, PaginationMetadata } from '@/shared/lib/pagination';
 
 // ============================================================================
 // Authentication & Token Types
