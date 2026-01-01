@@ -7,7 +7,7 @@
 
 import { httpClient, USER_ENDPOINTS, transformPagedResponse } from '@/shared/api';
 import type { PagedResponse } from '@/shared/api/types';
-import type { Paginated } from '@/shared/pagination';
+import type { Paginated } from '@/shared/lib/pagination';
 import type {
   UserDetailsDTO,
   CreateUserRequestDTO,
