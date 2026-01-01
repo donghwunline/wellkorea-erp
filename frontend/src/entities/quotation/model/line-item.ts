@@ -5,7 +5,7 @@
  * All properties are readonly to enforce immutability.
  */
 
-import { Money } from '@/shared/formatting/money';
+import { Money } from '@/shared/lib/formatting/money';
 
 /**
  * Line item in a quotation (domain model).

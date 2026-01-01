@@ -13,8 +13,8 @@
 
 import { Card, EmptyState, Table } from '@/shared/ui';
 import type { QuotationListItem } from '../model/quotation';
-import { formatDate } from '@/shared/formatting/date';
-import { Money } from '@/shared/formatting/money';
+import { formatDate } from '@/shared/lib/formatting/date';
+import { Money } from '@/shared/lib/formatting/money';
 import { QuotationStatusBadge } from './QuotationStatusBadge';
 
 export interface QuotationTableProps {

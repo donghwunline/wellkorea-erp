@@ -17,7 +17,7 @@ import type { Quotation, QuotationListItem } from '../model/quotation';
 import type { QuotationStatus } from '../model/quotation-status';
 import { quotationMapper } from './quotation.mapper';
 import { getQuotation, getQuotations } from './get-quotation';
-import type { Paginated } from '@/shared/pagination';
+import type { Paginated } from '@/shared/lib/pagination';
 
 /**
  * Parameters for list query.
