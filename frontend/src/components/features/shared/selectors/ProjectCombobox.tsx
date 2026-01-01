@@ -2,7 +2,7 @@
  * ProjectCombobox - Reusable Project Selector Component
  *
  * A specialized Combobox for selecting projects.
- * Encapsulates projectService calls and provides consistent project selection UI.
+ * Uses Query Factory pattern for consistent data fetching.
  *
  * Usage:
  * ```tsx
@@ -16,7 +16,8 @@
  */
 
 import { useCallback } from 'react';
-import { projectApi, projectMapper } from '@/entities/project';
+import { useQueryClient } from '@tanstack/react-query';
+import { projectQueries } from '@/entities/project';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
 
 export interface ProjectComboboxProps {
@@ -54,26 +55,31 @@ export function ProjectCombobox({
   helpText,
   className,
 }: Readonly<ProjectComboboxProps>) {
-  /**
-   * Load projects from API based on search query.
-   * Transforms ProjectListItem to ComboboxOption format.
-   */
-  const loadProjects = useCallback(async (query: string): Promise<ComboboxOption[]> => {
-    const result = await projectApi.getList({
-      search: query,
-      page: 0,
-      size: 20,
-    });
+  const queryClient = useQueryClient();
 
-    return result.data.map(dto => {
-      const project = projectMapper.toListItem(dto);
-      return {
+  /**
+   * Load projects using Query Factory pattern.
+   * Uses fetchQuery for imperative data fetching with caching.
+   */
+  const loadProjects = useCallback(
+    async (query: string): Promise<ComboboxOption[]> => {
+      const result = await queryClient.fetchQuery(
+        projectQueries.list({
+          page: 0,
+          size: 20,
+          search: query,
+          status: null,
+        })
+      );
+
+      return result.data.map(project => ({
         id: project.id,
         label: project.projectName,
         description: project.jobCode || undefined,
-      };
-    });
-  }, []);
+      }));
+    },
+    [queryClient]
+  );
 
   /**
    * Handle selection change.
