@@ -14,7 +14,7 @@ import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { ProjectListPage } from './ProjectListPage';
 // Import mocked hook for type-safe assertions
-import { usePaginatedSearch } from '@/shared/pagination';
+import { usePaginatedSearch } from '@/shared/lib/pagination';
 
 // Helper to render ProjectListPage with BrowserRouter
 function renderProjectListPage() {

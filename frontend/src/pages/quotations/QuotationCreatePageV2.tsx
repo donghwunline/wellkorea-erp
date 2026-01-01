@@ -16,9 +16,10 @@
 
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { ProjectCombobox } from '@/components/features/shared/selectors';
-import { useProject } from '@/entities/project';
+import { projectQueries } from '@/entities/project';
 import { useCreateQuotation, QuotationForm } from '@/features/quotation';
 import type { CreateQuotationInput } from '@/entities/quotation';
 
@@ -40,10 +41,14 @@ export function QuotationCreatePageV2() {
 
   // Hooks
   const {
-    project: selectedProject,
+    data: selectedProject,
     isLoading: isLoadingProject,
-    error: projectError,
-  } = useProject({ id: selectedProjectId });
+    error: projectQueryError,
+  } = useQuery({
+    ...projectQueries.detail(selectedProjectId ?? 0),
+    enabled: selectedProjectId !== null && selectedProjectId > 0,
+  });
+  const projectError = projectQueryError?.message ?? null;
 
   const {
     mutate: createQuotation,

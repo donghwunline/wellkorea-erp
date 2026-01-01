@@ -29,7 +29,7 @@ import {
   UserPasswordForm,
   UserRolesForm,
 } from '@/components/features/users';
-import { usePaginatedSearch } from '@/shared/pagination';
+import { usePaginatedSearch } from '@/shared/lib/pagination';
 import type { UserDetails } from '@/entities/user';
 
 type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | 'customers' | null;

@@ -27,7 +27,7 @@ import {
   SearchBar,
 } from '@/shared/ui';
 import { FilterBar } from '@/shared/ui/navigation/FilterBar';
-import { usePaginatedSearch } from '@/shared/pagination';
+import { usePaginatedSearch } from '@/shared/lib/pagination';
 
 // Entity imports - domain model and UI
 import { useQuery } from '@tanstack/react-query';
