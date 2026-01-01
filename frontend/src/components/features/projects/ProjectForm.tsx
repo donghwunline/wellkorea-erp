@@ -6,12 +6,13 @@
  */
 
 import { type FormEvent, useState } from 'react';
-import type { CreateProjectRequest, Project, UpdateProjectRequest } from '@/entities/project';
+import type {
+  CreateProjectInput,
+  Project,
+  UpdateProjectInput,
+} from '@/entities/project';
 import { Button, DatePicker, ErrorAlert, FormField } from '@/shared/ui';
 import { CompanyCombobox, UserCombobox } from '@/components/features/shared/selectors';
-
-// Alias for backward compatibility
-type ProjectDetails = Project;
 
 interface ProjectFormData {
   customerId: number | null;
@@ -29,7 +30,7 @@ const EMPTY_FORM_DATA: ProjectFormData = {
   internalOwnerId: null,
 };
 
-function toFormData(data: ProjectDetails): ProjectFormData {
+function toFormData(data: Project): ProjectFormData {
   return {
     customerId: data.customerId,
     projectName: data.projectName,
@@ -39,17 +40,17 @@ function toFormData(data: ProjectDetails): ProjectFormData {
   };
 }
 
-function toCreateRequest(data: ProjectFormData): CreateProjectRequest {
+function toCreateInput(data: ProjectFormData): CreateProjectInput {
   return {
-    customerId: data.customerId!,
+    customerId: data.customerId,
     projectName: data.projectName.trim(),
     requesterName: data.requesterName.trim() || undefined,
     dueDate: data.dueDate,
-    internalOwnerId: data.internalOwnerId!,
+    internalOwnerId: data.internalOwnerId,
   };
 }
 
-function toUpdateRequest(data: ProjectFormData): UpdateProjectRequest {
+function toUpdateInput(data: ProjectFormData): UpdateProjectInput {
   return {
     projectName: data.projectName.trim(),
     requesterName: data.requesterName.trim() || undefined,
@@ -61,9 +62,9 @@ export interface ProjectFormProps {
   /** Form mode: 'create' or 'edit' */
   mode: 'create' | 'edit';
   /** Initial data for edit mode */
-  initialData?: ProjectDetails | null;
+  initialData?: Project | null;
   /** Called when form is submitted */
-  onSubmit: (data: CreateProjectRequest | UpdateProjectRequest) => Promise<void>;
+  onSubmit: (data: CreateProjectInput | UpdateProjectInput) => Promise<void>;
   /** Called when cancel is clicked */
   onCancel: () => void;
   /** Whether form is currently submitting */
@@ -93,8 +94,8 @@ export function ProjectForm({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const request = mode === 'create' ? toCreateRequest(formData) : toUpdateRequest(formData);
-    await onSubmit(request);
+    const input = mode === 'create' ? toCreateInput(formData) : toUpdateInput(formData);
+    await onSubmit(input);
   };
 
   // Validation helpers
