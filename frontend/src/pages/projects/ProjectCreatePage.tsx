@@ -8,35 +8,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type {
-  CreateProjectRequest,
+  CreateProjectInput,
   ProjectCommandResult,
-  UpdateProjectRequest,
+  UpdateProjectInput,
 } from '@/entities/project';
 import { Card, Icon, PageHeader } from '@/shared/ui';
-import {
-  JobCodeSuccessModal,
-  ProjectForm,
-  useProjectActions,
-} from '@/components/features/projects';
+import { JobCodeSuccessModal, ProjectForm } from '@/components/features/projects';
+import { useCreateProject } from '@/features/project';
 
 export function ProjectCreatePage() {
   const navigate = useNavigate();
-  const { createProject, isLoading, error, clearError } = useProjectActions();
+  const createProjectMutation = useCreateProject();
 
   // Local UI State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdResult, setCreatedResult] = useState<ProjectCommandResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (data: CreateProjectRequest | UpdateProjectRequest) => {
+  const handleSubmit = async (data: CreateProjectInput | UpdateProjectInput) => {
+    setError(null);
     try {
-      // In create mode, the form always provides CreateProjectRequest
-      const result = await createProject(data as CreateProjectRequest);
+      // In create mode, the form always provides CreateProjectInput
+      const result = await createProjectMutation.mutateAsync(data as CreateProjectInput);
       setCreatedResult(result);
       setShowSuccessModal(true);
-    } catch {
-      // Error is handled by the hook
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create project');
     }
   };
+
+  const clearError = () => setError(null);
 
   const handleCancel = () => {
     navigate('/projects');
@@ -80,7 +81,7 @@ export function ProjectCreatePage() {
             mode="create"
             onSubmit={handleSubmit}
             onCancel={handleCancel}
-            isSubmitting={isLoading}
+            isSubmitting={createProjectMutation.isPending}
             error={error}
             onDismissError={clearError}
           />
