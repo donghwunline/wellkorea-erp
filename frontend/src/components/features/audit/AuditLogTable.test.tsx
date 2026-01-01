@@ -8,7 +8,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { type AuditLogFilters, AuditLogTable } from './AuditLogTable';
 import type { AuditLog } from '@/entities/audit';
-import type { PaginationMetadata } from '@/shared/pagination';
+import type { PaginationMetadata } from '@/shared/lib/pagination';
 
 // Mock the useAuditLogs hook from entities
 const mockRefetch = vi.fn();

@@ -7,7 +7,7 @@
 
 import { PROJECT_STATUS_LABELS, type Project, type ProjectStatus } from '@/entities/project';
 import { Badge, type BadgeVariant, Card, Icon, IconButton } from '@/shared/ui';
-import { formatDate, formatDateTime } from '@/shared/formatting';
+import { formatDate, formatDateTime } from '@/shared/lib/formatting';
 
 // Alias for backward compatibility
 type ProjectDetails = Project;

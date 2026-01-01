@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { companyService, ROLE_TYPE_LABELS } from '@/services';
 import type { CompanyDetails, RoleType } from '@/services';
-import { formatDate } from '@/shared/formatting';
+import { formatDate } from '@/shared/lib/formatting';
 import {
   Badge,
   type BadgeVariant,
