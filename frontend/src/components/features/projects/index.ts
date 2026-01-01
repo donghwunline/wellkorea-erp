@@ -24,5 +24,10 @@ export { ProjectKPIStrip } from './ProjectKPIStrip';
 export type { ProjectKPIStripProps } from './ProjectKPIStrip';
 
 // Hooks
-export { useProjectActions, useProjectSummary } from './hooks';
+export { useProjectSummary } from './hooks';
 export type { UseProjectSummaryOptions, UseProjectSummaryReturn } from './hooks';
+
+// Legacy exports (deprecated - will be removed in future version)
+// useProjectActions has been replaced by:
+// - projectQueries from '@/entities/project' (for queries)
+// - useCreateProject, useUpdateProject from '@/features/project' (for mutations)
