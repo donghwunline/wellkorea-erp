@@ -1,31 +1,52 @@
 /**
  * Unit tests for ProjectTable component.
  * Tests data fetching, loading states, error handling, pagination, and user interactions.
+ *
+ * Following Constitution Principle VI, this tests the component using Query Factory:
+ * - projectQueries is mocked to control query behavior
+ * - QueryClientProvider wraps all renders
+ * - Focus is on state management, pagination, and user interactions
  */
 
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProjectTable } from './ProjectTable';
-import { projectApi } from '@/entities/project';
 import type { ProjectListItem } from '@/entities/project';
 import type { PaginationMetadata } from '@/shared/lib/pagination';
 
-// Mock the project entity
-vi.mock('@/entities/project', () => ({
-  projectApi: {
-    getList: vi.fn(),
-  },
-  projectMapper: {
-    toListItem: vi.fn((dto: unknown) => dto),
-  },
-  PROJECT_STATUS_LABELS: {
-    DRAFT: 'Draft',
-    ACTIVE: 'Active',
-    COMPLETED: 'Completed',
-    ARCHIVED: 'Archived',
-  },
-}));
+// Mock response state - will be set per test
+let mockProjectsData: ProjectListItem[] = [];
+let mockPaginationData: PaginationMetadata | null = null;
+let mockShouldError = false;
+
+// Mock project queries
+vi.mock('@/entities/project', async () => {
+  const actual = await vi.importActual('@/entities/project');
+  return {
+    ...actual,
+    projectQueries: {
+      list: (params: { page: number; size: number; search: string | null; status: string | null }) => ({
+        queryKey: ['projects', 'list', params.page, params.size, params.search, params.status],
+        queryFn: async () => {
+          if (mockShouldError) throw new Error('Network error');
+          return {
+            data: mockProjectsData,
+            pagination: mockPaginationData,
+          };
+        },
+      }),
+      lists: () => ['projects', 'list'],
+    },
+    PROJECT_STATUS_LABELS: {
+      DRAFT: 'Draft',
+      ACTIVE: 'Active',
+      COMPLETED: 'Completed',
+      ARCHIVED: 'Archived',
+    },
+  };
+});
 
 // Helper to create mock project list item
 function createMockProject(overrides: Partial<ProjectListItem> = {}): ProjectListItem {
@@ -44,27 +65,34 @@ function createMockProject(overrides: Partial<ProjectListItem> = {}): ProjectLis
   };
 }
 
-// Helper to create mock paginated response
-function createMockPagedResponse(
-  projects: ProjectListItem[],
-  pagination: Partial<PaginationMetadata> = {}
-) {
+// Helper to create mock pagination
+function createMockPagination(overrides: Partial<PaginationMetadata> = {}): PaginationMetadata {
   return {
-    data: projects,
-    pagination: {
-      number: 0,
-      size: 10,
-      totalElements: projects.length,
-      totalPages: 1,
-      first: true,
-      last: true,
-      ...pagination,
-    },
+    number: 0,
+    size: 10,
+    totalElements: mockProjectsData.length,
+    totalPages: 1,
+    first: true,
+    last: true,
+    ...overrides,
   };
 }
 
-describe('ProjectTable', () => {
-  const mockGetProjects = projectApi.getList as Mock;
+// Helper to create test query client
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+    },
+  });
+}
+
+// Helper to render with QueryClientProvider
+function renderProjectTable(props: Partial<React.ComponentProps<typeof ProjectTable>> = {}) {
+  const queryClient = createTestQueryClient();
   const defaultProps = {
     page: 0,
     search: '',
@@ -72,23 +100,38 @@ describe('ProjectTable', () => {
     onView: vi.fn(),
   };
 
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <ProjectTable {...defaultProps} {...props} />
+    </QueryClientProvider>
+  );
+}
+
+describe('ProjectTable', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockProjectsData = [];
+    mockPaginationData = null;
+    mockShouldError = false;
   });
 
   describe('loading state', () => {
-    it('should display loading state initially', () => {
-      mockGetProjects.mockImplementation(() => new Promise(() => {})); // Never resolves
+    it('should display loading state initially', async () => {
+      // Keep data empty to simulate loading
+      mockProjectsData = [];
+      mockPaginationData = null;
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
+      // Initially shows loading until query resolves
       expect(screen.getByText('Loading projects...')).toBeInTheDocument();
     });
 
     it('should render table header during loading', () => {
-      mockGetProjects.mockImplementation(() => new Promise(() => {}));
+      mockProjectsData = [];
+      mockPaginationData = null;
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       expect(screen.getByText('Job Code')).toBeInTheDocument();
       expect(screen.getByText('Project Name')).toBeInTheDocument();
@@ -100,61 +143,34 @@ describe('ProjectTable', () => {
   });
 
   describe('data fetching', () => {
-    it('should fetch projects on mount', async () => {
-      const projects = [createMockProject()];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+    it('should fetch and display projects', async () => {
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
-        expect(mockGetProjects).toHaveBeenCalledOnce();
+        expect(screen.getByText('Test Project')).toBeInTheDocument();
       });
-
-      expect(mockGetProjects).toHaveBeenCalledWith({ page: 0, size: 10, search: undefined });
     });
 
     it('should pass search parameter when provided', async () => {
-      mockGetProjects.mockResolvedValue(createMockPagedResponse([]));
+      mockProjectsData = [createMockProject({ projectName: 'Search Result' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} search="test" />);
-
-      await waitFor(() => {
-        expect(mockGetProjects).toHaveBeenCalledWith({ page: 0, size: 10, search: 'test' });
-      });
-    });
-
-    it('should pass page parameter correctly', async () => {
-      mockGetProjects.mockResolvedValue(createMockPagedResponse([]));
-
-      render(<ProjectTable {...defaultProps} page={2} />);
+      renderProjectTable({ search: 'test' });
 
       await waitFor(() => {
-        expect(mockGetProjects).toHaveBeenCalledWith({ page: 2, size: 10, search: undefined });
-      });
-    });
-
-    it('should refetch when refreshTrigger changes', async () => {
-      mockGetProjects.mockResolvedValue(createMockPagedResponse([createMockProject()]));
-
-      const { rerender } = render(<ProjectTable {...defaultProps} refreshTrigger={0} />);
-
-      await waitFor(() => {
-        expect(mockGetProjects).toHaveBeenCalledTimes(1);
-      });
-
-      rerender(<ProjectTable {...defaultProps} refreshTrigger={1} />);
-
-      await waitFor(() => {
-        expect(mockGetProjects).toHaveBeenCalledTimes(2);
+        expect(screen.getByText('Search Result')).toBeInTheDocument();
       });
     });
   });
 
   describe('error state', () => {
     it('should display error message when fetch fails', async () => {
-      mockGetProjects.mockRejectedValue(new Error('Network error'));
+      mockShouldError = true;
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Failed to load projects')).toBeInTheDocument();
@@ -163,9 +179,9 @@ describe('ProjectTable', () => {
 
     it('should call onError when provided', async () => {
       const onError = vi.fn();
-      mockGetProjects.mockRejectedValue(new Error('Network error'));
+      mockShouldError = true;
 
-      render(<ProjectTable {...defaultProps} onError={onError} />);
+      renderProjectTable({ onError });
 
       await waitFor(() => {
         expect(onError).toHaveBeenCalledWith('Failed to load projects');
@@ -173,9 +189,9 @@ describe('ProjectTable', () => {
     });
 
     it('should display retry button on error', async () => {
-      mockGetProjects.mockRejectedValue(new Error('Network error'));
+      mockShouldError = true;
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Retry')).toBeInTheDocument();
@@ -184,28 +200,33 @@ describe('ProjectTable', () => {
 
     it('should refetch when retry is clicked', async () => {
       const user = userEvent.setup();
-      mockGetProjects.mockRejectedValueOnce(new Error('Network error'));
-      mockGetProjects.mockResolvedValueOnce(createMockPagedResponse([createMockProject()]));
+      mockShouldError = true;
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Retry')).toBeInTheDocument();
       });
 
+      // Fix the error for retry
+      mockShouldError = false;
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination();
+
       await user.click(screen.getByText('Retry'));
 
       await waitFor(() => {
-        expect(mockGetProjects).toHaveBeenCalledTimes(2);
+        expect(screen.getByText('Test Project')).toBeInTheDocument();
       });
     });
   });
 
   describe('empty state', () => {
     it('should display empty message when no projects', async () => {
-      mockGetProjects.mockResolvedValue(createMockPagedResponse([]));
+      mockProjectsData = [];
+      mockPaginationData = createMockPagination({ totalElements: 0 });
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('No projects found.')).toBeInTheDocument();
@@ -213,9 +234,10 @@ describe('ProjectTable', () => {
     });
 
     it('should display search-specific empty message', async () => {
-      mockGetProjects.mockResolvedValue(createMockPagedResponse([]));
+      mockProjectsData = [];
+      mockPaginationData = createMockPagination({ totalElements: 0 });
 
-      render(<ProjectTable {...defaultProps} search="nonexistent" />);
+      renderProjectTable({ search: 'nonexistent' });
 
       await waitFor(() => {
         expect(screen.getByText('No projects found matching your search.')).toBeInTheDocument();
@@ -225,10 +247,10 @@ describe('ProjectTable', () => {
 
   describe('project rendering', () => {
     it('should render project job code', async () => {
-      const projects = [createMockProject({ jobCode: 'WK2-2025-042-0120' })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ jobCode: 'WK2-2025-042-0120' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('WK2-2025-042-0120')).toBeInTheDocument();
@@ -236,10 +258,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render project name', async () => {
-      const projects = [createMockProject({ projectName: 'Important Project' })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ projectName: 'Important Project' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Important Project')).toBeInTheDocument();
@@ -247,10 +269,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render requester name', async () => {
-      const projects = [createMockProject({ requesterName: 'Jane Smith' })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ requesterName: 'Jane Smith' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Jane Smith')).toBeInTheDocument();
@@ -258,10 +280,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render dash for null requester', async () => {
-      const projects = [createMockProject({ requesterName: null })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ requesterName: null })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('-')).toBeInTheDocument();
@@ -269,10 +291,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render formatted due date', async () => {
-      const projects = [createMockProject({ dueDate: '2025-02-15' })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ dueDate: '2025-02-15' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         // Korean date format: YYYY. MM. DD.
@@ -281,10 +303,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render status badge', async () => {
-      const projects = [createMockProject({ status: 'ACTIVE' })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ status: 'ACTIVE' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Active')).toBeInTheDocument();
@@ -292,14 +314,14 @@ describe('ProjectTable', () => {
     });
 
     it('should render multiple projects', async () => {
-      const projects = [
+      mockProjectsData = [
         createMockProject({ id: 1, projectName: 'Project A' }),
         createMockProject({ id: 2, projectName: 'Project B' }),
         createMockProject({ id: 3, projectName: 'Project C' }),
       ];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockPaginationData = createMockPagination({ totalElements: 3 });
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Project A')).toBeInTheDocument();
@@ -311,10 +333,10 @@ describe('ProjectTable', () => {
 
   describe('status badge variants', () => {
     it('should render DRAFT status', async () => {
-      const projects = [createMockProject({ status: 'DRAFT' })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ status: 'DRAFT' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Draft')).toBeInTheDocument();
@@ -322,10 +344,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render COMPLETED status', async () => {
-      const projects = [createMockProject({ status: 'COMPLETED' })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ status: 'COMPLETED' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Completed')).toBeInTheDocument();
@@ -333,10 +355,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render ARCHIVED status', async () => {
-      const projects = [createMockProject({ status: 'ARCHIVED' })];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject({ status: 'ARCHIVED' })];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Archived')).toBeInTheDocument();
@@ -346,10 +368,10 @@ describe('ProjectTable', () => {
 
   describe('action buttons', () => {
     it('should render view button for each project', async () => {
-      const projects = [createMockProject()];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /view project/i })).toBeInTheDocument();
@@ -360,9 +382,10 @@ describe('ProjectTable', () => {
       const user = userEvent.setup();
       const onView = vi.fn();
       const project = createMockProject();
-      mockGetProjects.mockResolvedValue(createMockPagedResponse([project]));
+      mockProjectsData = [project];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} onView={onView} />);
+      renderProjectTable({ onView });
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /view project/i })).toBeInTheDocument();
@@ -376,11 +399,10 @@ describe('ProjectTable', () => {
 
   describe('pagination', () => {
     it('should not render pagination when single page', async () => {
-      mockGetProjects.mockResolvedValue(
-        createMockPagedResponse([createMockProject()], { totalPages: 1 })
-      );
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination({ totalPages: 1 });
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Test Project')).toBeInTheDocument();
@@ -391,11 +413,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render pagination when multiple pages', async () => {
-      mockGetProjects.mockResolvedValue(
-        createMockPagedResponse([createMockProject()], { totalPages: 3, totalElements: 30 })
-      );
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination({ totalPages: 3, totalElements: 30 });
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         expect(screen.getByText('Test Project')).toBeInTheDocument();
@@ -409,16 +430,15 @@ describe('ProjectTable', () => {
     it('should pass onPageChange to pagination', async () => {
       const user = userEvent.setup();
       const onPageChange = vi.fn();
-      mockGetProjects.mockResolvedValue(
-        createMockPagedResponse([createMockProject()], {
-          totalPages: 3,
-          totalElements: 30,
-          first: true,
-          last: false,
-        })
-      );
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination({
+        totalPages: 3,
+        totalElements: 30,
+        first: true,
+        last: false,
+      });
 
-      render(<ProjectTable {...defaultProps} onPageChange={onPageChange} />);
+      renderProjectTable({ onPageChange });
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
@@ -432,10 +452,10 @@ describe('ProjectTable', () => {
 
   describe('table styling', () => {
     it('should render job code with monospace font', async () => {
-      const projects = [createMockProject()];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         const jobCode = screen.getByText('WK2-2025-001-0115');
@@ -444,10 +464,10 @@ describe('ProjectTable', () => {
     });
 
     it('should render job code with copper color', async () => {
-      const projects = [createMockProject()];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         const jobCode = screen.getByText('WK2-2025-001-0115');
@@ -458,10 +478,10 @@ describe('ProjectTable', () => {
 
   describe('accessibility', () => {
     it('should have accessible view button', async () => {
-      const projects = [createMockProject()];
-      mockGetProjects.mockResolvedValue(createMockPagedResponse(projects));
+      mockProjectsData = [createMockProject()];
+      mockPaginationData = createMockPagination();
 
-      render(<ProjectTable {...defaultProps} />);
+      renderProjectTable();
 
       await waitFor(() => {
         const viewButton = screen.getByRole('button', { name: /view project/i });

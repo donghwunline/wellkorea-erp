@@ -2,23 +2,21 @@
  * Project Management Table - Smart Feature Component
  *
  * Responsibilities:
- * - Fetch project list data from projectService
+ * - Fetch project list data using Query Factory pattern
  * - Display projects in table format
  * - Delegate actions to parent via callbacks
- * - Respond to refreshTrigger changes
  *
- * This component owns Server State (Tier 3) for the project list.
+ * Uses TanStack Query for server state management.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  projectApi,
-  projectMapper,
+  projectQueries,
   PROJECT_STATUS_LABELS,
   type ProjectListItem,
   type ProjectStatus,
 } from '@/entities/project';
-import type { PaginationMetadata } from '@/shared/lib/pagination';
 import { formatDate } from '@/shared/lib/formatting';
 import {
   Badge,
@@ -66,37 +64,40 @@ export function ProjectTable({
   onView,
   onError,
 }: Readonly<ProjectTableProps>) {
-  // Server State (Tier 3) - managed here in feature component
-  const [projects, setProjects] = useState<ProjectListItem[]>([]);
-  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Fetch projects
-  const fetchProjects = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await projectApi.getList({
-        page,
-        size: 10,
-        search: search || undefined,
-      });
-      setProjects(result.data.map(projectMapper.toListItem));
-      setPagination(result.pagination);
-    } catch {
-      const errorMsg = 'Failed to load projects';
-      setError(errorMsg);
-      onError?.(errorMsg);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, search, onError]);
+  // Use Query Factory pattern for server state
+  const {
+    data,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery(
+    projectQueries.list({
+      page,
+      size: 10,
+      search,
+      status: null,
+    })
+  );
 
-  // Refetch when page, search, or refreshTrigger changes
+  const projects = data?.data ?? [];
+  const pagination = data?.pagination ?? null;
+  const error = queryError ? 'Failed to load projects' : null;
+
+  // Notify parent of errors
   useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects, refreshTrigger]);
+    if (error) {
+      onError?.(error);
+    }
+  }, [error, onError]);
+
+  // Handle refreshTrigger changes by invalidating query
+  useEffect(() => {
+    if (refreshTrigger !== undefined && refreshTrigger > 0) {
+      queryClient.invalidateQueries({ queryKey: projectQueries.lists() });
+    }
+  }, [refreshTrigger, queryClient]);
 
   // Render loading state
   if (isLoading) {
@@ -128,7 +129,7 @@ export function ProjectTable({
         <div className="p-8 text-center">
           <p className="text-red-400">{error}</p>
           <button
-            onClick={() => fetchProjects()}
+            onClick={() => refetch()}
             className="mt-4 text-sm text-copper-500 hover:underline"
           >
             Retry
