@@ -2,18 +2,15 @@
  * Project Entity - Public API.
  *
  * This is the ONLY entry point for importing from the project entity.
- * Internal modules (model/, api/, query/) should never be imported directly.
+ * Internal modules (model/, api/) should never be imported directly.
  *
  * FSD Layer: entities
  * Can import from: shared
  * Cannot import from: features, widgets, pages
- *
- * @see docs/architecture/fsd-public-api-guidelines.md
  */
 
 // =============================================================================
 // DOMAIN TYPES
-// Types that appear in component props, state, or function signatures
 // =============================================================================
 
 export type {
@@ -28,41 +25,66 @@ export type {
 
 // =============================================================================
 // BUSINESS RULES
-// Status labels, validation, and domain logic
 // =============================================================================
 
-export { PROJECT_STATUS_LABELS, projectRules } from './model';
+export { PROJECT_STATUS_LABELS, ProjectStatusConfig, projectRules } from './model';
 
 // =============================================================================
-// QUERY HOOKS
-// Main data access interface - prefer these over direct API calls
+// QUERY FACTORY (TanStack Query v5)
 // =============================================================================
 
-export { useProject } from './query';
-
-// Query keys for cache invalidation (used by features for mutations)
-export { projectQueryKeys } from './query';
-
-// =============================================================================
-// FORM TYPES
-// Input types for forms (used by features layer)
-// =============================================================================
-
-export type { CreateProjectInput, UpdateProjectInput, ProjectCommandResult } from './api';
-
-// =============================================================================
-// API ACCESS (for features layer mutations only)
-// These are needed by features/project/* for CRUD operations
-// =============================================================================
-
-export { projectApi, projectSummaryApi } from './api';
-export { projectMapper, projectCommandMapper } from './api';
+/**
+ * @example
+ * ```tsx
+ * // Direct usage - no custom hook needed
+ * const { data: project } = useQuery(projectQueries.detail(123));
+ *
+ * // List query with pagination
+ * const { data } = useQuery(projectQueries.list({ page: 0, size: 10, search: '', status: null }));
+ *
+ * // Cache invalidation
+ * queryClient.invalidateQueries({ queryKey: projectQueries.lists() });
+ * ```
+ */
+export { projectQueries, type ProjectListQueryParams } from './api';
 
 // =============================================================================
-// LEGACY ALIASES (for backward compatibility - prefer Input types)
+// COMMAND FUNCTIONS
 // =============================================================================
+
+/**
+ * @example
+ * ```tsx
+ * const mutation = useMutation({
+ *   mutationFn: createProject,
+ *   onSuccess: () => queryClient.invalidateQueries({ queryKey: projectQueries.lists() }),
+ * });
+ * ```
+ */
+export { createProject, type CreateProjectInput } from './api';
+export { updateProject, type UpdateProjectInput } from './api';
+
+// =============================================================================
+// COMMAND RESULT TYPE
+// =============================================================================
+
+export type { ProjectCommandResult } from './api';
+
+// =============================================================================
+// LEGACY EXPORTS (backward compatibility - to be removed after migration)
+// =============================================================================
+
+/** @deprecated Use projectQueries and command functions instead */
+export { projectApi } from './api';
+
+/** @deprecated Use projectQueries with projectMapper */
+export { projectSummaryApi } from './api';
+
+/** @deprecated Use projectMapper from api layer internally only */
+export { projectMapper } from './api';
 
 /** @deprecated Use CreateProjectInput instead */
-export type { CreateProjectRequestDTO as CreateProjectRequest } from './api';
+export type { CreateProjectRequest } from './api';
+
 /** @deprecated Use UpdateProjectInput instead */
-export type { UpdateProjectRequestDTO as UpdateProjectRequest } from './api';
+export type { UpdateProjectRequest } from './api';
