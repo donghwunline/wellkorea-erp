@@ -28,7 +28,9 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { Project, ProjectSection } from '@/entities/project';
+import { useQuery } from '@tanstack/react-query';
+import type { ProjectSection } from '@/entities/project';
+import { projectQueries } from '@/entities/project';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import {
@@ -47,13 +49,9 @@ import {
   ProjectDetailsCard,
   ProjectKPIStrip,
   ProjectRelatedNavigationGrid,
-  useProjectActions,
   useProjectSummary,
 } from '@/components/features/projects';
 import { QuotationDetailsPanel } from '@/widgets';
-
-// Alias for backward compatibility
-type ProjectDetails = Project;
 
 // Tab configuration with role requirements
 interface TabConfig {
@@ -83,10 +81,22 @@ export function ProjectViewPage() {
   const projectId = id ? parseInt(id, 10) : 0;
   const navigate = useNavigate();
   const { hasAnyRole } = useAuth();
-  const { getProject, isLoading: isProjectLoading, error: projectError } = useProjectActions();
 
-  // Project data (now includes resolved names from backend)
-  const [project, setProject] = useState<ProjectDetails | null>(null);
+  // Fetch project using Query Factory
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    error: queryError,
+  } = useQuery({
+    ...projectQueries.detail(projectId),
+    enabled: projectId > 0,
+  });
+
+  const projectError = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : 'Failed to load project'
+    : null;
 
   // Refresh triggers for child components
   const [kpiRefreshTrigger, triggerKpiRefresh] = useReducer((x: number) => x + 1, 0);
@@ -139,20 +149,6 @@ export function ProjectViewPage() {
     },
     [summary]
   );
-
-  // Fetch project data (now includes resolved names from backend CQRS pattern)
-  useEffect(() => {
-    const fetchProject = async () => {
-      if (!projectId) return;
-      try {
-        const data = await getProject(projectId);
-        setProject(data);
-      } catch {
-        // Error handled by hook
-      }
-    };
-    fetchProject();
-  }, [projectId, getProject]);
 
   // Navigation handlers
   const handleBack = () => navigate('/projects');
