@@ -8,7 +8,7 @@
 import type { Paginated } from '@/shared/lib/pagination';
 import { auditApi } from '../api/audit.api';
 import { auditLogMapper } from '../api/audit.mapper';
-import type { AuditLog } from '../model';
+import type { AuditLog } from '../model/audit-log';
 
 /**
  * List query parameters (domain level).

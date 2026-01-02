@@ -4,7 +4,7 @@
  * Transforms DTOs to domain models.
  */
 
-import type { AuditLog } from '../model';
+import type { AuditLog } from '../model/audit-log';
 import type { AuditLogDTO } from './audit.dto';
 
 /**

@@ -5,7 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import type { AuditLog } from '../model';
+import type { AuditLog } from '../model/audit-log';
 import { auditQueryKeys } from './query-keys';
 import { auditQueryFns } from './query-fns';
 
