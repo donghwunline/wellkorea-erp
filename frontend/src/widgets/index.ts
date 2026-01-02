@@ -12,3 +12,8 @@ export {
   QuotationDetailsPanel,
   type QuotationDetailsPanelProps,
 } from './quotation-details-panel';
+
+export {
+  CompanyManagementPanel,
+  type CompanyManagementPanelProps,
+} from './company-management';
