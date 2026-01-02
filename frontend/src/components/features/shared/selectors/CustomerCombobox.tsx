@@ -2,7 +2,11 @@
  * CustomerCombobox - Reusable Customer Selector Component
  *
  * A specialized Combobox for selecting customers.
- * Uses companyService with roleType: 'CUSTOMER' filter.
+ * Uses company API with roleType: 'CUSTOMER' filter.
+ *
+ * NOTE: This is a legacy wrapper. New code should use:
+ * import { CompanyCombobox } from '@/entities/company';
+ * <CompanyCombobox roleType="CUSTOMER" ... />
  *
  * Usage:
  * ```tsx
@@ -16,8 +20,16 @@
  */
 
 import { useCallback } from 'react';
-import { companyService } from '@/services';
+import { httpClient, COMPANY_ENDPOINTS, transformPagedResponse } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
+
+// Response type for company summary
+interface CompanySummaryResponse {
+  id: number;
+  name: string;
+  email?: string | null;
+}
 
 export interface CustomerComboboxProps {
   /** Currently selected customer ID */
@@ -41,7 +53,7 @@ export interface CustomerComboboxProps {
 }
 
 /**
- * Customer selector component that wraps Combobox with companyService.
+ * Customer selector component that wraps Combobox with company API.
  */
 export function CustomerCombobox({
   value,
@@ -59,12 +71,18 @@ export function CustomerCombobox({
    * Filters by roleType: 'CUSTOMER' to get only customer companies.
    */
   const loadCustomers = useCallback(async (query: string): Promise<ComboboxOption[]> => {
-    const result = await companyService.getCompanies({
-      search: query,
-      roleType: 'CUSTOMER',
-      page: 0,
-      size: 20,
+    const response = await httpClient.requestWithMeta<PagedResponse<CompanySummaryResponse>>({
+      method: 'GET',
+      url: COMPANY_ENDPOINTS.BASE,
+      params: {
+        search: query || undefined,
+        roleType: 'CUSTOMER',
+        page: 0,
+        size: 20,
+      },
     });
+
+    const result = transformPagedResponse(response.data, response.metadata);
 
     return result.data.map(company => ({
       id: company.id,

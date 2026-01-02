@@ -4,6 +4,9 @@
  * A specialized Combobox for selecting companies.
  * Supports filtering by role type (CUSTOMER, VENDOR, OUTSOURCE).
  *
+ * NOTE: This is a legacy wrapper. New code should use:
+ * import { CompanyCombobox } from '@/entities/company';
+ *
  * Usage:
  * ```tsx
  * <CompanyCombobox
@@ -17,9 +20,18 @@
  */
 
 import { useCallback } from 'react';
-import { companyService, ROLE_TYPE_LABELS } from '@/services';
-import type { RoleType } from '@/services';
+import { type RoleType, ROLE_TYPE_LABELS } from '@/entities/company';
+import { httpClient, COMPANY_ENDPOINTS, transformPagedResponse } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
+
+// Response type for company summary
+interface CompanySummaryResponse {
+  id: number;
+  name: string;
+  email?: string | null;
+  contactPerson?: string | null;
+}
 
 export interface CompanyComboboxProps {
   /** Currently selected company ID */
@@ -47,7 +59,7 @@ export interface CompanyComboboxProps {
 }
 
 /**
- * Company selector component that wraps Combobox with companyService.
+ * Company selector component that wraps Combobox with company API.
  */
 export function CompanyCombobox({
   value,
@@ -69,16 +81,22 @@ export function CompanyCombobox({
 
   /**
    * Load companies from API based on search query.
-   * Transforms CompanySummary to ComboboxOption format.
+   * Transforms response to ComboboxOption format.
    */
   const loadCompanies = useCallback(
     async (query: string): Promise<ComboboxOption[]> => {
-      const result = await companyService.getCompanies({
-        search: query,
-        page: 0,
-        size: 20,
-        roleType,
+      const response = await httpClient.requestWithMeta<PagedResponse<CompanySummaryResponse>>({
+        method: 'GET',
+        url: COMPANY_ENDPOINTS.BASE,
+        params: {
+          search: query || undefined,
+          page: 0,
+          size: 20,
+          roleType: roleType ?? undefined,
+        },
       });
+
+      const result = transformPagedResponse(response.data, response.metadata);
 
       return result.data.map(company => ({
         id: company.id,
