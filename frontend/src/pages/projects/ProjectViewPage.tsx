@@ -26,11 +26,11 @@
  * └──────────────────────────────────────────────────┘
  */
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ProjectSection } from '@/entities/project';
-import { projectQueries } from '@/entities/project';
+import { projectQueries, ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton } from '@/entities/project';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import {
@@ -45,13 +45,7 @@ import {
   TabPanel,
   Tabs,
 } from '@/shared/ui';
-import {
-  ProjectDetailsCard,
-  ProjectKPIStrip,
-  ProjectRelatedNavigationGrid,
-  useProjectSummary,
-} from '@/components/features/projects';
-import { QuotationDetailsPanel } from '@/widgets';
+import { QuotationDetailsPanel, ProjectRelatedNavigationGrid } from '@/widgets';
 
 // Tab configuration with role requirements
 interface TabConfig {
@@ -98,11 +92,24 @@ export function ProjectViewPage() {
       : 'Failed to load project'
     : null;
 
-  // Refresh triggers for child components
-  const [kpiRefreshTrigger, triggerKpiRefresh] = useReducer((x: number) => x + 1, 0);
+  const queryClient = useQueryClient();
+
+  // Get KPIs for the KPI strip
+  const { data: kpis, isLoading: isKpisLoading } = useQuery({
+    ...projectQueries.kpi(projectId),
+    enabled: !!project,
+  });
 
   // Get summary for badge counts
-  const { summary } = useProjectSummary({ projectId, enabled: !!project });
+  const { data: summary } = useQuery({
+    ...projectQueries.summary(projectId),
+    enabled: !!project,
+  });
+
+  // Refresh KPIs when data changes (e.g., after creating quotation)
+  const triggerKpiRefresh = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: projectQueries.kpis() });
+  }, [queryClient]);
 
   // Tab state from URL hash
   const [activeTab, setActiveTab] = useState(() => {
@@ -256,11 +263,8 @@ export function ProjectViewPage() {
         />
 
         {/* KPI Strip */}
-        <ProjectKPIStrip
-          projectId={project.id}
-          refreshTrigger={kpiRefreshTrigger}
-          className="mt-6"
-        />
+        {isKpisLoading && <ProjectKPIStripSkeleton className="mt-6" />}
+        {kpis && <ProjectKPIStrip kpis={kpis} className="mt-6" />}
 
         {/* Tabbed Navigation */}
         <Tabs defaultTab="overview" hash={true} onTabChange={handleTabChange}>

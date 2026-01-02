@@ -11,8 +11,8 @@ import { useQuery } from '@tanstack/react-query';
 import type { UpdateProjectInput } from '@/entities/project';
 import { projectQueries } from '@/entities/project';
 import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
-import { ProjectForm } from '@/components/features/projects';
-import { useUpdateProject } from '@/features/project';
+import { useUpdateProject } from '@/features/project/update';
+import { ProjectForm } from '@/features/project/form';
 
 export function ProjectEditPage() {
   const { id } = useParams<{ id: string }>();

@@ -13,8 +13,8 @@ import type {
   UpdateProjectInput,
 } from '@/entities/project';
 import { Card, Icon, PageHeader } from '@/shared/ui';
-import { JobCodeSuccessModal, ProjectForm } from '@/components/features/projects';
-import { useCreateProject } from '@/features/project';
+import { useCreateProject, JobCodeSuccessModal } from '@/features/project/create';
+import { ProjectForm } from '@/features/project/form';
 
 export function ProjectCreatePage() {
   const navigate = useNavigate();
