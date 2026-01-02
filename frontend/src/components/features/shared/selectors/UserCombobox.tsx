@@ -16,7 +16,7 @@
  */
 
 import { useCallback } from 'react';
-import { userService } from '@/services';
+import { userApi } from '@/entities/user';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
 
 export interface UserComboboxProps {
@@ -43,7 +43,7 @@ export interface UserComboboxProps {
 }
 
 /**
- * User selector component that wraps Combobox with userService.
+ * User selector component that wraps Combobox with userApi.
  */
 export function UserCombobox({
   value,
@@ -62,7 +62,7 @@ export function UserCombobox({
    * Transforms UserDetails to ComboboxOption format.
    */
   const loadUsers = useCallback(async (query: string): Promise<ComboboxOption[]> => {
-    const result = await userService.getUsers({
+    const result = await userApi.getList({
       search: query,
       page: 0,
       size: 20,

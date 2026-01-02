@@ -6,7 +6,7 @@
 
 import { Card, Icon, type IconName, StatCard } from '@/shared/ui';
 import { useAuth } from '@/entities/auth';
-import type { RoleName } from '@/services';
+import type { RoleName } from '@/entities/user';
 
 interface ModuleCard {
   title: string;

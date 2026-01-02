@@ -22,22 +22,10 @@ import { formatDate } from '@/shared/lib/formatting/date';
 
 // FSD imports - Entities (domain models, business rules, read-only UI)
 import { useQuery } from '@tanstack/react-query';
-import {
-  quotationQueries,
-  quotationRules,
-  QuotationCard,
-  QuotationStatusConfig,
-} from '@/entities/quotation';
-import {
-  useApprovals,
-  useApproval,
-  approvalRules,
-  ApprovalRequestCard,
-} from '@/entities/approval';
-
-// FSD imports - Features (user actions, mutations)
-import { useSubmitQuotation, useCreateVersion, useDownloadPdf } from '@/features/quotation';
-import { useApproveApproval, useRejectApproval, RejectModal } from '@/features/approval';
+import { QuotationCard, quotationQueries, quotationRules } from '@/entities/quotation';
+import { ApprovalRequestCard, approvalRules, useApproval, useApprovals } from '@/entities/approval'; // FSD imports - Features (user actions, mutations)
+import { useCreateVersion, useDownloadPdf, useSubmitQuotation } from '@/features/quotation';
+import { RejectModal, useApproveApproval, useRejectApproval } from '@/features/approval';
 
 export function QuotationDetailPageV2() {
   const navigate = useNavigate();
@@ -64,14 +52,17 @@ export function QuotationDetailPageV2() {
 
   // Step 1: Fetch approvals list to find the approval for this quotation
   // Note: List endpoint returns ApprovalSummaryView (without levels)
-  const approvalsQuery = useApprovals({
-    entityType: 'QUOTATION',
-    status: 'PENDING',
-    page: 0,
-    size: 20,
-  }, {
-    enabled: quotation?.status === 'PENDING',
-  });
+  const approvalsQuery = useApprovals(
+    {
+      entityType: 'QUOTATION',
+      status: 'PENDING',
+      page: 0,
+      size: 20,
+    },
+    {
+      enabled: quotation?.status === 'PENDING',
+    }
+  );
   const approvalsData = approvalsQuery.data;
   const isLoadingApprovalsList = approvalsQuery.isLoading;
 
@@ -91,10 +82,15 @@ export function QuotationDetailPageV2() {
   });
 
   // Combined loading state for approvals
-  const isLoadingApprovals = isLoadingApprovalsList || (approvalId !== undefined && isLoadingApprovalDetail);
+  const isLoadingApprovals =
+    isLoadingApprovalsList || (approvalId !== undefined && isLoadingApprovalDetail);
 
   // Mutation hooks
-  const { mutate: submitForApproval, isPending: isSubmitting, error: submitError } = useSubmitQuotation({
+  const {
+    mutate: submitForApproval,
+    isPending: isSubmitting,
+    error: submitError,
+  } = useSubmitQuotation({
     onSuccess: () => {
       showSuccess('Quotation submitted for approval');
       setSubmitConfirm(false);
@@ -102,8 +98,12 @@ export function QuotationDetailPageV2() {
     },
   });
 
-  const { mutate: createVersion, isPending: isCreatingVersion, error: versionError } = useCreateVersion({
-    onSuccess: (result) => {
+  const {
+    mutate: createVersion,
+    isPending: isCreatingVersion,
+    error: versionError,
+  } = useCreateVersion({
+    onSuccess: result => {
       showSuccess('New version created');
       setVersionConfirm(false);
       // Navigate to edit the new version
@@ -115,9 +115,17 @@ export function QuotationDetailPageV2() {
     },
   });
 
-  const { mutate: downloadPdf, isPending: isDownloading, error: downloadError } = useDownloadPdf({});
+  const {
+    mutate: downloadPdf,
+    isPending: isDownloading,
+    error: downloadError,
+  } = useDownloadPdf({});
 
-  const { mutate: approveApproval, isPending: isApproving, error: approveError } = useApproveApproval({
+  const {
+    mutate: approveApproval,
+    isPending: isApproving,
+    error: approveError,
+  } = useApproveApproval({
     entityId: quotationId ?? undefined,
     onSuccess: () => {
       showSuccess('Quotation approved');
@@ -126,7 +134,11 @@ export function QuotationDetailPageV2() {
     },
   });
 
-  const { mutate: rejectApproval, isPending: isRejecting, error: rejectError } = useRejectApproval({
+  const {
+    mutate: rejectApproval,
+    isPending: isRejecting,
+    error: rejectError,
+  } = useRejectApproval({
     entityId: quotationId ?? undefined,
     onSuccess: () => {
       showSuccess('Quotation rejected');
@@ -140,13 +152,14 @@ export function QuotationDetailPageV2() {
   const isLoading = isLoadingQuotation || isLoadingApprovals;
 
   // Collect all errors
-  const error = quotationError?.message
-    || submitError?.message
-    || versionError?.message
-    || downloadError?.message
-    || approveError?.message
-    || rejectError?.message
-    || null;
+  const error =
+    quotationError?.message ||
+    submitError?.message ||
+    versionError?.message ||
+    downloadError?.message ||
+    approveError?.message ||
+    rejectError?.message ||
+    null;
 
   // Clear messages after delay
   const showSuccess = useCallback((message: string) => {
@@ -187,7 +200,10 @@ export function QuotationDetailPageV2() {
   // Handle download PDF
   const handleDownloadPdf = useCallback(() => {
     if (!quotation) return;
-    downloadPdf({ quotationId: quotation.id, filename: `${quotation.jobCode}_v${quotation.version}.pdf` });
+    downloadPdf({
+      quotationId: quotation.id,
+      filename: `${quotation.jobCode}_v${quotation.version}.pdf`,
+    });
   }, [quotation, downloadPdf]);
 
   // Handle approve
@@ -197,15 +213,16 @@ export function QuotationDetailPageV2() {
   }, [approval, approveApproval]);
 
   // Handle reject
-  const handleReject = useCallback((reason: string) => {
-    if (!approval) return;
-    rejectApproval({ id: approval.id, reason });
-  }, [approval, rejectApproval]);
+  const handleReject = useCallback(
+    (reason: string) => {
+      if (!approval) return;
+      rejectApproval({ id: approval.id, reason });
+    },
+    [approval, rejectApproval]
+  );
 
   // Check if current user can approve/reject
-  const canApproveOrReject = approval && user
-    ? approvalRules.canAct(approval, user.id)
-    : false;
+  const canApproveOrReject = approval && user ? approvalRules.canAct(approval, user.id) : false;
 
   // Render loading state
   if (isLoading) {
@@ -336,10 +353,6 @@ export function QuotationDetailPageV2() {
 
               {quotation.status === 'APPROVED' && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-green-400">
-                    <Icon name="check-circle" className="h-5 w-5" />
-                    <span className="font-medium">Approved</span>
-                  </div>
                   {quotation.approvedByName && (
                     <div className="text-sm text-steel-400">
                       <span>Approved by: </span>
@@ -359,22 +372,11 @@ export function QuotationDetailPageV2() {
 
               {quotation.status === 'REJECTED' && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-red-400">
-                    <Icon name="x-circle" className="h-5 w-5" />
-                    <span className="font-medium">Rejected</span>
-                  </div>
                   {quotation.rejectionReason && (
                     <Alert variant="error" title="Reason">
                       {quotation.rejectionReason}
                     </Alert>
                   )}
-                </div>
-              )}
-
-              {['SENT', 'ACCEPTED'].includes(quotation.status) && (
-                <div className="flex items-center gap-2 text-copper-400">
-                  <Icon name="check-circle" className="h-5 w-5" />
-                  <span className="font-medium">{QuotationStatusConfig[quotation.status].labelKo}</span>
                 </div>
               )}
             </Card>

@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { Button, Card, ErrorAlert, Icon, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
 import { useServiceCategories } from '@/components/features/items';
-import type { ServiceCategorySummary, VendorServiceOffering } from '@/services';
+import type { ServiceCategoryListItem, VendorOffering } from '@/entities/catalog';
 import { useAuth } from '@/entities/auth';
 
 const PAGE_SIZE = 20;
@@ -38,12 +38,12 @@ export function PurchasedItemsTab() {
   } = useServiceCategories({ pageSize: PAGE_SIZE });
 
   // Vendor offerings modal state
-  const [selectedCategory, setSelectedCategory] = useState<ServiceCategorySummary | null>(null);
-  const [offerings, setOfferings] = useState<VendorServiceOffering[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategoryListItem | null>(null);
+  const [offerings, setOfferings] = useState<VendorOffering[]>([]);
   const [offeringsLoading, setOfferingsLoading] = useState(false);
 
   // View vendor offerings for a category
-  const handleViewOfferings = async (category: ServiceCategorySummary) => {
+  const handleViewOfferings = async (category: ServiceCategoryListItem) => {
     setSelectedCategory(category);
     setOfferingsLoading(true);
     try {

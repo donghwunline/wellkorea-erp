@@ -143,7 +143,7 @@ export function CompanyManagementPanel({
   if (error) {
     return (
       <Card className="p-12 text-center">
-        <Icon name="exclamation-circle" className="mx-auto mb-4 h-12 w-12 text-red-500" />
+        <Icon name="x-circle" className="mx-auto mb-4 h-12 w-12 text-red-500" />
         <p className="mb-4 text-red-400">{error.message}</p>
         <Button variant="secondary" onClick={() => void refetch()}>
           다시 시도
@@ -153,8 +153,9 @@ export function CompanyManagementPanel({
   }
 
   const companies = companiesData?.data ?? [];
-  const totalPages = companiesData?.totalPages ?? 0;
-  const totalElements = companiesData?.totalElements ?? 0;
+  const pagination = companiesData?.pagination;
+  const totalPages = pagination?.totalPages ?? 0;
+  const totalElements = pagination?.totalElements ?? 0;
 
   return (
     <div className="space-y-6">
@@ -183,7 +184,6 @@ export function CompanyManagementPanel({
             placeholder="회사명, 사업자번호, 담당자로 검색..."
             value={search}
             onChange={handleSearchChange}
-            leftIcon={<Icon name="magnifying-glass" className="h-4 w-4" />}
           />
         </div>
       </div>
@@ -209,11 +209,15 @@ export function CompanyManagementPanel({
       />
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalPages > 1 && pagination && (
         <Pagination
           currentPage={page}
-          totalPages={totalPages}
+          totalItems={totalElements}
+          itemsPerPage={pageSize}
           onPageChange={setPage}
+          isFirst={pagination.first}
+          isLast={pagination.last}
+          itemLabel="회사"
         />
       )}
     </div>

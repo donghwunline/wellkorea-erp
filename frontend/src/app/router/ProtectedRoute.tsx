@@ -40,7 +40,7 @@ import type { ReactNode } from 'react';
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/entities/auth';
-import type { RoleName } from '@/services';
+import type { RoleName } from '@/entities/user';
 import { Spinner } from '@/shared/ui';
 
 interface ProtectedRouteProps {

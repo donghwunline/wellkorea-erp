@@ -49,22 +49,26 @@ vi.mock('@/shared/api', async importOriginal => {
   };
 });
 
-// Mock the services used by the form
-vi.mock('@/services', async importOriginal => {
-  const original = await importOriginal<typeof import('@/services')>();
+// Mock the userApi used by UserCombobox
+vi.mock('@/entities/user', async importOriginal => {
+  const original = await importOriginal<typeof import('@/entities/user')>();
   return {
     ...original,
-    userService: {
-      getUsers: vi.fn().mockResolvedValue({
+    userApi: {
+      getList: vi.fn().mockResolvedValue({
         data: [
           { id: 1, username: 'minjun', fullName: 'Kim Minjun (Admin)', email: 'minjun@test.com', roles: [] },
           { id: 2, username: 'jiwon', fullName: 'Lee Jiwon (Sales)', email: 'jiwon@test.com', roles: [] },
           { id: 3, username: 'seohyun', fullName: 'Park Seohyun (Finance)', email: 'seohyun@test.com', roles: [] },
         ],
-        page: 0,
-        size: 20,
-        totalElements: 3,
-        totalPages: 1,
+        pagination: {
+          page: 0,
+          size: 20,
+          totalElements: 3,
+          totalPages: 1,
+          first: true,
+          last: true,
+        },
       }),
     },
   };
