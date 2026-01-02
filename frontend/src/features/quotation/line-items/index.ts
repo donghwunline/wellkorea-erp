@@ -6,4 +6,5 @@
  * FSD Layer: features/quotation/line-items
  */
 
-export { ProductSelector, type ProductLineItem, type ProductSelectorProps } from './ui';
+export { ProductSelector } from './ui/ProductSelector';
+export type { ProductLineItem, ProductSelectorProps } from './ui/types';

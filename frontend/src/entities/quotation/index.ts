@@ -62,7 +62,7 @@ export { downloadQuotationPdf } from './api/quotation-pdf';
 export { sendQuotationNotification } from './api/send-quotation-notification';
 
 // =============================================================================
-// DTO TYPES (for features layer if needed)
+// COMMAND RESULT TYPE
 // =============================================================================
 
 export type { CommandResult } from './api/quotation.dto';

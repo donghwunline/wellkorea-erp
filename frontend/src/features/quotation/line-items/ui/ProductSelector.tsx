@@ -7,8 +7,9 @@
  * FSD Layer: features/quotation/line-items
  */
 
-import { useCallback, useState } from 'react';
-import { productService } from '@/services';
+import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { productQueries, searchProductsApi } from '@/entities/product';
 import { formatCurrency } from '@/shared/lib/formatting';
 import {
   Button,
@@ -63,14 +64,29 @@ export function ProductSelector({
   const [unitPrice, setUnitPrice] = useState<string>('');
   const [note, setNote] = useState<string>('');
 
-  // Load products for combobox
+  // Use product detail query when a product is selected
+  const { data: productDetail } = useQuery({
+    ...productQueries.detail(selectedProductId ?? 0),
+    enabled: selectedProductId !== null && selectedProductId > 0,
+  });
+
+  /**
+   * Load products for combobox - direct API call.
+   *
+   * Uses searchProductsApi directly to avoid race condition with useQuery.
+   * The async loadOptions callback needs the results synchronously returned,
+   * which doesn't work with React Query's async lifecycle.
+   *
+   * TODO: Consider refactoring to a controlled input + debounce + useQuery pattern
+   * for better caching and request deduplication.
+   */
   const loadProducts = useCallback(async (query: string): Promise<ComboboxOption[]> => {
-    const result = await productService.searchProducts({
-      query,
-      page: 0,
-      size: 20,
-    });
-    return result.data.map(product => ({
+    if (!query.trim()) {
+      return [];
+    }
+
+    const { products } = await searchProductsApi(query, 20);
+    return products.map(product => ({
       id: product.id,
       label: product.name,
       description: `${product.sku}${product.productTypeName ? ` | ${product.productTypeName}` : ''}`,
@@ -78,30 +94,37 @@ export function ProductSelector({
   }, []);
 
   // Handle product selection from combobox
-  const handleProductSelect = useCallback(async (value: string | number | null) => {
-    if (value === null) {
-      setSelectedProductId(null);
-      setSelectedProduct(null);
-      setUnitPrice('');
-      return;
+  const handleProductSelect = useCallback(
+    (value: string | number | null) => {
+      if (value === null) {
+        setSelectedProductId(null);
+        setSelectedProduct(null);
+        setUnitPrice('');
+        return;
+      }
+
+      const productId = Number(value);
+      setSelectedProductId(productId);
+      setSelectedProduct(null); // Clear so useEffect can set new product details
+    },
+    []
+  );
+
+  // Effect to update selected product when detail loads
+  useEffect(() => {
+    if (productDetail && selectedProductId === productDetail.id && !selectedProduct) {
+      const price = productDetail.baseUnitPrice ?? 0;
+      setSelectedProduct({
+        productId: productDetail.id,
+        name: productDetail.name,
+        sku: productDetail.sku,
+        unit: productDetail.unit,
+        unitPrice: price,
+        quantity: 1,
+      });
+      setUnitPrice(price.toString());
     }
-
-    const productId = Number(value);
-    setSelectedProductId(productId);
-
-    // Fetch full product details
-    const product = await productService.getProduct(productId);
-    const price = product.baseUnitPrice ?? 0;
-    setSelectedProduct({
-      productId: product.id,
-      name: product.name,
-      sku: product.sku,
-      unit: product.unit,
-      unitPrice: price,
-      quantity: 1,
-    });
-    setUnitPrice(price.toString());
-  }, []);
+  }, [productDetail, selectedProductId, selectedProduct]);
 
   // Add selected product to line items
   const handleAddProduct = useCallback(() => {

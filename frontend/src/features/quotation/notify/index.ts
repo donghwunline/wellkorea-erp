@@ -12,4 +12,4 @@ export {
 export {
   EmailNotificationModal,
   type EmailNotificationModalProps,
-} from './ui';
+} from './ui/EmailNotificationModal';
