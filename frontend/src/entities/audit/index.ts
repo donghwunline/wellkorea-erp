@@ -33,23 +33,17 @@ export { auditLogRules } from './model/audit-log';
 export { auditQueries, type AuditListQueryParams } from './api/audit.queries';
 
 // =============================================================================
-// QUERY HOOKS (Legacy - prefer auditQueries above)
-// =============================================================================
-
-export { useAuditLogs } from './query/use-audit-logs';
-export type { UseAuditLogsOptions, UseAuditLogsParams } from './query/use-audit-logs';
-
-export { useAuditLog } from './query/use-audit-log';
-export type { UseAuditLogOptions } from './query/use-audit-log';
-
-// Query keys for cache invalidation (Legacy - use auditQueries.lists() etc.)
-export { auditQueryKeys } from './query/query-keys';
-export { auditQueryFns, type AuditLogListParams, type PaginatedAuditLogs } from './query/query-fns';
-
-// =============================================================================
 // API ACCESS (for features layer mutations only)
 // =============================================================================
 
-export { auditApi } from './api/audit.api';
-export { auditLogMapper } from './api/audit.mapper';
-export type { AuditLogDTO, AuditLogListParamsDTO } from './api/audit.dto';
+// =============================================================================
+// UI COMPONENTS
+// Display-only components with no side effects
+// =============================================================================
+
+export {
+  AuditLogTable,
+  AuditLogTableSkeleton,
+  type AuditLogTableProps,
+} from './ui/AuditLogTable';
+
