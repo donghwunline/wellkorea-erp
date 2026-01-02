@@ -149,20 +149,9 @@ export const userService = {
   },
 };
 
-// Company service (unified Customer + Vendor + Outsource)
-export { companyService, ROLE_TYPE_LABELS } from './companies';
-export type {
-  RoleType,
-  CompanyRole,
-  AddRoleRequest,
-  CompanySummary,
-  CompanyDetails,
-  CreateCompanyRequest,
-  UpdateCompanyRequest,
-  CompanyCommandResult,
-  CompanyListParams,
-  PaginatedCompanies,
-} from './companies';
+// Company service - MIGRATED TO FSD
+// Import from @/entities/company and @/features/company instead
+// Legacy exports removed - see entities/company/index.ts for new API
 
 // Product service (Items → Products tab)
 export { productService } from './products';
