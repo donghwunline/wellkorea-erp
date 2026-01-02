@@ -2,13 +2,16 @@
  * Service Categories Hook
  *
  * Manages service category listing with pagination and search.
+ * Uses TanStack Query via catalog entity queries.
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { serviceCategoryService } from '@/services';
-import type { ServiceCategorySummary, VendorServiceOffering } from '@/services';
-import type { ApiError } from '@/shared/api/types';
-import { getErrorMessage } from '@/shared/api';
+import { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  catalogQueries,
+  type ServiceCategoryListItem,
+  type VendorOffering,
+} from '@/entities/catalog';
 
 interface UseServiceCategoriesOptions {
   /** Initial page size */
@@ -19,7 +22,7 @@ interface UseServiceCategoriesOptions {
 
 interface UseServiceCategoriesReturn {
   // Data
-  categories: ServiceCategorySummary[];
+  categories: ServiceCategoryListItem[];
 
   // Pagination
   page: number;
@@ -41,88 +44,75 @@ interface UseServiceCategoriesReturn {
   clearError: () => void;
 
   // Vendor offerings
-  loadOfferings: (categoryId: number) => Promise<VendorServiceOffering[]>;
+  loadOfferings: (categoryId: number) => Promise<VendorOffering[]>;
 }
 
 /**
  * Hook for managing service category list with pagination.
+ * Uses TanStack Query for data fetching and caching.
  */
 export function useServiceCategories(
   options: UseServiceCategoriesOptions = {}
 ): UseServiceCategoriesReturn {
   const { pageSize = 20, autoLoad = true } = options;
-
-  // Data state
-  const [categories, setCategories] = useState<ServiceCategorySummary[]>([]);
-
-  // Pagination state
-  const [page, setPage] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  const [isFirst, setIsFirst] = useState(true);
-  const [isLast, setIsLast] = useState(true);
-
-  // Loading/error state
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Filter state
+  const [page, setPageState] = useState(0);
   const [search, setSearchState] = useState('');
 
-  // Load categories
-  const loadCategories = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await serviceCategoryService.getServiceCategories({
-        page,
-        size: pageSize,
-        search: search || undefined,
-      });
-      setCategories(result.data);
-      setTotalElements(result.pagination.totalElements);
-      setIsFirst(result.pagination.first);
-      setIsLast(result.pagination.last);
-    } catch (err) {
-      setError(getErrorMessage(err as ApiError));
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search]);
+  // Categories list query
+  const categoriesQuery = useQuery({
+    ...catalogQueries.categoryList({
+      page,
+      size: pageSize,
+      search,
+    }),
+    enabled: autoLoad,
+  });
 
-  // Load offerings for a category
-  const loadOfferings = useCallback(async (categoryId: number) => {
-    return serviceCategoryService.getCurrentOfferingsForCategory(categoryId);
-  }, []);
+  // Derived data
+  const categories = categoriesQuery.data?.data ?? [];
+  const pagination = categoriesQuery.data?.pagination;
 
   // Reset page when search changes
   const setSearch = useCallback((value: string) => {
     setSearchState(value);
-    setPage(0);
+    setPageState(0);
+  }, []);
+
+  const setPage = useCallback((newPage: number) => {
+    setPageState(newPage);
   }, []);
 
   const clearError = useCallback(() => {
-    setError(null);
+    // Errors are managed by TanStack Query, this is a no-op for compatibility
   }, []);
 
-  // Initial load
-  useEffect(() => {
-    if (autoLoad) {
-      loadCategories();
-    }
-  }, [autoLoad, loadCategories]);
+  const refresh = useCallback(async () => {
+    await categoriesQuery.refetch();
+  }, [categoriesQuery]);
+
+  // Load offerings for a category - uses query client directly
+  const loadOfferings = useCallback(
+    async (categoryId: number): Promise<VendorOffering[]> => {
+      return queryClient.fetchQuery(catalogQueries.currentOfferings(categoryId));
+    },
+    [queryClient]
+  );
 
   return {
     categories,
     page,
-    totalElements,
-    isFirst,
-    isLast,
-    loading,
-    error,
+    totalElements: pagination?.totalElements ?? 0,
+    isFirst: pagination?.first ?? true,
+    isLast: pagination?.last ?? true,
+    loading: categoriesQuery.isLoading || categoriesQuery.isFetching,
+    error: categoriesQuery.error?.message ?? null,
     search,
     setPage,
     setSearch,
-    refresh: loadCategories,
+    refresh,
     clearError,
     loadOfferings,
   };

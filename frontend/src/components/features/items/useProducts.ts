@@ -2,13 +2,16 @@
  * Products Hook
  *
  * Manages product listing with pagination, search, and filtering.
+ * Uses TanStack Query via product entity queries.
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import { productService } from '@/services';
-import type { ProductSummary, ProductType, ProductListParams } from '@/services';
-import type { ApiError } from '@/shared/api/types';
-import { getErrorMessage } from '@/shared/api';
+import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  productQueries,
+  type ProductListItem,
+  type ProductType,
+} from '@/entities/product';
 
 interface UseProductsOptions {
   /** Initial page size */
@@ -19,7 +22,7 @@ interface UseProductsOptions {
 
 interface UseProductsReturn {
   // Data
-  products: ProductSummary[];
+  products: ProductListItem[];
   productTypes: ProductType[];
 
   // Pagination
@@ -46,102 +49,72 @@ interface UseProductsReturn {
 
 /**
  * Hook for managing product list with pagination and filtering.
+ * Uses TanStack Query for data fetching and caching.
  */
 export function useProducts(options: UseProductsOptions = {}): UseProductsReturn {
   const { pageSize = 20, autoLoad = true } = options;
 
-  // Data state
-  const [products, setProducts] = useState<ProductSummary[]>([]);
-  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
-
-  // Pagination state
-  const [page, setPage] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  const [isFirst, setIsFirst] = useState(true);
-  const [isLast, setIsLast] = useState(true);
-
-  // Loading/error state
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   // Filter state
+  const [page, setPageState] = useState(0);
   const [search, setSearchState] = useState('');
   const [selectedTypeId, setSelectedTypeIdState] = useState<number | null>(null);
 
-  // Load products
-  const loadProducts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params: ProductListParams = {
-        page,
-        size: pageSize,
-        search: search || undefined,
-        productTypeId: selectedTypeId || undefined,
-      };
-      const result = await productService.getProducts(params);
-      setProducts(result.data);
-      setTotalElements(result.pagination.totalElements);
-      setIsFirst(result.pagination.first);
-      setIsLast(result.pagination.last);
-    } catch (err) {
-      setError(getErrorMessage(err as ApiError));
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search, selectedTypeId]);
+  // Products list query
+  const productsQuery = useQuery({
+    ...productQueries.list({
+      page,
+      size: pageSize,
+      search,
+      productTypeId: selectedTypeId,
+    }),
+    enabled: autoLoad,
+  });
 
-  // Load product types for filter
-  const loadProductTypes = useCallback(async () => {
-    try {
-      const types = await productService.getProductTypes();
-      setProductTypes(types);
-    } catch (err) {
-      console.error('Failed to load product types:', err);
-    }
-  }, []);
+  // Product types query
+  const productTypesQuery = useQuery(productQueries.allTypes());
+
+  // Derived data
+  const products = productsQuery.data?.data ?? [];
+  const pagination = productsQuery.data?.pagination;
 
   // Reset page when filters change
   const setSearch = useCallback((value: string) => {
     setSearchState(value);
-    setPage(0);
+    setPageState(0);
   }, []);
 
   const setSelectedTypeId = useCallback((typeId: number | null) => {
     setSelectedTypeIdState(typeId);
-    setPage(0);
+    setPageState(0);
+  }, []);
+
+  const setPage = useCallback((newPage: number) => {
+    setPageState(newPage);
   }, []);
 
   const clearError = useCallback(() => {
-    setError(null);
+    // Errors are managed by TanStack Query, this is a no-op for compatibility
   }, []);
 
-  // Initial load
-  useEffect(() => {
-    loadProductTypes();
-  }, [loadProductTypes]);
-
-  useEffect(() => {
-    if (autoLoad) {
-      loadProducts();
-    }
-  }, [autoLoad, loadProducts]);
+  const refresh = useCallback(async () => {
+    await productsQuery.refetch();
+  }, [productsQuery]);
 
   return {
     products,
-    productTypes,
+    productTypes: productTypesQuery.data ?? [],
     page,
-    totalElements,
-    isFirst,
-    isLast,
-    loading,
-    error,
+    totalElements: pagination?.totalElements ?? 0,
+    isFirst: pagination?.first ?? true,
+    isLast: pagination?.last ?? true,
+    loading: productsQuery.isLoading || productsQuery.isFetching,
+    error: productsQuery.error?.message ?? null,
     search,
     selectedTypeId,
     setPage,
     setSearch,
     setSelectedTypeId,
-    refresh: loadProducts,
+    refresh,
     clearError,
   };
 }
