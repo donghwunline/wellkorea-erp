@@ -17,10 +17,7 @@ import {
   type CommandResult,
 } from '@/entities/company';
 
-export interface AddRoleParams {
-  companyId: number;
-  input: AddRoleInput;
-}
+export type AddRoleParams = AddRoleInput;
 
 export interface UseAddRoleOptions {
   /**
@@ -61,7 +58,7 @@ export function useAddRole(options: UseAddRoleOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ companyId, input }: AddRoleParams) => addRole(companyId, input),
+    mutationFn: (input: AddRoleParams) => addRole(input),
 
     onSuccess: (result, variables) => {
       // Invalidate both list and detail queries

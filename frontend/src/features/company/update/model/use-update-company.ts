@@ -17,10 +17,7 @@ import {
   type CommandResult,
 } from '@/entities/company';
 
-export interface UpdateCompanyParams {
-  id: number;
-  input: UpdateCompanyInput;
-}
+export type UpdateCompanyParams = UpdateCompanyInput;
 
 export interface UseUpdateCompanyOptions {
   /**
@@ -60,7 +57,7 @@ export function useUpdateCompany(options: UseUpdateCompanyOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, input }: UpdateCompanyParams) => updateCompany(id, input),
+    mutationFn: (input: UpdateCompanyParams) => updateCompany(input),
 
     onSuccess: (result, variables) => {
       // Invalidate both list and detail queries

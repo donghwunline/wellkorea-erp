@@ -14,19 +14,15 @@ import {
   removeRole,
   companyQueries,
   type RemoveRoleInput,
-  type CommandResult,
 } from '@/entities/company';
 
-export interface RemoveRoleParams {
-  companyId: number;
-  input: RemoveRoleInput;
-}
+export type RemoveRoleParams = RemoveRoleInput;
 
 export interface UseRemoveRoleOptions {
   /**
    * Called on successful role removal.
    */
-  onSuccess?: (result: CommandResult) => void;
+  onSuccess?: () => void;
 
   /**
    * Called on error.
@@ -65,13 +61,13 @@ export function useRemoveRole(options: UseRemoveRoleOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ companyId, input }: RemoveRoleParams) => removeRole(companyId, input),
+    mutationFn: (input: RemoveRoleParams) => removeRole(input),
 
-    onSuccess: (result, variables) => {
+    onSuccess: (_result, variables) => {
       // Invalidate both list and detail queries
       queryClient.invalidateQueries({ queryKey: companyQueries.lists() });
       queryClient.invalidateQueries({ queryKey: companyQueries.detail(variables.companyId).queryKey });
-      options.onSuccess?.(result);
+      options.onSuccess?.();
     },
 
     onError: (error: Error) => {
