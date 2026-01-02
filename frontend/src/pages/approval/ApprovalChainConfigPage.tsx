@@ -32,7 +32,7 @@ import {
   chainTemplateRules,
   useChainTemplates,
 } from '@/entities/approval-chain';
-import { useUpdateChainLevels } from '@/features/approval-chain';
+import { useUpdateChainLevels } from '@/features/approval-chain/update';
 import { UserCombobox } from '@/components/features/shared/selectors';
 
 interface EditingChain {

@@ -14,11 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import { Alert, Card, Icon, PageHeader } from '@/shared/ui';
 
 // Feature imports (FSD)
-import {
-  useCreateCompany,
-  CompanyForm,
-  type CompanyFormData,
-} from '@/features/company';
+import { useCreateCompany } from '@/features/company/create';
+import { CompanyForm, type CompanyFormData } from '@/features/company/form';
 
 // Entity imports (FSD)
 import type { CreateCompanyInput } from '@/entities/company';

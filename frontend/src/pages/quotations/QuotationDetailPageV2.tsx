@@ -24,8 +24,11 @@ import { formatDate } from '@/shared/lib/formatting/date';
 import { useQuery } from '@tanstack/react-query';
 import { QuotationCard, quotationQueries, quotationRules } from '@/entities/quotation';
 import { ApprovalRequestCard, approvalRules, useApproval, useApprovals } from '@/entities/approval'; // FSD imports - Features (user actions, mutations)
-import { useCreateVersion, useDownloadPdf, useSubmitQuotation } from '@/features/quotation';
-import { RejectModal, useApproveApproval, useRejectApproval } from '@/features/approval';
+import { useSubmitQuotation } from '@/features/quotation/submit';
+import { useCreateVersion } from '@/features/quotation/version';
+import { useDownloadPdf } from '@/features/quotation/download-pdf';
+import { useApproveApproval } from '@/features/approval/approve';
+import { RejectModal, useRejectApproval } from '@/features/approval/reject';
 
 export function QuotationDetailPageV2() {
   const navigate = useNavigate();

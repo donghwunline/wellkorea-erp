@@ -19,7 +19,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { useQuery } from '@tanstack/react-query';
 import { quotationQueries, quotationRules, type UpdateQuotationInput } from '@/entities/quotation';
-import { QuotationForm, useUpdateQuotation } from '@/features/quotation';
+import { QuotationForm } from '@/features/quotation/form';
+import { useUpdateQuotation } from '@/features/quotation/update';
 
 export function QuotationEditPageV2() {
   const navigate = useNavigate();

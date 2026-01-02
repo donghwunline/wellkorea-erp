@@ -20,7 +20,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { ProjectCombobox } from '@/components/features/shared/selectors';
 import { projectQueries } from '@/entities/project';
-import { useCreateQuotation, QuotationForm } from '@/features/quotation';
+import { QuotationForm } from '@/features/quotation/form';
+import { useCreateQuotation } from '@/features/quotation/create';
 import type { CreateQuotationInput } from '@/entities/quotation';
 
 export function QuotationCreatePageV2() {

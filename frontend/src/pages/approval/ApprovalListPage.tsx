@@ -21,7 +21,8 @@ import {
   type ApprovalStatus,
   useApprovals,
 } from '@/entities/approval';
-import { RejectModal, useApproveApproval, useRejectApproval } from '@/features/approval';
+import { useApproveApproval } from '@/features/approval/approve';
+import { RejectModal, useRejectApproval } from '@/features/approval/reject';
 
 // Status filter options
 const STATUS_OPTIONS = [

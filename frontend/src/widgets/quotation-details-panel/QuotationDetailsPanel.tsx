@@ -27,13 +27,13 @@ import {
 } from '@/entities/quotation';
 
 // Feature imports
+import { useSubmitQuotation } from '@/features/quotation/submit';
+import { useCreateVersion } from '@/features/quotation/version';
+import { useDownloadPdf } from '@/features/quotation/download-pdf';
 import {
-  useSubmitQuotation,
-  useCreateVersion,
-  useDownloadPdf,
   useSendNotification,
   EmailNotificationModal,
-} from '@/features/quotation';
+} from '@/features/quotation/notify';
 
 export interface QuotationDetailsPanelProps {
   /** Project ID to fetch quotations for */

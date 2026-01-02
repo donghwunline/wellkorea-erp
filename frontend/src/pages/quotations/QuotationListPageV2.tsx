@@ -40,13 +40,13 @@ import {
 } from '@/entities/quotation';
 
 // Feature imports - user actions
+import { useSubmitQuotation } from '@/features/quotation/submit';
+import { useCreateVersion } from '@/features/quotation/version';
+import { useDownloadPdf } from '@/features/quotation/download-pdf';
 import {
-  EmailNotificationModal,
-  useCreateVersion,
-  useDownloadPdf,
   useSendNotification,
-  useSubmitQuotation,
-} from '@/features/quotation';
+  EmailNotificationModal,
+} from '@/features/quotation/notify';
 
 // Status filter options
 const STATUS_OPTIONS = [
