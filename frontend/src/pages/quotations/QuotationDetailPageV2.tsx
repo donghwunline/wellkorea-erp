@@ -23,7 +23,8 @@ import { formatDate } from '@/shared/lib/formatting/date';
 // FSD imports - Entities (domain models, business rules, read-only UI)
 import { useQuery } from '@tanstack/react-query';
 import { QuotationCard, quotationQueries, quotationRules } from '@/entities/quotation';
-import { ApprovalRequestCard, approvalRules, useApproval, useApprovals } from '@/entities/approval'; // FSD imports - Features (user actions, mutations)
+import { ApprovalRequestCard, approvalQueries, approvalRules } from '@/entities/approval';
+// FSD imports - Features (user actions, mutations)
 import { useSubmitQuotation } from '@/features/quotation/submit';
 import { useCreateVersion } from '@/features/quotation/version';
 import { useDownloadPdf } from '@/features/quotation/download-pdf';
@@ -55,17 +56,15 @@ export function QuotationDetailPageV2() {
 
   // Step 1: Fetch approvals list to find the approval for this quotation
   // Note: List endpoint returns ApprovalSummaryView (without levels)
-  const approvalsQuery = useApprovals(
-    {
+  const approvalsQuery = useQuery({
+    ...approvalQueries.list({
       entityType: 'QUOTATION',
       status: 'PENDING',
       page: 0,
       size: 20,
-    },
-    {
-      enabled: quotation?.status === 'PENDING',
-    }
-  );
+    }),
+    enabled: quotation?.status === 'PENDING',
+  });
   const approvalsData = approvalsQuery.data;
   const isLoadingApprovalsList = approvalsQuery.isLoading;
 
@@ -79,8 +78,8 @@ export function QuotationDetailPageV2() {
     data: approval,
     isLoading: isLoadingApprovalDetail,
     refetch: refetchApproval,
-  } = useApproval({
-    id: approvalId ?? 0,
+  } = useQuery({
+    ...approvalQueries.detail(approvalId ?? 0),
     enabled: approvalId !== undefined && approvalId > 0,
   });
 

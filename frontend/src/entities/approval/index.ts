@@ -78,18 +78,3 @@ export type { ApprovalLevelListProps } from './ui/ApprovalLevelList';
 export { ApprovalRequestCard } from './ui/ApprovalRequestCard';
 export type { ApprovalRequestCardProps } from './ui/ApprovalRequestCard';
 
-// =============================================================================
-// LEGACY EXPORTS (deprecated - to be removed after migration)
-// =============================================================================
-
-/** @deprecated Use approvalQueries with useQuery directly */
-export { useApproval } from './query/use-approval';
-export type { UseApprovalOptions } from './query/use-approval';
-
-/** @deprecated Use approvalQueries with useQuery directly */
-export { useApprovals } from './query/use-approvals';
-export type { UseApprovalsParams, UseApprovalsOptions } from './query/use-approvals';
-
-/** @deprecated Use approvalQueries with useQuery directly */
-export { useApprovalHistory } from './query/use-approval-history';
-export type { UseApprovalHistoryOptions } from './query/use-approval-history';

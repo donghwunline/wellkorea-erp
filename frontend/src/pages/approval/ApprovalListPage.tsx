@@ -14,12 +14,13 @@
 
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, FilterBar, LoadingState, PageHeader, Pagination } from '@/shared/ui';
 import {
   type Approval,
   ApprovalRequestCard,
+  approvalQueries,
   type ApprovalStatus,
-  useApprovals,
 } from '@/entities/approval';
 import { useApproveApproval } from '@/features/approval/approve';
 import { RejectModal, useRejectApproval } from '@/features/approval/reject';
@@ -44,15 +45,17 @@ export function ApprovalListPage() {
     data: approvalsData,
     isLoading,
     error: fetchError,
-  } = useApprovals({
-    page,
-    size: 10,
-    status: statusFilter,
-    myPending: true,
-  });
+  } = useQuery(
+    approvalQueries.list({
+      page,
+      size: 10,
+      status: statusFilter,
+      myPending: true,
+    })
+  );
 
   const approvals = approvalsData?.data ?? [];
-  const pagination = approvalsData;
+  const pagination = approvalsData?.pagination;
 
   // Local UI State
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
