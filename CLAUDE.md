@@ -293,6 +293,47 @@ entities → shared ONLY
 shared → NOTHING (base layer)
 ```
 
+**Slice Encapsulation Rules** (what to expose via `index.ts`):
+
+| Segment | Export? | Example |
+|---------|---------|---------|
+| `model/*.ts` | ✅ YES | Domain types, business rules |
+| `api/*.queries.ts` | ✅ YES | Query factory (`quotationQueries`) |
+| `api/create-*.ts` | ✅ YES | Command functions + Input types |
+| `api/update-*.ts` | ✅ YES | Command functions + Input types |
+| `ui/*.tsx` | ✅ YES | Display components |
+| `api/*.dto.ts` | ❌ NO | DTOs are internal implementation |
+| `api/*.mapper.ts` | ❌ NO | Mappers are internal implementation |
+| `api/*.api.ts` | ❌ NO | Low-level API calls are internal |
+| `query/query-keys.ts` | ❌ NO | Use `queries.lists()` instead |
+
+**No segment-level barrel exports**: Only `{slice}/index.ts` is public. Never create `model/index.ts`, `api/index.ts`, etc.
+
+**Group Slices** (organizational folders under `features/`):
+
+The `features/` layer uses **Group slices** for domain-based organization:
+```
+features/
+├── approval/           # Group slice (NO index.ts here!)
+│   ├── approve/        # Slice - HAS index.ts
+│   │   ├── ui/
+│   │   ├── model/
+│   │   └── index.ts    # ✅ Public API
+│   └── reject/         # Slice - HAS index.ts
+│       ├── ui/
+│       ├── model/
+│       └── index.ts    # ✅ Public API
+├── quotation/          # Group slice (NO index.ts here!)
+│   ├── form/           # Slice
+│   ├── line-items/     # Slice
+│   └── notify/         # Slice
+```
+
+**Rules**:
+- **Group slice** (`approval/`, `quotation/`): Organizational folder only. **NO `index.ts`**.
+- **Slice** (`approve/`, `reject/`, `form/`): Actual feature unit. **HAS `index.ts`** as public API.
+- Import from slice, not group: `from '@/features/approval/approve'` ✅, `from '@/features/approval'` ❌
+
 **Key Architecture Decisions:**
 
 1. **Domain Models = Plain Objects + Pure Functions** (not classes)
