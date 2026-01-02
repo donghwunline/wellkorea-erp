@@ -8,8 +8,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserCustomersForm } from './UserCustomersForm';
 import { mockUserDetails } from '@/test/fixtures';
-import { companyService, userService } from '@/services';
-import type { CompanySummary, PaginatedCompanies } from '@/services';
+import { userService } from '@/services';
+import * as sharedApi from '@/shared/api';
 
 // Mock services
 vi.mock('@/services', () => ({
@@ -17,23 +17,40 @@ vi.mock('@/services', () => ({
     getUserCustomers: vi.fn(),
     assignCustomers: vi.fn(),
   },
-  companyService: {
-    getCompanies: vi.fn(),
-  },
 }));
 
-// Mock customer data for tests
-const MOCK_CUSTOMERS: CompanySummary[] = [
-  { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com', phone: '02-1234-5678', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 1, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
-  { id: 2, name: 'LG Display', email: 'info@lgdisplay.com', phone: '02-2345-6789', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 2, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
-  { id: 3, name: 'Hyundai Motor', email: 'info@hyundai.com', phone: '02-3456-7890', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 3, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
-  { id: 4, name: 'SK Hynix', email: 'contact@skhynix.com', phone: '031-345-6789', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 4, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
-  { id: 5, name: 'POSCO', email: 'contact@posco.com', phone: '054-456-7890', isActive: true, createdAt: '2024-01-01T00:00:00Z', roles: [{ id: 5, roleType: 'CUSTOMER', notes: null, createdAt: '2024-01-01T00:00:00Z' }] },
+// Mock shared API
+vi.mock('@/shared/api', async importOriginal => {
+  const original = await importOriginal<typeof import('@/shared/api')>();
+  return {
+    ...original,
+    httpClient: {
+      ...original.httpClient,
+      requestWithMeta: vi.fn(),
+    },
+  };
+});
+
+// Mock customer data for tests (simplified API response format)
+interface MockCustomer {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const MOCK_CUSTOMERS: MockCustomer[] = [
+  { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com' },
+  { id: 2, name: 'LG Display', email: 'info@lgdisplay.com' },
+  { id: 3, name: 'Hyundai Motor', email: 'info@hyundai.com' },
+  { id: 4, name: 'SK Hynix', email: 'contact@skhynix.com' },
+  { id: 5, name: 'POSCO', email: 'contact@posco.com' },
 ];
 
-const MOCK_PAGINATED_CUSTOMERS: PaginatedCompanies = {
-  data: MOCK_CUSTOMERS,
-  pagination: {
+const MOCK_API_RESPONSE = {
+  data: {
+    content: MOCK_CUSTOMERS,
+  },
+  metadata: {
     page: 0,
     size: 100,
     totalElements: 5,
@@ -50,8 +67,8 @@ describe('UserCustomersForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default mock: return available customers from company service
-    vi.mocked(companyService.getCompanies).mockResolvedValue(MOCK_PAGINATED_CUSTOMERS);
+    // Default mock: return available customers from API
+    vi.mocked(sharedApi.httpClient.requestWithMeta).mockResolvedValue(MOCK_API_RESPONSE);
     // Default mock: no customers assigned
     vi.mocked(userService.getUserCustomers).mockResolvedValue([]);
   });
@@ -131,11 +148,11 @@ describe('UserCustomersForm', () => {
 
   describe('loading state', () => {
     it('should show loading state while fetching customers', async () => {
-      let resolveCompanies: (value: PaginatedCompanies) => void;
-      vi.mocked(companyService.getCompanies).mockImplementation(
+      let resolveApiCall: (value: typeof MOCK_API_RESPONSE) => void;
+      vi.mocked(sharedApi.httpClient.requestWithMeta).mockImplementation(
         () =>
           new Promise(resolve => {
-            resolveCompanies = resolve;
+            resolveApiCall = resolve;
           })
       );
 
@@ -143,7 +160,7 @@ describe('UserCustomersForm', () => {
 
       expect(screen.getByText('Loading customers...')).toBeInTheDocument();
 
-      resolveCompanies!(MOCK_PAGINATED_CUSTOMERS);
+      resolveApiCall!(MOCK_API_RESPONSE);
 
       await waitFor(() => {
         expect(screen.queryByText('Loading customers...')).not.toBeInTheDocument();
@@ -375,7 +392,7 @@ describe('UserCustomersForm', () => {
 
   describe('error handling', () => {
     it('should display error when loading customers fails', async () => {
-      vi.mocked(companyService.getCompanies).mockRejectedValue(new Error('Network error'));
+      vi.mocked(sharedApi.httpClient.requestWithMeta).mockRejectedValue(new Error('Network error'));
 
       renderForm();
 

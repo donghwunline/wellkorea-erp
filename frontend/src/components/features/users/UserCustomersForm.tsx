@@ -6,8 +6,24 @@
  */
 
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
-import { companyService, type CompanySummary, type UserDetails, userService } from '@/services';
+import { type UserDetails, userService } from '@/services';
+import { httpClient, COMPANY_ENDPOINTS, transformPagedResponse } from '@/shared/api';
+import type { PagedResponse } from '@/shared/api/types';
 import { Button, ErrorAlert, LoadingState, Modal } from '@/shared/ui';
+
+// Response type for company summary from API
+interface CompanySummaryResponse {
+  id: number;
+  name: string;
+  email?: string | null;
+}
+
+// Simple customer item for local display
+interface CustomerItem {
+  id: number;
+  name: string;
+  email: string | null;
+}
 
 export interface UserCustomersFormProps {
   isOpen: boolean;
@@ -24,7 +40,7 @@ export function UserCustomersForm({
 }: Readonly<UserCustomersFormProps>) {
   // Local UI State
   const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
-  const [availableCustomers, setAvailableCustomers] = useState<CompanySummary[]>([]);
+  const [availableCustomers, setAvailableCustomers] = useState<CustomerItem[]>([]);
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,13 +52,25 @@ export function UserCustomersForm({
     setIsLoadingCustomers(true);
     setError(null);
     try {
-      // Load all customers from companyService
-      const customersResult = await companyService.getCompanies({
-        roleType: 'CUSTOMER',
-        page: 0,
-        size: 100, // Load all customers for selection
+      // Load all customers using direct API call
+      const response = await httpClient.requestWithMeta<PagedResponse<CompanySummaryResponse>>({
+        method: 'GET',
+        url: COMPANY_ENDPOINTS.BASE,
+        params: {
+          roleType: 'CUSTOMER',
+          page: 0,
+          size: 100, // Load all customers for selection
+        },
       });
-      setAvailableCustomers(customersResult.data);
+      const customersResult = transformPagedResponse(response.data, response.metadata);
+
+      // Map to simple CustomerItem (only need id, name, email for display)
+      const customers: CustomerItem[] = customersResult.data.map(c => ({
+        id: c.id,
+        name: c.name,
+        email: c.email ?? null,
+      }));
+      setAvailableCustomers(customers);
 
       // Load user's current customer assignments
       const customerIds = await userService.getUserCustomers(user.id);
