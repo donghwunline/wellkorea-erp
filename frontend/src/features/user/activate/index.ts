@@ -5,4 +5,4 @@
 export {
   useActivateUser,
   type UseActivateUserOptions,
-} from './model';
+} from './model/use-activate-user';

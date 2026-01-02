@@ -6,4 +6,4 @@ export {
   useUpdateUser,
   type UseUpdateUserOptions,
   type UpdateUserMutationInput,
-} from './model';
+} from './model/use-update-user';

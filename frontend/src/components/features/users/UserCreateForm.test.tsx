@@ -9,14 +9,18 @@ import { userEvent } from '@testing-library/user-event';
 import { UserCreateForm } from './UserCreateForm';
 import { createMockUserDetails, type UserDetails } from '@/test/fixtures';
 import { getInputByPlaceholder } from '@/test/helpers';
-import { userService } from '@/services';
+import { userApi } from '@/entities/user';
 
-// Mock userService
-vi.mock('@/services', () => ({
-  userService: {
-    createUser: vi.fn(),
-  },
-}));
+// Mock userApi
+vi.mock('@/entities/user', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/entities/user')>();
+  return {
+    ...actual,
+    userApi: {
+      create: vi.fn(),
+    },
+  };
+});
 
 describe('UserCreateForm', () => {
   const mockOnClose = vi.fn();
@@ -159,10 +163,10 @@ describe('UserCreateForm', () => {
   });
 
   describe('successful submission', () => {
-    it('should call userService.createUser with form data', async () => {
+    it('should call userApi.create with form data', async () => {
       const user = userEvent.setup();
       const mockCreatedUser = createMockUserDetails({ username: 'newuser' });
-      vi.mocked(userService.createUser).mockResolvedValue(mockCreatedUser);
+      vi.mocked(userApi.create).mockResolvedValue(mockCreatedUser);
 
       renderForm();
 
@@ -174,8 +178,8 @@ describe('UserCreateForm', () => {
       await user.click(screen.getByRole('button', { name: /create user/i }));
 
       await waitFor(() => {
-        expect(userService.createUser).toHaveBeenCalledOnce();
-        expect(userService.createUser).toHaveBeenCalledWith({
+        expect(userApi.create).toHaveBeenCalledOnce();
+        expect(userApi.create).toHaveBeenCalledWith({
           username: 'newuser',
           email: 'new@example.com',
           fullName: 'New User',
@@ -187,7 +191,7 @@ describe('UserCreateForm', () => {
 
     it('should trim whitespace from inputs', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.createUser).mockResolvedValue(createMockUserDetails());
+      vi.mocked(userApi.create).mockResolvedValue(createMockUserDetails());
 
       renderForm();
 
@@ -199,7 +203,7 @@ describe('UserCreateForm', () => {
       await user.click(screen.getByRole('button', { name: /create user/i }));
 
       await waitFor(() => {
-        expect(userService.createUser).toHaveBeenCalledWith(
+        expect(userApi.create).toHaveBeenCalledWith(
           expect.objectContaining({
             username: 'newuser',
             email: 'new@example.com',
@@ -211,7 +215,7 @@ describe('UserCreateForm', () => {
 
     it('should call onSuccess and onClose after successful creation', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.createUser).mockResolvedValue(createMockUserDetails());
+      vi.mocked(userApi.create).mockResolvedValue(createMockUserDetails());
 
       renderForm();
 
@@ -230,7 +234,7 @@ describe('UserCreateForm', () => {
 
     it('should reset form after successful creation', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.createUser).mockResolvedValue(createMockUserDetails());
+      vi.mocked(userApi.create).mockResolvedValue(createMockUserDetails());
 
       const { rerender } = renderForm();
 
@@ -257,7 +261,7 @@ describe('UserCreateForm', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
       let resolveCreate: (value: UserDetails) => void;
-      vi.mocked(userService.createUser).mockImplementation(
+      vi.mocked(userApi.create).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveCreate = resolve;
@@ -291,7 +295,7 @@ describe('UserCreateForm', () => {
     it('should disable role buttons during submission', async () => {
       const user = userEvent.setup();
       let resolveCreate: (value: UserDetails) => void;
-      vi.mocked(userService.createUser).mockImplementation(
+      vi.mocked(userApi.create).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveCreate = resolve;
@@ -319,7 +323,7 @@ describe('UserCreateForm', () => {
   describe('error handling', () => {
     it('should display error message on API failure', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.createUser).mockRejectedValue(new Error('Username already exists'));
+      vi.mocked(userApi.create).mockRejectedValue(new Error('Username already exists'));
 
       renderForm();
 
@@ -341,7 +345,7 @@ describe('UserCreateForm', () => {
 
     it('should display generic error message for non-Error objects', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.createUser).mockRejectedValue('Unknown error');
+      vi.mocked(userApi.create).mockRejectedValue('Unknown error');
 
       renderForm();
 
@@ -359,7 +363,7 @@ describe('UserCreateForm', () => {
 
     it('should show dismiss button for error message', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.createUser).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.create).mockRejectedValue(new Error('Test error'));
 
       renderForm();
 
@@ -380,7 +384,7 @@ describe('UserCreateForm', () => {
 
     it('should re-enable form after error', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.createUser).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.create).mockRejectedValue(new Error('Test error'));
 
       renderForm();
 

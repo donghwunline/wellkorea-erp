@@ -5,4 +5,4 @@
 export {
   useDeactivateUser,
   type UseDeactivateUserOptions,
-} from './model';
+} from './model/use-deactivate-user';

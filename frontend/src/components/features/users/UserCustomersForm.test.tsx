@@ -8,16 +8,20 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserCustomersForm } from './UserCustomersForm';
 import { mockUserDetails } from '@/test/fixtures';
-import { userService } from '@/services';
+import { userApi } from '@/entities/user';
 import * as sharedApi from '@/shared/api';
 
-// Mock services
-vi.mock('@/services', () => ({
-  userService: {
-    getUserCustomers: vi.fn(),
-    assignCustomers: vi.fn(),
-  },
-}));
+// Mock userApi
+vi.mock('@/entities/user', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/entities/user')>();
+  return {
+    ...actual,
+    userApi: {
+      getCustomers: vi.fn(),
+      assignCustomers: vi.fn(),
+    },
+  };
+});
 
 // Mock shared API
 vi.mock('@/shared/api', async importOriginal => {
@@ -47,6 +51,9 @@ const MOCK_CUSTOMERS: MockCustomer[] = [
 ];
 
 const MOCK_API_RESPONSE = {
+  success: true,
+  message: 'Success',
+  timestamp: new Date().toISOString(),
   data: {
     content: MOCK_CUSTOMERS,
   },
@@ -70,7 +77,7 @@ describe('UserCustomersForm', () => {
     // Default mock: return available customers from API
     vi.mocked(sharedApi.httpClient.requestWithMeta).mockResolvedValue(MOCK_API_RESPONSE);
     // Default mock: no customers assigned
-    vi.mocked(userService.getUserCustomers).mockResolvedValue([]);
+    vi.mocked(userApi.getCustomers).mockResolvedValue([]);
   });
 
   function renderForm(isOpen = true, user: typeof testUser | null = testUser) {
@@ -171,15 +178,15 @@ describe('UserCustomersForm', () => {
       renderForm(true, testUser);
 
       await waitFor(() => {
-        expect(userService.getUserCustomers).toHaveBeenCalledOnce();
-        expect(userService.getUserCustomers).toHaveBeenCalledWith(testUser.id);
+        expect(userApi.getCustomers).toHaveBeenCalledOnce();
+        expect(userApi.getCustomers).toHaveBeenCalledWith(testUser.id);
       });
     });
   });
 
   describe('customer pre-selection', () => {
     it('should pre-select customers that user is assigned to', async () => {
-      vi.mocked(userService.getUserCustomers).mockResolvedValue([1, 3]); // Samsung (1) and Hyundai (3)
+      vi.mocked(userApi.getCustomers).mockResolvedValue([1, 3]); // Samsung (1) and Hyundai (3)
 
       renderForm();
 
@@ -197,7 +204,7 @@ describe('UserCustomersForm', () => {
     });
 
     it('should show checkmark for selected customers', async () => {
-      vi.mocked(userService.getUserCustomers).mockResolvedValue([1]);
+      vi.mocked(userApi.getCustomers).mockResolvedValue([1]);
 
       renderForm();
 
@@ -208,7 +215,7 @@ describe('UserCustomersForm', () => {
     });
 
     it('should handle empty customer assignments', async () => {
-      vi.mocked(userService.getUserCustomers).mockResolvedValue([]);
+      vi.mocked(userApi.getCustomers).mockResolvedValue([]);
 
       renderForm();
 
@@ -261,7 +268,7 @@ describe('UserCustomersForm', () => {
 
     it('should allow deselecting a pre-selected customer', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUserCustomers).mockResolvedValue([1]);
+      vi.mocked(userApi.getCustomers).mockResolvedValue([1]);
 
       renderForm();
 
@@ -277,9 +284,9 @@ describe('UserCustomersForm', () => {
   });
 
   describe('successful submission', () => {
-    it('should call userService.assignCustomers with selected customer IDs', async () => {
+    it('should call userApi.assignCustomers with selected customer IDs', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignCustomers).mockResolvedValue(undefined);
+      vi.mocked(userApi.assignCustomers).mockResolvedValue(undefined);
 
       renderForm();
 
@@ -293,17 +300,17 @@ describe('UserCustomersForm', () => {
       await user.click(screen.getByRole('button', { name: /save assignments/i }));
 
       await waitFor(() => {
-        expect(userService.assignCustomers).toHaveBeenCalledOnce();
-        expect(userService.assignCustomers).toHaveBeenCalledWith(
+        expect(userApi.assignCustomers).toHaveBeenCalledOnce();
+        expect(userApi.assignCustomers).toHaveBeenCalledWith(
           testUser.id,
-          expect.arrayContaining([1, 2])
+          { customerIds: expect.arrayContaining([1, 2]) }
         );
       });
     });
 
     it('should call onSuccess and onClose after successful assignment', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignCustomers).mockResolvedValue(undefined);
+      vi.mocked(userApi.assignCustomers).mockResolvedValue(undefined);
 
       renderForm();
 
@@ -321,7 +328,7 @@ describe('UserCustomersForm', () => {
 
     it('should allow saving with no customers selected (unassign all)', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignCustomers).mockResolvedValue(undefined);
+      vi.mocked(userApi.assignCustomers).mockResolvedValue(undefined);
 
       renderForm();
 
@@ -332,7 +339,7 @@ describe('UserCustomersForm', () => {
       await user.click(screen.getByRole('button', { name: /save assignments/i }));
 
       await waitFor(() => {
-        expect(userService.assignCustomers).toHaveBeenCalledWith(testUser.id, []);
+        expect(userApi.assignCustomers).toHaveBeenCalledWith(testUser.id, { customerIds: [] });
       });
     });
   });
@@ -341,7 +348,7 @@ describe('UserCustomersForm', () => {
     it('should disable buttons during submission', async () => {
       const user = userEvent.setup();
       let resolveAssign: () => void;
-      vi.mocked(userService.assignCustomers).mockImplementation(
+      vi.mocked(userApi.assignCustomers).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveAssign = resolve;
@@ -366,7 +373,7 @@ describe('UserCustomersForm', () => {
     it('should disable customer buttons during submission', async () => {
       const user = userEvent.setup();
       let resolveAssign: () => void;
-      vi.mocked(userService.assignCustomers).mockImplementation(
+      vi.mocked(userApi.assignCustomers).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveAssign = resolve;
@@ -403,7 +410,7 @@ describe('UserCustomersForm', () => {
 
     it('should display error message on submission failure', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignCustomers).mockRejectedValue(new Error('Permission denied'));
+      vi.mocked(userApi.assignCustomers).mockRejectedValue(new Error('Permission denied'));
 
       renderForm();
 
@@ -423,7 +430,7 @@ describe('UserCustomersForm', () => {
 
     it('should display generic error message for non-Error objects', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignCustomers).mockRejectedValue('Unknown error');
+      vi.mocked(userApi.assignCustomers).mockRejectedValue('Unknown error');
 
       renderForm();
 
@@ -440,7 +447,7 @@ describe('UserCustomersForm', () => {
 
     it('should show dismiss button for error message', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignCustomers).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.assignCustomers).mockRejectedValue(new Error('Test error'));
 
       renderForm();
 
@@ -460,7 +467,7 @@ describe('UserCustomersForm', () => {
 
     it('should re-enable form after error', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignCustomers).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.assignCustomers).mockRejectedValue(new Error('Test error'));
 
       renderForm();
 
@@ -499,7 +506,7 @@ describe('UserCustomersForm', () => {
       renderForm(true, mockUserDetails.adminUser);
 
       await waitFor(() => {
-        expect(userService.getUserCustomers).toHaveBeenCalledWith(mockUserDetails.adminUser.id);
+        expect(userApi.getCustomers).toHaveBeenCalledWith(mockUserDetails.adminUser.id);
       });
     });
   });

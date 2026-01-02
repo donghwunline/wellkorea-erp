@@ -8,14 +8,18 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserDeactivateModal } from './UserDeactivateModal';
 import { mockUserDetails } from '@/test/fixtures';
-import { userService } from '@/services';
+import { userApi } from '@/entities/user';
 
-// Mock userService
-vi.mock('@/services', () => ({
-  userService: {
-    deleteUser: vi.fn(),
-  },
-}));
+// Mock userApi
+vi.mock('@/entities/user', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/entities/user')>();
+  return {
+    ...actual,
+    userApi: {
+      deactivate: vi.fn(),
+    },
+  };
+});
 
 describe('UserDeactivateModal', () => {
   const mockOnClose = vi.fn();
@@ -74,23 +78,23 @@ describe('UserDeactivateModal', () => {
   });
 
   describe('successful deactivation', () => {
-    it('should call userService.deleteUser when confirmed', async () => {
+    it('should call userApi.deactivate when confirmed', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.deleteUser).mockResolvedValue(undefined);
+      vi.mocked(userApi.deactivate).mockResolvedValue(undefined);
 
       renderModal(true, testUser);
 
       await user.click(screen.getByRole('button', { name: /deactivate/i }));
 
       await waitFor(() => {
-        expect(userService.deleteUser).toHaveBeenCalledOnce();
-        expect(userService.deleteUser).toHaveBeenCalledWith(testUser.id);
+        expect(userApi.deactivate).toHaveBeenCalledOnce();
+        expect(userApi.deactivate).toHaveBeenCalledWith(testUser.id);
       });
     });
 
     it('should call onSuccess and onClose after successful deactivation', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.deleteUser).mockResolvedValue(undefined);
+      vi.mocked(userApi.deactivate).mockResolvedValue(undefined);
 
       renderModal(true, testUser);
 
@@ -109,7 +113,7 @@ describe('UserDeactivateModal', () => {
     it('should show loading state during deactivation', async () => {
       const user = userEvent.setup();
       let resolveDelete: () => void;
-      vi.mocked(userService.deleteUser).mockImplementation(
+      vi.mocked(userApi.deactivate).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveDelete = resolve;
@@ -135,7 +139,7 @@ describe('UserDeactivateModal', () => {
   describe('error handling', () => {
     it('should call onClose when deactivation fails', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.deleteUser).mockRejectedValue(new Error('Permission denied'));
+      vi.mocked(userApi.deactivate).mockRejectedValue(new Error('Permission denied'));
 
       renderModal(true, testUser);
 
@@ -162,13 +166,13 @@ describe('UserDeactivateModal', () => {
       expect(mockOnClose).toHaveBeenCalledOnce();
     });
 
-    it('should not call userService.deleteUser when cancelled', async () => {
+    it('should not call userApi.deactivate when cancelled', async () => {
       const user = userEvent.setup();
       renderModal(true, testUser);
 
       await user.click(screen.getByRole('button', { name: /cancel/i }));
 
-      expect(userService.deleteUser).not.toHaveBeenCalled();
+      expect(userApi.deactivate).not.toHaveBeenCalled();
     });
   });
 

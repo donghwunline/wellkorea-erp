@@ -5,7 +5,7 @@
  * These match the backend API contract exactly.
  */
 
-import type { RoleName } from '../model';
+import type { RoleName } from '../model/role';
 
 // ==================== RESPONSE DTOs ====================
 

@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { type UserDetails, userService } from '@/services';
+import { type UserDetails, userApi } from '@/entities/user';
 import { ConfirmationModal } from '@/shared/ui';
 
 export interface UserDeactivateModalProps {
@@ -29,7 +29,7 @@ export function UserDeactivateModal({
 
     setIsSubmitting(true);
     try {
-      await userService.deleteUser(user.id);
+      await userApi.deactivate(user.id);
       onSuccess();
       onClose();
     } catch {

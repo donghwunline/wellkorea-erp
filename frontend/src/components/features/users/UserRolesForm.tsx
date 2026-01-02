@@ -6,8 +6,7 @@
  */
 
 import { type FormEvent, useEffect, useState } from 'react';
-import { type UserDetails, userService } from '@/services';
-import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/entities/user';
+import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName, type UserDetails, userApi } from '@/entities/user';
 import { Badge, Button, ErrorAlert, Modal } from '@/shared/ui';
 
 export interface UserRolesFormProps {
@@ -44,7 +43,7 @@ export function UserRolesForm({ isOpen, user, onClose, onSuccess }: Readonly<Use
     setError(null);
 
     try {
-      await userService.assignRoles(user.id, { roles: selectedRoles });
+      await userApi.assignRoles(user.id, { roles: selectedRoles });
       onSuccess();
       onClose();
     } catch (err) {

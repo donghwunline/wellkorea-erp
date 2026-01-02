@@ -9,17 +9,16 @@ import { userEvent } from '@testing-library/user-event';
 import { UserManagementTable } from './UserManagementTable';
 import { createMockUserDetails, mockUserDetails } from '@/test/fixtures';
 import type { Paginated } from '@/shared/api/types';
-import type { UserDetails } from '@/entities/user';
-import { userService } from '@/services';
+import { type UserDetails, userApi } from '@/entities/user';
 
-// Mock userService while preserving other exports
-vi.mock('@/services', async importOriginal => {
-  const actual = await importOriginal<typeof import('@/services')>();
+// Mock userApi while preserving other exports
+vi.mock('@/entities/user', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/entities/user')>();
   return {
     ...actual,
-    userService: {
-      getUsers: vi.fn(),
-      activateUser: vi.fn(),
+    userApi: {
+      getList: vi.fn(),
+      activate: vi.fn(),
     },
   };
 });
@@ -74,43 +73,43 @@ describe('UserManagementTable', () => {
 
   describe('data fetching', () => {
     it('should fetch users on mount', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(createPaginatedUsers([]));
+      vi.mocked(userApi.getList).mockResolvedValue(createPaginatedUsers([]));
 
       renderTable();
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledOnce();
-        expect(userService.getUsers).toHaveBeenCalledWith({ page: 0, size: 10, search: undefined });
+        expect(userApi.getList).toHaveBeenCalledOnce();
+        expect(userApi.getList).toHaveBeenCalledWith({ page: 0, size: 10, search: undefined });
       });
     });
 
     it('should fetch users with search parameter', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(createPaginatedUsers([]));
+      vi.mocked(userApi.getList).mockResolvedValue(createPaginatedUsers([]));
 
       renderTable({ search: 'admin' });
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledWith({ page: 0, size: 10, search: 'admin' });
+        expect(userApi.getList).toHaveBeenCalledWith({ page: 0, size: 10, search: 'admin' });
       });
     });
 
     it('should fetch users with page parameter', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(createPaginatedUsers([]));
+      vi.mocked(userApi.getList).mockResolvedValue(createPaginatedUsers([]));
 
       renderTable({ page: 2 });
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledWith({ page: 2, size: 10, search: undefined });
+        expect(userApi.getList).toHaveBeenCalledWith({ page: 2, size: 10, search: undefined });
       });
     });
 
     it('should refetch when refreshTrigger changes', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(createPaginatedUsers([]));
+      vi.mocked(userApi.getList).mockResolvedValue(createPaginatedUsers([]));
 
       const { rerender } = renderTable({ refreshTrigger: 0 });
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledTimes(1);
+        expect(userApi.getList).toHaveBeenCalledTimes(1);
       });
 
       rerender(
@@ -128,17 +127,17 @@ describe('UserManagementTable', () => {
       );
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledTimes(2);
+        expect(userApi.getList).toHaveBeenCalledTimes(2);
       });
     });
 
     it('should refetch when search changes', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(createPaginatedUsers([]));
+      vi.mocked(userApi.getList).mockResolvedValue(createPaginatedUsers([]));
 
       const { rerender } = renderTable({ search: '' });
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledTimes(1);
+        expect(userApi.getList).toHaveBeenCalledTimes(1);
       });
 
       rerender(
@@ -156,7 +155,7 @@ describe('UserManagementTable', () => {
       );
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledTimes(2);
+        expect(userApi.getList).toHaveBeenCalledTimes(2);
       });
     });
   });
@@ -164,7 +163,7 @@ describe('UserManagementTable', () => {
   describe('loading state', () => {
     it('should show loading state while fetching', async () => {
       let resolveUsers: (value: Paginated<UserDetails>) => void;
-      vi.mocked(userService.getUsers).mockImplementation(
+      vi.mocked(userApi.getList).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveUsers = resolve;
@@ -183,7 +182,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should render table header during loading', () => {
-      vi.mocked(userService.getUsers).mockImplementation(() => new Promise(() => {}));
+      vi.mocked(userApi.getList).mockImplementation(() => new Promise(() => {}));
 
       renderTable();
 
@@ -197,7 +196,7 @@ describe('UserManagementTable', () => {
 
   describe('error state', () => {
     it('should show error message when fetch fails', async () => {
-      vi.mocked(userService.getUsers).mockRejectedValue(new Error('Network error'));
+      vi.mocked(userApi.getList).mockRejectedValue(new Error('Network error'));
 
       renderTable();
 
@@ -207,7 +206,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should call onError callback when fetch fails', async () => {
-      vi.mocked(userService.getUsers).mockRejectedValue(new Error('Network error'));
+      vi.mocked(userApi.getList).mockRejectedValue(new Error('Network error'));
 
       renderTable();
 
@@ -217,7 +216,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should show retry button on error', async () => {
-      vi.mocked(userService.getUsers).mockRejectedValue(new Error('Network error'));
+      vi.mocked(userApi.getList).mockRejectedValue(new Error('Network error'));
 
       renderTable();
 
@@ -228,8 +227,8 @@ describe('UserManagementTable', () => {
 
     it('should refetch when retry is clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockRejectedValueOnce(new Error('Network error'));
-      vi.mocked(userService.getUsers).mockResolvedValueOnce(createPaginatedUsers([]));
+      vi.mocked(userApi.getList).mockRejectedValueOnce(new Error('Network error'));
+      vi.mocked(userApi.getList).mockResolvedValueOnce(createPaginatedUsers([]));
 
       renderTable();
 
@@ -240,14 +239,14 @@ describe('UserManagementTable', () => {
       await user.click(screen.getByText('Retry'));
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledTimes(2);
+        expect(userApi.getList).toHaveBeenCalledTimes(2);
       });
     });
   });
 
   describe('empty state', () => {
     it('should show empty message when no users', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(createPaginatedUsers([]));
+      vi.mocked(userApi.getList).mockResolvedValue(createPaginatedUsers([]));
 
       renderTable();
 
@@ -257,7 +256,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should show search-specific message when search has no results', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(createPaginatedUsers([]));
+      vi.mocked(userApi.getList).mockResolvedValue(createPaginatedUsers([]));
 
       renderTable({ search: 'nonexistent' });
 
@@ -269,7 +268,7 @@ describe('UserManagementTable', () => {
 
   describe('table rendering', () => {
     it('should render user data in table', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -283,7 +282,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should render user roles as badges', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -295,7 +294,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should render multiple roles for multi-role user', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.multiRoleUser])
       );
 
@@ -308,7 +307,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should render active status badge', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -320,7 +319,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should render inactive status badge', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.inactiveUser])
       );
 
@@ -335,7 +334,7 @@ describe('UserManagementTable', () => {
       const userWithLogin = createMockUserDetails({
         lastLoginAt: '2025-01-15T10:30:00Z',
       });
-      vi.mocked(userService.getUsers).mockResolvedValue(createPaginatedUsers([userWithLogin]));
+      vi.mocked(userApi.getList).mockResolvedValue(createPaginatedUsers([userWithLogin]));
 
       renderTable();
 
@@ -346,7 +345,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should show dash for null last login', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.neverLoggedIn])
       );
 
@@ -358,7 +357,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should render multiple users', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([
           mockUserDetails.adminUser,
           mockUserDetails.salesUser,
@@ -378,7 +377,7 @@ describe('UserManagementTable', () => {
 
   describe('action buttons', () => {
     it('should render edit button for each user', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -391,7 +390,7 @@ describe('UserManagementTable', () => {
 
     it('should call onEdit when edit button is clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -409,7 +408,7 @@ describe('UserManagementTable', () => {
 
     it('should call onRoles when manage roles button is clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -427,7 +426,7 @@ describe('UserManagementTable', () => {
 
     it('should call onPassword when change password button is clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -444,7 +443,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should show assign customers button only for sales users', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.salesUser, mockUserDetails.financeUser])
       );
 
@@ -461,7 +460,7 @@ describe('UserManagementTable', () => {
 
     it('should call onCustomers when assign customers button is clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.salesUser])
       );
 
@@ -480,7 +479,7 @@ describe('UserManagementTable', () => {
 
   describe('deactivate/activate functionality', () => {
     it('should show deactivate button for active users', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -493,7 +492,7 @@ describe('UserManagementTable', () => {
 
     it('should call onDelete when deactivate button is clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -510,7 +509,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should show activate button for inactive users', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.inactiveUser])
       );
 
@@ -521,12 +520,12 @@ describe('UserManagementTable', () => {
       });
     });
 
-    it('should call userService.activateUser when activate button is clicked', async () => {
+    it('should call userApi.activate when activate button is clicked', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.inactiveUser])
       );
-      vi.mocked(userService.activateUser).mockResolvedValue(undefined);
+      vi.mocked(userApi.activate).mockResolvedValue(undefined);
 
       renderTable();
 
@@ -537,37 +536,37 @@ describe('UserManagementTable', () => {
       await user.click(screen.getByRole('button', { name: /activate user/i }));
 
       await waitFor(() => {
-        expect(userService.activateUser).toHaveBeenCalledOnce();
-        expect(userService.activateUser).toHaveBeenCalledWith(mockUserDetails.inactiveUser.id);
+        expect(userApi.activate).toHaveBeenCalledOnce();
+        expect(userApi.activate).toHaveBeenCalledWith(mockUserDetails.inactiveUser.id);
       });
     });
 
     it('should refetch users after activation', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.inactiveUser])
       );
-      vi.mocked(userService.activateUser).mockResolvedValue(undefined);
+      vi.mocked(userApi.activate).mockResolvedValue(undefined);
 
       renderTable();
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledTimes(1);
+        expect(userApi.getList).toHaveBeenCalledTimes(1);
       });
 
       await user.click(screen.getByRole('button', { name: /activate user/i }));
 
       await waitFor(() => {
-        expect(userService.getUsers).toHaveBeenCalledTimes(2);
+        expect(userApi.getList).toHaveBeenCalledTimes(2);
       });
     });
 
     it('should call onError if activation fails', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.inactiveUser])
       );
-      vi.mocked(userService.activateUser).mockRejectedValue(new Error('Activation failed'));
+      vi.mocked(userApi.activate).mockRejectedValue(new Error('Activation failed'));
 
       renderTable();
 
@@ -585,7 +584,7 @@ describe('UserManagementTable', () => {
 
   describe('pagination', () => {
     it('should not render pagination when only one page', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser], { totalPages: 1 })
       );
 
@@ -600,7 +599,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should render pagination when multiple pages', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser], { totalPages: 3, totalElements: 30 })
       );
 
@@ -617,7 +616,7 @@ describe('UserManagementTable', () => {
 
   describe('table header', () => {
     it('should render all column headers', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -635,7 +634,7 @@ describe('UserManagementTable', () => {
 
   describe('accessibility', () => {
     it('should have proper table structure', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 
@@ -647,7 +646,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should have action buttons with aria-labels', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.salesUser])
       );
 
@@ -663,7 +662,7 @@ describe('UserManagementTable', () => {
     });
 
     it('should have title attributes on action buttons', async () => {
-      vi.mocked(userService.getUsers).mockResolvedValue(
+      vi.mocked(userApi.getList).mockResolvedValue(
         createPaginatedUsers([mockUserDetails.adminUser])
       );
 

@@ -5,7 +5,7 @@
  */
 
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import type { UserDetails } from '../model';
+import type { UserDetails } from '../model/user';
 import { userQueryKeys } from './query-keys';
 import { userQueryFns } from './query-fns';
 

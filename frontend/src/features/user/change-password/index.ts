@@ -6,4 +6,4 @@ export {
   useChangePassword,
   type UseChangePasswordOptions,
   type ChangePasswordMutationInput,
-} from './model';
+} from './model/use-change-password';

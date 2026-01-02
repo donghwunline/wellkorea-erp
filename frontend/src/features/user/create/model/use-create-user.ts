@@ -13,7 +13,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   userApi,
   userCommandMapper,
-  userQueryKeys,
+  userQueries,
   type CreateUserInput,
 } from '@/entities/user';
 
@@ -67,7 +67,7 @@ export function useCreateUser(options: UseCreateUserOptions = {}) {
 
     onSuccess: () => {
       // Invalidate user list queries
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: userQueries.lists() });
 
       onSuccess?.();
     },

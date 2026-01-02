@@ -6,7 +6,7 @@
  */
 
 import { type FormEvent, useEffect, useState } from 'react';
-import { type UserDetails, userService } from '@/services';
+import { type UserDetails, userApi } from '@/entities/user';
 import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 
 export interface UserEditFormProps {
@@ -44,7 +44,7 @@ export function UserEditForm({ isOpen, user, onClose, onSuccess }: Readonly<User
     setError(null);
 
     try {
-      await userService.updateUser(user.id, {
+      await userApi.update(user.id, {
         email: formData.email.trim(),
         fullName: formData.fullName.trim(),
       });

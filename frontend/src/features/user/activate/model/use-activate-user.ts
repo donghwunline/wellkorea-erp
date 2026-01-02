@@ -3,7 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { userApi, userQueryKeys } from '@/entities/user';
+import { userApi, userQueries } from '@/entities/user';
 
 /**
  * Options for useActivateUser hook.
@@ -25,10 +25,10 @@ export function useActivateUser(options: UseActivateUserOptions = {}) {
       return userApi.activate(id);
     },
 
-    onSuccess: (_result, id) => {
+    onSuccess: () => {
       // Invalidate both list and detail queries
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: userQueries.lists() });
+      queryClient.invalidateQueries({ queryKey: userQueries.details() });
 
       onSuccess?.();
     },

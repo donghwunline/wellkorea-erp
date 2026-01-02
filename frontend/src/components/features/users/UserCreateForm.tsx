@@ -6,8 +6,7 @@
  */
 
 import { type FormEvent, useState } from 'react';
-import { userService } from '@/services';
-import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName } from '@/entities/user';
+import { ALL_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type RoleName, userApi } from '@/entities/user';
 import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 
 export interface UserCreateFormProps {
@@ -35,7 +34,7 @@ export function UserCreateForm({ isOpen, onClose, onSuccess }: Readonly<UserCrea
     setError(null);
 
     try {
-      await userService.createUser({
+      await userApi.create({
         username: formData.username.trim(),
         email: formData.email.trim(),
         password: formData.password,

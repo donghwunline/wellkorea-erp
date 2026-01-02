@@ -8,14 +8,18 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { UserRolesForm } from './UserRolesForm';
 import { createMockUserDetails, mockUserDetails, type UserDetails } from '@/test/fixtures';
-import { userService } from '@/services';
+import { userApi } from '@/entities/user';
 
-// Mock userService
-vi.mock('@/services', () => ({
-  userService: {
-    assignRoles: vi.fn(),
-  },
-}));
+// Mock userApi
+vi.mock('@/entities/user', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/entities/user')>();
+  return {
+    ...actual,
+    userApi: {
+      assignRoles: vi.fn(),
+    },
+  };
+});
 
 describe('UserRolesForm', () => {
   const mockOnClose = vi.fn();
@@ -213,9 +217,9 @@ describe('UserRolesForm', () => {
   });
 
   describe('successful submission', () => {
-    it('should call userService.assignRoles with selected roles', async () => {
+    it('should call userApi.assignRoles with selected roles', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignRoles).mockResolvedValue(undefined);
+      vi.mocked(userApi.assignRoles).mockResolvedValue(undefined);
 
       renderForm(true, testUser);
 
@@ -225,8 +229,8 @@ describe('UserRolesForm', () => {
       await user.click(screen.getByRole('button', { name: /save roles/i }));
 
       await waitFor(() => {
-        expect(userService.assignRoles).toHaveBeenCalledOnce();
-        expect(userService.assignRoles).toHaveBeenCalledWith(testUser.id, {
+        expect(userApi.assignRoles).toHaveBeenCalledOnce();
+        expect(userApi.assignRoles).toHaveBeenCalledWith(testUser.id, {
           roles: expect.arrayContaining(['ROLE_SALES', 'ROLE_ADMIN']),
         });
       });
@@ -234,7 +238,7 @@ describe('UserRolesForm', () => {
 
     it('should call onSuccess and onClose after successful update', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignRoles).mockResolvedValue(undefined);
+      vi.mocked(userApi.assignRoles).mockResolvedValue(undefined);
 
       renderForm(true, testUser);
 
@@ -248,7 +252,7 @@ describe('UserRolesForm', () => {
 
     it('should allow removing all but one role', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignRoles).mockResolvedValue(undefined);
+      vi.mocked(userApi.assignRoles).mockResolvedValue(undefined);
 
       renderForm(true, mockUserDetails.multiRoleUser);
 
@@ -258,7 +262,7 @@ describe('UserRolesForm', () => {
       await user.click(screen.getByRole('button', { name: /save roles/i }));
 
       await waitFor(() => {
-        expect(userService.assignRoles).toHaveBeenCalledWith(mockUserDetails.multiRoleUser.id, {
+        expect(userApi.assignRoles).toHaveBeenCalledWith(mockUserDetails.multiRoleUser.id, {
           roles: ['ROLE_SALES'],
         });
       });
@@ -269,7 +273,7 @@ describe('UserRolesForm', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
       let resolveAssign: () => void;
-      vi.mocked(userService.assignRoles).mockImplementation(
+      vi.mocked(userApi.assignRoles).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveAssign = resolve;
@@ -290,7 +294,7 @@ describe('UserRolesForm', () => {
     it('should disable role buttons during submission', async () => {
       const user = userEvent.setup();
       let resolveAssign: () => void;
-      vi.mocked(userService.assignRoles).mockImplementation(
+      vi.mocked(userApi.assignRoles).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveAssign = resolve;
@@ -313,7 +317,7 @@ describe('UserRolesForm', () => {
   describe('error handling', () => {
     it('should display error message on API failure', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignRoles).mockRejectedValue(new Error('Insufficient permissions'));
+      vi.mocked(userApi.assignRoles).mockRejectedValue(new Error('Insufficient permissions'));
 
       renderForm(true, testUser);
 
@@ -329,7 +333,7 @@ describe('UserRolesForm', () => {
 
     it('should display generic error message for non-Error objects', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignRoles).mockRejectedValue('Unknown error');
+      vi.mocked(userApi.assignRoles).mockRejectedValue('Unknown error');
 
       renderForm(true, testUser);
 
@@ -342,7 +346,7 @@ describe('UserRolesForm', () => {
 
     it('should show dismiss button for error message', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignRoles).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.assignRoles).mockRejectedValue(new Error('Test error'));
 
       renderForm(true, testUser);
 
@@ -358,7 +362,7 @@ describe('UserRolesForm', () => {
 
     it('should re-enable form after error', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.assignRoles).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.assignRoles).mockRejectedValue(new Error('Test error'));
 
       renderForm(true, testUser);
 

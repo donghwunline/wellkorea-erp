@@ -6,4 +6,4 @@ export {
   useAssignCustomers,
   type UseAssignCustomersOptions,
   type AssignCustomersMutationInput,
-} from './model';
+} from './model/use-assign-customers';

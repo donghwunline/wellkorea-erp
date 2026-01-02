@@ -16,31 +16,47 @@
 // Types that appear in component props, state, or function signatures
 // =============================================================================
 
-export type { User, UserDetails, UserListItem, RoleName } from './model';
+export type { User, UserDetails, UserListItem } from './model/user';
+export type { RoleName, RoleBadgeVariant } from './model/role';
 
 // =============================================================================
 // ROLE CONSTANTS
 // Role labels, descriptions, and configuration
 // =============================================================================
 
-export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from './model';
+export { ALL_ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS, ROLE_BADGE_VARIANTS } from './model/role';
 
 // =============================================================================
 // BUSINESS RULES
 // Pure functions for domain logic
 // =============================================================================
 
-export { userRules } from './model';
+export { userRules } from './model/user-rules';
 
 // =============================================================================
-// QUERY HOOKS
-// Main data access interface - prefer these over direct API calls
+// QUERY FACTORY (TanStack Query v5)
+// Use with useQuery() directly - no custom hooks needed
 // =============================================================================
 
-export { useUser, useUsers, useUserCustomers } from './query';
+export { userQueries, type UserListQueryParams } from './api/user.queries';
 
-// Query keys for cache invalidation (used by features for mutations)
-export { userQueryKeys } from './query';
+// =============================================================================
+// LEGACY QUERY HOOKS (deprecated - use userQueries instead)
+// Kept for backwards compatibility with existing code
+// =============================================================================
+
+export { useUser } from './query/use-user';
+export type { UseUserOptions } from './query/use-user';
+
+export { useUsers } from './query/use-users';
+export type { UseUsersOptions } from './query/use-users';
+
+export { useUserCustomers } from './query/use-user-customers';
+export type { UseUserCustomersOptions } from './query/use-user-customers';
+
+// Legacy query keys - use userQueries.lists(), userQueries.details() instead
+export { userQueryKeys } from './query/query-keys';
+export { userQueryFns, type UserListParams, type PaginatedUsers } from './query/query-fns';
 
 // =============================================================================
 // FORM TYPES
@@ -49,16 +65,34 @@ export { userQueryKeys } from './query';
 
 export type {
   CreateUserInput,
+  CreateUserCommand,
   UpdateUserInput,
+  UpdateUserCommand,
   AssignRolesInput,
+  AssignRolesCommand,
   ChangePasswordInput,
+  ChangePasswordCommand,
   AssignCustomersInput,
-} from './api';
+  AssignCustomersCommand,
+} from './api/user.command-mapper';
 
 // =============================================================================
 // API ACCESS (for features layer mutations only)
 // These are needed by features/user/* for CRUD operations
 // =============================================================================
 
-export { userApi } from './api';
-export { userMapper, userCommandMapper } from './api';
+export { userApi } from './api/user.api';
+export { userMapper } from './api/user.mapper';
+export { userCommandMapper } from './api/user.command-mapper';
+
+// DTO types for low-level access if needed
+export type {
+  UserDetailsDTO,
+  CreateUserRequestDTO,
+  UpdateUserRequestDTO,
+  AssignRolesRequestDTO,
+  ChangePasswordRequestDTO,
+  AssignCustomersRequestDTO,
+  UserListParamsDTO,
+  UserCommandResultDTO,
+} from './api/user.dto';

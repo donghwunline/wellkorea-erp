@@ -6,7 +6,7 @@
  */
 
 import { type FormEvent, useState } from 'react';
-import { type UserDetails, userService } from '@/services';
+import { type UserDetails, userApi } from '@/entities/user';
 import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 
 export interface UserPasswordFormProps {
@@ -46,7 +46,7 @@ export function UserPasswordForm({
     setError(null);
 
     try {
-      await userService.changePassword(user.id, { newPassword: password });
+      await userApi.changePassword(user.id, { newPassword: password });
       setPassword('');
       setConfirmPassword('');
       onSuccess();

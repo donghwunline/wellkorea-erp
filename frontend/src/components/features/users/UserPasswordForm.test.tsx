@@ -9,14 +9,18 @@ import { userEvent } from '@testing-library/user-event';
 import { UserPasswordForm } from './UserPasswordForm';
 import { mockUserDetails } from '@/test/fixtures';
 import { getInputByPlaceholder } from '@/test/helpers';
-import { userService } from '@/services';
+import { userApi } from '@/entities/user';
 
-// Mock userService
-vi.mock('@/services', () => ({
-  userService: {
-    changePassword: vi.fn(),
-  },
-}));
+// Mock userApi
+vi.mock('@/entities/user', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/entities/user')>();
+  return {
+    ...actual,
+    userApi: {
+      changePassword: vi.fn(),
+    },
+  };
+});
 
 describe('UserPasswordForm', () => {
   const mockOnClose = vi.fn();
@@ -149,7 +153,7 @@ describe('UserPasswordForm', () => {
         expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
       });
 
-      expect(userService.changePassword).not.toHaveBeenCalled();
+      expect(userApi.changePassword).not.toHaveBeenCalled();
     });
 
     it('should show error when password is less than 8 characters', async () => {
@@ -164,7 +168,7 @@ describe('UserPasswordForm', () => {
         expect(screen.getByText('Password must be at least 8 characters')).toBeInTheDocument();
       });
 
-      expect(userService.changePassword).not.toHaveBeenCalled();
+      expect(userApi.changePassword).not.toHaveBeenCalled();
     });
 
     it('should show password mismatch error before length validation', async () => {
@@ -182,9 +186,9 @@ describe('UserPasswordForm', () => {
   });
 
   describe('successful submission', () => {
-    it('should call userService.changePassword with new password', async () => {
+    it('should call userApi.changePassword with new password', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.changePassword).mockResolvedValue(undefined);
+      vi.mocked(userApi.changePassword).mockResolvedValue(undefined);
 
       renderForm(true, testUser);
 
@@ -193,8 +197,8 @@ describe('UserPasswordForm', () => {
       await user.click(screen.getByRole('button', { name: /change password/i }));
 
       await waitFor(() => {
-        expect(userService.changePassword).toHaveBeenCalledOnce();
-        expect(userService.changePassword).toHaveBeenCalledWith(testUser.id, {
+        expect(userApi.changePassword).toHaveBeenCalledOnce();
+        expect(userApi.changePassword).toHaveBeenCalledWith(testUser.id, {
           newPassword: 'newpassword123',
         });
       });
@@ -202,7 +206,7 @@ describe('UserPasswordForm', () => {
 
     it('should call onSuccess and onClose after successful change', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.changePassword).mockResolvedValue(undefined);
+      vi.mocked(userApi.changePassword).mockResolvedValue(undefined);
 
       renderForm(true, testUser);
 
@@ -218,7 +222,7 @@ describe('UserPasswordForm', () => {
 
     it('should reset form fields after successful change', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.changePassword).mockResolvedValue(undefined);
+      vi.mocked(userApi.changePassword).mockResolvedValue(undefined);
 
       renderForm(true, testUser);
 
@@ -235,7 +239,7 @@ describe('UserPasswordForm', () => {
 
     it('should accept exactly 8 character password', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.changePassword).mockResolvedValue(undefined);
+      vi.mocked(userApi.changePassword).mockResolvedValue(undefined);
 
       renderForm(true, testUser);
 
@@ -244,7 +248,7 @@ describe('UserPasswordForm', () => {
       await user.click(screen.getByRole('button', { name: /change password/i }));
 
       await waitFor(() => {
-        expect(userService.changePassword).toHaveBeenCalledOnce();
+        expect(userApi.changePassword).toHaveBeenCalledOnce();
       });
     });
   });
@@ -253,7 +257,7 @@ describe('UserPasswordForm', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
       let resolveChange: () => void;
-      vi.mocked(userService.changePassword).mockImplementation(
+      vi.mocked(userApi.changePassword).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveChange = resolve;
@@ -279,7 +283,7 @@ describe('UserPasswordForm', () => {
   describe('error handling', () => {
     it('should display error message on API failure', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.changePassword).mockRejectedValue(new Error('Password too weak'));
+      vi.mocked(userApi.changePassword).mockRejectedValue(new Error('Password too weak'));
 
       renderForm(true, testUser);
 
@@ -297,7 +301,7 @@ describe('UserPasswordForm', () => {
 
     it('should display generic error message for non-Error objects', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.changePassword).mockRejectedValue('Unknown error');
+      vi.mocked(userApi.changePassword).mockRejectedValue('Unknown error');
 
       renderForm(true, testUser);
 
@@ -312,7 +316,7 @@ describe('UserPasswordForm', () => {
 
     it('should show dismiss button for error message', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.changePassword).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.changePassword).mockRejectedValue(new Error('Test error'));
 
       renderForm(true, testUser);
 
@@ -330,7 +334,7 @@ describe('UserPasswordForm', () => {
 
     it('should re-enable form after error', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.changePassword).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.changePassword).mockRejectedValue(new Error('Test error'));
 
       renderForm(true, testUser);
 

@@ -5,7 +5,7 @@
  * Following the same pattern as quotation.command-mapper.ts
  */
 
-import type { RoleName } from '../model';
+import type { RoleName } from '../model/role';
 import type {
   CreateUserRequestDTO,
   UpdateUserRequestDTO,

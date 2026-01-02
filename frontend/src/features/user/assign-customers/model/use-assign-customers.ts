@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   userApi,
   userCommandMapper,
-  userQueryKeys,
+  userQueries,
   type AssignCustomersInput,
 } from '@/entities/user';
 
@@ -40,9 +40,9 @@ export function useAssignCustomers(options: UseAssignCustomersOptions = {}) {
       return userApi.assignCustomers(id, dto);
     },
 
-    onSuccess: (_result, { id }) => {
+    onSuccess: (_result, { id: _id }) => {
       // Invalidate customer query for this user
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.customers(id) });
+      queryClient.invalidateQueries({ queryKey: userQueries.customersKeys() });
 
       onSuccess?.();
     },

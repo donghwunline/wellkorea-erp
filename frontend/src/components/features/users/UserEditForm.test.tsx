@@ -9,14 +9,18 @@ import { userEvent } from '@testing-library/user-event';
 import { UserEditForm } from './UserEditForm';
 import { createMockUserDetails, mockUserDetails, type UserDetails } from '@/test/fixtures';
 import { getInputByLabel } from '@/test/helpers';
-import { userService } from '@/services';
+import { userApi } from '@/entities/user';
 
-// Mock userService
-vi.mock('@/services', () => ({
-  userService: {
-    updateUser: vi.fn(),
-  },
-}));
+// Mock userApi
+vi.mock('@/entities/user', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/entities/user')>();
+  return {
+    ...actual,
+    userApi: {
+      update: vi.fn(),
+    },
+  };
+});
 
 describe('UserEditForm', () => {
   const mockOnClose = vi.fn();
@@ -127,14 +131,14 @@ describe('UserEditForm', () => {
   });
 
   describe('successful submission', () => {
-    it('should call userService.updateUser with form data', async () => {
+    it('should call userApi.update with form data', async () => {
       const user = userEvent.setup();
       const updatedUser = createMockUserDetails({
         ...testUser,
         email: 'updated@example.com',
         fullName: 'Updated Name',
       });
-      vi.mocked(userService.updateUser).mockResolvedValue(updatedUser);
+      vi.mocked(userApi.update).mockResolvedValue(updatedUser);
 
       renderForm();
 
@@ -148,8 +152,8 @@ describe('UserEditForm', () => {
       await user.click(screen.getByRole('button', { name: /save changes/i }));
 
       await waitFor(() => {
-        expect(userService.updateUser).toHaveBeenCalledOnce();
-        expect(userService.updateUser).toHaveBeenCalledWith(testUser.id, {
+        expect(userApi.update).toHaveBeenCalledOnce();
+        expect(userApi.update).toHaveBeenCalledWith(testUser.id, {
           email: 'updated@example.com',
           fullName: 'Updated Name',
         });
@@ -158,7 +162,7 @@ describe('UserEditForm', () => {
 
     it('should trim whitespace from inputs', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.updateUser).mockResolvedValue(createMockUserDetails());
+      vi.mocked(userApi.update).mockResolvedValue(createMockUserDetails());
 
       renderForm();
 
@@ -172,7 +176,7 @@ describe('UserEditForm', () => {
       await user.click(screen.getByRole('button', { name: /save changes/i }));
 
       await waitFor(() => {
-        expect(userService.updateUser).toHaveBeenCalledWith(testUser.id, {
+        expect(userApi.update).toHaveBeenCalledWith(testUser.id, {
           email: 'updated@example.com',
           fullName: 'Updated Name',
         });
@@ -181,7 +185,7 @@ describe('UserEditForm', () => {
 
     it('should call onSuccess and onClose after successful update', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.updateUser).mockResolvedValue(createMockUserDetails());
+      vi.mocked(userApi.update).mockResolvedValue(createMockUserDetails());
 
       renderForm();
 
@@ -198,7 +202,7 @@ describe('UserEditForm', () => {
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
       let resolveUpdate: () => void;
-      vi.mocked(userService.updateUser).mockImplementation(
+      vi.mocked(userApi.update).mockImplementation(
         () =>
           new Promise(resolve => {
             resolveUpdate = () => resolve(createMockUserDetails());
@@ -224,7 +228,7 @@ describe('UserEditForm', () => {
   describe('error handling', () => {
     it('should display error message on API failure', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.updateUser).mockRejectedValue(new Error('Email already exists'));
+      vi.mocked(userApi.update).mockRejectedValue(new Error('Email already exists'));
 
       renderForm();
 
@@ -240,7 +244,7 @@ describe('UserEditForm', () => {
 
     it('should display generic error message for non-Error objects', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.updateUser).mockRejectedValue('Unknown error');
+      vi.mocked(userApi.update).mockRejectedValue('Unknown error');
 
       renderForm();
 
@@ -253,7 +257,7 @@ describe('UserEditForm', () => {
 
     it('should show dismiss button for error message', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.updateUser).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.update).mockRejectedValue(new Error('Test error'));
 
       renderForm();
 
@@ -269,7 +273,7 @@ describe('UserEditForm', () => {
 
     it('should re-enable form after error', async () => {
       const user = userEvent.setup();
-      vi.mocked(userService.updateUser).mockRejectedValue(new Error('Test error'));
+      vi.mocked(userApi.update).mockRejectedValue(new Error('Test error'));
 
       renderForm();
 

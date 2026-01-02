@@ -5,7 +5,7 @@
  * Following the same pattern as quotation.mapper.ts
  */
 
-import type { UserDetails, UserListItem } from '../model';
+import type { UserDetails, UserListItem } from '../model/user';
 import type { UserDetailsDTO } from './user.dto';
 
 /**

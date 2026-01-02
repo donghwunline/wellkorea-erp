@@ -5,9 +5,10 @@
  * Used by query hooks and prefetchQuery calls.
  */
 
-import type { UserDetails } from '../model';
+import type { UserDetails } from '../model/user';
 import type { PaginationMetadata } from '@/shared/lib/pagination';
-import { userApi, userMapper } from '../api';
+import { userApi } from '../api/user.api';
+import { userMapper } from '../api/user.mapper';
 
 /**
  * Parameters for user list query.

@@ -6,7 +6,7 @@
  */
 
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
-import { type UserDetails, userService } from '@/services';
+import { type UserDetails, userApi } from '@/entities/user';
 import { httpClient, COMPANY_ENDPOINTS, transformPagedResponse } from '@/shared/api';
 import type { PagedResponse } from '@/shared/api/types';
 import { Button, ErrorAlert, LoadingState, Modal } from '@/shared/ui';
@@ -73,7 +73,7 @@ export function UserCustomersForm({
       setAvailableCustomers(customers);
 
       // Load user's current customer assignments
-      const customerIds = await userService.getUserCustomers(user.id);
+      const customerIds = await userApi.getCustomers(user.id);
       setSelectedCustomers(customerIds);
     } catch {
       setError('Failed to load customer data');
@@ -104,7 +104,7 @@ export function UserCustomersForm({
     setError(null);
 
     try {
-      await userService.assignCustomers(user.id, selectedCustomers);
+      await userApi.assignCustomers(user.id, { customerIds: selectedCustomers });
       onSuccess();
       onClose();
     } catch (err) {

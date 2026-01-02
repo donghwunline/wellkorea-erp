@@ -6,4 +6,4 @@ export {
   useAssignRoles,
   type UseAssignRolesOptions,
   type AssignRolesMutationInput,
-} from './model';
+} from './model/use-assign-roles';

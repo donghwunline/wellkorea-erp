@@ -11,7 +11,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { ROLE_LABELS, type RoleName, type UserDetails, userService } from '@/services';
+import { ROLE_LABELS, type RoleName, type UserDetails, userApi } from '@/entities/user';
 import { formatDateTime } from '@/shared/lib/formatting';
 import type { PaginationMetadata } from '@/shared/lib/pagination';
 import {
@@ -96,7 +96,7 @@ export function UserManagementTable({
     setIsLoading(true);
     setError(null);
     try {
-      const result = await userService.getUsers({
+      const result = await userApi.getList({
         page,
         size: 10,
         search: search || undefined,
@@ -121,7 +121,7 @@ export function UserManagementTable({
   const handleActivate = useCallback(
     async (user: UserDetails) => {
       try {
-        await userService.activateUser(user.id);
+        await userApi.activate(user.id);
         await fetchUsers();
       } catch {
         onError?.('Failed to activate user');

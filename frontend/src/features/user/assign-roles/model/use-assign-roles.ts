@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   userApi,
   userCommandMapper,
-  userQueryKeys,
+  userQueries,
   type AssignRolesInput,
 } from '@/entities/user';
 
@@ -40,10 +40,10 @@ export function useAssignRoles(options: UseAssignRolesOptions = {}) {
       return userApi.assignRoles(id, dto);
     },
 
-    onSuccess: (_result, { id }) => {
+    onSuccess: (_result, { id: _id }) => {
       // Invalidate both list and detail queries
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: userQueries.lists() });
+      queryClient.invalidateQueries({ queryKey: userQueries.details() });
 
       onSuccess?.();
     },
