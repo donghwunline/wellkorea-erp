@@ -13,6 +13,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   Badge,
@@ -29,11 +30,11 @@ import {
 import {
   type ChainLevelInput,
   type ChainTemplate,
+  chainTemplateQueries,
   chainTemplateRules,
-  useChainTemplates,
 } from '@/entities/approval-chain';
 import { useUpdateChainLevels } from '@/features/approval-chain/update';
-import { UserCombobox } from '@/components/features/shared/selectors';
+import { UserCombobox } from '@/entities/user';
 
 interface EditingChain {
   template: ChainTemplate;
@@ -42,7 +43,7 @@ interface EditingChain {
 
 export function ApprovalChainConfigPage() {
   // Server state via TanStack Query
-  const { data: templates = [], isLoading, error: fetchError } = useChainTemplates();
+  const { data: templates = [], isLoading, error: fetchError } = useQuery(chainTemplateQueries.list());
 
   // Mutation hook
   const {

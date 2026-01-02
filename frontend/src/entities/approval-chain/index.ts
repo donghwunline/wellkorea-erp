@@ -35,20 +35,6 @@ export { chainTemplateRules } from './model/chain-template';
 export { chainTemplateQueries } from './api/chain-template.queries';
 
 // =============================================================================
-// QUERY HOOKS (Legacy - prefer chainTemplateQueries above)
-// =============================================================================
-
-export { useChainTemplates } from './query/use-chain-templates';
-export type { UseChainTemplatesOptions } from './query/use-chain-templates';
-
-export { useChainTemplate } from './query/use-chain-template';
-export type { UseChainTemplateOptions } from './query/use-chain-template';
-
-// Query keys for cache invalidation (Legacy - use chainTemplateQueries.lists() etc.)
-export { chainTemplateQueryKeys } from './query/query-keys';
-export { chainTemplateQueryFns } from './query/query-fns';
-
-// =============================================================================
 // API ACCESS (for features layer mutations only)
 // These are needed by features/approval-chain/* for CRUD operations
 // =============================================================================
