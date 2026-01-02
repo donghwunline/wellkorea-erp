@@ -15,28 +15,45 @@ type ProjectDetails = Project;
 // Mock scrollIntoView since JSDOM doesn't implement it
 Element.prototype.scrollIntoView = vi.fn();
 
-// Mock the services used by the Combobox components
+// Mock the shared API used by the Combobox components
+vi.mock('@/shared/api', async importOriginal => {
+  const original = await importOriginal<typeof import('@/shared/api')>();
+  return {
+    ...original,
+    httpClient: {
+      ...original.httpClient,
+      requestWithMeta: vi.fn().mockImplementation(async (config: { url: string }) => {
+        // Return mock data for company API calls
+        if (config.url.includes('companies')) {
+          return {
+            data: {
+              content: [
+                { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com', roles: [{ id: 1, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
+                { id: 2, name: 'LG Display', email: 'contact@lgdisplay.com', roles: [{ id: 2, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
+                { id: 3, name: 'SK Hynix', email: 'contact@skhynix.com', roles: [{ id: 3, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
+              ],
+            },
+            metadata: {
+              page: 0,
+              size: 20,
+              totalElements: 3,
+              totalPages: 1,
+              first: true,
+              last: true,
+            },
+          };
+        }
+        throw new Error(`Unhandled URL: ${config.url}`);
+      }),
+    },
+  };
+});
+
+// Mock the services used by the form
 vi.mock('@/services', async importOriginal => {
   const original = await importOriginal<typeof import('@/services')>();
   return {
     ...original,
-    companyService: {
-      getCompanies: vi.fn().mockResolvedValue({
-        data: [
-          { id: 1, name: 'Samsung Electronics', email: 'contact@samsung.com', roles: [{ id: 1, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
-          { id: 2, name: 'LG Display', email: 'contact@lgdisplay.com', roles: [{ id: 2, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
-          { id: 3, name: 'SK Hynix', email: 'contact@skhynix.com', roles: [{ id: 3, roleType: 'CUSTOMER' }], isActive: true, createdAt: '2025-01-01' },
-        ],
-        pagination: {
-          page: 0,
-          size: 20,
-          totalElements: 3,
-          totalPages: 1,
-          first: true,
-          last: true,
-        },
-      }),
-    },
     userService: {
       getUsers: vi.fn().mockResolvedValue({
         data: [
