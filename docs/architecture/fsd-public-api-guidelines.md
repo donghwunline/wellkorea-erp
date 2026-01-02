@@ -20,6 +20,53 @@ Everything else stays internal.
 
 ---
 
+## Slice Encapsulation Rules
+
+### What to Export via `index.ts`
+
+| Segment | Export? | Example |
+|---------|---------|---------|
+| `model/*.ts` | ✅ YES | Domain types, business rules |
+| `api/*.queries.ts` | ✅ YES | Query factory (`quotationQueries`) |
+| `api/create-*.ts` | ✅ YES | Command functions + Input types |
+| `api/update-*.ts` | ✅ YES | Command functions + Input types |
+| `ui/*.tsx` | ✅ YES | Display components |
+| `api/*.dto.ts` | ❌ NO | DTOs are internal implementation |
+| `api/*.mapper.ts` | ❌ NO | Mappers are internal implementation |
+| `api/*.api.ts` | ❌ NO | Low-level API calls are internal |
+
+**No segment-level barrel exports**: Only `{slice}/index.ts` is public. Never create `model/index.ts`, `api/index.ts`, etc.
+
+---
+
+## Group Slices vs Slices
+
+The `features/` layer uses **Group slices** for domain-based organization:
+
+```
+features/
+├── approval/           # Group slice (NO index.ts here!)
+│   ├── approve/        # Slice - HAS index.ts
+│   │   ├── ui/
+│   │   ├── model/
+│   │   └── index.ts    # ✅ Public API
+│   └── reject/         # Slice - HAS index.ts
+│       ├── ui/
+│       ├── model/
+│       └── index.ts    # ✅ Public API
+├── quotation/          # Group slice (NO index.ts here!)
+│   ├── form/           # Slice
+│   ├── line-items/     # Slice
+│   └── notify/         # Slice
+```
+
+**Rules**:
+- **Group slice** (`approval/`, `quotation/`): Organizational folder only. **NO `index.ts`**.
+- **Slice** (`approve/`, `reject/`, `form/`): Actual feature unit. **HAS `index.ts`** as public API.
+- Import from slice, not group: `from '@/features/approval/approve'` ✅, `from '@/features/approval'` ❌
+
+---
+
 ## Entity File Structure (Reference: `quotation/`)
 
 ```
@@ -93,12 +140,6 @@ export {
 export { createQuotation, type CreateQuotationInput, type LineItemInput } from './api/create-quotation';
 export { updateQuotation, type UpdateQuotationInput } from './api/update-quotation';
 export { submitQuotation } from './api/submit-quotation';
-
-// =============================================================================
-// DTO TYPES (for features layer if needed)
-// =============================================================================
-
-export type { CommandResult } from './api/quotation.dto';
 
 // =============================================================================
 // UI COMPONENTS
@@ -301,19 +342,46 @@ export function useCreateQuotation() {
 
 ## Feature Layer Guidelines
 
-### What TO Export
+### Structure: Group Slices
+
+Features are organized as **group slices** (see [Group Slices vs Slices](#group-slices-vs-slices)):
+
+```
+features/quotation/          # Group slice - NO index.ts here!
+├── create/                  # Slice
+│   ├── model/use-create-quotation.ts
+│   └── index.ts            # ✅ Public API
+├── update/                  # Slice
+│   ├── model/use-update-quotation.ts
+│   └── index.ts            # ✅ Public API
+├── form/                    # Slice
+│   ├── ui/QuotationForm.tsx
+│   └── index.ts            # ✅ Public API
+└── notify/                  # Slice
+    ├── model/use-send-notification.ts
+    ├── ui/EmailNotificationModal.tsx
+    └── index.ts            # ✅ Public API
+```
+
+### What TO Export (per slice)
 
 ```typescript
-// features/quotation/index.ts
+// features/quotation/create/index.ts
+export { useCreateQuotation, type UseCreateQuotationOptions } from './model/use-create-quotation';
 
-// Mutation hooks (the main interface)
-export { useCreateQuotation } from './create';
-export { useUpdateQuotation } from './update';
-export { useSubmitQuotation } from './submit';
+// features/quotation/form/index.ts
+export { QuotationForm, type QuotationFormProps } from './ui/QuotationForm';
+```
 
-// Shared UI components (if any)
-export { QuotationForm } from './form';
-export { EmailNotificationModal } from './notify';
+### Import Pattern
+
+```typescript
+// ✅ Correct: Import from slice
+import { useCreateQuotation } from '@/features/quotation/create';
+import { QuotationForm } from '@/features/quotation/form';
+
+// ❌ Wrong: No group-level barrel export exists
+import { useCreateQuotation, QuotationForm } from '@/features/quotation';
 ```
 
 ### What NOT to Export

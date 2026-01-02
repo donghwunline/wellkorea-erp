@@ -1,5 +1,19 @@
 # Frontend Architecture Analysis & Proposed Redesign
 
+> **⚠️ Document Status (January 2026)**
+>
+> This document was written as a proposal for FSD migration. The migration has been completed with some pattern updates:
+>
+> **Key Changes from Original Proposal:**
+> 1. **No `query/` segment** - Queries and commands both live in `api/` segment
+> 2. **Query Factory Pattern** - Use `queryOptions()` directly instead of custom hooks like `useQuotation()`
+> 3. **Group Slices in features/** - No barrel exports at group level (e.g., no `features/quotation/index.ts`)
+>
+> **Current Pattern Reference:**
+> - See `entities/quotation/` for reference entity implementation
+> - See [fsd-public-api-guidelines.md](./fsd-public-api-guidelines.md) for export rules
+> - See `CLAUDE.md` for up-to-date architecture documentation
+
 This document analyzes the current WellKorea ERP frontend architecture, identifies pain points, and proposes a redesigned architecture following **Feature-Sliced Design (FSD-lite)** principles aligned with the backend's DDD + CQS patterns.
 
 ---
@@ -405,16 +419,14 @@ src/
 │   │   ├── model/           # Domain types and pure functions
 │   │   │   ├── quotation.ts           # Quotation type + quotationRules
 │   │   │   ├── line-item.ts           # LineItem type + lineItemRules
-│   │   │   ├── quotation-status.ts    # Status enum + display config
-│   │   │   └── types.ts               # Type exports
-│   │   ├── api/             # API layer
-│   │   │   ├── quotation.dto.ts       # API DTOs
-│   │   │   ├── quotation.mapper.ts    # DTO ↔ Domain mapping
-│   │   │   └── quotation.api.ts       # API functions
-│   │   ├── query/           # TanStack Query hooks
-│   │   │   ├── use-quotation.ts       # Single quotation query
-│   │   │   ├── use-quotations.ts      # List with pagination
-│   │   │   └── query-keys.ts          # Centralized query keys
+│   │   │   └── quotation-status.ts    # Status enum + display config
+│   │   ├── api/             # API layer (queries + commands)
+│   │   │   ├── quotation.dto.ts       # API DTOs (internal)
+│   │   │   ├── quotation.mapper.ts    # DTO ↔ Domain mapping (internal)
+│   │   │   ├── quotation.queries.ts   # Query factory with queryOptions()
+│   │   │   ├── get-quotation.ts       # HTTP GET operations (internal)
+│   │   │   ├── create-quotation.ts    # Command: Input + validation + POST
+│   │   │   └── update-quotation.ts    # Command: Input + validation + PUT
 │   │   ├── ui/              # Entity-level UI components
 │   │   │   ├── QuotationCard.tsx
 │   │   │   ├── QuotationTable.tsx     # Display only, no fetching
@@ -423,7 +435,6 @@ src/
 │   ├── project/
 │   │   ├── model/
 │   │   ├── api/
-│   │   ├── query/
 │   │   └── ui/
 │   ├── company/
 │   ├── user/
@@ -775,8 +786,7 @@ export function useCreateQuotation() {
 
 **Structure per entity:**
 - `model/` - Domain types and pure functions for behavior
-- `api/` - DTOs, mappers, API functions
-- `query/` - TanStack Query hooks and keys
+- `api/` - DTOs, mappers, query factory, command functions
 - `ui/` - Entity display components (tables, cards, badges)
 
 **Rules:**
@@ -822,21 +832,21 @@ export function useCreateQuotation() {
 >
 > **Key Principle:** Entities within the same bounded context can share types and reference each other. Cross-BC references should go through IDs only (not direct imports).
 
-**entities/query/ Read-Only Rule:**
+**Query Factory Read-Only Rule:**
 
-> ⚠️ **entities/query/ must remain read-only (no business decisions)**
+> ⚠️ **Query factory in entities/*/api/ must remain read-only (no business decisions)**
 >
-> Query hooks in `entities/*/query/` are strictly for:
+> Query factory methods (`quotationQueries.detail()`, etc.) are strictly for:
 > 1. **Data fetching** - API calls via `queryFn`
 > 2. **DTO → Domain mapping** - Transform API responses to domain models
 > 3. **Cache configuration** - `staleTime`, `gcTime`, `placeholderData`
 >
-> **Forbidden in entities/query/:**
+> **Forbidden in query factory:**
 > - ❌ Business decisions (if-else based on status, role checks)
 > - ❌ Side effects beyond caching (toast notifications, navigation)
 > - ❌ Calling other mutations or commands
 >
-> **Why this matters:** The `entities/` layer can become a monolith if query hooks start accumulating business logic. Keep queries "dumb" - they fetch, map, and cache. Business decisions belong in `features/` or `quotationRules`.
+> **Why this matters:** The `entities/` layer can become a monolith if query factory starts accumulating business logic. Keep queries "dumb" - they fetch, map, and cache. Business decisions belong in `features/` or `quotationRules`.
 
 > ⚠️ **Team Rule: UX Side-Effects belong in features/ ONLY**
 >
@@ -855,10 +865,8 @@ export function useCreateQuotation() {
 >   navigate(`/quotations/${id}`);
 > }
 >
-> // ❌ entities/quotation/query/use-quotation.ts
-> onSuccess: () => {
->   toast.success('Loaded');  // NEVER do this
-> }
+> // ❌ entities/quotation/api/quotation.queries.ts
+> // NEVER add side-effects in query factory
 > ```
 >
 > **Why this matters:** Once side-effects enter entities, testing becomes harder and the layer loses its "pure data" nature. Features own user interactions; entities own data.
