@@ -5,7 +5,7 @@
  */
 
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import type { ChainTemplate } from '../model';
+import type { ChainTemplate } from '../model/chain-template';
 import { chainTemplateQueryKeys } from './query-keys';
 import { chainTemplateQueryFns } from './query-fns';
 

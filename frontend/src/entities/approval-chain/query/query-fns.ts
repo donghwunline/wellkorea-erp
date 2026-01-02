@@ -4,8 +4,8 @@
  * Factory for TanStack Query query functions.
  */
 
-import { chainTemplateApi } from '../api';
-import type { ChainTemplate } from '../model';
+import { chainTemplateApi } from '../api/chain-template.api';
+import type { ChainTemplate } from '../model/chain-template';
 
 /**
  * Query function factories for chain templates.

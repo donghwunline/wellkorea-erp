@@ -18,28 +18,46 @@
 // Types that appear in component props, state, or function signatures
 // =============================================================================
 
-export type { ChainLevel, ChainTemplate, ChainLevelInput } from './model';
+export type { ChainLevel, ChainTemplate, ChainLevelInput } from './model/chain-template';
 
 // =============================================================================
 // BUSINESS RULES
 // Pure functions for domain logic
 // =============================================================================
 
-export { chainTemplateRules } from './model';
+export { chainTemplateRules } from './model/chain-template';
 
 // =============================================================================
-// QUERY HOOKS
-// Main data access interface - prefer these over direct API calls
+// QUERY FACTORY (TanStack Query v5 pattern)
+// Primary data access interface - use with useQuery() directly
 // =============================================================================
 
-export { useChainTemplates, useChainTemplate } from './query';
+export { chainTemplateQueries } from './api/chain-template.queries';
 
-// Query keys for cache invalidation (used by features for mutations)
-export { chainTemplateQueryKeys } from './query';
+// =============================================================================
+// QUERY HOOKS (Legacy - prefer chainTemplateQueries above)
+// =============================================================================
+
+export { useChainTemplates } from './query/use-chain-templates';
+export type { UseChainTemplatesOptions } from './query/use-chain-templates';
+
+export { useChainTemplate } from './query/use-chain-template';
+export type { UseChainTemplateOptions } from './query/use-chain-template';
+
+// Query keys for cache invalidation (Legacy - use chainTemplateQueries.lists() etc.)
+export { chainTemplateQueryKeys } from './query/query-keys';
+export { chainTemplateQueryFns } from './query/query-fns';
 
 // =============================================================================
 // API ACCESS (for features layer mutations only)
 // These are needed by features/approval-chain/* for CRUD operations
 // =============================================================================
 
-export { chainTemplateApi } from './api';
+export { chainTemplateApi } from './api/chain-template.api';
+export { chainTemplateMapper } from './api/chain-template.mapper';
+export type {
+  ChainTemplateDTO,
+  ChainLevelDTO,
+  ChainLevelRequestDTO,
+  UpdateChainLevelsRequestDTO,
+} from './api/chain-template.dto';

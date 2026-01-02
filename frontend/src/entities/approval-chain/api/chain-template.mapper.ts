@@ -4,7 +4,7 @@
  * Converts between DTOs and domain models.
  */
 
-import type { ChainLevel, ChainLevelInput, ChainTemplate } from '../model';
+import type { ChainLevel, ChainLevelInput, ChainTemplate } from '../model/chain-template';
 import type { ChainLevelDTO, ChainLevelRequestDTO, ChainTemplateDTO } from './chain-template.dto';
 
 /**

@@ -5,7 +5,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { chainTemplateApi, chainTemplateQueryKeys, type ChainLevelInput } from '@/entities/approval-chain';
+import { chainTemplateApi, chainTemplateQueries, type ChainLevelInput } from '@/entities/approval-chain';
 
 /**
  * Input for update chain levels mutation.
@@ -83,10 +83,10 @@ export function useUpdateChainLevels(options: UseUpdateChainLevelsOptions = {}) 
       return chainTemplateApi.updateLevels(input.templateId, input.levels);
     },
 
-    onSuccess: (result, input) => {
+    onSuccess: (result, _input) => {
       // Invalidate chain template caches
-      queryClient.invalidateQueries({ queryKey: chainTemplateQueryKeys.all });
-      queryClient.invalidateQueries({ queryKey: chainTemplateQueryKeys.detail(input.templateId) });
+      queryClient.invalidateQueries({ queryKey: chainTemplateQueries.all() });
+      queryClient.invalidateQueries({ queryKey: chainTemplateQueries.details() });
 
       onSuccess?.(result);
     },

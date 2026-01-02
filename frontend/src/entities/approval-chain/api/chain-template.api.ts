@@ -5,7 +5,7 @@
  */
 
 import { httpClient, APPROVAL_CHAIN_ENDPOINTS } from '@/shared/api';
-import type { ChainLevelInput, ChainTemplate } from '../model';
+import type { ChainLevelInput, ChainTemplate } from '../model/chain-template';
 import type { ChainTemplateDTO, UpdateChainLevelsRequestDTO } from './chain-template.dto';
 import { chainTemplateMapper } from './chain-template.mapper';
 
