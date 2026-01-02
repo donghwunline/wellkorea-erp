@@ -32,3 +32,6 @@ export {
   type UseRemoveRoleOptions,
   type RemoveRoleParams,
 } from './remove-role';
+
+// Company form UI
+export { CompanyForm, type CompanyFormProps, type CompanyFormData } from './form';
