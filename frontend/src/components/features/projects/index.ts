@@ -1,33 +1,45 @@
 /**
  * Projects feature components barrel export.
+ *
+ * @deprecated This module is deprecated. Import from:
+ * - '@/entities/project' for display components (ProjectTable, ProjectDetailsCard, etc.)
+ * - '@/features/project/form' for ProjectForm
+ * - '@/features/project/create' for useCreateProject, JobCodeSuccessModal
+ * - '@/features/project/update' for useUpdateProject
+ * - '@/widgets' for ProjectRelatedNavigationGrid
+ *
+ * This file re-exports for backward compatibility and will be removed after full migration.
  */
 
-export { ProjectTable } from './ProjectTable';
-export type { ProjectTableProps } from './ProjectTable';
+// =============================================================================
+// RE-EXPORTS FROM ENTITIES (new location)
+// =============================================================================
 
-export { ProjectForm } from './ProjectForm';
-export type { ProjectFormProps } from './ProjectForm';
+/** @deprecated Import from '@/entities/project' instead */
+export { ProjectTable, type ProjectTableProps } from '@/entities/project';
 
-export { ProjectDetailsCard } from './ProjectDetailsCard';
-export type { ProjectDetailsCardProps } from './ProjectDetailsCard';
+/** @deprecated Import from '@/entities/project' instead */
+export { ProjectDetailsCard, type ProjectDetailsCardProps } from '@/entities/project';
 
-export { JobCodeSuccessModal } from './JobCodeSuccessModal';
-export type { JobCodeSuccessModalProps } from './JobCodeSuccessModal';
+/** @deprecated Import from '@/entities/project' instead */
+export { ProjectSummaryCard, type ProjectSummaryCardProps } from '@/entities/project';
 
-export { ProjectSummaryCard } from './ProjectSummaryCard';
-export type { ProjectSummaryCardProps } from './ProjectSummaryCard';
+/** @deprecated Import from '@/entities/project' instead */
+export { ProjectKPIStrip, ProjectKPIStripSkeleton, type ProjectKPIStripProps } from '@/entities/project';
 
-export { ProjectRelatedNavigationGrid } from './ProjectRelatedNavigationGrid';
-export type { ProjectRelatedNavigationGridProps } from './ProjectRelatedNavigationGrid';
+// =============================================================================
+// RE-EXPORTS FROM FEATURES (new location)
+// =============================================================================
 
-export { ProjectKPIStrip } from './ProjectKPIStrip';
-export type { ProjectKPIStripProps } from './ProjectKPIStrip';
+/** @deprecated Import from '@/features/project/form' instead */
+export { ProjectForm, type ProjectFormProps } from '@/features/project/form';
 
-// Hooks
-export { useProjectSummary } from './hooks';
-export type { UseProjectSummaryOptions, UseProjectSummaryReturn } from './hooks';
+/** @deprecated Import from '@/features/project/create' instead */
+export { JobCodeSuccessModal, type JobCodeSuccessModalProps } from '@/features/project/create';
 
-// Legacy exports (deprecated - will be removed in future version)
-// useProjectActions has been replaced by:
-// - projectQueries from '@/entities/project' (for queries)
-// - useCreateProject, useUpdateProject from '@/features/project' (for mutations)
+// =============================================================================
+// RE-EXPORTS FROM WIDGETS (new location)
+// =============================================================================
+
+/** @deprecated Import from '@/widgets' instead */
+export { ProjectRelatedNavigationGrid, type ProjectRelatedNavigationGridProps } from '@/widgets';
