@@ -17,3 +17,8 @@ export {
   CompanyManagementPanel,
   type CompanyManagementPanelProps,
 } from './company-management';
+
+export {
+  ProjectRelatedNavigationGrid,
+  type ProjectRelatedNavigationGridProps,
+} from './project-related-navigation-grid';
