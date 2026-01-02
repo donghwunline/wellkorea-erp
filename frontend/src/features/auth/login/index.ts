@@ -2,4 +2,4 @@
  * Login Feature - Public API.
  */
 
-export { useLogin, type UseLoginOptions } from './model';
+export { useLogin, type UseLoginOptions } from './model/use-login';
