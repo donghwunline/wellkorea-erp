@@ -75,6 +75,20 @@ export { updateProject, type UpdateProjectInput } from './api/update-project';
 export type { ProjectCommandResult } from './api/project.mapper';
 
 // =============================================================================
+// UI COMPONENTS
+// Display-only components with no side effects
+// =============================================================================
+
+export { ProjectTable, type ProjectTableProps } from './ui/ProjectTable';
+export { ProjectDetailsCard, type ProjectDetailsCardProps } from './ui/ProjectDetailsCard';
+export { ProjectSummaryCard, type ProjectSummaryCardProps } from './ui/ProjectSummaryCard';
+export {
+  ProjectKPIStrip,
+  ProjectKPIStripSkeleton,
+  type ProjectKPIStripProps,
+} from './ui/ProjectKPIStrip';
+
+// =============================================================================
 // LEGACY EXPORTS (backward compatibility - to be removed after migration)
 // =============================================================================
 

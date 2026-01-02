@@ -21,9 +21,10 @@
  */
 
 import { queryOptions, keepPreviousData } from '@tanstack/react-query';
-import type { Project, ProjectListItem, ProjectStatus } from '../model/project';
+import type { Project, ProjectListItem, ProjectStatus, ProjectSectionsSummary, ProjectKPI } from '../model/project';
 import { projectMapper } from './project.mapper';
 import { getProject, getProjectByJobCode, getProjects } from './get-project';
+import { projectSummaryApi } from './project-summary.api';
 import type { Paginated } from '@/shared/lib/pagination';
 
 /**
@@ -124,5 +125,45 @@ export const projectQueries = {
         return projectMapper.toDomain(dto);
       },
       staleTime: 1000 * 60 * 5, // 5 minutes
+    }),
+
+  /**
+   * Base key for summary queries.
+   */
+  summaries: () => [...projectQueries.all(), 'summary'] as const,
+
+  /**
+   * Project sections summary query.
+   *
+   * @example
+   * const { data: summary } = useQuery(projectQueries.summary(123));
+   */
+  summary: (projectId: number) =>
+    queryOptions({
+      queryKey: [...projectQueries.summaries(), projectId] as const,
+      queryFn: async (): Promise<ProjectSectionsSummary> => {
+        return projectSummaryApi.getSummary(projectId);
+      },
+      staleTime: 1000 * 60 * 2, // 2 minutes
+    }),
+
+  /**
+   * Base key for KPI queries.
+   */
+  kpis: () => [...projectQueries.all(), 'kpis'] as const,
+
+  /**
+   * Project KPI query.
+   *
+   * @example
+   * const { data: kpis } = useQuery(projectQueries.kpi(123));
+   */
+  kpi: (projectId: number) =>
+    queryOptions({
+      queryKey: [...projectQueries.kpis(), projectId] as const,
+      queryFn: async (): Promise<ProjectKPI> => {
+        return projectSummaryApi.getKPIs(projectId);
+      },
+      staleTime: 1000 * 60 * 2, // 2 minutes
     }),
 };
