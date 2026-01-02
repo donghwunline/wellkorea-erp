@@ -23,7 +23,7 @@
  */
 
 import { DomainValidationError, httpClient, PROJECT_ENDPOINTS } from '@/shared/api';
-import type { ProjectStatus } from '../model';
+import type { ProjectStatus } from '../model/project';
 import type { UpdateProjectRequestDTO, ProjectCommandResultDTO } from './project.dto';
 import { projectMapper, type ProjectCommandResult } from './project.mapper';
 

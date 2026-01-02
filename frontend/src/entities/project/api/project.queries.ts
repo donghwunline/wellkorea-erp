@@ -21,7 +21,7 @@
  */
 
 import { queryOptions, keepPreviousData } from '@tanstack/react-query';
-import type { Project, ProjectListItem, ProjectStatus } from '../model';
+import type { Project, ProjectListItem, ProjectStatus } from '../model/project';
 import { projectMapper } from './project.mapper';
 import { getProject, getProjectByJobCode, getProjects } from './get-project';
 import type { Paginated } from '@/shared/lib/pagination';

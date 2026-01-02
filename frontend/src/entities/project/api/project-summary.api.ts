@@ -7,7 +7,7 @@
  * FSD Layer: entities/project/api
  */
 
-import type { ProjectSectionSummary, ProjectSectionsSummary, ProjectKPI } from '../model';
+import type { ProjectSectionSummary, ProjectSectionsSummary, ProjectKPI } from '../model/project';
 
 // ============================================================================
 // Stub Implementation (Mock Data)

@@ -6,7 +6,7 @@
  * FSD Layer: entities/project/api
  */
 
-import type { Project, ProjectListItem } from '../model';
+import type { Project, ProjectListItem } from '../model/project';
 import type { ProjectDetailsDTO, ProjectListItemDTO, ProjectCommandResultDTO } from './project.dto';
 
 /**

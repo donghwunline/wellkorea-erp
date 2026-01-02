@@ -21,13 +21,17 @@ export type {
   ProjectSectionSummary,
   ProjectSectionsSummary,
   ProjectKPI,
-} from './model';
+} from './model/project';
+
+// Command types
+export type { CreateProjectCommand, UpdateProjectCommand } from './model/project-command';
 
 // =============================================================================
 // BUSINESS RULES
 // =============================================================================
 
-export { PROJECT_STATUS_LABELS, ProjectStatusConfig, projectRules } from './model';
+export { PROJECT_STATUS_LABELS, ProjectStatusConfig, projectRules } from './model/project';
+export { projectValidation } from './model/project-command';
 
 // =============================================================================
 // QUERY FACTORY (TanStack Query v5)
@@ -46,7 +50,7 @@ export { PROJECT_STATUS_LABELS, ProjectStatusConfig, projectRules } from './mode
  * queryClient.invalidateQueries({ queryKey: projectQueries.lists() });
  * ```
  */
-export { projectQueries, type ProjectListQueryParams } from './api';
+export { projectQueries, type ProjectListQueryParams } from './api/project.queries';
 
 // =============================================================================
 // COMMAND FUNCTIONS
@@ -61,30 +65,30 @@ export { projectQueries, type ProjectListQueryParams } from './api';
  * });
  * ```
  */
-export { createProject, type CreateProjectInput } from './api';
-export { updateProject, type UpdateProjectInput } from './api';
+export { createProject, type CreateProjectInput } from './api/create-project';
+export { updateProject, type UpdateProjectInput } from './api/update-project';
 
 // =============================================================================
 // COMMAND RESULT TYPE
 // =============================================================================
 
-export type { ProjectCommandResult } from './api';
+export type { ProjectCommandResult } from './api/project.mapper';
 
 // =============================================================================
 // LEGACY EXPORTS (backward compatibility - to be removed after migration)
 // =============================================================================
 
 /** @deprecated Use projectQueries and command functions instead */
-export { projectApi } from './api';
+export { projectApi } from './api/project.api';
 
 /** @deprecated Use projectQueries with projectMapper */
-export { projectSummaryApi } from './api';
+export { projectSummaryApi } from './api/project-summary.api';
 
 /** @deprecated Use projectMapper from api layer internally only */
-export { projectMapper } from './api';
+export { projectMapper } from './api/project.mapper';
 
 /** @deprecated Use CreateProjectInput instead */
-export type { CreateProjectRequest } from './api';
+export type { CreateProjectRequestDTO as CreateProjectRequest } from './api/project.dto';
 
 /** @deprecated Use UpdateProjectInput instead */
-export type { UpdateProjectRequest } from './api';
+export type { UpdateProjectRequestDTO as UpdateProjectRequest } from './api/project.dto';

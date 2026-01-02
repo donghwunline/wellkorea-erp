@@ -6,7 +6,7 @@
  * FSD Layer: entities/project/api
  */
 
-import type { ProjectStatus } from '../model';
+import type { ProjectStatus } from '../model/project';
 
 /**
  * Project details DTO from backend ProjectDetailView.
