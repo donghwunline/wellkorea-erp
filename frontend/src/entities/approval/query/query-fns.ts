@@ -6,8 +6,12 @@
  * to maintain consistent cache data format.
  */
 
-import type { Approval, ApprovalHistory, ApprovalStatus, EntityType } from '../model';
-import { approvalApi, approvalMapper, approvalHistoryMapper } from '../api';
+import type { Approval } from '../model/approval';
+import type { ApprovalHistory } from '../model/approval-history';
+import type { ApprovalStatus } from '../model/approval-status';
+import type { EntityType } from '../model/entity-type';
+import { approvalApi } from '../api/approval.api';
+import { approvalMapper, approvalHistoryMapper } from '../api/approval.mapper';
 import type { Paginated } from '@/shared/lib/pagination';
 
 /**

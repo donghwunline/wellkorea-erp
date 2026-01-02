@@ -6,7 +6,7 @@
  */
 
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import type { ApprovalHistory } from '../model';
+import type { ApprovalHistory } from '../model/approval-history';
 import { approvalQueryKeys } from './query-keys';
 import { approvalQueryFns } from './query-fns';
 

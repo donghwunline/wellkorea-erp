@@ -5,7 +5,8 @@
  * Uses primitives only for stable serialization.
  */
 
-import type { ApprovalStatus, EntityType } from '../model';
+import type { ApprovalStatus } from '../model/approval-status';
+import type { EntityType } from '../model/entity-type';
 
 /**
  * Query key factory for approval queries.

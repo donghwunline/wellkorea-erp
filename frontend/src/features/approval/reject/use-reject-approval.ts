@@ -5,29 +5,16 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { approvalApi, approvalQueryKeys } from '@/entities/approval';
+import {
+  rejectApproval,
+  approvalQueries,
+  type RejectApprovalInput,
+  type ApprovalCommandResult,
+} from '@/entities/approval';
 import { quotationQueries } from '@/entities/quotation';
-import type { CommandResult } from '@/entities/approval';
 
-/**
- * Input for reject mutation.
- */
-export interface RejectApprovalInput {
-  /**
-   * Approval ID to reject.
-   */
-  id: number;
-
-  /**
-   * Rejection reason (required).
-   */
-  reason: string;
-
-  /**
-   * Optional additional comments.
-   */
-  comments?: string;
-}
+// Re-export input type for convenience
+export type { RejectApprovalInput };
 
 /**
  * Options for useRejectApproval hook.
@@ -36,7 +23,7 @@ export interface UseRejectApprovalOptions {
   /**
    * Callback on successful rejection.
    */
-  onSuccess?: (result: CommandResult) => void;
+  onSuccess?: (result: ApprovalCommandResult) => void;
 
   /**
    * Callback on error.
@@ -96,17 +83,12 @@ export function useRejectApproval(options: UseRejectApprovalOptions = {}) {
   const { onSuccess, onError, entityId } = options;
 
   return useMutation({
-    mutationFn: async (input: RejectApprovalInput): Promise<CommandResult> => {
-      if (!input.reason?.trim()) {
-        throw new Error('반려 사유를 입력해주세요');
-      }
-      return approvalApi.reject(input.id, input.reason, input.comments);
-    },
+    mutationFn: rejectApproval,
 
-    onSuccess: (result, input) => {
+    onSuccess: (result, _input) => {
       // Invalidate approval caches
-      queryClient.invalidateQueries({ queryKey: approvalQueryKeys.all });
-      queryClient.invalidateQueries({ queryKey: approvalQueryKeys.detail(input.id) });
+      queryClient.invalidateQueries({ queryKey: approvalQueries.all() });
+      queryClient.invalidateQueries({ queryKey: approvalQueries.details() });
 
       // Invalidate related quotation cache if entityId provided
       if (entityId) {

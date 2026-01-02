@@ -13,8 +13,10 @@
 
 import { Badge, Button, Card, Icon, Spinner } from '@/shared/ui';
 import { formatDateTime } from '@/shared/lib/formatting';
-import type { Approval, ApprovalLevel } from '../model';
-import { ApprovalStatusConfig, EntityTypeConfigs } from '../model';
+import type { Approval } from '../model/approval';
+import type { ApprovalLevel } from '../model/approval-level';
+import { ApprovalStatusConfig } from '../model/approval-status';
+import { EntityTypeConfigs } from '../model/entity-type';
 
 export interface ApprovalRequestCardProps {
   /**

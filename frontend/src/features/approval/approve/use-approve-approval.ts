@@ -5,24 +5,16 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { approvalApi, approvalQueryKeys } from '@/entities/approval';
+import {
+  approveApproval,
+  approvalQueries,
+  type ApproveApprovalInput,
+  type ApprovalCommandResult,
+} from '@/entities/approval';
 import { quotationQueries } from '@/entities/quotation';
-import type { CommandResult } from '@/entities/approval';
 
-/**
- * Input for approve mutation.
- */
-export interface ApproveApprovalInput {
-  /**
-   * Approval ID to approve.
-   */
-  id: number;
-
-  /**
-   * Optional approval comments.
-   */
-  comments?: string;
-}
+// Re-export input type for convenience
+export type { ApproveApprovalInput };
 
 /**
  * Options for useApproveApproval hook.
@@ -31,7 +23,7 @@ export interface UseApproveApprovalOptions {
   /**
    * Callback on successful approval.
    */
-  onSuccess?: (result: CommandResult) => void;
+  onSuccess?: (result: ApprovalCommandResult) => void;
 
   /**
    * Callback on error.
@@ -79,14 +71,12 @@ export function useApproveApproval(options: UseApproveApprovalOptions = {}) {
   const { onSuccess, onError, entityId } = options;
 
   return useMutation({
-    mutationFn: async (input: ApproveApprovalInput): Promise<CommandResult> => {
-      return approvalApi.approve(input.id, input.comments);
-    },
+    mutationFn: approveApproval,
 
-    onSuccess: (result, input) => {
+    onSuccess: (result, _input) => {
       // Invalidate approval caches
-      queryClient.invalidateQueries({ queryKey: approvalQueryKeys.all });
-      queryClient.invalidateQueries({ queryKey: approvalQueryKeys.detail(input.id) });
+      queryClient.invalidateQueries({ queryKey: approvalQueries.all() });
+      queryClient.invalidateQueries({ queryKey: approvalQueries.details() });
 
       // Invalidate related quotation cache if entityId provided
       if (entityId) {

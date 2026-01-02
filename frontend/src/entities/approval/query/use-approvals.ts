@@ -6,7 +6,8 @@
  */
 
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import type { ApprovalStatus, EntityType } from '../model';
+import type { ApprovalStatus } from '../model/approval-status';
+import type { EntityType } from '../model/entity-type';
 import { approvalQueryKeys } from './query-keys';
 import { approvalQueryFns, type PaginatedApprovals, type ApprovalListParams } from './query-fns';
 

@@ -5,8 +5,9 @@
  * Read-only component, no action buttons.
  */
 
-import type { ApprovalLevel } from '../model';
-import { approvalLevelRules, ApprovalStatusConfig } from '../model';
+import type { ApprovalLevel } from '../model/approval-level';
+import { approvalLevelRules } from '../model/approval-level';
+import { ApprovalStatusConfig } from '../model/approval-status';
 
 /**
  * Props for ApprovalLevelList.

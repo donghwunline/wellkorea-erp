@@ -5,15 +5,11 @@
  * Always normalize/trim strings from API responses.
  */
 
-import type {
-  Approval,
-  ApprovalListItem,
-  ApprovalLevel,
-  ApprovalHistory,
-  ApprovalStatus,
-  EntityType,
-  ApprovalHistoryAction,
-} from '../model';
+import type { Approval, ApprovalListItem } from '../model/approval';
+import type { ApprovalLevel } from '../model/approval-level';
+import type { ApprovalHistory, ApprovalHistoryAction } from '../model/approval-history';
+import type { ApprovalStatus } from '../model/approval-status';
+import type { EntityType } from '../model/entity-type';
 import type {
   ApprovalDetailsDTO,
   LevelDecisionDTO,

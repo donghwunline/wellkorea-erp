@@ -6,8 +6,8 @@
  */
 
 import { Badge, type BadgeVariant } from '@/shared/ui';
-import type { ApprovalStatus } from '../model';
-import { ApprovalStatusConfig } from '../model';
+import type { ApprovalStatus } from '../model/approval-status';
+import { ApprovalStatusConfig } from '../model/approval-status';
 
 /**
  * Props for ApprovalStatusBadge.

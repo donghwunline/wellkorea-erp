@@ -5,8 +5,8 @@
  * Shows current level vs total levels.
  */
 
-import type { Approval } from '../model';
-import { approvalRules } from '../model';
+import type { Approval } from '../model/approval';
+import { approvalRules } from '../model/approval';
 
 /**
  * Props for ApprovalProgressBar.
