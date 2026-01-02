@@ -40,7 +40,7 @@ export function useAssignCustomers(options: UseAssignCustomersOptions = {}) {
       return userApi.assignCustomers(id, dto);
     },
 
-    onSuccess: (_result, { id: _id }) => {
+    onSuccess: () => {
       // Invalidate customer query for this user
       queryClient.invalidateQueries({ queryKey: userQueries.customersKeys() });
 

@@ -9,12 +9,10 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { ProjectListPage } from './ProjectListPage';
-// Import mocked hook for type-safe assertions
-import { usePaginatedSearch } from '@/shared/lib/pagination';
 
 // Helper to render ProjectListPage with BrowserRouter
 function renderProjectListPage() {
@@ -55,23 +53,43 @@ vi.mock('@/shared/lib/pagination', () => ({
   })),
 }));
 
-// Mock feature components - capture props for assertions
-vi.mock('@/components/features/projects', () => ({
+// Mock useQuery
+const mockRefetch = vi.fn();
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: vi.fn(() => ({
+    data: {
+      data: [{ id: 42, jobCode: 'WK2-2025-042', projectName: 'Test Project' }],
+      pagination: {
+        page: 0,
+        size: 10,
+        totalElements: 1,
+        totalPages: 1,
+        first: true,
+        last: true,
+      },
+    },
+    isLoading: false,
+    error: null,
+    refetch: mockRefetch,
+  })),
+}));
+
+// Mock entity components - capture props for assertions
+vi.mock('@/entities/project', () => ({
+  projectQueries: {
+    list: vi.fn(() => ({ queryKey: ['projects', 'list'] })),
+  },
   ProjectTable: vi.fn((props: Record<string, unknown>) => {
     projectTableProps = props;
     return (
       <div data-testid="project-table">
         <button
-          data-testid="trigger-view"
-          onClick={() => (props.onView as (project: { id: number }) => void)({ id: 42 })}
+          data-testid="trigger-row-click"
+          onClick={() =>
+            (props.onRowClick as (project: { id: number }) => void)({ id: 42 })
+          }
         >
-          Trigger View
-        </button>
-        <button
-          data-testid="trigger-error"
-          onClick={() => (props.onError as (error: string) => void)('Test error message')}
-        >
-          Trigger Error
+          Trigger Row Click
         </button>
       </div>
     );
@@ -131,46 +149,16 @@ describe('ProjectListPage', () => {
   });
 
   describe('props passed to ProjectTable', () => {
-    it('should pass page from usePaginatedSearch', () => {
+    it('should pass projects array', () => {
       renderProjectListPage();
 
-      expect(projectTableProps.page).toBe(0);
+      expect(Array.isArray(projectTableProps.projects)).toBe(true);
     });
 
-    it('should pass search from usePaginatedSearch', () => {
+    it('should pass onRowClick callback', () => {
       renderProjectListPage();
 
-      expect(projectTableProps.search).toBe('');
-    });
-
-    it('should pass setPage as onPageChange', () => {
-      renderProjectListPage();
-
-      expect(projectTableProps.onPageChange).toBe(mockSetPage);
-    });
-
-    it('should pass callback functions', () => {
-      renderProjectListPage();
-
-      expect(typeof projectTableProps.onView).toBe('function');
-      expect(typeof projectTableProps.onError).toBe('function');
-    });
-
-    it('should pass custom page value when hook returns different page', () => {
-      vi.mocked(usePaginatedSearch).mockReturnValue({
-        page: 3,
-        setPage: mockSetPage,
-        search: 'project',
-        searchInput: 'project',
-        handleSearchChange: mockHandleSearchChange,
-        handleSearchSubmit: mockHandleSearchSubmit,
-        handleClearSearch: mockHandleClearSearch,
-      });
-
-      renderProjectListPage();
-
-      expect(projectTableProps.page).toBe(3);
-      expect(projectTableProps.search).toBe('project');
+      expect(typeof projectTableProps.onRowClick).toBe('function');
     });
   });
 
@@ -184,11 +172,11 @@ describe('ProjectListPage', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/projects/new');
     });
 
-    it('should navigate to view page when onView is triggered', async () => {
+    it('should navigate to view page when row is clicked', async () => {
       const user = userEvent.setup();
       renderProjectListPage();
 
-      await user.click(screen.getByTestId('trigger-view'));
+      await user.click(screen.getByTestId('trigger-row-click'));
 
       expect(mockNavigate).toHaveBeenCalledWith('/projects/42');
     });
@@ -212,33 +200,6 @@ describe('ProjectListPage', () => {
       await user.type(searchInput, '{Enter}');
 
       expect(mockHandleSearchSubmit).toHaveBeenCalled();
-    });
-  });
-
-  describe('error handling', () => {
-    it('should display error alert when onError is triggered', async () => {
-      const user = userEvent.setup();
-      renderProjectListPage();
-
-      await user.click(screen.getByTestId('trigger-error'));
-
-      expect(screen.getByText('Test error message')).toBeInTheDocument();
-    });
-
-    it('should dismiss error alert when close button is clicked', async () => {
-      const user = userEvent.setup();
-      renderProjectListPage();
-
-      // Trigger error
-      await user.click(screen.getByTestId('trigger-error'));
-      expect(screen.getByText('Test error message')).toBeInTheDocument();
-
-      // Find and click close button in alert
-      const alert = screen.getByRole('alert');
-      const closeButton = within(alert).getByRole('button');
-      await user.click(closeButton);
-
-      expect(screen.queryByText('Test error message')).not.toBeInTheDocument();
     });
   });
 

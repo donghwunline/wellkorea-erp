@@ -1,15 +1,22 @@
 /**
  * Products Tab - Displays list of products I manufacture and sell.
  *
+ * FSD pattern:
+ * - Server state via Query Factory (productQueries)
+ * - Local state for filters and pagination
+ * - Entity-first approach
+ *
  * Features:
  * - Paginated product list with search
  * - Filter by product type
  * - Create/Edit/Delete products (Admin, Finance only)
  */
 
-import { Button, Card, ErrorAlert, Pagination, SearchBar, Spinner } from '@/shared/ui';
-import { useProducts } from '@/components/features/items';
+import { useCallback, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { productQueries } from '@/entities/product';
 import { useAuth } from '@/entities/auth';
+import { Button, Card, Pagination, SearchBar, Spinner } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
 
@@ -20,22 +27,44 @@ export function ProductsTab() {
   const { hasAnyRole } = useAuth();
   const canManage = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
 
+  // Local state for filters and pagination
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
+  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+
+  // Handle search change with pagination reset
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(0);
+  }, []);
+
+  // Handle type filter change with pagination reset
+  const handleTypeChange = useCallback((typeId: number | null) => {
+    setSelectedTypeId(typeId);
+    setPage(0);
+  }, []);
+
+  // Server state via Query Factory
   const {
-    products,
-    productTypes,
+    data: productsData,
+    isLoading: productsLoading,
+    error: productsError,
+    refetch: refetchProducts,
+  } = useQuery(productQueries.list({
     page,
-    totalElements,
-    isFirst,
-    isLast,
-    loading,
-    error,
+    size: PAGE_SIZE,
     search,
-    selectedTypeId,
-    setPage,
-    setSearch,
-    setSelectedTypeId,
-    clearError,
-  } = useProducts({ pageSize: PAGE_SIZE });
+    productTypeId: selectedTypeId,
+  }));
+
+  const {
+    data: productTypes = [],
+    isLoading: typesLoading,
+  } = useQuery(productQueries.allTypes());
+
+  const products = productsData?.data ?? [];
+  const pagination = productsData?.pagination;
+  const loading = productsLoading || typesLoading;
 
   // Format price
   const formatPrice = (price: number | null | undefined): string => {
@@ -54,7 +83,7 @@ export function ProductsTab() {
         <div className="flex items-center gap-4">
           <SearchBar
             value={search}
-            onValueChange={setSearch}
+            onValueChange={handleSearchChange}
             placeholder="Search by name or SKU..."
             className="w-72"
           />
@@ -62,7 +91,7 @@ export function ProductsTab() {
           {/* Product Type Filter */}
           <select
             value={selectedTypeId || ''}
-            onChange={e => setSelectedTypeId(e.target.value ? Number(e.target.value) : null)}
+            onChange={e => handleTypeChange(e.target.value ? Number(e.target.value) : null)}
             className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none"
           >
             <option value="">All Types</option>
@@ -82,7 +111,17 @@ export function ProductsTab() {
       </div>
 
       {/* Error */}
-      {error && <ErrorAlert message={error} onDismiss={clearError} />}
+      {productsError && (
+        <Card variant="table" className="p-8 text-center">
+          <p className="text-red-400">Failed to load products</p>
+          <button
+            onClick={() => refetchProducts()}
+            className="mt-4 text-sm text-copper-500 hover:underline"
+          >
+            Retry
+          </button>
+        </Card>
+      )}
 
       {/* Loading */}
       {loading && (
@@ -92,7 +131,7 @@ export function ProductsTab() {
       )}
 
       {/* Product List */}
-      {!loading && products.length === 0 && (
+      {!loading && !productsError && products.length === 0 && (
         <Card className="p-8 text-center text-steel-400">
           <p>No products found.</p>
           {canManage && (
@@ -101,7 +140,7 @@ export function ProductsTab() {
         </Card>
       )}
 
-      {!loading && products.length > 0 && (
+      {!loading && !productsError && products.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-steel-700/50">
           <table className="min-w-full divide-y divide-steel-700/50">
             <thead className="bg-steel-800/60">
@@ -173,15 +212,17 @@ export function ProductsTab() {
           </table>
 
           {/* Pagination */}
-          <Pagination
-            currentPage={page}
-            totalItems={totalElements}
-            itemsPerPage={PAGE_SIZE}
-            onPageChange={setPage}
-            isFirst={isFirst}
-            isLast={isLast}
-            itemLabel="products"
-          />
+          {pagination && pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={page}
+              totalItems={pagination.totalElements}
+              itemsPerPage={PAGE_SIZE}
+              onPageChange={setPage}
+              isFirst={pagination.first}
+              isLast={pagination.last}
+              itemLabel="products"
+            />
+          )}
         </div>
       )}
     </div>

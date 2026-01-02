@@ -25,7 +25,7 @@ export function useDeactivateUser(options: UseDeactivateUserOptions = {}) {
       return userApi.deactivate(id);
     },
 
-    onSuccess: (_result, _id) => {
+    onSuccess: () => {
       // Invalidate both list and detail queries
       queryClient.invalidateQueries({ queryKey: userQueries.lists() });
       queryClient.invalidateQueries({ queryKey: userQueries.details() });

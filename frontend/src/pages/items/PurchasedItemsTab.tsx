@@ -1,17 +1,22 @@
 /**
  * Purchased Items Tab - Displays service categories I buy.
  *
+ * FSD pattern:
+ * - Server state via Query Factory (catalogQueries)
+ * - Local state for filters and pagination
+ * - Entity-first approach
+ *
  * Features:
  * - Paginated service category list with search
  * - Drill-down to view vendor offerings per category
  * - Create/Edit/Delete categories (Admin, Finance only)
  */
 
-import { useState } from 'react';
-import { Button, Card, ErrorAlert, Icon, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
-import { useServiceCategories } from '@/components/features/items';
-import type { ServiceCategoryListItem, VendorOffering } from '@/entities/catalog';
+import { useCallback, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { catalogQueries, type ServiceCategoryListItem } from '@/entities/catalog';
 import { useAuth } from '@/entities/auth';
+import { Button, Card, Icon, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
 
@@ -22,45 +27,46 @@ export function PurchasedItemsTab() {
   const { hasAnyRole } = useAuth();
   const canManage = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
 
-  const {
-    categories,
-    page,
-    totalElements,
-    isFirst,
-    isLast,
-    loading,
-    error,
-    search,
-    setPage,
-    setSearch,
-    clearError,
-    loadOfferings,
-  } = useServiceCategories({ pageSize: PAGE_SIZE });
+  // Local state for filters and pagination
+  const [page, setPage] = useState(0);
+  const [search, setSearch] = useState('');
 
   // Vendor offerings modal state
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategoryListItem | null>(null);
-  const [offerings, setOfferings] = useState<VendorOffering[]>([]);
-  const [offeringsLoading, setOfferingsLoading] = useState(false);
 
-  // View vendor offerings for a category
-  const handleViewOfferings = async (category: ServiceCategoryListItem) => {
-    setSelectedCategory(category);
-    setOfferingsLoading(true);
-    try {
-      const result = await loadOfferings(category.id);
-      setOfferings(result);
-    } catch (err) {
-      console.error('Failed to load offerings:', err);
-      setOfferings([]);
-    } finally {
-      setOfferingsLoading(false);
-    }
-  };
+  // Handle search change with pagination reset
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(0);
+  }, []);
+
+  // Server state for categories via Query Factory
+  const {
+    data: categoriesData,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+    refetch: refetchCategories,
+  } = useQuery(catalogQueries.categoryList({
+    page,
+    size: PAGE_SIZE,
+    search: search || undefined,
+  }));
+
+  // Server state for offerings (only when category selected)
+  const {
+    data: offerings = [],
+    isLoading: offeringsLoading,
+  } = useQuery({
+    ...catalogQueries.currentOfferings(selectedCategory?.id ?? 0),
+    enabled: !!selectedCategory,
+  });
+
+  const categories = categoriesData?.data ?? [];
+  const pagination = categoriesData?.pagination;
 
   // Close offerings modal
   const handleCloseOfferings = () => {
     setSelectedCategory(null);
-    setOfferings([]);
   };
 
   // Format price
@@ -79,7 +85,7 @@ export function PurchasedItemsTab() {
       <div className="flex items-center justify-between gap-4">
         <SearchBar
           value={search}
-          onValueChange={setSearch}
+          onValueChange={handleSearchChange}
           placeholder="Search service categories..."
           className="w-72"
         />
@@ -92,17 +98,27 @@ export function PurchasedItemsTab() {
       </div>
 
       {/* Error */}
-      {error && <ErrorAlert message={error} onDismiss={clearError} />}
+      {categoriesError && (
+        <Card variant="table" className="p-8 text-center">
+          <p className="text-red-400">Failed to load service categories</p>
+          <button
+            onClick={() => refetchCategories()}
+            className="mt-4 text-sm text-copper-500 hover:underline"
+          >
+            Retry
+          </button>
+        </Card>
+      )}
 
       {/* Loading */}
-      {loading && (
+      {categoriesLoading && (
         <div className="flex justify-center py-12">
           <Spinner size="lg" />
         </div>
       )}
 
       {/* Category List */}
-      {!loading && categories.length === 0 && (
+      {!categoriesLoading && !categoriesError && categories.length === 0 && (
         <Card className="p-8 text-center text-steel-400">
           <p>No service categories found.</p>
           {canManage && (
@@ -113,14 +129,14 @@ export function PurchasedItemsTab() {
         </Card>
       )}
 
-      {!loading && categories.length > 0 && (
+      {!categoriesLoading && !categoriesError && categories.length > 0 && (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {categories.map(category => (
               <Card
                 key={category.id}
                 className="cursor-pointer p-4 transition-colors hover:border-copper-500/50"
-                onClick={() => handleViewOfferings(category)}
+                onClick={() => setSelectedCategory(category)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -154,16 +170,18 @@ export function PurchasedItemsTab() {
           </div>
 
           {/* Pagination */}
-          <Pagination
-            currentPage={page}
-            totalItems={totalElements}
-            itemsPerPage={PAGE_SIZE}
-            onPageChange={setPage}
-            isFirst={isFirst}
-            isLast={isLast}
-            itemLabel="categories"
-            className="border-0 bg-transparent px-0"
-          />
+          {pagination && pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={page}
+              totalItems={pagination.totalElements}
+              itemsPerPage={PAGE_SIZE}
+              onPageChange={setPage}
+              isFirst={pagination.first}
+              isLast={pagination.last}
+              itemLabel="categories"
+              className="border-0 bg-transparent px-0"
+            />
+          )}
         </>
       )}
 

@@ -1,36 +1,35 @@
 /**
  * User Management Page - Admin Only
  *
- * Pure composition layer following Constitution Principle VI:
- * - Composes features and UI components
- * - No direct service calls (feature components own their service calls)
- * - 4-Tier State Separation:
- *   Tier 1 (Local UI State): Modal open/close, selected user -> Local state in page
- *   Tier 2 (Page UI State): Search/pagination -> usePaginatedSearch hook
- *   Tier 3 (Server State): User list data -> Feature components (forms, table)
- *   Tier 4 (App Global State): Auth -> authStore via useAuth (not needed here)
+ * Pure composition layer following FSD principles:
+ * - Uses Query Factory for data fetching
+ * - Composes entity UI components and feature forms
+ * - No direct service calls in page layer
  *
- * Import Policy:
- * - pages -> features: YES (via @/components/features/users)
- * - pages -> ui: YES (via @/shared/ui)
- * - pages -> shared/hooks: YES (via @/shared/hooks)
- * - pages -> services: NO (feature components handle this)
- * - pages -> stores: NO (use shared hooks instead)
+ * 4-Tier State Separation:
+ * - Tier 1 (Local UI State): Modal open/close, selected user
+ * - Tier 2 (Page UI State): Search/pagination via usePaginatedSearch
+ * - Tier 3 (Server State): User list via Query Factory
+ * - Tier 4 (App Global State): Not needed here
  */
 
-import { useReducer, useState } from 'react';
-import { Alert, Button, Icon, PageHeader, SearchBar } from '@/shared/ui';
-import {
-  UserCreateForm,
-  UserCustomersForm,
-  UserDeactivateModal,
-  UserEditForm,
-  UserManagementTable,
-  UserPasswordForm,
-  UserRolesForm,
-} from '@/components/features/users';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Alert, Button, Icon, PageHeader, Pagination, SearchBar } from '@/shared/ui';
 import { usePaginatedSearch } from '@/shared/lib/pagination';
-import type { UserDetails } from '@/entities/user';
+import {
+  userQueries,
+  UserTable,
+  UserTableSkeleton,
+  type UserDetails,
+} from '@/entities/user';
+import { UserCreateForm } from '@/features/user/create';
+import { UserEditForm } from '@/features/user/update';
+import { UserDeactivateModal } from '@/features/user/deactivate';
+import { UserPasswordForm } from '@/features/user/change-password';
+import { UserRolesForm } from '@/features/user/assign-roles';
+import { UserCustomersForm } from '@/features/user/assign-customers';
+import { useActivateUser } from '@/features/user/activate';
 
 type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | 'customers' | null;
 
@@ -46,13 +45,31 @@ export function UserManagementPage() {
     handleClearSearch,
   } = usePaginatedSearch();
 
-  // Refresh trigger - increment to signal table to refetch
-  const [refreshTrigger, triggerRefresh] = useReducer((x: number) => x + 1, 0);
+  // Server State (Tier 3) - Query Factory pattern
+  const {
+    data,
+    isLoading,
+    error: queryError,
+  } = useQuery(
+    userQueries.list({
+      page,
+      size: 10,
+      search,
+    })
+  );
+
+  const users = data?.data ?? [];
+  const pagination = data?.pagination ?? null;
 
   // Local UI State (Tier 1) - Modal type and selected user
   const [modalType, setModalType] = useState<ModalType>(null);
   const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Activate user mutation
+  const { mutate: activateUser } = useActivateUser({
+    onError: (err) => setError(err.message),
+  });
 
   // Modal handlers
   const openModal = (type: ModalType, user?: UserDetails) => {
@@ -65,10 +82,15 @@ export function UserManagementPage() {
     setSelectedUser(null);
   };
 
-  // Success handler for forms/modals - triggers refresh after operation completes
+  // Success handler for forms/modals
   const handleFormSuccess = () => {
-    triggerRefresh();
+    // Query cache is automatically invalidated by mutation hooks
     closeModal();
+  };
+
+  // Handle activate user
+  const handleActivate = (user: UserDetails) => {
+    activateUser(user.id);
   };
 
   return (
@@ -100,27 +122,47 @@ export function UserManagementPage() {
       </div>
 
       {/* Error Message */}
-      {error && (
+      {(error || queryError) && (
         <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
-          {error}
+          {error || 'Failed to load users'}
         </Alert>
       )}
 
-      {/* Feature Table Component (handles data fetching and activation) */}
-      <UserManagementTable
-        page={page}
-        search={search}
-        refreshTrigger={refreshTrigger}
-        onPageChange={setPage}
-        onEdit={user => openModal('edit', user)}
-        onDelete={user => openModal('delete', user)}
-        onRoles={user => openModal('roles', user)}
-        onPassword={user => openModal('password', user)}
-        onCustomers={user => openModal('customers', user)}
-        onError={setError}
-      />
+      {/* Loading State */}
+      {isLoading && <UserTableSkeleton />}
 
-      {/* Modals - Feature components own their service calls */}
+      {/* User Table */}
+      {!isLoading && !queryError && (
+        <>
+          <UserTable
+            users={users}
+            onEdit={user => openModal('edit', user)}
+            onDeactivate={user => openModal('delete', user)}
+            onActivate={handleActivate}
+            onRoles={user => openModal('roles', user)}
+            onPassword={user => openModal('password', user)}
+            onCustomers={user => openModal('customers', user)}
+            emptyMessage={search ? 'No users found matching your search.' : 'No users found.'}
+          />
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={page}
+                totalItems={pagination.totalElements}
+                itemsPerPage={pagination.size}
+                onPageChange={setPage}
+                isFirst={pagination.first}
+                isLast={pagination.last}
+                itemLabel="users"
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modals */}
       <UserCreateForm
         isOpen={modalType === 'create'}
         onClose={closeModal}

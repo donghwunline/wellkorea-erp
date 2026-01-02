@@ -87,6 +87,7 @@ export {
   ProjectKPIStripSkeleton,
   type ProjectKPIStripProps,
 } from './ui/ProjectKPIStrip';
+export { ProjectCombobox, type ProjectComboboxProps } from './ui/ProjectCombobox';
 
 // =============================================================================
 // LEGACY EXPORTS (backward compatibility - to be removed after migration)

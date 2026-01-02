@@ -93,7 +93,6 @@ export function ProjectRelatedNavigationGrid({
       {visibleSections.map(section => (
         <ProjectSummaryCard
           key={section.section}
-          projectId={projectId}
           summary={section}
           onClick={onSectionClick}
         />

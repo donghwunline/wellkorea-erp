@@ -73,7 +73,7 @@ export function useApproveApproval(options: UseApproveApprovalOptions = {}) {
   return useMutation({
     mutationFn: approveApproval,
 
-    onSuccess: (result, _input) => {
+    onSuccess: (result) => {
       // Invalidate approval caches
       queryClient.invalidateQueries({ queryKey: approvalQueries.all() });
       queryClient.invalidateQueries({ queryKey: approvalQueries.details() });

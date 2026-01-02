@@ -83,7 +83,7 @@ export function useUpdateChainLevels(options: UseUpdateChainLevelsOptions = {}) 
       return chainTemplateApi.updateLevels(input.templateId, input.levels);
     },
 
-    onSuccess: (result, _input) => {
+    onSuccess: (result) => {
       // Invalidate chain template caches
       queryClient.invalidateQueries({ queryKey: chainTemplateQueries.all() });
       queryClient.invalidateQueries({ queryKey: chainTemplateQueries.details() });

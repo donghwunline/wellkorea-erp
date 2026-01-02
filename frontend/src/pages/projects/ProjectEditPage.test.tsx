@@ -84,17 +84,17 @@ vi.mock('react-router-dom', async () => {
 
 // Mock mutateAsync for the update hook
 const mockMutateAsync = vi.fn();
-const mockClearError = vi.fn();
 
-// Mock useUpdateProject hook from features
-vi.mock('@/features/project', () => ({
+// Mock useUpdateProject hook from features/project/update
+vi.mock('@/features/project/update', () => ({
   useUpdateProject: vi.fn(() => ({
     mutateAsync: mockMutateAsync,
     isPending: false,
   })),
 }));
 
-vi.mock('@/components/features/projects', () => ({
+// Mock ProjectForm from features/project/form
+vi.mock('@/features/project/form', () => ({
   ProjectForm: vi.fn((props: Record<string, unknown>) => {
     formProps = props;
     return (
@@ -120,7 +120,6 @@ vi.mock('@/components/features/projects', () => ({
       </div>
     );
   }),
-  SelectOption: {},
 }));
 
 // Helper to create test query client

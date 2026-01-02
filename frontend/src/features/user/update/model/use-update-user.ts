@@ -40,7 +40,7 @@ export function useUpdateUser(options: UseUpdateUserOptions = {}) {
       return userApi.update(id, dto);
     },
 
-    onSuccess: (_result, { id: _id }) => {
+    onSuccess: () => {
       // Invalidate both list and detail queries
       queryClient.invalidateQueries({ queryKey: userQueries.lists() });
       queryClient.invalidateQueries({ queryKey: userQueries.details() });

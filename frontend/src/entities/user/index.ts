@@ -41,24 +41,6 @@ export { userRules } from './model/user-rules';
 export { userQueries, type UserListQueryParams } from './api/user.queries';
 
 // =============================================================================
-// LEGACY QUERY HOOKS (deprecated - use userQueries instead)
-// Kept for backwards compatibility with existing code
-// =============================================================================
-
-export { useUser } from './query/use-user';
-export type { UseUserOptions } from './query/use-user';
-
-export { useUsers } from './query/use-users';
-export type { UseUsersOptions } from './query/use-users';
-
-export { useUserCustomers } from './query/use-user-customers';
-export type { UseUserCustomersOptions } from './query/use-user-customers';
-
-// Legacy query keys - use userQueries.lists(), userQueries.details() instead
-export { userQueryKeys } from './query/query-keys';
-export { userQueryFns, type UserListParams, type PaginatedUsers } from './query/query-fns';
-
-// =============================================================================
 // FORM TYPES
 // Input types for forms (used by features layer)
 // =============================================================================
@@ -96,3 +78,11 @@ export type {
   UserListParamsDTO,
   UserCommandResultDTO,
 } from './api/user.dto';
+
+// =============================================================================
+// UI COMPONENTS
+// Display-only components with no side effects
+// =============================================================================
+
+export { UserTable, UserTableSkeleton, type UserTableProps } from './ui/UserTable';
+export { UserCombobox, type UserComboboxProps } from './ui/UserCombobox';

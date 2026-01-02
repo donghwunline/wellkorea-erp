@@ -44,15 +44,34 @@ vi.mock('react-router-dom', async () => {
 // Mock mutateAsync for the create hook
 const mockMutateAsync = vi.fn();
 
-// Mock useCreateProject hook from features
-vi.mock('@/features/project', () => ({
+// Mock useCreateProject hook and JobCodeSuccessModal from features/project/create
+vi.mock('@/features/project/create', () => ({
   useCreateProject: vi.fn(() => ({
     mutateAsync: mockMutateAsync,
     isPending: false,
   })),
+  JobCodeSuccessModal: vi.fn((props: Record<string, unknown>) => {
+    // Props are captured for rendering but not needed for assertions
+    void props;
+    return props.isOpen ? (
+      <div data-testid="success-modal">
+        <span data-testid="modal-job-code">{props.jobCode as string}</span>
+        <button data-testid="modal-close" onClick={() => (props.onClose as () => void)()}>
+          Close
+        </button>
+        <button
+          data-testid="modal-view-project"
+          onClick={() => (props.onViewProject as () => void)()}
+        >
+          View Project
+        </button>
+      </div>
+    ) : null;
+  }),
 }));
 
-vi.mock('@/components/features/projects', () => ({
+// Mock ProjectForm from features/project/form
+vi.mock('@/features/project/form', () => ({
   ProjectForm: vi.fn((props: Record<string, unknown>) => {
     formProps = props;
     return (
@@ -77,25 +96,6 @@ vi.mock('@/components/features/projects', () => ({
       </div>
     );
   }),
-  JobCodeSuccessModal: vi.fn((props: Record<string, unknown>) => {
-    // Props are captured for rendering but not needed for assertions
-    void props;
-    return props.isOpen ? (
-      <div data-testid="success-modal">
-        <span data-testid="modal-job-code">{props.jobCode as string}</span>
-        <button data-testid="modal-close" onClick={() => (props.onClose as () => void)()}>
-          Close
-        </button>
-        <button
-          data-testid="modal-view-project"
-          onClick={() => (props.onViewProject as () => void)()}
-        >
-          View Project
-        </button>
-      </div>
-    ) : null;
-  }),
-  SelectOption: {},
 }));
 
 // Helper to create test query client

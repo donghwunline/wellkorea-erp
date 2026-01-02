@@ -15,8 +15,8 @@ import type {
   UpdateProjectInput,
 } from '@/entities/project';
 import { Button, DatePicker, ErrorAlert, FormField } from '@/shared/ui';
-// TODO: After Phase 3, import from entities instead
-import { CompanyCombobox, UserCombobox } from '@/components/features/shared/selectors';
+import { CompanyCombobox } from '@/entities/company';
+import { UserCombobox } from '@/entities/user';
 
 interface ProjectFormData {
   customerId: number | null;

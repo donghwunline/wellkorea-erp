@@ -7,3 +7,4 @@ export {
   type UseChangePasswordOptions,
   type ChangePasswordMutationInput,
 } from './model/use-change-password';
+export { UserPasswordForm, type UserPasswordFormProps } from './ui/UserPasswordForm';

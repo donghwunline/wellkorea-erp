@@ -24,7 +24,7 @@ export function useUpdateProject(options: UseUpdateProjectOptions = {}) {
     mutationFn: ({ id, input }: { id: number; input: UpdateProjectInput }) =>
       updateProject(id, input),
 
-    onSuccess: (result, variables) => {
+    onSuccess: (result) => {
       // Invalidate list queries
       queryClient.invalidateQueries({ queryKey: projectQueries.lists() });
       // Invalidate the specific project detail

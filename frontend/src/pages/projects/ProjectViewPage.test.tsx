@@ -20,7 +20,7 @@ import type { Project } from '@/entities/project';
 let mockProjectData: Project | null = null;
 let mockShouldError = false;
 
-// Mock project queries
+// Mock project queries and entity components
 vi.mock('@/entities/project', async () => {
   const actual = await vi.importActual('@/entities/project');
   return {
@@ -34,7 +34,45 @@ vi.mock('@/entities/project', async () => {
         },
         enabled: id > 0,
       }),
+      kpi: (id: number) => ({
+        queryKey: ['projects', 'kpi', id],
+        queryFn: async () => ({
+          totalItems: 10,
+          completedItems: 5,
+          progressPercent: 50,
+        }),
+        enabled: id > 0,
+      }),
+      summary: (id: number) => ({
+        queryKey: ['projects', 'summary', id],
+        queryFn: async () => ({
+          sections: [],
+        }),
+        enabled: id > 0,
+      }),
     },
+    ProjectDetailsCard: vi.fn((props: Record<string, unknown>) => {
+      detailsCardProps = props;
+      const project = props.project as Project | undefined;
+      const onEdit = props.onEdit as (() => void) | undefined;
+      return (
+        <div data-testid="project-details-card">
+          <span data-testid="project-name">{project?.projectName}</span>
+          <span data-testid="customer-name">{project?.customerName}</span>
+          {onEdit && (
+            <button
+              data-testid="edit-project-button"
+              onClick={() => onEdit()}
+              aria-label="Edit project"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+      );
+    }),
+    ProjectKPIStrip: vi.fn(() => <div data-testid="kpi-strip">KPI Strip</div>),
+    ProjectKPIStripSkeleton: vi.fn(() => <div data-testid="kpi-strip-skeleton">Loading KPI...</div>),
   };
 });
 
@@ -85,43 +123,13 @@ vi.mock('@/entities/auth', async () => {
   };
 });
 
-vi.mock('@/components/features/projects', () => ({
-  useProjectSummary: vi.fn(() => ({
-    summary: null,
-    isLoading: false,
-    error: null,
-  })),
-  ProjectDetailsCard: vi.fn((props: Record<string, unknown>) => {
-    detailsCardProps = props;
-    const project = props.project as Project | undefined;
-    const customerName = props.customerName as string | undefined;
-    const onEdit = props.onEdit as (() => void) | undefined;
-    return (
-      <div data-testid="project-details-card">
-        <span data-testid="project-name">{project?.projectName}</span>
-        <span data-testid="customer-name">{customerName}</span>
-        {onEdit && (
-          <button
-            data-testid="edit-project-button"
-            onClick={() => onEdit()}
-            aria-label="Edit project"
-          >
-            Edit
-          </button>
-        )}
-      </div>
-    );
-  }),
+// Mock widgets
+vi.mock('@/widgets', () => ({
+  QuotationDetailsPanel: vi.fn(() => <div data-testid="quotation-panel">Quotation Panel</div>),
   ProjectRelatedNavigationGrid: vi.fn((props: Record<string, unknown>) => {
     navigationGridProps = props;
     return <div data-testid="navigation-grid">Project ID: {props.projectId as number}</div>;
   }),
-  ProjectKPIStrip: vi.fn(() => <div data-testid="kpi-strip">KPI Strip</div>),
-}));
-
-// Mock quotation widget
-vi.mock('@/widgets', () => ({
-  QuotationDetailsPanel: vi.fn(() => <div data-testid="quotation-panel">Quotation Panel</div>),
 }));
 
 // Mock UI tab components to simplify testing

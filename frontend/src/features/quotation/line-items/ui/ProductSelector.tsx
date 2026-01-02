@@ -7,7 +7,7 @@
  * FSD Layer: features/quotation/line-items
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { productQueries, searchProductsApi } from '@/entities/product';
 import { formatCurrency } from '@/shared/lib/formatting';
@@ -29,8 +29,7 @@ interface SelectedProduct {
   name: string;
   sku: string;
   unit: string | null;
-  unitPrice: number;
-  quantity: number;
+  basePrice: number;
 }
 
 /**
@@ -59,16 +58,43 @@ export function ProductSelector({
 }: Readonly<ProductSelectorProps>) {
   // Local state for new product being added
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<SelectedProduct | null>(null);
   const [quantity, setQuantity] = useState<string>('1');
   const [unitPrice, setUnitPrice] = useState<string>('');
   const [note, setNote] = useState<string>('');
+  // Track which product ID had its price initialized to prevent re-initialization
+  const [priceInitializedForId, setPriceInitializedForId] = useState<number | null>(null);
 
   // Use product detail query when a product is selected
   const { data: productDetail } = useQuery({
     ...productQueries.detail(selectedProductId ?? 0),
     enabled: selectedProductId !== null && selectedProductId > 0,
+    // Initialize unit price when data loads for a new product
+    select: (data) => {
+      // Only initialize price once per product selection
+      if (data && priceInitializedForId !== data.id && selectedProductId === data.id) {
+        // Schedule state update for next render cycle
+        queueMicrotask(() => {
+          setUnitPrice((data.baseUnitPrice ?? 0).toString());
+          setPriceInitializedForId(data.id);
+        });
+      }
+      return data;
+    },
   });
+
+  // Derive selectedProduct from productDetail (no useState needed)
+  const selectedProduct = useMemo((): SelectedProduct | null => {
+    if (!productDetail || selectedProductId !== productDetail.id) {
+      return null;
+    }
+    return {
+      productId: productDetail.id,
+      name: productDetail.name,
+      sku: productDetail.sku,
+      unit: productDetail.unit,
+      basePrice: productDetail.baseUnitPrice ?? 0,
+    };
+  }, [productDetail, selectedProductId]);
 
   /**
    * Load products for combobox - direct API call.
@@ -95,33 +121,17 @@ export function ProductSelector({
     (value: string | number | null) => {
       if (value === null) {
         setSelectedProductId(null);
-        setSelectedProduct(null);
         setUnitPrice('');
+        setPriceInitializedForId(null);
         return;
       }
 
       const productId = Number(value);
       setSelectedProductId(productId);
-      setSelectedProduct(null); // Clear so useEffect can set new product details
+      // Price will be initialized when productDetail loads via the render-time check above
     },
     []
   );
-
-  // Effect to update selected product when detail loads
-  useEffect(() => {
-    if (productDetail && selectedProductId === productDetail.id && !selectedProduct) {
-      const price = productDetail.baseUnitPrice ?? 0;
-      setSelectedProduct({
-        productId: productDetail.id,
-        name: productDetail.name,
-        sku: productDetail.sku,
-        unit: productDetail.unit,
-        unitPrice: price,
-        quantity: 1,
-      });
-      setUnitPrice(price.toString());
-    }
-  }, [productDetail, selectedProductId, selectedProduct]);
 
   // Add selected product to line items
   const handleAddProduct = useCallback(() => {
@@ -146,7 +156,7 @@ export function ProductSelector({
 
     // Reset form
     setSelectedProductId(null);
-    setSelectedProduct(null);
+    setPriceInitializedForId(null);
     setQuantity('1');
     setUnitPrice('');
     setNote('');
