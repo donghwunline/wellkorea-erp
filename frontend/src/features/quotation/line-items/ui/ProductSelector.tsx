@@ -77,15 +77,12 @@ export function ProductSelector({
    * The async loadOptions callback needs the results synchronously returned,
    * which doesn't work with React Query's async lifecycle.
    *
-   * TODO: Consider refactoring to a controlled input + debounce + useQuery pattern
-   * for better caching and request deduplication.
+   * When query is empty, loads initial list of products.
+   * When query has value, searches for matching products.
    */
   const loadProducts = useCallback(async (query: string): Promise<ComboboxOption[]> => {
-    if (!query.trim()) {
-      return [];
-    }
-
-    const { products } = await searchProductsApi(query, 20);
+    // Allow empty queries to show initial products when dropdown opens
+    const { products } = await searchProductsApi(query.trim(), 20);
     return products.map(product => ({
       id: product.id,
       label: product.name,

@@ -38,17 +38,14 @@ export interface SearchProductsResult {
  * Bypasses React Query for use in async callbacks where hooks can't be used.
  * Returns domain models mapped from API response.
  *
- * @param query - Search term (name or SKU)
+ * @param query - Search term (name or SKU). Empty string returns initial product list.
  * @param limit - Maximum results to return (default: 20)
  */
 export async function searchProductsApi(
   query: string,
   limit: number = 20
 ): Promise<SearchProductsResult> {
-  if (!query.trim()) {
-    return { products: [], total: 0 };
-  }
-
+  // Allow empty query to return initial products list
   const response = await searchProducts(query, { size: limit });
 
   return {

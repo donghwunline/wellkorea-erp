@@ -60,9 +60,18 @@ export async function getProducts(
     },
   });
 
+  // Extract pagination from PagedResponse structure (uses 'number' for page index)
+  const pagedData = response.data;
   return {
-    data: response.data.content,
-    pagination: response.metadata as unknown as PaginationMetadata,
+    data: pagedData.content,
+    pagination: {
+      page: pagedData.number,
+      size: pagedData.size,
+      totalElements: pagedData.totalElements,
+      totalPages: pagedData.totalPages,
+      first: pagedData.first,
+      last: pagedData.last,
+    },
   };
 }
 
