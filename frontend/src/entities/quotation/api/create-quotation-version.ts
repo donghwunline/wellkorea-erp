@@ -5,7 +5,7 @@
  */
 
 import { httpClient, QUOTATION_ENDPOINTS } from '@/shared/api';
-import type { CommandResult } from './quotation.dto';
+import type { CommandResult } from './quotation.mapper';
 
 /**
  * Create a new version from an existing quotation.

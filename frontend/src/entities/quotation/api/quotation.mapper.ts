@@ -1,14 +1,81 @@
 /**
- * Quotation Response to Domain model mappers.
+ * Quotation Response ↔ Domain mappers.
  *
- * Maps API Response types to domain models (read-side).
- * Always returns plain objects (not class instances).
+ * Transforms API responses to domain models.
  */
 
 import { type Quotation, type QuotationListItem, quotationRules } from '../model/quotation';
 import type { LineItem } from '../model/line-item';
 import type { QuotationStatus } from '../model/quotation-status';
-import type { LineItemResponse, QuotationDetailsResponse } from './quotation.dto';
+
+// =============================================================================
+// RESPONSE TYPES
+// =============================================================================
+
+/**
+ * Command result from CQRS command endpoints.
+ */
+export interface CommandResult {
+  id: number;
+  message: string;
+}
+
+/**
+ * Line item from API response.
+ */
+export interface LineItemResponse {
+  id: number;
+  productId: number;
+  productSku: string;
+  productName: string;
+  sequence: number;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  notes: string | null;
+}
+
+/**
+ * Full quotation details from API response.
+ */
+export interface QuotationDetailsResponse {
+  id: number;
+  projectId: number;
+  projectName: string;
+  jobCode: string;
+  version: number;
+  status: string; // Will be cast to QuotationStatus
+  quotationDate: string;
+  validityDays: number;
+  expiryDate: string;
+  totalAmount: number;
+  notes: string | null;
+  createdById: number;
+  createdByName: string;
+  submittedAt: string | null;
+  approvedAt: string | null;
+  approvedById: number | null;
+  approvedByName: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lineItems: LineItemResponse[] | null;
+}
+
+/**
+ * Query parameters for listing quotations.
+ */
+export interface QuotationListParams {
+  page?: number;
+  size?: number;
+  status?: string;
+  projectId?: number;
+  search?: string;
+}
+
+// =============================================================================
+// MAPPERS
+// =============================================================================
 
 /**
  * Line item mapper.

@@ -62,12 +62,6 @@ export { downloadQuotationPdf } from './api/quotation-pdf';
 export { sendQuotationNotification } from './api/send-quotation-notification';
 
 // =============================================================================
-// COMMAND RESULT TYPE
-// =============================================================================
-
-export type { CommandResult } from './api/quotation.dto';
-
-// =============================================================================
 // UI COMPONENTS
 // Display-only components with no side effects
 // =============================================================================

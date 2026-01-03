@@ -6,8 +6,31 @@
  */
 
 import { DomainValidationError, httpClient, QUOTATION_ENDPOINTS } from '@/shared/api';
-import type { CommandResult, LineItemRequest, UpdateQuotationRequest } from './quotation.dto';
+import type { CommandResult } from './quotation.mapper';
 import type { LineItemInput } from './create-quotation';
+
+// =============================================================================
+// REQUEST TYPES (internal)
+// =============================================================================
+
+/**
+ * Line item for updating quotation.
+ */
+interface LineItemRequest {
+  productId: number;
+  quantity: number;
+  unitPrice: number;
+  notes?: string;
+}
+
+/**
+ * Request for updating an existing quotation.
+ */
+interface UpdateQuotationRequest {
+  validityDays?: number;
+  notes?: string;
+  lineItems: LineItemRequest[];
+}
 
 // =============================================================================
 // INPUT TYPES

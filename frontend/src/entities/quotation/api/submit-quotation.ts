@@ -5,7 +5,7 @@
  */
 
 import { httpClient, QUOTATION_ENDPOINTS } from '@/shared/api';
-import type { CommandResult } from './quotation.dto';
+import type { CommandResult } from './quotation.mapper';
 
 /**
  * Submit quotation for approval.
