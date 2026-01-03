@@ -31,7 +31,7 @@ import { useDownloadPdf } from '@/features/quotation/download-pdf';
 import { useApproveApproval } from '@/features/approval/approve';
 import { RejectModal, useRejectApproval } from '@/features/approval/reject';
 
-export function QuotationDetailPageV2() {
+export function QuotationDetailPage() {
   const navigate = useNavigate();
   const { id, projectId } = useParams<{ id: string; projectId?: string }>();
   const quotationId = id ? parseInt(id, 10) : null;

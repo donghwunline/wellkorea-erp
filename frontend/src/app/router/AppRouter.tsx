@@ -22,10 +22,10 @@ import { ApprovalChainConfigPage } from '@/pages/approval/ApprovalChainConfigPag
 import { ApprovalListPage } from '@/pages/approval/ApprovalListPage';
 import { ProjectCreatePage, ProjectEditPage, ProjectListPage, ProjectViewPage, } from '@/pages/projects';
 import {
-  QuotationCreatePageV2,
-  QuotationDetailPageV2,
-  QuotationEditPageV2,
-  QuotationListPageV2,
+  QuotationCreatePage,
+  QuotationDetailPage,
+  QuotationEditPage,
+  QuotationListPage,
 } from '@/pages/quotations';
 import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from '@/pages/companies';
 import { ItemsPage } from '@/pages/items';
@@ -94,15 +94,15 @@ export function AppRouter() {
         <Route path="/projects/:id/edit" element={<ProjectEditPage />} />
 
         {/* Quotations */}
-        <Route path="/quotations" element={<QuotationListPageV2 />} />
-        <Route path="/quotations/create" element={<QuotationCreatePageV2 />} />
-        <Route path="/quotations/:id" element={<QuotationDetailPageV2 />} />
-        <Route path="/quotations/:id/edit" element={<QuotationEditPageV2 />} />
+        <Route path="/quotations" element={<QuotationListPage />} />
+        <Route path="/quotations/create" element={<QuotationCreatePage />} />
+        <Route path="/quotations/:id" element={<QuotationDetailPage />} />
+        <Route path="/quotations/:id/edit" element={<QuotationEditPage />} />
 
         {/* Project quotation sub-routes */}
-        <Route path="/projects/:projectId/quotations/create" element={<QuotationCreatePageV2 />} />
-        <Route path="/projects/:projectId/quotations/:id" element={<QuotationDetailPageV2 />} />
-        <Route path="/projects/:projectId/quotations/:id/edit" element={<QuotationEditPageV2 />} />
+        <Route path="/projects/:projectId/quotations/create" element={<QuotationCreatePage />} />
+        <Route path="/projects/:projectId/quotations/:id" element={<QuotationDetailPage />} />
+        <Route path="/projects/:projectId/quotations/:id/edit" element={<QuotationEditPage />} />
 
         {/* Companies */}
         <Route path="/companies" element={<CompanyListPage />} />

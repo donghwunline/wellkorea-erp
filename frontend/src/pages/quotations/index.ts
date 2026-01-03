@@ -5,7 +5,7 @@
  * that compose entities, features, and widgets.
  */
 
-export { QuotationListPageV2 } from './QuotationListPageV2';
-export { QuotationCreatePageV2 } from './QuotationCreatePageV2';
-export { QuotationEditPageV2 } from './QuotationEditPageV2';
-export { QuotationDetailPageV2 } from './QuotationDetailPageV2';
+export { QuotationListPage } from './QuotationListPage';
+export { QuotationCreatePage } from './QuotationCreatePage';
+export { QuotationEditPage } from './QuotationEditPage';
+export { QuotationDetailPage } from './QuotationDetailPage';

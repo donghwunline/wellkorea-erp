@@ -22,7 +22,7 @@ import { quotationQueries, quotationRules, type UpdateQuotationInput } from '@/e
 import { QuotationForm } from '@/features/quotation/form';
 import { useUpdateQuotation } from '@/features/quotation/update';
 
-export function QuotationEditPageV2() {
+export function QuotationEditPage() {
   const navigate = useNavigate();
   const { id, projectId } = useParams<{ id: string; projectId?: string }>();
   const quotationId = id ? parseInt(id, 10) : null;

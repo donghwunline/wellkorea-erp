@@ -59,7 +59,7 @@ const STATUS_OPTIONS = [
   { value: 'REJECTED', label: 'Rejected' },
 ];
 
-export function QuotationListPageV2() {
+export function QuotationListPage() {
   const navigate = useNavigate();
 
   // Page UI State - pagination and search

@@ -23,7 +23,7 @@ import { QuotationForm } from '@/features/quotation/form';
 import { useCreateQuotation } from '@/features/quotation/create';
 import type { CreateQuotationInput } from '@/entities/quotation';
 
-export function QuotationCreatePageV2() {
+export function QuotationCreatePage() {
   const navigate = useNavigate();
   const { projectId: routeProjectId } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
