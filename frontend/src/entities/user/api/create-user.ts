@@ -7,7 +7,22 @@
 
 import { httpClient, USER_ENDPOINTS } from '@/shared/api';
 import type { RoleName } from '../model/role';
-import type { UserDetailsDTO, CreateUserRequestDTO } from './user.dto';
+import type { UserDetailsResponse } from './user.mapper';
+
+// =============================================================================
+// REQUEST TYPE
+// =============================================================================
+
+/**
+ * Request type for creating a new user.
+ */
+interface CreateUserRequest {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  roles: RoleName[];
+}
 
 // =============================================================================
 // INPUT TYPES
@@ -31,7 +46,7 @@ export interface CreateUserInput {
 /**
  * Map create input to API request.
  */
-function toCreateRequest(input: CreateUserInput): CreateUserRequestDTO {
+function toCreateRequest(input: CreateUserInput): CreateUserRequest {
   return {
     username: input.username.trim().toLowerCase(),
     email: input.email.trim().toLowerCase(),
@@ -64,7 +79,7 @@ function toCreateRequest(input: CreateUserInput): CreateUserRequestDTO {
  * });
  * ```
  */
-export async function createUser(input: CreateUserInput): Promise<UserDetailsDTO> {
+export async function createUser(input: CreateUserInput): Promise<UserDetailsResponse> {
   const request = toCreateRequest(input);
-  return httpClient.post<UserDetailsDTO>(USER_ENDPOINTS.BASE, request);
+  return httpClient.post<UserDetailsResponse>(USER_ENDPOINTS.BASE, request);
 }

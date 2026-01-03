@@ -6,7 +6,19 @@
  */
 
 import { httpClient, USER_ENDPOINTS } from '@/shared/api';
-import type { UserDetailsDTO, UpdateUserRequestDTO } from './user.dto';
+import type { UserDetailsResponse } from './user.mapper';
+
+// =============================================================================
+// REQUEST TYPE
+// =============================================================================
+
+/**
+ * Request type for updating user details.
+ */
+interface UpdateUserRequest {
+  fullName: string;
+  email: string;
+}
 
 // =============================================================================
 // INPUT TYPES
@@ -27,7 +39,7 @@ export interface UpdateUserInput {
 /**
  * Map update input to API request.
  */
-function toUpdateRequest(input: UpdateUserInput): UpdateUserRequestDTO {
+function toUpdateRequest(input: UpdateUserInput): UpdateUserRequest {
   return {
     fullName: input.fullName.trim(),
     email: input.email.trim().toLowerCase(),
@@ -53,7 +65,7 @@ function toUpdateRequest(input: UpdateUserInput): UpdateUserRequestDTO {
  * });
  * ```
  */
-export async function updateUser(id: number, input: UpdateUserInput): Promise<UserDetailsDTO> {
+export async function updateUser(id: number, input: UpdateUserInput): Promise<UserDetailsResponse> {
   const request = toUpdateRequest(input);
-  return httpClient.put<UserDetailsDTO>(USER_ENDPOINTS.byId(id), request);
+  return httpClient.put<UserDetailsResponse>(USER_ENDPOINTS.byId(id), request);
 }

@@ -20,7 +20,9 @@
 import { queryOptions, keepPreviousData } from '@tanstack/react-query';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { UserDetails } from '../model/user';
-import { userApi } from './user.api';
+import { getUserList } from './get-user-list';
+import { getUserById } from './get-user-by-id';
+import { getCustomerAssignments } from './assign-customers';
 import { userMapper } from './user.mapper';
 
 // =============================================================================
@@ -72,7 +74,7 @@ export const userQueries = {
         params.sort ?? '',
       ] as const,
       queryFn: async (): Promise<Paginated<UserDetails>> => {
-        const response = await userApi.getList({
+        const response = await getUserList({
           page: params.page ?? 0,
           size: params.size ?? 10,
           search: params.search || undefined,
@@ -98,7 +100,7 @@ export const userQueries = {
     queryOptions({
       queryKey: [...userQueries.details(), id] as const,
       queryFn: async (): Promise<UserDetails> => {
-        const dto = await userApi.getById(id);
+        const dto = await getUserById(id);
         return userMapper.toDomain(dto);
       },
       enabled: id > 0,
@@ -115,7 +117,7 @@ export const userQueries = {
     queryOptions({
       queryKey: [...userQueries.customersKeys(), id] as const,
       queryFn: async (): Promise<number[]> => {
-        return userApi.getCustomers(id);
+        return getCustomerAssignments(id);
       },
       enabled: id > 0,
     }),

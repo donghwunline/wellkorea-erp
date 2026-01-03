@@ -5,7 +5,17 @@
  */
 
 import { httpClient, USER_ENDPOINTS } from '@/shared/api';
-import type { ChangePasswordRequestDTO } from './user.dto';
+
+// =============================================================================
+// REQUEST TYPE
+// =============================================================================
+
+/**
+ * Request type for changing password.
+ */
+interface ChangePasswordRequest {
+  newPassword: string;
+}
 
 // =============================================================================
 // INPUT TYPES
@@ -25,7 +35,7 @@ export interface ChangePasswordInput {
 /**
  * Map input to API request.
  */
-function toChangePasswordRequest(input: ChangePasswordInput): ChangePasswordRequestDTO {
+function toChangePasswordRequest(input: ChangePasswordInput): ChangePasswordRequest {
   return {
     newPassword: input.newPassword,
   };

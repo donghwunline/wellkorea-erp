@@ -5,7 +5,17 @@
  */
 
 import { httpClient, USER_ENDPOINTS } from '@/shared/api';
-import type { AssignCustomersRequestDTO } from './user.dto';
+
+// =============================================================================
+// REQUEST TYPE
+// =============================================================================
+
+/**
+ * Request type for assigning customers.
+ */
+interface AssignCustomersRequest {
+  customerIds: number[];
+}
 
 // =============================================================================
 // INPUT TYPES
@@ -25,7 +35,7 @@ export interface AssignCustomersInput {
 /**
  * Map input to API request.
  */
-function toAssignCustomersRequest(input: AssignCustomersInput): AssignCustomersRequestDTO {
+function toAssignCustomersRequest(input: AssignCustomersInput): AssignCustomersRequest {
   return {
     customerIds: input.customerIds,
   };

@@ -6,7 +6,17 @@
 
 import { httpClient, USER_ENDPOINTS } from '@/shared/api';
 import type { RoleName } from '../model/role';
-import type { AssignRolesRequestDTO } from './user.dto';
+
+// =============================================================================
+// REQUEST TYPE
+// =============================================================================
+
+/**
+ * Request type for assigning roles.
+ */
+interface AssignRolesRequest {
+  roles: RoleName[];
+}
 
 // =============================================================================
 // INPUT TYPES
@@ -26,7 +36,7 @@ export interface AssignRolesInput {
 /**
  * Map input to API request.
  */
-function toAssignRolesRequest(input: AssignRolesInput): AssignRolesRequestDTO {
+function toAssignRolesRequest(input: AssignRolesInput): AssignRolesRequest {
   return {
     roles: input.roles,
   };
