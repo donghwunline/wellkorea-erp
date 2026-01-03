@@ -3,7 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { userApi, userQueries } from '@/entities/user';
+import { deactivateUser, userQueries } from '@/entities/user';
 
 /**
  * Options for useDeactivateUser hook.
@@ -21,9 +21,7 @@ export function useDeactivateUser(options: UseDeactivateUserOptions = {}) {
   const { onSuccess, onError } = options;
 
   return useMutation({
-    mutationFn: async (id: number) => {
-      return userApi.deactivate(id);
-    },
+    mutationFn: (id: number) => deactivateUser(id),
 
     onSuccess: () => {
       // Invalidate both list and detail queries

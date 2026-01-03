@@ -2,7 +2,7 @@
  * User Entity - Public API.
  *
  * This is the ONLY entry point for importing from the user entity.
- * Internal modules (model/, api/, query/) should never be imported directly.
+ * Internal modules (model/, api/) should never be imported directly.
  *
  * FSD Layer: entities
  * Can import from: shared
@@ -41,43 +41,20 @@ export { userRules } from './model/user-rules';
 export { userQueries, type UserListQueryParams } from './api/user.queries';
 
 // =============================================================================
-// FORM TYPES
-// Input types for forms (used by features layer)
+// COMMAND FUNCTIONS
 // =============================================================================
 
-export type {
-  CreateUserInput,
-  CreateUserCommand,
-  UpdateUserInput,
-  UpdateUserCommand,
-  AssignRolesInput,
-  AssignRolesCommand,
-  ChangePasswordInput,
-  ChangePasswordCommand,
-  AssignCustomersInput,
-  AssignCustomersCommand,
-} from './api/user.command-mapper';
-
-// =============================================================================
-// API ACCESS (for features layer mutations only)
-// These are needed by features/user/* for CRUD operations
-// =============================================================================
-
-export { userApi } from './api/user.api';
-export { userMapper } from './api/user.mapper';
-export { userCommandMapper } from './api/user.command-mapper';
-
-// DTO types for low-level access if needed
-export type {
-  UserDetailsDTO,
-  CreateUserRequestDTO,
-  UpdateUserRequestDTO,
-  AssignRolesRequestDTO,
-  ChangePasswordRequestDTO,
-  AssignCustomersRequestDTO,
-  UserListParamsDTO,
-  UserCommandResultDTO,
-} from './api/user.dto';
+export { createUser, type CreateUserInput } from './api/create-user';
+export { updateUser, type UpdateUserInput } from './api/update-user';
+export { assignRoles, type AssignRolesInput } from './api/assign-roles';
+export { changePassword, type ChangePasswordInput } from './api/change-password';
+export {
+  assignCustomers,
+  getCustomerAssignments,
+  type AssignCustomersInput,
+} from './api/assign-customers';
+export { activateUser } from './api/activate-user';
+export { deactivateUser } from './api/deactivate-user';
 
 // =============================================================================
 // UI COMPONENTS

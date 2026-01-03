@@ -3,11 +3,7 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
-import {
-  userApi,
-  userCommandMapper,
-  type ChangePasswordInput,
-} from '@/entities/user';
+import { changePassword, type ChangePasswordInput } from '@/entities/user';
 
 /**
  * Options for useChangePassword hook.
@@ -32,11 +28,7 @@ export function useChangePassword(options: UseChangePasswordOptions = {}) {
   const { onSuccess, onError } = options;
 
   return useMutation({
-    mutationFn: async ({ id, data }: ChangePasswordMutationInput) => {
-      const command = userCommandMapper.toChangePasswordCommand(data);
-      const dto = userCommandMapper.toChangePasswordDto(command);
-      return userApi.changePassword(id, dto);
-    },
+    mutationFn: ({ id, data }: ChangePasswordMutationInput) => changePassword(id, data),
 
     onSuccess: () => {
       // No cache invalidation needed - password doesn't appear in queries

@@ -2,20 +2,13 @@
  * Create user mutation hook.
  *
  * Encapsulates user creation workflow with:
- * - Input validation
- * - Command mapping
- * - API call
+ * - API call via command function
  * - Cache invalidation
  * - Success/error callbacks
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  userApi,
-  userCommandMapper,
-  userQueries,
-  type CreateUserInput,
-} from '@/entities/user';
+import { createUser, userQueries, type CreateUserInput } from '@/entities/user';
 
 /**
  * Options for useCreateUser hook.
@@ -38,7 +31,7 @@ export interface UseCreateUserOptions {
  * @example
  * ```tsx
  * function CreateUserForm({ onClose }: Props) {
- *   const { mutate: createUser, isPending, error } = useCreateUser({
+ *   const { mutate: create, isPending, error } = useCreateUser({
  *     onSuccess: () => {
  *       toast.success('User created successfully');
  *       onClose();
@@ -46,7 +39,7 @@ export interface UseCreateUserOptions {
  *   });
  *
  *   const handleSubmit = (data: CreateUserInput) => {
- *     createUser(data);
+ *     create(data);
  *   };
  *
  *   return <form onSubmit={handleSubmit}>...</form>;
@@ -58,12 +51,7 @@ export function useCreateUser(options: UseCreateUserOptions = {}) {
   const { onSuccess, onError } = options;
 
   return useMutation({
-    mutationFn: async (input: CreateUserInput) => {
-      // Two-step mapping: Input → Command → DTO
-      const command = userCommandMapper.toCreateCommand(input);
-      const dto = userCommandMapper.toCreateDto(command);
-      return userApi.create(dto);
-    },
+    mutationFn: (input: CreateUserInput) => createUser(input),
 
     onSuccess: () => {
       // Invalidate user list queries

@@ -9,8 +9,7 @@
 
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { UserDetails } from '@/entities/user';
-import { userApi } from '@/entities/user';
+import { getCustomerAssignments, type UserDetails } from '@/entities/user';
 import { companyQueries } from '@/entities/company';
 import { Button, ErrorAlert, LoadingState, Modal } from '@/shared/ui';
 import { useAssignCustomers } from '../model/use-assign-customers';
@@ -52,7 +51,7 @@ export function UserCustomersForm({
 
     setIsLoadingAssignments(true);
     try {
-      const customerIds = await userApi.getCustomers(user.id);
+      const customerIds = await getCustomerAssignments(user.id);
       setSelectedCustomers(customerIds);
     } catch {
       setError('Failed to load customer assignments');

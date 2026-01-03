@@ -3,12 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  userApi,
-  userCommandMapper,
-  userQueries,
-  type AssignRolesInput,
-} from '@/entities/user';
+import { assignRoles, userQueries, type AssignRolesInput } from '@/entities/user';
 
 /**
  * Options for useAssignRoles hook.
@@ -34,11 +29,7 @@ export function useAssignRoles(options: UseAssignRolesOptions = {}) {
   const { onSuccess, onError } = options;
 
   return useMutation({
-    mutationFn: async ({ id, data }: AssignRolesMutationInput) => {
-      const command = userCommandMapper.toAssignRolesCommand(data);
-      const dto = userCommandMapper.toAssignRolesDto(command);
-      return userApi.assignRoles(id, dto);
-    },
+    mutationFn: ({ id, data }: AssignRolesMutationInput) => assignRoles(id, data),
 
     onSuccess: () => {
       // Invalidate both list and detail queries

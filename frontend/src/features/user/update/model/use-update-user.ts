@@ -3,12 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  userApi,
-  userCommandMapper,
-  userQueries,
-  type UpdateUserInput,
-} from '@/entities/user';
+import { updateUser, userQueries, type UpdateUserInput } from '@/entities/user';
 
 /**
  * Options for useUpdateUser hook.
@@ -34,11 +29,7 @@ export function useUpdateUser(options: UseUpdateUserOptions = {}) {
   const { onSuccess, onError } = options;
 
   return useMutation({
-    mutationFn: async ({ id, data }: UpdateUserMutationInput) => {
-      const command = userCommandMapper.toUpdateCommand(data);
-      const dto = userCommandMapper.toUpdateDto(command);
-      return userApi.update(id, dto);
-    },
+    mutationFn: ({ id, data }: UpdateUserMutationInput) => updateUser(id, data),
 
     onSuccess: () => {
       // Invalidate both list and detail queries

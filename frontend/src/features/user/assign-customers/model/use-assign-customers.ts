@@ -3,12 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  userApi,
-  userCommandMapper,
-  userQueries,
-  type AssignCustomersInput,
-} from '@/entities/user';
+import { assignCustomers, userQueries, type AssignCustomersInput } from '@/entities/user';
 
 /**
  * Options for useAssignCustomers hook.
@@ -34,11 +29,7 @@ export function useAssignCustomers(options: UseAssignCustomersOptions = {}) {
   const { onSuccess, onError } = options;
 
   return useMutation({
-    mutationFn: async ({ id, data }: AssignCustomersMutationInput) => {
-      const command = userCommandMapper.toAssignCustomersCommand(data);
-      const dto = userCommandMapper.toAssignCustomersDto(command);
-      return userApi.assignCustomers(id, dto);
-    },
+    mutationFn: ({ id, data }: AssignCustomersMutationInput) => assignCustomers(id, data),
 
     onSuccess: () => {
       // Invalidate customer query for this user
