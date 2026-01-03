@@ -19,10 +19,30 @@
  */
 
 import { httpClient, SERVICE_CATEGORY_ENDPOINTS } from '@/shared/api';
-import type { CommandResult, UpdateVendorOfferingRequestDTO } from './catalog.dto';
+import type { CommandResult } from './catalog.mapper';
 
 // =============================================================================
-// Input Type
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Request to update a vendor service offering.
+ */
+interface UpdateVendorOfferingRequest {
+  vendorServiceCode?: string | null;
+  vendorServiceName?: string | null;
+  unitPrice?: number | null;
+  currency?: string | null;
+  leadTimeDays?: number | null;
+  minOrderQuantity?: number | null;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  isPreferred?: boolean | null;
+  notes?: string | null;
+}
+
+// =============================================================================
+// INPUT TYPE
 // =============================================================================
 
 /**
@@ -44,7 +64,7 @@ export interface UpdateVendorOfferingInput {
 }
 
 // =============================================================================
-// Validation
+// VALIDATION
 // =============================================================================
 
 /**
@@ -104,14 +124,14 @@ function validateUpdateInput(input: UpdateVendorOfferingInput): void {
 }
 
 // =============================================================================
-// Request Mapping
+// REQUEST MAPPING
 // =============================================================================
 
 /**
  * Map input to API request.
  */
-function toUpdateRequest(input: UpdateVendorOfferingInput): UpdateVendorOfferingRequestDTO {
-  const request: UpdateVendorOfferingRequestDTO = {};
+function toUpdateRequest(input: UpdateVendorOfferingInput): UpdateVendorOfferingRequest {
+  const request: UpdateVendorOfferingRequest = {};
 
   if (input.vendorServiceCode !== undefined) {
     request.vendorServiceCode = input.vendorServiceCode?.trim() || null;
@@ -157,7 +177,7 @@ function toUpdateRequest(input: UpdateVendorOfferingInput): UpdateVendorOffering
 }
 
 // =============================================================================
-// Command Function
+// COMMAND FUNCTION
 // =============================================================================
 
 /**

@@ -19,10 +19,22 @@
  */
 
 import { httpClient, SERVICE_CATEGORY_ENDPOINTS } from '@/shared/api';
-import type { CommandResult, CreateServiceCategoryRequestDTO } from './catalog.dto';
+import type { CommandResult } from './catalog.mapper';
 
 // =============================================================================
-// Input Type
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Request to create a new service category.
+ */
+interface CreateServiceCategoryRequest {
+  name: string;
+  description?: string | null;
+}
+
+// =============================================================================
+// INPUT TYPE
 // =============================================================================
 
 /**
@@ -35,7 +47,7 @@ export interface CreateServiceCategoryInput {
 }
 
 // =============================================================================
-// Validation
+// VALIDATION
 // =============================================================================
 
 /**
@@ -85,13 +97,13 @@ function validateCreateInput(input: CreateServiceCategoryInput): void {
 }
 
 // =============================================================================
-// Request Mapping
+// REQUEST MAPPING
 // =============================================================================
 
 /**
  * Map input to API request.
  */
-function toCreateRequest(input: CreateServiceCategoryInput): CreateServiceCategoryRequestDTO {
+function toCreateRequest(input: CreateServiceCategoryInput): CreateServiceCategoryRequest {
   return {
     name: input.name.trim(),
     description: input.description?.trim() || null,
@@ -99,7 +111,7 @@ function toCreateRequest(input: CreateServiceCategoryInput): CreateServiceCatego
 }
 
 // =============================================================================
-// Command Function
+// COMMAND FUNCTION
 // =============================================================================
 
 /**

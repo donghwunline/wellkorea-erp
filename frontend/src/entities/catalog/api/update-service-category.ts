@@ -19,10 +19,23 @@
  */
 
 import { httpClient, SERVICE_CATEGORY_ENDPOINTS } from '@/shared/api';
-import type { CommandResult, UpdateServiceCategoryRequestDTO } from './catalog.dto';
+import type { CommandResult } from './catalog.mapper';
 
 // =============================================================================
-// Input Type
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Request to update a service category.
+ */
+interface UpdateServiceCategoryRequest {
+  name?: string | null;
+  description?: string | null;
+  isActive?: boolean | null;
+}
+
+// =============================================================================
+// INPUT TYPE
 // =============================================================================
 
 /**
@@ -37,7 +50,7 @@ export interface UpdateServiceCategoryInput {
 }
 
 // =============================================================================
-// Validation
+// VALIDATION
 // =============================================================================
 
 /**
@@ -97,14 +110,14 @@ function validateUpdateInput(input: UpdateServiceCategoryInput): void {
 }
 
 // =============================================================================
-// Request Mapping
+// REQUEST MAPPING
 // =============================================================================
 
 /**
  * Map input to API request.
  */
-function toUpdateRequest(input: UpdateServiceCategoryInput): UpdateServiceCategoryRequestDTO {
-  const request: UpdateServiceCategoryRequestDTO = {};
+function toUpdateRequest(input: UpdateServiceCategoryInput): UpdateServiceCategoryRequest {
+  const request: UpdateServiceCategoryRequest = {};
 
   if (input.name !== undefined) {
     request.name = input.name?.trim() || null;
@@ -122,7 +135,7 @@ function toUpdateRequest(input: UpdateServiceCategoryInput): UpdateServiceCatego
 }
 
 // =============================================================================
-// Command Function
+// COMMAND FUNCTION
 // =============================================================================
 
 /**

@@ -80,9 +80,3 @@ export { deleteServiceCategory, type DeleteServiceCategoryInput } from './api/de
 export { createVendorOffering, type CreateVendorOfferingInput } from './api/create-vendor-offering';
 export { updateVendorOffering, type UpdateVendorOfferingInput } from './api/update-vendor-offering';
 export { deleteVendorOffering, type DeleteVendorOfferingInput } from './api/delete-vendor-offering';
-
-// =============================================================================
-// DTO TYPES (for features layer if needed)
-// =============================================================================
-
-export type { CommandResult } from './api/catalog.dto';

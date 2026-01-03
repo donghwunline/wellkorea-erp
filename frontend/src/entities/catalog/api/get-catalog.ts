@@ -9,12 +9,10 @@ import { httpClient, SERVICE_CATEGORY_ENDPOINTS, type PagedResponse } from '@/sh
 import type { Paginated } from '@/shared/lib/pagination';
 import type { ServiceCategory, ServiceCategoryListItem } from '../model/service-category';
 import type { VendorOffering } from '../model/vendor-offering';
-import type {
-  ServiceCategorySummaryDTO,
-  ServiceCategoryDetailsDTO,
-  VendorOfferingDTO,
-} from './catalog.dto';
 import {
+  type ServiceCategorySummaryResponse,
+  type ServiceCategoryDetailsResponse,
+  type VendorOfferingResponse,
   toServiceCategory,
   toServiceCategoryListItem,
   toVendorOffering,
@@ -32,7 +30,7 @@ export async function getServiceCategories(params: {
   size?: number;
   search?: string;
 }): Promise<Paginated<ServiceCategoryListItem>> {
-  const response = await httpClient.requestWithMeta<PagedResponse<ServiceCategorySummaryDTO>>({
+  const response = await httpClient.requestWithMeta<PagedResponse<ServiceCategorySummaryResponse>>({
     method: 'GET',
     url: SERVICE_CATEGORY_ENDPOINTS.BASE,
     params: {
@@ -59,7 +57,7 @@ export async function getServiceCategories(params: {
  * Get all service categories for dropdown.
  */
 export async function getAllServiceCategories(): Promise<ServiceCategoryListItem[]> {
-  const data = await httpClient.get<ServiceCategorySummaryDTO[]>(SERVICE_CATEGORY_ENDPOINTS.all);
+  const data = await httpClient.get<ServiceCategorySummaryResponse[]>(SERVICE_CATEGORY_ENDPOINTS.all);
   return data.map(toServiceCategoryListItem);
 }
 
@@ -67,8 +65,8 @@ export async function getAllServiceCategories(): Promise<ServiceCategoryListItem
  * Get service category by ID.
  */
 export async function getServiceCategory(id: number): Promise<ServiceCategory> {
-  const dto = await httpClient.get<ServiceCategoryDetailsDTO>(SERVICE_CATEGORY_ENDPOINTS.byId(id));
-  return toServiceCategory(dto);
+  const response = await httpClient.get<ServiceCategoryDetailsResponse>(SERVICE_CATEGORY_ENDPOINTS.byId(id));
+  return toServiceCategory(response);
 }
 
 // =============================================================================
@@ -82,7 +80,7 @@ export async function getOfferingsForCategory(
   serviceCategoryId: number,
   params?: { page?: number; size?: number }
 ): Promise<Paginated<VendorOffering>> {
-  const response = await httpClient.requestWithMeta<PagedResponse<VendorOfferingDTO>>({
+  const response = await httpClient.requestWithMeta<PagedResponse<VendorOfferingResponse>>({
     method: 'GET',
     url: SERVICE_CATEGORY_ENDPOINTS.offerings(serviceCategoryId),
     params,
@@ -107,7 +105,7 @@ export async function getOfferingsForCategory(
 export async function getCurrentOfferingsForCategory(
   serviceCategoryId: number
 ): Promise<VendorOffering[]> {
-  const data = await httpClient.get<VendorOfferingDTO[]>(
+  const data = await httpClient.get<VendorOfferingResponse[]>(
     SERVICE_CATEGORY_ENDPOINTS.currentOfferings(serviceCategoryId)
   );
   return data.map(toVendorOffering);
@@ -117,6 +115,6 @@ export async function getCurrentOfferingsForCategory(
  * Get vendor offering by ID.
  */
 export async function getVendorOffering(id: number): Promise<VendorOffering> {
-  const dto = await httpClient.get<VendorOfferingDTO>(SERVICE_CATEGORY_ENDPOINTS.offering(id));
-  return toVendorOffering(dto);
+  const response = await httpClient.get<VendorOfferingResponse>(SERVICE_CATEGORY_ENDPOINTS.offering(id));
+  return toVendorOffering(response);
 }

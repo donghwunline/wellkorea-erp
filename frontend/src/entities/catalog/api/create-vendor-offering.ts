@@ -26,10 +26,32 @@
  */
 
 import { httpClient, SERVICE_CATEGORY_ENDPOINTS } from '@/shared/api';
-import type { CommandResult, CreateVendorOfferingRequestDTO } from './catalog.dto';
+import type { CommandResult } from './catalog.mapper';
 
 // =============================================================================
-// Input Type
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Request to create a vendor service offering.
+ */
+interface CreateVendorOfferingRequest {
+  vendorId: number;
+  serviceCategoryId: number;
+  vendorServiceCode?: string | null;
+  vendorServiceName?: string | null;
+  unitPrice?: number | null;
+  currency?: string | null;
+  leadTimeDays?: number | null;
+  minOrderQuantity?: number | null;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  isPreferred?: boolean;
+  notes?: string | null;
+}
+
+// =============================================================================
+// INPUT TYPE
 // =============================================================================
 
 /**
@@ -52,7 +74,7 @@ export interface CreateVendorOfferingInput {
 }
 
 // =============================================================================
-// Validation
+// VALIDATION
 // =============================================================================
 
 /**
@@ -119,13 +141,13 @@ function validateCreateInput(input: CreateVendorOfferingInput): void {
 }
 
 // =============================================================================
-// Request Mapping
+// REQUEST MAPPING
 // =============================================================================
 
 /**
  * Map input to API request.
  */
-function toCreateRequest(input: CreateVendorOfferingInput): CreateVendorOfferingRequestDTO {
+function toCreateRequest(input: CreateVendorOfferingInput): CreateVendorOfferingRequest {
   return {
     vendorId: input.vendorId,
     serviceCategoryId: input.serviceCategoryId,
@@ -143,7 +165,7 @@ function toCreateRequest(input: CreateVendorOfferingInput): CreateVendorOffering
 }
 
 // =============================================================================
-// Command Function
+// COMMAND FUNCTION
 // =============================================================================
 
 /**
