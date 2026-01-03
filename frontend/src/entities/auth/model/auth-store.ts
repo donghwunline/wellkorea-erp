@@ -13,7 +13,7 @@
 import { create } from 'zustand';
 import { authStorage } from '@/shared/lib/storage';
 import type { RoleName, User } from '@/entities/user';
-import type { AuthStore, LoginCredentials } from '../model/auth';
+import type { AuthStore, LoginCredentials } from './auth';
 import { authApi } from '../api/auth.api';
 import { authEvents } from './auth-events';
 

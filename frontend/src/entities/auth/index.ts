@@ -2,10 +2,7 @@
  * Auth Entity - Public API.
  *
  * This is the ONLY entry point for importing from the auth entity.
- * Internal modules (hooks/, store/, model/) should never be imported directly.
- *
- * Note: Auth entity uses hooks/ + store/ instead of model/api/query/
- * because authentication is primarily about state management, not data fetching.
+ * Internal modules (model/, api/) should never be imported directly.
  *
  * FSD Layer: entities
  * Can import from: shared
@@ -19,14 +16,14 @@
 // Primary interface for consuming auth state
 // =============================================================================
 
-export { useAuth } from './hooks/useAuth';
+export { useAuth } from './model/useAuth';
 
 // =============================================================================
 // AUTH STORE
 // Low-level store access (for features that need direct store manipulation)
 // =============================================================================
 
-export { useAuthStore } from './store/auth-store';
+export { useAuthStore } from './model/auth-store';
 
 // =============================================================================
 // TYPES
@@ -40,7 +37,7 @@ export type { LoginCredentials, AuthStore, AuthState, AuthActions } from './mode
 // Auth events for cross-domain coordination (e.g., logout → clear cache)
 // =============================================================================
 
-export { authEvents, type AuthEvent } from './store/auth-events';
+export { authEvents, type AuthEvent } from './model/auth-events';
 
 // =============================================================================
 // API ACCESS (for features layer mutations only)
