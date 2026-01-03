@@ -12,7 +12,7 @@
 import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { ApiError } from './types';
 import type { ApiResponse, Tokens, TokenStore } from './types';
-import { AUTH_ENDPOINTS } from './endpoints';
+import { AUTH_ENDPOINTS } from '../config/endpoints';
 
 /**
  * Pending request during token refresh.
