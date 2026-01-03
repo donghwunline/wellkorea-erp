@@ -5,8 +5,8 @@
  * These should NOT be exported from the entity's public API.
  */
 
-import { httpClient, SERVICE_CATEGORY_ENDPOINTS } from '@/shared/api';
-import type { PagedResponse, Paginated } from '@/shared/api/types';
+import { httpClient, SERVICE_CATEGORY_ENDPOINTS, type PagedResponse } from '@/shared/api';
+import type { Paginated } from '@/shared/lib/pagination';
 import type { ServiceCategory, ServiceCategoryListItem } from '../model/service-category';
 import type { VendorOffering } from '../model/vendor-offering';
 import type {

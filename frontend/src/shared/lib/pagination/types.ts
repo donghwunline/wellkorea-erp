@@ -2,6 +2,7 @@
  * Pagination types for query layer.
  *
  * Core types for handling paginated data in TanStack Query and UI components.
+ * Note: PagedResponse (backend response type) is in @/shared/api/types.
  */
 
 /**
@@ -29,28 +30,4 @@ export interface PaginationMetadata {
 export interface Paginated<T> {
   data: T[];
   pagination: PaginationMetadata;
-}
-
-/**
- * Paged response structure from backend.
- * Used when backend returns paginated data objects directly in ApiResponse.data.
- *
- * This represents the backend's Page<T> structure, which differs from PaginationMetadata:
- * - Uses 'content' array for data
- * - Uses 'number' instead of 'page' for current page index
- *
- * @example
- * // Backend returns: ApiResponse<Page<UserResponse>>
- * const response = await httpClient.requestWithMeta<PagedResponse<User>>(...);
- * const users = response.data.content;
- * const currentPage = response.data.number;
- */
-export interface PagedResponse<T> {
-  content: T[];
-  number: number; // Current page index (0-based)
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  first: boolean;
-  last: boolean;
 }

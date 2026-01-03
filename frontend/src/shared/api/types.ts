@@ -7,11 +7,35 @@
  * - Authentication (Tokens, TokenStore)
  * - Errors (ApiError, ErrorResponse)
  *
- * Note: Paginated<T> and PaginationMetadata are in @/shared/pagination
+ * Note: Paginated<T> and PaginationMetadata are in @/shared/lib/pagination
  */
 
-// Re-export pagination types for backward compatibility
-export type { Paginated, PaginationMetadata, PagedResponse } from '@/shared/lib/pagination';
+// ============================================================================
+// Backend Response Types
+// ============================================================================
+
+/**
+ * Paged response structure from backend.
+ * Represents Spring Data's Page<T> structure.
+ *
+ * Use this type when receiving paginated data from the backend.
+ * For frontend consumption, prefer using Paginated<T> from @/shared/lib/pagination.
+ *
+ * @example
+ * // Backend returns: ApiResponse<Page<UserResponse>>
+ * const response = await httpClient.requestWithMeta<PagedResponse<User>>(...);
+ * const users = response.data.content;
+ * const currentPage = response.data.number;
+ */
+export interface PagedResponse<T> {
+  content: T[];
+  number: number; // Current page index (0-based)
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
 
 // ============================================================================
 // Authentication & Token Types

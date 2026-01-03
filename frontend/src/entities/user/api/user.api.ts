@@ -5,10 +5,9 @@
  * Returns DTOs, not domain models.
  */
 
-import { httpClient, USER_ENDPOINTS } from '@/shared/api';
+import { httpClient, USER_ENDPOINTS, type PagedResponse } from '@/shared/api';
 import {
   transformPagedResponse,
-  type PagedResponse,
   type Paginated,
 } from '@/shared/lib/pagination';
 import type {

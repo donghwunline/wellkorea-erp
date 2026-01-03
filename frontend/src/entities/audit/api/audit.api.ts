@@ -4,10 +4,9 @@
  * Raw API calls for audit log operations.
  */
 
-import { httpClient, AUDIT_ENDPOINTS } from '@/shared/api';
+import { httpClient, AUDIT_ENDPOINTS, type PagedResponse } from '@/shared/api';
 import {
   transformPagedResponse,
-  type PagedResponse,
   type Paginated,
 } from '@/shared/lib/pagination';
 import type { AuditLogDTO, AuditLogListParamsDTO } from './audit.dto';

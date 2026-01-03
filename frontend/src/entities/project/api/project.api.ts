@@ -5,10 +5,9 @@
  * This file is kept for backward compatibility with legacy components.
  */
 
-import { httpClient, PROJECT_ENDPOINTS } from '@/shared/api';
+import { httpClient, PROJECT_ENDPOINTS, type PagedResponse } from '@/shared/api';
 import {
   transformPagedResponse,
-  type PagedResponse,
   type Paginated,
 } from '@/shared/lib/pagination';
 import type {

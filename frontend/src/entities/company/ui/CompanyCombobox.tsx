@@ -12,8 +12,8 @@
 
 import { useCallback } from 'react';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
-import { httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
-import { transformPagedResponse, type PagedResponse } from '@/shared/lib/pagination';
+import { httpClient, COMPANY_ENDPOINTS, type PagedResponse } from '@/shared/api';
+import { transformPagedResponse } from '@/shared/lib/pagination';
 import type { RoleType } from '../model/role-type';
 import { ROLE_TYPE_LABELS } from '../model/role-type';
 

@@ -21,7 +21,7 @@
  */
 
 import { queryOptions, keepPreviousData } from '@tanstack/react-query';
-import type { Paginated } from '@/shared/api/types';
+import type { Paginated } from '@/shared/lib/pagination';
 import type { ServiceCategory, ServiceCategoryListItem } from '../model/service-category';
 import type { VendorOffering } from '../model/vendor-offering';
 import {

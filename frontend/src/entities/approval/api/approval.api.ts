@@ -5,10 +5,9 @@
  * Returns DTOs only - use query hooks for domain models with caching.
  */
 
-import { httpClient, APPROVAL_ENDPOINTS } from '@/shared/api';
+import { httpClient, APPROVAL_ENDPOINTS, type PagedResponse } from '@/shared/api';
 import {
   transformPagedResponse,
-  type PagedResponse,
   type Paginated,
 } from '@/shared/lib/pagination';
 import type {

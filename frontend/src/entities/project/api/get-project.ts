@@ -7,10 +7,9 @@
  * @internal This module is internal to the entity and should not be exported.
  */
 
-import { httpClient, PROJECT_ENDPOINTS } from '@/shared/api';
+import { httpClient, PROJECT_ENDPOINTS, type PagedResponse } from '@/shared/api';
 import {
   transformPagedResponse,
-  type PagedResponse,
   type Paginated,
 } from '@/shared/lib/pagination';
 import type {

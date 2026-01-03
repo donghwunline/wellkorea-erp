@@ -5,7 +5,7 @@
 
 import { HttpClient } from './httpClient';
 import { tokenStore } from './tokenStore';
-import { navigation } from '@/shared/lib';
+import { navigation } from '@/shared/lib/navigation';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
@@ -40,6 +40,10 @@ export const httpClient = new HttpClient(BASE_URL, tokenStore, onUnauthorized);
 
 // Re-export types
 export type { Tokens, ApiError } from './types';
+
+// Re-export PagedResponse (deprecated from barrel - use @/shared/api/types directly)
+export type { PagedResponse } from './types';
+
 export { HttpClient } from './httpClient';
 export { tokenStore } from './tokenStore';
 
@@ -65,7 +69,7 @@ export {
   extractErrorMessage,
 } from './errors';
 
-// Re-export endpoint constants
+// Re-export endpoint constants from config segment
 export {
   AUTH_ENDPOINTS,
   USER_ENDPOINTS,
@@ -77,4 +81,4 @@ export {
   PRODUCT_ENDPOINTS,
   SERVICE_CATEGORY_ENDPOINTS,
   COMPANY_ENDPOINTS,
-} from './endpoints';
+} from '../config/endpoints';
