@@ -22,6 +22,13 @@ import { getAuditById } from './get-audit-by-id';
 import { auditLogMapper } from './audit.mapper';
 
 // =============================================================================
+// Query Parameters
+// =============================================================================
+
+/** Query parameters for audit log list */
+export type AuditListQueryParams = GetAuditListParams;
+
+// =============================================================================
 // Query Factory
 // =============================================================================
 
