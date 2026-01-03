@@ -269,11 +269,12 @@ frontend/src/
 │   └── {domain}/            # e.g., quotation/, project/, company/
 │       ├── model/           # Domain types + pure functions (quotationRules)
 │       ├── api/             # Query factory + Command functions
-│       │   ├── {entity}.dto.ts        # *Request/*Response types (internal)
-│       │   ├── {entity}.mapper.ts     # Response → Domain mapping (internal)
+│       │   ├── {entity}.mapper.ts     # Response DTO + mapper (DTO→Domain)
 │       │   ├── {entity}.queries.ts    # Query factory with queryOptions()
-│       │   ├── create-{entity}.ts     # Command: Input + validation + POST
-│       │   └── update-{entity}.ts     # Command: Input + validation + PUT
+│       │   ├── get-{entity}-list.ts   # HTTP GET list operation
+│       │   ├── get-{entity}-by-id.ts  # HTTP GET single operation
+│       │   ├── create-{entity}.ts     # Request DTO inline + Input + POST
+│       │   └── update-{entity}.ts     # Request DTO inline + Input + PUT
 │       ├── ui/              # Entity display components (read-only)
 │       └── index.ts         # Public barrel export
 ├── shared/                   # Cross-cutting concerns
@@ -302,10 +303,14 @@ shared → NOTHING (base layer)
 | `api/create-*.ts` | ✅ YES | Command functions + Input types |
 | `api/update-*.ts` | ✅ YES | Command functions + Input types |
 | `ui/*.tsx` | ✅ YES | Display components |
-| `api/*.dto.ts` | ❌ NO | DTOs are internal implementation |
-| `api/*.mapper.ts` | ❌ NO | Mappers are internal implementation |
-| `api/*.api.ts` | ❌ NO | Low-level API calls are internal |
+| `api/*.mapper.ts` | ❌ NO | Response types + mappers are internal |
+| `api/get-*.ts` | ❌ NO | GET operations are internal (used by queries) |
 | `query/query-keys.ts` | ❌ NO | Use `queries.lists()` instead |
+
+**API Type Distribution Pattern** (no centralized `{entity}.dto.ts`):
+- **Response types** (`*Response`) → defined in `{entity}.mapper.ts` (shared across queries/commands)
+- **Request types** (`*Request`) → inlined in each command file (private, not exported)
+- The `httpClient` auto-unwraps `ApiResponse<T>` → returns `T` directly
 
 **No segment-level barrel exports**: Only `{slice}/index.ts` is public. Never create `model/index.ts`, `api/index.ts`, etc.
 

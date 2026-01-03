@@ -31,9 +31,8 @@ Everything else stays internal.
 | `api/create-*.ts` | ✅ YES | Command functions + Input types |
 | `api/update-*.ts` | ✅ YES | Command functions + Input types |
 | `ui/*.tsx` | ✅ YES | Display components |
-| `api/*.dto.ts` | ❌ NO | DTOs are internal implementation |
-| `api/*.mapper.ts` | ❌ NO | Mappers are internal implementation |
-| `api/*.api.ts` | ❌ NO | Low-level API calls are internal |
+| `api/*.mapper.ts` | ❌ NO | Response types + mappers are internal |
+| `api/get-*.ts` | ❌ NO | GET operations are internal (used by queries) |
 
 **No segment-level barrel exports**: Only `{slice}/index.ts` is public. Never create `model/index.ts`, `api/index.ts`, etc.
 
@@ -67,7 +66,7 @@ features/
 
 ---
 
-## Entity File Structure (Reference: `quotation/`)
+## Entity File Structure (Reference: `user/`)
 
 ```
 entities/{entity}/
@@ -77,18 +76,35 @@ entities/{entity}/
 │   ├── {entity}-status.ts     # Status enum + config (if applicable)
 │   └── {child}.ts             # Child domain types (e.g., line-item.ts)
 ├── api/
-│   ├── {entity}.dto.ts        # Request/Response types (internal)
-│   ├── {entity}.mapper.ts     # Response → Domain mapping (internal)
+│   ├── {entity}.mapper.ts     # Response type + mapper (Response→Domain)
 │   ├── {entity}.queries.ts    # Query factory for TanStack Query v5
-│   ├── get-{entity}.ts        # HTTP GET operations (internal)
-│   ├── create-{entity}.ts     # Command: Input + validation + POST
-│   ├── update-{entity}.ts     # Command: Input + validation + PUT
-│   └── {action}-{entity}.ts   # Other commands (submit, download, etc.)
+│   ├── get-{entity}-list.ts   # HTTP GET list operation (internal)
+│   ├── get-{entity}-by-id.ts  # HTTP GET single operation (internal)
+│   ├── create-{entity}.ts     # Request type inline + Input + POST
+│   ├── update-{entity}.ts     # Request type inline + Input + PUT
+│   └── {action}-{entity}.ts   # Request type inline + action command
 └── ui/
     ├── {Entity}StatusBadge.tsx
     ├── {Entity}Card.tsx
     └── {Entity}Table.tsx
 ```
+
+### API Type Distribution Pattern
+
+**No centralized `{entity}.dto.ts` file.** Instead:
+
+- **Response types** (`*Response`) → defined in `{entity}.mapper.ts`
+  - Shared across queries and commands that return data
+  - Lives with the mapper that transforms it to domain model
+  - Naming: `UserDetailsResponse`, `QuotationListItemResponse`
+
+- **Request types** (`*Request`) → inlined in each command file
+  - Each request type is used by exactly one command
+  - Private implementation detail (not exported)
+  - Makes each command file self-contained
+  - Naming: `CreateUserRequest`, `UpdateQuotationRequest`
+
+**Note**: The `httpClient` auto-unwraps `ApiResponse<T>` and returns `T` directly.
 
 ---
 
@@ -155,9 +171,9 @@ export { QuotationTable } from './ui/QuotationTable';
 
 | Internal Item | Why It's Internal |
 |---------------|-------------------|
-| `*Response` DTO types | Implementation detail of API layer |
-| `*Request` DTO types | Used inside command functions |
-| `*Params` DTO types | Used inside query factory |
+| `*Response` types | Implementation detail of API layer |
+| `*Request` types | Used inside command functions |
+| `*Params` types | Used inside query factory |
 | `{entity}Mapper` | Used inside query factory |
 | `get{Entity}` functions | Used inside query factory |
 | `httpClient` calls | Abstracted by command/query functions |
@@ -168,17 +184,44 @@ export { QuotationTable } from './ui/QuotationTable';
 
 ## API Layer Patterns
 
-### 1. DTO Naming Convention (`quotation.dto.ts`)
+### 1. Mapper with Response Type (`{entity}.mapper.ts`)
 
 ```typescript
-// Naming convention:
-// - *Request: Types sent TO the API (create, update, params)
-// - *Response: Types received FROM the API (details, list items)
+// Response type defined in mapper file
+// Naming: {Entity}DetailsResponse, {Entity}ListItemResponse
 
-export interface QuotationDetailsResponse { ... }  // FROM API
-export interface CreateQuotationRequest { ... }    // TO API
-export interface QuotationListParams { ... }       // Query params
-export interface CommandResult { ... }             // CQRS result
+import type { RoleName } from '../model/role';
+import type { UserDetails } from '../model/user';
+
+// =============================================================================
+// RESPONSE TYPE
+// =============================================================================
+
+export interface UserDetailsResponse {
+  id: number;
+  username: string;
+  email: string;
+  fullName: string;
+  isActive: boolean;
+  roles: RoleName[];
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+// =============================================================================
+// MAPPER
+// =============================================================================
+
+export const userMapper = {
+  toDomain(response: UserDetailsResponse): UserDetails {
+    return {
+      id: response.id,
+      username: response.username.trim(),
+      email: response.email.toLowerCase().trim(),
+      // ... rest of mapping
+    };
+  },
+};
 ```
 
 ### 2. Query Factory Pattern (`quotation.queries.ts`)
@@ -222,63 +265,66 @@ export const quotationQueries = {
 // queryClient.invalidateQueries({ queryKey: quotationQueries.lists() });
 ```
 
-### 3. Command Function Pattern (`create-quotation.ts`)
+### 3. Command Function Pattern (`create-user.ts`)
 
-Each command combines: **Input types + Validation + Mapping + API call**
+Each command combines: **Request type (inline) + Input types + Mapping + API call**
 
 ```typescript
+import { httpClient, USER_ENDPOINTS } from '@/shared/api';
+import type { RoleName } from '../model/role';
+import type { UserDetailsResponse } from './user.mapper';
+
 // =============================================================================
-// INPUT TYPES (UI-friendly, allow nulls/strings)
+// REQUEST TYPE (internal - not exported)
 // =============================================================================
 
-export interface LineItemInput {
-  productId: number | null;  // null allowed for form initial state
-  quantity: number | string; // string allowed for form input
-  unitPrice: number | string;
-  notes?: string;
+interface CreateUserRequest {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  roles: RoleName[];
 }
 
-export interface CreateQuotationInput {
-  projectId: number | null;
-  lineItems: LineItemInput[];
-}
-
 // =============================================================================
-// VALIDATION (throws DomainValidationError)
+// INPUT TYPES (exported for form usage)
 // =============================================================================
 
-function validateCreateInput(input: CreateQuotationInput): void {
-  if (input.projectId === null) {
-    throw new DomainValidationError('REQUIRED', 'projectId', 'Project is required');
-  }
-  // ... more validation
+export interface CreateUserInput {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  roles: RoleName[];
 }
 
 // =============================================================================
 // MAPPING (Input → Request)
 // =============================================================================
 
-function toCreateRequest(input: CreateQuotationInput): CreateQuotationRequest {
+function toCreateRequest(input: CreateUserInput): CreateUserRequest {
   return {
-    projectId: input.projectId!,
-    lineItems: input.lineItems.map(toLineItemRequest),
+    username: input.username.trim().toLowerCase(),
+    email: input.email.trim().toLowerCase(),
+    password: input.password,
+    fullName: input.fullName.trim(),
+    roles: input.roles,
   };
 }
 
 // =============================================================================
-// API FUNCTION (single export)
+// API FUNCTION (exported)
 // =============================================================================
 
-export async function createQuotation(input: CreateQuotationInput): Promise<CommandResult> {
-  validateCreateInput(input);
+export async function createUser(input: CreateUserInput): Promise<UserDetailsResponse> {
   const request = toCreateRequest(input);
-  return httpClient.post<CommandResult>(QUOTATION_ENDPOINTS.BASE, request);
+  return httpClient.post<UserDetailsResponse>(USER_ENDPOINTS.BASE, request);
 }
 ```
 
-### 4. Getter Functions (`get-quotation.ts`)
+### 4. Getter Functions (`get-{entity}-by-id.ts`, `get-{entity}-list.ts`)
 
-Simple HTTP GET operations, return raw DTOs (mapping happens in query factory):
+Simple HTTP GET operations, return response types (mapping happens in query factory):
 
 ```typescript
 export async function getQuotation(id: number): Promise<QuotationDetailsResponse> {
@@ -417,7 +463,7 @@ Before adding any export to `index.ts`, ask:
    - If only used internally → Don't export
 
 2. **Is this an implementation detail?**
-   - DTOs, mappers, internal helpers → Don't export
+   - Response/Request types, mappers, internal helpers → Don't export
 
 3. **Can consumers achieve this through existing exports?**
    - If yes → Don't add redundant export
