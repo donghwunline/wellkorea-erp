@@ -6,7 +6,24 @@
  */
 
 import { DomainValidationError, httpClient, PRODUCT_ENDPOINTS } from '@/shared/api';
-import type { CommandResult, UpdateProductRequest } from './product.dto';
+import type { CommandResult } from './product.mapper';
+
+// =============================================================================
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Update product request to backend.
+ */
+interface UpdateProductRequest {
+  sku?: string | null;
+  name?: string | null;
+  description?: string | null;
+  productTypeId?: number | null;
+  baseUnitPrice?: number | null;
+  unit?: string | null;
+  isActive?: boolean | null;
+}
 
 // =============================================================================
 // INPUT TYPES

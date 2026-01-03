@@ -69,9 +69,3 @@ export { deleteProduct, type DeleteProductInput } from './api/delete-product';
 // =============================================================================
 
 export { searchProductsApi, type SearchProductsResult } from './api/search-products';
-
-// =============================================================================
-// DTO TYPES (for features layer if needed)
-// =============================================================================
-
-export type { CommandResult } from './api/product.dto';

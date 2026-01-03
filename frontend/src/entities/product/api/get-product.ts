@@ -11,7 +11,7 @@ import type {
   ProductDetailResponse,
   ProductSummaryResponse,
   ProductTypeResponse,
-} from './product.dto';
+} from './product.mapper';
 
 // =============================================================================
 // API RESPONSE TYPE

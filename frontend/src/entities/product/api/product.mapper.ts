@@ -1,17 +1,69 @@
 /**
- * Product Mapper.
+ * Product Response ↔ Domain mappers.
  *
- * Internal module for mapping between DTOs and domain models.
- * This should NOT be exported from the entity barrel.
+ * Transforms API responses to domain models.
  */
 
 import type { Product, ProductListItem } from '../model/product';
 import type { ProductType } from '../model/product-type';
-import type {
-  ProductDetailResponse,
-  ProductSummaryResponse,
-  ProductTypeResponse,
-} from './product.dto';
+
+// =============================================================================
+// RESPONSE TYPES
+// =============================================================================
+
+/**
+ * Product type response from backend.
+ */
+export interface ProductTypeResponse {
+  id: number;
+  name: string;
+  description?: string | null;
+  createdAt: string;
+}
+
+/**
+ * Product summary response from backend (list view).
+ */
+export interface ProductSummaryResponse {
+  id: number;
+  sku: string;
+  name: string;
+  description?: string | null;
+  productTypeId: number;
+  productTypeName: string;
+  baseUnitPrice?: number | null;
+  unit: string;
+  isActive: boolean;
+}
+
+/**
+ * Full product details response from backend.
+ */
+export interface ProductDetailResponse {
+  id: number;
+  sku: string;
+  name: string;
+  description?: string | null;
+  productTypeId: number;
+  productTypeName: string;
+  baseUnitPrice?: number | null;
+  unit: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Command result returned by create/update/delete operations.
+ */
+export interface CommandResult {
+  id: number;
+  message: string;
+}
+
+// =============================================================================
+// MAPPERS
+// =============================================================================
 
 /**
  * Product mapper functions.
@@ -20,36 +72,36 @@ export const productMapper = {
   /**
    * Map product detail response to domain model.
    */
-  toDomain(dto: ProductDetailResponse): Product {
+  toDomain(response: ProductDetailResponse): Product {
     return {
-      id: dto.id,
-      sku: dto.sku,
-      name: dto.name,
-      description: dto.description ?? null,
-      productTypeId: dto.productTypeId,
-      productTypeName: dto.productTypeName,
-      baseUnitPrice: dto.baseUnitPrice ?? null,
-      unit: dto.unit,
-      isActive: dto.isActive,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      id: response.id,
+      sku: response.sku,
+      name: response.name,
+      description: response.description ?? null,
+      productTypeId: response.productTypeId,
+      productTypeName: response.productTypeName,
+      baseUnitPrice: response.baseUnitPrice ?? null,
+      unit: response.unit,
+      isActive: response.isActive,
+      createdAt: response.createdAt,
+      updatedAt: response.updatedAt,
     };
   },
 
   /**
    * Map product summary response to list item.
    */
-  toListItem(dto: ProductSummaryResponse): ProductListItem {
+  toListItem(response: ProductSummaryResponse): ProductListItem {
     return {
-      id: dto.id,
-      sku: dto.sku,
-      name: dto.name,
-      description: dto.description ?? null,
-      productTypeId: dto.productTypeId,
-      productTypeName: dto.productTypeName,
-      baseUnitPrice: dto.baseUnitPrice ?? null,
-      unit: dto.unit,
-      isActive: dto.isActive,
+      id: response.id,
+      sku: response.sku,
+      name: response.name,
+      description: response.description ?? null,
+      productTypeId: response.productTypeId,
+      productTypeName: response.productTypeName,
+      baseUnitPrice: response.baseUnitPrice ?? null,
+      unit: response.unit,
+      isActive: response.isActive,
     };
   },
 };
@@ -61,12 +113,12 @@ export const productTypeMapper = {
   /**
    * Map product type response to domain model.
    */
-  toDomain(dto: ProductTypeResponse): ProductType {
+  toDomain(response: ProductTypeResponse): ProductType {
     return {
-      id: dto.id,
-      name: dto.name,
-      description: dto.description ?? null,
-      createdAt: dto.createdAt,
+      id: response.id,
+      name: response.name,
+      description: response.description ?? null,
+      createdAt: response.createdAt,
     };
   },
 };
