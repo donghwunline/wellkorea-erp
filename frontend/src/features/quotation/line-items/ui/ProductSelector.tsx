@@ -22,7 +22,7 @@ import {
   Input,
   Table,
 } from '@/shared/ui';
-import type { ProductLineItem, ProductSelectorProps } from './types';
+import type { ProductLineItem, ProductSelectorProps } from '../model/types';
 
 interface SelectedProduct {
   productId: number;

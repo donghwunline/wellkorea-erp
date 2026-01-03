@@ -7,4 +7,4 @@
  */
 
 export { ProductSelector } from './ui/ProductSelector';
-export type { ProductLineItem, ProductSelectorProps } from './ui/types';
+export type { ProductLineItem, ProductSelectorProps } from './model/types';
