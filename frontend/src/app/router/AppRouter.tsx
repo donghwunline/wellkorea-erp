@@ -14,8 +14,8 @@ import { NotFoundPage } from './components/NotFoundPage';
 import { PlaceholderPage } from './components/PlaceholderPage';
 
 // Page imports
-import { LoginPage } from '@/pages/LoginPage';
-import { DashboardPage } from '@/pages/DashboardPage';
+import { LoginPage } from '@/pages/auth';
+import { DashboardPage } from '@/pages/dashboard';
 import { UserManagementPage } from '@/pages/admin/UserManagementPage';
 import { AuditLogPage } from '@/pages/admin/AuditLogPage';
 import { ApprovalChainConfigPage } from '@/pages/approval/ApprovalChainConfigPage';
