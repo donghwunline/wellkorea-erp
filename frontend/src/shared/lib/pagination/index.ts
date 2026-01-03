@@ -1,13 +1,18 @@
 /**
  * Shared pagination utilities.
  *
- * Provides reusable pagination types and search state management.
+ * Provides reusable pagination types, transforms, and search state management.
  */
 
-export type { Paginated, PaginationMetadata } from './types.ts';
+// Types
+export type { Paginated, PaginationMetadata, PagedResponse } from './types';
 
+// Transform utilities
+export { transformPagedResponse, createEmptyPaginated } from './transform';
+
+// Search hook
 export {
   usePaginatedSearch,
   type UsePaginatedSearchOptions,
   type UsePaginatedSearchReturn,
-} from './usePaginatedSearch.ts';
+} from './usePaginatedSearch';

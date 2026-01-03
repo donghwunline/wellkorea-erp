@@ -5,9 +5,12 @@
  * Returns raw DTOs - mapping to domain models happens in query factory.
  */
 
-import { httpClient, QUOTATION_ENDPOINTS, transformPagedResponse } from '@/shared/api';
-import type { PagedResponse } from '@/shared/api/types';
-import type { Paginated } from '@/shared/lib/pagination';
+import { httpClient, QUOTATION_ENDPOINTS } from '@/shared/api';
+import {
+  transformPagedResponse,
+  type PagedResponse,
+  type Paginated,
+} from '@/shared/lib/pagination';
 import type { QuotationDetailsResponse, QuotationListParams } from './quotation.dto';
 
 /**
