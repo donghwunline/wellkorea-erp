@@ -1,8 +1,7 @@
 /**
- * Approval API mappers.
+ * Approval Response ↔ Domain mappers.
  *
- * Maps DTOs to domain models and vice versa.
- * Always normalize/trim strings from API responses.
+ * Transforms API responses to domain models.
  */
 
 import type { Approval, ApprovalListItem } from '../model/approval';
@@ -10,30 +9,100 @@ import type { ApprovalLevel } from '../model/approval-level';
 import type { ApprovalHistory, ApprovalHistoryAction } from '../model/approval-history';
 import type { ApprovalStatus } from '../model/approval-status';
 import type { EntityType } from '../model/entity-type';
-import type {
-  ApprovalDetailsDTO,
-  LevelDecisionDTO,
-  ApprovalHistoryDTO,
-} from './approval.dto';
+
+// =============================================================================
+// RESPONSE TYPES
+// =============================================================================
+
+/**
+ * Command result from CQRS command endpoints.
+ */
+export interface CommandResult {
+  id: number;
+  message: string;
+}
+
+/**
+ * Level decision from API response.
+ */
+export interface LevelDecisionResponse {
+  levelOrder: number;
+  levelName: string;
+  expectedApproverUserId: number;
+  expectedApproverName: string;
+  decision: string; // Will be cast to ApprovalStatus
+  decidedByUserId: number | null;
+  decidedByName: string | null;
+  decidedAt: string | null;
+  comments: string | null;
+}
+
+/**
+ * Approval details from API response.
+ */
+export interface ApprovalDetailsResponse {
+  id: number;
+  entityType: string; // Will be cast to EntityType
+  entityId: number;
+  entityDescription: string | null;
+  currentLevel: number;
+  totalLevels: number;
+  status: string; // Will be cast to ApprovalStatus
+  submittedById: number;
+  submittedByName: string;
+  submittedAt: string;
+  completedAt: string | null;
+  createdAt: string;
+  levels: LevelDecisionResponse[] | null;
+}
+
+/**
+ * Approval history entry from API response.
+ */
+export interface ApprovalHistoryResponse {
+  id: number;
+  levelOrder: number | null;
+  levelName: string | null;
+  action: string; // Will be cast to ApprovalHistoryAction
+  actorId: number;
+  actorName: string;
+  comments: string | null;
+  createdAt: string;
+}
+
+/**
+ * Query parameters for listing approvals.
+ */
+export interface ApprovalListParams {
+  page?: number;
+  size?: number;
+  entityType?: string;
+  status?: string;
+  myPending?: boolean;
+}
+
+// =============================================================================
+// MAPPERS
+// =============================================================================
 
 /**
  * Approval level mapper.
  */
 export const approvalLevelMapper = {
   /**
-   * Map API DTO to domain model.
+   * Map API response to domain model.
    */
-  toDomain(dto: LevelDecisionDTO): ApprovalLevel {
+  toDomain(response: LevelDecisionResponse): ApprovalLevel {
     return {
-      levelOrder: dto.levelOrder,
-      levelName: dto.levelName.trim(),
-      expectedApproverUserId: dto.expectedApproverUserId,
-      expectedApproverName: dto.expectedApproverName.trim(),
-      decision: dto.decision as ApprovalStatus,
-      decidedByUserId: dto.decidedByUserId,
-      decidedByName: dto.decidedByName?.trim() ?? null,
-      decidedAt: dto.decidedAt,
-      comments: dto.comments?.trim() ?? null,
+      levelOrder: response.levelOrder,
+      levelName: response.levelName.trim(),
+      expectedApproverUserId: response.expectedApproverUserId,
+      expectedApproverName: response.expectedApproverName.trim(),
+      decision: response.decision as ApprovalStatus,
+      decidedByUserId: response.decidedByUserId,
+      decidedByName: response.decidedByName?.trim() ?? null,
+      decidedAt: response.decidedAt,
+      comments: response.comments?.trim() ?? null,
     };
   },
 };
@@ -43,24 +112,24 @@ export const approvalLevelMapper = {
  */
 export const approvalMapper = {
   /**
-   * Map API DTO to domain model.
+   * Map API response to domain model.
    */
-  toDomain(dto: ApprovalDetailsDTO): Approval {
-    const levels = dto.levels?.map(approvalLevelMapper.toDomain) ?? null;
+  toDomain(response: ApprovalDetailsResponse): Approval {
+    const levels = response.levels?.map(approvalLevelMapper.toDomain) ?? null;
 
     return {
-      id: dto.id,
-      entityType: dto.entityType as EntityType,
-      entityId: dto.entityId,
-      entityDescription: dto.entityDescription?.trim() ?? null,
-      currentLevel: dto.currentLevel,
-      totalLevels: dto.totalLevels,
-      status: dto.status as ApprovalStatus,
-      submittedById: dto.submittedById,
-      submittedByName: dto.submittedByName.trim(),
-      submittedAt: dto.submittedAt,
-      completedAt: dto.completedAt,
-      createdAt: dto.createdAt,
+      id: response.id,
+      entityType: response.entityType as EntityType,
+      entityId: response.entityId,
+      entityDescription: response.entityDescription?.trim() ?? null,
+      currentLevel: response.currentLevel,
+      totalLevels: response.totalLevels,
+      status: response.status as ApprovalStatus,
+      submittedById: response.submittedById,
+      submittedByName: response.submittedByName.trim(),
+      submittedAt: response.submittedAt,
+      completedAt: response.completedAt,
+      createdAt: response.createdAt,
       levels,
     };
   },
@@ -83,19 +152,19 @@ export const approvalMapper = {
   },
 
   /**
-   * Map DTO directly to list item (skip full domain conversion).
+   * Map response directly to list item (skip full domain conversion).
    */
-  dtoToListItem(dto: ApprovalDetailsDTO): ApprovalListItem {
+  responseToListItem(response: ApprovalDetailsResponse): ApprovalListItem {
     return {
-      id: dto.id,
-      entityType: dto.entityType as EntityType,
-      entityId: dto.entityId,
-      entityDescription: dto.entityDescription?.trim() ?? null,
-      currentLevel: dto.currentLevel,
-      totalLevels: dto.totalLevels,
-      status: dto.status as ApprovalStatus,
-      submittedByName: dto.submittedByName.trim(),
-      submittedAt: dto.submittedAt,
+      id: response.id,
+      entityType: response.entityType as EntityType,
+      entityId: response.entityId,
+      entityDescription: response.entityDescription?.trim() ?? null,
+      currentLevel: response.currentLevel,
+      totalLevels: response.totalLevels,
+      status: response.status as ApprovalStatus,
+      submittedByName: response.submittedByName.trim(),
+      submittedAt: response.submittedAt,
     };
   },
 };
@@ -105,18 +174,18 @@ export const approvalMapper = {
  */
 export const approvalHistoryMapper = {
   /**
-   * Map API DTO to domain model.
+   * Map API response to domain model.
    */
-  toDomain(dto: ApprovalHistoryDTO): ApprovalHistory {
+  toDomain(response: ApprovalHistoryResponse): ApprovalHistory {
     return {
-      id: dto.id,
-      levelOrder: dto.levelOrder,
-      levelName: dto.levelName?.trim() ?? null,
-      action: dto.action as ApprovalHistoryAction,
-      actorId: dto.actorId,
-      actorName: dto.actorName.trim(),
-      comments: dto.comments?.trim() ?? null,
-      createdAt: dto.createdAt,
+      id: response.id,
+      levelOrder: response.levelOrder,
+      levelName: response.levelName?.trim() ?? null,
+      action: response.action as ApprovalHistoryAction,
+      actorId: response.actorId,
+      actorName: response.actorName.trim(),
+      comments: response.comments?.trim() ?? null,
+      createdAt: response.createdAt,
     };
   },
 };

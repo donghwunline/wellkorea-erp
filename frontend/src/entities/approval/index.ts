@@ -54,11 +54,7 @@ export { approvalQueries, type ApprovalListQueryParams } from './api/approval.qu
 // Use with useMutation() directly
 // =============================================================================
 
-export {
-  approveApproval,
-  type ApproveApprovalInput,
-  type ApprovalCommandResult,
-} from './api/approve-approval';
+export { approveApproval, type ApproveApprovalInput } from './api/approve-approval';
 export { rejectApproval, type RejectApprovalInput } from './api/reject-approval';
 
 // =============================================================================
@@ -77,4 +73,3 @@ export type { ApprovalLevelListProps } from './ui/ApprovalLevelList';
 
 export { ApprovalRequestCard } from './ui/ApprovalRequestCard';
 export type { ApprovalRequestCardProps } from './ui/ApprovalRequestCard';
-

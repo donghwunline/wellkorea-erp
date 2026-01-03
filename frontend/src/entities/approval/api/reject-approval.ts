@@ -6,7 +6,19 @@
  */
 
 import { httpClient, APPROVAL_ENDPOINTS } from '@/shared/api';
-import type { ApprovalCommandResult } from './approve-approval';
+import type { CommandResult } from './approval.mapper';
+
+// =============================================================================
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Request for rejecting.
+ */
+interface RejectRequest {
+  reason: string;
+  comments?: string;
+}
 
 // =============================================================================
 // INPUT TYPE
@@ -47,6 +59,20 @@ function validateRejectInput(input: RejectApprovalInput): void {
 }
 
 // =============================================================================
+// MAPPING
+// =============================================================================
+
+/**
+ * Map reject input to API request.
+ */
+function toRejectRequest(input: RejectApprovalInput): RejectRequest {
+  return {
+    reason: input.reason.trim(),
+    comments: input.comments?.trim() || undefined,
+  };
+}
+
+// =============================================================================
 // COMMAND FUNCTION
 // =============================================================================
 
@@ -67,11 +93,8 @@ function validateRejectInput(input: RejectApprovalInput): void {
  * mutation.mutate({ id: 123, reason: '가격 검토 필요' });
  * ```
  */
-export async function rejectApproval(input: RejectApprovalInput): Promise<ApprovalCommandResult> {
+export async function rejectApproval(input: RejectApprovalInput): Promise<CommandResult> {
   validateRejectInput(input);
-
-  return httpClient.post<ApprovalCommandResult>(
-    APPROVAL_ENDPOINTS.reject(input.id),
-    { reason: input.reason, comments: input.comments }
-  );
+  const request = toRejectRequest(input);
+  return httpClient.post<CommandResult>(APPROVAL_ENDPOINTS.reject(input.id), request);
 }

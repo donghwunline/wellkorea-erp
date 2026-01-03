@@ -6,17 +6,17 @@
  */
 
 import { httpClient, APPROVAL_ENDPOINTS } from '@/shared/api';
+import type { CommandResult } from './approval.mapper';
 
 // =============================================================================
-// COMMAND RESULT TYPE
+// REQUEST TYPE (internal)
 // =============================================================================
 
 /**
- * Result from approval command.
+ * Request for approving.
  */
-export interface ApprovalCommandResult {
-  id: number;
-  message: string;
+interface ApproveRequest {
+  comments?: string;
 }
 
 // =============================================================================
@@ -58,9 +58,9 @@ export interface ApproveApprovalInput {
  * mutation.mutate({ id: 123, comments: '승인합니다' });
  * ```
  */
-export async function approveApproval(input: ApproveApprovalInput): Promise<ApprovalCommandResult> {
-  const request = input.comments ? { comments: input.comments } : undefined;
-  return httpClient.post<ApprovalCommandResult>(
+export async function approveApproval(input: ApproveApprovalInput): Promise<CommandResult> {
+  const request: ApproveRequest | undefined = input.comments ? { comments: input.comments } : undefined;
+  return httpClient.post<CommandResult>(
     APPROVAL_ENDPOINTS.approve(input.id),
     request
   );

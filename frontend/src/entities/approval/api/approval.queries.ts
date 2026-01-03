@@ -23,8 +23,9 @@ import type { Approval } from '../model/approval';
 import type { ApprovalHistory } from '../model/approval-history';
 import type { ApprovalStatus } from '../model/approval-status';
 import type { EntityType } from '../model/entity-type';
-import { approvalApi } from './approval.api';
 import { approvalMapper, approvalHistoryMapper } from './approval.mapper';
+import { getApproval, getApprovals } from './get-approval';
+import { getApprovalHistory } from './get-approval-history';
 
 // =============================================================================
 // Query Parameters
@@ -77,7 +78,7 @@ export const approvalQueries = {
         params.myPending ?? false,
       ] as const,
       queryFn: async (): Promise<Paginated<Approval>> => {
-        const response = await approvalApi.getList({
+        const response = await getApprovals({
           page: params.page ?? 0,
           size: params.size ?? 10,
           entityType: params.entityType ?? undefined,
@@ -104,8 +105,8 @@ export const approvalQueries = {
     queryOptions({
       queryKey: [...approvalQueries.details(), id] as const,
       queryFn: async (): Promise<Approval> => {
-        const dto = await approvalApi.getById(id);
-        return approvalMapper.toDomain(dto);
+        const response = await getApproval(id);
+        return approvalMapper.toDomain(response);
       },
       enabled: id > 0,
     }),
@@ -121,8 +122,8 @@ export const approvalQueries = {
     queryOptions({
       queryKey: [...approvalQueries.histories(), id] as const,
       queryFn: async (): Promise<ApprovalHistory[]> => {
-        const dtos = await approvalApi.getHistory(id);
-        return dtos.map(approvalHistoryMapper.toDomain);
+        const responses = await getApprovalHistory(id);
+        return responses.map(approvalHistoryMapper.toDomain);
       },
       enabled: id > 0,
     }),
