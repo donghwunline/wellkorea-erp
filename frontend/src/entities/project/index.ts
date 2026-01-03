@@ -88,22 +88,3 @@ export {
   type ProjectKPIStripProps,
 } from './ui/ProjectKPIStrip';
 export { ProjectCombobox, type ProjectComboboxProps } from './ui/ProjectCombobox';
-
-// =============================================================================
-// LEGACY EXPORTS (backward compatibility - to be removed after migration)
-// =============================================================================
-
-/** @deprecated Use projectQueries and command functions instead */
-export { projectApi } from './api/project.api';
-
-/** @deprecated Use projectQueries with projectMapper */
-export { projectSummaryApi } from './api/project-summary.api';
-
-/** @deprecated Use projectMapper from api layer internally only */
-export { projectMapper } from './api/project.mapper';
-
-/** @deprecated Use CreateProjectInput instead */
-export type { CreateProjectRequestDTO as CreateProjectRequest } from './api/project.dto';
-
-/** @deprecated Use UpdateProjectInput instead */
-export type { UpdateProjectRequestDTO as UpdateProjectRequest } from './api/project.dto';
