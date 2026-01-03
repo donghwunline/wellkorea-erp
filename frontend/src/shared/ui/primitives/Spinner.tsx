@@ -13,7 +13,7 @@
  * ```
  */
 
-import { cn } from '../lib';
+import { cn } from '@/shared/lib/cn';
 
 export interface SpinnerProps {
   /** Size of the spinner */

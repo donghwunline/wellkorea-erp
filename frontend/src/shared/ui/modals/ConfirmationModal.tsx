@@ -26,7 +26,7 @@ import { Alert } from '../feedback/Alert';
 import { Button } from '../primitives/Button';
 import { Modal } from './Modal';
 import { ModalActions } from './ModalActions';
-import { cn } from '../lib';
+import { cn } from '@/shared/lib/cn';
 
 export interface ConfirmationModalProps {
   /** Controls modal visibility */

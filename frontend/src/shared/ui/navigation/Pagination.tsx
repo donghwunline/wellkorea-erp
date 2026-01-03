@@ -21,7 +21,7 @@
  * ```
  */
 
-import { cn } from '../lib';
+import { cn } from '@/shared/lib/cn';
 
 export interface PaginationProps {
   /** Current page (0-indexed) */

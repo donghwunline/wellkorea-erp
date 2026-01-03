@@ -18,7 +18,9 @@
  */
 
 import { type ReactNode, useEffect } from 'react';
-import { cn, useBodyScrollLock, useFocusTrap } from '../lib';
+import { cn } from '@/shared/lib/cn';
+import { useFocusTrap } from '../lib/useFocusTrap';
+import { useBodyScrollLock } from '../lib/useBodyScrollLock';
 
 export interface ModalProps {
   /** Controls modal visibility */

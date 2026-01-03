@@ -29,7 +29,7 @@ import {
 } from 'react';
 import { Badge, type BadgeVariant } from '../primitives/Badge';
 import { Icon, type IconName } from '../primitives/Icon';
-import { cn } from '../lib';
+import { cn } from '@/shared/lib/cn';
 
 // ============================================================================
 // Types

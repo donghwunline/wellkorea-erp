@@ -6,7 +6,7 @@
  */
 
 import type { HTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
-import { cn } from '../lib';
+import { cn } from '@/shared/lib/cn';
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;

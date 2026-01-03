@@ -15,7 +15,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { cn } from '../lib';
+import { cn } from '@/shared/lib/cn';
 
 export type AlertVariant = 'info' | 'success' | 'warning' | 'error';
 
