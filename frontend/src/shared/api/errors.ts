@@ -1,43 +1,22 @@
 /**
- * Domain validation error handling.
+ * API Error Handling.
  *
- * Provides structured error types for domain validation that can be
- * mapped to form field errors in the UI layer.
+ * Bridges API error responses to domain validation errors.
+ * Converts backend 400 responses to structured DomainValidationError.
  */
 
-/**
- * DomainValidationError - Structured error for domain validation failures.
- *
- * Use class (not interface casting) for:
- * - Proper instanceof checks
- * - Correct Error.name and stack trace
- * - Type guards that work at runtime
- */
-export class DomainValidationError extends Error {
-  readonly code: string; // Machine-readable: 'REQUIRED', 'INVALID_FORMAT', 'OUT_OF_RANGE'
-  readonly fieldPath: string; // Form field path: 'projectId', 'lineItems[0].quantity'
+import {
+  DomainValidationError,
+  isDomainValidationError,
+} from '@/shared/lib/errors/domain-validation-error';
 
-  constructor(code: string, fieldPath: string, message: string) {
-    super(message);
-    this.name = 'DomainValidationError';
-    this.code = code;
-    this.fieldPath = fieldPath;
+// Re-export for backward compatibility
+// TODO: Update imports to use '@/shared/lib/errors/domain-validation-error' directly
+export { DomainValidationError, isDomainValidationError };
 
-    // Maintains proper stack trace in V8 environments (Node, Chrome)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((Error as any).captureStackTrace) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (Error as any).captureStackTrace(this, DomainValidationError);
-    }
-  }
-}
-
-/**
- * Type guard for DomainValidationError.
- */
-export function isDomainValidationError(error: unknown): error is DomainValidationError {
-  return error instanceof DomainValidationError;
-}
+// =============================================================================
+// API Error Types
+// =============================================================================
 
 /**
  * API validation error shape (from backend 400 responses).
@@ -54,6 +33,10 @@ interface ApiValidationError {
 interface ApiErrorResponse {
   errors: ApiValidationError[];
 }
+
+// =============================================================================
+// API Error Utilities
+// =============================================================================
 
 /**
  * Check if an object is an API error response.
