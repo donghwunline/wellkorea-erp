@@ -6,6 +6,9 @@
  * can import directly from this module.
  */
 
-export { cn } from './cn';
+// Re-export cn from shared/lib for internal UI component use
+export { cn } from '@/shared/lib';
+
+// Internal hooks for modal/overlay components
 export { useFocusTrap, type UseFocusTrapOptions } from './useFocusTrap';
 export { useBodyScrollLock } from './useBodyScrollLock';

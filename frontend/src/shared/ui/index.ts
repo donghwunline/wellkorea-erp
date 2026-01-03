@@ -11,11 +11,8 @@
  * - layout/        - Page structure (PageHeader)
  *
  * Internal utilities (lib/) are used internally by UI components.
- * External consumers should import cn from @/shared/ui.
+ * For className utility, import cn from @/shared/lib.
  */
-
-// Utility exports (for external use)
-export { cn } from './lib';
 
 // Primitives - Atomic building blocks
 export * from './primitives';

@@ -15,7 +15,7 @@ import { Card, Icon } from '@/shared/ui';
 import type { IconName } from '@/shared/ui/primitives/Icon';
 import type { ProjectSection, ProjectSectionSummary } from '../model/project';
 import { formatCurrency } from '@/shared/lib/formatting';
-import { cn } from '@/shared/ui';
+import { cn } from '@/shared/lib';
 
 export interface ProjectSummaryCardProps {
   /** Section summary data */
