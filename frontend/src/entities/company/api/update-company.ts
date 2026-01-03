@@ -6,7 +6,28 @@
  */
 
 import { DomainValidationError, httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
-import type { CommandResult, UpdateCompanyRequest } from './company.dto';
+import type { CommandResult } from './company.mapper';
+
+// =============================================================================
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Update company request.
+ */
+interface UpdateCompanyRequest {
+  name?: string | null;
+  registrationNumber?: string | null;
+  representative?: string | null;
+  businessType?: string | null;
+  businessCategory?: string | null;
+  contactPerson?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  bankAccount?: string | null;
+  paymentTerms?: string | null;
+}
 
 // =============================================================================
 // INPUT TYPES

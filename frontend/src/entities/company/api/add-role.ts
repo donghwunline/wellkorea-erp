@@ -6,7 +6,21 @@
 
 import { DomainValidationError, httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
 import type { RoleType } from '../model/role-type';
-import type { CommandResult, AddRoleRequest } from './company.dto';
+import type { CommandResult } from './company.mapper';
+
+// =============================================================================
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Add role to company request.
+ */
+interface AddRoleRequest {
+  roleType: RoleType;
+  creditLimit?: number | null;
+  defaultPaymentDays?: number | null;
+  notes?: string | null;
+}
 
 // =============================================================================
 // INPUT TYPES

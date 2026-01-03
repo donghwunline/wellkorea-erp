@@ -71,12 +71,6 @@ export { addRole, type AddRoleInput } from './api/add-role';
 export { removeRole, type RemoveRoleInput } from './api/remove-role';
 
 // =============================================================================
-// DTO TYPES (for features layer if needed)
-// =============================================================================
-
-export type { CommandResult } from './api/company.dto';
-
-// =============================================================================
 // UI COMPONENTS
 // Display-only components with no side effects
 // =============================================================================

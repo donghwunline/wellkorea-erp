@@ -14,7 +14,7 @@ import type {
   CompanyDetailsResponse,
   CompanySummaryResponse,
   CompanyListParams,
-} from './company.dto';
+} from './company.mapper';
 
 /**
  * Get company by ID.

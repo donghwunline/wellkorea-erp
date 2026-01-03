@@ -7,7 +7,29 @@
 
 import { DomainValidationError, httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
 import type { RoleType } from '../model/role-type';
-import type { CommandResult, CreateCompanyRequest } from './company.dto';
+import type { CommandResult } from './company.mapper';
+
+// =============================================================================
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Create company request.
+ */
+interface CreateCompanyRequest {
+  name: string;
+  registrationNumber?: string | null;
+  representative?: string | null;
+  businessType?: string | null;
+  businessCategory?: string | null;
+  contactPerson?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  bankAccount?: string | null;
+  paymentTerms?: string | null;
+  roles: RoleType[];
+}
 
 // =============================================================================
 // INPUT TYPES
