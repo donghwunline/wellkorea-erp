@@ -5,7 +5,12 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { chainTemplateApi, chainTemplateQueries, type ChainLevelInput } from '@/entities/approval-chain';
+import {
+  updateChainLevels,
+  chainTemplateQueries,
+  type ChainLevelInput,
+  type ChainCommandResult,
+} from '@/entities/approval-chain';
 
 /**
  * Input for update chain levels mutation.
@@ -23,21 +28,13 @@ export interface UpdateChainLevelsInput {
 }
 
 /**
- * Command result from update operation.
- */
-interface CommandResult {
-  id: number;
-  message: string;
-}
-
-/**
  * Options for useUpdateChainLevels hook.
  */
 export interface UseUpdateChainLevelsOptions {
   /**
    * Callback on successful update.
    */
-  onSuccess?: (result: CommandResult) => void;
+  onSuccess?: (result: ChainCommandResult) => void;
 
   /**
    * Callback on error.
@@ -57,13 +54,13 @@ export interface UseUpdateChainLevelsOptions {
  * ```tsx
  * function ChainEditor({ templateId }: Props) {
  *   const [levels, setLevels] = useState<ChainLevelInput[]>([]);
- *   const { mutate: updateLevels, isPending } = useUpdateChainLevels({
+ *   const { mutate: update, isPending } = useUpdateChainLevels({
  *     onSuccess: () => toast.success('Chain updated successfully'),
  *     onError: (err) => toast.error(err.message),
  *   });
  *
  *   const handleSave = () => {
- *     updateLevels({ templateId, levels });
+ *     update({ templateId, levels });
  *   };
  *
  *   return (
@@ -79,9 +76,8 @@ export function useUpdateChainLevels(options: UseUpdateChainLevelsOptions = {}) 
   const { onSuccess, onError } = options;
 
   return useMutation({
-    mutationFn: async (input: UpdateChainLevelsInput): Promise<CommandResult> => {
-      return chainTemplateApi.updateLevels(input.templateId, input.levels);
-    },
+    mutationFn: (input: UpdateChainLevelsInput) =>
+      updateChainLevels(input.templateId, input.levels),
 
     onSuccess: (result) => {
       // Invalidate chain template caches
