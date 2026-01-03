@@ -1,55 +1,85 @@
 /**
- * Chain Template Mapper.
+ * Chain Template Response ↔ Domain mappers.
  *
- * Converts between DTOs and domain models.
+ * Transforms API responses to domain models.
  */
 
-import type { ChainLevel, ChainLevelInput, ChainTemplate } from '../model/chain-template';
-import type { ChainLevelDTO, ChainLevelRequestDTO, ChainTemplateDTO } from './chain-template.dto';
+import type { EntityType } from '@/entities/approval';
+import type { ChainLevel, ChainTemplate } from '../model/chain-template';
+
+// =============================================================================
+// RESPONSE TYPES
+// =============================================================================
+
+/**
+ * Command result from CQRS command endpoints.
+ */
+export interface CommandResult {
+  id: number;
+  message: string;
+}
+
+/**
+ * Chain level from API response.
+ */
+export interface ChainLevelResponse {
+  id: number;
+  levelOrder: number;
+  levelName: string;
+  approverUserId: number;
+  approverUserName: string;
+  isRequired: boolean;
+}
+
+/**
+ * Chain template from API response.
+ */
+export interface ChainTemplateResponse {
+  id: number;
+  entityType: EntityType;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  levels: ChainLevelResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// =============================================================================
+// MAPPERS
+// =============================================================================
 
 /**
  * Mapper for chain template entities.
  */
 export const chainTemplateMapper = {
   /**
-   * Map ChainLevelDTO to domain model.
+   * Map ChainLevelResponse to domain model.
    */
-  toLevel(dto: ChainLevelDTO): ChainLevel {
+  toLevel(response: ChainLevelResponse): ChainLevel {
     return {
-      id: dto.id,
-      levelOrder: dto.levelOrder,
-      levelName: dto.levelName?.trim() ?? '',
-      approverUserId: dto.approverUserId,
-      approverUserName: dto.approverUserName?.trim() ?? '',
-      isRequired: dto.isRequired,
+      id: response.id,
+      levelOrder: response.levelOrder,
+      levelName: response.levelName?.trim() ?? '',
+      approverUserId: response.approverUserId,
+      approverUserName: response.approverUserName?.trim() ?? '',
+      isRequired: response.isRequired,
     };
   },
 
   /**
-   * Map ChainTemplateDTO to domain model.
+   * Map ChainTemplateResponse to domain model.
    */
-  toTemplate(dto: ChainTemplateDTO): ChainTemplate {
+  toTemplate(response: ChainTemplateResponse): ChainTemplate {
     return {
-      id: dto.id,
-      entityType: dto.entityType,
-      name: dto.name?.trim() ?? '',
-      description: dto.description?.trim() ?? null,
-      isActive: dto.isActive,
-      levels: dto.levels?.map(this.toLevel) ?? [],
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-    };
-  },
-
-  /**
-   * Map ChainLevelInput to request DTO.
-   */
-  toLevelRequest(input: ChainLevelInput): ChainLevelRequestDTO {
-    return {
-      levelOrder: input.levelOrder,
-      levelName: input.levelName,
-      approverUserId: input.approverUserId,
-      isRequired: input.isRequired,
+      id: response.id,
+      entityType: response.entityType,
+      name: response.name?.trim() ?? '',
+      description: response.description?.trim() ?? null,
+      isActive: response.isActive,
+      levels: response.levels?.map(l => chainTemplateMapper.toLevel(l)) ?? [],
+      createdAt: response.createdAt,
+      updatedAt: response.updatedAt,
     };
   },
 };

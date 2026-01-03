@@ -6,18 +6,27 @@
 
 import { httpClient, APPROVAL_CHAIN_ENDPOINTS } from '@/shared/api';
 import type { ChainLevelInput } from '../model/chain-template';
-import type { ChainLevelRequestDTO, UpdateChainLevelsRequestDTO } from './chain-template.dto';
+import type { CommandResult } from './chain-template.mapper';
 
 // =============================================================================
-// RESULT TYPE
+// REQUEST TYPES (internal)
 // =============================================================================
 
 /**
- * Command result from chain operations.
+ * Request for a single chain level.
  */
-export interface ChainCommandResult {
-  id: number;
-  message: string;
+interface ChainLevelRequest {
+  levelOrder: number;
+  levelName: string;
+  approverUserId: number;
+  isRequired: boolean;
+}
+
+/**
+ * Request for updating chain levels.
+ */
+interface UpdateChainLevelsRequest {
+  levels: ChainLevelRequest[];
 }
 
 // =============================================================================
@@ -25,9 +34,9 @@ export interface ChainCommandResult {
 // =============================================================================
 
 /**
- * Map ChainLevelInput to request DTO.
+ * Map ChainLevelInput to request.
  */
-function toLevelRequest(input: ChainLevelInput): ChainLevelRequestDTO {
+function toLevelRequest(input: ChainLevelInput): ChainLevelRequest {
   return {
     levelOrder: input.levelOrder,
     levelName: input.levelName,
@@ -58,9 +67,9 @@ function toLevelRequest(input: ChainLevelInput): ChainLevelRequestDTO {
 export async function updateChainLevels(
   templateId: number,
   levels: ChainLevelInput[]
-): Promise<ChainCommandResult> {
-  const request: UpdateChainLevelsRequestDTO = {
+): Promise<CommandResult> {
+  const request: UpdateChainLevelsRequest = {
     levels: levels.map(toLevelRequest),
   };
-  return httpClient.put<ChainCommandResult>(APPROVAL_CHAIN_ENDPOINTS.levels(templateId), request);
+  return httpClient.put<CommandResult>(APPROVAL_CHAIN_ENDPOINTS.levels(templateId), request);
 }

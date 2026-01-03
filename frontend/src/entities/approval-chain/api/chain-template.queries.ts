@@ -16,7 +16,8 @@
 
 import { queryOptions } from '@tanstack/react-query';
 import type { ChainTemplate } from '../model/chain-template';
-import { chainTemplateApi } from './chain-template.api';
+import { chainTemplateMapper } from './chain-template.mapper';
+import { getChainTemplates, getChainTemplate } from './get-chain-template';
 
 // =============================================================================
 // Query Factory
@@ -47,7 +48,8 @@ export const chainTemplateQueries = {
     queryOptions({
       queryKey: [...chainTemplateQueries.lists()] as const,
       queryFn: async (): Promise<ChainTemplate[]> => {
-        return chainTemplateApi.getAll();
+        const responses = await getChainTemplates();
+        return responses.map(chainTemplateMapper.toTemplate);
       },
     }),
 
@@ -62,7 +64,8 @@ export const chainTemplateQueries = {
     queryOptions({
       queryKey: [...chainTemplateQueries.details(), id] as const,
       queryFn: async (): Promise<ChainTemplate> => {
-        return chainTemplateApi.getById(id);
+        const response = await getChainTemplate(id);
+        return chainTemplateMapper.toTemplate(response);
       },
       enabled: id > 0,
     }),
