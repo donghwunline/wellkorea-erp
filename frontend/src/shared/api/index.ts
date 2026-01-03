@@ -5,7 +5,7 @@
 
 import { HttpClient } from './httpClient';
 import { tokenStore } from './tokenStore';
-import { navigation } from './navigation';
+import { navigation } from '@/shared/lib';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
@@ -64,13 +64,6 @@ export {
   normalizeApiErrors,
   extractErrorMessage,
 } from './errors';
-
-// Pagination utilities
-export { transformPagedResponse, createEmptyPaginated } from './pagination';
-
-// Storage and navigation utilities
-export { storage, authStorage } from './storage';
-export { navigation } from './navigation';
 
 // Re-export endpoint constants
 export {

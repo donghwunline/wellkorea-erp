@@ -11,7 +11,7 @@
  */
 
 import { create } from 'zustand';
-import { authStorage } from '@/shared/api';
+import { authStorage } from '@/shared/lib';
 import type { RoleName, User } from '@/entities/user';
 import type { AuthStore, LoginCredentials } from '../model/auth';
 import { authApi } from '../api/auth.api';

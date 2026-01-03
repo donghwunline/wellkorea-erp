@@ -17,7 +17,7 @@
 
 import type { ReactNode } from 'react';
 import React, { Component } from 'react';
-import { navigation } from '@/shared/api';
+import { navigation } from '@/shared/lib';
 
 interface Props {
   children: ReactNode;

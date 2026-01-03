@@ -6,10 +6,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tokenStore } from './tokenStore';
 // Import mocked module
-import { authStorage } from './storage';
+import { authStorage } from '@/shared/lib';
 
-// Mock authStorage module
-vi.mock('./storage', () => ({
+// Mock authStorage module (now in shared/lib)
+vi.mock('@/shared/lib', () => ({
   authStorage: {
     getAccessToken: vi.fn(),
     getRefreshToken: vi.fn(),
