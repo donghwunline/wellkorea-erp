@@ -17,23 +17,9 @@
 import { queryOptions, keepPreviousData } from '@tanstack/react-query';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { AuditLog } from '../model/audit-log';
-import { auditApi } from './audit.api';
+import { getAuditList, type GetAuditListParams } from './get-audit-list';
+import { getAuditById } from './get-audit-by-id';
 import { auditLogMapper } from './audit.mapper';
-
-// =============================================================================
-// Query Parameters
-// =============================================================================
-
-export interface AuditListQueryParams {
-  page?: number;
-  size?: number;
-  sort?: string;
-  username?: string;
-  action?: string;
-  entityType?: string;
-  startDate?: string;
-  endDate?: string;
-}
 
 // =============================================================================
 // Query Factory
@@ -60,7 +46,7 @@ export const auditQueries = {
   /**
    * Query options for paginated audit log list.
    */
-  list: (params: AuditListQueryParams = {}) =>
+  list: (params: GetAuditListParams = {}) =>
     queryOptions({
       queryKey: [
         ...auditQueries.lists(),
@@ -74,7 +60,7 @@ export const auditQueries = {
         params.endDate ?? '',
       ] as const,
       queryFn: async (): Promise<Paginated<AuditLog>> => {
-        const response = await auditApi.getList({
+        const response = await getAuditList({
           page: params.page ?? 0,
           size: params.size ?? 10,
           sort: params.sort,
@@ -104,8 +90,8 @@ export const auditQueries = {
     queryOptions({
       queryKey: [...auditQueries.details(), id] as const,
       queryFn: async (): Promise<AuditLog> => {
-        const dto = await auditApi.getById(id);
-        return auditLogMapper.toDomain(dto);
+        const response = await getAuditById(id);
+        return auditLogMapper.toDomain(response);
       },
       enabled: id > 0,
     }),

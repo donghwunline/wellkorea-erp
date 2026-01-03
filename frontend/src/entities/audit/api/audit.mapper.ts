@@ -1,38 +1,55 @@
 /**
- * Audit log mapper.
+ * Audit Response ↔ Domain mappers.
  *
- * Transforms DTOs to domain models.
+ * Transforms API responses to domain models.
  */
 
 import type { AuditLog } from '../model/audit-log';
-import type { AuditLogDTO } from './audit.dto';
+
+// =============================================================================
+// RESPONSE TYPE
+// =============================================================================
 
 /**
- * Map AuditLogDTO to AuditLog domain model.
+ * Audit log entry as returned by the API.
+ * Matches backend AuditLogResponse.java
  */
-function toDomain(dto: AuditLogDTO): AuditLog {
-  return {
-    id: dto.id,
-    entityType: dto.entityType,
-    entityId: dto.entityId,
-    action: dto.action,
-    userId: dto.userId,
-    username: dto.username,
-    ipAddress: dto.ipAddress,
-    changes: dto.changes,
-    metadata: dto.metadata,
-    createdAt: dto.createdAt,
-  };
+export interface AuditLogResponse {
+  id: number;
+  entityType: string;
+  entityId: number | null;
+  action: string;
+  userId: number | null;
+  username: string | null;
+  ipAddress: string | null;
+  changes: string | null;
+  metadata: string | null;
+  createdAt: string;
 }
+
+// =============================================================================
+// MAPPER
+// =============================================================================
 
 /**
- * Map array of DTOs to domain models.
+ * Audit log mapper functions.
  */
-function toDomainList(dtos: AuditLogDTO[]): AuditLog[] {
-  return dtos.map(toDomain);
-}
-
 export const auditLogMapper = {
-  toDomain,
-  toDomainList,
+  /**
+   * Map AuditLogResponse to AuditLog domain model.
+   */
+  toDomain(response: AuditLogResponse): AuditLog {
+    return {
+      id: response.id,
+      entityType: response.entityType,
+      entityId: response.entityId,
+      action: response.action,
+      userId: response.userId,
+      username: response.username,
+      ipAddress: response.ipAddress,
+      changes: response.changes,
+      metadata: response.metadata,
+      createdAt: response.createdAt,
+    };
+  },
 };
