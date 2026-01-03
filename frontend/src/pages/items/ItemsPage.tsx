@@ -7,8 +7,8 @@
  */
 
 import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
-import { ProductsTab } from './ProductsTab';
-import { PurchasedItemsTab } from './PurchasedItemsTab';
+import { ProductsTab } from './ui/ProductsTab';
+import { PurchasedItemsTab } from './ui/PurchasedItemsTab';
 
 /**
  * Items page with tabbed navigation.
