@@ -7,9 +7,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ErrorBoundary } from './ErrorBoundary';
 
-// Mock navigation utility (now in shared/lib)
-vi.mock('@/shared/lib', async () => {
-  const actual = await vi.importActual('@/shared/lib');
+// Mock navigation utility
+vi.mock('@/shared/lib/navigation', async () => {
+  const actual = await vi.importActual('@/shared/lib/navigation');
   return {
     ...actual,
     navigation: {
@@ -19,7 +19,7 @@ vi.mock('@/shared/lib', async () => {
   };
 });
 
-const { navigation } = await import('@/shared/lib');
+const { navigation } = await import('@/shared/lib/navigation');
 
 // Component that throws an error
 const ProblemChild = () => {

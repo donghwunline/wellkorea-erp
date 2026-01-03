@@ -19,7 +19,7 @@
 import type { ProjectKPI } from '../model/project';
 import { Icon, StatCard } from '@/shared/ui';
 import { formatCurrency } from '@/shared/lib/formatting';
-import { cn } from '@/shared/lib';
+import { cn } from '@/shared/lib/cn';
 
 export interface ProjectKPIStripProps {
   /** KPI data to display */
