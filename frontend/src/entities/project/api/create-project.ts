@@ -25,8 +25,26 @@
  */
 
 import { DomainValidationError, httpClient, PROJECT_ENDPOINTS } from '@/shared/api';
-import type { CreateProjectRequestDTO, ProjectCommandResultDTO } from './project.dto';
-import { projectMapper, type ProjectCommandResult } from './project.mapper';
+import type { CommandResult } from './project.mapper';
+
+// =============================================================================
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Request for creating a new project.
+ */
+interface CreateProjectRequest {
+  customerId: number;
+  projectName: string;
+  requesterName?: string;
+  dueDate: string;
+  internalOwnerId: number;
+}
+
+// =============================================================================
+// INPUT TYPE
+// =============================================================================
 
 /**
  * Input type for creating a project.
@@ -66,7 +84,7 @@ function validateCreateInput(input: CreateProjectInput): void {
 // MAPPING
 // =============================================================================
 
-function toCreateRequest(input: CreateProjectInput): CreateProjectRequestDTO {
+function toCreateRequest(input: CreateProjectInput): CreateProjectRequest {
   return {
     customerId: input.customerId!,
     projectName: input.projectName.trim(),
@@ -83,16 +101,15 @@ function toCreateRequest(input: CreateProjectInput): CreateProjectRequestDTO {
 /**
  * Create a new project.
  *
- * Validates input, maps to request DTO, and sends HTTP POST.
+ * Validates input, maps to request, and sends HTTP POST.
  * Returns command result with ID and auto-generated JobCode.
  *
  * @throws DomainValidationError if validation fails
  */
 export async function createProject(
   input: CreateProjectInput
-): Promise<ProjectCommandResult> {
+): Promise<CommandResult> {
   validateCreateInput(input);
   const request = toCreateRequest(input);
-  const dto = await httpClient.post<ProjectCommandResultDTO>(PROJECT_ENDPOINTS.BASE, request);
-  return projectMapper.toCommandResult(dto);
+  return httpClient.post<CommandResult>(PROJECT_ENDPOINTS.BASE, request);
 }

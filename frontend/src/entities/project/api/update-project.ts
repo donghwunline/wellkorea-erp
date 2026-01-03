@@ -24,8 +24,25 @@
 
 import { DomainValidationError, httpClient, PROJECT_ENDPOINTS } from '@/shared/api';
 import type { ProjectStatus } from '../model/project';
-import type { UpdateProjectRequestDTO, ProjectCommandResultDTO } from './project.dto';
-import { projectMapper, type ProjectCommandResult } from './project.mapper';
+import type { CommandResult } from './project.mapper';
+
+// =============================================================================
+// REQUEST TYPE (internal)
+// =============================================================================
+
+/**
+ * Request for updating an existing project.
+ */
+interface UpdateProjectRequest {
+  projectName?: string;
+  requesterName?: string;
+  dueDate?: string;
+  status?: ProjectStatus;
+}
+
+// =============================================================================
+// INPUT TYPE
+// =============================================================================
 
 /**
  * Input type for updating a project.
@@ -56,7 +73,7 @@ function validateUpdateInput(input: UpdateProjectInput): void {
 // MAPPING
 // =============================================================================
 
-function toUpdateRequest(input: UpdateProjectInput): UpdateProjectRequestDTO {
+function toUpdateRequest(input: UpdateProjectInput): UpdateProjectRequest {
   return {
     projectName: input.projectName?.trim(),
     requesterName: input.requesterName?.trim() || undefined,
@@ -72,7 +89,7 @@ function toUpdateRequest(input: UpdateProjectInput): UpdateProjectRequestDTO {
 /**
  * Update an existing project.
  *
- * Validates input, maps to request DTO, and sends HTTP PUT.
+ * Validates input, maps to request, and sends HTTP PUT.
  * Supports partial updates - only provided fields are updated.
  *
  * @throws DomainValidationError if validation fails
@@ -80,9 +97,8 @@ function toUpdateRequest(input: UpdateProjectInput): UpdateProjectRequestDTO {
 export async function updateProject(
   id: number,
   input: UpdateProjectInput
-): Promise<ProjectCommandResult> {
+): Promise<CommandResult> {
   validateUpdateInput(input);
   const request = toUpdateRequest(input);
-  const dto = await httpClient.put<ProjectCommandResultDTO>(PROJECT_ENDPOINTS.byId(id), request);
-  return projectMapper.toCommandResult(dto);
+  return httpClient.put<CommandResult>(PROJECT_ENDPOINTS.byId(id), request);
 }

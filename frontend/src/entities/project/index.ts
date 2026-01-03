@@ -69,12 +69,6 @@ export { createProject, type CreateProjectInput } from './api/create-project';
 export { updateProject, type UpdateProjectInput } from './api/update-project';
 
 // =============================================================================
-// COMMAND RESULT TYPE
-// =============================================================================
-
-export type { ProjectCommandResult } from './api/project.mapper';
-
-// =============================================================================
 // UI COMPONENTS
 // Display-only components with no side effects
 // =============================================================================

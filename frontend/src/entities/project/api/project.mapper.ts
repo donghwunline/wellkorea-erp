@@ -1,75 +1,116 @@
 /**
- * Project mappers.
+ * Project Response ↔ Domain mappers.
  *
- * Transforms DTOs to domain models.
- *
- * FSD Layer: entities/project/api
+ * Transforms API responses to domain models.
  */
 
-import type { Project, ProjectListItem } from '../model/project';
-import type { ProjectDetailsDTO, ProjectListItemDTO, ProjectCommandResultDTO } from './project.dto';
+import type { Project, ProjectListItem, ProjectStatus } from '../model/project';
+
+// =============================================================================
+// RESPONSE TYPES
+// =============================================================================
 
 /**
- * Project command result (mapped from DTO).
+ * Command result from CQRS command endpoints.
+ * Project commands include auto-generated jobCode.
  */
-export interface ProjectCommandResult {
-  readonly id: number;
-  readonly message: string;
-  readonly jobCode: string | null;
+export interface CommandResult {
+  id: number;
+  message: string;
+  jobCode: string | null;
 }
+
+/**
+ * Project details from API response.
+ */
+export interface ProjectDetailsResponse {
+  id: number;
+  jobCode: string;
+  customerId: number;
+  customerName: string | null;
+  projectName: string;
+  requesterName: string | null;
+  dueDate: string;
+  internalOwnerId: number;
+  internalOwnerName: string | null;
+  status: ProjectStatus;
+  createdById: number;
+  createdByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Project list item from API response.
+ */
+export interface ProjectListItemResponse {
+  id: number;
+  jobCode: string;
+  customerId: number;
+  customerName: string | null;
+  projectName: string;
+  requesterName: string | null;
+  dueDate: string;
+  status: ProjectStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Query parameters for listing projects.
+ */
+export interface ProjectListParams {
+  page?: number;
+  size?: number;
+  search?: string;
+  status?: ProjectStatus;
+}
+
+// =============================================================================
+// MAPPERS
+// =============================================================================
 
 /**
  * Project mapper.
  */
 export const projectMapper = {
   /**
-   * Transform ProjectDetailsDTO to Project domain model.
+   * Transform ProjectDetailsResponse to Project domain model.
    */
-  toDomain(dto: ProjectDetailsDTO): Project {
+  toDomain(response: ProjectDetailsResponse): Project {
     return {
-      id: dto.id,
-      jobCode: dto.jobCode,
-      customerId: dto.customerId,
-      customerName: dto.customerName,
-      projectName: dto.projectName?.trim() ?? '',
-      requesterName: dto.requesterName?.trim() ?? null,
-      dueDate: dto.dueDate,
-      internalOwnerId: dto.internalOwnerId,
-      internalOwnerName: dto.internalOwnerName,
-      status: dto.status,
-      createdById: dto.createdById,
-      createdByName: dto.createdByName,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      id: response.id,
+      jobCode: response.jobCode,
+      customerId: response.customerId,
+      customerName: response.customerName,
+      projectName: response.projectName?.trim() ?? '',
+      requesterName: response.requesterName?.trim() ?? null,
+      dueDate: response.dueDate,
+      internalOwnerId: response.internalOwnerId,
+      internalOwnerName: response.internalOwnerName,
+      status: response.status,
+      createdById: response.createdById,
+      createdByName: response.createdByName,
+      createdAt: response.createdAt,
+      updatedAt: response.updatedAt,
     };
   },
 
   /**
-   * Transform ProjectListItemDTO to ProjectListItem domain model.
+   * Transform ProjectListItemResponse to ProjectListItem domain model.
    */
-  toListItem(dto: ProjectListItemDTO): ProjectListItem {
+  toListItem(response: ProjectListItemResponse): ProjectListItem {
     return {
-      id: dto.id,
-      jobCode: dto.jobCode,
-      customerId: dto.customerId,
-      customerName: dto.customerName,
-      projectName: dto.projectName?.trim() ?? '',
-      requesterName: dto.requesterName?.trim() ?? null,
-      dueDate: dto.dueDate,
-      status: dto.status,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
-    };
-  },
-
-  /**
-   * Transform ProjectCommandResultDTO to ProjectCommandResult.
-   */
-  toCommandResult(dto: ProjectCommandResultDTO): ProjectCommandResult {
-    return {
-      id: dto.id,
-      message: dto.message,
-      jobCode: dto.jobCode,
+      id: response.id,
+      jobCode: response.jobCode,
+      customerId: response.customerId,
+      customerName: response.customerName,
+      projectName: response.projectName?.trim() ?? '',
+      requesterName: response.requesterName?.trim() ?? null,
+      dueDate: response.dueDate,
+      status: response.status,
+      createdAt: response.createdAt,
+      updatedAt: response.updatedAt,
     };
   },
 };
