@@ -22,3 +22,5 @@ export {
   ProjectRelatedNavigationGrid,
   type ProjectRelatedNavigationGridProps,
 } from './project-related-navigation-grid';
+
+export { UserMenu, type UserMenuProps, type UserMenuItem } from './user-menu';
