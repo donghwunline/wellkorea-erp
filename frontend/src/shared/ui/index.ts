@@ -104,6 +104,13 @@ export type { TabsProps, TabListProps, TabProps, TabPanelProps } from './navigat
 export { TabOverflow } from './navigation/TabOverflow';
 export type { TabOverflowProps, TabOverflowItemProps } from './navigation/TabOverflow';
 
+export { Navigation } from './navigation/Navigation';
+export type {
+  NavigationProps,
+  NavigationSectionProps,
+  NavigationLinkProps,
+} from './navigation/Navigation';
+
 // ============================================================================
 // Modals - Modal dialogs and confirmations
 // ============================================================================
