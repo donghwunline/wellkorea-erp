@@ -9,10 +9,10 @@
 
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Icon, type IconName } from '@/shared/ui';
+import { Icon, Navigation, type IconName } from '@/shared/ui';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
+import { UserMenu } from '@/widgets';
 
 interface NavItem {
   label: string;
@@ -126,11 +126,8 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: Readonly<AppLayoutProps>) {
-  const { user, logout, hasAnyRole } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { user, hasAnyRole } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   // Filter nav items based on user roles
   const filterNavItems = (items: NavItem[]): NavItem[] => {
@@ -152,13 +149,6 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const visibleReportsItems = filterNavItems(REPORTS_NAV_ITEMS);
   const visibleApprovalItems = filterNavItems(APPROVAL_NAV_ITEMS);
   const visibleAdminItems = filterNavItems(ADMIN_NAV_ITEMS);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const isActive = (path: string) => location.pathname === path;
 
   return (
     <div className="flex min-h-screen bg-steel-950">
@@ -194,186 +184,73 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex-1 overflow-y-auto p-3">
+        <Navigation collapsed={sidebarCollapsed} aria-label="Main navigation">
           {/* Operations Section */}
-          <ul className="space-y-1">
+          <Navigation.Section title="Operations">
             {visibleOperationsItems.map(item => (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                    isActive(item.path)
-                      ? 'bg-copper-500/10 text-copper-400'
-                      : 'text-steel-400 hover:bg-steel-800 hover:text-white'
-                  }`}
-                  title={sidebarCollapsed ? item.label : undefined}
-                >
-                  <Icon name={item.icon} className="h-5 w-5 shrink-0" />
-                  {!sidebarCollapsed && <span>{item.label}</span>}
-                </Link>
-              </li>
+              <Navigation.Link
+                key={item.path}
+                to={item.path}
+                icon={item.icon}
+                exact={item.path === '/'}
+              >
+                {item.label}
+              </Navigation.Link>
             ))}
-          </ul>
+          </Navigation.Section>
 
           {/* Master Data Section */}
           {visibleMasterDataItems.length > 0 && (
-            <>
-              <div className="my-4 border-t border-steel-800/50" />
-              {!sidebarCollapsed && (
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-steel-500">
-                  Master Data
-                </p>
-              )}
-              <ul className="space-y-1">
-                {visibleMasterDataItems.map(item => (
-                  <li key={item.path}>
-                    <Link
-                      to={item.path}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive(item.path) ||
-                        (item.path === '/items' && location.pathname.startsWith('/items'))
-                          ? 'bg-copper-500/10 text-copper-400'
-                          : 'text-steel-400 hover:bg-steel-800 hover:text-white'
-                      }`}
-                      title={sidebarCollapsed ? item.label : undefined}
-                    >
-                      <Icon name={item.icon} className="h-5 w-5 shrink-0" />
-                      {!sidebarCollapsed && <span>{item.label}</span>}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </>
+            <Navigation.Section title="Master Data" showDivider>
+              {visibleMasterDataItems.map(item => (
+                <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
+                  {item.label}
+                </Navigation.Link>
+              ))}
+            </Navigation.Section>
           )}
 
           {/* Reports Section */}
           {visibleReportsItems.length > 0 && (
-            <>
-              <div className="my-4 border-t border-steel-800/50" />
-              {!sidebarCollapsed && (
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-steel-500">
-                  Reports
-                </p>
-              )}
-              <ul className="space-y-1">
-                {visibleReportsItems.map(item => (
-                  <li key={item.path}>
-                    <Link
-                      to={item.path}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive(item.path)
-                          ? 'bg-copper-500/10 text-copper-400'
-                          : 'text-steel-400 hover:bg-steel-800 hover:text-white'
-                      }`}
-                      title={sidebarCollapsed ? item.label : undefined}
-                    >
-                      <Icon name={item.icon} className="h-5 w-5 shrink-0" />
-                      {!sidebarCollapsed && <span>{item.label}</span>}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </>
+            <Navigation.Section title="Reports" showDivider>
+              {visibleReportsItems.map(item => (
+                <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
+                  {item.label}
+                </Navigation.Link>
+              ))}
+            </Navigation.Section>
           )}
 
           {/* Approval Section */}
           {visibleApprovalItems.length > 0 && (
-            <>
-              <div className="my-4 border-t border-steel-800/50" />
-              {!sidebarCollapsed && (
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-steel-500">
-                  Approval
-                </p>
-              )}
-              <ul className="space-y-1">
-                {visibleApprovalItems.map(item => (
-                  <li key={item.path}>
-                    <Link
-                      to={item.path}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive(item.path)
-                          ? 'bg-copper-500/10 text-copper-400'
-                          : 'text-steel-400 hover:bg-steel-800 hover:text-white'
-                      }`}
-                      title={sidebarCollapsed ? item.label : undefined}
-                    >
-                      <Icon name={item.icon} className="h-5 w-5 shrink-0" />
-                      {!sidebarCollapsed && <span>{item.label}</span>}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </>
+            <Navigation.Section title="Approval" showDivider>
+              {visibleApprovalItems.map(item => (
+                <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
+                  {item.label}
+                </Navigation.Link>
+              ))}
+            </Navigation.Section>
           )}
 
           {/* Admin Section */}
           {visibleAdminItems.length > 0 && (
-            <>
-              <div className="my-4 border-t border-steel-800/50" />
-              {!sidebarCollapsed && (
-                <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-steel-500">
-                  Administration
-                </p>
-              )}
-              <ul className="space-y-1">
-                {visibleAdminItems.map(item => (
-                  <li key={item.path}>
-                    <Link
-                      to={item.path}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                        isActive(item.path)
-                          ? 'bg-copper-500/10 text-copper-400'
-                          : 'text-steel-400 hover:bg-steel-800 hover:text-white'
-                      }`}
-                      title={sidebarCollapsed ? item.label : undefined}
-                    >
-                      <Icon name={item.icon} className="h-5 w-5 shrink-0" />
-                      {!sidebarCollapsed && <span>{item.label}</span>}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </>
+            <Navigation.Section title="Administration" showDivider>
+              {visibleAdminItems.map(item => (
+                <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
+                  {item.label}
+                </Navigation.Link>
+              ))}
+            </Navigation.Section>
           )}
-        </nav>
+        </Navigation>
 
         {/* User Section */}
-        <div className="border-t border-steel-800/50 p-3">
-          <div className="relative">
-            <button
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-steel-800"
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-copper-500/20 text-copper-400">
-                <span className="text-sm font-medium">
-                  {user?.fullName?.charAt(0) || user?.username?.charAt(0) || '?'}
-                </span>
-              </div>
-              {!sidebarCollapsed && (
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-white">{user?.fullName}</p>
-                  <p className="truncate text-xs text-steel-500">{user?.roles.join(', ')}</p>
-                </div>
-              )}
-            </button>
-
-            {/* User Dropdown */}
-            {userMenuOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                <div className="absolute bottom-full left-0 right-0 z-50 mb-2 rounded-lg border border-steel-700/50 bg-steel-800 py-1 shadow-lg">
-                  <button
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-400 transition-colors hover:bg-steel-700"
-                  >
-                    <Icon name="logout" className="h-4 w-4" strokeWidth={2} />
-                    Sign out
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <UserMenu
+          userName={user?.fullName || user?.username || 'Unknown'}
+          userInitial={user?.fullName?.charAt(0) || user?.username?.charAt(0) || '?'}
+          userRole={user?.roles.join(', ') || ''}
+          collapsed={sidebarCollapsed}
+        />
       </aside>
 
       {/* Main Content */}
