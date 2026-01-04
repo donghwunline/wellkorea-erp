@@ -1,6 +1,6 @@
 # Phase 0: Research & Clarifications
 
-**Date**: 2025-11-24 (Updated: 2025-12-23)
+**Date**: 2025-11-24 (Updated: 2026-01-05)
 **Branch**: `001-erp-core`
 **Status**: Complete
 
@@ -13,6 +13,12 @@
 - **Company unification**: Customer and Supplier merged into single `Company` entity with `CompanyRole` for role differentiation
 - **VendorServiceOffering**: New entity for vendor-specific service pricing to support "select service → get vendor/price list" feature
 - **ServiceCategory**: Purchase/outsource services (CNC, etching, painting) managed separately from sales Products
+
+**Key Architectural Clarifications (2025-12-30 / 2026-01-05)**:
+- **FSD-Lite adoption**: Frontend migrated to Feature-Sliced Design aligned with backend DDD + CQS patterns
+- **Query Factory Pattern**: TanStack Query v5 with `queryOptions()` in `entities/*/api/*.queries.ts`
+- **Command Functions**: Individual files with validation + mapping in `entities/*/api/create-*.ts`
+- See [Frontend Architecture: FSD-Lite](#frontend-architecture-fsd-lite-feature-sliced-design) section for complete details
 
 ---
 
@@ -510,6 +516,115 @@ public record CommandResult(Long id, String message) {
 - Svelte: Smaller ecosystem; fewer charting libraries for reporting dashboards
 
 **Justification**: React + Material UI strikes balance between powerful capabilities and team productivity; Material UI accessibility compliance directly supports constitution UX principle.
+
+---
+
+### Frontend Architecture: FSD-Lite (Feature-Sliced Design)
+
+**Decision**: Adopt FSD-Lite (Feature-Sliced Design) architecture aligned with backend's DDD + CQRS patterns.
+
+**Date**: 2025-12-30 (Updated: 2026-01-05)
+
+**Rationale**:
+- **Domain alignment**: Frontend structure mirrors backend's domain-oriented architecture (project, quotation, approval, company, etc.)
+- **Query/Command separation**: TanStack Query v5 with Query Factory pattern aligns with backend CQRS
+- **Clear dependencies**: Strict layer boundaries prevent circular imports and maintain separation of concerns
+- **Scalability**: Feature isolation enables parallel development by different teams
+- **Testability**: Business logic in pure functions (domain rules) easily unit-tested
+
+**Directory Structure**:
+```
+frontend/src/
+├── app/                      # Application setup (providers, router, styles)
+├── pages/                    # Route-level components (ASSEMBLY ONLY)
+├── widgets/                  # Composite UI blocks (FEATURE COMPOSITION)
+├── features/                 # User actions/workflows (ISOLATED UNITS)
+│   └── {domain}/{action}/   # e.g., quotation/create/, approval/approve/
+├── entities/                 # Domain models (TYPES + RULES + QUERIES)
+│   └── {domain}/            # e.g., quotation/, project/, company/
+│       ├── model/           # Domain types + pure functions
+│       ├── api/             # Query factory + Command functions
+│       └── ui/              # Entity display components (read-only)
+├── shared/                   # Cross-cutting concerns (api, ui, lib, types)
+└── stores/                   # Global state (minimal - auth only)
+```
+
+**Layer Dependencies** (enforced by ESLint):
+```
+pages → widgets → features → entities → shared
+```
+- `entities` cannot import from `features`, `widgets`, `pages`
+- `features` cannot import from other `features` (use `widgets` for composition)
+- `shared` cannot import from any other layer
+
+**Key Patterns**:
+
+1. **Query Factory Pattern** (`entities/*/api/{entity}.queries.ts`):
+   ```typescript
+   export const quotationQueries = {
+     all: () => ['quotations'] as const,
+     lists: () => [...quotationQueries.all(), 'list'] as const,
+     list: (params: QuotationListQueryParams) => queryOptions({
+       queryKey: [...quotationQueries.lists(), params.page, params.size, ...],
+       queryFn: async () => { /* fetch + map to domain */ },
+     }),
+     detail: (id: number) => queryOptions({
+       queryKey: [...quotationQueries.details(), id] as const,
+       queryFn: async () => { /* fetch + map to domain */ },
+     }),
+   };
+   // Usage: useQuery(quotationQueries.detail(id))
+   ```
+
+2. **Command Functions** (`entities/*/api/create-{entity}.ts`):
+   ```typescript
+   export async function createQuotation(input: CreateQuotationInput): Promise<CommandResult> {
+     validateCreateInput(input);
+     const request = toCreateRequest(input);
+     return httpClient.post(QUOTATION_ENDPOINTS.BASE, request);
+   }
+   // Usage in features: useMutation({ mutationFn: createQuotation, ... })
+   ```
+
+3. **Domain Models = Plain Objects + Pure Functions**:
+   ```typescript
+   export interface Quotation { readonly id: number; readonly status: QuotationStatus; ... }
+   export const quotationRules = {
+     canEdit(q: Quotation): boolean { return q.status === 'DRAFT'; },
+     canSubmit(q: Quotation): boolean { return q.status === 'DRAFT' && q.lineItems.length > 0; },
+   };
+   ```
+
+4. **Group Slices in features/** (no barrel export at group level):
+   ```
+   features/quotation/         # Group slice - NO index.ts here
+   ├── create/                 # Slice - HAS index.ts
+   ├── update/                 # Slice - HAS index.ts
+   └── submit/                 # Slice - HAS index.ts
+   ```
+
+**Public API Rules** (what to export via `index.ts`):
+| Segment | Export? | Example |
+|---------|---------|---------|
+| `model/*.ts` | ✅ YES | Domain types, business rules |
+| `api/*.queries.ts` | ✅ YES | Query factory (`quotationQueries`) |
+| `api/create-*.ts` | ✅ YES | Command functions + Input types |
+| `ui/*.tsx` | ✅ YES | Display components |
+| `api/*.mapper.ts` | ❌ NO | Response types + mappers are internal |
+| `api/get-*.ts` | ❌ NO | GET operations are internal |
+
+**Reference Documents**:
+- [docs/architecture/fsd-public-api-guidelines.md](../../docs/architecture/fsd-public-api-guidelines.md) - Export rules and patterns
+- [docs/architecture/frontend-architecture-analysis.md](../../docs/architecture/frontend-architecture-analysis.md) - Full architecture documentation
+- [CLAUDE.md](../../CLAUDE.md) - Up-to-date architecture summary
+
+**Alternatives Considered**:
+- **Original layered architecture** (services/, components/features/): Rejected; too much boilerplate per table component, no domain layer, business logic scattered in components
+- **Full FSD**: Rejected; too complex for current team size; FSD-Lite provides 80% benefits with 20% complexity
+- **Atomic Design**: Rejected; focuses on visual composition, not business domain boundaries
+- **Redux/RTK Query**: Rejected; TanStack Query provides better caching with less boilerplate
+
+**Justification**: FSD-Lite provides clear boundaries between UI (pages/widgets/features), domain logic (entities), and infrastructure (shared). The Query Factory pattern eliminates boilerplate while maintaining type safety. Domain rules in pure functions are easily testable and reusable across components.
 
 ---
 

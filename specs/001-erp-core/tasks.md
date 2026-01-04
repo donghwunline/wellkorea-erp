@@ -20,6 +20,8 @@
 
 **✅ Company Unification & Purchasing Redesign (2025-12-23)**: Merged Customer and Supplier into unified `Company` entity with `CompanyRole` (CUSTOMER, VENDOR, OUTSOURCE) for dual-role support. Added `ServiceCategory` and `VendorServiceOffering` for "select service → get vendor/price list" functionality (FR-053). Replaced RFQ with `PurchaseRequest` + `RFQItem` workflow. Updated all FK references (customer_id → customer_company_id, supplier_id → vendor_company_id).
 
+**✅ FSD-Lite Architecture Migration (2025-12-30 / 2026-01-05)**: Frontend migrated to Feature-Sliced Design (FSD-Lite) aligned with backend DDD + CQRS patterns. Added Phase 0 for TanStack Query infrastructure setup. Updated all frontend task paths to use FSD layers: `entities/`, `features/`, `widgets/`, `pages/`, `shared/`, `stores/`. See [docs/architecture/fsd-public-api-guidelines.md](../../docs/architecture/fsd-public-api-guidelines.md) for Query Factory and Command Function patterns.
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)

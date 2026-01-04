@@ -1,7 +1,12 @@
 # Implementation Plan: WellKorea Integrated Work System (ERP)
 
-**Branch**: `001-erp-core` | **Date**: 2025-12-01 (Updated: 2025-12-23) | **Spec**: [spec.md](./spec.md)
+**Branch**: `001-erp-core` | **Date**: 2025-12-01 (Updated: 2026-01-05) | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-erp-core/spec.md`
+
+**Frontend Architecture Reference**:
+- [docs/architecture/fsd-public-api-guidelines.md](../../docs/architecture/fsd-public-api-guidelines.md) - Entity public API patterns (Query Factory, Command Functions)
+- [docs/architecture/frontend-architecture-analysis.md](../../docs/architecture/frontend-architecture-analysis.md) - Complete FSD-Lite architecture documentation
+- [CLAUDE.md](../../CLAUDE.md) - Up-to-date architecture summary for all development
 
 ## Summary
 
