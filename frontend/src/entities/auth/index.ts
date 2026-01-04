@@ -19,13 +19,6 @@
 export { useAuth } from './model/useAuth';
 
 // =============================================================================
-// AUTH STORE
-// Low-level store access (for features that need direct store manipulation)
-// =============================================================================
-
-export { useAuthStore } from './model/auth-store';
-
-// =============================================================================
 // TYPES
 // Types needed by consumers
 // =============================================================================

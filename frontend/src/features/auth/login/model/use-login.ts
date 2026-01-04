@@ -6,7 +6,7 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
-import { useAuthStore, type LoginCredentials } from '@/entities/auth';
+import { useAuth, type LoginCredentials } from '@/entities/auth';
 
 /**
  * Options for useLogin hook.
@@ -46,7 +46,7 @@ export interface UseLoginOptions {
  * ```
  */
 export function useLogin(options: UseLoginOptions = {}) {
-  const login = useAuthStore(state => state.login);
+  const { login } = useAuth();
   const { onSuccess, onError } = options;
 
   return useMutation({

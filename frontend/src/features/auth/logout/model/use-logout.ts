@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from 'react';
-import { useAuthStore } from '@/entities/auth';
+import { useAuth } from '@/entities/auth';
 
 /**
  * Options for useLogout hook.
@@ -36,13 +36,13 @@ export interface UseLogoutOptions {
  * ```
  */
 export function useLogout(options: UseLogoutOptions = {}) {
-  const storeLogout = useAuthStore(state => state.logout);
+  const { logout: authLogout } = useAuth();
   const { onLogout } = options;
 
   const logout = useCallback(() => {
-    storeLogout();
+    authLogout();
     onLogout?.();
-  }, [storeLogout, onLogout]);
+  }, [authLogout, onLogout]);
 
   return { logout };
 }
