@@ -292,6 +292,287 @@ class WorkProgressServiceTest {
     }
 
     // ==========================================================================
+    // Step Dependency (Tree-like) Tests
+    // ==========================================================================
+
+    @Nested
+    @DisplayName("Step Dependencies (Parent-Child Relationships)")
+    class StepDependencyTests {
+
+        @Test
+        @DisplayName("should allow starting step when no parent exists")
+        void startWork_NoParent_Succeeds() {
+            // Given
+            WorkProgressSheet sheet = new WorkProgressSheet();
+            sheet.setStatus(SheetStatus.NOT_STARTED);
+
+            WorkProgressStep step = new WorkProgressStep();
+            step.setStatus(StepStatus.NOT_STARTED);
+            step.setSheet(sheet);
+            step.setParentStep(null); // No parent dependency
+            sheet.setSteps(List.of(step));
+
+            // When
+            step.startWork();
+
+            // Then
+            assertThat(step.getStatus()).isEqualTo(StepStatus.IN_PROGRESS);
+            assertThat(step.getStartedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("should allow starting step when parent is COMPLETED")
+        void startWork_ParentCompleted_Succeeds() {
+            // Given
+            WorkProgressSheet sheet = new WorkProgressSheet();
+            sheet.setStatus(SheetStatus.IN_PROGRESS);
+
+            WorkProgressStep parentStep = new WorkProgressStep();
+            parentStep.setStepNumber(1);
+            parentStep.setStepName("Parent Step");
+            parentStep.setStatus(StepStatus.COMPLETED);
+            parentStep.setSheet(sheet);
+
+            WorkProgressStep childStep = new WorkProgressStep();
+            childStep.setStepNumber(2);
+            childStep.setStepName("Child Step");
+            childStep.setStatus(StepStatus.NOT_STARTED);
+            childStep.setSheet(sheet);
+            childStep.setParentStep(parentStep);
+
+            sheet.setSteps(List.of(parentStep, childStep));
+
+            // When
+            childStep.startWork();
+
+            // Then
+            assertThat(childStep.getStatus()).isEqualTo(StepStatus.IN_PROGRESS);
+            assertThat(childStep.getStartedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("should allow starting step when parent is SKIPPED")
+        void startWork_ParentSkipped_Succeeds() {
+            // Given
+            WorkProgressSheet sheet = new WorkProgressSheet();
+            sheet.setStatus(SheetStatus.IN_PROGRESS);
+
+            WorkProgressStep parentStep = new WorkProgressStep();
+            parentStep.setStepNumber(1);
+            parentStep.setStepName("Parent Step");
+            parentStep.setStatus(StepStatus.SKIPPED);
+            parentStep.setSheet(sheet);
+
+            WorkProgressStep childStep = new WorkProgressStep();
+            childStep.setStepNumber(2);
+            childStep.setStepName("Child Step");
+            childStep.setStatus(StepStatus.NOT_STARTED);
+            childStep.setSheet(sheet);
+            childStep.setParentStep(parentStep);
+
+            sheet.setSteps(List.of(parentStep, childStep));
+
+            // When
+            childStep.startWork();
+
+            // Then
+            assertThat(childStep.getStatus()).isEqualTo(StepStatus.IN_PROGRESS);
+        }
+
+        @Test
+        @DisplayName("should throw exception when parent is NOT_STARTED")
+        void startWork_ParentNotStarted_ThrowsException() {
+            // Given
+            WorkProgressSheet sheet = new WorkProgressSheet();
+            sheet.setStatus(SheetStatus.IN_PROGRESS);
+
+            WorkProgressStep parentStep = new WorkProgressStep();
+            parentStep.setStepNumber(1);
+            parentStep.setStepName("Parent Step");
+            parentStep.setStatus(StepStatus.NOT_STARTED);
+            parentStep.setSheet(sheet);
+
+            WorkProgressStep childStep = new WorkProgressStep();
+            childStep.setStepNumber(2);
+            childStep.setStepName("Child Step");
+            childStep.setStatus(StepStatus.NOT_STARTED);
+            childStep.setSheet(sheet);
+            childStep.setParentStep(parentStep);
+
+            sheet.setSteps(List.of(parentStep, childStep));
+
+            // When/Then
+            assertThatThrownBy(() -> childStep.startWork())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("parent step")
+                    .hasMessageContaining("Parent Step")
+                    .hasMessageContaining("not completed");
+        }
+
+        @Test
+        @DisplayName("should throw exception when parent is IN_PROGRESS")
+        void startWork_ParentInProgress_ThrowsException() {
+            // Given
+            WorkProgressSheet sheet = new WorkProgressSheet();
+            sheet.setStatus(SheetStatus.IN_PROGRESS);
+
+            WorkProgressStep parentStep = new WorkProgressStep();
+            parentStep.setStepNumber(1);
+            parentStep.setStepName("Welding");
+            parentStep.setStatus(StepStatus.IN_PROGRESS);
+            parentStep.setSheet(sheet);
+
+            WorkProgressStep childStep = new WorkProgressStep();
+            childStep.setStepNumber(2);
+            childStep.setStepName("Painting");
+            childStep.setStatus(StepStatus.NOT_STARTED);
+            childStep.setSheet(sheet);
+            childStep.setParentStep(parentStep);
+
+            sheet.setSteps(List.of(parentStep, childStep));
+
+            // When/Then
+            assertThatThrownBy(() -> childStep.startWork())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("parent step")
+                    .hasMessageContaining("Welding");
+        }
+
+        @Test
+        @DisplayName("should not allow outsourcing when parent is not completed")
+        void markAsOutsourced_ParentNotCompleted_ThrowsException() {
+            // Given - outsourcing calls startWork() internally
+            WorkProgressSheet sheet = new WorkProgressSheet();
+            sheet.setStatus(SheetStatus.IN_PROGRESS);
+
+            WorkProgressStep parentStep = new WorkProgressStep();
+            parentStep.setStepNumber(1);
+            parentStep.setStepName("Design");
+            parentStep.setStatus(StepStatus.IN_PROGRESS);
+            parentStep.setSheet(sheet);
+
+            WorkProgressStep childStep = new WorkProgressStep();
+            childStep.setStepNumber(2);
+            childStep.setStepName("Laser Cutting");
+            childStep.setStatus(StepStatus.NOT_STARTED);
+            childStep.setSheet(sheet);
+            childStep.setParentStep(parentStep);
+
+            sheet.setSteps(List.of(parentStep, childStep));
+
+            // When/Then - markAsOutsourced calls startWork which checks parent
+            assertThatThrownBy(() -> childStep.markAsOutsourced(100L,
+                    java.time.LocalDate.of(2025, 1, 20), new BigDecimal("50000")))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("parent step");
+        }
+
+        @Test
+        @DisplayName("should allow outsourcing when parent is completed")
+        void markAsOutsourced_ParentCompleted_Succeeds() {
+            // Given
+            WorkProgressSheet sheet = new WorkProgressSheet();
+            sheet.setStatus(SheetStatus.IN_PROGRESS);
+
+            WorkProgressStep parentStep = new WorkProgressStep();
+            parentStep.setStepNumber(1);
+            parentStep.setStepName("Design");
+            parentStep.setStatus(StepStatus.COMPLETED);
+            parentStep.setSheet(sheet);
+
+            WorkProgressStep childStep = new WorkProgressStep();
+            childStep.setStepNumber(2);
+            childStep.setStepName("Laser Cutting");
+            childStep.setStatus(StepStatus.NOT_STARTED);
+            childStep.setSheet(sheet);
+            childStep.setParentStep(parentStep);
+
+            sheet.setSteps(List.of(parentStep, childStep));
+
+            // When
+            childStep.markAsOutsourced(100L,
+                    java.time.LocalDate.of(2025, 1, 20), new BigDecimal("50000"));
+
+            // Then
+            assertThat(childStep.isOutsourced()).isTrue();
+            assertThat(childStep.getStatus()).isEqualTo(StepStatus.IN_PROGRESS);
+            assertThat(childStep.getOutsourceVendorId()).isEqualTo(100L);
+        }
+
+        @Test
+        @DisplayName("should support multi-level dependency chain (grandparent-parent-child)")
+        void startWork_MultiLevelChain_RequiresAllParentsCompleted() {
+            // Given: Step3 -> Step2 -> Step1 (Step3 depends on Step2, Step2 depends on Step1)
+            WorkProgressSheet sheet = new WorkProgressSheet();
+            sheet.setStatus(SheetStatus.IN_PROGRESS);
+
+            WorkProgressStep step1 = new WorkProgressStep();
+            step1.setStepNumber(1);
+            step1.setStepName("Step 1");
+            step1.setStatus(StepStatus.COMPLETED);
+            step1.setSheet(sheet);
+            step1.setParentStep(null);
+
+            WorkProgressStep step2 = new WorkProgressStep();
+            step2.setStepNumber(2);
+            step2.setStepName("Step 2");
+            step2.setStatus(StepStatus.NOT_STARTED);
+            step2.setSheet(sheet);
+            step2.setParentStep(step1);
+
+            WorkProgressStep step3 = new WorkProgressStep();
+            step3.setStepNumber(3);
+            step3.setStepName("Step 3");
+            step3.setStatus(StepStatus.NOT_STARTED);
+            step3.setSheet(sheet);
+            step3.setParentStep(step2);
+
+            sheet.setSteps(List.of(step1, step2, step3));
+
+            // Step2 can start because Step1 is completed
+            step2.startWork();
+            assertThat(step2.getStatus()).isEqualTo(StepStatus.IN_PROGRESS);
+
+            // Step3 cannot start because Step2 is IN_PROGRESS (not COMPLETED)
+            assertThatThrownBy(() -> step3.startWork())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Step 2");
+
+            // Complete Step2
+            step2.complete(1L, null);
+            assertThat(step2.getStatus()).isEqualTo(StepStatus.COMPLETED);
+
+            // Now Step3 can start
+            step3.startWork();
+            assertThat(step3.getStatus()).isEqualTo(StepStatus.IN_PROGRESS);
+        }
+
+        @Test
+        @DisplayName("should allow child steps to have their own children (tree structure)")
+        void childSteps_CanHaveTheirOwnChildren() {
+            // Given
+            WorkProgressStep parent = new WorkProgressStep();
+            parent.setStepName("Parent");
+            parent.setStatus(StepStatus.COMPLETED);
+
+            WorkProgressStep child1 = new WorkProgressStep();
+            child1.setStepName("Child 1");
+            child1.setParentStep(parent);
+
+            WorkProgressStep child2 = new WorkProgressStep();
+            child2.setStepName("Child 2");
+            child2.setParentStep(parent);
+
+            parent.setChildSteps(List.of(child1, child2));
+
+            // Then
+            assertThat(parent.getChildSteps()).hasSize(2);
+            assertThat(child1.getParentStep()).isEqualTo(parent);
+            assertThat(child2.getParentStep()).isEqualTo(parent);
+        }
+    }
+
+    // ==========================================================================
     // Helper Methods
     // ==========================================================================
 
