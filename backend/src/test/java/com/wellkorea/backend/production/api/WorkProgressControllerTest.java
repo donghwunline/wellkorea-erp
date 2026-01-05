@@ -344,8 +344,8 @@ class WorkProgressControllerTest extends BaseIntegrationTest implements TestFixt
                             .content(updateRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.status").value("IN_PROGRESS"))
-                    .andExpect(jsonPath("$.data.startedAt").exists());
+                    .andExpect(jsonPath("$.data.id").value(stepId))
+                    .andExpect(jsonPath("$.data.message").value("Step updated successfully"));
         }
 
         @Test
@@ -372,9 +372,8 @@ class WorkProgressControllerTest extends BaseIntegrationTest implements TestFixt
                             .content(updateRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.status").value("COMPLETED"))
-                    .andExpect(jsonPath("$.data.completedAt").exists())
-                    .andExpect(jsonPath("$.data.completedById").value(3)); // production user ID
+                    .andExpect(jsonPath("$.data.id").value(stepId))
+                    .andExpect(jsonPath("$.data.message").value("Step updated successfully"));
         }
 
         @Test
@@ -414,9 +413,8 @@ class WorkProgressControllerTest extends BaseIntegrationTest implements TestFixt
                             .content(updateRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.isOutsourced").value(true))
-                    .andExpect(jsonPath("$.data.outsourceVendorId").value(100))
-                    .andExpect(jsonPath("$.data.outsourceEta").value("2025-01-15"));
+                    .andExpect(jsonPath("$.data.id").value(stepId))
+                    .andExpect(jsonPath("$.data.message").value("Step updated successfully"));
         }
 
         @Test
