@@ -28,12 +28,20 @@ public interface WorkProgressMapper {
     List<WorkProgressSheetView> findSheetsByProjectId(@Param("projectId") Long projectId);
 
     /**
-     * Find work progress sheet by ID with all steps.
+     * Find work progress sheet by ID (without steps).
      *
      * @param id The sheet ID
-     * @return WorkProgressSheetView with all step details
+     * @return WorkProgressSheetView without step details
      */
     Optional<WorkProgressSheetView> findSheetById(@Param("id") Long id);
+
+    /**
+     * Find all steps for a sheet.
+     *
+     * @param sheetId The sheet ID
+     * @return List of WorkProgressStepView
+     */
+    List<WorkProgressStepView> findStepsBySheetId(@Param("id") Long sheetId);
 
     /**
      * Find a specific step by sheet ID and step ID.

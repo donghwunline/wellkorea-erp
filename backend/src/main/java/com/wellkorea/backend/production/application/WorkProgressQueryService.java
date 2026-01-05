@@ -33,10 +33,35 @@ public class WorkProgressQueryService {
 
     /**
      * Get a work progress sheet by ID with all steps.
+     * Uses two queries: one for sheet, one for steps, then combines.
      */
     public WorkProgressSheetView getSheetById(Long id) {
-        return workProgressMapper.findSheetById(id)
+        WorkProgressSheetView sheet = workProgressMapper.findSheetById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("WorkProgressSheet", id));
+
+        // Fetch steps separately and create a new view with steps
+        List<WorkProgressStepView> steps = workProgressMapper.findStepsBySheetId(id);
+
+        return new WorkProgressSheetView(
+                sheet.id(),
+                sheet.projectId(),
+                sheet.jobCode(),
+                sheet.productId(),
+                sheet.productName(),
+                sheet.productSku(),
+                sheet.quantity(),
+                sheet.sequence(),
+                sheet.status(),
+                sheet.startedAt(),
+                sheet.completedAt(),
+                sheet.notes(),
+                sheet.progressPercentage(),
+                sheet.totalSteps(),
+                sheet.completedSteps(),
+                steps,
+                sheet.createdAt(),
+                sheet.updatedAt()
+        );
     }
 
     /**

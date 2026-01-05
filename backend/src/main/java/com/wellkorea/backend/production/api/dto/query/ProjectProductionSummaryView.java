@@ -7,13 +7,13 @@ package com.wellkorea.backend.production.api.dto.query;
 public record ProjectProductionSummaryView(
         Long projectId,
         String jobCode,
-        int totalSheets,
-        int completedSheets,
-        int inProgressSheets,
-        int notStartedSheets,
-        int overallProgressPercentage,
-        int totalSteps,
-        int completedSteps
+        Integer totalSheets,
+        Integer completedSheets,
+        Integer inProgressSheets,
+        Integer notStartedSheets,
+        Integer overallProgressPercentage,
+        Integer totalSteps,
+        Integer completedSteps
 ) {
     public static ProjectProductionSummaryView empty(Long projectId) {
         return new ProjectProductionSummaryView(
