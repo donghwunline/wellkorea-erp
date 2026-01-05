@@ -70,6 +70,9 @@ export { deleteCompany, type DeleteCompanyInput } from './api/delete-company';
 export { addRole, type AddRoleInput } from './api/add-role';
 export { removeRole, type RemoveRoleInput } from './api/remove-role';
 
+// Command result type (shared across commands)
+export type { CommandResult } from './api/company.mapper';
+
 // =============================================================================
 // UI COMPONENTS
 // Display-only components with no side effects
