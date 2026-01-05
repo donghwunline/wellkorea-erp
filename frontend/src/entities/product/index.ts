@@ -64,8 +64,24 @@ export { updateProduct, type UpdateProductInput } from './api/update-product';
 export { deleteProduct, type DeleteProductInput } from './api/delete-product';
 
 // =============================================================================
+// COMMAND RESULT TYPE
+// =============================================================================
+
+export type { CommandResult as ProductCommandResult } from './api/product.mapper';
+
+// =============================================================================
 // DIRECT API FUNCTIONS
 // For async callbacks (e.g., Combobox loadOptions) that can't use hooks
 // =============================================================================
 
 export { searchProductsApi, type SearchProductsResult } from './api/search-products';
+
+// =============================================================================
+// UI COMPONENTS
+// Display-only components with no side effects
+// =============================================================================
+
+export { ProductTable, type ProductTableProps } from './ui/ProductTable';
+export { ProductCard, type ProductCardProps } from './ui/ProductCard';
+export { ProductStatusBadge, type ProductStatusBadgeProps } from './ui/ProductStatusBadge';
+export { ProductCombobox, type ProductComboboxProps } from './ui/ProductCombobox';
