@@ -57,6 +57,9 @@ export { approvalQueries, type ApprovalListQueryParams } from './api/approval.qu
 export { approveApproval, type ApproveApprovalInput } from './api/approve-approval';
 export { rejectApproval, type RejectApprovalInput } from './api/reject-approval';
 
+// Command result type (shared across commands)
+export type { CommandResult, ApprovalCommandResult } from './api/approval.mapper';
+
 // =============================================================================
 // UI COMPONENTS
 // Display-only components with no side effects

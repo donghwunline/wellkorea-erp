@@ -23,6 +23,11 @@ export interface CommandResult {
 }
 
 /**
+ * Approval-specific command result alias.
+ */
+export type ApprovalCommandResult = CommandResult;
+
+/**
  * Level decision from API response.
  */
 export interface LevelDecisionResponse {
