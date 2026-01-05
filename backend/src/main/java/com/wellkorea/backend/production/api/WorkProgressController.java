@@ -107,7 +107,7 @@ public class WorkProgressController {
      */
     @PutMapping("/{sheetId}/steps/{stepId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
-    public ResponseEntity<ApiResponse<WorkProgressStepView>> updateStepStatus(
+    public ResponseEntity<ApiResponse<WorkProgressCommandResult>> updateStepStatus(
             @PathVariable Long sheetId,
             @PathVariable Long stepId,
             @Valid @RequestBody UpdateStepStatusRequest request,
@@ -115,10 +115,7 @@ public class WorkProgressController {
     ) {
         Long userId = user.getUserId();
         commandService.updateStepStatus(sheetId, stepId, request, userId);
-
-        // Return the updated step view
-        WorkProgressStepView step = queryService.getStep(sheetId, stepId);
-        return ResponseEntity.ok(ApiResponse.success(step));
+        return ResponseEntity.ok(ApiResponse.success(WorkProgressCommandResult.updated(stepId)));
     }
 
     /**
