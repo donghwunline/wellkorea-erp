@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.production.infrastructure.mapper.WorkProgressMapper">
+
+    <!-- WorkProgressStepView result map -->
+    <resultMap id="WorkProgressStepViewResult" type="com.wellkorea.backend.production.api.dto.query.WorkProgressStepView">
+        <constructor>
+            <idArg column="step_id" javaType="Long"/>
+            <arg column="sheet_id" javaType="Long"/>
+            <arg column="step_number" javaType="Integer"/>
+            <arg column="step_name" javaType="String"/>
+            <arg column="step_status" javaType="com.wellkorea.backend.production.domain.StepStatus"/>
+            <arg column="step_started_at" javaType="java.time.Instant"/>
+            <arg column="step_completed_at" javaType="java.time.Instant"/>
+            <arg column="completed_by_id" javaType="Long"/>
+            <arg column="completed_by_name" javaType="String"/>
+            <arg column="step_estimated_hours" javaType="java.math.BigDecimal"/>
+            <arg column="actual_hours" javaType="java.math.BigDecimal"/>
+            <arg column="is_outsourced" javaType="boolean"/>
+            <arg column="outsource_vendor_id" javaType="Long"/>
+            <arg column="outsource_vendor_name" javaType="String"/>
+            <arg column="outsource_eta" javaType="java.time.LocalDate"/>
+            <arg column="outsource_cost" javaType="java.math.BigDecimal"/>
+            <arg column="step_notes" javaType="String"/>
+            <arg column="step_created_at" javaType="java.time.Instant"/>
+            <arg column="step_updated_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
+    <!-- WorkProgressSheetView result map for list (without steps) -->
+    <resultMap id="WorkProgressSheetListResult" type="com.wellkorea.backend.production.api.dto.query.WorkProgressSheetView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="product_id" javaType="Long"/>
+            <arg column="product_name" javaType="String"/>
+            <arg column="product_sku" javaType="String"/>
+            <arg column="quantity" javaType="Integer"/>
+            <arg column="sequence" javaType="Integer"/>
+            <arg column="status" javaType="com.wellkorea.backend.production.domain.SheetStatus"/>
+            <arg column="started_at" javaType="java.time.Instant"/>
+            <arg column="completed_at" javaType="java.time.Instant"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="progress_percentage" javaType="int"/>
+            <arg column="total_steps" javaType="int"/>
+            <arg column="completed_steps" javaType="int"/>
+            <!-- steps is null for list queries -->
+            <arg javaType="java.util.List"><null/></arg>
+            <arg column="created_at" javaType="java.time.Instant"/>
+            <arg column="updated_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
+    <!-- WorkProgressSheetView result map with nested steps -->
+    <resultMap id="WorkProgressSheetDetailResult" type="com.wellkorea.backend.production.api.dto.query.WorkProgressSheetView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="product_id" javaType="Long"/>
+            <arg column="product_name" javaType="String"/>
+            <arg column="product_sku" javaType="String"/>
+            <arg column="quantity" javaType="Integer"/>
+            <arg column="sequence" javaType="Integer"/>
+            <arg column="status" javaType="com.wellkorea.backend.production.domain.SheetStatus"/>
+            <arg column="started_at" javaType="java.time.Instant"/>
+            <arg column="completed_at" javaType="java.time.Instant"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="progress_percentage" javaType="int"/>
+            <arg column="total_steps" javaType="int"/>
+            <arg column="completed_steps" javaType="int"/>
+            <arg column="id" javaType="java.util.List" select="findStepsBySheetId"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+            <arg column="updated_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
+    <!-- ProjectProductionSummaryView result map -->
+    <resultMap id="ProjectProductionSummaryResult" type="com.wellkorea.backend.production.api.dto.query.ProjectProductionSummaryView">
+        <constructor>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="total_sheets" javaType="int"/>
+            <arg column="completed_sheets" javaType="int"/>
+            <arg column="in_progress_sheets" javaType="int"/>
+            <arg column="not_started_sheets" javaType="int"/>
+            <arg column="overall_progress_percentage" javaType="int"/>
+            <arg column="total_steps" javaType="int"/>
+            <arg column="completed_steps" javaType="int"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find sheets by project ID with aggregated stats -->
+    <select id="findSheetsByProjectId" resultMap="WorkProgressSheetListResult">
+        SELECT
+            s.id,
+            s.project_id,
+            p.job_code,
+            s.product_id,
+            prod.name AS product_name,
+            prod.sku AS product_sku,
+            s.quantity,
+            s.sequence,
+            s.status,
+            s.started_at,
+            s.completed_at,
+            s.notes,
+            COALESCE(step_stats.total_steps, 0) AS total_steps,
+            COALESCE(step_stats.completed_steps, 0) AS completed_steps,
+            CASE
+                WHEN COALESCE(step_stats.total_steps, 0) = 0 THEN 0
+                ELSE FLOOR(COALESCE(step_stats.completed_steps, 0)::NUMERIC / step_stats.total_steps * 100)::INT
+            END AS progress_percentage,
+            s.created_at,
+            s.updated_at
+        FROM work_progress_sheets s
+        INNER JOIN projects p ON s.project_id = p.id
+        INNER JOIN products prod ON s.product_id = prod.id
+        LEFT JOIN (
+            SELECT
+                sheet_id,
+                COUNT(*) AS total_steps,
+                COUNT(*) FILTER (WHERE status IN ('COMPLETED', 'SKIPPED')) AS completed_steps
+            FROM work_progress_steps
+            GROUP BY sheet_id
+        ) step_stats ON s.id = step_stats.sheet_id
+        WHERE s.project_id = #{projectId}
+        ORDER BY s.sequence, s.id
+    </select>
+
+    <!-- Find sheet by ID with steps (nested select) -->
+    <select id="findSheetById" resultMap="WorkProgressSheetDetailResult">
+        SELECT
+            s.id,
+            s.project_id,
+            p.job_code,
+            s.product_id,
+            prod.name AS product_name,
+            prod.sku AS product_sku,
+            s.quantity,
+            s.sequence,
+            s.status,
+            s.started_at,
+            s.completed_at,
+            s.notes,
+            COALESCE(step_stats.total_steps, 0) AS total_steps,
+            COALESCE(step_stats.completed_steps, 0) AS completed_steps,
+            CASE
+                WHEN COALESCE(step_stats.total_steps, 0) = 0 THEN 0
+                ELSE FLOOR(COALESCE(step_stats.completed_steps, 0)::NUMERIC / step_stats.total_steps * 100)::INT
+            END AS progress_percentage,
+            s.created_at,
+            s.updated_at
+        FROM work_progress_sheets s
+        INNER JOIN projects p ON s.project_id = p.id
+        INNER JOIN products prod ON s.product_id = prod.id
+        LEFT JOIN (
+            SELECT
+                sheet_id,
+                COUNT(*) AS total_steps,
+                COUNT(*) FILTER (WHERE status IN ('COMPLETED', 'SKIPPED')) AS completed_steps
+            FROM work_progress_steps
+            GROUP BY sheet_id
+        ) step_stats ON s.id = step_stats.sheet_id
+        WHERE s.id = #{id}
+    </select>
+
+    <!-- Find steps by sheet ID (for nested select) -->
+    <select id="findStepsBySheetId" resultMap="WorkProgressStepViewResult">
+        SELECT
+            st.id AS step_id,
+            st.sheet_id,
+            st.step_number,
+            st.step_name,
+            st.status AS step_status,
+            st.started_at AS step_started_at,
+            st.completed_at AS step_completed_at,
+            st.completed_by_id,
+            u.full_name AS completed_by_name,
+            st.estimated_hours AS step_estimated_hours,
+            st.actual_hours,
+            st.is_outsourced,
+            st.outsource_vendor_id,
+            c.company_name AS outsource_vendor_name,
+            st.outsource_eta,
+            st.outsource_cost,
+            st.notes AS step_notes,
+            st.created_at AS step_created_at,
+            st.updated_at AS step_updated_at
+        FROM work_progress_steps st
+        LEFT JOIN users u ON st.completed_by_id = u.id
+        LEFT JOIN companies c ON st.outsource_vendor_id = c.id
+        WHERE st.sheet_id = #{sheetId}
+        ORDER BY st.step_number
+    </select>
+
+    <!-- Find step by sheet ID and step ID -->
+    <select id="findStepBySheetIdAndId" resultMap="WorkProgressStepViewResult">
+        SELECT
+            st.id AS step_id,
+            st.sheet_id,
+            st.step_number,
+            st.step_name,
+            st.status AS step_status,
+            st.started_at AS step_started_at,
+            st.completed_at AS step_completed_at,
+            st.completed_by_id,
+            u.full_name AS completed_by_name,
+            st.estimated_hours AS step_estimated_hours,
+            st.actual_hours,
+            st.is_outsourced,
+            st.outsource_vendor_id,
+            c.company_name AS outsource_vendor_name,
+            st.outsource_eta,
+            st.outsource_cost,
+            st.notes AS step_notes,
+            st.created_at AS step_created_at,
+            st.updated_at AS step_updated_at
+        FROM work_progress_steps st
+        LEFT JOIN users u ON st.completed_by_id = u.id
+        LEFT JOIN companies c ON st.outsource_vendor_id = c.id
+        WHERE st.sheet_id = #{sheetId} AND st.id = #{stepId}
+    </select>
+
+    <!-- Get project production summary with aggregated progress -->
+    <select id="findProjectSummary" resultMap="ProjectProductionSummaryResult">
+        SELECT
+            p.id AS project_id,
+            p.job_code,
+            COALESCE(sheet_stats.total_sheets, 0) AS total_sheets,
+            COALESCE(sheet_stats.completed_sheets, 0) AS completed_sheets,
+            COALESCE(sheet_stats.in_progress_sheets, 0) AS in_progress_sheets,
+            COALESCE(sheet_stats.not_started_sheets, 0) AS not_started_sheets,
+            COALESCE(step_stats.total_steps, 0) AS total_steps,
+            COALESCE(step_stats.completed_steps, 0) AS completed_steps,
+            CASE
+                WHEN COALESCE(step_stats.total_steps, 0) = 0 THEN 0
+                ELSE FLOOR(COALESCE(step_stats.completed_steps, 0)::NUMERIC / step_stats.total_steps * 100)::INT
+            END AS overall_progress_percentage
+        FROM projects p
+        LEFT JOIN (
+            SELECT
+                project_id,
+                COUNT(*) AS total_sheets,
+                COUNT(*) FILTER (WHERE status = 'COMPLETED') AS completed_sheets,
+                COUNT(*) FILTER (WHERE status = 'IN_PROGRESS') AS in_progress_sheets,
+                COUNT(*) FILTER (WHERE status = 'NOT_STARTED') AS not_started_sheets
+            FROM work_progress_sheets
+            GROUP BY project_id
+        ) sheet_stats ON p.id = sheet_stats.project_id
+        LEFT JOIN (
+            SELECT
+                s.project_id,
+                COUNT(st.id) AS total_steps,
+                COUNT(st.id) FILTER (WHERE st.status IN ('COMPLETED', 'SKIPPED')) AS completed_steps
+            FROM work_progress_sheets s
+            INNER JOIN work_progress_steps st ON s.id = st.sheet_id
+            GROUP BY s.project_id
+        ) step_stats ON p.id = step_stats.project_id
+        WHERE p.id = #{projectId}
+    </select>
+
+    <!-- Find outsourced steps by project ID -->
+    <select id="findOutsourcedStepsByProjectId" resultMap="WorkProgressStepViewResult">
+        SELECT
+            st.id AS step_id,
+            st.sheet_id,
+            st.step_number,
+            st.step_name,
+            st.status AS step_status,
+            st.started_at AS step_started_at,
+            st.completed_at AS step_completed_at,
+            st.completed_by_id,
+            u.full_name AS completed_by_name,
+            st.estimated_hours AS step_estimated_hours,
+            st.actual_hours,
+            st.is_outsourced,
+            st.outsource_vendor_id,
+            c.company_name AS outsource_vendor_name,
+            st.outsource_eta,
+            st.outsource_cost,
+            st.notes AS step_notes,
+            st.created_at AS step_created_at,
+            st.updated_at AS step_updated_at
+        FROM work_progress_steps st
+        INNER JOIN work_progress_sheets s ON st.sheet_id = s.id
+        LEFT JOIN users u ON st.completed_by_id = u.id
+        LEFT JOIN companies c ON st.outsource_vendor_id = c.id
+        WHERE s.project_id = #{projectId} AND st.is_outsourced = true
+        ORDER BY st.outsource_eta NULLS LAST, st.id
+    </select>
+
+</mapper>
