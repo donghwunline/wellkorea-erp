@@ -37,3 +37,9 @@ export { chainTemplateQueries } from './api/chain-template.queries';
 // =============================================================================
 
 export { updateChainLevels } from './api/update-chain-levels';
+
+// =============================================================================
+// COMMAND RESULT TYPE
+// =============================================================================
+
+export type { CommandResult as ChainCommandResult } from './api/chain-template.mapper';
