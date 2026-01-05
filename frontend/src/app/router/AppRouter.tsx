@@ -30,6 +30,7 @@ import {
 import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from '@/pages/companies';
 import { ItemsPage } from '@/pages/items';
 import { ProcurementPage } from '@/pages/procurement';
+import { AllProductionsPage, ProductionListPage, ProductionDetailPage } from '@/pages/production';
 
 /**
  * Layout wrapper for protected routes.
@@ -79,7 +80,10 @@ export function AppRouter() {
         <Route path="/projects" element={<ProjectListPage />} />
         <Route path="/projects/:id" element={<ProjectViewPage />} />
         <Route path="/approvals" element={<ApprovalListPage />} />
-        <Route path="/production" element={<PlaceholderPage title="Production" />} />
+        {/* Production routes - view access for all */}
+        <Route path="/production" element={<AllProductionsPage />} />
+        <Route path="/projects/:projectId/production" element={<ProductionListPage />} />
+        <Route path="/production/:id" element={<ProductionDetailPage />} />
         <Route path="/delivery" element={<PlaceholderPage title="Delivery" />} />
       </Route>
 

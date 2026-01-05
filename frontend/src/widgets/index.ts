@@ -24,3 +24,8 @@ export {
 } from './project-related-navigation-grid';
 
 export { UserMenu, type UserMenuProps, type UserMenuItem } from './user-menu';
+
+export {
+  ProductionProgressPanel,
+  type ProductionProgressPanelProps,
+} from './production-progress-panel';

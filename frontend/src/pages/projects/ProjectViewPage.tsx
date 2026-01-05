@@ -45,7 +45,7 @@ import {
   TabPanel,
   Tabs,
 } from '@/shared/ui';
-import { QuotationDetailsPanel, ProjectRelatedNavigationGrid } from '@/widgets';
+import { QuotationDetailsPanel, ProjectRelatedNavigationGrid, ProductionProgressPanel } from '@/widgets';
 
 // Tab configuration with role requirements
 interface TabConfig {
@@ -303,15 +303,9 @@ export function ProjectViewPage() {
             <QuotationDetailsPanel projectId={project.id} onDataChange={triggerKpiRefresh} />
           </TabPanel>
 
-          {/* Process Tab (Placeholder) */}
+          {/* Process Tab - Production Progress */}
           <TabPanel id="process">
-            <Card className="p-12 text-center">
-              <Icon name="cog" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-              <h3 className="text-lg font-semibold text-white">공정/진행률</h3>
-              <p className="mt-2 text-steel-500">
-                Production tracking will be available in a future release.
-              </p>
-            </Card>
+            <ProductionProgressPanel projectId={project.id} />
           </TabPanel>
 
           {/* Outsource Tab (Placeholder) */}

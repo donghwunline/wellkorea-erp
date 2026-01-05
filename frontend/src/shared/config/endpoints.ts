@@ -171,3 +171,21 @@ export const COMPANY_ENDPOINTS = {
   /** DELETE /companies/:id/roles/:roleId - Remove role from company */
   role: (id: number, roleId: number) => `/companies/${id}/roles/${roleId}`,
 } as const;
+
+// ============================================================================
+// Work Progress Endpoints (Production Tracking)
+// ============================================================================
+
+export const WORK_PROGRESS_ENDPOINTS = {
+  /** Base path for work progress operations */
+  BASE: '/work-progress',
+
+  /** GET/DELETE /work-progress/:id */
+  byId: (id: number) => `/work-progress/${id}`,
+  /** PUT /work-progress/:sheetId/steps/:stepId */
+  step: (sheetId: number, stepId: number) => `/work-progress/${sheetId}/steps/${stepId}`,
+  /** GET /work-progress/project/:projectId/summary */
+  projectSummary: (projectId: number) => `/work-progress/project/${projectId}/summary`,
+  /** GET /work-progress/project/:projectId/outsourced */
+  outsourcedSteps: (projectId: number) => `/work-progress/project/${projectId}/outsourced`,
+} as const;
