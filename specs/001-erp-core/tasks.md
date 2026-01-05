@@ -484,45 +484,46 @@
 
 > **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [X] T098 [P] [US3] Write contract tests for POST /api/products endpoint (validates SKU uniqueness, name non-empty, base_price >= 0) in backend/src/test/java/com/wellkorea/backend/product/api/ProductControllerTest.java ✅ Tests passing
-- [X] T099 [P] [US3] Write contract tests for GET /api/products, GET /api/products/{id}, PUT /api/products/{id}, DELETE /api/products/{id} endpoints in backend/src/test/java/com/wellkorea/backend/product/api/ProductControllerTest.java ✅ Tests passing
-- [X] T100 [P] [US3] Write contract tests for GET /api/products/search endpoint (search by name, filter by type) in backend/src/test/java/com/wellkorea/backend/product/api/ProductControllerTest.java ✅ Tests passing
-- [X] T101 [US3] Write unit tests for ProductService (product deactivation logic, preserve in old quotations) in backend/src/test/java/com/wellkorea/backend/product/application/ProductCommandServiceTest.java, ProductQueryServiceTest.java ✅ Tests passing
+- [ ] T098 [P] [US3] Write contract tests for POST /api/products endpoint (validates SKU uniqueness, name non-empty, base_price >= 0) in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
+- [ ] T099 [P] [US3] Write contract tests for GET /api/products, GET /api/products/{id}, PUT /api/products/{id}, DELETE /api/products/{id} endpoints in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
+- [ ] T100 [P] [US3] Write contract tests for GET /api/products/search endpoint (search by name, filter by type) in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
+- [ ] T101 [US3] Write unit tests for ProductService (product deactivation logic, preserve in old quotations) in backend/src/test/java/com/wellkorea/backend/product/service/ProductServiceTest.java - MUST FAIL initially
 
 ### Database Schema for User Story 3
 
-- [X] T102 Create Flyway migration for Product, ProductType tables - included in V2__create_project_tables.sql
+- [ ] T102 Create Flyway migration V9__create_product_domain.sql for Product, ProductType tables
 
 ### Backend Implementation for User Story 3
 
-- [X] T099 [P] [US3] Create Product entity in backend/src/main/java/com/wellkorea/backend/product/domain/Product.java ✅ Implemented
-- [X] T100 [P] [US3] Create ProductType entity in backend/src/main/java/com/wellkorea/backend/product/domain/ProductType.java ✅ Implemented
-- [X] T101 [US3] Create ProductRepository with search by name in backend/src/main/java/com/wellkorea/backend/product/infrastructure/persistence/ProductRepository.java ✅ Implemented
-- [X] T102 [US3] Implement ProductService with CRUD and search operations in backend/src/main/java/com/wellkorea/backend/product/application/ProductCommandService.java, ProductQueryService.java ✅ Implemented
-- [X] T103 [US3] Create ProductController with REST endpoints (/api/products - GET, POST, PUT, DELETE, GET /search) in backend/src/main/java/com/wellkorea/backend/product/api/ProductController.java ✅ Implemented
-- [X] T104 [US3] Create DTOs (CreateProductRequest, UpdateProductRequest, ProductResponse) in backend/src/main/java/com/wellkorea/backend/product/api/dto/ ✅ Implemented
-- [X] T105 [US3] Add validation (SKU unique, name non-empty, base price >= 0) ✅ Implemented in ProductCommandService
-- [X] T106 [US3] Implement product deactivation (is_active flag) while preserving in old quotations ✅ Implemented
+- [ ] T099 [P] [US3] Create Product entity in backend/src/main/java/com/wellkorea/backend/product/domain/Product.java
+- [ ] T100 [P] [US3] Create ProductType entity in backend/src/main/java/com/wellkorea/backend/product/domain/ProductType.java
+- [ ] T101 [US3] Create ProductRepository with search by name in backend/src/main/java/com/wellkorea/backend/product/infrastructure/persistence/ProductRepository.java (depends on T099)
+- [ ] T102 [US3] Implement ProductService with CRUD and search operations in backend/src/main/java/com/wellkorea/backend/product/service/ProductService.java
+- [ ] T103 [US3] Create ProductController with REST endpoints (/api/products - GET, POST, PUT, DELETE, GET /search) in backend/src/main/java/com/wellkorea/backend/product/controller/ProductController.java
+- [ ] T104 [US3] Create DTOs (CreateProductRequest, UpdateProductRequest, ProductResponse) in backend/src/main/java/com/wellkorea/backend/product/dto/
+- [ ] T105 [US3] Add validation (SKU unique, name non-empty, base price >= 0)
+- [ ] T106 [US3] Implement product deactivation (is_active flag) while preserving in old quotations
 
 ### Frontend Implementation for User Story 3 (FSD-Lite)
 
 > **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
 
 #### Product Entity Layer
-- [X] T107 [US3] Create product entity in frontend/src/entities/product/ (model/, api/, ui/) - **FSD-Lite** ✅ Complete
-  - model/product.ts (Product type + productRules: isActive, canEdit, isDiscontinued) ✅
-  - model/product-type.ts (ProductType type) ✅
-  - api/product.queries.ts, product.mapper.ts, create-product.ts, update-product.ts, delete-product.ts, search-products.ts ✅
-  - ui/ProductTable.tsx, ProductCard.tsx, ProductStatusBadge.tsx, ProductCombobox.tsx ✅
+- [ ] T107 [US3] Create product entity in frontend/src/entities/product/ (model/, api/, query/, ui/) - **FSD-Lite**
+  - model/product.ts (Product type + productRules: isActive, canEdit, isDiscontinued)
+  - model/product-type.ts (ProductType type)
+  - api/product.api.ts, product.mapper.ts
+  - query/use-product.ts, use-products.ts, use-product-search.ts, query-keys.ts
+  - ui/ProductTable.tsx, ProductCard.tsx, ProductSearchCombobox.tsx
 
 #### Product Features
-- [X] T108 [US3] Create product list page in frontend/src/pages/items/ItemsPage.tsx with ProductsTab (assembly, uses inline table) - **FSD-Lite** ✅
-- [X] T109 [US3] Create product create feature in frontend/src/features/product/create/ (model/use-create-product.ts) - **FSD-Lite** ✅
-- [X] T109a [US3] Product create integrated in ProductsTab via modal - **FSD-Lite** ✅ (uses useCreateProduct hook)
-- [X] T110 [US3] Create product update feature in frontend/src/features/product/update/ (model/use-update-product.ts) - **FSD-Lite** ✅
-- [X] T110a [US3] Product edit integrated in ProductsTab via modal - **FSD-Lite** ✅ (uses useUpdateProduct hook)
-- [X] T111 [US3] Product detail view integrated in ProductsTab (expandable rows or modal) - **FSD-Lite** ✅
-- [X] T112 [US3] Role-based access implemented in ProductsTab (Admin/Finance only) - **FSD-Lite** ✅
+- [ ] T108 [US3] Create product list page in frontend/src/pages/products/list/ProductListPage.tsx (assembly only, uses entities/product/ui/ProductTable) - **FSD-Lite**
+- [ ] T109 [US3] Create product create feature in frontend/src/features/product/create/ (ui/CreateProductForm.tsx, model/use-create-product.ts) - **FSD-Lite**
+- [ ] T109a [US3] Create product create page in frontend/src/pages/products/create/CreateProductPage.tsx (assembly only) - **FSD-Lite**
+- [ ] T110 [US3] Create product update feature in frontend/src/features/product/update/ (ui/EditProductForm.tsx, model/use-update-product.ts) - **FSD-Lite**
+- [ ] T110a [US3] Create product edit page in frontend/src/pages/products/[id]/edit/EditProductPage.tsx (assembly only) - **FSD-Lite**
+- [ ] T111 [US3] Create product detail page in frontend/src/pages/products/[id]/ProductDetailPage.tsx - **FSD-Lite**
+- [ ] T112 [US3] Add role-based access (Admin only can create/edit products) using entities/product/query hooks with role filtering
 
 **Checkpoint**: Product catalog complete - standardized product selection available for quotations
 
@@ -542,48 +543,50 @@
 
 > **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T113 [P] [US4] Write contract tests for POST /api/work-progress endpoint (creates sheet for project-product) in backend/src/test/java/com/wellkorea/backend/production/controller/WorkProgressControllerTest.java - MUST FAIL initially
-- [ ] T114 [P] [US4] Write contract tests for PUT /api/work-progress/{id}/steps/{stepId} endpoint (updates step status, dates, remarks) in backend/src/test/java/com/wellkorea/backend/production/controller/WorkProgressControllerTest.java - MUST FAIL initially
-- [ ] T115 [P] [US4] Write contract tests for GET /api/work-progress endpoint (get all sheets for project, calculate aggregated progress %) in backend/src/test/java/com/wellkorea/backend/production/controller/WorkProgressControllerTest.java - MUST FAIL initially
-- [ ] T116 [US4] Write unit tests for WorkProgressService (progress calculation, outsourced step tracking) in backend/src/test/java/com/wellkorea/backend/production/service/WorkProgressServiceTest.java - MUST FAIL initially
+- [X] T113 [P] [US4] Write contract tests for POST /api/work-progress endpoint (creates sheet for project-product) in backend/src/test/java/com/wellkorea/backend/production/api/WorkProgressControllerTest.java - COMPLETED
+- [X] T114 [P] [US4] Write contract tests for PUT /api/work-progress/{id}/steps/{stepId} endpoint (updates step status, dates, remarks) in backend/src/test/java/com/wellkorea/backend/production/api/WorkProgressControllerTest.java - COMPLETED
+- [X] T115 [P] [US4] Write contract tests for GET /api/work-progress endpoint (get all sheets for project, calculate aggregated progress %) in backend/src/test/java/com/wellkorea/backend/production/api/WorkProgressControllerTest.java - COMPLETED
+- [X] T116 [US4] Write unit tests for WorkProgressService (progress calculation, outsourced step tracking) in backend/src/test/java/com/wellkorea/backend/production/application/WorkProgressServiceTest.java - COMPLETED
 
 ### Database Schema for User Story 4
 
-- [ ] T113 Create Flyway migration V10__create_production_domain.sql for WorkProgressSheet, WorkProgressStep, WorkProgressStepTemplate tables
+- [X] T113 Create Flyway migration V10__create_production_domain.sql for WorkProgressSheet, WorkProgressStep, WorkProgressStepTemplate tables - COMPLETED
 
 ### Backend Implementation for User Story 4
 
-- [ ] T114 [P] [US4] Create WorkProgressSheet entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressSheet.java
-- [ ] T115 [P] [US4] Create WorkProgressStep entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressStep.java
-- [ ] T116 [P] [US4] Create WorkProgressStepTemplate entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressStepTemplate.java
-- [ ] T117 [P] [US4] Create StepStatus enum (NotStarted, InProgress, Completed) in backend/src/main/java/com/wellkorea/backend/production/domain/StepStatus.java
-- [ ] T118 [US4] Create WorkProgressSheetRepository in backend/src/main/java/com/wellkorea/backend/production/infrastructure/persistence/WorkProgressSheetRepository.java (depends on T114)
-- [ ] T119 [US4] Implement WorkProgressService with create sheet, update step, get progress in backend/src/main/java/com/wellkorea/backend/production/service/WorkProgressService.java
-- [ ] T120 [US4] Create WorkProgressController with REST endpoints in backend/src/main/java/com/wellkorea/backend/production/controller/WorkProgressController.java
-- [ ] T121 [US4] Create DTOs (CreateWorkProgressSheetRequest, UpdateStepRequest, WorkProgressResponse) in backend/src/main/java/com/wellkorea/backend/production/dto/
-- [ ] T122 [US4] Add validation (unique sheet per project-product, status progression, completed_by required on completion)
-- [ ] T123 [US4] Implement aggregated progress calculation (% complete per product)
+- [X] T114 [P] [US4] Create WorkProgressSheet entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressSheet.java - COMPLETED
+- [X] T115 [P] [US4] Create WorkProgressStep entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressStep.java - COMPLETED
+- [X] T116 [P] [US4] Create WorkProgressStepTemplate entity in backend/src/main/java/com/wellkorea/backend/production/domain/WorkProgressStepTemplate.java - COMPLETED
+- [X] T117 [P] [US4] Create StepStatus enum (NotStarted, InProgress, Completed) in backend/src/main/java/com/wellkorea/backend/production/domain/StepStatus.java - COMPLETED (also SheetStatus)
+- [X] T118 [US4] Create WorkProgressSheetRepository in backend/src/main/java/com/wellkorea/backend/production/infrastructure/persistence/WorkProgressSheetRepository.java - COMPLETED
+- [X] T119 [US4] Implement WorkProgressService with create sheet, update step, get progress using CQRS pattern (WorkProgressCommandService, WorkProgressQueryService) - COMPLETED
+- [X] T120 [US4] Create WorkProgressController with REST endpoints in backend/src/main/java/com/wellkorea/backend/production/api/WorkProgressController.java - COMPLETED
+- [X] T121 [US4] Create DTOs (CreateWorkProgressSheetRequest, UpdateStepStatusRequest, WorkProgressSheetView, WorkProgressStepView, ProjectProductionSummaryView) in backend/src/main/java/com/wellkorea/backend/production/api/dto/ - COMPLETED
+- [X] T122 [US4] Add validation (unique sheet per project-product, status progression, completed_by required on completion) - COMPLETED
+- [X] T123 [US4] Implement aggregated progress calculation (% complete per product) in WorkProgressQueryService.getProjectSummary() - COMPLETED
 
 ### Frontend Implementation for User Story 4 (FSD-Lite)
 
 > **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
 
 #### Work Progress Entity Layer
-- [ ] T124 [US4] Create work-progress entity in frontend/src/entities/work-progress/ (model/, api/, query/, ui/) - **FSD-Lite**
-  - model/work-progress.ts (WorkProgressSheet type + progressRules: getProgress, isComplete, getNextStep)
-  - model/work-step.ts (WorkProgressStep type + stepRules: isComplete, isInProgress)
-  - model/step-status.ts (StepStatus enum + display config)
-  - api/work-progress.api.ts, work-progress.mapper.ts
-  - query/use-work-progress.ts, use-work-progress-by-project.ts, query-keys.ts
-  - ui/WorkProgressTable.tsx, WorkProgressCard.tsx, StepStatusBadge.tsx, ProgressBar.tsx
+- [X] T124 [US4] Create work-progress entity in frontend/src/entities/work-progress/ (model/, api/, ui/) - **FSD-Lite** - COMPLETED
+  - model/step-status.ts (StepStatus, SheetStatus enums + display config)
+  - model/work-progress-step.ts (WorkProgressStep type)
+  - model/work-progress-sheet.ts (WorkProgressSheet type + progressRules, stepRules)
+  - api/work-progress.mapper.ts, work-progress.queries.ts (Query Factory pattern)
+  - api/create-work-progress-sheet.ts, update-step-status.ts, delete-work-progress-sheet.ts
+  - ui/StepStatusBadge.tsx, SheetStatusBadge.tsx, WorkProgressBar.tsx, WorkProgressSheetTable.tsx, WorkProgressStepList.tsx, ProjectProductionSummaryCard.tsx
 
 #### Work Progress Features
-- [ ] T125 [US4] Create work progress list page in frontend/src/pages/production/list/WorkProgressListPage.tsx (assembly only, uses entities/work-progress/ui/WorkProgressTable) - **FSD-Lite**
-- [ ] T126 [US4] Create work progress detail page in frontend/src/pages/production/[id]/WorkProgressDetailPage.tsx (uses widgets/production/StepTrackerPanel) - **FSD-Lite**
-- [ ] T127 [US4] Create update-step feature in frontend/src/features/work-progress/update-step/ (ui/UpdateStepDialog.tsx, model/use-update-step.ts) - **FSD-Lite**
-- [ ] T127a [US4] Create step-tracker widget in frontend/src/widgets/production/StepTrackerPanel.tsx (combines step display + update-step feature) - **FSD-Lite**
-- [ ] T128 [US4] Add aggregated progress widget in frontend/src/widgets/project/ProductionProgressPanel.tsx for project detail page - **FSD-Lite**
-- [ ] T129 [US4] Add role-based access (Production staff can update, Finance/Sales can view read-only) using entities/work-progress/query hooks
+- [X] T125 [US4] Create work progress list page in frontend/src/pages/production/ProductionListPage.tsx - **FSD-Lite** - COMPLETED
+- [X] T126 [US4] Create work progress detail page in frontend/src/pages/production/ProductionDetailPage.tsx - **FSD-Lite** - COMPLETED
+- [X] T127 [US4] Create update-step feature in frontend/src/features/work-progress/update-step/ (model/use-update-step.ts with useStartStep, useCompleteStep, useSkipStep, useResetStep) - **FSD-Lite** - COMPLETED
+- [X] T127b [US4] Create create-sheet feature in frontend/src/features/work-progress/create-sheet/ (model/use-create-sheet.ts) - **FSD-Lite** - COMPLETED
+- [X] T127c [US4] Create delete-sheet feature in frontend/src/features/work-progress/delete-sheet/ (model/use-delete-sheet.ts) - **FSD-Lite** - COMPLETED
+- [x] T127a [US4] Create step-tracker widget in frontend/src/widgets/production/StepTrackerPanel.tsx (combines step display + update-step feature) - **FSD-Lite** (functionality integrated in ProductionDetailPage.tsx)
+- [x] T128 [US4] Add aggregated progress widget in frontend/src/widgets/production-progress-panel/ProductionProgressPanel.tsx for project detail page - **FSD-Lite**
+- [x] T129 [US4] Add role-based access (Production staff can update, Finance/Sales can view read-only) in ProductionDetailPage, ProductionListPage, ProductionProgressPanel
 
 **Checkpoint**: Production tracking complete - per-product work progress visible with real-time status updates
 
