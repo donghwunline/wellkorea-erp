@@ -1,23 +1,20 @@
 /**
  * Unit tests for AuditLogPage component.
- * Tests page rendering, filter interactions, detail modal, error display, and accessibility.
  *
- * Following Constitution Principle VI, this tests the page as a composition layer:
- * - Feature components (AuditLogTable) are mocked
- * - Feature hooks (useAuditLogPage) are mocked
- * - Focus is on filter state, detail modal, and page-level interactions
+ * FSD pattern - tests page as composition layer:
+ * - Entity components (AuditLogTable) are mocked
+ * - Query Factory (auditQueries) is mocked via useQuery
+ * - Focus on filter state, detail modal, and page-level interactions
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { AuditLogPage } from './AuditLogPage';
-import type { AuditLogEntry } from '@/services';
-// Import mocked hook for type-safe assertions
-import { useAuditLogPage } from '@/components/features/audit';
+import type { AuditLog } from '@/entities/audit';
 
 // Sample audit log entry for testing
-const mockAuditLogEntry: AuditLogEntry = {
+const mockAuditLogEntry: AuditLog = {
   id: 1,
   action: 'CREATE',
   entityType: 'User',
@@ -30,7 +27,7 @@ const mockAuditLogEntry: AuditLogEntry = {
   createdAt: '2025-01-15T10:30:00Z',
 };
 
-const mockAuditLogEntryMinimal: AuditLogEntry = {
+const mockAuditLogEntryMinimal: AuditLog = {
   id: 2,
   action: 'LOGIN',
   entityType: 'Session',
@@ -46,61 +43,55 @@ const mockAuditLogEntryMinimal: AuditLogEntry = {
 // Track props passed to mocked components
 let auditTableProps: Record<string, unknown> = {};
 
-// Mock handlers
-const mockSetPage = vi.fn();
-const mockHandleFilterChange = vi.fn();
-const mockHandleClearFilters = vi.fn();
-const mockHandleSearchChange = vi.fn();
-const mockHandleSearchSubmit = vi.fn();
-const mockHandleClearSearch = vi.fn();
-
-// Mock the feature hook
-vi.mock('@/components/features/audit', () => ({
-  useAuditLogPage: vi.fn(() => ({
-    page: 0,
-    setPage: mockSetPage,
-    search: '',
-    searchInput: '',
-    handleSearchChange: mockHandleSearchChange,
-    handleSearchSubmit: mockHandleSearchSubmit,
-    handleClearSearch: mockHandleClearSearch,
-    filters: {
-      username: '',
-      action: '',
-      startDate: '',
-      endDate: '',
+// Mock useQuery
+const mockRefetch = vi.fn();
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: vi.fn(() => ({
+    data: {
+      data: [mockAuditLogEntry, mockAuditLogEntryMinimal],
+      pagination: {
+        page: 0,
+        size: 10,
+        totalElements: 2,
+        totalPages: 1,
+        first: true,
+        last: true,
+      },
     },
-    handleFilterChange: mockHandleFilterChange,
-    handleClearFilters: mockHandleClearFilters,
+    isLoading: false,
+    error: null,
+    refetch: mockRefetch,
   })),
+}));
+
+// Mock entity exports
+vi.mock('@/entities/audit', () => ({
+  auditQueries: {
+    list: vi.fn(() => ({ queryKey: ['audit', 'list'] })),
+  },
   AuditLogTable: vi.fn((props: Record<string, unknown>) => {
     auditTableProps = props;
+    const logs = props.logs as AuditLog[];
     return (
       <div data-testid="audit-log-table">
-        <button
-          data-testid="trigger-view-details"
-          onClick={() => (props.onViewDetails as (entry: AuditLogEntry) => void)(mockAuditLogEntry)}
-        >
-          View Details
-        </button>
-        <button
-          data-testid="trigger-view-minimal"
-          onClick={() =>
-            (props.onViewDetails as (entry: AuditLogEntry) => void)(mockAuditLogEntryMinimal)
-          }
-        >
-          View Minimal
-        </button>
-        <button
-          data-testid="trigger-error"
-          onClick={() => (props.onError as (error: string) => void)('Failed to load audit logs')}
-        >
-          Trigger Error
-        </button>
+        {logs.map(log => (
+          <button
+            key={log.id}
+            data-testid={`view-details-${log.id}`}
+            onClick={() => (props.onViewDetails as (entry: AuditLog) => void)(log)}
+          >
+            View {log.action}
+          </button>
+        ))}
       </div>
     );
   }),
+  AuditLogTableSkeleton: vi.fn(() => <div data-testid="audit-table-skeleton">Loading...</div>),
 }));
+
+// Get mocked useQuery for test manipulation
+import { useQuery } from '@tanstack/react-query';
+const mockUseQuery = vi.mocked(useQuery);
 
 describe('AuditLogPage', () => {
   beforeEach(() => {
@@ -108,23 +99,22 @@ describe('AuditLogPage', () => {
     auditTableProps = {};
 
     // Reset to default mock state
-    vi.mocked(useAuditLogPage).mockReturnValue({
-      page: 0,
-      setPage: mockSetPage,
-      search: '',
-      searchInput: '',
-      handleSearchChange: mockHandleSearchChange,
-      handleSearchSubmit: mockHandleSearchSubmit,
-      handleClearSearch: mockHandleClearSearch,
-      filters: {
-        username: '',
-        action: '',
-        startDate: '',
-        endDate: '',
+    mockUseQuery.mockReturnValue({
+      data: {
+        data: [mockAuditLogEntry, mockAuditLogEntryMinimal],
+        pagination: {
+          page: 0,
+          size: 10,
+          totalElements: 2,
+          totalPages: 1,
+          first: true,
+          last: true,
+        },
       },
-      handleFilterChange: mockHandleFilterChange,
-      handleClearFilters: mockHandleClearFilters,
-    });
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+    } as unknown as ReturnType<typeof useQuery>);
   });
 
   describe('rendering', () => {
@@ -142,10 +132,11 @@ describe('AuditLogPage', () => {
       expect(screen.getByText('Action')).toBeInTheDocument();
     });
 
-    it('should render AuditLogTable', () => {
+    it('should render AuditLogTable with logs', () => {
       render(<AuditLogPage />);
 
       expect(screen.getByTestId('audit-log-table')).toBeInTheDocument();
+      expect(auditTableProps.logs).toEqual([mockAuditLogEntry, mockAuditLogEntryMinimal]);
     });
 
     it('should not render detail modal initially', () => {
@@ -161,163 +152,51 @@ describe('AuditLogPage', () => {
     });
   });
 
-  describe('filter interactions', () => {
-    it('should render Clear Filters button when filters are active', () => {
-      vi.mocked(useAuditLogPage).mockReturnValue({
-        page: 0,
-        setPage: mockSetPage,
-        search: '',
-        searchInput: '',
-        handleSearchChange: mockHandleSearchChange,
-        handleSearchSubmit: mockHandleSearchSubmit,
-        handleClearSearch: mockHandleClearSearch,
-        filters: {
-          username: 'admin', // Active filter
-          action: '',
-          startDate: '',
-          endDate: '',
-        },
-        handleFilterChange: mockHandleFilterChange,
-        handleClearFilters: mockHandleClearFilters,
-      });
+  describe('loading state', () => {
+    it('should show skeleton when loading', () => {
+      mockUseQuery.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        error: null,
+        refetch: mockRefetch,
+      } as unknown as ReturnType<typeof useQuery>);
 
       render(<AuditLogPage />);
 
-      expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument();
-    });
-
-    it('should render Clear Filters button when action filter is active', () => {
-      vi.mocked(useAuditLogPage).mockReturnValue({
-        page: 0,
-        setPage: mockSetPage,
-        search: '',
-        searchInput: '',
-        handleSearchChange: mockHandleSearchChange,
-        handleSearchSubmit: mockHandleSearchSubmit,
-        handleClearSearch: mockHandleClearSearch,
-        filters: {
-          username: '',
-          action: 'CREATE', // Active filter
-          startDate: '',
-          endDate: '',
-        },
-        handleFilterChange: mockHandleFilterChange,
-        handleClearFilters: mockHandleClearFilters,
-      });
-
-      render(<AuditLogPage />);
-
-      expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument();
-    });
-
-    it('should call handleClearFilters when Clear Filters button is clicked', async () => {
-      const user = userEvent.setup();
-
-      vi.mocked(useAuditLogPage).mockReturnValue({
-        page: 0,
-        setPage: mockSetPage,
-        search: '',
-        searchInput: '',
-        handleSearchChange: mockHandleSearchChange,
-        handleSearchSubmit: mockHandleSearchSubmit,
-        handleClearSearch: mockHandleClearSearch,
-        filters: {
-          username: 'admin',
-          action: 'CREATE',
-          startDate: '',
-          endDate: '',
-        },
-        handleFilterChange: mockHandleFilterChange,
-        handleClearFilters: mockHandleClearFilters,
-      });
-
-      render(<AuditLogPage />);
-
-      await user.click(screen.getByRole('button', { name: /clear filters/i }));
-
-      expect(mockHandleClearFilters).toHaveBeenCalledOnce();
+      expect(screen.getByTestId('audit-table-skeleton')).toBeInTheDocument();
+      expect(screen.queryByTestId('audit-log-table')).not.toBeInTheDocument();
     });
   });
 
-  describe('props passed to AuditLogTable', () => {
-    it('should pass page from useAuditLogPage', () => {
+  describe('error state', () => {
+    it('should show error message and retry button on error', () => {
+      mockUseQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: new Error('Network error'),
+        refetch: mockRefetch,
+      } as unknown as ReturnType<typeof useQuery>);
+
       render(<AuditLogPage />);
 
-      expect(auditTableProps.page).toBe(0);
+      expect(screen.getByText('Failed to load audit logs')).toBeInTheDocument();
+      expect(screen.getByText('Retry')).toBeInTheDocument();
     });
 
-    it('should pass filters mapped correctly', () => {
-      vi.mocked(useAuditLogPage).mockReturnValue({
-        page: 0,
-        setPage: mockSetPage,
-        search: '',
-        searchInput: '',
-        handleSearchChange: mockHandleSearchChange,
-        handleSearchSubmit: mockHandleSearchSubmit,
-        handleClearSearch: mockHandleClearSearch,
-        filters: {
-          username: 'User', // Entity type filter (note: maps to entityType in table)
-          action: 'CREATE',
-          startDate: '',
-          endDate: '',
-        },
-        handleFilterChange: mockHandleFilterChange,
-        handleClearFilters: mockHandleClearFilters,
-      });
+    it('should call refetch when retry is clicked', async () => {
+      const user = userEvent.setup();
+      mockUseQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: new Error('Network error'),
+        refetch: mockRefetch,
+      } as unknown as ReturnType<typeof useQuery>);
 
       render(<AuditLogPage />);
 
-      expect(auditTableProps.filters).toEqual({
-        entityType: 'User',
-        action: 'CREATE',
-      });
-    });
+      await user.click(screen.getByText('Retry'));
 
-    it('should pass undefined for empty filter values', () => {
-      render(<AuditLogPage />);
-
-      expect(auditTableProps.filters).toEqual({
-        entityType: undefined,
-        action: undefined,
-      });
-    });
-
-    it('should pass callback functions', () => {
-      render(<AuditLogPage />);
-
-      expect(typeof auditTableProps.onPageChange).toBe('function');
-      expect(typeof auditTableProps.onViewDetails).toBe('function');
-      expect(typeof auditTableProps.onError).toBe('function');
-    });
-
-    it('should pass setPage to onPageChange', () => {
-      render(<AuditLogPage />);
-
-      expect(auditTableProps.onPageChange).toBe(mockSetPage);
-    });
-
-    it('should reflect page changes from hook', () => {
-      vi.mocked(useAuditLogPage).mockReturnValue({
-        page: 3,
-        setPage: mockSetPage,
-        search: '',
-        searchInput: '',
-        handleSearchChange: mockHandleSearchChange,
-        handleSearchSubmit: mockHandleSearchSubmit,
-        handleClearSearch: mockHandleClearSearch,
-        filters: {
-          username: '',
-          action: '',
-          startDate: '',
-          endDate: '',
-        },
-        handleFilterChange: mockHandleFilterChange,
-        handleClearFilters: mockHandleClearFilters,
-      });
-
-      render(<AuditLogPage />);
-
-      expect(auditTableProps.page).toBe(3);
+      expect(mockRefetch).toHaveBeenCalled();
     });
   });
 
@@ -326,7 +205,7 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       expect(screen.getByText('Audit Log Details')).toBeInTheDocument();
     });
@@ -335,10 +214,9 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       expect(screen.getByText(/entry #1/i)).toBeInTheDocument();
-      // Date formatted in ko-KR locale
       expect(screen.getByText(/2025/)).toBeInTheDocument();
     });
 
@@ -346,7 +224,7 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       const modal = screen.getByRole('dialog');
       expect(within(modal).getByText('CREATE')).toBeInTheDocument();
@@ -356,12 +234,10 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       const modal = screen.getByRole('dialog');
-      // Entity Type label and value "User" are both in the modal
       expect(within(modal).getByText('Entity Type')).toBeInTheDocument();
-      // The value "User" is in the paragraph after the label
       const entityTypeParagraphs = within(modal).getAllByText('User');
       expect(entityTypeParagraphs.length).toBeGreaterThan(0);
     });
@@ -370,7 +246,7 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       expect(screen.getByText('123')).toBeInTheDocument();
     });
@@ -379,7 +255,7 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       const modal = screen.getByRole('dialog');
       expect(within(modal).getByText('admin')).toBeInTheDocument();
@@ -389,7 +265,7 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
     });
@@ -398,9 +274,8 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
-      // Changes are parsed and displayed
       expect(screen.getByText(/"field"/)).toBeInTheDocument();
     });
 
@@ -408,9 +283,8 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
-      // Metadata is parsed and displayed
       expect(screen.getByText(/"key"/)).toBeInTheDocument();
     });
 
@@ -418,12 +292,9 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-minimal'));
+      await user.click(screen.getByTestId('view-details-2'));
 
-      // Modal should be open
       const modal = screen.getByRole('dialog');
-
-      // Should have dash for null ipAddress
       const dashElements = within(modal).getAllByText('-');
       expect(dashElements.length).toBeGreaterThan(0);
     });
@@ -432,9 +303,8 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-minimal'));
+      await user.click(screen.getByTestId('view-details-2'));
 
-      // Changes section should not appear when changes is null
       expect(screen.queryByText('Changes')).not.toBeInTheDocument();
     });
 
@@ -442,9 +312,8 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-minimal'));
+      await user.click(screen.getByTestId('view-details-2'));
 
-      // Metadata section should not appear when metadata is null
       expect(screen.queryByText('Metadata')).not.toBeInTheDocument();
     });
 
@@ -452,7 +321,7 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-minimal'));
+      await user.click(screen.getByTestId('view-details-2'));
 
       expect(screen.queryByText('Entity ID')).not.toBeInTheDocument();
     });
@@ -461,64 +330,14 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
       expect(screen.getByText('Audit Log Details')).toBeInTheDocument();
 
-      // Find and click modal close button (aria-label="Close dialog")
       const modal = screen.getByRole('dialog');
       const closeButton = within(modal).getByRole('button', { name: /close dialog/i });
       await user.click(closeButton);
 
       expect(screen.queryByText('Audit Log Details')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('error handling', () => {
-    it('should display error alert when onError is triggered', async () => {
-      const user = userEvent.setup();
-      render(<AuditLogPage />);
-
-      await user.click(screen.getByTestId('trigger-error'));
-
-      expect(screen.getByText('Failed to load audit logs')).toBeInTheDocument();
-    });
-
-    it('should dismiss error alert when close button is clicked', async () => {
-      const user = userEvent.setup();
-      render(<AuditLogPage />);
-
-      await user.click(screen.getByTestId('trigger-error'));
-      expect(screen.getByText('Failed to load audit logs')).toBeInTheDocument();
-
-      const alert = screen.getByRole('alert');
-      const closeButton = within(alert).getByRole('button');
-      await user.click(closeButton);
-
-      expect(screen.queryByText('Failed to load audit logs')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('action badge variants', () => {
-    it('should display CREATE action with badge in modal', async () => {
-      const user = userEvent.setup();
-      render(<AuditLogPage />);
-
-      await user.click(screen.getByTestId('trigger-view-details'));
-
-      const modal = screen.getByRole('dialog');
-      // Badge is inside the modal under Action label
-      expect(within(modal).getByText('CREATE')).toBeInTheDocument();
-    });
-
-    it('should display LOGIN action badge in modal', async () => {
-      const user = userEvent.setup();
-      render(<AuditLogPage />);
-
-      await user.click(screen.getByTestId('trigger-view-minimal'));
-
-      const modal = screen.getByRole('dialog');
-      // Badge is inside the modal under Action label
-      expect(within(modal).getByText('LOGIN')).toBeInTheDocument();
     });
   });
 
@@ -540,18 +359,9 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
-    });
-
-    it('should have accessible error alert', async () => {
-      const user = userEvent.setup();
-      render(<AuditLogPage />);
-
-      await user.click(screen.getByTestId('trigger-error'));
-
-      expect(screen.getByRole('alert')).toBeInTheDocument();
     });
   });
 
@@ -560,10 +370,8 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
-      // Korean date format includes year and specific formatting
-      // 2025-01-15T10:30:00Z should contain 2025
       expect(screen.getByText(/2025/)).toBeInTheDocument();
     });
   });
@@ -573,9 +381,8 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
-      // The JSON should be pretty-printed
       expect(screen.getByText(/field/)).toBeInTheDocument();
       expect(screen.getByText(/value/)).toBeInTheDocument();
     });
@@ -584,7 +391,7 @@ describe('AuditLogPage', () => {
       const user = userEvent.setup();
       render(<AuditLogPage />);
 
-      await user.click(screen.getByTestId('trigger-view-details'));
+      await user.click(screen.getByTestId('view-details-1'));
 
       expect(screen.getByText(/key/)).toBeInTheDocument();
       expect(screen.getByText(/meta/)).toBeInTheDocument();

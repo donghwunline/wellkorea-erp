@@ -153,7 +153,7 @@ class QuotationEmailServiceTest {
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(999L))
                     .isInstanceOf(ResourceNotFoundException.class)
-                    .hasMessageContaining("Quotation not found with ID: 999");
+                    .hasMessageContaining("Quotation not found with id: 999");
         }
 
         @Test

@@ -4,29 +4,39 @@
  * Main page for viewing and managing companies.
  * Features role-based filtering via tabs (All, Customer, Vendor, Outsource).
  *
- * Pure composition layer following Constitution Principle VI:
- * - Composes feature components and UI components
- * - No direct service calls (feature components own their service calls)
+ * FSD Layer: pages
+ * - Composes widgets, features, entities, and shared components
+ * - Uses useQuery directly with entity query factory
  */
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, Icon, PageHeader, SearchBar, Tab, TabList, Tabs } from '@/components/ui';
-import { CompanyTable } from '@/components/features/companies';
-import { usePaginatedSearch } from '@/shared/hooks';
-import type { RoleType } from '@/services';
+import { useQuery } from '@tanstack/react-query';
+import {
+  Alert,
+  Button,
+  Card,
+  Icon,
+  PageHeader,
+  Pagination,
+  SearchBar,
+  Spinner,
+  Tab,
+  TabList,
+  Tabs,
+} from '@/shared/ui';
+import { usePaginatedSearch } from '@/shared/lib/pagination';
+
+// Entity imports (FSD)
+import {
+  type CompanyListItem,
+  companyQueries,
+  CompanyTable,
+  ROLE_TYPE_LABELS,
+  type RoleType,
+} from '@/entities/company';
 
 type RoleFilter = RoleType | 'ALL';
-
-/**
- * Human-readable labels for role types.
- * Defined locally to avoid importing value from services layer.
- */
-const ROLE_TYPE_LABELS: Record<RoleType, string> = {
-  CUSTOMER: '고객사',
-  VENDOR: '협력업체',
-  OUTSOURCE: '외주업체',
-};
 
 const ROLE_TABS: { id: RoleFilter; label: string }[] = [
   { id: 'ALL', label: '전체' },
@@ -38,7 +48,7 @@ const ROLE_TABS: { id: RoleFilter; label: string }[] = [
 export function CompanyListPage() {
   const navigate = useNavigate();
 
-  // Page UI State (Tier 2) - pagination and search
+  // Page UI State - pagination and search
   const {
     page,
     setPage,
@@ -49,28 +59,72 @@ export function CompanyListPage() {
     handleClearSearch,
   } = usePaginatedSearch();
 
-  // Local UI State (Tier 1) - Role filter and error message
+  // Local UI State - Role filter and error message
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
   const [error, setError] = useState<string | null>(null);
 
+  // Server State - Company list via TanStack Query
+  const {
+    data: companiesData,
+    isLoading,
+    error: queryError,
+  } = useQuery(
+    companyQueries.list({
+      page,
+      size: 10,
+      search,
+      roleType: roleFilter === 'ALL' ? null : roleFilter,
+    })
+  );
+
   // Navigation handlers
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     navigate('/companies/new');
-  };
+  }, [navigate]);
 
-  const handleView = (company: { id: number }) => {
-    navigate(`/companies/${company.id}`);
-  };
-
-  const handleEdit = (company: { id: number }) => {
-    navigate(`/companies/${company.id}/edit`);
-  };
+  const handleRowClick = useCallback(
+    (company: CompanyListItem) => {
+      navigate(`/companies/${company.id}`);
+    },
+    [navigate]
+  );
 
   // Handle tab change - reset page to 0 when switching tabs
-  const handleTabChange = (tabId: string) => {
-    setRoleFilter(tabId as RoleFilter);
-    setPage(0);
-  };
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      setRoleFilter(tabId as RoleFilter);
+      setPage(0);
+    },
+    [setPage]
+  );
+
+  // Render actions for table rows
+  const renderActions = useCallback(
+    (company: CompanyListItem) => (
+      <>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(`/companies/${company.id}`)}
+          aria-label="View company"
+        >
+          <Icon name="eye" className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(`/companies/${company.id}/edit`)}
+          aria-label="Edit company"
+        >
+          <Icon name="pencil" className="h-4 w-4" />
+        </Button>
+      </>
+    ),
+    [navigate]
+  );
+
+  const companies = companiesData?.data ?? [];
+  const pagination = companiesData?.pagination;
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
@@ -115,22 +169,50 @@ export function CompanyListPage() {
       </div>
 
       {/* Error Message */}
-      {error && (
+      {(error || queryError) && (
         <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
-          {error}
+          {error || queryError?.message || 'Failed to load companies'}
         </Alert>
       )}
 
-      {/* Company Table (handles data fetching) */}
-      <CompanyTable
-        page={page}
-        search={search}
-        roleType={roleFilter === 'ALL' ? undefined : roleFilter}
-        onPageChange={setPage}
-        onView={handleView}
-        onEdit={handleEdit}
-        onError={setError}
-      />
+      {/* Loading State */}
+      {isLoading ? (
+        <Card className="p-12 text-center">
+          <Spinner className="mx-auto h-8 w-8" />
+          <p className="mt-4 text-steel-400">Loading companies...</p>
+        </Card>
+      ) : (
+        <>
+          {/* Company Table (dumb component) */}
+          <CompanyTable
+            companies={companies}
+            onRowClick={handleRowClick}
+            renderActions={renderActions}
+            emptyMessage={
+              search
+                ? `No companies found matching "${search}".`
+                : roleFilter !== 'ALL'
+                  ? `No ${ROLE_TYPE_LABELS[roleFilter].toLowerCase()} found.`
+                  : 'No companies found.'
+            }
+          />
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={page}
+                totalItems={pagination.totalElements}
+                itemsPerPage={pagination.size}
+                onPageChange={setPage}
+                isFirst={pagination.first}
+                isLast={pagination.last}
+                itemLabel="companies"
+              />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

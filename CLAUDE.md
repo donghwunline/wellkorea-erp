@@ -222,7 +222,7 @@ com/wellkorea/backend/
   - `{Domain}QueryService` - `@Transactional(readOnly = true)`, handles reads, returns **View DTOs**
 - **DTO Segregation**:
   - `api/dto/command/` - Request DTOs (`CreateXxxRequest`), Result DTOs (`XxxCommandResult`)
-  - `api/dto/query/` - View DTOs (`XxxDetailView`, `XxxSummaryView`) with static `from(Entity)` factory
+  - `api/dto/query/` - View DTOs (`XxxDetailView`, `XxxSummaryView`) populated by MyBatis mappers for optimized read performance
 - **Controller Pattern**:
   - Inject both `CommandService` and `QueryService`
   - Command endpoints return `CommandResult` (ID + message), clients fetch fresh data via query endpoints
@@ -247,72 +247,173 @@ GET /api/quotations/{id} → queryService.getQuotationDetail(id) → QuotationDe
 - **Audit Logging**: `AuditLogger` with `AuditContextHolder` for request context tracking
 - **Domain Events**: Use `DomainEventPublisher` for cross-domain communication (e.g., approval workflow)
 
-### Frontend Architecture (Layered Service Pattern)
+### Frontend Architecture (FSD-Lite: Feature-Sliced Design)
 
-Frontend uses a layered service pattern with strict import boundaries enforced by ESLint.
+**IMPORTANT: See these architecture documents:**
+- [frontend/docs/architecture/fsd-public-api-guidelines.md](frontend/docs/architecture/fsd-public-api-guidelines.md) - Entity public API patterns (Query Factory, Command Functions)
+- [docs/architecture/frontend-architecture-analysis.md](docs/architecture/frontend-architecture-analysis.md) - Complete architecture documentation
 
-**IMPORTANT: See [frontend/ARCHITECTURE.md](frontend/ARCHITECTURE.md) for complete architecture documentation including:**
-- Layer definitions (pages, features, ui, services, stores, hooks, api)
-- Dependency flow diagram and import rules matrix
-- ESLint rule configuration
-- Code examples and anti-patterns
+Frontend follows **FSD-Lite (Feature-Sliced Design)** aligned with backend's DDD + CQS patterns:
 
 ```
 frontend/src/
-├── pages/               # Route-level components (orchestration layer)
-├── components/
-│   ├── ui/             # Dumb components (Button, Modal, Table)
-│   └── features/       # Smart components (data fetching, stores)
-│       └── users/      # User management forms
-├── stores/              # Global state (Zustand)
-│   └── authStore.ts    # Authentication state
-├── hooks/               # Custom React hooks
-├── services/            # Business logic services
-│   ├── auth/           # Authentication service
-│   ├── users/          # User management service
-│   ├── audit/          # Audit logging service
-│   └── shared/         # Shared utilities (pagination)
-├── api/                 # HTTP client layer
-│   ├── httpClient.ts   # Axios wrapper with token refresh
-│   ├── tokenStore.ts   # Token persistence
-│   └── types.ts        # API types
-├── types/               # Shared TypeScript types
-└── utils/               # Pure utility functions
+├── app/                      # Application setup (providers, router, styles)
+├── pages/                    # Route-level components (ASSEMBLY ONLY)
+├── widgets/                  # Composite UI blocks (FEATURE COMPOSITION)
+├── features/                 # User actions/workflows (ISOLATED UNITS)
+│   └── {domain}/{action}/   # e.g., quotation/create/, quotation/approve/
+│       ├── ui/              # Feature UI components
+│       ├── model/           # useMutation hooks
+│       └── index.ts         # Public barrel export
+├── entities/                 # Domain models (TYPES + RULES + QUERIES)
+│   └── {domain}/            # e.g., quotation/, project/, company/
+│       ├── model/           # Domain types + pure functions (quotationRules)
+│       ├── api/             # Query factory + Command functions
+│       │   ├── {entity}.mapper.ts     # Response DTO + mapper (DTO→Domain)
+│       │   ├── {entity}.queries.ts    # Query factory with queryOptions()
+│       │   ├── get-{entity}-list.ts   # HTTP GET list operation
+│       │   ├── get-{entity}-by-id.ts  # HTTP GET single operation
+│       │   ├── create-{entity}.ts     # Request DTO inline + Input + POST
+│       │   └── update-{entity}.ts     # Request DTO inline + Input + PUT
+│       ├── ui/              # Entity display components (read-only)
+│       └── index.ts         # Public barrel export
+├── shared/                   # Cross-cutting concerns
+│   ├── api/                 # HTTP client, error handling
+│   ├── ui/                  # Design system components
+│   ├── lib/                 # Pure utilities (date, money, validation)
+│   └── types/               # Shared types (pagination, api-response)
+└── stores/                   # Global state (minimal - auth only)
 ```
 
-**Import Rules** (enforced by ESLint):
-- ❌ `pages/` → Nobody imports from pages (top-level orchestration)
-- ❌ `components/ui/` → No services/stores (dumb components only)
-- ❌ `components/stores/pages/hooks` → No `@/api` (use services)
-- ✅ `stores/` → Can use `services/` (orchestration pattern)
-- ✅ `components/features/` → Can use `services/stores/` (smart components)
+**Dependency Rules** (enforced by ESLint):
+```
+pages → widgets, features, entities, shared
+widgets → features, entities, shared
+features → entities, shared (NOT other features - use widgets)
+entities → shared ONLY
+shared → NOTHING (base layer)
 ```
 
-**Key Patterns**:
-- **Service Layer**: All API calls go through feature services (never call `httpClient` directly from components)
-- **HttpClient Auto-Refresh**: Token refresh with request queueing (prevents race conditions during concurrent 401s)
-- **Type Imports**: Use `import type` for TypeScript types to reduce bundle size
-- **Barrel Exports**: Each feature exports through `index.ts` for clean imports
-- **Zustand State**: Minimal global state (auth only), prefer component state + React Query for server state
-- **Protected Routes**: RBAC with `ProtectedRoute` wrapper checking user roles
+**Slice Encapsulation Rules** (what to expose via `index.ts`):
 
-**HTTP Client Example**:
+| Segment | Export? | Example |
+|---------|---------|---------|
+| `model/*.ts` | ✅ YES | Domain types, business rules |
+| `api/*.queries.ts` | ✅ YES | Query factory (`quotationQueries`) |
+| `api/create-*.ts` | ✅ YES | Command functions + Input types |
+| `api/update-*.ts` | ✅ YES | Command functions + Input types |
+| `ui/*.tsx` | ✅ YES | Display components |
+| `api/*.mapper.ts` | ❌ NO | Response types + mappers are internal |
+| `api/get-*.ts` | ❌ NO | GET operations are internal (used by queries) |
+| `query/query-keys.ts` | ❌ NO | Use `queries.lists()` instead |
+
+**API Type Distribution Pattern** (no centralized `{entity}.dto.ts`):
+- **Response types** (`*Response`) → defined in `{entity}.mapper.ts` (shared across queries/commands)
+- **Request types** (`*Request`) → inlined in each command file (private, not exported)
+- The `httpClient` auto-unwraps `ApiResponse<T>` → returns `T` directly
+
+**No segment-level barrel exports**: Only `{slice}/index.ts` is public. Never create `model/index.ts`, `api/index.ts`, etc.
+
+**Group Slices** (organizational folders under `features/`):
+
+The `features/` layer uses **Group slices** for domain-based organization:
+```
+features/
+├── approval/           # Group slice (NO index.ts here!)
+│   ├── approve/        # Slice - HAS index.ts
+│   │   ├── ui/
+│   │   ├── model/
+│   │   └── index.ts    # ✅ Public API
+│   └── reject/         # Slice - HAS index.ts
+│       ├── ui/
+│       ├── model/
+│       └── index.ts    # ✅ Public API
+├── quotation/          # Group slice (NO index.ts here!)
+│   ├── form/           # Slice
+│   ├── line-items/     # Slice
+│   └── notify/         # Slice
+```
+
+**Rules**:
+- **Group slice** (`approval/`, `quotation/`): Organizational folder only. **NO `index.ts`**.
+- **Slice** (`approve/`, `reject/`, `form/`): Actual feature unit. **HAS `index.ts`** as public API.
+- Import from slice, not group: `from '@/features/approval/approve'` ✅, `from '@/features/approval'` ❌
+
+**Key Architecture Decisions:**
+
+1. **Domain Models = Plain Objects + Pure Functions** (not classes)
+   ```typescript
+   // entities/quotation/model/quotation.ts
+   export interface Quotation { readonly id: number; readonly status: QuotationStatus; ... }
+   export const quotationRules = {
+     canEdit(q: Quotation): boolean { return q.status === 'DRAFT'; },
+     calculateTotal(q: Quotation): number { ... },
+   };
+   ```
+
+2. **TanStack Query v5 with Query Factory Pattern**
+   - `entities/*/api/{entity}.queries.ts` - Query factory using `queryOptions()`
+   - Direct usage: `useQuery(quotationQueries.detail(id))` - no custom hooks needed
+   - `entities/*/api/create-{entity}.ts` - Command functions with built-in validation
+   - `features/*/model/` - Mutation hooks wrapping entity command functions
+   - All queries return domain models (DTOs mapped via internal mapper)
+
+3. **Cache Data Format = Always Domain Models**
+   - All `useQuery`, `prefetchQuery`, `setQueryData` work with domain types
+   - Query factory handles DTO→Domain mapping internally
+
+4. **Query Key Stability = Primitives Only**
+   ```typescript
+   // Use individual primitives, NOT objects
+   list: (page, size, search, status) => [...keys.lists(), page, size, search, status]
+   ```
+
+5. **Dates = ISO Strings** (not Date objects) for React Query serialization
+
+**Component Placement Quick Reference:**
+
+| Type | Layer | Indicator |
+|------|-------|-----------|
+| Single entity display (read-only) | `entities/*/ui` | Displays ONE entity, no mutations |
+| User action button/form | `features/*/ui` | Triggers mutation, contains action logic |
+| Multi-feature composition | `widgets/*` | Combines 2+ features |
+| Route-level view | `pages/*` | URL params + layout assembly only |
+
+**entities/ui/ Rules** (keep components reusable):
+- ❌ No router dependencies (`useNavigate`, `Link`)
+- ❌ No feature-specific buttons ("Approve", "Submit")
+- ❌ No mutation hooks
+- ✅ Delegate via callback props (`onRowClick`, `renderActions`)
+
+**features/ Rules** (isolated workflows):
+- One feature = one user action
+- Features do NOT import other features (use widgets for composition)
+- UX side-effects (`toast()`, `navigate()`) belong here, NOT in entities
+
+**Command Function Pattern:**
 ```typescript
-// DON'T: Call httpClient directly from components
-const users = await httpClient.get('/users');
+// Command functions have built-in validation + mapping
+// entities/quotation/api/create-quotation.ts
+export async function createQuotation(input: CreateQuotationInput): Promise<CommandResult> {
+  validateCreateInput(input);           // Throws DomainValidationError
+  const request = toCreateRequest(input); // Input → Request mapping
+  return httpClient.post(QUOTATION_ENDPOINTS.BASE, request);
+}
 
-// DO: Use feature services
-import { userService } from '@/services';
-const users = await userService.getUsers();
+// Usage in features/quotation/create/model/use-create-quotation.ts
+const mutation = useMutation({
+  mutationFn: createQuotation,
+  onSuccess: () => queryClient.invalidateQueries({ queryKey: quotationQueries.lists() }),
+});
 ```
 
 **Authentication Flow**:
 1. User logs in → `authService.login()` stores tokens in localStorage
 2. HttpClient auto-injects token in `Authorization: Bearer {token}` header
-3. On 401 response → HttpClient automatically refreshes token using refresh endpoint
+3. On 401 response → HttpClient automatically refreshes token
 4. Concurrent 401s are queued (prevents multiple refresh calls)
-5. If refresh fails → Clear tokens, redirect to login via `onUnauthorized` callback
-6. Zustand `authStore` syncs authentication state across components
+5. If refresh fails → Clear tokens, redirect to login
+6. Zustand `authStore` syncs authentication state
 
 ## CI/CD Pipeline
 
@@ -469,4 +570,5 @@ From feature spec `001-erp-core`:
 - Keycloak (optional SSO)
 
 ## Recent Changes
+- 001-erp-core: Frontend entity pattern updated - Query Factory Pattern with `queryOptions()`, Command Functions with built-in validation (see `quotation/` as reference)
 - 001-erp-core: Added Java 21 (Spring Boot 3.5.8) + Spring Boot (Web, Data JPA, Security, Actuator), PostgreSQL driver, Apache POI (Excel), iText/PDFBox (PDF generation)

@@ -1,5 +1,5 @@
 /**
- * Quotation Edit Page
+ * Quotation Edit Page (FSD Version).
  *
  * Form for editing an existing quotation.
  * Only DRAFT quotations can be edited.
@@ -8,67 +8,45 @@
  * - /quotations/:id/edit (standalone)
  * - /projects/:projectId/quotations/:id/edit (project context)
  *
- * Features:
- * - Edit quotation details and line items
- * - Version management
+ * Pages Layer: Route-level assembly only
+ * - URL params handling
+ * - Layout composition
+ * - Feature delegation
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/components/ui';
-import {
-  QuotationForm,
-  useQuotationActions,
-} from '@/components/features/quotations';
-import type { QuotationDetails, UpdateQuotationRequest } from '@/services';
+import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
+import { useQuery } from '@tanstack/react-query';
+import { quotationQueries, quotationRules, type UpdateQuotationInput } from '@/entities/quotation';
+import { QuotationForm } from '@/features/quotation/form';
+import { useUpdateQuotation } from '@/features/quotation/update';
 
 export function QuotationEditPage() {
   const navigate = useNavigate();
   const { id, projectId } = useParams<{ id: string; projectId?: string }>();
   const quotationId = id ? parseInt(id, 10) : null;
 
-  // State
-  const [quotation, setQuotation] = useState<QuotationDetails | null>(null);
-  const [isLoadingQuotation, setIsLoadingQuotation] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  // Hooks
+  // Fetch quotation data using TanStack Query
   const {
-    isLoading: isSubmitting,
-    error,
-    getQuotation,
-    updateQuotation,
-  } = useQuotationActions();
+    data: quotation,
+    isLoading: isLoadingQuotation,
+    error: loadError,
+  } = useQuery({
+    ...quotationQueries.detail(quotationId!),
+    enabled: quotationId !== null,
+  });
 
-  // Load quotation on mount
-  useEffect(() => {
-    async function loadQuotation() {
-      if (!quotationId) {
-        setLoadError('Invalid quotation ID');
-        setIsLoadingQuotation(false);
-        return;
-      }
-
-      try {
-        const data = await getQuotation(quotationId);
-
-        // Check if quotation is editable (DRAFT only)
-        if (data.status !== 'DRAFT') {
-          setLoadError(`Cannot edit quotation in ${data.status} status. Only DRAFT quotations can be edited.`);
-          setQuotation(null);
-        } else {
-          setQuotation(data);
-          setLoadError(null);
-        }
-      } catch {
-        setLoadError('Failed to load quotation');
-      } finally {
-        setIsLoadingQuotation(false);
-      }
-    }
-
-    loadQuotation();
-  }, [quotationId, getQuotation]);
+  // Mutation hook for updating
+  const {
+    mutate: updateQuotation,
+    isPending: isSubmitting,
+    error: mutationError,
+  } = useUpdateQuotation({
+    onSuccess: () => {
+      navigateBack();
+    },
+  });
 
   // Navigate back to appropriate page
   const navigateBack = useCallback(() => {
@@ -80,21 +58,29 @@ export function QuotationEditPage() {
   }, [navigate, projectId]);
 
   // Handle form submission
-  const handleSubmit = useCallback(async (data: UpdateQuotationRequest) => {
-    if (!quotationId) return;
-
-    try {
-      await updateQuotation(quotationId, data);
-      navigateBack();
-    } catch {
-      // Error is handled by the hook
-    }
-  }, [quotationId, updateQuotation, navigateBack]);
+  const handleUpdateSubmit = useCallback(
+    (data: UpdateQuotationInput) => {
+      if (!quotationId) return;
+      updateQuotation({ id: quotationId, input: data });
+    },
+    [quotationId, updateQuotation]
+  );
 
   // Handle cancel
   const handleCancel = useCallback(() => {
     navigateBack();
   }, [navigateBack]);
+
+  // Check if quotation is editable
+  const canEdit = quotation ? quotationRules.canEdit(quotation) : false;
+  const editError =
+    quotation && !canEdit
+      ? `Cannot edit quotation in ${quotation.status} status. Only DRAFT quotations can be edited.`
+      : null;
+
+  // Error message
+  const error =
+    mutationError?.message || editError || (loadError ? 'Failed to load quotation' : null);
 
   // Render loading state
   if (isLoadingQuotation) {
@@ -108,15 +94,12 @@ export function QuotationEditPage() {
     );
   }
 
-  // Render error state
-  if (loadError) {
+  // Render error state (load error or not editable)
+  if (error && !canEdit) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title
-            title="Edit Quotation"
-            description="Unable to edit quotation"
-          />
+          <PageHeader.Title title="Edit Quotation" description="Unable to edit quotation" />
           <PageHeader.Actions>
             <button
               onClick={handleCancel}
@@ -128,7 +111,7 @@ export function QuotationEditPage() {
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="error" className="mt-6">
-          {loadError}
+          {error}
         </Alert>
         <div className="mt-4">
           <Button variant="secondary" onClick={handleCancel}>
@@ -160,13 +143,13 @@ export function QuotationEditPage() {
       </PageHeader>
 
       {/* Form */}
-      {quotation && (
+      {quotation && canEdit && (
         <QuotationForm
           key={quotation.id}
           quotation={quotation}
           isSubmitting={isSubmitting}
-          error={error}
-          onSubmit={handleSubmit}
+          error={mutationError?.message}
+          onUpdateSubmit={handleUpdateSubmit}
           onCancel={handleCancel}
         />
       )}

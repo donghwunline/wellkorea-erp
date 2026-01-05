@@ -9,7 +9,7 @@
  * ```typescript
  * import { mockHttpClient, mockUserService } from '@/test/mocks';
  *
- * vi.mock('@/api', () => mockHttpClient());
+ * vi.mock('@/shared/api', () => mockHttpClient());
  * vi.mock('@/services', () => ({ userService: mockUserService() }));
  * ```
  */

@@ -1,25 +1,52 @@
 /**
- * Quotation List Page - Standalone
+ * Quotation List Page (FSD-Lite Version)
  *
  * Displays all quotations across all projects.
  * Allows filtering by status and navigating to details.
  *
  * Route: /quotations
  *
- * 4-Tier State Separation:
- * - Tier 1 (Local UI State): Modal open/close -> Local state
- * - Tier 2 (Page UI State): Search/pagination/filters -> usePaginatedSearch hook
- * - Tier 3 (Server State): Quotation list data -> QuotationTable feature component
- * - Tier 4 (App Global State): Not used directly here
+ * Architecture Notes:
+ * - Page = assembly layer (combines entities, features, widgets)
+ * - Data fetching via TanStack Query (useQuotations hook)
+ * - Actions via feature mutation hooks
+ * - No refreshTrigger pattern - uses query invalidation
  */
 
-import { useCallback, useReducer, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Button, ConfirmationModal, Icon, PageHeader, SearchBar } from '@/components/ui';
-import { FilterBar } from '@/components/ui/navigation/FilterBar';
-import { EmailNotificationModal, QuotationTable, useQuotationActions } from '@/components/features/quotations';
-import { usePaginatedSearch } from '@/shared/hooks';
-import type { QuotationDetails, QuotationStatus } from '@/services';
+import {
+  Alert,
+  Button,
+  ConfirmationModal,
+  Icon,
+  Icon as ActionIcon,
+  IconButton,
+  PageHeader,
+  Pagination,
+  SearchBar,
+} from '@/shared/ui';
+import { FilterBar } from '@/shared/ui/navigation/FilterBar';
+import { usePaginatedSearch } from '@/shared/lib/pagination';
+
+// Entity imports - domain model and UI
+import { useQuery } from '@tanstack/react-query';
+import {
+  type QuotationListItem,
+  quotationQueries,
+  quotationRules,
+  type QuotationStatus,
+  QuotationTable,
+} from '@/entities/quotation';
+
+// Feature imports - user actions
+import { useSubmitQuotation } from '@/features/quotation/submit';
+import { useCreateVersion } from '@/features/quotation/version';
+import { useDownloadPdf } from '@/features/quotation/download-pdf';
+import {
+  useSendNotification,
+  EmailNotificationModal,
+} from '@/features/quotation/notify';
 
 // Status filter options
 const STATUS_OPTIONS = [
@@ -35,7 +62,7 @@ const STATUS_OPTIONS = [
 export function QuotationListPage() {
   const navigate = useNavigate();
 
-  // Page UI State (Tier 2) - pagination and search
+  // Page UI State - pagination and search
   const {
     page,
     setPage,
@@ -47,111 +74,144 @@ export function QuotationListPage() {
   } = usePaginatedSearch();
 
   // Filter state
-  const [statusFilter, setStatusFilter] = useState<QuotationStatus | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<QuotationStatus | null>(null);
 
-  // Refresh trigger - increment to signal table to refetch
-  const [refreshTrigger, triggerRefresh] = useReducer((x: number) => x + 1, 0);
-
-  // Local UI State (Tier 1)
-  const [error, setError] = useState<string | null>(null);
+  // Local UI State - modals
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [submitConfirm, setSubmitConfirm] = useState<QuotationDetails | null>(null);
-  const [versionConfirm, setVersionConfirm] = useState<QuotationDetails | null>(null);
-  const [emailConfirm, setEmailConfirm] = useState<QuotationDetails | null>(null);
+  const [submitConfirm, setSubmitConfirm] = useState<QuotationListItem | null>(null);
+  const [versionConfirm, setVersionConfirm] = useState<QuotationListItem | null>(null);
+  const [emailConfirm, setEmailConfirm] = useState<QuotationListItem | null>(null);
 
-  // Actions hook
-  const { isLoading: isActing, submitForApproval, createNewVersion, downloadPdf, sendRevisionNotification } = useQuotationActions();
+  // Query hook - fetches quotation list
+  const { data, isLoading, error } = useQuery(
+    quotationQueries.list({
+      page,
+      size: 10,
+      search,
+      status: statusFilter,
+      projectId: null,
+    })
+  );
 
-  // Clear messages after delay
+  // Mutation hooks - feature actions
+  const submitMutation = useSubmitQuotation({
+    onSuccess: () => {
+      showSuccess(`Quotation submitted for approval`);
+      setSubmitConfirm(null);
+    },
+  });
+
+  const versionMutation = useCreateVersion({
+    onSuccess: result => {
+      showSuccess('New version created');
+      setVersionConfirm(null);
+      navigate(`/quotations/${result.id}/edit`);
+    },
+  });
+
+  const pdfMutation = useDownloadPdf({
+    onError: () => showSuccess('Failed to download PDF'), // TODO: Show error toast instead
+  });
+
+  const notifyMutation = useSendNotification({
+    onSuccess: () => {
+      showSuccess('Email notification sent');
+      setEmailConfirm(null);
+    },
+    onError: () => showSuccess('Failed to send email notification'), // TODO: Show error toast instead
+  });
+
+  // Helper to show success message
   const showSuccess = useCallback((message: string) => {
     setSuccessMessage(message);
     setTimeout(() => setSuccessMessage(null), 3000);
   }, []);
 
-  // Handle view quotation
-  const handleView = useCallback(
-    (quotation: QuotationDetails) => {
-      navigate(`/quotations/${quotation.id}`);
-    },
-    [navigate]
-  );
-
-  // Handle edit quotation
-  const handleEdit = useCallback(
-    (quotation: QuotationDetails) => {
-      navigate(`/quotations/${quotation.id}/edit`);
-    },
-    [navigate]
-  );
-
-  // Handle submit for approval
-  const handleSubmit = useCallback((quotation: QuotationDetails) => {
-    setSubmitConfirm(quotation);
-  }, []);
-
-  const handleSubmitConfirm = useCallback(async () => {
-    if (!submitConfirm) return;
-
-    await submitForApproval(submitConfirm.id);
-    showSuccess(`Quotation ${submitConfirm.jobCode} submitted for approval`);
-    setSubmitConfirm(null);
-    triggerRefresh();
-  }, [submitConfirm, submitForApproval, showSuccess]);
-
-  // Handle create new version
-  const handleCreateVersion = useCallback((quotation: QuotationDetails) => {
-    setVersionConfirm(quotation);
-  }, []);
-
-  const handleVersionConfirm = useCallback(async () => {
-    if (!versionConfirm) return;
-
-    const result = await createNewVersion(versionConfirm.id);
-    showSuccess('New version created');
-    setVersionConfirm(null);
-    triggerRefresh();
-    // Navigate to edit the new version
-    navigate(`/quotations/${result.id}/edit`);
-  }, [versionConfirm, createNewVersion, showSuccess, navigate]);
-
-  // Handle download PDF
-  const handleDownloadPdf = useCallback(
-    async (quotation: QuotationDetails) => {
-      try {
-        await downloadPdf(quotation.id, `${quotation.jobCode}_v${quotation.version}.pdf`);
-      } catch {
-        setError('Failed to download PDF');
-      }
-    },
-    [downloadPdf]
-  );
-
-  // Handle send email - show confirmation modal
-  const handleSendEmail = useCallback((quotation: QuotationDetails) => {
-    setEmailConfirm(quotation);
-  }, []);
-
-  // Confirm send email
-  const handleEmailConfirm = useCallback(async () => {
-    if (!emailConfirm) return;
-
-    try {
-      await sendRevisionNotification(emailConfirm.id);
-      showSuccess(`Email notification sent for "${emailConfirm.jobCode}"`);
-      setEmailConfirm(null);
-      triggerRefresh();
-    } catch {
-      setError('Failed to send email notification');
-    }
-  }, [emailConfirm, sendRevisionNotification, showSuccess]);
-
   // Handle filter change
   const handleStatusFilterChange = useCallback(
     (value: string) => {
-      setStatusFilter(value ? (value as QuotationStatus) : undefined);
+      setStatusFilter(value ? (value as QuotationStatus) : null);
       setPage(0);
     },
     [setPage]
+  );
+
+  // Render action buttons for each quotation row
+  const renderActions = useCallback(
+    (quotation: QuotationListItem) => (
+      <>
+        {/* View - always available */}
+        <IconButton
+          onClick={() => navigate(`/quotations/${quotation.id}`)}
+          aria-label="View quotation"
+          title="View quotation"
+        >
+          <ActionIcon name="eye" className="h-4 w-4" />
+        </IconButton>
+
+        {/* Edit - only for DRAFT */}
+        {quotationRules.canEdit(quotation) && (
+          <IconButton
+            onClick={() => navigate(`/quotations/${quotation.id}/edit`)}
+            aria-label="Edit quotation"
+            title="Edit quotation"
+          >
+            <ActionIcon name="pencil" className="h-4 w-4" />
+          </IconButton>
+        )}
+
+        {/* Submit for approval - only for DRAFT */}
+        {quotationRules.canSubmit(quotation) && (
+          <IconButton
+            onClick={() => setSubmitConfirm(quotation)}
+            variant="primary"
+            aria-label="Submit for approval"
+            title="Submit for approval"
+          >
+            <ActionIcon name="paper-airplane" className="h-4 w-4" />
+          </IconButton>
+        )}
+
+        {/* Download PDF - only for non-DRAFT */}
+        {quotationRules.canGeneratePdf(quotation) && (
+          <IconButton
+            onClick={() =>
+              pdfMutation.mutate({
+                quotationId: quotation.id,
+                filename: `${quotation.jobCode}_v${quotation.version}.pdf`,
+              })
+            }
+            aria-label="Download PDF"
+            title="Download PDF"
+          >
+            <ActionIcon name="document-arrow-down" className="h-4 w-4" />
+          </IconButton>
+        )}
+
+        {/* Send email - only for APPROVED or SENT */}
+        {quotationRules.canSend(quotation) && (
+          <IconButton
+            onClick={() => setEmailConfirm(quotation)}
+            aria-label="Send email"
+            title="Send email"
+          >
+            <ActionIcon name="envelope" className="h-4 w-4" />
+          </IconButton>
+        )}
+
+        {/* Create new version */}
+        {quotationRules.canCreateNewVersion(quotation) && (
+          <IconButton
+            onClick={() => setVersionConfirm(quotation)}
+            aria-label="Create new version"
+            title="Create new version"
+          >
+            <ActionIcon name="document-duplicate" className="h-4 w-4" />
+          </IconButton>
+        )}
+      </>
+    ),
+    [navigate, pdfMutation]
   );
 
   return (
@@ -199,26 +259,42 @@ export function QuotationListPage() {
 
       {/* Error Message */}
       {error && (
-        <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
-          {error}
+        <Alert variant="error" className="mb-6">
+          {error.message}
         </Alert>
       )}
 
-      {/* Quotations Table */}
-      <QuotationTable
-        page={page}
-        search={search}
-        status={statusFilter}
-        refreshTrigger={refreshTrigger}
-        onPageChange={setPage}
-        onView={handleView}
-        onEdit={handleEdit}
-        onSubmit={handleSubmit}
-        onCreateVersion={handleCreateVersion}
-        onDownloadPdf={handleDownloadPdf}
-        onSendEmail={handleSendEmail}
-        onError={setError}
-      />
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="text-center py-8 text-steel-400">Loading quotations...</div>
+      ) : (
+        <>
+          {/* Quotations Table */}
+          <QuotationTable
+            quotations={data?.data ?? []}
+            onRowClick={quotation => navigate(`/quotations/${quotation.id}`)}
+            renderActions={renderActions}
+            emptyMessage={
+              statusFilter ? 'No quotations found with selected status.' : 'No quotations found.'
+            }
+          />
+
+          {/* Pagination */}
+          {data && data.pagination.totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={page}
+                totalItems={data.pagination.totalElements}
+                itemsPerPage={data.pagination.size}
+                onPageChange={setPage}
+                isFirst={data.pagination.first}
+                isLast={data.pagination.last}
+                itemLabel="quotations"
+              />
+            </div>
+          )}
+        </>
+      )}
 
       {/* Submit Confirmation Modal */}
       <ConfirmationModal
@@ -226,7 +302,9 @@ export function QuotationListPage() {
         title="Submit for Approval"
         message={`Are you sure you want to submit "${submitConfirm?.jobCode}" for approval? This will start the approval workflow.`}
         confirmLabel="Submit"
-        onConfirm={handleSubmitConfirm}
+        onConfirm={() => {
+          if (submitConfirm) submitMutation.mutate(submitConfirm.id);
+        }}
         onClose={() => setSubmitConfirm(null)}
         variant="warning"
       />
@@ -237,7 +315,9 @@ export function QuotationListPage() {
         title="Create New Version"
         message={`Create a new version based on "${versionConfirm?.jobCode} v${versionConfirm?.version}"? The new version will be in DRAFT status.`}
         confirmLabel="Create Version"
-        onConfirm={handleVersionConfirm}
+        onConfirm={() => {
+          if (versionConfirm) versionMutation.mutate(versionConfirm.id);
+        }}
         onClose={() => setVersionConfirm(null)}
         variant="warning"
       />
@@ -246,9 +326,15 @@ export function QuotationListPage() {
       <EmailNotificationModal
         isOpen={!!emailConfirm}
         onClose={() => setEmailConfirm(null)}
-        onSend={handleEmailConfirm}
-        quotationInfo={emailConfirm ? { jobCode: emailConfirm.jobCode, version: emailConfirm.version } : undefined}
-        isLoading={isActing}
+        onSend={() => {
+          if (emailConfirm) notifyMutation.mutate(emailConfirm.id);
+        }}
+        quotationInfo={
+          emailConfirm
+            ? { jobCode: emailConfirm.jobCode, version: emailConfirm.version }
+            : undefined
+        }
+        isLoading={notifyMutation.isPending}
       />
     </div>
   );

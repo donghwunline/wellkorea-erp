@@ -4,7 +4,7 @@
  *
  * Following Constitution Principle VI, this tests the page as a composition layer:
  * - Feature components are mocked (they own their service calls)
- * - useProjectActions hook is mocked
+ * - useCreateProject mutation hook is mocked
  * - Focus is on state management, navigation, and modal behavior
  */
 
@@ -12,8 +12,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProjectCreatePage } from './ProjectCreatePage';
-import type { CreateProjectRequest, ProjectCommandResult, UpdateProjectRequest } from '@/services';
+import type {
+  CreateProjectInput,
+  ProjectCommandResult,
+  UpdateProjectInput,
+} from '@/entities/project';
 
 // Default mock command result for project creation
 const DEFAULT_COMMAND_RESULT: ProjectCommandResult = {
@@ -36,54 +41,22 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-// Mock useProjectActions hook
-const mockCreateProject = vi.fn();
-const mockClearError = vi.fn();
+// Mock mutateAsync for the create hook
+const mockMutateAsync = vi.fn();
 
-vi.mock('@/components/features/projects', () => ({
-  useProjectActions: vi.fn(() => ({
-    createProject: mockCreateProject,
-    isLoading: false,
-    error: null,
-    clearError: mockClearError,
+// Mock useCreateProject hook and JobCodeSuccessModal from features/project/create
+vi.mock('@/features/project/create', () => ({
+  useCreateProject: vi.fn(() => ({
+    mutateAsync: mockMutateAsync,
+    isPending: false,
   })),
-  ProjectForm: vi.fn((props: Record<string, unknown>) => {
-    formProps = props;
-    return (
-      <div data-testid="project-form">
-        <span data-testid="form-mode">{props.mode as string}</span>
-        <button
-          data-testid="form-submit"
-          onClick={() =>
-            (props.onSubmit as (data: CreateProjectRequest | UpdateProjectRequest) => Promise<void>)({
-              customerId: 1,
-              projectName: 'New Project',
-              dueDate: '2025-02-15',
-              internalOwnerId: 2,
-            })
-          }
-        >
-          Submit
-        </button>
-        <button
-          data-testid="form-cancel"
-          onClick={() => (props.onCancel as () => void)()}
-        >
-          Cancel
-        </button>
-      </div>
-    );
-  }),
   JobCodeSuccessModal: vi.fn((props: Record<string, unknown>) => {
     // Props are captured for rendering but not needed for assertions
     void props;
     return props.isOpen ? (
       <div data-testid="success-modal">
         <span data-testid="modal-job-code">{props.jobCode as string}</span>
-        <button
-          data-testid="modal-close"
-          onClick={() => (props.onClose as () => void)()}
-        >
+        <button data-testid="modal-close" onClick={() => (props.onClose as () => void)()}>
           Close
         </button>
         <button
@@ -95,18 +68,57 @@ vi.mock('@/components/features/projects', () => ({
       </div>
     ) : null;
   }),
-  SelectOption: {},
 }));
 
-// Import mocked hook for assertions
-import { useProjectActions } from '@/components/features/projects';
+// Mock ProjectForm from features/project/form
+vi.mock('@/features/project/form', () => ({
+  ProjectForm: vi.fn((props: Record<string, unknown>) => {
+    formProps = props;
+    return (
+      <div data-testid="project-form">
+        <span data-testid="form-mode">{props.mode as string}</span>
+        <button
+          data-testid="form-submit"
+          onClick={() =>
+            (props.onSubmit as (data: CreateProjectInput | UpdateProjectInput) => Promise<void>)({
+              customerId: 1,
+              projectName: 'New Project',
+              dueDate: '2025-02-15',
+              internalOwnerId: 2,
+            })
+          }
+        >
+          Submit
+        </button>
+        <button data-testid="form-cancel" onClick={() => (props.onCancel as () => void)()}>
+          Cancel
+        </button>
+      </div>
+    );
+  }),
+}));
 
-// Helper to render with router
+// Helper to create test query client
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+    },
+  });
+}
+
+// Helper to render with router and query client
 function renderProjectCreatePage() {
+  const queryClient = createTestQueryClient();
   return render(
-    <BrowserRouter>
-      <ProjectCreatePage />
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ProjectCreatePage />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
@@ -114,17 +126,7 @@ describe('ProjectCreatePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     formProps = {};
-    mockCreateProject.mockResolvedValue(DEFAULT_COMMAND_RESULT);
-
-    // Reset the mock to default state
-    vi.mocked(useProjectActions).mockReturnValue({
-      createProject: mockCreateProject,
-      isLoading: false,
-      error: null,
-      clearError: mockClearError,
-      getProject: vi.fn(),
-      updateProject: vi.fn(),
-    });
+    mockMutateAsync.mockResolvedValue(DEFAULT_COMMAND_RESULT);
   });
 
   describe('rendering', () => {
@@ -179,38 +181,17 @@ describe('ProjectCreatePage', () => {
 
       expect(formProps.isSubmitting).toBe(false);
     });
-
-    it('should pass error from hook', () => {
-      vi.mocked(useProjectActions).mockReturnValue({
-        createProject: mockCreateProject,
-        isLoading: false,
-        error: 'Test error',
-        clearError: mockClearError,
-        getProject: vi.fn(),
-        updateProject: vi.fn(),
-      });
-
-      renderProjectCreatePage();
-
-      expect(formProps.error).toBe('Test error');
-    });
-
-    it('should pass clearError as onDismissError', () => {
-      renderProjectCreatePage();
-
-      expect(formProps.onDismissError).toBe(mockClearError);
-    });
   });
 
   describe('form submission', () => {
-    it('should call createProject when form is submitted', async () => {
+    it('should call mutateAsync when form is submitted', async () => {
       const user = userEvent.setup();
       renderProjectCreatePage();
 
       await user.click(screen.getByTestId('form-submit'));
 
       await waitFor(() => {
-        expect(mockCreateProject).toHaveBeenCalledWith({
+        expect(mockMutateAsync).toHaveBeenCalledWith({
           customerId: 1,
           projectName: 'New Project',
           dueDate: '2025-02-15',
@@ -221,7 +202,7 @@ describe('ProjectCreatePage', () => {
 
     it('should show success modal after successful creation', async () => {
       const user = userEvent.setup();
-      mockCreateProject.mockResolvedValue({
+      mockMutateAsync.mockResolvedValue({
         ...DEFAULT_COMMAND_RESULT,
         jobCode: 'WK2-2025-099-0131',
       });
@@ -237,7 +218,7 @@ describe('ProjectCreatePage', () => {
 
     it('should pass created job code to success modal', async () => {
       const user = userEvent.setup();
-      mockCreateProject.mockResolvedValue({
+      mockMutateAsync.mockResolvedValue({
         ...DEFAULT_COMMAND_RESULT,
         jobCode: 'WK2-2025-099-0131',
       });
@@ -273,7 +254,7 @@ describe('ProjectCreatePage', () => {
 
     it('should navigate to projects list when modal close is clicked', async () => {
       const user = userEvent.setup();
-      mockCreateProject.mockResolvedValue(DEFAULT_COMMAND_RESULT);
+      mockMutateAsync.mockResolvedValue(DEFAULT_COMMAND_RESULT);
 
       renderProjectCreatePage();
 
@@ -292,7 +273,7 @@ describe('ProjectCreatePage', () => {
 
     it('should navigate to project view when View Project is clicked', async () => {
       const user = userEvent.setup();
-      mockCreateProject.mockResolvedValue(DEFAULT_COMMAND_RESULT);
+      mockMutateAsync.mockResolvedValue(DEFAULT_COMMAND_RESULT);
 
       renderProjectCreatePage();
 
@@ -310,27 +291,10 @@ describe('ProjectCreatePage', () => {
     });
   });
 
-  describe('loading state', () => {
-    it('should pass isLoading to form', () => {
-      vi.mocked(useProjectActions).mockReturnValue({
-        createProject: mockCreateProject,
-        isLoading: true,
-        error: null,
-        clearError: mockClearError,
-        getProject: vi.fn(),
-        updateProject: vi.fn(),
-      });
-
-      renderProjectCreatePage();
-
-      expect(formProps.isSubmitting).toBe(true);
-    });
-  });
-
   describe('error handling', () => {
     it('should not show modal when creation fails', async () => {
       const user = userEvent.setup();
-      mockCreateProject.mockRejectedValue(new Error('Creation failed'));
+      mockMutateAsync.mockRejectedValue(new Error('Creation failed'));
 
       renderProjectCreatePage();
 

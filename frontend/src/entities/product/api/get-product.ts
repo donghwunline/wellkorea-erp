@@ -1,0 +1,104 @@
+/**
+ * Product API Functions.
+ *
+ * Internal raw API calls for products.
+ * Used by query factory and command functions.
+ */
+
+import { httpClient, PRODUCT_ENDPOINTS, type PagedResponse } from '@/shared/api';
+import type { PaginationMetadata } from '@/shared/lib/pagination';
+import type {
+  ProductDetailResponse,
+  ProductSummaryResponse,
+  ProductTypeResponse,
+} from './product.mapper';
+
+// =============================================================================
+// API RESPONSE TYPE
+// =============================================================================
+
+/**
+ * Paginated response with metadata.
+ */
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMetadata;
+}
+
+// =============================================================================
+// API PARAMS
+// =============================================================================
+
+/**
+ * Parameters for listing products.
+ */
+export interface GetProductsParams {
+  page?: number;
+  size?: number;
+  productTypeId?: number;
+  search?: string;
+}
+
+// =============================================================================
+// API FUNCTIONS
+// =============================================================================
+
+/**
+ * Get paginated list of products.
+ */
+export async function getProducts(
+  params: GetProductsParams = {}
+): Promise<PaginatedResponse<ProductSummaryResponse>> {
+  const response = await httpClient.requestWithMeta<PagedResponse<ProductSummaryResponse>>({
+    method: 'GET',
+    url: PRODUCT_ENDPOINTS.BASE,
+    params: {
+      page: params.page,
+      size: params.size,
+      productTypeId: params.productTypeId,
+      search: params.search,
+    },
+  });
+
+  // Extract pagination from PagedResponse structure (uses 'number' for page index)
+  const pagedData = response.data;
+  return {
+    data: pagedData.content,
+    pagination: {
+      page: pagedData.number,
+      size: pagedData.size,
+      totalElements: pagedData.totalElements,
+      totalPages: pagedData.totalPages,
+      first: pagedData.first,
+      last: pagedData.last,
+    },
+  };
+}
+
+/**
+ * Get product by ID.
+ */
+export async function getProduct(id: number): Promise<ProductDetailResponse> {
+  return httpClient.get<ProductDetailResponse>(PRODUCT_ENDPOINTS.byId(id));
+}
+
+/**
+ * Get all product types.
+ */
+export async function getProductTypes(): Promise<ProductTypeResponse[]> {
+  return httpClient.get<ProductTypeResponse[]>(PRODUCT_ENDPOINTS.types);
+}
+
+/**
+ * Search products (for combobox/autocomplete).
+ */
+export async function searchProducts(
+  query: string,
+  options: { page?: number; size?: number } = {}
+): Promise<PaginatedResponse<ProductSummaryResponse>> {
+  return getProducts({
+    search: query,
+    page: options.page ?? 0,
+    size: options.size ?? 20,
+  });
+}

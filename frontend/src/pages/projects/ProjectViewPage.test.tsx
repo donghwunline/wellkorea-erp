@@ -4,7 +4,7 @@
  *
  * Following Constitution Principle VI, this tests the page as a composition layer:
  * - Feature components are mocked (they own their service calls)
- * - useProjectActions hook is mocked
+ * - Query Factory is mocked via projectQueries
  * - Focus is on state management, navigation, and component composition
  */
 
@@ -12,11 +12,72 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProjectViewPage } from './ProjectViewPage';
-import type { ProjectDetails } from '@/services';
+import type { Project } from '@/entities/project';
+
+// Mock response state - will be set per test
+let mockProjectData: Project | null = null;
+let mockShouldError = false;
+
+// Mock project queries and entity components
+vi.mock('@/entities/project', async () => {
+  const actual = await vi.importActual('@/entities/project');
+  return {
+    ...actual,
+    projectQueries: {
+      detail: (id: number) => ({
+        queryKey: ['projects', 'detail', id],
+        queryFn: async () => {
+          if (mockShouldError) throw new Error('Failed to load project');
+          return mockProjectData;
+        },
+        enabled: id > 0,
+      }),
+      kpi: (id: number) => ({
+        queryKey: ['projects', 'kpi', id],
+        queryFn: async () => ({
+          totalItems: 10,
+          completedItems: 5,
+          progressPercent: 50,
+        }),
+        enabled: id > 0,
+      }),
+      summary: (id: number) => ({
+        queryKey: ['projects', 'summary', id],
+        queryFn: async () => ({
+          sections: [],
+        }),
+        enabled: id > 0,
+      }),
+    },
+    ProjectDetailsCard: vi.fn((props: Record<string, unknown>) => {
+      detailsCardProps = props;
+      const project = props.project as Project | undefined;
+      const onEdit = props.onEdit as (() => void) | undefined;
+      return (
+        <div data-testid="project-details-card">
+          <span data-testid="project-name">{project?.projectName}</span>
+          <span data-testid="customer-name">{project?.customerName}</span>
+          {onEdit && (
+            <button
+              data-testid="edit-project-button"
+              onClick={() => onEdit()}
+              aria-label="Edit project"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+      );
+    }),
+    ProjectKPIStrip: vi.fn(() => <div data-testid="kpi-strip">KPI Strip</div>),
+    ProjectKPIStripSkeleton: vi.fn(() => <div data-testid="kpi-strip-skeleton">Loading KPI...</div>),
+  };
+});
 
 // Helper to create mock project (now includes resolved names from backend CQRS pattern)
-function createMockProject(overrides: Partial<ProjectDetails> = {}): ProjectDetails {
+function createMockProject(overrides: Partial<Project> = {}): Project {
   return {
     id: 42,
     jobCode: 'WK2-2025-042-0120',
@@ -52,75 +113,49 @@ vi.mock('react-router-dom', async () => {
 });
 
 // Mock useAuth hook
-vi.mock('@/shared/hooks', () => ({
-  useAuth: () => ({
-    hasAnyRole: vi.fn(() => true),
-  }),
-}));
+vi.mock('@/entities/auth', async () => {
+  const actual = await vi.importActual('@/entities/auth');
+  return {
+    ...actual,
+    useAuth: () => ({
+      hasAnyRole: vi.fn(() => true),
+    }),
+  };
+});
 
-// Mock useProjectActions hook
-const mockGetProject = vi.fn();
-
-vi.mock('@/components/features/projects', () => ({
-  useProjectActions: vi.fn(() => ({
-    getProject: mockGetProject,
-    isLoading: false,
-    error: null,
-  })),
-  useProjectSummary: vi.fn(() => ({
-    summary: null,
-    isLoading: false,
-    error: null,
-  })),
-  ProjectDetailsCard: vi.fn((props: Record<string, unknown>) => {
-    detailsCardProps = props;
-    const project = props.project as ProjectDetails | undefined;
-    const customerName = props.customerName as string | undefined;
-    const onEdit = props.onEdit as (() => void) | undefined;
-    return (
-      <div data-testid="project-details-card">
-        <span data-testid="project-name">{project?.projectName}</span>
-        <span data-testid="customer-name">{customerName}</span>
-        {onEdit && (
-          <button
-            data-testid="edit-project-button"
-            onClick={() => onEdit()}
-            aria-label="Edit project"
-          >
-            Edit
-          </button>
-        )}
-      </div>
-    );
-  }),
+// Mock widgets
+vi.mock('@/widgets', () => ({
+  QuotationDetailsPanel: vi.fn(() => <div data-testid="quotation-panel">Quotation Panel</div>),
   ProjectRelatedNavigationGrid: vi.fn((props: Record<string, unknown>) => {
     navigationGridProps = props;
     return <div data-testid="navigation-grid">Project ID: {props.projectId as number}</div>;
   }),
-  ProjectKPIStrip: vi.fn(() => <div data-testid="kpi-strip">KPI Strip</div>),
-}));
-
-// Mock quotation feature components
-vi.mock('@/components/features/quotations', () => ({
-  QuotationDetailsPanel: vi.fn(() => <div data-testid="quotation-panel">Quotation Panel</div>),
 }));
 
 // Mock UI tab components to simplify testing
-vi.mock('@/components/ui', async () => {
-  const actual = await vi.importActual('@/components/ui');
+vi.mock('@/shared/ui', async () => {
+  const actual = await vi.importActual('@/shared/ui');
   return {
     ...actual,
     Tabs: vi.fn(({ children, defaultTab }: { children: React.ReactNode; defaultTab?: string }) => (
-      <div data-testid="tabs" data-default-tab={defaultTab}>{children}</div>
+      <div data-testid="tabs" data-default-tab={defaultTab}>
+        {children}
+      </div>
     )),
     TabList: vi.fn(({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div role="tablist" className={className}>{children}</div>
+      <div role="tablist" className={className}>
+        {children}
+      </div>
     )),
     Tab: vi.fn(({ children, id }: { children: React.ReactNode; id: string }) => (
-      <button role="tab" id={`tab-${id}`}>{children}</button>
+      <button role="tab" id={`tab-${id}`}>
+        {children}
+      </button>
     )),
     TabPanel: vi.fn(({ children, id }: { children: React.ReactNode; id: string }) => (
-      <div role="tabpanel" id={`panel-${id}`}>{children}</div>
+      <div role="tabpanel" id={`panel-${id}`}>
+        {children}
+      </div>
     )),
     TabOverflow: Object.assign(
       vi.fn(({ children }: { children: React.ReactNode }) => (
@@ -135,18 +170,30 @@ vi.mock('@/components/ui', async () => {
   };
 });
 
-// Import mocked hook for assertions
-import { useProjectActions } from '@/components/features/projects';
+// Helper to create test query client
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+    },
+  });
+}
 
-// Helper to render with route params
+// Helper to render with route params and QueryClientProvider
 function renderProjectViewPage(projectId = '42') {
+  const queryClient = createTestQueryClient();
   return render(
-    <MemoryRouter initialEntries={[`/projects/${projectId}`]}>
-      <Routes>
-        <Route path="/projects/:id" element={<ProjectViewPage />} />
-        <Route path="/projects" element={<div>Project List</div>} />
-      </Routes>
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[`/projects/${projectId}`]}>
+        <Routes>
+          <Route path="/projects/:id" element={<ProjectViewPage />} />
+          <Route path="/projects" element={<div>Project List</div>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 
@@ -155,63 +202,26 @@ describe('ProjectViewPage', () => {
     vi.clearAllMocks();
     detailsCardProps = {};
     navigationGridProps = {};
-    mockGetProject.mockResolvedValue(createMockProject());
-
-    // Reset the mock to default state
-    vi.mocked(useProjectActions).mockReturnValue({
-      getProject: mockGetProject,
-      isLoading: false,
-      error: null,
-      createProject: vi.fn(),
-      updateProject: vi.fn(),
-      clearError: vi.fn(),
-    });
+    // Reset mock state
+    mockProjectData = createMockProject();
+    mockShouldError = false;
   });
 
   describe('loading state', () => {
-    it('should display loading state when fetching project', () => {
-      vi.mocked(useProjectActions).mockReturnValue({
-        getProject: mockGetProject,
-        isLoading: true,
-        error: null,
-        createProject: vi.fn(),
-        updateProject: vi.fn(),
-        clearError: vi.fn(),
-      });
+    it('should display loading state initially', async () => {
+      // Set project to null initially to simulate loading
+      mockProjectData = null;
 
       renderProjectViewPage();
 
+      // Initially shows loading
       expect(screen.getByText('Loading...')).toBeInTheDocument();
-      expect(screen.getByText('Loading project...')).toBeInTheDocument();
-    });
-
-    it('should show loading spinner', () => {
-      vi.mocked(useProjectActions).mockReturnValue({
-        getProject: mockGetProject,
-        isLoading: true,
-        error: null,
-        createProject: vi.fn(),
-        updateProject: vi.fn(),
-        clearError: vi.fn(),
-      });
-
-      const { container } = renderProjectViewPage();
-
-      const spinner = container.querySelector('.animate-spin');
-      expect(spinner).toBeInTheDocument();
     });
   });
 
   describe('error state', () => {
     it('should display error message when fetch fails', async () => {
-      vi.mocked(useProjectActions).mockReturnValue({
-        getProject: mockGetProject,
-        isLoading: false,
-        error: 'Failed to load project',
-        createProject: vi.fn(),
-        updateProject: vi.fn(),
-        clearError: vi.fn(),
-      });
+      mockShouldError = true;
 
       renderProjectViewPage();
 
@@ -222,14 +232,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should show back to projects link on error', async () => {
-      vi.mocked(useProjectActions).mockReturnValue({
-        getProject: mockGetProject,
-        isLoading: false,
-        error: 'Network error',
-        createProject: vi.fn(),
-        updateProject: vi.fn(),
-        clearError: vi.fn(),
-      });
+      mockShouldError = true;
 
       renderProjectViewPage();
 
@@ -240,14 +243,7 @@ describe('ProjectViewPage', () => {
 
     it('should navigate back when back link is clicked on error', async () => {
       const user = userEvent.setup();
-      vi.mocked(useProjectActions).mockReturnValue({
-        getProject: mockGetProject,
-        isLoading: false,
-        error: 'Error',
-        createProject: vi.fn(),
-        updateProject: vi.fn(),
-        clearError: vi.fn(),
-      });
+      mockShouldError = true;
 
       renderProjectViewPage();
 
@@ -263,20 +259,18 @@ describe('ProjectViewPage', () => {
 
   describe('not found state', () => {
     it('should display not found when project is null', async () => {
-      mockGetProject.mockResolvedValue(null);
+      mockProjectData = null;
 
       renderProjectViewPage();
 
       await waitFor(() => {
         expect(screen.getByText('Project Not Found')).toBeInTheDocument();
-        expect(
-          screen.getByText('The requested project could not be found.')
-        ).toBeInTheDocument();
+        expect(screen.getByText('The requested project could not be found.')).toBeInTheDocument();
       });
     });
 
     it('should show back to projects link when not found', async () => {
-      mockGetProject.mockResolvedValue(null);
+      mockProjectData = null;
 
       renderProjectViewPage();
 
@@ -288,7 +282,7 @@ describe('ProjectViewPage', () => {
 
   describe('successful render', () => {
     it('should display project name in header', async () => {
-      mockGetProject.mockResolvedValue(createMockProject({ projectName: 'My Project' }));
+      mockProjectData = createMockProject({ projectName: 'My Project' });
 
       renderProjectViewPage();
 
@@ -299,7 +293,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should display job code in header description', async () => {
-      mockGetProject.mockResolvedValue(createMockProject({ jobCode: 'WK2-2025-099-0131' }));
+      mockProjectData = createMockProject({ jobCode: 'WK2-2025-099-0131' });
 
       renderProjectViewPage();
 
@@ -309,7 +303,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should render ProjectDetailsCard', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       renderProjectViewPage();
 
@@ -319,8 +313,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should pass project to ProjectDetailsCard', async () => {
-      const project = createMockProject({ projectName: 'Card Test' });
-      mockGetProject.mockResolvedValue(project);
+      mockProjectData = createMockProject({ projectName: 'Card Test' });
 
       renderProjectViewPage();
 
@@ -330,7 +323,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should render overview tab with navigation grid', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       renderProjectViewPage();
 
@@ -341,7 +334,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should render ProjectRelatedNavigationGrid', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       renderProjectViewPage();
 
@@ -351,7 +344,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should pass projectId to navigation grid', async () => {
-      mockGetProject.mockResolvedValue(createMockProject({ id: 42 }));
+      mockProjectData = createMockProject({ id: 42 });
 
       renderProjectViewPage();
 
@@ -363,7 +356,7 @@ describe('ProjectViewPage', () => {
 
   describe('navigation', () => {
     it('should render Back to Projects link', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       renderProjectViewPage();
 
@@ -374,7 +367,7 @@ describe('ProjectViewPage', () => {
 
     it('should navigate to projects list when back is clicked', async () => {
       const user = userEvent.setup();
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       renderProjectViewPage();
 
@@ -388,7 +381,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should pass onEdit to ProjectDetailsCard', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       renderProjectViewPage();
 
@@ -400,7 +393,7 @@ describe('ProjectViewPage', () => {
 
     it('should navigate to edit page when edit is triggered from card', async () => {
       const user = userEvent.setup();
-      mockGetProject.mockResolvedValue(createMockProject({ id: 42 }));
+      mockProjectData = createMockProject({ id: 42 });
 
       renderProjectViewPage('42');
 
@@ -414,47 +407,14 @@ describe('ProjectViewPage', () => {
     });
   });
 
-  describe('data fetching', () => {
-    it('should call getProject with project id from URL', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectViewPage('99');
-
-      await waitFor(() => {
-        expect(mockGetProject).toHaveBeenCalledWith(99);
-      });
-    });
-
-    it('should include id in useEffect dependencies', async () => {
-      // This test verifies the component has correct dependencies for refetching.
-      // Note: Testing actual route changes requires integration tests with real routing.
-      // The component's useEffect depends on `id`, so it will refetch when id changes.
-      mockGetProject.mockResolvedValue(createMockProject());
-
-      renderProjectViewPage('1');
-
-      await waitFor(() => {
-        expect(mockGetProject).toHaveBeenCalledWith(1);
-      });
-
-      // Test that different IDs fetch different projects
-      vi.clearAllMocks();
-      renderProjectViewPage('2');
-
-      await waitFor(() => {
-        expect(mockGetProject).toHaveBeenCalledWith(2);
-      });
-    });
-  });
-
   describe('name resolution', () => {
-    it('should pass customerName from mock data', async () => {
-      mockGetProject.mockResolvedValue(createMockProject({ customerId: 1 }));
+    it('should pass customerName from project data', async () => {
+      mockProjectData = createMockProject({ customerName: 'Samsung Electronics' });
 
       renderProjectViewPage();
 
       await waitFor(() => {
-        // The component uses MOCK_CUSTOMERS to resolve names
+        // The component passes customerName to ProjectDetailsCard
         expect(screen.getByTestId('customer-name')).toHaveTextContent('Samsung Electronics');
       });
     });
@@ -462,7 +422,7 @@ describe('ProjectViewPage', () => {
 
   describe('accessibility', () => {
     it('should have accessible page heading', async () => {
-      mockGetProject.mockResolvedValue(createMockProject({ projectName: 'My Project' }));
+      mockProjectData = createMockProject({ projectName: 'My Project' });
 
       renderProjectViewPage();
 
@@ -472,7 +432,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should have accessible edit button in details card', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       renderProjectViewPage();
 
@@ -483,7 +443,7 @@ describe('ProjectViewPage', () => {
     });
 
     it('should have accessible tab navigation', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       renderProjectViewPage();
 
@@ -496,7 +456,7 @@ describe('ProjectViewPage', () => {
 
   describe('layout', () => {
     it('should render with proper background styling', async () => {
-      mockGetProject.mockResolvedValue(createMockProject());
+      mockProjectData = createMockProject();
 
       const { container } = renderProjectViewPage();
 

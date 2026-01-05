@@ -1,0 +1,45 @@
+/**
+ * Assign customers mutation hook.
+ */
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { assignCustomers, userQueries, type AssignCustomersInput } from '@/entities/user';
+
+/**
+ * Options for useAssignCustomers hook.
+ */
+export interface UseAssignCustomersOptions {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
+
+/**
+ * Input for assign customers mutation.
+ */
+export interface AssignCustomersMutationInput {
+  id: number;
+  data: AssignCustomersInput;
+}
+
+/**
+ * Mutation hook for assigning customers to a user.
+ */
+export function useAssignCustomers(options: UseAssignCustomersOptions = {}) {
+  const queryClient = useQueryClient();
+  const { onSuccess, onError } = options;
+
+  return useMutation({
+    mutationFn: ({ id, data }: AssignCustomersMutationInput) => assignCustomers(id, data),
+
+    onSuccess: () => {
+      // Invalidate customer query for this user
+      queryClient.invalidateQueries({ queryKey: userQueries.customersKeys() });
+
+      onSuccess?.();
+    },
+
+    onError: (error: Error) => {
+      onError?.(error);
+    },
+  });
+}

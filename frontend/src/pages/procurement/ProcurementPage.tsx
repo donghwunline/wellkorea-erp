@@ -7,7 +7,7 @@
  * - Purchase Orders
  */
 
-import { Card, Icon, PageHeader } from '@/components/ui';
+import { Card, Icon, PageHeader } from '@/shared/ui';
 
 /**
  * Procurement page placeholder.

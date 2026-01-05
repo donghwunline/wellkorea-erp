@@ -1,24 +1,27 @@
 /**
- * Quotation Create Page
+ * Quotation Create Page (FSD Version).
  *
  * Form for creating a new quotation.
- * Requires project selection or comes from project context.
+ * Uses FSD architecture with separated concerns.
  *
  * Routes:
  * - /quotations/create (standalone - requires project selection)
  * - /projects/:id/quotations/create (project context - project pre-selected)
+ *
+ * Pages Layer: Route-level assembly only
+ * - URL params handling
+ * - Layout composition
+ * - Feature delegation
  */
 
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, Card, Icon, PageHeader, Spinner } from '@/components/ui';
-import { ProjectCombobox } from '@/components/features/shared/selectors';
-import {
-  QuotationForm,
-  useProjectDetails,
-  useQuotationActions,
-} from '@/components/features/quotations';
-import type { CreateQuotationRequest, UpdateQuotationRequest } from '@/services';
+import { useQuery } from '@tanstack/react-query';
+import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
+import { projectQueries, ProjectCombobox } from '@/entities/project';
+import { QuotationForm } from '@/features/quotation/form';
+import { useCreateQuotation } from '@/features/quotation/create';
+import type { CreateQuotationInput } from '@/entities/quotation';
 
 export function QuotationCreatePage() {
   const navigate = useNavigate();
@@ -37,39 +40,42 @@ export function QuotationCreatePage() {
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(initialProjectId);
 
   // Hooks
-  const { isLoading: isSubmitting, error, createQuotation, clearError } = useQuotationActions();
   const {
-    project: selectedProject,
+    data: selectedProject,
     isLoading: isLoadingProject,
-    error: projectError,
-  } = useProjectDetails(selectedProjectId);
+    error: projectQueryError,
+  } = useQuery({
+    ...projectQueries.detail(selectedProjectId ?? 0),
+    enabled: selectedProjectId !== null && selectedProjectId > 0,
+  });
+  const projectError = projectQueryError?.message ?? null;
 
-  // Handle project selection
-  const handleProjectSelect = useCallback(
-    (projectId: number | null) => {
-      setSelectedProjectId(projectId);
-      clearError();
-    },
-    [clearError]
-  );
-
-  // Handle form submission
-  const handleSubmit = useCallback(
-    async (data: CreateQuotationRequest | UpdateQuotationRequest) => {
-      try {
-        // In create mode, data is always CreateQuotationRequest
-        const quotation = await createQuotation(data as CreateQuotationRequest);
-        // Navigate to the created quotation
-        if (routeProjectId) {
-          navigate(`/projects/${routeProjectId}/quotations/${quotation.id}`);
-        } else {
-          navigate(`/quotations/${quotation.id}`);
-        }
-      } catch {
-        // Error is handled by the hook
+  const {
+    mutate: createQuotation,
+    isPending: isSubmitting,
+    error: mutationError,
+  } = useCreateQuotation({
+    onSuccess: result => {
+      // Navigate to the created quotation
+      if (routeProjectId) {
+        navigate(`/projects/${routeProjectId}/quotations/${result.id}`);
+      } else {
+        navigate(`/quotations/${result.id}`);
       }
     },
-    [createQuotation, navigate, routeProjectId]
+  });
+
+  // Handle project selection
+  const handleProjectSelect = useCallback((projectId: number | null) => {
+    setSelectedProjectId(projectId);
+  }, []);
+
+  // Handle form submission
+  const handleCreateSubmit = useCallback(
+    (data: CreateQuotationInput) => {
+      createQuotation(data);
+    },
+    [createQuotation]
   );
 
   // Handle cancel
@@ -80,6 +86,9 @@ export function QuotationCreatePage() {
       navigate('/quotations');
     }
   }, [navigate, routeProjectId]);
+
+  // Error message
+  const error = mutationError?.message || null;
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
@@ -140,7 +149,7 @@ export function QuotationCreatePage() {
           projectName={selectedProject.projectName}
           isSubmitting={isSubmitting}
           error={error}
-          onSubmit={handleSubmit}
+          onCreateSubmit={handleCreateSubmit}
           onCancel={handleCancel}
         />
       )}

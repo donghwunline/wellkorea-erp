@@ -1,7 +1,12 @@
 # Implementation Plan: WellKorea Integrated Work System (ERP)
 
-**Branch**: `001-erp-core` | **Date**: 2025-12-01 (Updated: 2025-12-23) | **Spec**: [spec.md](./spec.md)
+**Branch**: `001-erp-core` | **Date**: 2025-12-01 (Updated: 2026-01-05) | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-erp-core/spec.md`
+
+**Frontend Architecture Reference**:
+- [docs/architecture/fsd-public-api-guidelines.md](../../docs/architecture/fsd-public-api-guidelines.md) - Entity public API patterns (Query Factory, Command Functions)
+- [docs/architecture/frontend-architecture-analysis.md](../../docs/architecture/frontend-architecture-analysis.md) - Complete FSD-Lite architecture documentation
+- [CLAUDE.md](../../CLAUDE.md) - Up-to-date architecture summary for all development
 
 ## Summary
 
@@ -285,18 +290,72 @@ backend/                                       # Spring Boot application
     ├── quotation/
     └── [domain-specific tests]
 
-frontend/                                     # React application
+frontend/                                     # React application (FSD-Lite Architecture)
 ├── src/
-│   ├── components/                          # Reusable UI components
-│   ├── pages/                              # Page-level components
-│   ├── services/                           # API client layer
-│   ├── contexts/                           # React Context (auth, theme)
-│   └── App.tsx
-├── tests/unit/                             # Vitest unit tests
-└── e2e/                                    # Playwright E2E tests
+│   ├── app/                                 # Application setup
+│   │   ├── providers/                      # QueryClient, i18n, theme providers
+│   │   ├── router/                         # Route configuration
+│   │   └── styles/                         # Global styles
+│   │
+│   ├── pages/                               # Route-level components (ASSEMBLY ONLY)
+│   │   ├── login/
+│   │   ├── dashboard/
+│   │   ├── projects/                       # list/, [id]/
+│   │   ├── quotations/                     # list/, create/, [id]/
+│   │   ├── companies/                      # list/, create/, [id]/
+│   │   └── admin/                          # users/, audit-log/, approval-chains/
+│   │
+│   ├── widgets/                             # Composite UI blocks (FEATURE COMPOSITION)
+│   │   ├── quotation/                      # QuotationDetailActionsPanel, QuotationListToolbar
+│   │   ├── project/                        # ProjectStatusPanel
+│   │   └── approval/                       # ApprovalWorkflowPanel
+│   │
+│   ├── features/                            # User actions / workflows (ISOLATED UNITS)
+│   │   ├── quotation/                      # create/, approve/, submit/, generate-pdf/
+│   │   │   ├── create/
+│   │   │   │   ├── ui/                    # CreateQuotationForm
+│   │   │   │   ├── model/                 # useCreateQuotation hook
+│   │   │   │   └── index.ts
+│   │   │   └── approve/                   # ApprovalDialog, useApproveQuotation
+│   │   ├── project/                        # create/, update-status/
+│   │   ├── auth/                           # login/, logout/
+│   │   ├── company/                        # create/, add-role/
+│   │   └── user/                           # create/, assign-roles/, manage-customers/
+│   │
+│   ├── entities/                            # Domain models (TYPES + RULES + QUERIES)
+│   │   ├── quotation/                       # Reference implementation
+│   │   │   ├── model/                      # quotation.ts, line-item.ts, quotation-status.ts
+│   │   │   ├── api/                        # Query factory + Command functions
+│   │   │   │   ├── quotation.dto.ts       # *Request/*Response types (internal)
+│   │   │   │   ├── quotation.mapper.ts    # Response → Domain mapping (internal)
+│   │   │   │   ├── quotation.queries.ts   # Query factory with queryOptions()
+│   │   │   │   ├── get-quotation.ts       # HTTP GET operations (internal)
+│   │   │   │   ├── create-quotation.ts    # Input + validation + POST
+│   │   │   │   ├── update-quotation.ts    # Input + validation + PUT
+│   │   │   │   └── submit-quotation.ts    # Other command functions
+│   │   │   ├── ui/                         # QuotationCard, QuotationTable, QuotationStatusBadge
+│   │   │   └── index.ts                    # Public API (minimal exports)
+│   │   ├── project/
+│   │   ├── company/
+│   │   ├── user/
+│   │   ├── approval/
+│   │   └── product/
+│   │
+│   ├── shared/                              # Cross-cutting concerns
+│   │   ├── api/                            # http-client.ts, api-error.ts, interceptors/
+│   │   ├── ui/                             # Design system (Button, Modal, Table, FormField)
+│   │   ├── lib/                            # Pure utilities (date.ts, money.ts, validation.ts)
+│   │   └── types/                          # Shared types (pagination.ts, api-response.ts)
+│   │
+│   └── stores/                              # Global state (minimal - auth only)
+│       └── auth/
+│           └── auth.store.ts
+│
+├── tests/unit/                              # Vitest unit tests
+└── e2e/                                     # Playwright E2E tests
 ```
 
-**Structure Decision**: Domain-oriented modular architecture for backend. Each domain module contains all layers needed for that domain (business logic, services, APIs, database access). Frontend maintains simpler component/page structure.
+**Structure Decision**: Domain-oriented modular architecture for backend. Each domain module contains all layers needed for that domain (business logic, services, APIs, database access). Frontend uses **FSD-Lite (Feature-Sliced Design)** aligned with backend's DDD + CQS patterns.
 
 **Layer Organization** (consistent across all 9 domain modules):
 
@@ -308,7 +367,7 @@ frontend/                                     # React application
 | `infrastructure/persistence/` | Database repositories (JPA) | `ProjectRepository.java` |
 | `infrastructure/storage/` | File storage adapters (MinIO, S3) | `MinioAdapter.java` (document module only) |
 
-**Key Architectural Decisions**:
+**Key Architectural Decisions (Backend)**:
 - **Domain isolation**: Each domain module is self-contained with clear boundaries (no cross-domain imports)
 - **Consistent layering**: All domains follow the same 4-layer structure (domain → application → api + infrastructure/persistence)
 - **Explicit `/persistence` subfolder**: JPA repositories always under `infrastructure/persistence/` for clarity
@@ -319,6 +378,33 @@ frontend/                                     # React application
 - **Approval is cross-cutting domain**: Handles approval workflows for quotations and other entities (승인/결재)
 - **Shared infrastructure**: Technical utilities (exceptions, config, audit logging) in `shared/` package
 - **Test organization**: Tests mirror domain structure (`src/test/java/.../project/`, `.../quotation/`, etc.)
+
+**Key Architectural Decisions (Frontend - FSD-Lite)**:
+- **FSD-Lite adoption (2025-12-30)**: Frontend migrated to Feature-Sliced Design aligned with backend DDD + CQS patterns
+- **Query Factory Pattern (2026-01-01)**: No `query/` folder - queries live in `api/quotation.queries.ts` using TanStack Query v5 `queryOptions()`
+- **Direct Query Usage**: `useQuery(quotationQueries.detail(id))` - no custom hook wrappers needed
+- **Command Functions**: Individual files (`create-quotation.ts`) combining Input types + validation + mapping + API call
+- **Domain Models = Plain Objects + Pure Functions**: `quotationRules.canEdit(q)` instead of classes, React Query serialization-compatible
+- **Cache Data Format = Always Domain Models**: All `useQuery`, `prefetchQuery`, `setQueryData` work with domain types, not DTOs
+- **Query Key Stability = Primitives Only**: Query keys use individual primitives (page, size, search, status) not objects
+- **Dates = ISO Strings**: Not Date objects, for React Query cache serialization
+- **Layer Dependencies (enforced by ESLint)**: pages → widgets → features → entities → shared
+- **entities/ui/ = Dumb Components**: No router dependencies, no mutation hooks, delegate via callback props
+- **features/ = Isolated Workflows**: One feature = one user action, no cross-feature imports (use widgets for composition)
+- **widgets/ = Feature Composition**: Combine 2+ features into reusable panels (e.g., QuotationDetailActionsPanel)
+- **UX Side-Effects in features/ Only**: `toast()`, `navigate()` belong in features/model hooks, NOT in entities
+
+**Frontend Layer Organization** (FSD-Lite):
+
+| Layer | Responsibility | Imports From | Examples |
+|-------|---------------|--------------|----------|
+| `app/` | Application bootstrap, providers | All layers | QueryProvider, RouterProvider |
+| `pages/` | Route handling, layout, compose features | widgets, features, entities, shared | QuotationListPage, ProjectDetailPage |
+| `widgets/` | Composite UI blocks, multi-feature composition | features, entities, shared | QuotationDetailActionsPanel |
+| `features/` | User actions/workflows with mutation hooks | entities, shared (NOT other features) | CreateQuotationForm, useCreateQuotation |
+| `entities/` | Domain types + rules + query factory + command fns + display UI | shared ONLY | Quotation, quotationRules, quotationQueries, createQuotation, QuotationTable |
+| `shared/` | Cross-cutting infrastructure and utilities | NOTHING (base layer) | httpClient, Button, formatDate |
+| `stores/` | Global state (minimal - auth only) | shared | authStore |
 
 ## Complexity Tracking
 

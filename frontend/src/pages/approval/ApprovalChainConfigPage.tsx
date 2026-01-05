@@ -6,14 +6,14 @@
  *
  * Route: /admin/approval-chains
  *
- * 4-Tier State Separation:
- * - Tier 1 (Local UI State): Edit mode, selected chain
- * - Tier 2 (Page UI State): Pagination (if needed)
- * - Tier 3 (Server State): Chain templates -> useApprovalChainConfig hook
- * - Tier 4 (App Global State): Not used directly here
+ * FSD Architecture:
+ * - Page layer: URL params + layout assembly
+ * - Uses entities/approval-chain for query hooks and types
+ * - Uses features/approval-chain for mutations
  */
 
 import { useCallback, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   Badge,
@@ -26,52 +26,67 @@ import {
   PageHeader,
   Spinner,
   Table,
-} from '@/components/ui';
-import { useApprovalChainConfig } from '@/components/features/approval';
-import { UserCombobox } from '@/components/features/shared/selectors';
-import type { ChainLevel, ChainLevelRequest, ChainTemplate } from '@/services';
+} from '@/shared/ui';
+import {
+  type ChainLevelInput,
+  type ChainTemplate,
+  chainTemplateQueries,
+  chainTemplateRules,
+} from '@/entities/approval-chain';
+import { useUpdateChainLevels } from '@/features/approval-chain/update';
+import { UserCombobox } from '@/entities/user';
 
 interface EditingChain {
   template: ChainTemplate;
-  levels: ChainLevelRequest[];
+  levels: ChainLevelInput[];
 }
 
 export function ApprovalChainConfigPage() {
-  // Server state via hook
+  // Server state via TanStack Query
+  const { data: templates = [], isLoading, error: fetchError } = useQuery(chainTemplateQueries.list());
+
+  // Mutation hook
   const {
-    templates,
-    isLoading,
-    error: fetchError,
-    isSaving,
-    saveError,
-    refetch,
-    updateChainLevels,
-    clearSaveError,
-  } = useApprovalChainConfig();
+    mutate: updateLevels,
+    isPending: isSaving,
+    error: saveError,
+    reset: resetSaveError,
+  } = useUpdateChainLevels({
+    onSuccess: () => {
+      showSuccess('Approval chain updated successfully');
+      setEditingChain(null);
+    },
+  });
 
   // Local UI State
-  const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [editingChain, setEditingChain] = useState<EditingChain | null>(null);
 
   // Clear messages after delay
-  const showSuccess = useCallback((message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  }, []);
+  const showSuccess = useCallback(
+    (message: string) => {
+      setSuccessMessage(message);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    },
+    [setSuccessMessage]
+  );
 
   // Handle edit chain
-  const handleEditChain = useCallback((template: ChainTemplate) => {
-    setEditingChain({
-      template,
-      levels: template.levels.map(level => ({
-        levelOrder: level.levelOrder,
-        levelName: level.levelName,
-        approverUserId: level.approverUserId,
-        isRequired: level.isRequired,
-      })),
-    });
-  }, []);
+  const handleEditChain = useCallback(
+    (template: ChainTemplate) => {
+      setEditingChain({
+        template,
+        levels: template.levels.map(level => ({
+          levelOrder: level.levelOrder,
+          levelName: level.levelName,
+          approverUserId: level.approverUserId,
+          isRequired: level.isRequired,
+        })),
+      });
+    },
+    [setEditingChain]
+  );
 
   // Handle add level
   const handleAddLevel = useCallback(() => {
@@ -90,7 +105,7 @@ export function ApprovalChainConfigPage() {
         },
       ],
     });
-  }, [editingChain]);
+  }, [editingChain, setEditingChain]);
 
   // Handle remove level
   const handleRemoveLevel = useCallback(
@@ -106,7 +121,7 @@ export function ApprovalChainConfigPage() {
         levels: newLevels,
       });
     },
-    [editingChain]
+    [editingChain, setEditingChain]
   );
 
   // Handle approver change
@@ -122,33 +137,32 @@ export function ApprovalChainConfigPage() {
         levels: newLevels,
       });
     },
-    [editingChain]
+    [editingChain, setEditingChain]
   );
 
   // Handle save
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(() => {
     if (!editingChain) return;
 
-    // Validate
-    if (editingChain.levels.some(l => !l.approverUserId || l.approverUserId === 0)) {
-      setError('All levels must have an approver assigned');
+    // Validate using domain rules
+    const validationResult = chainTemplateRules.validateLevels(editingChain.levels);
+    if (validationResult) {
+      setValidationError(validationResult);
       return;
     }
 
-    try {
-      await updateChainLevels(editingChain.template.id, editingChain.levels);
-      showSuccess('Approval chain updated successfully');
-      setEditingChain(null);
-    } catch {
-      // Error handled by hook
-    }
-  }, [editingChain, updateChainLevels, showSuccess]);
+    setValidationError(null);
+    updateLevels({
+      templateId: editingChain.template.id,
+      levels: editingChain.levels,
+    });
+  }, [editingChain, updateLevels, setValidationError]);
 
-  // Format level display
-  const formatLevels = (levels: ChainLevel[]): string => {
-    if (levels.length === 0) return 'No levels configured';
-    return `${levels.length} level${levels.length > 1 ? 's' : ''}`;
-  };
+  // Clear errors
+  const clearErrors = useCallback(() => {
+    setValidationError(null);
+    resetSaveError();
+  }, [setValidationError, resetSaveError]);
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
@@ -168,16 +182,9 @@ export function ApprovalChainConfigPage() {
       )}
 
       {/* Error Message */}
-      {(error || saveError) && (
-        <Alert
-          variant="error"
-          className="mb-6"
-          onClose={() => {
-            setError(null);
-            clearSaveError();
-          }}
-        >
-          {error || saveError}
+      {(validationError || saveError) && (
+        <Alert variant="error" className="mb-6" onClose={clearErrors}>
+          {validationError ?? saveError?.message}
         </Alert>
       )}
 
@@ -191,10 +198,7 @@ export function ApprovalChainConfigPage() {
       {/* Error State */}
       {!isLoading && fetchError && (
         <Card className="p-8 text-center">
-          <p className="text-red-400">{fetchError}</p>
-          <button onClick={refetch} className="mt-4 text-sm text-copper-500 hover:underline">
-            Retry
-          </button>
+          <p className="text-red-400">{fetchError.message}</p>
         </Card>
       )}
 
@@ -228,7 +232,9 @@ export function ApprovalChainConfigPage() {
                       <span className="font-medium text-white">{template.name}</span>
                     </Table.Cell>
                     <Table.Cell>
-                      <span className="text-steel-300">{formatLevels(template.levels)}</span>
+                      <span className="text-steel-300">
+                        {chainTemplateRules.formatLevelCount(template.levels)}
+                      </span>
                     </Table.Cell>
                     <Table.Cell>
                       <div className="flex flex-wrap gap-1">

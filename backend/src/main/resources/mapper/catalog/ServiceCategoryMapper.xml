@@ -116,7 +116,7 @@
     <!-- Common SELECT columns for vendor offerings -->
     <sql id="vendorOfferingColumns">
         vso.id,
-        vso.vendor_id,
+        vso.vendor_company_id AS vendor_id,
         c.name AS vendor_name,
         vso.service_category_id,
         sc.name AS service_category_name,
@@ -139,7 +139,7 @@
         SELECT
             <include refid="vendorOfferingColumns"/>
         FROM vendor_service_offerings vso
-        INNER JOIN companies c ON vso.vendor_id = c.id
+        INNER JOIN companies c ON vso.vendor_company_id = c.id
         INNER JOIN service_categories sc ON vso.service_category_id = sc.id
         WHERE vso.service_category_id = #{serviceCategoryId}
         ORDER BY vso.is_preferred DESC, c.name
@@ -154,14 +154,16 @@
     </select>
 
     <!-- Find current offerings by service category -->
+    <!-- NULL effective_from means always effective (no start date restriction) -->
+    <!-- NULL effective_to means no expiry -->
     <select id="findCurrentOfferingsByServiceCategoryId" resultMap="VendorServiceOfferingViewResult">
         SELECT
             <include refid="vendorOfferingColumns"/>
         FROM vendor_service_offerings vso
-        INNER JOIN companies c ON vso.vendor_id = c.id
+        INNER JOIN companies c ON vso.vendor_company_id = c.id
         INNER JOIN service_categories sc ON vso.service_category_id = sc.id
         WHERE vso.service_category_id = #{serviceCategoryId}
-          AND vso.effective_from &lt;= #{currentDate}
+          AND (vso.effective_from IS NULL OR vso.effective_from &lt;= #{currentDate})
           AND (vso.effective_to IS NULL OR vso.effective_to &gt;= #{currentDate})
         ORDER BY vso.is_preferred DESC, c.name
     </select>
@@ -171,9 +173,9 @@
         SELECT
             <include refid="vendorOfferingColumns"/>
         FROM vendor_service_offerings vso
-        INNER JOIN companies c ON vso.vendor_id = c.id
+        INNER JOIN companies c ON vso.vendor_company_id = c.id
         INNER JOIN service_categories sc ON vso.service_category_id = sc.id
-        WHERE vso.vendor_id = #{vendorId}
+        WHERE vso.vendor_company_id = #{vendorId}
         ORDER BY sc.name
         LIMIT #{limit} OFFSET #{offset}
     </select>
@@ -182,7 +184,7 @@
     <select id="countOfferingsByVendorId" resultType="long">
         SELECT COUNT(*)
         FROM vendor_service_offerings vso
-        WHERE vso.vendor_id = #{vendorId}
+        WHERE vso.vendor_company_id = #{vendorId}
     </select>
 
     <!-- Find offering by ID -->
@@ -190,7 +192,7 @@
         SELECT
             <include refid="vendorOfferingColumns"/>
         FROM vendor_service_offerings vso
-        INNER JOIN companies c ON vso.vendor_id = c.id
+        INNER JOIN companies c ON vso.vendor_company_id = c.id
         INNER JOIN service_categories sc ON vso.service_category_id = sc.id
         WHERE vso.id = #{id}
     </select>

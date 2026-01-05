@@ -5,54 +5,46 @@
  * Loads project data and shows pre-filled form.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { ProjectDetails, UpdateProjectRequest } from '@/services';
-import { Alert, Card, Icon, PageHeader, Spinner } from '@/components/ui';
-import { ProjectForm, useProjectActions } from '@/components/features/projects';
+import { useQuery } from '@tanstack/react-query';
+import type { UpdateProjectInput } from '@/entities/project';
+import { projectQueries } from '@/entities/project';
+import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
+import { useUpdateProject } from '@/features/project/update';
+import { ProjectForm } from '@/features/project/form';
 
 export function ProjectEditPage() {
   const { id } = useParams<{ id: string }>();
+  const projectId = id ? parseInt(id, 10) : 0;
   const navigate = useNavigate();
+
+  // Fetch project using Query Factory
   const {
-    getProject,
-    updateProject,
-    isLoading,
-    error,
-    clearError,
-  } = useProjectActions();
+    data: project,
+    isLoading: isLoadingProject,
+    error: fetchError,
+  } = useQuery({
+    ...projectQueries.detail(projectId),
+    enabled: projectId > 0,
+  });
 
-  // Local State
-  const [project, setProject] = useState<ProjectDetails | null>(null);
-  const [isLoadingProject, setIsLoadingProject] = useState(true);
+  // Update mutation
+  const updateProjectMutation = useUpdateProject();
 
-  // Fetch project on mount
-  useEffect(() => {
-    const fetchProject = async () => {
-      if (!id) return;
+  // Local error state for mutation errors
+  const [error, setError] = useState<string | null>(null);
+  const clearError = () => setError(null);
 
-      setIsLoadingProject(true);
-      try {
-        const data = await getProject(parseInt(id, 10));
-        setProject(data);
-      } catch {
-        // Error is handled by the hook
-      } finally {
-        setIsLoadingProject(false);
-      }
-    };
+  const handleSubmit = async (data: UpdateProjectInput) => {
+    if (!projectId) return;
 
-    fetchProject();
-  }, [id, getProject]);
-
-  const handleSubmit = async (data: UpdateProjectRequest) => {
-    if (!id) return;
-
+    setError(null);
     try {
-      await updateProject(parseInt(id, 10), data);
+      await updateProjectMutation.mutateAsync({ id: projectId, input: data });
       navigate(`/projects/${id}`);
-    } catch {
-      // Error is handled by the hook
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update project');
     }
   };
 
@@ -82,7 +74,7 @@ export function ProjectEditPage() {
   }
 
   // Load error state
-  if (error && !project) {
+  if (fetchError && !project) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
@@ -98,7 +90,7 @@ export function ProjectEditPage() {
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="error" className="mx-auto max-w-2xl">
-          {error}
+          {fetchError instanceof Error ? fetchError.message : 'Failed to load project'}
         </Alert>
       </div>
     );
@@ -131,10 +123,7 @@ export function ProjectEditPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title="Edit Project"
-          description={`Job Code: ${project.jobCode}`}
-        />
+        <PageHeader.Title title="Edit Project" description={`Job Code: ${project.jobCode}`} />
         <PageHeader.Actions>
           <button
             onClick={handleCancel}
@@ -155,7 +144,7 @@ export function ProjectEditPage() {
             initialData={project}
             onSubmit={handleSubmit}
             onCancel={handleCancel}
-            isSubmitting={isLoading}
+            isSubmitting={updateProjectMutation.isPending}
             error={error}
             onDismissError={clearError}
           />

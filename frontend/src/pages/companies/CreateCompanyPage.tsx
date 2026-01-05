@@ -3,37 +3,71 @@
  *
  * Page for creating new companies with role selection.
  * Shows success message after creation and navigates to company detail.
+ *
+ * FSD Layer: pages
+ * - Uses feature hooks for mutations
+ * - Composes feature UI components
  */
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { CreateCompanyRequest, UpdateCompanyRequest } from '@/services';
-import { Alert, Card, Icon, PageHeader } from '@/components/ui';
-import { CompanyForm, useCompanyActions } from '@/components/features/companies';
+import { Alert, Card, Icon, PageHeader } from '@/shared/ui';
+
+// Feature imports (FSD)
+import { useCreateCompany } from '@/features/company/create';
+import { CompanyForm, type CompanyFormData } from '@/features/company/form';
+
+// Entity imports (FSD)
+import type { CreateCompanyInput } from '@/entities/company';
 
 export function CreateCompanyPage() {
   const navigate = useNavigate();
-  const { createCompany, isLoading, error, clearError } = useCompanyActions();
-
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (data: CreateCompanyRequest | UpdateCompanyRequest) => {
-    try {
-      // In create mode, the form always provides CreateCompanyRequest
-      const result = await createCompany(data as CreateCompanyRequest);
-      setSuccessMessage(`Company created successfully!`);
+  // Mutation hook from features layer
+  const { mutateAsync: createCompany, isPending } = useCreateCompany({
+    onSuccess: result => {
+      setSuccessMessage('Company created successfully!');
       // Navigate to the new company detail page after short delay
       setTimeout(() => {
         navigate(`/companies/${result.id}`);
       }, 1500);
-    } catch {
-      // Error is handled by the hook
-    }
-  };
+    },
+    onError: err => {
+      setError(err.message);
+    },
+  });
 
-  const handleCancel = () => {
+  const handleSubmit = useCallback(async (data: CompanyFormData) => {
+    setError(null);
+
+    // Map form data to command input
+    const input: CreateCompanyInput = {
+      name: data.name.trim(),
+      roles: data.roles,
+      registrationNumber: data.registrationNumber.trim() || undefined,
+      representative: data.representative.trim() || undefined,
+      businessType: data.businessType.trim() || undefined,
+      businessCategory: data.businessCategory.trim() || undefined,
+      contactPerson: data.contactPerson.trim() || undefined,
+      phone: data.phone.trim() || undefined,
+      email: data.email.trim() || undefined,
+      address: data.address.trim() || undefined,
+      bankAccount: data.bankAccount.trim() || undefined,
+      paymentTerms: data.paymentTerms.trim() || undefined,
+    };
+
+    await createCompany(input);
+  }, [createCompany]);
+
+  const handleCancel = useCallback(() => {
     navigate('/companies');
-  };
+  }, [navigate]);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
@@ -69,7 +103,7 @@ export function CreateCompanyPage() {
             mode="create"
             onSubmit={handleSubmit}
             onCancel={handleCancel}
-            isSubmitting={isLoading}
+            isSubmitting={isPending}
             error={error}
             onDismissError={clearError}
           />

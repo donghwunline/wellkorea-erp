@@ -26,11 +26,13 @@
  * └──────────────────────────────────────────────────┘
  */
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { ProjectDetails, ProjectSection } from '@/services';
-import { useAuth } from '@/shared/hooks';
-import type { RoleName } from '@/shared/types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ProjectSection } from '@/entities/project';
+import { projectQueries, ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton } from '@/entities/project';
+import { useAuth } from '@/entities/auth';
+import type { RoleName } from '@/entities/user';
 import {
   Alert,
   Card,
@@ -42,15 +44,8 @@ import {
   TabOverflow,
   TabPanel,
   Tabs,
-} from '@/components/ui';
-import {
-  ProjectDetailsCard,
-  ProjectKPIStrip,
-  ProjectRelatedNavigationGrid,
-  useProjectActions,
-  useProjectSummary,
-} from '@/components/features/projects';
-import { QuotationDetailsPanel } from '@/components/features/quotations';
+} from '@/shared/ui';
+import { QuotationDetailsPanel, ProjectRelatedNavigationGrid } from '@/widgets';
 
 // Tab configuration with role requirements
 interface TabConfig {
@@ -80,16 +75,41 @@ export function ProjectViewPage() {
   const projectId = id ? parseInt(id, 10) : 0;
   const navigate = useNavigate();
   const { hasAnyRole } = useAuth();
-  const { getProject, isLoading: isProjectLoading, error: projectError } = useProjectActions();
 
-  // Project data (now includes resolved names from backend)
-  const [project, setProject] = useState<ProjectDetails | null>(null);
+  // Fetch project using Query Factory
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    error: queryError,
+  } = useQuery({
+    ...projectQueries.detail(projectId),
+    enabled: projectId > 0,
+  });
 
-  // Refresh triggers for child components
-  const [kpiRefreshTrigger, triggerKpiRefresh] = useReducer((x: number) => x + 1, 0);
+  const projectError = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : 'Failed to load project'
+    : null;
+
+  const queryClient = useQueryClient();
+
+  // Get KPIs for the KPI strip
+  const { data: kpis, isLoading: isKpisLoading } = useQuery({
+    ...projectQueries.kpi(projectId),
+    enabled: !!project,
+  });
 
   // Get summary for badge counts
-  const { summary } = useProjectSummary({ projectId, enabled: !!project });
+  const { data: summary } = useQuery({
+    ...projectQueries.summary(projectId),
+    enabled: !!project,
+  });
+
+  // Refresh KPIs when data changes (e.g., after creating quotation)
+  const triggerKpiRefresh = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: projectQueries.kpis() });
+  }, [queryClient]);
 
   // Tab state from URL hash
   const [activeTab, setActiveTab] = useState(() => {
@@ -136,20 +156,6 @@ export function ProjectViewPage() {
     },
     [summary]
   );
-
-  // Fetch project data (now includes resolved names from backend CQRS pattern)
-  useEffect(() => {
-    const fetchProject = async () => {
-      if (!projectId) return;
-      try {
-        const data = await getProject(projectId);
-        setProject(data);
-      } catch {
-        // Error handled by hook
-      }
-    };
-    fetchProject();
-  }, [projectId, getProject]);
 
   // Navigation handlers
   const handleBack = () => navigate('/projects');
@@ -257,11 +263,8 @@ export function ProjectViewPage() {
         />
 
         {/* KPI Strip */}
-        <ProjectKPIStrip
-          projectId={project.id}
-          refreshTrigger={kpiRefreshTrigger}
-          className="mt-6"
-        />
+        {isKpisLoading && <ProjectKPIStripSkeleton className="mt-6" />}
+        {kpis && <ProjectKPIStrip kpis={kpis} className="mt-6" />}
 
         {/* Tabbed Navigation */}
         <Tabs defaultTab="overview" hash={true} onTabChange={handleTabChange}>

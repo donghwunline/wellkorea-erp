@@ -1,27 +1,31 @@
 /**
  * Audit Log Page - Admin Only
  *
- * Follows Constitution Principle VI:
- * - Pure composition layer (composes features and UI components)
- * - No direct service calls (uses feature components instead)
- * - 4-Tier State Separation:
- *   Tier 1 (Local UI State): Detail modal open/close -> Local state in page
- *   Tier 2 (Page UI State): Filters/pagination -> useAuditLogPage hook
- *   Tier 3 (Server State): Audit log data -> AuditLogTable component
- *   Tier 4 (App Global State): Auth -> authStore via useAuth (not needed here)
- *
- * Import Policy:
- * - pages -> features: YES (via @/components/features/audit)
- * - pages -> ui: YES (via @/components/ui)
- * - pages -> shared/hooks: YES (via @/shared/hooks)
- * - pages -> services: NO (use feature components instead)
- * - pages -> stores: NO (use shared hooks instead)
+ * FSD pattern:
+ * - Pages are pure composition layer
+ * - Server state via Query Factory (auditQueries.list)
+ * - Entity UI components receive data via props
+ * - Local state for filters and modal
  */
 
-import { useState } from 'react';
-import type { AuditLogEntry } from '@/services';
-import { Alert, Badge, type BadgeVariant, Button, FilterBar, Modal, PageHeader, } from '@/components/ui';
-import { AuditLogTable, useAuditLogPage } from '@/components/features/audit';
+import { useCallback, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  type AuditLog,
+  auditQueries,
+  AuditLogTable,
+  AuditLogTableSkeleton,
+} from '@/entities/audit';
+import {
+  Badge,
+  type BadgeVariant,
+  Button,
+  Card,
+  FilterBar,
+  Modal,
+  PageHeader,
+  Pagination,
+} from '@/shared/ui';
 
 type AuditAction =
   | 'CREATE'
@@ -63,13 +67,46 @@ const ACTION_BADGE_VARIANTS: Record<string, BadgeVariant> = {
 
 const ENTITY_TYPES = ['User', 'Project', 'Quotation', 'Product', 'Invoice', 'Delivery'];
 
-export function AuditLogPage() {
-  // Page UI State (Tier 2) - from feature hook
-  const { page, setPage, filters, handleFilterChange, handleClearFilters } = useAuditLogPage();
+interface AuditFilters {
+  entityType: string;
+  action: string;
+}
 
-  // Local UI State (Tier 1) - Detail modal and error
-  const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
-  const [error, setError] = useState<string | null>(null);
+const INITIAL_FILTERS: AuditFilters = {
+  entityType: '',
+  action: '',
+};
+
+export function AuditLogPage() {
+  // Local UI State - filters, pagination, modal
+  const [page, setPage] = useState(0);
+  const [filters, setFilters] = useState<AuditFilters>(INITIAL_FILTERS);
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+
+  // Filter handlers
+  const handleFilterChange = useCallback((key: keyof AuditFilters, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPage(0); // Reset pagination on filter change
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setFilters(INITIAL_FILTERS);
+    setPage(0);
+  }, []);
+
+  // Server state via Query Factory
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery(auditQueries.list({
+    page,
+    size: 10,
+    sort: 'createdAt,desc',
+    entityType: filters.entityType || undefined,
+    action: filters.action || undefined,
+  }));
 
   // Utilities
   const formatTimestamp = (dateStr: string) => {
@@ -92,7 +129,9 @@ export function AuditLogPage() {
     }
   };
 
-  const hasActiveFilters = filters.username || filters.action;
+  const hasActiveFilters = filters.entityType || filters.action;
+  const logs = data?.data ?? [];
+  const pagination = data?.pagination ?? null;
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
@@ -105,8 +144,8 @@ export function AuditLogPage() {
       <FilterBar className="mb-6">
         <FilterBar.Field label="Entity Type">
           <FilterBar.Select
-            value={filters.username}
-            onValueChange={value => handleFilterChange('username', value)}
+            value={filters.entityType}
+            onValueChange={value => handleFilterChange('entityType', value)}
             options={ENTITY_TYPES.map(type => ({ value: type, label: type }))}
             placeholder="All Types"
           />
@@ -128,24 +167,46 @@ export function AuditLogPage() {
         )}
       </FilterBar>
 
-      {/* Error Message */}
+      {/* Error State */}
       {error && (
-        <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
-          {error}
-        </Alert>
+        <Card variant="table" className="mb-6">
+          <div className="p-8 text-center">
+            <p className="text-red-400">Failed to load audit logs</p>
+            <button
+              onClick={() => refetch()}
+              className="mt-4 text-sm text-copper-500 hover:underline"
+            >
+              Retry
+            </button>
+          </div>
+        </Card>
       )}
 
-      {/* Audit Log Table (Server State managed by feature component) */}
-      <AuditLogTable
-        page={page}
-        filters={{
-          entityType: filters.username || undefined,
-          action: filters.action || undefined,
-        }}
-        onPageChange={setPage}
-        onViewDetails={setSelectedLog}
-        onError={setError}
-      />
+      {/* Loading State */}
+      {isLoading && <AuditLogTableSkeleton />}
+
+      {/* Audit Log Table */}
+      {!isLoading && !error && (
+        <>
+          <AuditLogTable
+            logs={logs}
+            onViewDetails={setSelectedLog}
+            emptyMessage="No audit logs found."
+          />
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={page}
+              totalItems={pagination.totalElements}
+              itemsPerPage={pagination.size}
+              onPageChange={setPage}
+              isFirst={pagination.first}
+              isLast={pagination.last}
+            />
+          )}
+        </>
+      )}
 
       {/* Detail Modal */}
       {selectedLog && (
