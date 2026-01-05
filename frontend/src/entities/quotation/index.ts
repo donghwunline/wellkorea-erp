@@ -54,6 +54,9 @@ export { updateQuotation, type UpdateQuotationInput } from './api/update-quotati
 export { submitQuotation } from './api/submit-quotation';
 export { createQuotationVersion } from './api/create-quotation-version';
 
+// Command result type (shared across commands)
+export type { CommandResult } from './api/quotation.mapper';
+
 // =============================================================================
 // OTHER API FUNCTIONS
 // =============================================================================
