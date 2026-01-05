@@ -11,6 +11,7 @@ import com.wellkorea.backend.production.infrastructure.persistence.WorkProgressS
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
+import com.wellkorea.backend.shared.exception.DuplicateResourceException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +63,7 @@ public class WorkProgressCommandService {
 
         // Check for duplicate project-product combination
         if (sheetRepository.existsByProjectIdAndProductId(request.projectId(), request.productId())) {
-            throw new BusinessException("Work progress sheet already exists for this project-product combination");
+            throw new DuplicateResourceException("Work progress sheet already exists for this project-product combination");
         }
 
         // Create sheet
