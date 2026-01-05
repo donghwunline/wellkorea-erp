@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Individual work step instance within a WorkProgressSheet.
@@ -66,6 +68,20 @@ public class WorkProgressStep {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
+    /**
+     * Parent step for dependency chain.
+     * If set, this step cannot start until the parent step is COMPLETED or SKIPPED.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_step_id")
+    private WorkProgressStep parentStep;
+
+    /**
+     * Child steps that depend on this step.
+     */
+    @OneToMany(mappedBy = "parentStep")
+    private List<WorkProgressStep> childSteps = new ArrayList<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -87,11 +103,21 @@ public class WorkProgressStep {
 
     /**
      * Start work on this step. Updates status and records start time.
+     * Validates that parent step is completed first (if parent exists).
      */
     public void startWork() {
         if (this.status == StepStatus.COMPLETED || this.status == StepStatus.SKIPPED) {
             throw new IllegalStateException("Cannot start work on a completed or skipped step");
         }
+
+        // Check parent dependency - parent must be COMPLETED or SKIPPED before this step can start
+        if (parentStep != null
+                && parentStep.getStatus() != StepStatus.COMPLETED
+                && parentStep.getStatus() != StepStatus.SKIPPED) {
+            throw new IllegalStateException("Cannot start step: parent step '"
+                    + parentStep.getStepName() + "' is not completed");
+        }
+
         this.status = StepStatus.IN_PROGRESS;
         this.startedAt = Instant.now();
 
@@ -294,5 +320,21 @@ public class WorkProgressStep {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public WorkProgressStep getParentStep() {
+        return parentStep;
+    }
+
+    public void setParentStep(WorkProgressStep parentStep) {
+        this.parentStep = parentStep;
+    }
+
+    public List<WorkProgressStep> getChildSteps() {
+        return childSteps;
+    }
+
+    public void setChildSteps(List<WorkProgressStep> childSteps) {
+        this.childSteps = childSteps;
     }
 }

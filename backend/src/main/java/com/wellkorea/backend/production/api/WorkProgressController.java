@@ -11,6 +11,8 @@ import com.wellkorea.backend.production.application.WorkProgressCommandService;
 import com.wellkorea.backend.production.application.WorkProgressQueryService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,12 +45,20 @@ public class WorkProgressController {
     // ========== QUERY ENDPOINTS ==========
 
     /**
-     * Get all work progress sheets for a project.
+     * Get work progress sheets (paginated).
+     * <p>
+     * If projectId is provided, returns sheets for that project only.
+     * If projectId is not provided, returns all sheets across all projects.
+     *
+     * @param projectId Optional project ID to filter by
+     * @param pageable  Pagination parameters (page, size, sort)
+     * @return Paginated list of work progress sheets
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION', 'SALES')")
-    public ResponseEntity<ApiResponse<List<WorkProgressSheetView>>> getSheets(@RequestParam Long projectId) {
-        List<WorkProgressSheetView> sheets = queryService.getSheetsByProjectId(projectId);
+    public ResponseEntity<ApiResponse<Page<WorkProgressSheetView>>> getSheets(@RequestParam(required = false) Long projectId,
+                                                                              Pageable pageable) {
+        Page<WorkProgressSheetView> sheets = queryService.getSheets(projectId, pageable);
         return ResponseEntity.ok(ApiResponse.success(sheets));
     }
 

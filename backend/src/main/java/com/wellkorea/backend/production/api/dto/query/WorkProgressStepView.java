@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public record WorkProgressStepView(
         Long id,
         Long sheetId,
+        Long parentStepId,
         Integer stepNumber,
         String stepName,
         StepStatus status,

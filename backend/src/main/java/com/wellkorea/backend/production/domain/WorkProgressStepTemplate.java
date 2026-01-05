@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Template for manufacturing steps per product type.
@@ -34,6 +36,20 @@ public class WorkProgressStepTemplate {
 
     @Column(name = "is_outsourceable", nullable = false)
     private boolean outsourceable = false;
+
+    /**
+     * Parent template for dependency chain.
+     * If set, steps created from this template cannot start until the parent step completes.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_template_id")
+    private WorkProgressStepTemplate parentTemplate;
+
+    /**
+     * Child templates that depend on this template.
+     */
+    @OneToMany(mappedBy = "parentTemplate")
+    private List<WorkProgressStepTemplate> childTemplates = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -95,5 +111,21 @@ public class WorkProgressStepTemplate {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public WorkProgressStepTemplate getParentTemplate() {
+        return parentTemplate;
+    }
+
+    public void setParentTemplate(WorkProgressStepTemplate parentTemplate) {
+        this.parentTemplate = parentTemplate;
+    }
+
+    public List<WorkProgressStepTemplate> getChildTemplates() {
+        return childTemplates;
+    }
+
+    public void setChildTemplates(List<WorkProgressStepTemplate> childTemplates) {
+        this.childTemplates = childTemplates;
     }
 }

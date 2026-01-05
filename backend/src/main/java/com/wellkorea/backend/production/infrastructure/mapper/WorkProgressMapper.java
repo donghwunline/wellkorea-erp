@@ -19,13 +19,42 @@ import java.util.Optional;
 public interface WorkProgressMapper {
 
     /**
-     * Find all work progress sheets for a project.
+     * Find all work progress sheets across all projects (paginated).
+     *
+     * @param limit  Maximum number of results
+     * @param offset Starting offset
+     * @return List of WorkProgressSheetView with aggregated progress
+     */
+    List<WorkProgressSheetView> findAllSheets(@Param("limit") int limit, @Param("offset") long offset);
+
+    /**
+     * Count total work progress sheets across all projects.
+     *
+     * @return Total count
+     */
+    long countAllSheets();
+
+    /**
+     * Find all work progress sheets for a project (paginated).
      * Returns sheets with progress stats (without individual step details).
      *
      * @param projectId The project ID
+     * @param limit     Maximum number of results
+     * @param offset    Starting offset
      * @return List of WorkProgressSheetView with aggregated progress
      */
-    List<WorkProgressSheetView> findSheetsByProjectId(@Param("projectId") Long projectId);
+    List<WorkProgressSheetView> findSheetsByProjectId(
+            @Param("projectId") Long projectId,
+            @Param("limit") int limit,
+            @Param("offset") long offset);
+
+    /**
+     * Count total work progress sheets for a project.
+     *
+     * @param projectId The project ID
+     * @return Total count
+     */
+    long countSheetsByProjectId(@Param("projectId") Long projectId);
 
     /**
      * Find work progress sheet by ID (without steps).

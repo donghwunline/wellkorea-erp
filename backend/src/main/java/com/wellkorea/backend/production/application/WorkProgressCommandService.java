@@ -16,7 +16,9 @@ import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Command service for work progress (CQRS pattern - write operations).
@@ -149,11 +151,16 @@ public class WorkProgressCommandService {
 
     /**
      * Create steps from product type templates.
+     * Uses a two-pass approach to preserve parent-child relationships.
      */
     private void createStepsFromTemplates(WorkProgressSheet sheet, Long productTypeId) {
         List<WorkProgressStepTemplate> templates =
                 stepTemplateRepository.findByProductTypeIdOrderByStepNumber(productTypeId);
 
+        // Map template ID to created step for parent linking
+        Map<Long, WorkProgressStep> templateToStep = new HashMap<>();
+
+        // First pass: create all steps without parent relationships
         for (WorkProgressStepTemplate template : templates) {
             WorkProgressStep step = new WorkProgressStep();
             step.setSheet(sheet);
@@ -164,6 +171,19 @@ public class WorkProgressCommandService {
             step.setStatus(StepStatus.NOT_STARTED);
 
             stepRepository.save(step);
+            templateToStep.put(template.getId(), step);
+        }
+
+        // Second pass: link parent steps based on template relationships
+        for (WorkProgressStepTemplate template : templates) {
+            if (template.getParentTemplate() != null) {
+                WorkProgressStep step = templateToStep.get(template.getId());
+                WorkProgressStep parentStep = templateToStep.get(template.getParentTemplate().getId());
+                if (step != null && parentStep != null) {
+                    step.setParentStep(parentStep);
+                    stepRepository.save(step);
+                }
+            }
         }
     }
 }

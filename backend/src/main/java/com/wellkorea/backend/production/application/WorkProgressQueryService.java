@@ -5,6 +5,9 @@ import com.wellkorea.backend.production.api.dto.query.WorkProgressSheetView;
 import com.wellkorea.backend.production.api.dto.query.WorkProgressStepView;
 import com.wellkorea.backend.production.infrastructure.mapper.WorkProgressMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +28,33 @@ public class WorkProgressQueryService {
     }
 
     /**
-     * Get all work progress sheets for a project.
+     * Get work progress sheets (paginated).
+     * <p>
+     * If projectId is provided, returns sheets for that project only.
+     * If projectId is null, returns all sheets across all projects.
+     *
+     * @param projectId Optional project ID to filter by
+     * @param pageable  Pagination parameters
+     * @return Paginated list of work progress sheets
      */
-    public List<WorkProgressSheetView> getSheetsByProjectId(Long projectId) {
-        return workProgressMapper.findSheetsByProjectId(projectId);
+    public Page<WorkProgressSheetView> getSheets(Long projectId, Pageable pageable) {
+        List<WorkProgressSheetView> sheets;
+        long total;
+
+        if (projectId != null) {
+            sheets = workProgressMapper.findSheetsByProjectId(
+                    projectId,
+                    pageable.getPageSize(),
+                    pageable.getOffset());
+            total = workProgressMapper.countSheetsByProjectId(projectId);
+        } else {
+            sheets = workProgressMapper.findAllSheets(
+                    pageable.getPageSize(),
+                    pageable.getOffset());
+            total = workProgressMapper.countAllSheets();
+        }
+
+        return new PageImpl<>(sheets, pageable, total);
     }
 
     /**
