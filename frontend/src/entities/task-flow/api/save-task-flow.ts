@@ -7,6 +7,7 @@ import { httpClient, TASK_FLOW_ENDPOINTS, DomainValidationError } from '@/shared
 import type { CommandResult } from './task-flow.mapper';
 import type { TaskNode } from '../model/task-node';
 import type { TaskEdge } from '../model/task-edge';
+import { taskFlowRules } from '../model/task-flow';
 
 // ============================================================================
 // Input Types (exported for features)
@@ -85,6 +86,15 @@ function validateInput(input: SaveTaskFlowInput): void {
         'Edge target references non-existent node'
       );
     }
+  }
+
+  // Validate no cycles in DAG
+  if (taskFlowRules.hasCycle(input.edges)) {
+    throw new DomainValidationError(
+      'CYCLE_DETECTED',
+      'edges',
+      'Task flow contains circular dependencies'
+    );
   }
 }
 

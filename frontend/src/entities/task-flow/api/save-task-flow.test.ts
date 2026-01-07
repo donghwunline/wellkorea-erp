@@ -268,6 +268,59 @@ describe('saveTaskFlow', () => {
         );
       });
     });
+
+    describe('cycle detection validation', () => {
+      it('should throw CYCLE_DETECTED error for circular dependencies (A → B → A)', async () => {
+        const input = createValidInput({
+          nodes: [
+            createTestNode({ id: 'A', title: 'Task A' }),
+            createTestNode({ id: 'B', title: 'Task B' }),
+          ],
+          edges: [
+            createTestEdge({ id: 'e1', source: 'A', target: 'B' }),
+            createTestEdge({ id: 'e2', source: 'B', target: 'A' }),
+          ],
+        });
+
+        await expectAsyncValidationError(
+          () => saveTaskFlow(input),
+          'CYCLE_DETECTED',
+          'edges',
+          'circular dependencies'
+        );
+      });
+
+      it('should throw CYCLE_DETECTED error for self-loop (A → A)', async () => {
+        const input = createValidInput({
+          nodes: [createTestNode({ id: 'A', title: 'Task A' })],
+          edges: [createTestEdge({ id: 'e1', source: 'A', target: 'A' })],
+        });
+
+        await expectAsyncValidationError(
+          () => saveTaskFlow(input),
+          'CYCLE_DETECTED',
+          'edges'
+        );
+      });
+
+      it('should accept valid DAG without cycles', async () => {
+        mockPut.mockResolvedValue(createUpdatedResult(1));
+
+        const input = createValidInput({
+          nodes: [
+            createTestNode({ id: 'A', title: 'Task A' }),
+            createTestNode({ id: 'B', title: 'Task B' }),
+            createTestNode({ id: 'C', title: 'Task C' }),
+          ],
+          edges: [
+            createTestEdge({ id: 'e1', source: 'A', target: 'B' }),
+            createTestEdge({ id: 'e2', source: 'B', target: 'C' }),
+          ],
+        });
+
+        await expect(saveTaskFlow(input)).resolves.not.toThrow();
+      });
+    });
   });
 
   // ==========================================================================

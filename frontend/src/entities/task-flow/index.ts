@@ -22,6 +22,7 @@ export type { TaskFlow } from './model/task-flow';
 // ============================================================================
 
 export { taskNodeRules } from './model/task-node';
+export { taskFlowRules } from './model/task-flow';
 
 // ============================================================================
 // Query Factory
