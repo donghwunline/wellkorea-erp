@@ -3,6 +3,8 @@ package com.wellkorea.backend.production.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+import java.util.Objects;
+
 /**
  * An edge (connection) between two task nodes in the DAG (value object).
  * Represents a dependency: source node must complete before target node can start.
@@ -63,5 +65,20 @@ public class TaskEdge {
 
     public void setTargetNodeId(String targetNodeId) {
         this.targetNodeId = targetNodeId;
+    }
+
+    // ========== Equals and HashCode (value-based on edgeId) ==========
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TaskEdge taskEdge = (TaskEdge) o;
+        return Objects.equals(edgeId, taskEdge.edgeId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(edgeId);
     }
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * A task node in the DAG task flow (value object).
@@ -66,14 +67,25 @@ public class TaskNode {
     // ========== Business Methods ==========
 
     /**
-     * Check if this task is overdue.
+     * Check if this task is overdue as of the given date.
      * A task is overdue if deadline has passed and progress is not 100%.
+     *
+     * @param asOf the date to check against (for testability)
+     * @return true if overdue
      */
-    public boolean isOverdue() {
+    public boolean isOverdue(LocalDate asOf) {
         if (deadline == null) {
             return false;
         }
-        return LocalDate.now().isAfter(deadline) && progress < 100;
+        return asOf.isAfter(deadline) && progress < 100;
+    }
+
+    /**
+     * Check if this task is overdue as of today.
+     * Convenience method that delegates to {@link #isOverdue(LocalDate)}.
+     */
+    public boolean isOverdue() {
+        return isOverdue(LocalDate.now());
     }
 
     /**
@@ -146,5 +158,20 @@ public class TaskNode {
 
     public void setPositionY(Double positionY) {
         this.positionY = positionY;
+    }
+
+    // ========== Equals and HashCode (value-based on nodeId) ==========
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TaskNode taskNode = (TaskNode) o;
+        return Objects.equals(nodeId, taskNode.nodeId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nodeId);
     }
 }
