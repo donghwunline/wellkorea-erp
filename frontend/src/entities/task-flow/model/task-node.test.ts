@@ -131,11 +131,8 @@ describe('taskNodeRules', () => {
   // ==========================================================================
 
   describe('isOverdue', () => {
-    let originalDate: typeof Date;
-
     beforeEach(() => {
       // Mock Date to control "now"
-      originalDate = global.Date;
       const mockDate = new Date('2025-01-07T12:00:00Z');
       vi.setSystemTime(mockDate);
     });

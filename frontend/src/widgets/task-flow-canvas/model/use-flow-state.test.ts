@@ -7,7 +7,7 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useFlowState, type UseFlowStateOptions } from './use-flow-state';
+import { useFlowState } from './use-flow-state';
 import type { TaskFlow, TaskNode, TaskEdge } from '@/entities/task-flow';
 
 // Mock uuid
