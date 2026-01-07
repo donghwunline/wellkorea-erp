@@ -189,3 +189,16 @@ export const WORK_PROGRESS_ENDPOINTS = {
   /** GET /work-progress/project/:projectId/outsourced */
   outsourcedSteps: (projectId: number) => `/work-progress/project/${projectId}/outsourced`,
 } as const;
+
+// ============================================================================
+// Task Flow Endpoints (DAG-based task progress)
+// ============================================================================
+
+export const TASK_FLOW_ENDPOINTS = {
+  /** Base path for task flow operations */
+  /** GET /task-flows?projectId={projectId} - Query with projectId parameter */
+  BASE: '/task-flows',
+
+  /** GET/PUT /task-flows/:id */
+  byId: (id: number) => `/task-flows/${id}`,
+} as const;

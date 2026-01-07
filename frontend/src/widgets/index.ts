@@ -25,7 +25,6 @@ export {
 
 export { UserMenu, type UserMenuProps, type UserMenuItem } from './user-menu';
 
-export {
-  ProductionProgressPanel,
-  type ProductionProgressPanelProps,
-} from './production-progress-panel';
+export { TaskFlowModal, type TaskFlowModalProps } from './task-flow-modal';
+
+export { TaskFlowCanvas, type TaskFlowCanvasProps } from './task-flow-canvas';
