@@ -43,6 +43,9 @@ public class TaskFlowController {
      * @param projectId Project ID (required query parameter)
      * @return Task flow with nodes and edges
      */
+    // TODO: Potential race condition - concurrent requests may both try to create a TaskFlow.
+    //       Database unique constraint on project_id prevents duplicates, but one request will fail.
+    //       Consider: atomic getOrCreate in a dedicated service or database-level upsert.
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<TaskFlowView>> getTaskFlow(
