@@ -30,7 +30,7 @@ export interface ProductStatusBadgeProps {
 
 const STATUS_CONFIG = {
   active: { label: 'Active', variant: 'success' as const },
-  inactive: { label: 'Inactive', variant: 'default' as const },
+  inactive: { label: 'Inactive', variant: 'steel' as const },
 };
 
 /**

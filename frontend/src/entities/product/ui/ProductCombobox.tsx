@@ -26,12 +26,6 @@ export interface ProductComboboxProps {
   onChange: (productId: number | null) => void;
 
   /**
-   * Whether to show only active products.
-   * @default true
-   */
-  activeOnly?: boolean;
-
-  /**
    * Field label.
    */
   label?: string;
@@ -89,7 +83,6 @@ export interface ProductComboboxProps {
 export function ProductCombobox({
   value,
   onChange,
-  activeOnly = true,
   label,
   placeholder = 'Search products...',
   initialLabel,
@@ -104,19 +97,15 @@ export function ProductCombobox({
    */
   const loadOptions = useCallback(
     async (query: string): Promise<ComboboxOption[]> => {
-      const result: SearchProductsResult = await searchProductsApi({
-        query: query || '',
-        activeOnly,
-        limit: 20,
-      });
+      const result: SearchProductsResult = await searchProductsApi(query || '', 20);
 
-      return result.data.map(product => ({
+      return result.products.map(product => ({
         id: product.id,
         label: `[${product.sku}] ${product.name}`,
         description: product.productTypeName,
       }));
     },
-    [activeOnly]
+    []
   );
 
   /**
