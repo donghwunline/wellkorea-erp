@@ -7,6 +7,9 @@ import com.wellkorea.backend.production.application.TaskFlowCommandService;
 import com.wellkorea.backend.production.application.TaskFlowQueryService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/task-flows")
 public class TaskFlowController {
 
+    private static final Logger log = LoggerFactory.getLogger(TaskFlowController.class);
+
     private final TaskFlowCommandService commandService;
     private final TaskFlowQueryService queryService;
 
@@ -38,14 +43,15 @@ public class TaskFlowController {
 
     /**
      * Get task flow for a project.
-     * Returns empty flow structure if no flow exists yet.
+     * Creates a new empty flow if one doesn't exist yet.
+     * <p>
+     * Race condition handling: If concurrent requests both try to create a flow,
+     * the database unique constraint prevents duplicates. The losing request
+     * catches the constraint violation and retries the query.
      *
      * @param projectId Project ID (required query parameter)
      * @return Task flow with nodes and edges
      */
-    // TODO: Potential race condition - concurrent requests may both try to create a TaskFlow.
-    //       Database unique constraint on project_id prevents duplicates, but one request will fail.
-    //       Consider: atomic getOrCreate in a dedicated service or database-level upsert.
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<TaskFlowView>> getTaskFlow(
@@ -55,8 +61,18 @@ public class TaskFlowController {
 
         // If flow doesn't exist (id is null), create one
         if (flow.id() == null) {
-            Long newFlowId = commandService.createTaskFlow(projectId);
-            flow = queryService.getById(newFlowId);
+            try {
+                Long newFlowId = commandService.createTaskFlow(projectId);
+                flow = queryService.getById(newFlowId);
+            } catch (DataIntegrityViolationException e) {
+                // Another request created the flow concurrently - retry query
+                log.debug("Concurrent TaskFlow creation detected for project {}, retrying query", projectId);
+                flow = queryService.getByProjectId(projectId);
+                if (flow.id() == null) {
+                    // Should not happen - re-throw if still null
+                    throw e;
+                }
+            }
         }
 
         return ResponseEntity.ok(ApiResponse.success(flow));
@@ -85,7 +101,7 @@ public class TaskFlowController {
      * @return Command result with flow ID
      */
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PRODUCTION', 'FINANCE', 'SALES')")
     public ResponseEntity<ApiResponse<TaskFlowCommandResult>> saveTaskFlow(
             @PathVariable Long id,
             @Valid @RequestBody SaveTaskFlowRequest request
