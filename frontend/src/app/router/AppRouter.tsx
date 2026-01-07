@@ -79,7 +79,6 @@ export function AppRouter() {
         <Route path="/projects" element={<ProjectListPage />} />
         <Route path="/projects/:id" element={<ProjectViewPage />} />
         <Route path="/approvals" element={<ApprovalListPage />} />
-        <Route path="/production" element={<PlaceholderPage title="Production" />} />
         <Route path="/delivery" element={<PlaceholderPage title="Delivery" />} />
       </Route>
 

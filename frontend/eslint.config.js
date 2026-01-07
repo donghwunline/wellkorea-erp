@@ -9,11 +9,25 @@ export default defineConfig([
   globalIgnores(['dist', 'coverage']),
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'src/test/**/*'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
+  // Test files - base config without react-refresh
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
     ],
     languageOptions: {
       ecmaVersion: 2020,
@@ -72,7 +86,7 @@ export default defineConfig([
     },
   },
 
-  // ENTITIES layer: Can only import from shared
+  // ENTITIES layer: Can only import from shared (NOT other entities)
   {
     files: ['src/entities/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
@@ -82,6 +96,10 @@ export default defineConfig([
         'error',
         {
           patterns: [
+            {
+              group: ['@/entities', '@/entities/*', '@/entities/**'],
+              message: '❌ FSD: entities/ cannot import from other entities. Move shared types to @/shared/domain.',
+            },
             {
               group: ['@/features', '@/features/*', '@/features/**'],
               message: '❌ FSD: entities/ cannot import from features/. Use shared/ or define in entity.',
@@ -181,89 +199,30 @@ export default defineConfig([
   },
 
   // ==========================================================================
-  // LEGACY LAYER RESTRICTIONS (during migration)
+  // DEEP IMPORT BAN - Force barrel exports
   // ==========================================================================
-  // These rules help enforce the migration from old architecture to FSD-Lite
-  // Remove once migration is complete
-
-  // Legacy pages: Cannot import services directly (use entity query hooks)
+  // Consumers must import from slice barrel (e.g., @/entities/user)
+  // Not from internal modules (e.g., @/entities/user/model/user)
+  // Note: Internal imports within slices use relative paths, so they're not affected.
   {
-    files: ['src/pages/**/*.{ts,tsx}'],
+    files: ['src/app/**/*.{ts,tsx}', 'src/pages/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
     rules: {
-      '@typescript-eslint/no-restricted-imports': [
-        'warn', // Warning during migration
-        {
-          patterns: [
-            {
-              group: ['@/services', '@/services/*', '@/services/**'],
-              message:
-                '⚠️ Migration: Use entity query hooks (e.g., useQuotation) instead of services. See entities/quotation/query/',
-              allowTypeImports: true,
-            },
-            {
-              group: ['@/shared/stores', '@/shared/stores/*', '@/shared/stores/**'],
-              message:
-                '⚠️ Migration: Use @/shared/hooks (e.g., useAuth) instead of stores directly.',
-              allowTypeImports: true,
-            },
-            {
-              group: ['@/api', '@/api/*', '@/api/**'],
-              message: '⚠️ Migration: Use entity API (e.g., entities/quotation/api) instead of @/api.',
-              allowTypeImports: true,
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // Legacy UI components: Must stay dumb (no services/stores)
-  {
-    files: ['src/components/ui/**/*.{ts,tsx}'],
-    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
       '@typescript-eslint/no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['@/services', '@/services/*', '@/services/**'],
-              message:
-                '❌ UI components must receive data via props. Move to features/ for smart components.',
+              group: ['@/entities/*/api/*', '@/entities/*/model/*', '@/entities/*/ui/*'],
+              message: '❌ FSD: Import from @/entities/{entity} barrel, not internal modules.',
             },
             {
-              group: ['@/shared/stores', '@/shared/stores/*', '@/shared/stores/**'],
-              message:
-                '❌ UI components must receive data via props. Move to features/ for smart components.',
+              group: ['@/features/*/*/ui/*', '@/features/*/*/model/*'],
+              message: '❌ FSD: Import from @/features/{group}/{feature} barrel, not internal modules.',
             },
             {
-              group: ['@/api', '@/api/*', '@/api/**'],
-              message: '❌ UI components should not import from @/api.',
-              allowTypeImports: true,
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // Legacy feature components: Cannot import other feature components
-  {
-    files: ['src/components/features/**/*.{ts,tsx}'],
-    ignores: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-      '@typescript-eslint/no-restricted-imports': [
-        'warn', // Warning during migration
-        {
-          patterns: [
-            {
-              group: ['@/services', '@/services/*', '@/services/**'],
-              message:
-                '⚠️ Migration: Move to features/ layer and use entity query/mutation hooks.',
-              allowTypeImports: true,
+              group: ['@/widgets/*/ui/*', '@/widgets/*/model/*'],
+              message: '❌ FSD: Import from @/widgets/{widget} barrel, not internal modules.',
             },
           ],
         },

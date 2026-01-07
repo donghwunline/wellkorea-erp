@@ -38,7 +38,7 @@ function createValidInput(overrides?: Partial<CreateUserInput>): CreateUserInput
     email: 'JOHN.DOE@example.com',
     password: 'Password123!',
     fullName: 'John Doe',
-    roles: ['ROLE_USER'],
+    roles: ['ROLE_SALES'],
     ...overrides,
   };
 }
@@ -50,7 +50,7 @@ function createMockUserResponse(id = 1) {
     email: 'john.doe@example.com',
     fullName: 'John Doe',
     isActive: true,
-    roles: ['ROLE_USER'],
+    roles: ['ROLE_SALES'],
     createdAt: '2025-01-15T00:00:00Z',
     lastLoginAt: null,
   };
@@ -112,13 +112,13 @@ describe('createUser', () => {
     });
 
     it('should pass roles array as-is', async () => {
-      const input = createValidInput({ roles: ['ROLE_USER', 'ROLE_ADMIN'] });
+      const input = createValidInput({ roles: ['ROLE_SALES', 'ROLE_ADMIN'] });
 
       await createUser(input);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         '/api/users',
-        expect.objectContaining({ roles: ['ROLE_USER', 'ROLE_ADMIN'] })
+        expect.objectContaining({ roles: ['ROLE_SALES', 'ROLE_ADMIN'] })
       );
     });
 

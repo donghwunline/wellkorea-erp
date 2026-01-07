@@ -4,7 +4,7 @@
  * Data Transfer Objects for auth API endpoints.
  */
 
-import type { RoleName } from '@/entities/user';
+import type { RoleName } from '@/shared/domain';
 
 // ==================== REQUEST DTOs ====================
 

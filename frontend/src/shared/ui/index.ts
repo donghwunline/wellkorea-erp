@@ -130,3 +130,6 @@ export type { ModalActionsProps } from './modals/ModalActions';
 
 export { PageHeader } from './layout/PageHeader';
 export type { PageHeaderProps, PageHeaderTitleProps, PageHeaderActionsProps } from './layout/PageHeader';
+
+export { SectionHeader } from './layout/SectionHeader';
+export type { SectionHeaderProps } from './layout/SectionHeader';

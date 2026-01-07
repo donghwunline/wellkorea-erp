@@ -6,7 +6,9 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { productQueries, type ProductListQueryParams } from './product.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import type { Paginated } from '@/shared/lib/pagination';
+import type { ProductSummaryResponse, ProductDetailResponse, ProductTypeResponse } from './product.mapper';
 
 // Mock dependencies
 vi.mock('./get-product', () => ({
@@ -28,6 +30,62 @@ vi.mock('./product.mapper', () => ({
 // Import mocked modules
 import { getProduct, getProducts, getProductTypes } from './get-product';
 import { productMapper, productTypeMapper } from './product.mapper';
+
+// =============================================================================
+// Test Fixtures - Minimal Response objects to satisfy TypeScript
+// =============================================================================
+
+function createMockProductSummaryResponse(
+  overrides: Partial<ProductSummaryResponse> = {}
+): ProductSummaryResponse {
+  return {
+    id: 1,
+    sku: '',
+    name: '',
+    productTypeId: 1,
+    productTypeName: '',
+    unit: '',
+    isActive: true,
+    ...overrides,
+  };
+}
+
+function createMockProductDetailResponse(
+  overrides: Partial<ProductDetailResponse> = {}
+): ProductDetailResponse {
+  return {
+    id: 1,
+    sku: '',
+    name: '',
+    productTypeId: 1,
+    productTypeName: '',
+    unit: '',
+    isActive: true,
+    createdAt: '',
+    updatedAt: '',
+    ...overrides,
+  };
+}
+
+function createMockProductTypeResponse(
+  overrides: Partial<ProductTypeResponse> = {}
+): ProductTypeResponse {
+  return {
+    id: 1,
+    name: '',
+    createdAt: '',
+    ...overrides,
+  };
+}
+
+function createMockPaginatedProducts(
+  data: ProductSummaryResponse[]
+): Paginated<ProductSummaryResponse> {
+  return {
+    data,
+    pagination: { page: 0, size: 10, totalElements: data.length, totalPages: 1, first: true, last: true },
+  };
+}
 
 describe('productQueries', () => {
   beforeEach(() => {
@@ -119,14 +177,13 @@ describe('productQueries', () => {
     });
 
     it('should call getProducts with correct params in queryFn', async () => {
-      const mockResponse = {
-        data: [{ id: 1, name: 'Product 1' }],
-        pagination: { page: 0, size: 10, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedProducts([
+        createMockProductSummaryResponse({ id: 1, name: 'Product 1' }),
+      ]);
       vi.mocked(getProducts).mockResolvedValue(mockResponse);
 
       const options = productQueries.list(defaultParams);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getProducts).toHaveBeenCalledWith({
         page: 0,
@@ -137,17 +194,14 @@ describe('productQueries', () => {
     });
 
     it('should map response data using productMapper.toListItem', async () => {
-      const mockResponse = {
-        data: [
-          { id: 1, name: 'Product 1' },
-          { id: 2, name: 'Product 2' },
-        ],
-        pagination: { page: 0, size: 10, totalElements: 2, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedProducts([
+        createMockProductSummaryResponse({ id: 1, name: 'Product 1' }),
+        createMockProductSummaryResponse({ id: 2, name: 'Product 2' }),
+      ]);
       vi.mocked(getProducts).mockResolvedValue(mockResponse);
 
       const options = productQueries.list(defaultParams);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<Paginated<unknown>>(options);
 
       expect(productMapper.toListItem).toHaveBeenCalledTimes(2);
       expect(result.data).toHaveLength(2);
@@ -176,21 +230,21 @@ describe('productQueries', () => {
     });
 
     it('should call getProduct with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, name: 'Test Product' };
+      const mockResponse = createMockProductDetailResponse({ id: 123, name: 'Test Product' });
       vi.mocked(getProduct).mockResolvedValue(mockResponse);
 
       const options = productQueries.detail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getProduct).toHaveBeenCalledWith(123);
     });
 
     it('should map response using productMapper.toDomain', async () => {
-      const mockResponse = { id: 123, name: 'Test Product' };
+      const mockResponse = createMockProductDetailResponse({ id: 123, name: 'Test Product' });
       vi.mocked(getProduct).mockResolvedValue(mockResponse);
 
       const options = productQueries.detail(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(productMapper.toDomain).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });
@@ -219,13 +273,13 @@ describe('productQueries', () => {
 
     it('should call getProductTypes in queryFn', async () => {
       const mockTypes = [
-        { id: 1, name: 'Type A' },
-        { id: 2, name: 'Type B' },
+        createMockProductTypeResponse({ id: 1, name: 'Type A' }),
+        createMockProductTypeResponse({ id: 2, name: 'Type B' }),
       ];
       vi.mocked(getProductTypes).mockResolvedValue(mockTypes);
 
       const options = productQueries.allTypes();
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<unknown[]>(options);
 
       expect(getProductTypes).toHaveBeenCalled();
       expect(productTypeMapper.toDomain).toHaveBeenCalledTimes(2);
@@ -269,14 +323,13 @@ describe('productQueries', () => {
     });
 
     it('should call getProducts with search params', async () => {
-      const mockResponse = {
-        data: [{ id: 1, name: 'Widget' }],
-        pagination: { page: 0, size: 20, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedProducts([
+        createMockProductSummaryResponse({ id: 1, name: 'Widget' }),
+      ]);
       vi.mocked(getProducts).mockResolvedValue(mockResponse);
 
       const options = productQueries.search('widget', 15);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getProducts).toHaveBeenCalledWith({
         search: 'widget',

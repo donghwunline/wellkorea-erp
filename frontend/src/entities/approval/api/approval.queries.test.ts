@@ -6,7 +6,7 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { approvalQueries, type ApprovalListQueryParams } from './approval.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
 
 // Mock dependencies
 vi.mock('./get-approval', () => ({
@@ -31,6 +31,58 @@ vi.mock('./approval.mapper', () => ({
 import { getApproval, getApprovals } from './get-approval';
 import { getApprovalHistory } from './get-approval-history';
 import { approvalMapper, approvalHistoryMapper } from './approval.mapper';
+import type { ApprovalDetailsResponse, ApprovalHistoryResponse } from './approval.mapper';
+import type { Paginated } from '@/shared/lib/pagination';
+
+// =============================================================================
+// Test Fixtures - Minimal Response objects to satisfy TypeScript
+// =============================================================================
+
+function createMockApprovalResponse(
+  overrides: Partial<ApprovalDetailsResponse> = {}
+): ApprovalDetailsResponse {
+  return {
+    id: 1,
+    entityType: 'QUOTATION',
+    entityId: 1,
+    entityDescription: '',
+    currentLevel: 1,
+    totalLevels: 2,
+    status: 'PENDING',
+    submittedById: 1,
+    submittedByName: '',
+    submittedAt: '',
+    completedAt: null,
+    createdAt: '',
+    levels: null,
+    ...overrides,
+  };
+}
+
+function createMockApprovalHistoryResponse(
+  overrides: Partial<ApprovalHistoryResponse> = {}
+): ApprovalHistoryResponse {
+  return {
+    id: 1,
+    levelOrder: 1,
+    levelName: '',
+    action: 'SUBMITTED',
+    actorId: 1,
+    actorName: '',
+    comments: null,
+    createdAt: '',
+    ...overrides,
+  };
+}
+
+function createMockPaginatedApprovals(
+  data: ApprovalDetailsResponse[]
+): Paginated<ApprovalDetailsResponse> {
+  return {
+    data,
+    pagination: { page: 0, size: 10, totalElements: data.length, totalPages: 1, first: true, last: true },
+  };
+}
 
 describe('approvalQueries', () => {
   beforeEach(() => {
@@ -120,10 +172,7 @@ describe('approvalQueries', () => {
     });
 
     it('should call getApprovals with correct params in queryFn', async () => {
-      const mockResponse = {
-        data: [{ id: 1, entityType: 'QUOTATION', status: 'PENDING' }],
-        pagination: { page: 0, size: 10, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedApprovals([createMockApprovalResponse()]);
       vi.mocked(getApprovals).mockResolvedValue(mockResponse);
 
       const params: ApprovalListQueryParams = {
@@ -134,7 +183,7 @@ describe('approvalQueries', () => {
         myPending: true,
       };
       const options = approvalQueries.list(params);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getApprovals).toHaveBeenCalledWith({
         page: 0,
@@ -146,14 +195,11 @@ describe('approvalQueries', () => {
     });
 
     it('should convert null/undefined params to undefined in API call', async () => {
-      const mockResponse = {
-        data: [],
-        pagination: { page: 0, size: 10, totalElements: 0, totalPages: 0 },
-      };
+      const mockResponse = createMockPaginatedApprovals([]);
       vi.mocked(getApprovals).mockResolvedValue(mockResponse);
 
       const options = approvalQueries.list({});
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getApprovals).toHaveBeenCalledWith({
         page: 0,
@@ -165,17 +211,14 @@ describe('approvalQueries', () => {
     });
 
     it('should map response data using approvalMapper.toDomain', async () => {
-      const mockResponse = {
-        data: [
-          { id: 1, entityType: 'QUOTATION' },
-          { id: 2, entityType: 'PROJECT' },
-        ],
-        pagination: { page: 0, size: 10, totalElements: 2, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedApprovals([
+        createMockApprovalResponse({ id: 1 }),
+        createMockApprovalResponse({ id: 2 }),
+      ]);
       vi.mocked(getApprovals).mockResolvedValue(mockResponse);
 
       const options = approvalQueries.list(defaultParams);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<Paginated<unknown>>(options);
 
       expect(approvalMapper.toDomain).toHaveBeenCalledTimes(2);
       expect(result.data).toHaveLength(2);
@@ -214,21 +257,21 @@ describe('approvalQueries', () => {
     });
 
     it('should call getApproval with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, entityType: 'QUOTATION', status: 'PENDING' };
+      const mockResponse = createMockApprovalResponse({ id: 123 });
       vi.mocked(getApproval).mockResolvedValue(mockResponse);
 
       const options = approvalQueries.detail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getApproval).toHaveBeenCalledWith(123);
     });
 
     it('should map response using approvalMapper.toDomain', async () => {
-      const mockResponse = { id: 123, entityType: 'QUOTATION' };
+      const mockResponse = createMockApprovalResponse({ id: 123 });
       vi.mocked(getApproval).mockResolvedValue(mockResponse);
 
       const options = approvalQueries.detail(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(approvalMapper.toDomain).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });
@@ -262,26 +305,26 @@ describe('approvalQueries', () => {
 
     it('should call getApprovalHistory with correct id in queryFn', async () => {
       const mockResponses = [
-        { id: 1, action: 'SUBMITTED', actorName: 'John' },
-        { id: 2, action: 'APPROVED', actorName: 'Jane' },
+        createMockApprovalHistoryResponse({ id: 1, action: 'SUBMITTED' }),
+        createMockApprovalHistoryResponse({ id: 2, action: 'APPROVED' }),
       ];
       vi.mocked(getApprovalHistory).mockResolvedValue(mockResponses);
 
       const options = approvalQueries.history(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getApprovalHistory).toHaveBeenCalledWith(123);
     });
 
     it('should map each history item using approvalHistoryMapper.toDomain', async () => {
       const mockResponses = [
-        { id: 1, action: 'SUBMITTED' },
-        { id: 2, action: 'APPROVED' },
+        createMockApprovalHistoryResponse({ id: 1 }),
+        createMockApprovalHistoryResponse({ id: 2 }),
       ];
       vi.mocked(getApprovalHistory).mockResolvedValue(mockResponses);
 
       const options = approvalQueries.history(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<unknown[]>(options);
 
       expect(approvalHistoryMapper.toDomain).toHaveBeenCalledTimes(2);
       expect(result).toHaveLength(2);

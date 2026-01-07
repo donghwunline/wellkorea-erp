@@ -6,7 +6,7 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { auditQueries, type AuditListQueryParams } from './audit.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
 
 // Mock dependencies
 vi.mock('./get-audit-list', () => ({
@@ -27,6 +27,39 @@ vi.mock('./audit.mapper', () => ({
 import { getAuditList } from './get-audit-list';
 import { getAuditById } from './get-audit-by-id';
 import { auditLogMapper } from './audit.mapper';
+import type { AuditLogResponse } from './audit.mapper';
+import type { Paginated } from '@/shared/lib/pagination';
+
+// =============================================================================
+// Test Fixtures - Minimal Response objects to satisfy TypeScript
+// =============================================================================
+
+function createMockAuditLogResponse(
+  overrides: Partial<AuditLogResponse> = {}
+): AuditLogResponse {
+  return {
+    id: 1,
+    entityType: '',
+    entityId: null,
+    action: '',
+    userId: null,
+    username: null,
+    ipAddress: null,
+    changes: null,
+    metadata: null,
+    createdAt: '',
+    ...overrides,
+  };
+}
+
+function createMockPaginatedAuditLogs(
+  data: AuditLogResponse[]
+): Paginated<AuditLogResponse> {
+  return {
+    data,
+    pagination: { page: 0, size: 10, totalElements: data.length, totalPages: 1, first: true, last: true },
+  };
+}
 
 describe('auditQueries', () => {
   beforeEach(() => {
@@ -119,10 +152,7 @@ describe('auditQueries', () => {
     });
 
     it('should call getAuditList with correct params in queryFn', async () => {
-      const mockResponse = {
-        data: [{ id: 1, action: 'CREATE', entityType: 'QUOTATION' }],
-        pagination: { page: 0, size: 10, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedAuditLogs([createMockAuditLogResponse()]);
       vi.mocked(getAuditList).mockResolvedValue(mockResponse);
 
       const params: AuditListQueryParams = {
@@ -132,7 +162,7 @@ describe('auditQueries', () => {
         action: 'CREATE',
       };
       const options = auditQueries.list(params);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getAuditList).toHaveBeenCalledWith({
         page: 0,
@@ -147,17 +177,14 @@ describe('auditQueries', () => {
     });
 
     it('should map response data using auditLogMapper.toDomain', async () => {
-      const mockResponse = {
-        data: [
-          { id: 1, action: 'CREATE' },
-          { id: 2, action: 'UPDATE' },
-        ],
-        pagination: { page: 0, size: 10, totalElements: 2, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedAuditLogs([
+        createMockAuditLogResponse({ id: 1 }),
+        createMockAuditLogResponse({ id: 2 }),
+      ]);
       vi.mocked(getAuditList).mockResolvedValue(mockResponse);
 
       const options = auditQueries.list(defaultParams);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<Paginated<unknown>>(options);
 
       expect(auditLogMapper.toDomain).toHaveBeenCalledTimes(2);
       expect(result.data).toHaveLength(2);
@@ -196,21 +223,21 @@ describe('auditQueries', () => {
     });
 
     it('should call getAuditById with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, action: 'CREATE', entityType: 'PROJECT' };
+      const mockResponse = createMockAuditLogResponse({ id: 123 });
       vi.mocked(getAuditById).mockResolvedValue(mockResponse);
 
       const options = auditQueries.detail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getAuditById).toHaveBeenCalledWith(123);
     });
 
     it('should map response using auditLogMapper.toDomain', async () => {
-      const mockResponse = { id: 123, action: 'CREATE' };
+      const mockResponse = createMockAuditLogResponse({ id: 123 });
       vi.mocked(getAuditById).mockResolvedValue(mockResponse);
 
       const options = auditQueries.detail(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(auditLogMapper.toDomain).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });

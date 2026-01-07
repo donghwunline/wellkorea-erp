@@ -5,18 +5,10 @@
  * Dates are stored as ISO strings for React Query cache serialization.
  */
 
-import type { RoleName } from './role';
+import type { RoleName } from '@/shared/domain';
 
-/**
- * Core user type (for authenticated user context).
- */
-export interface User {
-  readonly id: number;
-  readonly username: string;
-  readonly email: string;
-  readonly fullName: string;
-  readonly roles: RoleName[];
-}
+// Re-export User from shared (core user type for auth)
+export type { User } from '@/shared/domain';
 
 /**
  * Extended user details (for admin user management).

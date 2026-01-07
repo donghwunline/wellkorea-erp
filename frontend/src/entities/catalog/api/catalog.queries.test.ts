@@ -10,7 +10,10 @@ import {
   type ServiceCategoryListQueryParams,
   type VendorOfferingListQueryParams,
 } from './catalog.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import type { Paginated } from '@/shared/lib/pagination';
+import type { ServiceCategory, ServiceCategoryListItem } from '../model/service-category';
+import type { VendorOffering } from '../model/vendor-offering';
 
 // Mock dependencies
 vi.mock('./get-catalog', () => ({
@@ -31,6 +34,81 @@ import {
   getCurrentOfferingsForCategory,
   getVendorOffering,
 } from './get-catalog';
+
+// =============================================================================
+// Test Fixtures - Domain types (mapping happens inside get-catalog.ts)
+// =============================================================================
+
+function createMockServiceCategoryListItem(
+  overrides: Partial<ServiceCategoryListItem> = {}
+): ServiceCategoryListItem {
+  return {
+    id: 1,
+    name: '',
+    description: null,
+    isActive: true,
+    vendorCount: 0,
+    ...overrides,
+  };
+}
+
+function createMockServiceCategory(
+  overrides: Partial<ServiceCategory> = {}
+): ServiceCategory {
+  return {
+    id: 1,
+    name: '',
+    description: null,
+    isActive: true,
+    vendorCount: 0,
+    createdAt: '',
+    updatedAt: '',
+    ...overrides,
+  };
+}
+
+function createMockVendorOffering(
+  overrides: Partial<VendorOffering> = {}
+): VendorOffering {
+  return {
+    id: 1,
+    vendorId: 1,
+    vendorName: '',
+    serviceCategoryId: 1,
+    serviceCategoryName: '',
+    vendorServiceCode: null,
+    vendorServiceName: null,
+    unitPrice: null,
+    currency: 'KRW',
+    leadTimeDays: null,
+    minOrderQuantity: null,
+    effectiveFrom: null,
+    effectiveTo: null,
+    isPreferred: false,
+    notes: null,
+    createdAt: '',
+    updatedAt: '',
+    ...overrides,
+  };
+}
+
+function createMockPaginatedCategories(
+  data: ServiceCategoryListItem[]
+): Paginated<ServiceCategoryListItem> {
+  return {
+    data,
+    pagination: { page: 0, size: 20, totalElements: data.length, totalPages: 1, first: true, last: true },
+  };
+}
+
+function createMockPaginatedOfferings(
+  data: VendorOffering[]
+): Paginated<VendorOffering> {
+  return {
+    data,
+    pagination: { page: 0, size: 20, totalElements: data.length, totalPages: 1, first: true, last: true },
+  };
+}
 
 describe('catalogQueries', () => {
   beforeEach(() => {
@@ -122,10 +200,9 @@ describe('catalogQueries', () => {
     });
 
     it('should call getServiceCategories with correct params in queryFn', async () => {
-      const mockResponse = {
-        data: [{ id: 1, name: 'Category 1' }],
-        pagination: { page: 0, size: 20, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedCategories([
+        createMockServiceCategoryListItem({ id: 1, name: 'Category 1' }),
+      ]);
       vi.mocked(getServiceCategories).mockResolvedValue(mockResponse);
 
       const params: ServiceCategoryListQueryParams = {
@@ -134,7 +211,7 @@ describe('catalogQueries', () => {
         search: 'test',
       };
       const options = catalogQueries.categoryList(params);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(getServiceCategories).toHaveBeenCalledWith({
         page: 0,
@@ -167,13 +244,13 @@ describe('catalogQueries', () => {
 
     it('should call getAllServiceCategories in queryFn', async () => {
       const mockCategories = [
-        { id: 1, name: 'Category 1' },
-        { id: 2, name: 'Category 2' },
+        createMockServiceCategoryListItem({ id: 1, name: 'Category 1' }),
+        createMockServiceCategoryListItem({ id: 2, name: 'Category 2' }),
       ];
       vi.mocked(getAllServiceCategories).mockResolvedValue(mockCategories);
 
       const options = catalogQueries.allCategories();
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(getAllServiceCategories).toHaveBeenCalled();
       expect(result).toEqual(mockCategories);
@@ -211,11 +288,11 @@ describe('catalogQueries', () => {
     });
 
     it('should call getServiceCategory with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, name: 'Test Category' };
+      const mockResponse = createMockServiceCategory({ id: 123, name: 'Test Category' });
       vi.mocked(getServiceCategory).mockResolvedValue(mockResponse);
 
       const options = catalogQueries.categoryDetail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getServiceCategory).toHaveBeenCalledWith(123);
     });
@@ -267,14 +344,13 @@ describe('catalogQueries', () => {
     });
 
     it('should call getOfferingsForCategory with correct params', async () => {
-      const mockResponse = {
-        data: [{ id: 1, vendorName: 'Vendor 1' }],
-        pagination: { page: 0, size: 20, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedOfferings([
+        createMockVendorOffering({ id: 1, vendorName: 'Vendor 1' }),
+      ]);
       vi.mocked(getOfferingsForCategory).mockResolvedValue(mockResponse);
 
       const options = catalogQueries.offeringList(123, { page: 1, size: 30 });
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getOfferingsForCategory).toHaveBeenCalledWith(123, { page: 1, size: 30 });
     });
@@ -313,13 +389,13 @@ describe('catalogQueries', () => {
 
     it('should call getCurrentOfferingsForCategory in queryFn', async () => {
       const mockOfferings = [
-        { id: 1, vendorName: 'Vendor 1' },
-        { id: 2, vendorName: 'Vendor 2' },
+        createMockVendorOffering({ id: 1, vendorName: 'Vendor 1' }),
+        createMockVendorOffering({ id: 2, vendorName: 'Vendor 2' }),
       ];
       vi.mocked(getCurrentOfferingsForCategory).mockResolvedValue(mockOfferings);
 
       const options = catalogQueries.currentOfferings(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(getCurrentOfferingsForCategory).toHaveBeenCalledWith(123);
       expect(result).toEqual(mockOfferings);
@@ -352,11 +428,11 @@ describe('catalogQueries', () => {
     });
 
     it('should call getVendorOffering with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, vendorName: 'Test Vendor' };
+      const mockResponse = createMockVendorOffering({ id: 123, vendorName: 'Test Vendor' });
       vi.mocked(getVendorOffering).mockResolvedValue(mockResponse);
 
       const options = catalogQueries.offeringDetail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getVendorOffering).toHaveBeenCalledWith(123);
     });

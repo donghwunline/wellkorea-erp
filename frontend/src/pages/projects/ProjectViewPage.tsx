@@ -30,11 +30,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ProjectSection } from '@/entities/project';
-import { projectQueries, ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton } from '@/entities/project';
+import { ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton, projectQueries, } from '@/entities/project';
+import { type TaskEdge, taskFlowQueries, type TaskNode } from '@/entities/task-flow';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import {
   Alert,
+  Button,
   Card,
   Icon,
   PageHeader,
@@ -45,7 +47,8 @@ import {
   TabPanel,
   Tabs,
 } from '@/shared/ui';
-import { QuotationDetailsPanel, ProjectRelatedNavigationGrid } from '@/widgets';
+import { ProjectRelatedNavigationGrid, QuotationDetailsPanel, TaskFlowCanvas, TaskFlowModal, } from '@/widgets';
+import { useSaveFlow } from '@/features/task-flow/save-flow'; // Tab configuration with role requirements
 
 // Tab configuration with role requirements
 interface TabConfig {
@@ -110,6 +113,31 @@ export function ProjectViewPage() {
   const triggerKpiRefresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: projectQueries.kpis() });
   }, [queryClient]);
+
+  // Task Flow data and state
+  const {
+    data: taskFlow,
+    isLoading: isTaskFlowLoading,
+    error: taskFlowError,
+  } = useQuery({
+    ...taskFlowQueries.byProject(projectId),
+    enabled: !!project,
+  });
+  const [isTaskFlowModalOpen, setIsTaskFlowModalOpen] = useState(false);
+  const { mutate: saveTaskFlow, isPending: isSavingTaskFlow } = useSaveFlow();
+
+  // Handle task flow save from inline canvas
+  const handleTaskFlowSave = useCallback(
+    (nodes: readonly TaskNode[], edges: readonly TaskEdge[]) => {
+      if (taskFlow) {
+        saveTaskFlow({ id: taskFlow.id, nodes, edges });
+      }
+    },
+    [taskFlow, saveTaskFlow]
+  );
+
+  // Check if task flow has nodes (not empty)
+  const hasTaskFlowNodes = taskFlow && taskFlow.nodes.length > 0;
 
   // Tab state from URL hash
   const [activeTab, setActiveTab] = useState(() => {
@@ -303,15 +331,73 @@ export function ProjectViewPage() {
             <QuotationDetailsPanel projectId={project.id} onDataChange={triggerKpiRefresh} />
           </TabPanel>
 
-          {/* Process Tab (Placeholder) */}
+          {/* Process Tab - Task Flow */}
           <TabPanel id="process">
-            <Card className="p-12 text-center">
-              <Icon name="cog" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-              <h3 className="text-lg font-semibold text-white">공정/진행률</h3>
-              <p className="mt-2 text-steel-500">
-                Production tracking will be available in a future release.
-              </p>
-            </Card>
+            {/* Loading State */}
+            {isTaskFlowLoading && (
+              <Card className="p-12 text-center">
+                <Spinner size="lg" label="Loading task flow" />
+                <p className="mt-4 text-steel-400">Loading task flow...</p>
+              </Card>
+            )}
+
+            {/* Error State */}
+            {taskFlowError && (
+              <Alert variant="error">Failed to load task flow: {taskFlowError.message}</Alert>
+            )}
+
+            {/* Empty State - Show button to open editor */}
+            {!isTaskFlowLoading && !taskFlowError && !hasTaskFlowNodes && (
+              <Card className="p-12 text-center">
+                <Icon name="workflow" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+                <h3 className="text-lg font-semibold text-white">공정 관리</h3>
+                <p className="mt-2 text-steel-500">
+                  No tasks have been defined for this project yet.
+                </p>
+                <Button
+                  variant="primary"
+                  className="mt-6"
+                  onClick={() => setIsTaskFlowModalOpen(true)}
+                >
+                  <Icon name="plus" className="h-4 w-4" />
+                  Open Task Flow Editor
+                </Button>
+              </Card>
+            )}
+
+            {/* Task Flow Canvas with Expand Button */}
+            {!isTaskFlowLoading && !taskFlowError && hasTaskFlowNodes && taskFlow && (
+              <Card className="overflow-hidden">
+                {/* Header with Expand Button */}
+                <div className="flex items-center justify-between border-b border-steel-700/50 bg-steel-800/50 px-4 py-3">
+                  <h3 className="font-medium text-white">공정 관리 (Task Flow)</h3>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setIsTaskFlowModalOpen(true)}
+                  >
+                    <Icon name="arrows-pointing-out" className="h-4 w-4" />
+                    Expand to Fullscreen
+                  </Button>
+                </div>
+                {/* Inline Canvas - Fixed 500px height */}
+                <div className="h-[500px]">
+                  <TaskFlowCanvas
+                    flow={taskFlow}
+                    isSaving={isSavingTaskFlow}
+                    onSave={handleTaskFlowSave}
+                  />
+                </div>
+              </Card>
+            )}
+
+            {/* Fullscreen Modal */}
+            <TaskFlowModal
+              isOpen={isTaskFlowModalOpen}
+              projectId={project.id}
+              projectName={project.projectName}
+              onClose={() => setIsTaskFlowModalOpen(false)}
+            />
           </TabPanel>
 
           {/* Outsource Tab (Placeholder) */}

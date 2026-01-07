@@ -6,7 +6,7 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { chainTemplateQueries } from './chain-template.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
 
 // Mock dependencies
 vi.mock('./get-chain-template', () => ({
@@ -23,6 +23,27 @@ vi.mock('./chain-template.mapper', () => ({
 // Import mocked modules
 import { getChainTemplate, getChainTemplates } from './get-chain-template';
 import { chainTemplateMapper } from './chain-template.mapper';
+import type { ChainTemplateResponse } from './chain-template.mapper';
+
+// =============================================================================
+// Test Fixtures - Minimal Response objects to satisfy TypeScript
+// =============================================================================
+
+function createMockChainTemplateResponse(
+  overrides: Partial<ChainTemplateResponse> = {}
+): ChainTemplateResponse {
+  return {
+    id: 1,
+    entityType: 'QUOTATION',
+    name: '',
+    description: null,
+    isActive: true,
+    levels: [],
+    createdAt: '',
+    updatedAt: '',
+    ...overrides,
+  };
+}
 
 describe('chainTemplateQueries', () => {
   beforeEach(() => {
@@ -70,38 +91,38 @@ describe('chainTemplateQueries', () => {
 
     it('should call getChainTemplates in queryFn', async () => {
       const mockResponses = [
-        { id: 1, name: 'Quotation Approval', entityType: 'QUOTATION' },
-        { id: 2, name: 'Project Approval', entityType: 'PROJECT' },
+        createMockChainTemplateResponse({ id: 1 }),
+        createMockChainTemplateResponse({ id: 2, entityType: 'PURCHASE_ORDER' }),
       ];
       vi.mocked(getChainTemplates).mockResolvedValue(mockResponses);
 
       const options = chainTemplateQueries.list();
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getChainTemplates).toHaveBeenCalled();
     });
 
     it('should map each template using chainTemplateMapper.toTemplate', async () => {
       const mockResponses = [
-        { id: 1, name: 'Template 1' },
-        { id: 2, name: 'Template 2' },
-        { id: 3, name: 'Template 3' },
+        createMockChainTemplateResponse({ id: 1 }),
+        createMockChainTemplateResponse({ id: 2 }),
+        createMockChainTemplateResponse({ id: 3 }),
       ];
       vi.mocked(getChainTemplates).mockResolvedValue(mockResponses);
 
       const options = chainTemplateQueries.list();
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<unknown[]>(options);
 
       expect(chainTemplateMapper.toTemplate).toHaveBeenCalledTimes(3);
       expect(result).toHaveLength(3);
     });
 
     it('should return mapped templates', async () => {
-      const mockResponses = [{ id: 1, name: 'Template 1' }];
+      const mockResponses = [createMockChainTemplateResponse({ id: 1 })];
       vi.mocked(getChainTemplates).mockResolvedValue(mockResponses);
 
       const options = chainTemplateQueries.list();
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<Array<{ _mapped?: boolean }>>(options);
 
       expect(result[0]).toHaveProperty('_mapped', true);
     });
@@ -138,21 +159,21 @@ describe('chainTemplateQueries', () => {
     });
 
     it('should call getChainTemplate with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, name: 'Test Template', entityType: 'QUOTATION' };
+      const mockResponse = createMockChainTemplateResponse({ id: 123 });
       vi.mocked(getChainTemplate).mockResolvedValue(mockResponse);
 
       const options = chainTemplateQueries.detail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getChainTemplate).toHaveBeenCalledWith(123);
     });
 
     it('should map response using chainTemplateMapper.toTemplate', async () => {
-      const mockResponse = { id: 123, name: 'Test Template' };
+      const mockResponse = createMockChainTemplateResponse({ id: 123 });
       vi.mocked(getChainTemplate).mockResolvedValue(mockResponse);
 
       const options = chainTemplateQueries.detail(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(chainTemplateMapper.toTemplate).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });

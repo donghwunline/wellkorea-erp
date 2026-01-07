@@ -41,7 +41,7 @@ const createTestInput = () => ({
   email: 'test@example.com',
   password: 'password123',
   fullName: 'Test User',
-  roles: ['ROLE_USER'] as const,
+  roles: ['ROLE_SALES'] as ('ROLE_ADMIN' | 'ROLE_FINANCE' | 'ROLE_PRODUCTION' | 'ROLE_SALES')[],
 });
 
 const createUserResponse = () => ({
@@ -50,7 +50,7 @@ const createUserResponse = () => ({
   email: 'test@example.com',
   fullName: 'Test User',
   isActive: true,
-  roles: ['ROLE_USER'],
+  roles: ['ROLE_SALES'],
 });
 
 describe('useCreateUser', () => {

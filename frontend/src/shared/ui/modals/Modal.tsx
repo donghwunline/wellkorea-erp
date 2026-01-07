@@ -30,7 +30,7 @@ export interface ModalProps {
   /** Modal title */
   title?: string;
   /** Modal size */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'fullscreen';
   /** Disable close on backdrop click */
   closeOnBackdrop?: boolean;
   /** Disable close on Escape key */
@@ -44,6 +44,7 @@ const sizeClasses = {
   sm: 'max-w-md',
   md: 'max-w-2xl',
   lg: 'max-w-4xl',
+  fullscreen: 'w-full h-full max-w-none max-h-none rounded-none',
 };
 
 export function Modal({
@@ -83,9 +84,14 @@ export function Modal({
 
   if (!isOpen) return null;
 
+  const isFullscreen = size === 'fullscreen';
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className={cn(
+        'fixed inset-0 z-50 flex items-center justify-center',
+        !isFullscreen && 'bg-black/60 backdrop-blur-sm'
+      )}
       onClick={handleBackdropClick}
     >
       <div
@@ -94,20 +100,30 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
         className={cn(
-          'w-full rounded-xl border border-steel-800/50 bg-steel-900 p-6 shadow-elevated',
+          'flex w-full flex-col bg-steel-900 shadow-elevated',
+          isFullscreen
+            ? 'h-full border-0 p-0'
+            : 'rounded-xl border border-steel-800/50 p-6',
           sizeClasses[size],
           className
         )}
       >
         {title && (
-          <div className="mb-6 flex items-start justify-between">
+          <div
+            className={cn(
+              'flex items-start justify-between',
+              isFullscreen
+                ? 'border-b border-steel-700/50 bg-steel-800 px-6 py-4'
+                : 'mb-6'
+            )}
+          >
             <h2 id="modal-title" className="text-xl font-semibold text-white">
               {title}
             </h2>
             <button
               onClick={onClose}
               aria-label="Close dialog"
-              className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
+              className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-700 hover:text-white"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -120,7 +136,9 @@ export function Modal({
             </button>
           </div>
         )}
-        {children}
+        <div className={cn(isFullscreen ? 'flex-1 overflow-hidden' : '')}>
+          {children}
+        </div>
       </div>
     </div>
   );

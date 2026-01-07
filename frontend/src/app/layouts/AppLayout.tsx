@@ -9,7 +9,7 @@
 
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { Icon, Navigation, type IconName } from '@/shared/ui';
+import { Icon, type IconName, Navigation } from '@/shared/ui';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import { UserMenu } from '@/widgets';
@@ -41,11 +41,6 @@ const OPERATIONS_NAV_ITEMS: NavItem[] = [
     path: '/quotations',
     icon: 'document',
     hideFromRoles: ['ROLE_PRODUCTION'], // Production users cannot see quotations
-  },
-  {
-    label: '공정',
-    path: '/production',
-    icon: 'cog',
   },
   {
     label: '출고',

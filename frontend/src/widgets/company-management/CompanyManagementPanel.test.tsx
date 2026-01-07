@@ -20,11 +20,11 @@ vi.mock('react-router-dom', async () => {
 const mockGetCompanyList = vi.hoisted(() => vi.fn());
 
 vi.mock('@/entities/company', async () => {
-  const actual = await vi.importActual('@/entities/company');
+  const actual = await vi.importActual<typeof import('@/entities/company')>('@/entities/company');
   return {
     ...actual,
     companyQueries: {
-      ...(actual as Record<string, unknown>).companyQueries,
+      ...actual.companyQueries,
       list: (params: { page: number; size: number; search: string; roleType: string | null }) => ({
         queryKey: ['companies', 'list', params],
         queryFn: () => mockGetCompanyList(params),

@@ -4,7 +4,7 @@
  * Transforms API responses to domain models.
  */
 
-import type { EntityType } from '@/entities/approval';
+import type { EntityType } from '@/shared/domain';
 import type { ChainLevel, ChainTemplate } from '../model/chain-template';
 
 // =============================================================================

@@ -5,7 +5,7 @@
  */
 
 import { httpClient, AUTH_ENDPOINTS } from '@/shared/api';
-import type { User } from '@/entities/user';
+import type { User } from '@/shared/domain';
 import type { LoginRequestDTO, LoginResponseDTO } from './auth.dto';
 import type { LoginResult } from './auth.mapper';
 import { authMapper } from './auth.mapper';

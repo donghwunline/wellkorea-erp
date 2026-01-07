@@ -6,7 +6,9 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { companyQueries, type CompanyListQueryParams } from './company.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import type { Paginated } from '@/shared/lib/pagination';
+import type { CompanySummaryResponse, CompanyDetailsResponse } from './company.mapper';
 
 // Mock dependencies
 vi.mock('./get-company', () => ({
@@ -24,6 +26,45 @@ vi.mock('./company.mapper', () => ({
 // Import mocked modules
 import { getCompany, getCompanies } from './get-company';
 import { companyMapper } from './company.mapper';
+
+// =============================================================================
+// Test Fixtures - Minimal Response objects to satisfy TypeScript
+// =============================================================================
+
+function createMockCompanySummaryResponse(
+  overrides: Partial<CompanySummaryResponse> = {}
+): CompanySummaryResponse {
+  return {
+    id: 1,
+    name: '',
+    roles: [],
+    isActive: true,
+    createdAt: '',
+    ...overrides,
+  };
+}
+
+function createMockCompanyDetailsResponse(
+  overrides: Partial<CompanyDetailsResponse> = {}
+): CompanyDetailsResponse {
+  return {
+    id: 1,
+    name: '',
+    roles: [],
+    isActive: true,
+    createdAt: '',
+    ...overrides,
+  };
+}
+
+function createMockPaginatedCompanies(
+  data: CompanySummaryResponse[]
+): Paginated<CompanySummaryResponse> {
+  return {
+    data,
+    pagination: { page: 0, size: 10, totalElements: data.length, totalPages: 1, first: true, last: true },
+  };
+}
 
 describe('companyQueries', () => {
   beforeEach(() => {
@@ -109,14 +150,13 @@ describe('companyQueries', () => {
     });
 
     it('should call getCompanies with correct params in queryFn', async () => {
-      const mockResponse = {
-        data: [{ id: 1, name: 'Test Company' }],
-        pagination: { page: 0, size: 10, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedCompanies([
+        createMockCompanySummaryResponse({ id: 1, name: 'Test Company' }),
+      ]);
       vi.mocked(getCompanies).mockResolvedValue(mockResponse);
 
       const options = companyQueries.list(defaultParams);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getCompanies).toHaveBeenCalledWith({
         page: 0,
@@ -127,17 +167,14 @@ describe('companyQueries', () => {
     });
 
     it('should map response data using companyMapper.toListItem', async () => {
-      const mockResponse = {
-        data: [
-          { id: 1, name: 'Company 1' },
-          { id: 2, name: 'Company 2' },
-        ],
-        pagination: { page: 0, size: 10, totalElements: 2, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedCompanies([
+        createMockCompanySummaryResponse({ id: 1, name: 'Company 1' }),
+        createMockCompanySummaryResponse({ id: 2, name: 'Company 2' }),
+      ]);
       vi.mocked(getCompanies).mockResolvedValue(mockResponse);
 
       const options = companyQueries.list(defaultParams);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<Paginated<unknown>>(options);
 
       expect(companyMapper.toListItem).toHaveBeenCalledTimes(2);
       expect(result.data).toHaveLength(2);
@@ -176,21 +213,21 @@ describe('companyQueries', () => {
     });
 
     it('should call getCompany with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, name: 'Test Company' };
+      const mockResponse = createMockCompanyDetailsResponse({ id: 123, name: 'Test Company' });
       vi.mocked(getCompany).mockResolvedValue(mockResponse);
 
       const options = companyQueries.detail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getCompany).toHaveBeenCalledWith(123);
     });
 
     it('should map response using companyMapper.toDomain', async () => {
-      const mockResponse = { id: 123, name: 'Test Company' };
+      const mockResponse = createMockCompanyDetailsResponse({ id: 123, name: 'Test Company' });
       vi.mocked(getCompany).mockResolvedValue(mockResponse);
 
       const options = companyQueries.detail(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(companyMapper.toDomain).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });

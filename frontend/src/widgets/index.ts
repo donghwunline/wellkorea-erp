@@ -24,3 +24,7 @@ export {
 } from './project-related-navigation-grid';
 
 export { UserMenu, type UserMenuProps, type UserMenuItem } from './user-menu';
+
+export { TaskFlowModal, type TaskFlowModalProps } from './task-flow-modal';
+
+export { TaskFlowCanvas, type TaskFlowCanvasProps } from './task-flow-canvas';

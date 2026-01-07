@@ -29,7 +29,7 @@ function createMockProjectDetailsResponse(
     dueDate: '2025-02-28',
     internalOwnerId: 10,
     internalOwnerName: 'Jane Smith',
-    status: 'IN_PROGRESS',
+    status: 'ACTIVE',
     createdById: 1,
     createdByName: 'Admin User',
     createdAt: '2025-01-15T00:00:00Z',
@@ -49,7 +49,7 @@ function createMockProjectListItemResponse(
     projectName: 'Test Project',
     requesterName: 'John Doe',
     dueDate: '2025-02-28',
-    status: 'IN_PROGRESS',
+    status: 'ACTIVE',
     createdAt: '2025-01-15T00:00:00Z',
     updatedAt: '2025-01-15T00:00:00Z',
     ...overrides,
@@ -92,7 +92,7 @@ describe('projectMapper', () => {
       expect(result.jobCode).toBe('WK22025-000001-20250115');
       expect(result.customerId).toBe(100);
       expect(result.internalOwnerId).toBe(10);
-      expect(result.status).toBe('IN_PROGRESS');
+      expect(result.status).toBe('ACTIVE');
     });
 
     it('should cast status string to ProjectStatus', () => {

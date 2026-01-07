@@ -5,6 +5,7 @@
  * - Server state via Query Factory (productQueries)
  * - Local state for filters and pagination
  * - Entity-first approach
+ * - Uses Entity UI components (ProductTable)
  *
  * Features:
  * - Paginated product list with search
@@ -14,7 +15,7 @@
 
 import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { productQueries } from '@/entities/product';
+import { productQueries, ProductTable } from '@/entities/product';
 import { useAuth } from '@/entities/auth';
 import { Button, Card, Pagination, SearchBar, Spinner } from '@/shared/ui';
 
@@ -65,16 +66,6 @@ export function ProductsTab() {
   const products = productsData?.data ?? [];
   const pagination = productsData?.pagination;
   const loading = productsLoading || typesLoading;
-
-  // Format price
-  const formatPrice = (price: number | null | undefined): string => {
-    if (price == null) return '-';
-    return new Intl.NumberFormat('ko-KR', {
-      style: 'currency',
-      currency: 'KRW',
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
 
   return (
     <div className="space-y-6">
@@ -131,85 +122,29 @@ export function ProductsTab() {
       )}
 
       {/* Product List */}
-      {!loading && !productsError && products.length === 0 && (
-        <Card className="p-8 text-center text-steel-400">
-          <p>No products found.</p>
-          {canManage && (
-            <p className="mt-2">Click &quot;Add Product&quot; to create your first product.</p>
-          )}
-        </Card>
-      )}
-
-      {!loading && !productsError && products.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-steel-700/50">
-          <table className="min-w-full divide-y divide-steel-700/50">
-            <thead className="bg-steel-800/60">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                  SKU
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                  Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                  Base Price
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                  Unit
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                  Status
-                </th>
-                {canManage && (
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                    Actions
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-steel-700/30 bg-steel-900/40">
-              {products.map(product => (
-                <tr key={product.id} className="hover:bg-steel-800/30">
-                  <td className="whitespace-nowrap px-4 py-3 font-mono text-sm text-copper-400">
-                    {product.sku}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-white">{product.name}</td>
-                  <td className="px-4 py-3 text-sm text-steel-300">{product.productTypeName}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-white">
-                    {formatPrice(product.baseUnitPrice)}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
-                    {product.unit}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-center">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                        product.isActive
-                          ? 'bg-emerald-500/10 text-emerald-400'
-                          : 'bg-red-500/10 text-red-400'
-                      }`}
+      {!loading && !productsError && (
+        <>
+          <ProductTable
+            products={products}
+            emptyMessage={
+              canManage
+                ? 'No products found. Click "Add Product" to create your first product.'
+                : 'No products found.'
+            }
+            renderActions={
+              canManage
+                ? product => (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => alert(`Edit product ${product.id} - TODO`)}
                     >
-                      {product.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  {canManage && (
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => alert(`Edit product ${product.id} - TODO`)}
-                      >
-                        Edit
-                      </Button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      Edit
+                    </Button>
+                  )
+                : undefined
+            }
+          />
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
@@ -223,7 +158,7 @@ export function ProductsTab() {
               itemLabel="products"
             />
           )}
-        </div>
+        </>
       )}
     </div>
   );

@@ -130,6 +130,7 @@ vi.mock('@/widgets', () => ({
     navigationGridProps = props;
     return <div data-testid="navigation-grid">Project ID: {props.projectId as number}</div>;
   }),
+  TaskFlowModal: vi.fn(() => null),
 }));
 
 // Mock UI tab components to simplify testing

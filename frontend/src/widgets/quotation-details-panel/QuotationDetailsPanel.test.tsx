@@ -71,11 +71,11 @@ const mockGetQuotationList = vi.hoisted(() => vi.fn());
 const mockGetQuotationDetail = vi.hoisted(() => vi.fn());
 
 vi.mock('@/entities/quotation', async () => {
-  const actual = await vi.importActual('@/entities/quotation');
+  const actual = await vi.importActual<typeof import('@/entities/quotation')>('@/entities/quotation');
   return {
     ...actual,
     quotationQueries: {
-      ...(actual as Record<string, unknown>).quotationQueries,
+      ...actual.quotationQueries,
       list: (params: { page: number; size: number; search: string; status: string | null; projectId: number }) => ({
         queryKey: ['quotations', 'list', params],
         queryFn: () => mockGetQuotationList(params),

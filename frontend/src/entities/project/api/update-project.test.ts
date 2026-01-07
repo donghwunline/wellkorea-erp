@@ -206,7 +206,7 @@ describe('updateProject', () => {
         projectName: 'Updated Project',
         requesterName: 'Jane Doe',
         dueDate: '2025-06-30',
-        status: 'IN_PROGRESS',
+        status: 'ACTIVE',
       };
 
       await updateProject(projectId, input);
@@ -215,7 +215,7 @@ describe('updateProject', () => {
         projectName: 'Updated Project',
         requesterName: 'Jane Doe',
         dueDate: '2025-06-30',
-        status: 'IN_PROGRESS',
+        status: 'ACTIVE',
       });
     });
   });
