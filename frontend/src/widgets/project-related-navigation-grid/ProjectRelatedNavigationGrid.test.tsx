@@ -25,11 +25,11 @@ vi.mock('@/entities/auth', () => ({
 const mockGetSummary = vi.hoisted(() => vi.fn());
 
 vi.mock('@/entities/project', async () => {
-  const actual = await vi.importActual('@/entities/project');
+  const actual = await vi.importActual<typeof import('@/entities/project')>('@/entities/project');
   return {
     ...actual,
     projectQueries: {
-      ...(actual as Record<string, unknown>).projectQueries,
+      ...actual.projectQueries,
       summary: (projectId: number) => ({
         queryKey: ['projects', 'summary', projectId],
         queryFn: () => mockGetSummary(projectId),

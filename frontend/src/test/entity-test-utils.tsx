@@ -17,7 +17,7 @@
  * ```
  */
 
-import { vi, type Mock } from 'vitest';
+import { vi, expect, type Mock } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DomainValidationError } from '@/shared/lib/errors/domain-validation-error';
 import type { ReactNode } from 'react';
@@ -165,10 +165,15 @@ export function createQueryWrapper(
 
 /**
  * Minimal interface for queryOptions result.
+ * Compatible with TanStack Query v5 queryOptions() return type.
+ *
+ * Uses permissive types to work with any queryOptions() return value.
+ * The queryFn type is intentionally loose to avoid complex generic inference issues.
  */
-interface QueryOptionsLike<T = unknown> {
+interface QueryOptionsLike {
   queryKey: readonly unknown[];
-  queryFn: () => Promise<T>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  queryFn?: (context: any) => any;
 }
 
 /**
@@ -180,12 +185,35 @@ interface QueryOptionsLike<T = unknown> {
  * expectValidQueryOptions(options);
  * ```
  */
-export function expectValidQueryOptions<T>(options: QueryOptionsLike<T>): void {
+export function expectValidQueryOptions(options: QueryOptionsLike): void {
   expect(options).toHaveProperty('queryKey');
   expect(options).toHaveProperty('queryFn');
   expect(Array.isArray(options.queryKey)).toBe(true);
   expect(options.queryKey.length).toBeGreaterThan(0);
   expect(typeof options.queryFn).toBe('function');
+}
+
+/**
+ * Helper to invoke queryFn from queryOptions with minimal context.
+ * Use this in tests instead of calling options.queryFn() directly.
+ *
+ * @example
+ * ```typescript
+ * const options = quotationQueries.detail(1);
+ * const result = await invokeQueryFn(options);
+ * ```
+ */
+export async function invokeQueryFn<T = unknown>(options: QueryOptionsLike): Promise<T> {
+  if (!options.queryFn) {
+    throw new Error('queryFn is undefined');
+  }
+  // Provide minimal context for queryFn - using any to avoid strict type requirements
+  const context = {
+    queryKey: options.queryKey,
+    signal: new AbortController().signal,
+    meta: undefined,
+  };
+  return options.queryFn(context) as T;
 }
 
 /**

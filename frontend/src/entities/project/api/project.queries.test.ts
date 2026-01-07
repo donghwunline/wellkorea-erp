@@ -6,7 +6,9 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { projectQueries, type ProjectListQueryParams } from './project.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import type { Paginated } from '@/shared/lib/pagination';
+import type { ProjectListItemResponse, ProjectDetailsResponse } from './project.mapper';
 
 // Mock dependencies
 vi.mock('./get-project', () => ({
@@ -33,6 +35,59 @@ vi.mock('./project-summary.api', () => ({
 import { getProject, getProjectByJobCode, getProjects } from './get-project';
 import { projectMapper } from './project.mapper';
 import { projectSummaryApi } from './project-summary.api';
+
+// =============================================================================
+// Test Fixtures - Minimal Response objects to satisfy TypeScript
+// =============================================================================
+
+function createMockProjectListItemResponse(
+  overrides: Partial<ProjectListItemResponse> = {}
+): ProjectListItemResponse {
+  return {
+    id: 1,
+    jobCode: '',
+    customerId: 1,
+    customerName: null,
+    projectName: '',
+    requesterName: null,
+    dueDate: '',
+    status: 'DRAFT',
+    createdAt: '',
+    updatedAt: '',
+    ...overrides,
+  };
+}
+
+function createMockProjectDetailsResponse(
+  overrides: Partial<ProjectDetailsResponse> = {}
+): ProjectDetailsResponse {
+  return {
+    id: 1,
+    jobCode: '',
+    customerId: 1,
+    customerName: null,
+    projectName: '',
+    requesterName: null,
+    dueDate: '',
+    internalOwnerId: 1,
+    internalOwnerName: null,
+    status: 'DRAFT',
+    createdById: 1,
+    createdByName: null,
+    createdAt: '',
+    updatedAt: '',
+    ...overrides,
+  };
+}
+
+function createMockPaginatedProjects(
+  data: ProjectListItemResponse[]
+): Paginated<ProjectListItemResponse> {
+  return {
+    data,
+    pagination: { page: 0, size: 10, totalElements: data.length, totalPages: 1, first: true, last: true },
+  };
+}
 
 describe('projectQueries', () => {
   beforeEach(() => {
@@ -103,7 +158,7 @@ describe('projectQueries', () => {
         page: 1,
         size: 20,
         search: 'test',
-        status: 'IN_PROGRESS',
+        status: 'ACTIVE',
       };
       const options = projectQueries.list(params);
 
@@ -113,7 +168,7 @@ describe('projectQueries', () => {
         1,
         20,
         'test',
-        'IN_PROGRESS',
+        'ACTIVE',
       ]);
     });
 
@@ -136,14 +191,13 @@ describe('projectQueries', () => {
     });
 
     it('should call getProjects with correct params in queryFn', async () => {
-      const mockResponse = {
-        data: [{ id: 1, projectName: 'Test Project' }],
-        pagination: { page: 0, size: 10, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedProjects([
+        createMockProjectListItemResponse({ id: 1, projectName: 'Test Project' }),
+      ]);
       vi.mocked(getProjects).mockResolvedValue(mockResponse);
 
       const options = projectQueries.list(defaultParams);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getProjects).toHaveBeenCalledWith({
         page: 0,
@@ -154,17 +208,14 @@ describe('projectQueries', () => {
     });
 
     it('should map response data using projectMapper.toListItem', async () => {
-      const mockResponse = {
-        data: [
-          { id: 1, projectName: 'Project 1' },
-          { id: 2, projectName: 'Project 2' },
-        ],
-        pagination: { page: 0, size: 10, totalElements: 2, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedProjects([
+        createMockProjectListItemResponse({ id: 1, projectName: 'Project 1' }),
+        createMockProjectListItemResponse({ id: 2, projectName: 'Project 2' }),
+      ]);
       vi.mocked(getProjects).mockResolvedValue(mockResponse);
 
       const options = projectQueries.list(defaultParams);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<Paginated<unknown>>(options);
 
       expect(projectMapper.toListItem).toHaveBeenCalledTimes(2);
       expect(result.data).toHaveLength(2);
@@ -193,21 +244,21 @@ describe('projectQueries', () => {
     });
 
     it('should call getProject with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, projectName: 'Test' };
+      const mockResponse = createMockProjectDetailsResponse({ id: 123, projectName: 'Test' });
       vi.mocked(getProject).mockResolvedValue(mockResponse);
 
       const options = projectQueries.detail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getProject).toHaveBeenCalledWith(123);
     });
 
     it('should map response using projectMapper.toDomain', async () => {
-      const mockResponse = { id: 123, projectName: 'Test Project' };
+      const mockResponse = createMockProjectDetailsResponse({ id: 123, projectName: 'Test Project' });
       vi.mocked(getProject).mockResolvedValue(mockResponse);
 
       const options = projectQueries.detail(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(projectMapper.toDomain).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });
@@ -244,21 +295,21 @@ describe('projectQueries', () => {
     });
 
     it('should call getProjectByJobCode with correct jobCode in queryFn', async () => {
-      const mockResponse = { id: 123, jobCode: 'WK2-001-20250101' };
+      const mockResponse = createMockProjectDetailsResponse({ id: 123, jobCode: 'WK2-001-20250101' });
       vi.mocked(getProjectByJobCode).mockResolvedValue(mockResponse);
 
       const options = projectQueries.byJobCode('WK2-001-20250101');
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getProjectByJobCode).toHaveBeenCalledWith('WK2-001-20250101');
     });
 
     it('should map response using projectMapper.toDomain', async () => {
-      const mockResponse = { id: 123, jobCode: 'WK2-001-20250101' };
+      const mockResponse = createMockProjectDetailsResponse({ id: 123, jobCode: 'WK2-001-20250101' });
       vi.mocked(getProjectByJobCode).mockResolvedValue(mockResponse);
 
       const options = projectQueries.byJobCode('WK2-001-20250101');
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(projectMapper.toDomain).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });
@@ -290,7 +341,7 @@ describe('projectQueries', () => {
       vi.mocked(projectSummaryApi.getSummary).mockResolvedValue(mockSummary);
 
       const options = projectQueries.summary(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(projectSummaryApi.getSummary).toHaveBeenCalledWith(123);
       expect(result).toEqual(mockSummary);
@@ -318,11 +369,16 @@ describe('projectQueries', () => {
     });
 
     it('should call projectSummaryApi.getKPIs with correct projectId', async () => {
-      const mockKPI = { progressPercent: 50, pendingApprovals: 2 };
+      const mockKPI = {
+        progressPercent: 50,
+        pendingApprovals: 2,
+        missingDocuments: 1,
+        accountsReceivable: 1000000,
+      };
       vi.mocked(projectSummaryApi.getKPIs).mockResolvedValue(mockKPI);
 
       const options = projectQueries.kpi(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(projectSummaryApi.getKPIs).toHaveBeenCalledWith(123);
       expect(result).toEqual(mockKPI);

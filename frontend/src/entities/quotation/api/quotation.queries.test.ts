@@ -6,7 +6,9 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { quotationQueries, type QuotationListQueryParams } from './quotation.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import type { Paginated } from '@/shared/lib/pagination';
+import type { QuotationDetailsResponse } from './quotation.mapper';
 
 // Mock dependencies
 vi.mock('./get-quotation', () => ({
@@ -24,6 +26,48 @@ vi.mock('./quotation.mapper', () => ({
 // Import mocked modules
 import { getQuotation, getQuotations } from './get-quotation';
 import { quotationMapper } from './quotation.mapper';
+
+// =============================================================================
+// Test Fixtures - Minimal Response objects to satisfy TypeScript
+// =============================================================================
+
+function createMockQuotationDetailsResponse(
+  overrides: Partial<QuotationDetailsResponse> = {}
+): QuotationDetailsResponse {
+  return {
+    id: 1,
+    projectId: 1,
+    projectName: '',
+    jobCode: '',
+    version: 1,
+    status: 'DRAFT',
+    quotationDate: '',
+    validityDays: 30,
+    expiryDate: '',
+    totalAmount: 0,
+    notes: null,
+    createdById: 1,
+    createdByName: '',
+    submittedAt: null,
+    approvedAt: null,
+    approvedById: null,
+    approvedByName: null,
+    rejectionReason: null,
+    createdAt: '',
+    updatedAt: '',
+    lineItems: null,
+    ...overrides,
+  };
+}
+
+function createMockPaginatedQuotations(
+  data: QuotationDetailsResponse[]
+): Paginated<QuotationDetailsResponse> {
+  return {
+    data,
+    pagination: { page: 0, size: 10, totalElements: data.length, totalPages: 1, first: true, last: true },
+  };
+}
 
 describe('quotationQueries', () => {
   beforeEach(() => {
@@ -113,14 +157,13 @@ describe('quotationQueries', () => {
     });
 
     it('should call getQuotations with correct params in queryFn', async () => {
-      const mockResponse = {
-        data: [{ id: 1, status: 'DRAFT' }],
-        pagination: { page: 0, size: 10, totalElements: 1, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedQuotations([
+        createMockQuotationDetailsResponse({ id: 1, status: 'DRAFT' }),
+      ]);
       vi.mocked(getQuotations).mockResolvedValue(mockResponse);
 
       const options = quotationQueries.list(defaultParams);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getQuotations).toHaveBeenCalledWith({
         page: 0,
@@ -132,14 +175,14 @@ describe('quotationQueries', () => {
     });
 
     it('should map response data using quotationMapper.responseToListItem', async () => {
-      const mockResponse = {
-        data: [{ id: 1, status: 'DRAFT' }, { id: 2, status: 'PENDING' }],
-        pagination: { page: 0, size: 10, totalElements: 2, totalPages: 1 },
-      };
+      const mockResponse = createMockPaginatedQuotations([
+        createMockQuotationDetailsResponse({ id: 1, status: 'DRAFT' }),
+        createMockQuotationDetailsResponse({ id: 2, status: 'PENDING' }),
+      ]);
       vi.mocked(getQuotations).mockResolvedValue(mockResponse);
 
       const options = quotationQueries.list(defaultParams);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<Paginated<unknown>>(options);
 
       expect(quotationMapper.responseToListItem).toHaveBeenCalledTimes(2);
       expect(result.data).toHaveLength(2);
@@ -178,21 +221,21 @@ describe('quotationQueries', () => {
     });
 
     it('should call getQuotation with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, status: 'DRAFT' };
+      const mockResponse = createMockQuotationDetailsResponse({ id: 123, status: 'DRAFT' });
       vi.mocked(getQuotation).mockResolvedValue(mockResponse);
 
       const options = quotationQueries.detail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getQuotation).toHaveBeenCalledWith(123);
     });
 
     it('should map response using quotationMapper.toDomain', async () => {
-      const mockResponse = { id: 123, status: 'DRAFT', projectName: 'Test' };
+      const mockResponse = createMockQuotationDetailsResponse({ id: 123, status: 'DRAFT', projectName: 'Test' });
       vi.mocked(getQuotation).mockResolvedValue(mockResponse);
 
       const options = quotationQueries.detail(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(quotationMapper.toDomain).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });

@@ -21,7 +21,7 @@ function createMockUserDetailsResponse(
     email: 'JOHN.DOE@example.com',
     fullName: 'John Doe',
     isActive: true,
-    roles: ['ROLE_USER'],
+    roles: ['ROLE_SALES'],
     createdAt: '2025-01-15T00:00:00Z',
     lastLoginAt: '2025-01-20T10:30:00Z',
     ...overrides,
@@ -86,11 +86,11 @@ describe('userMapper', () => {
 
     it('should preserve roles array', () => {
       const response = createMockUserDetailsResponse({
-        roles: ['ROLE_USER', 'ROLE_ADMIN'],
+        roles: ['ROLE_SALES', 'ROLE_ADMIN'],
       });
       const result = userMapper.toDomain(response);
 
-      expect(result.roles).toEqual(['ROLE_USER', 'ROLE_ADMIN']);
+      expect(result.roles).toEqual(['ROLE_SALES', 'ROLE_ADMIN']);
     });
 
     it('should handle null lastLoginAt', () => {
@@ -201,11 +201,11 @@ describe('userMapper', () => {
 
     it('should preserve roles array', () => {
       const response = createMockUserDetailsResponse({
-        roles: ['ROLE_ADMIN', 'ROLE_MANAGER'],
+        roles: ['ROLE_ADMIN', 'ROLE_FINANCE'],
       });
       const result = userMapper.responseToListItem(response);
 
-      expect(result.roles).toEqual(['ROLE_ADMIN', 'ROLE_MANAGER']);
+      expect(result.roles).toEqual(['ROLE_ADMIN', 'ROLE_FINANCE']);
     });
 
     it('should handle null lastLoginAt', () => {

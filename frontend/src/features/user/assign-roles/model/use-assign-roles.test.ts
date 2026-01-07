@@ -39,7 +39,7 @@ function resetMocks() {
 const createAssignRolesInput = () => ({
   id: 1,
   data: {
-    roles: ['ROLE_ADMIN', 'ROLE_USER'] as const,
+    roles: ['ROLE_ADMIN', 'ROLE_SALES'] as ('ROLE_ADMIN' | 'ROLE_FINANCE' | 'ROLE_PRODUCTION' | 'ROLE_SALES')[],
   },
 });
 

@@ -6,7 +6,8 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { userQueries, type UserListQueryParams } from './user.queries';
-import { expectValidQueryOptions, expectQueryKey } from '@/test/entity-test-utils';
+import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import type { Paginated } from '@/shared/lib/pagination';
 
 // Mock dependencies
 vi.mock('./get-user-list', () => ({
@@ -124,8 +125,8 @@ describe('userQueries', () => {
 
     it('should call getUserList with correct params in queryFn', async () => {
       const mockResponse = {
-        data: [{ id: 1, username: 'john' }],
-        pagination: { page: 0, size: 10, totalElements: 1, totalPages: 1 },
+        data: [{ id: 1, username: 'john', email: 'john@test.com', fullName: 'John Doe', isActive: true, roles: [], createdAt: '', lastLoginAt: null }],
+        pagination: { page: 0, size: 10, totalElements: 1, totalPages: 1, first: true, last: true },
       };
       vi.mocked(getUserList).mockResolvedValue(mockResponse);
 
@@ -136,7 +137,7 @@ describe('userQueries', () => {
         sort: 'fullName,asc',
       };
       const options = userQueries.list(params);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getUserList).toHaveBeenCalledWith({
         page: 1,
@@ -149,12 +150,12 @@ describe('userQueries', () => {
     it('should convert empty search/sort to undefined in queryFn', async () => {
       const mockResponse = {
         data: [],
-        pagination: { page: 0, size: 10, totalElements: 0, totalPages: 0 },
+        pagination: { page: 0, size: 10, totalElements: 0, totalPages: 0, first: true, last: true },
       };
       vi.mocked(getUserList).mockResolvedValue(mockResponse);
 
       const options = userQueries.list({ search: '', sort: '' });
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getUserList).toHaveBeenCalledWith({
         page: 0,
@@ -167,15 +168,15 @@ describe('userQueries', () => {
     it('should map response data using userMapper.toDomain', async () => {
       const mockResponse = {
         data: [
-          { id: 1, username: 'john' },
-          { id: 2, username: 'jane' },
+          { id: 1, username: 'john', email: 'john@test.com', fullName: 'John Doe', isActive: true, roles: [], createdAt: '', lastLoginAt: null },
+          { id: 2, username: 'jane', email: 'jane@test.com', fullName: 'Jane Doe', isActive: true, roles: [], createdAt: '', lastLoginAt: null },
         ],
-        pagination: { page: 0, size: 10, totalElements: 2, totalPages: 1 },
+        pagination: { page: 0, size: 10, totalElements: 2, totalPages: 1, first: true, last: true },
       };
       vi.mocked(getUserList).mockResolvedValue(mockResponse);
 
       const options = userQueries.list(defaultParams);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn<Paginated<unknown>>(options);
 
       expect(userMapper.toDomain).toHaveBeenCalledTimes(2);
       expect(result.data).toHaveLength(2);
@@ -212,21 +213,21 @@ describe('userQueries', () => {
     });
 
     it('should call getUserById with correct id in queryFn', async () => {
-      const mockResponse = { id: 123, username: 'john' };
+      const mockResponse = { id: 123, username: 'john', email: 'john@test.com', fullName: 'John Doe', isActive: true, roles: [], createdAt: '', lastLoginAt: null };
       vi.mocked(getUserById).mockResolvedValue(mockResponse);
 
       const options = userQueries.detail(123);
-      await options.queryFn();
+      await invokeQueryFn(options);
 
       expect(getUserById).toHaveBeenCalledWith(123);
     });
 
     it('should map response using userMapper.toDomain', async () => {
-      const mockResponse = { id: 123, username: 'john' };
+      const mockResponse = { id: 123, username: 'john', email: 'john@test.com', fullName: 'John Doe', isActive: true, roles: [], createdAt: '', lastLoginAt: null };
       vi.mocked(getUserById).mockResolvedValue(mockResponse);
 
       const options = userQueries.detail(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(userMapper.toDomain).toHaveBeenCalledWith(mockResponse);
       expect(result).toEqual({ ...mockResponse, _mapped: true });
@@ -275,7 +276,7 @@ describe('userQueries', () => {
       vi.mocked(getCustomerAssignments).mockResolvedValue(mockCustomerIds);
 
       const options = userQueries.customers(123);
-      const result = await options.queryFn();
+      const result = await invokeQueryFn(options);
 
       expect(getCustomerAssignments).toHaveBeenCalledWith(123);
       expect(result).toEqual([1, 2, 3]);
