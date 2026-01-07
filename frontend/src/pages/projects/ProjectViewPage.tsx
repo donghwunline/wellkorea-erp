@@ -30,8 +30,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ProjectSection } from '@/entities/project';
-import { projectQueries, ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton } from '@/entities/project';
-import { taskFlowQueries, type TaskNode, type TaskEdge } from '@/entities/task-flow';
+import { ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton, projectQueries, } from '@/entities/project';
+import { type TaskEdge, taskFlowQueries, type TaskNode } from '@/entities/task-flow';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import {
@@ -47,8 +47,8 @@ import {
   TabPanel,
   Tabs,
 } from '@/shared/ui';
-import { QuotationDetailsPanel, ProjectRelatedNavigationGrid, TaskFlowCanvas, TaskFlowModal } from '@/widgets';
-import { useSaveFlow } from '@/features/task-flow/save-flow';
+import { ProjectRelatedNavigationGrid, QuotationDetailsPanel, TaskFlowCanvas, TaskFlowModal, } from '@/widgets';
+import { useSaveFlow } from '@/features/task-flow/save-flow'; // Tab configuration with role requirements
 
 // Tab configuration with role requirements
 interface TabConfig {
@@ -115,7 +115,11 @@ export function ProjectViewPage() {
   }, [queryClient]);
 
   // Task Flow data and state
-  const { data: taskFlow, isLoading: isTaskFlowLoading, error: taskFlowError } = useQuery({
+  const {
+    data: taskFlow,
+    isLoading: isTaskFlowLoading,
+    error: taskFlowError,
+  } = useQuery({
     ...taskFlowQueries.byProject(projectId),
     enabled: !!project,
   });
@@ -339,9 +343,7 @@ export function ProjectViewPage() {
 
             {/* Error State */}
             {taskFlowError && (
-              <Alert variant="error">
-                Failed to load task flow: {taskFlowError instanceof Error ? taskFlowError.message : 'Unknown error'}
-              </Alert>
+              <Alert variant="error">Failed to load task flow: {taskFlowError.message}</Alert>
             )}
 
             {/* Empty State - Show button to open editor */}

@@ -60,13 +60,6 @@ const MODULES: ModuleCard[] = [
     hideFromRoles: ['ROLE_PRODUCTION'], // Production cannot see pricing
   },
   {
-    title: '공정',
-    phase: 'Phase 7',
-    description: 'Work progress tracking',
-    icon: 'cog',
-    path: '/production',
-  },
-  {
     title: 'Delivery',
     phase: 'Phase 8',
     description: 'Shipment management',
