@@ -21,6 +21,14 @@ public record SaveTaskFlowRequest(
 ) {
     /**
      * Node data within the save request.
+     *
+     * @param id        Client-side node ID (required, max 36 chars)
+     * @param title     Task title (required, max 255 chars)
+     * @param assignee  Person assigned to task (optional, max 100 chars)
+     * @param deadline  Task deadline (optional)
+     * @param progress  Progress percentage 0-100 (optional, defaults to 0, clamped to 0-100)
+     * @param positionX X coordinate on canvas (optional, defaults to 0.0)
+     * @param positionY Y coordinate on canvas (optional, defaults to 0.0)
      */
     public record NodeData(
             @NotBlank(message = "Node ID is required")
