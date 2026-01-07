@@ -8,7 +8,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 /**
- * Repository for TaskFlow entities.
+ * Repository for TaskFlow aggregate root.
+ * Element collections (nodes, edges) are loaded lazily by default.
  */
 public interface TaskFlowRepository extends JpaRepository<TaskFlow, Long> {
 
@@ -23,20 +24,9 @@ public interface TaskFlowRepository extends JpaRepository<TaskFlow, Long> {
     boolean existsByProjectId(Long projectId);
 
     /**
-     * Find task flow by project ID with nodes and edges eagerly loaded.
+     * Find task flow by project ID.
+     * Note: Element collections are loaded lazily. Access them within transaction.
      */
-    @Query("SELECT DISTINCT f FROM TaskFlow f " +
-            "LEFT JOIN FETCH f.nodes " +
-            "LEFT JOIN FETCH f.edges " +
-            "WHERE f.project.id = :projectId")
-    Optional<TaskFlow> findByProjectIdWithNodesAndEdges(@Param("projectId") Long projectId);
-
-    /**
-     * Find task flow by ID with nodes and edges eagerly loaded.
-     */
-    @Query("SELECT DISTINCT f FROM TaskFlow f " +
-            "LEFT JOIN FETCH f.nodes " +
-            "LEFT JOIN FETCH f.edges " +
-            "WHERE f.id = :id")
-    Optional<TaskFlow> findByIdWithNodesAndEdges(@Param("id") Long id);
+    @Query("SELECT f FROM TaskFlow f WHERE f.project.id = :projectId")
+    Optional<TaskFlow> findByProjectIdWithCollections(@Param("projectId") Long projectId);
 }

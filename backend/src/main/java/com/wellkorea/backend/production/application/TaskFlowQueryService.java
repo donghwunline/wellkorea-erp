@@ -44,7 +44,7 @@ public class TaskFlowQueryService {
             throw new ResourceNotFoundException("Project", projectId);
         }
 
-        return taskFlowRepository.findByProjectIdWithNodesAndEdges(projectId)
+        return taskFlowRepository.findByProjectId(projectId)
                 .map(this::toView)
                 .orElseGet(() -> TaskFlowView.empty(projectId));
     }
@@ -56,13 +56,14 @@ public class TaskFlowQueryService {
      * @return TaskFlowView with nodes and edges
      */
     public TaskFlowView getById(Long id) {
-        return taskFlowRepository.findByIdWithNodesAndEdges(id)
+        return taskFlowRepository.findById(id)
                 .map(this::toView)
                 .orElseThrow(() -> new ResourceNotFoundException("TaskFlow", id));
     }
 
     /**
      * Convert entity to view DTO.
+     * Element collections are accessed within transaction (lazy loading).
      */
     private TaskFlowView toView(TaskFlow flow) {
         List<TaskNodeView> nodeViews = flow.getNodes().stream()

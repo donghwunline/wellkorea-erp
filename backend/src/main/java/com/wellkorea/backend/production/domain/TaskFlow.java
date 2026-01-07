@@ -11,6 +11,9 @@ import java.util.Set;
  * Task flow representing a DAG (Directed Acyclic Graph) of tasks for a project.
  * Each project has exactly one task flow.
  * Contains nodes (tasks) and edges (dependencies between tasks).
+ *
+ * TaskFlow is the aggregate root - nodes and edges are value objects
+ * managed entirely by this entity.
  */
 @Entity
 @Table(name = "task_flows",
@@ -31,10 +34,12 @@ public class TaskFlow {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    @OneToMany(mappedBy = "flow", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ElementCollection
+    @CollectionTable(name = "task_nodes", joinColumns = @JoinColumn(name = "flow_id"))
     private Set<TaskNode> nodes = new HashSet<>();
 
-    @OneToMany(mappedBy = "flow", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ElementCollection
+    @CollectionTable(name = "task_edges", joinColumns = @JoinColumn(name = "flow_id"))
     private Set<TaskEdge> edges = new HashSet<>();
 
     @PrePersist
@@ -55,7 +60,6 @@ public class TaskFlow {
      */
     public void addNode(TaskNode node) {
         nodes.add(node);
-        node.setFlow(this);
     }
 
     /**
@@ -75,7 +79,6 @@ public class TaskFlow {
      */
     public void addEdge(TaskEdge edge) {
         edges.add(edge);
-        edge.setFlow(this);
     }
 
     /**
@@ -91,6 +94,22 @@ public class TaskFlow {
     public void clearAll() {
         nodes.clear();
         edges.clear();
+    }
+
+    /**
+     * Replace all nodes with new set.
+     */
+    public void replaceNodes(Set<TaskNode> newNodes) {
+        nodes.clear();
+        nodes.addAll(newNodes);
+    }
+
+    /**
+     * Replace all edges with new set.
+     */
+    public void replaceEdges(Set<TaskEdge> newEdges) {
+        edges.clear();
+        edges.addAll(newEdges);
     }
 
     // ========== Getters and Setters ==========

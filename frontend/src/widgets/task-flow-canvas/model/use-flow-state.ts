@@ -177,7 +177,7 @@ export function useFlowState(options: UseFlowStateOptions = {}): UseFlowStateRet
     (connection: Connection) => {
       if (connection.source && connection.target) {
         const newEdge: Edge = {
-          id: `e-${uuidv4()}`,
+          id: uuidv4(), // Plain UUID (36 chars) - backend requires max 36 chars
           source: connection.source,
           target: connection.target,
           type: 'smoothstep',
@@ -219,7 +219,7 @@ export function useFlowState(options: UseFlowStateOptions = {}): UseFlowStateRet
   // Add new node
   const addNode = useCallback(
     (position: { x: number; y: number }): TaskNode => {
-      const id = `n-${uuidv4()}`;
+      const id = uuidv4(); // Plain UUID (36 chars) - backend requires max 36 chars
       const newTaskNode = taskNodeRules.createDefault(id, position);
       const flowNode = toFlowNode(newTaskNode);
       setNodes(nds => [...nds, flowNode]);

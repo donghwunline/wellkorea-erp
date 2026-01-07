@@ -56,14 +56,18 @@ export function EditNodeModal({
         deadline: formState.deadline || null,
         progress: formState.progress,
       });
-      onClose();
+      // Note: Don't call onClose() here - the parent's onSave handler
+      // will close the modal by setting editingNode to null.
+      // Calling onClose() here would trigger the "cancel add" logic
+      // which deletes the newly created node.
     }
   };
 
   const handleDelete = () => {
     if (onDelete && window.confirm('Are you sure you want to delete this task?')) {
       onDelete();
-      onClose();
+      // Note: Don't call onClose() here - the parent's onDelete handler
+      // will close the modal by setting editingNode to null.
     }
   };
 

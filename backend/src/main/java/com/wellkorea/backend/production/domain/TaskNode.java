@@ -1,30 +1,21 @@
 package com.wellkorea.backend.production.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 import java.time.LocalDate;
-import java.time.Instant;
 
 /**
- * A task node in the DAG task flow.
+ * A task node in the DAG task flow (value object).
  * Represents a single task with title, assignee, deadline, and progress.
  * Position (x, y) is stored for React Flow visualization.
  */
-@Entity
-@Table(name = "task_nodes")
+@Embeddable
 public class TaskNode {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "flow_id", nullable = false)
-    private TaskFlow flow;
 
     /**
      * Client-side node ID (UUID string) for React Flow.
-     * Used to identify nodes in the frontend without exposing database IDs.
+     * Used to identify nodes in the frontend.
      */
     @Column(name = "node_id", nullable = false, length = 36)
     private String nodeId;
@@ -56,21 +47,20 @@ public class TaskNode {
     @Column(name = "position_y", nullable = false)
     private Double positionY = 0.0;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-        updatedAt = Instant.now();
+    // Default constructor for JPA
+    public TaskNode() {
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
+    // Constructor for convenience
+    public TaskNode(String nodeId, String title, String assignee, LocalDate deadline,
+                    Integer progress, Double positionX, Double positionY) {
+        this.nodeId = nodeId;
+        this.title = title;
+        this.assignee = assignee;
+        this.deadline = deadline;
+        this.progress = progress != null ? Math.max(0, Math.min(100, progress)) : 0;
+        this.positionX = positionX != null ? positionX : 0.0;
+        this.positionY = positionY != null ? positionY : 0.0;
     }
 
     // ========== Business Methods ==========
@@ -101,22 +91,6 @@ public class TaskNode {
     }
 
     // ========== Getters and Setters ==========
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public TaskFlow getFlow() {
-        return flow;
-    }
-
-    public void setFlow(TaskFlow flow) {
-        this.flow = flow;
-    }
 
     public String getNodeId() {
         return nodeId;
@@ -172,13 +146,5 @@ public class TaskNode {
 
     public void setPositionY(Double positionY) {
         this.positionY = positionY;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
     }
 }

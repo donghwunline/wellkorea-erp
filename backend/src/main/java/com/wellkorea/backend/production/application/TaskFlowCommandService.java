@@ -11,6 +11,9 @@ import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Command service for task flows (CQRS pattern - write operations).
  * Handles saving task flow with nodes and edges.
@@ -29,45 +32,50 @@ public class TaskFlowCommandService {
     }
 
     /**
-     * Save task flow (create or update).
-     * Performs full replacement of nodes and edges.
+     * Save task flow (full replacement of nodes and edges).
+     * Element collections are completely replaced, avoiding orphan removal issues.
      *
      * @param id      Task flow ID
      * @param request Save request with nodes and edges
      * @return The saved task flow ID
      */
     public Long saveTaskFlow(Long id, SaveTaskFlowRequest request) {
-        TaskFlow flow = taskFlowRepository.findByIdWithNodesAndEdges(id)
+        TaskFlow flow = taskFlowRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TaskFlow", id));
 
-        // Clear existing nodes and edges (cascade will remove them)
-        flow.clearAll();
-
-        // Add new nodes
+        // Build new nodes set
+        Set<TaskNode> newNodes = new HashSet<>();
         if (request.nodes() != null) {
             for (SaveTaskFlowRequest.NodeData nodeData : request.nodes()) {
-                TaskNode node = new TaskNode();
-                node.setNodeId(nodeData.id());
-                node.setTitle(nodeData.title());
-                node.setAssignee(nodeData.assignee());
-                node.setDeadline(nodeData.deadline());
-                node.setProgress(nodeData.progress() != null ? nodeData.progress() : 0);
-                node.setPositionX(nodeData.positionX() != null ? nodeData.positionX() : 0.0);
-                node.setPositionY(nodeData.positionY() != null ? nodeData.positionY() : 0.0);
-                flow.addNode(node);
+                TaskNode node = new TaskNode(
+                        nodeData.id(),
+                        nodeData.title(),
+                        nodeData.assignee(),
+                        nodeData.deadline(),
+                        nodeData.progress(),
+                        nodeData.positionX(),
+                        nodeData.positionY()
+                );
+                newNodes.add(node);
             }
         }
 
-        // Add new edges
+        // Build new edges set
+        Set<TaskEdge> newEdges = new HashSet<>();
         if (request.edges() != null) {
             for (SaveTaskFlowRequest.EdgeData edgeData : request.edges()) {
-                TaskEdge edge = new TaskEdge();
-                edge.setEdgeId(edgeData.id());
-                edge.setSourceNodeId(edgeData.source());
-                edge.setTargetNodeId(edgeData.target());
-                flow.addEdge(edge);
+                TaskEdge edge = new TaskEdge(
+                        edgeData.id(),
+                        edgeData.source(),
+                        edgeData.target()
+                );
+                newEdges.add(edge);
             }
         }
+
+        // Replace collections (element collections are replaced wholesale)
+        flow.replaceNodes(newNodes);
+        flow.replaceEdges(newEdges);
 
         taskFlowRepository.save(flow);
         return flow.getId();

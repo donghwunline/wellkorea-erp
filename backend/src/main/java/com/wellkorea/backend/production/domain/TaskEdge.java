@@ -1,25 +1,14 @@
 package com.wellkorea.backend.production.domain;
 
-import jakarta.persistence.*;
-
-import java.time.Instant;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
- * An edge (connection) between two task nodes in the DAG.
+ * An edge (connection) between two task nodes in the DAG (value object).
  * Represents a dependency: source node must complete before target node can start.
  */
-@Entity
-@Table(name = "task_edges",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"flow_id", "source_node_id", "target_node_id"}))
+@Embeddable
 public class TaskEdge {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "flow_id", nullable = false)
-    private TaskFlow flow;
 
     /**
      * Client-side edge ID (UUID string) for React Flow.
@@ -39,31 +28,18 @@ public class TaskEdge {
     @Column(name = "target_node_id", nullable = false, length = 36)
     private String targetNodeId;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    // Default constructor for JPA
+    public TaskEdge() {
+    }
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
+    // Constructor for convenience
+    public TaskEdge(String edgeId, String sourceNodeId, String targetNodeId) {
+        this.edgeId = edgeId;
+        this.sourceNodeId = sourceNodeId;
+        this.targetNodeId = targetNodeId;
     }
 
     // ========== Getters and Setters ==========
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public TaskFlow getFlow() {
-        return flow;
-    }
-
-    public void setFlow(TaskFlow flow) {
-        this.flow = flow;
-    }
 
     public String getEdgeId() {
         return edgeId;
@@ -87,9 +63,5 @@ public class TaskEdge {
 
     public void setTargetNodeId(String targetNodeId) {
         this.targetNodeId = targetNodeId;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
     }
 }
