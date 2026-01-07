@@ -49,6 +49,34 @@ function validateInput(input: SaveTaskFlowInput): void {
     throw new DomainValidationError('REQUIRED', 'id', 'Task flow ID is required');
   }
 
+  // Check for duplicate node IDs
+  const seenNodeIds = new Set<string>();
+  for (let i = 0; i < input.nodes.length; i++) {
+    const node = input.nodes[i];
+    if (seenNodeIds.has(node.id)) {
+      throw new DomainValidationError(
+        'DUPLICATE_ID',
+        `nodes[${i}].id`,
+        `Duplicate node ID: ${node.id}`
+      );
+    }
+    seenNodeIds.add(node.id);
+  }
+
+  // Check for duplicate edge IDs
+  const seenEdgeIds = new Set<string>();
+  for (let i = 0; i < input.edges.length; i++) {
+    const edge = input.edges[i];
+    if (seenEdgeIds.has(edge.id)) {
+      throw new DomainValidationError(
+        'DUPLICATE_ID',
+        `edges[${i}].id`,
+        `Duplicate edge ID: ${edge.id}`
+      );
+    }
+    seenEdgeIds.add(edge.id);
+  }
+
   // Validate nodes
   for (let i = 0; i < input.nodes.length; i++) {
     const node = input.nodes[i];

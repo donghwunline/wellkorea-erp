@@ -321,6 +321,60 @@ describe('saveTaskFlow', () => {
         await expect(saveTaskFlow(input)).resolves.not.toThrow();
       });
     });
+
+    describe('duplicate ID validation', () => {
+      it('should throw DUPLICATE_ID error for duplicate node IDs', async () => {
+        const input = createValidInput({
+          nodes: [
+            createTestNode({ id: 'same-id', title: 'Task 1' }),
+            createTestNode({ id: 'same-id', title: 'Task 2' }),
+          ],
+          edges: [],
+        });
+
+        await expectAsyncValidationError(
+          () => saveTaskFlow(input),
+          'DUPLICATE_ID',
+          'nodes[1].id',
+          'Duplicate node ID: same-id'
+        );
+      });
+
+      it('should throw DUPLICATE_ID error for duplicate edge IDs', async () => {
+        const input = createValidInput({
+          nodes: [
+            createTestNode({ id: 'A', title: 'Task A' }),
+            createTestNode({ id: 'B', title: 'Task B' }),
+            createTestNode({ id: 'C', title: 'Task C' }),
+          ],
+          edges: [
+            createTestEdge({ id: 'same-edge', source: 'A', target: 'B' }),
+            createTestEdge({ id: 'same-edge', source: 'B', target: 'C' }),
+          ],
+        });
+
+        await expectAsyncValidationError(
+          () => saveTaskFlow(input),
+          'DUPLICATE_ID',
+          'edges[1].id',
+          'Duplicate edge ID: same-edge'
+        );
+      });
+
+      it('should accept unique node and edge IDs', async () => {
+        mockPut.mockResolvedValue(createUpdatedResult(1));
+
+        const input = createValidInput({
+          nodes: [
+            createTestNode({ id: 'node-1', title: 'Task 1' }),
+            createTestNode({ id: 'node-2', title: 'Task 2' }),
+          ],
+          edges: [createTestEdge({ id: 'edge-1', source: 'node-1', target: 'node-2' })],
+        });
+
+        await expect(saveTaskFlow(input)).resolves.not.toThrow();
+      });
+    });
   });
 
   // ==========================================================================
