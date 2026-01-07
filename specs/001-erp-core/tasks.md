@@ -484,46 +484,46 @@
 
 > **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T098 [P] [US3] Write contract tests for POST /api/products endpoint (validates SKU uniqueness, name non-empty, base_price >= 0) in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
-- [ ] T099 [P] [US3] Write contract tests for GET /api/products, GET /api/products/{id}, PUT /api/products/{id}, DELETE /api/products/{id} endpoints in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
-- [ ] T100 [P] [US3] Write contract tests for GET /api/products/search endpoint (search by name, filter by type) in backend/src/test/java/com/wellkorea/backend/product/controller/ProductControllerTest.java - MUST FAIL initially
-- [ ] T101 [US3] Write unit tests for ProductService (product deactivation logic, preserve in old quotations) in backend/src/test/java/com/wellkorea/backend/product/service/ProductServiceTest.java - MUST FAIL initially
+- [X] T098 [P] [US3] Write contract tests for POST /api/products endpoint (validates SKU uniqueness, name non-empty, base_price >= 0) in backend/src/test/java/com/wellkorea/backend/product/api/ProductControllerTest.java - MUST FAIL initially
+- [X] T099 [P] [US3] Write contract tests for GET /api/products, GET /api/products/{id}, PUT /api/products/{id}, DELETE /api/products/{id} endpoints in backend/src/test/java/com/wellkorea/backend/product/api/ProductControllerTest.java - MUST FAIL initially
+- [X] T100 [P] [US3] Write contract tests for GET /api/products/search endpoint (search by name, filter by type) in backend/src/test/java/com/wellkorea/backend/product/api/ProductControllerTest.java - MUST FAIL initially
+- [X] T101 [US3] Write unit tests for ProductService (product deactivation logic, preserve in old quotations) in backend/src/test/java/com/wellkorea/backend/product/application/ProductCommandServiceTest.java - MUST FAIL initially
 
 ### Database Schema for User Story 3
 
-- [ ] T102 Create Flyway migration V9__create_product_domain.sql for Product, ProductType tables
+- [X] T102 Create Flyway migration V2__create_project_tables.sql includes Product, ProductType tables (moved to Phase 2)
 
 ### Backend Implementation for User Story 3
 
-- [ ] T099 [P] [US3] Create Product entity in backend/src/main/java/com/wellkorea/backend/product/domain/Product.java
-- [ ] T100 [P] [US3] Create ProductType entity in backend/src/main/java/com/wellkorea/backend/product/domain/ProductType.java
-- [ ] T101 [US3] Create ProductRepository with search by name in backend/src/main/java/com/wellkorea/backend/product/infrastructure/persistence/ProductRepository.java (depends on T099)
-- [ ] T102 [US3] Implement ProductService with CRUD and search operations in backend/src/main/java/com/wellkorea/backend/product/service/ProductService.java
-- [ ] T103 [US3] Create ProductController with REST endpoints (/api/products - GET, POST, PUT, DELETE, GET /search) in backend/src/main/java/com/wellkorea/backend/product/controller/ProductController.java
-- [ ] T104 [US3] Create DTOs (CreateProductRequest, UpdateProductRequest, ProductResponse) in backend/src/main/java/com/wellkorea/backend/product/dto/
-- [ ] T105 [US3] Add validation (SKU unique, name non-empty, base price >= 0)
-- [ ] T106 [US3] Implement product deactivation (is_active flag) while preserving in old quotations
+- [X] T099 [P] [US3] Create Product entity in backend/src/main/java/com/wellkorea/backend/product/domain/Product.java
+- [X] T100 [P] [US3] Create ProductType entity in backend/src/main/java/com/wellkorea/backend/product/domain/ProductType.java
+- [X] T101 [US3] Create ProductRepository with search by name in backend/src/main/java/com/wellkorea/backend/product/infrastructure/persistence/ProductRepository.java (depends on T099)
+- [X] T102 [US3] Implement ProductService with CRUD and search operations in backend/src/main/java/com/wellkorea/backend/product/application/ProductCommandService.java, ProductQueryService.java (CQRS)
+- [X] T103 [US3] Create ProductController with REST endpoints (/api/products - GET, POST, PUT, DELETE, GET /search) in backend/src/main/java/com/wellkorea/backend/product/api/ProductController.java
+- [X] T104 [US3] Create DTOs (CreateProductRequest, UpdateProductRequest, ProductResponse) in backend/src/main/java/com/wellkorea/backend/product/api/dto/
+- [X] T105 [US3] Add validation (SKU unique, name non-empty, base price >= 0)
+- [X] T106 [US3] Implement product deactivation (is_active flag) while preserving in old quotations
 
 ### Frontend Implementation for User Story 3 (FSD-Lite)
 
 > **Note**: Paths updated for FSD-Lite architecture (2025-12-30)
+> **Note**: Product pages integrated into ItemsPage (2026-01-07)
 
 #### Product Entity Layer
-- [ ] T107 [US3] Create product entity in frontend/src/entities/product/ (model/, api/, query/, ui/) - **FSD-Lite**
-  - model/product.ts (Product type + productRules: isActive, canEdit, isDiscontinued)
-  - model/product-type.ts (ProductType type)
-  - api/product.api.ts, product.mapper.ts
-  - query/use-product.ts, use-products.ts, use-product-search.ts, query-keys.ts
-  - ui/ProductTable.tsx, ProductCard.tsx, ProductSearchCombobox.tsx
+- [X] T107 [US3] Create product entity in frontend/src/entities/product/ (model/, api/, ui/) - **FSD-Lite**
+  - model/product.ts (Product type + productRules: isActive, canEdit, hasDescription, hasPrice, formatPrice)
+  - model/product-type.ts (ProductType type + productTypeRules)
+  - api/product.queries.ts, product.mapper.ts, create-product.ts, update-product.ts, delete-product.ts, get-product.ts, search-products.ts
+  - ui/ProductTable.tsx, ProductCard.tsx, ProductStatusBadge.tsx, ProductCombobox.tsx
 
-#### Product Features
-- [ ] T108 [US3] Create product list page in frontend/src/pages/products/list/ProductListPage.tsx (assembly only, uses entities/product/ui/ProductTable) - **FSD-Lite**
-- [ ] T109 [US3] Create product create feature in frontend/src/features/product/create/ (ui/CreateProductForm.tsx, model/use-create-product.ts) - **FSD-Lite**
-- [ ] T109a [US3] Create product create page in frontend/src/pages/products/create/CreateProductPage.tsx (assembly only) - **FSD-Lite**
-- [ ] T110 [US3] Create product update feature in frontend/src/features/product/update/ (ui/EditProductForm.tsx, model/use-update-product.ts) - **FSD-Lite**
-- [ ] T110a [US3] Create product edit page in frontend/src/pages/products/[id]/edit/EditProductPage.tsx (assembly only) - **FSD-Lite**
-- [ ] T111 [US3] Create product detail page in frontend/src/pages/products/[id]/ProductDetailPage.tsx - **FSD-Lite**
-- [ ] T112 [US3] Add role-based access (Admin only can create/edit products) using entities/product/query hooks with role filtering
+#### Product Features (Integrated into ItemsPage)
+- [X] T108 [US3] Product list integrated into frontend/src/pages/items/ui/ProductsTab.tsx (uses entities/product/ui/ProductTable) - **FSD-Lite**
+- [X] T109 [US3] Create product create feature in frontend/src/features/product/create/ (model/use-create-product.ts) - **FSD-Lite**
+- [X] T109a [US3] Product create via modal in frontend/src/features/product/form/ui/ProductFormModal.tsx - **FSD-Lite**
+- [X] T110 [US3] Create product update feature in frontend/src/features/product/update/ (model/use-update-product.ts) - **FSD-Lite**
+- [X] T110a [US3] Product edit via modal in frontend/src/features/product/form/ui/ProductFormModal.tsx - **FSD-Lite**
+- [X] T111 [US3] Product detail shown in edit modal (no separate detail page - modal-based UX) - **FSD-Lite**
+- [X] T112 [US3] Add role-based access (Admin, Finance can create/edit products) via useAuth().hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE'])
 
 **Checkpoint**: Product catalog complete - standardized product selection available for quotations
 

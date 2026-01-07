@@ -15,8 +15,9 @@
 
 import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { productQueries, ProductTable } from '@/entities/product';
+import { type Product, type ProductListItem, productQueries, ProductTable, } from '@/entities/product';
 import { useAuth } from '@/entities/auth';
+import { ProductFormModal } from '@/features/product/form';
 import { Button, Card, Pagination, SearchBar, Spinner } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
@@ -32,6 +33,10 @@ export function ProductsTab() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Handle search change with pagination reset
   const handleSearchChange = useCallback((value: string) => {
@@ -51,21 +56,54 @@ export function ProductsTab() {
     isLoading: productsLoading,
     error: productsError,
     refetch: refetchProducts,
-  } = useQuery(productQueries.list({
-    page,
-    size: PAGE_SIZE,
-    search,
-    productTypeId: selectedTypeId,
-  }));
+  } = useQuery(
+    productQueries.list({
+      page,
+      size: PAGE_SIZE,
+      search,
+      productTypeId: selectedTypeId,
+    })
+  );
 
-  const {
-    data: productTypes = [],
-    isLoading: typesLoading,
-  } = useQuery(productQueries.allTypes());
+  const { data: productTypes = [], isLoading: typesLoading } = useQuery(productQueries.allTypes());
 
   const products = productsData?.data ?? [];
   const pagination = productsData?.pagination;
   const loading = productsLoading || typesLoading;
+
+  // Modal handlers
+  const handleOpenCreateModal = () => {
+    setEditingProduct(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = async (product: ProductListItem) => {
+    // For edit, we need the full Product, so use the list item data
+    // The modal will handle fetching the full product if needed
+    setEditingProduct({
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
+      description: product.description,
+      productTypeId: product.productTypeId,
+      productTypeName: product.productTypeName,
+      baseUnitPrice: product.baseUnitPrice,
+      unit: product.unit,
+      isActive: product.isActive,
+      createdAt: '', // Not needed for edit form
+      updatedAt: '', // Not needed for edit form
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingProduct(null);
+  };
+
+  const handleModalSuccess = () => {
+    // List will auto-refresh due to cache invalidation in mutation hooks
+  };
 
   return (
     <div className="space-y-6">
@@ -95,7 +133,7 @@ export function ProductsTab() {
         </div>
 
         {canManage && (
-          <Button variant="primary" onClick={() => alert('Create product modal - TODO')}>
+          <Button variant="primary" onClick={handleOpenCreateModal}>
             Add Product
           </Button>
         )}
@@ -134,11 +172,7 @@ export function ProductsTab() {
             renderActions={
               canManage
                 ? product => (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => alert(`Edit product ${product.id} - TODO`)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleOpenEditModal(product)}>
                       Edit
                     </Button>
                   )
@@ -160,6 +194,14 @@ export function ProductsTab() {
           )}
         </>
       )}
+
+      {/* Create/Edit Modal */}
+      <ProductFormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        product={editingProduct}
+        onSuccess={handleModalSuccess}
+      />
     </div>
   );
 }
