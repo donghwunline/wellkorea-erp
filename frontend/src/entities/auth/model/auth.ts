@@ -4,7 +4,7 @@
  * Types for authentication state and session management.
  */
 
-import type { RoleName, User } from '@/entities/user';
+import type { RoleName, User } from '@/shared/domain';
 
 /**
  * Authentication state.

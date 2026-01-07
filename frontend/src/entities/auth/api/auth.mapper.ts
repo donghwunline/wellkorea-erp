@@ -2,7 +2,7 @@
  * Auth DTO ↔ Domain mappers.
  */
 
-import type { User } from '@/entities/user';
+import type { User } from '@/shared/domain';
 import type { LoginResponseDTO, LoginUserDTO } from './auth.dto';
 
 /**

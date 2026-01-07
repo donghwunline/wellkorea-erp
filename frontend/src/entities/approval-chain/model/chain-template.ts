@@ -4,7 +4,7 @@
  * Represents an approval chain configuration template.
  */
 
-import type { EntityType } from '@/entities/approval';
+import type { EntityType } from '@/shared/domain';
 
 /**
  * Approval level in a chain template.
