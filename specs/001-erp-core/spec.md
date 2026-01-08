@@ -8,7 +8,7 @@
 
 The WellKorea Integrated Work System consolidates fragmented job lifecycle data (currently spread across handwritten ledgers, multiple Excel files, legacy order software, and folder trees) into a unified web application. The system manages the complete workflow from customer request through JobCode creation, quotation & approval (with products from catalog), production tracking per product, granular delivery/invoicing (by product and quantity), payments, and financial reporting.
 
-**Key Design Principle**: Quotations list customer-requested products from a pre-defined catalog with quantities and unit prices. Work progress is tracked per product (not per JobCode as a whole). Invoicing is granular—allowing any combination of products and quantities to be invoiced independently, with the system preventing double-billing by tracking what's been invoiced.
+**Key Design Principle**: Quotations list customer-requested products from a pre-defined catalog with quantities and unit prices. Production progress is tracked via TaskFlow (DAG-based task management per project). Invoicing is granular—allowing any combination of products and quantities to be invoiced independently, with the system preventing double-billing by tracking what's been invoiced.
 
 ---
 
@@ -34,7 +34,7 @@ The WellKorea Integrated Work System consolidates fragmented job lifecycle data 
 
 ### User Story 1 - JobCode Creation & Request Intake (Priority: P1)
 
-**Description**: Operations staff receives a customer request (via email, phone, or system) and creates a new JobCode in a single place, recording all essential information (customer, project name, requester, due date, internal owner) once. This single entry powers order status, work progress, quotations, and AR/AP records without re-entry.
+**Description**: Operations staff receives a customer request (via email, phone, or system) and creates a new JobCode in a single place, recording all essential information (customer, project name, requester, due date, internal owner) once. This single entry powers order status, production tracking (TaskFlow), quotations, and AR/AP records without re-entry.
 
 **Why this priority**: This is the foundational data entry point. Without a reliable JobCode creation workflow, the entire system falls apart. All downstream features depend on this core entity existing in one place.
 
@@ -123,34 +123,36 @@ This story delivers the MVP for product standardization.
 
 ---
 
-### User Story 4 - Production Tracking: Work Progress Sheet Per Product (Priority: P2)
+### User Story 4 - Production Tracking: TaskFlow DAG (Priority: P2) - **UPDATED 2026-01-08**
 
-**Description**: Production staff view and update a work progress sheet per product (not per JobCode). For each product in a JobCode, a separate progress sheet shows all manufacturing steps (Management, Design, Laser, Sheet metal, Machining, Assembly, Welding, Painting/Finishing, etc.). For each step, staff record status (not started / in progress / completed), date, remarks, and whether the work is internal or outsourced (with vendor name and ETA if outsourced). Unused steps can be hidden per product type.
+**Description**: Production staff view and manage tasks for a project using a visual DAG (Directed Acyclic Graph) interface powered by React Flow. Each project has one TaskFlow containing task nodes that can be connected with edges to define dependencies. For each task node, staff record title, assignee, deadline, and progress (0-100%). The visual interface allows drag-and-drop positioning of nodes and connecting nodes with dependency edges. Overdue tasks are highlighted based on deadline.
 
-**Why this priority**: This replaces the Excel work progress sheet and provides real-time visibility into per-product production status. It supports parallel processes (e.g., fabrication and machining simultaneously for different products) and tracks outsourcing ETAs. However, it's P2 because the MVP can initially launch with basic status tracking before sophisticated visibility/filtering is added.
+**Implementation Note (2026-01-08)**: Originally specified as "Work Progress Sheet Per Product" with fixed manufacturing steps. Implemented as TaskFlow (DAG-based task management) which provides more flexibility - arbitrary tasks and dependencies rather than predefined manufacturing step sequences. This better reflects the reality of varied job types and custom workflows.
+
+**Why this priority**: This replaces the Excel work progress sheet and provides real-time visibility into project production status with a flexible, visual task management system. It supports arbitrary task dependencies and parallel processes. However, it's P2 because the MVP can initially launch with basic task tracking before sophisticated filtering is added.
 
 **Independent Test**: Can be fully tested by:
-1. Creating work progress sheets for 2–3 products in a JobCode (e.g., Bracket, Frame, Enclosure)
-2. For each product, marking manufacturing steps as "in progress" with dates and remarks
-3. Recording an outsourced step for one product (vendor name, ETA)
-4. Hiding unused steps for a specific product type (e.g., hiding "Welding" for a "Sheet Metal Only" product)
-5. Supporting parallel processes (marking both "Fabrication" and "Machining" as in progress for the same product with different dates)
-6. Viewing production status from the main job detail view aggregated across all products
-7. Editing remarks and status without losing historical data
+1. Creating a TaskFlow for a project with multiple task nodes
+2. For each task node, setting title, assignee, deadline, and updating progress (0-100%)
+3. Connecting task nodes with edges to define dependencies
+4. Dragging nodes to reposition them in the visual canvas
+5. Identifying overdue tasks based on deadline (highlighted in UI)
+6. Viewing overall project progress from aggregated node progress
+7. Editing task details without losing node positions or connections
 
-This story delivers the MVP for per-product production visibility, replacing Excel sheets.
+This story delivers the MVP for flexible task management, replacing Excel sheets.
 
 **Acceptance Scenarios**:
 
-1. **Given** a JobCode with 3 quoted products (Bracket, Frame, Enclosure), **When** staff access the production section, **Then** they see 3 separate work progress sheets, one per product.
+1. **Given** a project, **When** staff access the production section, **Then** they see a visual TaskFlow canvas where they can add, edit, and connect task nodes.
 
-2. **Given** a work progress sheet for a product, **When** a user selects a product type (e.g., "Sheet Metal"), **Then** the system suggests standard manufacturing steps for that type (Design → Laser → Assembly → Painting → Packaging), but allows adding/removing steps.
+2. **Given** a TaskFlow for a project, **When** a user adds a new task node, **Then** they can set title, assignee, deadline, and the node appears in the canvas at the specified position.
 
-3. **Given** a manufacturing step on a product's progress sheet, **When** production staff update the status to "In Progress", **Then** the current date and time are recorded, and remarks (e.g., "Started machining part A") can be added.
+3. **Given** a task node in the TaskFlow, **When** production staff update the progress to a percentage (e.g., 50%), **Then** the progress bar reflects this and overall project progress is recalculated.
 
-4. **Given** a step marked as outsourced, **When** staff record the vendor name and ETA, **Then** the system stores this information and displays the ETA prominently on the product's status view.
+4. **Given** two task nodes, **When** staff connect them with an edge, **Then** the dependency relationship is visualized and persisted, showing the flow of work.
 
-5. **Given** multiple products in a JobCode at different production stages, **When** management views the job detail, **Then** they see an aggregated production status (e.g., "Bracket 80% complete, Frame 50% complete, Enclosure not started").
+5. **Given** a project with multiple task nodes at different progress levels, **When** management views the project detail, **Then** they see overall project progress aggregated from all node progress percentages.
 
 ---
 
@@ -219,34 +221,35 @@ This story delivers the MVP for financial tracking and reporting.
 
 ---
 
-### User Story 7 - Document Management & Central Storage (Priority: P3)
+### User Story 7 - Outsourcing Blueprint Attachments (Priority: P3) - **UPDATED 2026-01-08** (TaskFlow integration)
 
-**Description**: Users upload and tag documents (drawings, quotations, work photos, purchase docs, BOMs, 3D files, etc.) by JobCode, project, customer, product, and document type. A powerful search finds documents by JobCode, project name, customer, product, or document type. A "virtual tree" view recreates the familiar folder structure (company → project → JobCode → product → document) without physical folder management. CAD file editing is not supported; files are managed and opened with local CAD tools.
+**Description**: When production staff place an outsourcing order (외주) for a task, they can attach blueprint/drawing files (PDF, DXF, DWG, etc.) to the task node in the TaskFlow. These attachments are sent along with the RFQ email to vendors and remain associated with the task node for reference. The system provides simple file management for these attachments - upload, download, and view associated files per task node. CAD file editing is not supported; files are managed and opened with local CAD tools.
 
-**Why this priority**: Document centralization eliminates time hunting through folder trees and enables cross-cutting searches. However, it's P3 because the MVP can initially work with basic JobCode/project/customer tagging before adding sophisticated virtual tree views.
+**Implementation Note (2026-01-08)**: Originally specified for WorkProgressStep, now integrated with TaskFlow. BlueprintAttachment references the TaskFlow (flow_id) and TaskNode (node_id) rather than WorkProgressStep.
+
+**Why this priority**: Blueprint attachments are essential for outsourcing communication - vendors need drawings to quote accurately. However, it's P3 because outsourcing can initially be tracked manually (via notes field) before file attachment is implemented.
 
 **Independent Test**: Can be fully tested by:
-1. Uploading 20 mixed files (PDF, DXF, JPG, XLSX, DOCX) and tagging by JobCode, product, document type
-2. Searching by JobCode and finding all related documents
-3. Searching by product name (e.g., "Bracket") and finding all documents for that product across JobCodes
-4. Searching by document type (e.g., "drawing") and finding all drawings across all JobCodes/products
-5. Using a virtual tree view to navigate company → project → JobCode → product → document
-6. Downloading a file and confirming it opens correctly in local CAD tools
-7. Replacing a document version and confirming old version is archived with version history preserved
+1. Creating a task node in TaskFlow for outsourced work
+2. Uploading a blueprint file (PDF or DXF) to the task node
+3. Viewing the list of attached files on the task node detail panel
+4. Downloading an attached file and confirming it opens correctly in local CAD tools
+5. Confirming the RFQ email includes the attached blueprint file
+6. Uploading additional files to the same task node
 
-This story delivers the MVP for centralized document storage and search.
+This story delivers the MVP for blueprint attachment to outsourcing orders.
 
 **Acceptance Scenarios**:
 
-1. **Given** a JobCode or product detail page, **When** staff upload a file and tag it with document type (drawing, photo, BOM, quotation, etc.), **Then** the file is stored centrally with metadata (JobCode, product, customer, document type, upload date).
+1. **Given** a task node in the TaskFlow for outsourced work, **When** staff click "Attach Blueprint", **Then** they can select and upload one or more drawing files (PDF, DXF, DWG, JPG, PNG up to 50MB each).
 
-2. **Given** multiple documents tagged by JobCode and product, **When** a user searches for a JobCode, **Then** all documents for that JobCode (across all products) are returned in a list with download links.
+2. **Given** a task node with attached blueprints, **When** staff view the task node detail panel, **Then** they see a list of attached files with filename, file size, upload date, and download link.
 
-3. **Given** documents tagged by product name (e.g., "Bracket"), **When** a user filters by product, **Then** all documents for that product across all JobCodes are shown.
+3. **Given** a task node with attached blueprints, **When** staff send an RFQ email to the vendor, **Then** the attached blueprints are included in the email as attachments.
 
-4. **Given** documents tagged by document type (e.g., "drawing"), **When** a user filters by document type, **Then** all drawings across all JobCodes and products are shown.
+4. **Given** an attached blueprint file, **When** staff click download, **Then** the file downloads and can be opened with local CAD tools (e.g., AutoCAD, DraftSight).
 
-5. **Given** a large number of documents, **When** a user navigates a virtual tree (Company → Project → JobCode → Product → Document Type), **Then** files are organized hierarchically without physical folder structures.
+5. **Given** a task node, **When** staff need to add additional drawings after initial upload, **Then** they can upload more files without replacing existing attachments.
 
 ---
 
@@ -283,7 +286,7 @@ This story delivers the MVP for vendor management and RFQ tracking.
 
 ### User Story 9 - Role-Based Access Control & Quotation Protection (Priority: P1)
 
-**Description**: The system enforces role-based access control with roles: Admin, Finance, Production, Sales. Only Admin and Finance roles can view all quotations and financial data (invoices, AR/AP). Production staff see only production-relevant data (work progress, deliveries, documents tagged for production). Sales staff see quotations and customer data but not financial/payables data. Admin accounts manage users and permissions. Access to sensitive documents (quotations, financial reports) is logged for audit.
+**Description**: The system enforces role-based access control with roles: Admin, Finance, Production, Sales. Only Admin and Finance roles can view all quotations and financial data (invoices, AR/AP). Production staff see only production-relevant data (TaskFlow/task nodes, deliveries, documents tagged for production). Sales staff see quotations and customer data but not financial/payables data. Admin accounts manage users and permissions. Access to sensitive documents (quotations, financial reports) is logged for audit.
 
 **Why this priority**: This is critical for security and compliance. A previous data leak of quotations necessitates strict access control from day one. This must ship with P1.
 
@@ -301,7 +304,7 @@ This story delivers security MVP and must ship with P1.
 
 **Acceptance Scenarios**:
 
-1. **Given** a system with multiple users in different roles, **When** a Production staff member logs in, **Then** they see only production-relevant data (work progress sheets, deliveries for their JobCodes, documents tagged for production view) and NOT quotations, pricing, or financial data.
+1. **Given** a system with multiple users in different roles, **When** a Production staff member logs in, **Then** they see only production-relevant data (TaskFlow with task nodes, deliveries for their JobCodes, documents tagged for production view) and NOT quotations, pricing, or financial data.
 
 2. **Given** a Sales staff member logged in, **When** they access the quotation list, **Then** they see quotations for customers they manage, along with approval status and PDF download option.
 
@@ -318,9 +321,9 @@ This story delivers security MVP and must ship with P1.
 ### Edge Cases
 
 - What happens when a quotation unit price is updated after a partial delivery? (Answer: subsequent deliveries use the new price; past deliveries retain their original prices)
-- How does the system handle a product with no work progress steps defined? (Answer: system allows creating a work progress sheet but doesn't suggest steps; user must manually add them)
+- How does the system handle a project with no task nodes defined? (Answer: system allows creating a TaskFlow but it starts empty; user must manually add task nodes)
 - What if a vendor RFQ is sent but no responses are received by the deadline? (Answer: system shows "no response" status; user can manually close or extend the deadline)
-- How does the system handle editing a JobCode that is already in production? (Answer: JobCode is always editable, but changes are logged; work progress, vendor commitments, and delivery status are separate from JobCode data)
+- How does the system handle editing a JobCode that is already in production? (Answer: JobCode is always editable, but changes are logged; TaskFlow, vendor commitments, and delivery status are separate from JobCode data)
 - What happens if a user uploads a duplicate filename to the same JobCode/product? (Answer: system appends a version suffix and archives the old file, with version history preserved)
 - How does the system handle refunds or negative payments? (Answer: system accepts negative amounts as refunds, reducing the receivable/payable balance and adjusting the invoice status)
 - What if a delivery is recorded but not yet invoiced? (Answer: delivery is marked as "pending invoice"; the system calculates what remains to be invoiced and prevents double-invoicing)
@@ -361,17 +364,17 @@ This story delivers security MVP and must ship with P1.
 - **FR-018b**: System MUST allow Admin to revise a "Sent" quotation, creating a new version automatically while preserving previous versions in history
 - **FR-018c**: System MUST provide Admin with option to email customer notification of quotation revision (Admin chooses whether to send automatic notification or manual follow-up required)
 
-**Production Tracking Per Product**:
+**Production Tracking with TaskFlow** *(UPDATED 2026-01-08)*:
 
-- **FR-019**: System MUST provide a separate work progress sheet per product (not per JobCode)
-- **FR-020**: System MUST allow defining product types (e.g., "Sheet Metal," "Custom Components") with standard manufacturing step templates
-- **FR-021**: System MUST suggest manufacturing steps based on product type (Design, Laser, Machining, Assembly, Welding, Painting/Finishing, etc.) but allow customization
-- **FR-022**: System MUST allow recording status (not started / in progress / completed), date, and remarks per step
-- **FR-023**: System MUST support marking steps as internal or outsourced (with vendor name and ETA if outsourced)
-- **FR-024**: System MUST allow hiding unused steps per product
-- **FR-025**: System MUST support parallel processes (multiple steps in progress simultaneously with different dates)
-- **FR-026**: System MUST show aggregated production status on job detail view (e.g., "Bracket 80% complete, Frame 50% complete")
-- **FR-027**: System MUST preserve step history and allow editing remarks without losing historical data
+- **FR-019**: System MUST provide a visual TaskFlow (DAG-based task management) per project for production tracking
+- **FR-020**: System MUST allow creating task nodes with title, assignee, deadline, and progress (0-100%) in the TaskFlow
+- **FR-021**: System MUST allow connecting task nodes with edges to define dependencies between tasks
+- **FR-022**: System MUST allow recording progress (0-100%), deadline, and assignee per task node
+- **FR-023**: System MUST support task nodes for outsourced work (allowing blueprint attachment and vendor association)
+- **FR-024**: System MUST allow deleting or archiving task nodes that are no longer needed
+- **FR-025**: System MUST support parallel task execution (multiple task nodes can be in progress simultaneously)
+- **FR-026**: System MUST show aggregated production progress on project detail view (calculated from task node progress percentages)
+- **FR-027**: System MUST preserve task history and allow editing task details without losing node positions or connections
 
 **Delivery Tracking & Granular Invoicing**:
 
@@ -395,16 +398,16 @@ This story delivers security MVP and must ship with P1.
 - **FR-042**: System MUST provide cash flow forecasting (receivable/payable by month for next 3 months)
 - **FR-043**: System MUST aggregate sales and purchases by period (monthly, quarterly, yearly)
 
-**Document Management**:
+**Outsourcing Blueprint Attachments** *(UPDATED 2026-01-08)*:
 
-- **FR-044**: System MUST support uploading and storing documents (PDF, DXF, JPG, XLSX, DOCX, etc.) with central storage
-- **FR-045**: System MUST tag documents by JobCode, product, project, customer, and document type (drawing, quotation, photo, BOM, etc.)
-- **FR-046**: System MUST support powerful search by JobCode, project name, customer, product name, and document type
-- **FR-047**: System MUST support filtering documents by multiple attributes simultaneously (e.g., JobCode AND product AND document type)
-- **FR-048**: System MUST provide a virtual tree view (Company → Project → JobCode → Product → Document) without physical folder structures
-- **FR-049**: System MUST preserve document version history when files are replaced
-- **FR-050**: System MUST allow direct file download and opening in local CAD tools (no web-based CAD editing)
-- **FR-051**: System MUST support file size limits (e.g., max 100MB per file)
+- **FR-044**: System MUST support uploading blueprint/drawing files (PDF, DXF, DWG, JPG, PNG) to task nodes in TaskFlow
+- **FR-045**: System MUST store uploaded files with metadata linking them to the specific TaskFlow and task node
+- **FR-046**: System MUST allow multiple file attachments per task node (not limited to one file)
+- **FR-047**: System MUST display attached files on task node detail panel with filename, file size, upload date, and download link
+- **FR-048**: System MUST include attached blueprint files as email attachments when sending RFQ to vendor
+- **FR-049**: System MUST allow direct file download for opening in local CAD tools (no web-based CAD editing)
+- **FR-050**: System MUST support file size limits (max 50MB per file)
+- **FR-051**: System MUST allow adding additional files to a task node without replacing existing attachments
 
 **Purchasing & RFQ**:
 
@@ -424,7 +427,7 @@ This story delivers security MVP and must ship with P1.
 - **FR-062**: System MUST allow Sales role READ-ONLY access to quotations they created and approved quotations for their assigned customers
 - **FR-063**: System MUST restrict financial data (AR/AP, invoices, purchase prices) to Admin and Finance roles
 - **FR-064**: System MUST allow Admin to assign Production staff visibility scope: by JobCode, by manufacturing department/step, or full plant visibility
-- **FR-065**: System MUST restrict production data (work progress, deliveries, tagged documents) visibility per assigned scope for Production staff
+- **FR-065**: System MUST restrict production data (TaskFlow/task nodes, deliveries, tagged documents) visibility per assigned scope for Production staff
 - **FR-066**: System MUST allow Admin to manage users and assign roles and visibility scopes
 - **FR-067**: System MUST maintain an audit log of access to sensitive documents (quotations, financial reports) with user name, date, time, and action
 - **FR-068**: System MUST apply role and visibility scope changes immediately on the user's next session refresh
@@ -435,17 +438,19 @@ This story delivers security MVP and must ship with P1.
 
 - **JobCode**: Unique human-readable identifier (WK2{year}-{sequence}-{date}), customer reference, project name, internal owner, requested due date, status, created date, last updated date. Primary key is a database ID (not the JobCode string).
 
-- **Product**: Name, description, category, optional base unit price, active flag, created date. Used in quotations and work progress sheets.
+- **Product**: Name, description, category, optional base unit price, active flag, created date. Used in quotations.
 
-- **Product Type**: Name (e.g., "Sheet Metal", "Custom Component"), standard manufacturing step template (Design, Laser, Machining, etc.). Used to suggest steps for work progress sheets.
+- **Product Type**: Name (e.g., "Sheet Metal", "Custom Component"). Used for product categorization.
 
 - **Quotation**: JobCode reference, line items (product reference, quantity, unit price, total per line), total amount, approval status, approver name, approval date/time, version number, created date, last updated date, status (Draft/Pending/Approved/Sent/Accepted/Rejected).
 
 - **Quotation Line Item**: Quotation reference, product reference, quantity, unit price (quotation-specific, may differ from catalog base price), line total.
 
-- **Work Progress Sheet**: JobCode reference, product reference, product type reference, created date, last updated date.
+- **TaskFlow** *(UPDATED 2026-01-08)*: Project reference (unique - one per project), nodes collection, edges collection, created date, last updated date. Aggregate root for DAG-based task management.
 
-- **Work Progress Step**: Work progress sheet reference, step name (Design, Laser, Machining, etc.), status (not started / in progress / completed), date started, date completed, remarks, internal/outsourced flag, vendor name (if outsourced), ETA (if outsourced), created date, last updated date.
+- **TaskNode** *(UPDATED 2026-01-08)*: NodeId (UUID for React Flow), title, assignee, deadline, progress (0-100%), positionX, positionY. Value object embedded in TaskFlow. Tracks individual task progress within a project.
+
+- **TaskEdge** *(UPDATED 2026-01-08)*: EdgeId (UUID), sourceNodeId, targetNodeId. Value object embedded in TaskFlow. Represents dependency relationship between two task nodes.
 
 - **Delivery**: JobCode reference, delivery date, delivery number (1st, 2nd, etc.), final delivery flag, created date.
 
@@ -459,7 +464,7 @@ This story delivers security MVP and must ship with P1.
 
 - **Payment**: Tax invoice reference, payment date, amount, payment method, remarks, created date.
 
-- **Document**: File name, file type, file size, storage path, JobCode reference (if applicable), product reference (if applicable), project reference (if applicable), customer reference (if applicable), document type tag, upload date, version number, uploader name, archive flag.
+- **Blueprint Attachment** *(UPDATED 2026-01-08)*: File name, file type (PDF, DXF, DWG, JPG, PNG), file size, storage path, TaskFlow reference (flow_id), TaskNode reference (node_id), upload date, uploader name. Used to attach drawings to task nodes for outsourcing communication.
 
 - **Customer/Company**: Company name, site/location, department, contact person, phone, email, billing address, payment terms.
 
@@ -485,7 +490,7 @@ This story delivers security MVP and must ship with P1.
 
 - **SC-002**: Quotations are created from a JobCode by selecting catalog products and entering quantities/prices in under 5 minutes. Quotation PDFs are generated and downloadable within 10 seconds.
 
-- **SC-003**: Production staff can update work progress (status, date, remarks) for any product step in under 1 minute per update. The updated status is visible on the job detail view within 5 seconds.
+- **SC-003**: Production staff can update task progress (percentage, deadline, assignee) for any task node in TaskFlow in under 1 minute per update. The updated progress is visible on the project detail view within 5 seconds.
 
 - **SC-004**: A delivery is recorded with shipped products/quantities in under 3 minutes. Transaction statements are generated automatically within 10 seconds without manual re-entry of customer, product, or price data.
 
@@ -499,7 +504,7 @@ This story delivers security MVP and must ship with P1.
 
 - **SC-009**: Vendor RFQ emails are auto-generated and sent within 30 seconds. Vendor response tracking and purchase order creation complete in under 3 minutes.
 
-- **SC-010**: Management sees real-time visibility: project status (per-product work progress %), on-time delivery %, sales by month, outstanding AR/AP aging (30/60/90+ days), and project profitability (quotation vs. cost) all within 5 seconds of opening the dashboard.
+- **SC-010**: Management sees real-time visibility: project status (TaskFlow progress % aggregated from task nodes), on-time delivery %, sales by month, outstanding AR/AP aging (30/60/90+ days), and project profitability (quotation vs. cost) all within 5 seconds of opening the dashboard.
 
 - **SC-011**: Partial/split deliveries and granular invoicing work correctly—the system prevents double-invoicing of the same product-quantity combination and allows invoicing any subset of products independently.
 
@@ -509,7 +514,7 @@ This story delivers security MVP and must ship with P1.
 
 ## Assumptions
 
-- **Data Volume**: Expected medium volume of 500–1000 JobCodes created per month. System should support at least 12 months of operational data (6,000–12,000 JobCodes) at launch with scalability to 24+ months. Each JobCode may have 1–5 quoted products; 3–10 work progress steps per product; 1–4 deliveries per JobCode; multiple quotation versions per JobCode.
+- **Data Volume**: Expected medium volume of 500–1000 JobCodes created per month. System should support at least 12 months of operational data (6,000–12,000 JobCodes) at launch with scalability to 24+ months. Each JobCode may have 1–5 quoted products; 5–20 task nodes per project TaskFlow; 1–4 deliveries per JobCode; multiple quotation versions per JobCode.
 
 - **Database**: System uses a relational database (SQL-based) with foreign key relationships between JobCode, products, quotations, deliveries, invoices, and payments. Database should support ACID transactions for quotation approval and payment recording.
 
@@ -545,7 +550,7 @@ This story delivers security MVP and must ship with P1.
 
 - **JobCode uniqueness**: JobCode values must be unique across all records. Sequence number generation must be atomic to prevent duplicates in high-concurrency scenarios.
 
-- **Product-to-step mapping**: Work progress step templates per product type must be defined by admin before production staff can use them. System should allow manual customization per JobCode.
+- **TaskFlow flexibility**: TaskFlow provides flexible task management without predefined templates. Production staff can create task nodes as needed per project. System supports manual customization per JobCode.
 
 - **Quotation-to-invoice traceability**: All invoices must link to a quotation line item to prevent discrepancies. System must prevent invoicing products/quantities not in the quotation.
 

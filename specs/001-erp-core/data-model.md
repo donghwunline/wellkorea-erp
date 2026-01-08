@@ -23,9 +23,10 @@ Project (root aggregate)
 │   ├── QuotationLineItem (one-to-many)
 │   │   └── Product (many-to-one)
 │   └── ApprovalRequest (one-to-one, via Approval domain)
-├── WorkProgressSheet (one-to-many, per-product)
-│   ├── Product (many-to-one)
-│   └── WorkProgressStep (one-to-many)
+├── TaskFlow (one-to-one, DAG-based production tracking) - **UPDATED 2026-01-08**
+│   ├── TaskNode (one-to-many, value objects - tasks)
+│   ├── TaskEdge (one-to-many, value objects - dependencies)
+│   └── BlueprintAttachment (one-to-many, files for outsourced tasks)
 ├── Delivery (one-to-many)
 │   ├── DeliveryLineItem (one-to-many)
 │   │   └── Product (many-to-one)
@@ -64,7 +65,6 @@ User (cross-cutting)
 
 Product (catalog, referenced by quotations and invoices)
 └── ProductType (category)
-    └── WorkProgressStepTemplate (one-to-many: multiple step templates per product type)
 ```
 
 ---
@@ -111,7 +111,7 @@ Product (catalog, referenced by quotations and invoices)
 
 **Relationships**:
 - 1:N → Quotation
-- 1:N → WorkProgressSheet
+- 1:1 → TaskFlow (DAG-based production tracking) - **UPDATED 2026-01-08**
 - 1:N → Delivery
 - 1:N → TaxInvoice
 - 1:N → Payment
@@ -239,9 +239,7 @@ Product (catalog, referenced by quotations and invoices)
 **Relationships**:
 - M:1 → ProductType
 - 1:N → QuotationLineItem
-- 1:N → WorkProgressSheet
 - 1:N → InvoiceLineItem
-- 1:1 → WorkProgressStepTemplate
 
 ---
 
@@ -259,22 +257,14 @@ Product (catalog, referenced by quotations and invoices)
 
 **Relationships**:
 - 1:N → Product
-- 1:N → WorkProgressStepTemplate (one ProductType has multiple step templates defining the manufacturing process)
 
 ---
 
-### 5. WorkProgressStepTemplate
+### 5. ~~WorkProgressStepTemplate~~ (DEPRECATED)
 
-**Purpose**: Defines standard work steps for a product type (e.g., "Cut", "Weld", "Paint", "QC").
+> **Note**: WorkProgressStepTemplate has been removed as of 2026-01-08. TaskFlow/TaskNode now provides flexible task management without predefined templates. See section 9 for TaskFlow entities.
 
-**Fields**:
-
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| id | UUID/BigInt | Yes | Primary key |
-| product_type_id | FK | Yes | References ProductType |
-| step_number | Integer | Yes | 1, 2, 3, ... (execution order) |
-| step_name | String(100) | Yes | E.g., "Cutting", "Welding", "Painting" |
+**Fields** (for reference only - no longer used):
 | estimated_hours | Decimal(5,2) | No | Baseline time estimate |
 
 **Relationships**:
@@ -533,65 +523,116 @@ Product (catalog, referenced by quotations and invoices)
 
 ---
 
-### 9. WorkProgressSheet
+### 9. TaskFlow - **UPDATED 2026-01-08**
 
-**Purpose**: Track production steps for a specific product within a JobCode.
+**Purpose**: DAG (Directed Acyclic Graph) based task management for project production tracking. Replaces previous WorkProgressSheet/WorkProgressStep model.
 
-**Key Design**: One WorkProgressSheet per (JobCode, Product) combination. This enables:
-- Different products in same JobCode to have independent progress
-- Partial delivery (e.g., complete Product A, still working on Product B)
+**Key Design**: One TaskFlow per Project. Contains TaskNodes (tasks) and TaskEdges (dependencies). Visualized using React Flow for interactive management. This enables:
+- Flexible task dependencies (any node can depend on any other nodes)
+- Visual task management with drag-and-drop positioning
+- Generic tasks (not tied to specific manufacturing steps)
+- Progress tracking per task with deadline management
 
 **Fields**:
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
-| id | UUID/BigInt | Yes | Primary key |
-| jobcode_id | FK | Yes | References JobCode |
-| product_id | FK | Yes | References Product |
-| sequence | Integer | Yes | Which product row in quotation (for display) |
-| status | Enum | Yes | Not Started, In Progress, Completed |
+| id | BigInt | Yes | Primary key |
+| project_id | FK | Yes | References Project (UNIQUE) |
 | created_at | Timestamp | Yes | UTC |
 | updated_at | Timestamp | Yes | UTC |
 
 **Validation Rules**:
-- Unique constraint on (jobcode_id, product_id)
-- Only one WorkProgressSheet per product per JobCode
+- Unique constraint on (project_id) - one TaskFlow per project
+- DAG validation: no cycles allowed in edges
 
 **Relationships**:
-- M:1 → JobCode
-- M:1 → Product
-- 1:N → WorkProgressStep (instances of template steps)
+- 1:1 → Project (unique constraint)
+- 1:N → TaskNode (value objects, stored in task_nodes table)
+- 1:N → TaskEdge (value objects, stored in task_edges table)
+- 1:N → BlueprintAttachment (for outsourced tasks)
 
 ---
 
-### 10. WorkProgressStep
+### 9a. TaskNode (Value Object)
 
-**Purpose**: Instance of a work step for a specific product in a JobCode.
+**Purpose**: A single task within a TaskFlow. Stored as @ElementCollection in task_nodes table.
 
 **Fields**:
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
-| id | UUID/BigInt | Yes | Primary key |
-| sheet_id | FK | Yes | References WorkProgressSheet |
-| step_template_id | FK | Yes | References WorkProgressStepTemplate |
-| step_number | Integer | Yes | Order (1, 2, 3, ...) |
-| status | Enum | Yes | Not Started, In Progress, Completed |
-| started_at | Timestamp | No | When work began |
-| completed_at | Timestamp | No | When work finished |
-| completed_by_id | FK | No | References User (who completed) |
-| notes | Text | No | Work notes, issues, observations |
-| created_at | Timestamp | Yes | UTC |
+| flow_id | FK | Yes | References TaskFlow (join column) |
+| node_id | String(36) | Yes | UUID for React Flow identification |
+| title | String(255) | Yes | Task title |
+| assignee | String(100) | No | Person responsible |
+| deadline | Date | No | Task due date |
+| progress | Integer | Yes | 0-100 percentage complete |
+| position_x | Double | Yes | X coordinate for React Flow canvas |
+| position_y | Double | Yes | Y coordinate for React Flow canvas |
 
 **Validation Rules**:
-- `status` progression: Not Started → In Progress → Completed
-- If `completed_at` set, `status` must be Completed
-- `completed_by_id` required if status = Completed
+- progress must be between 0 and 100
+- node_id must be unique within the flow
+
+**Business Methods**:
+- `isOverdue(asOf)`: Returns true if deadline passed and progress < 100
+- `getProgressLevel()`: Returns "low" (0-33%), "medium" (34-66%), "high" (67-100%)
+
+---
+
+### 9b. TaskEdge (Value Object)
+
+**Purpose**: A dependency edge between two TaskNodes. Stored as @ElementCollection in task_edges table.
+
+**Fields**:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| flow_id | FK | Yes | References TaskFlow (join column) |
+| edge_id | String(36) | Yes | UUID for React Flow identification |
+| source_node_id | String(36) | Yes | Source TaskNode.node_id |
+| target_node_id | String(36) | Yes | Target TaskNode.node_id |
+
+**Validation Rules**:
+- Both source_node_id and target_node_id must exist in the same flow's nodes
+- edge_id must be unique within the flow
+- No cycles allowed (DAG constraint)
+
+---
+
+### 9c. BlueprintAttachment
+
+**Purpose**: File attachment for outsourced tasks. Stores drawings/blueprints sent to vendors.
+
+**Fields**:
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| id | BigInt | Yes | Primary key |
+| task_flow_id | FK | Yes | References TaskFlow |
+| node_id | String(36) | Yes | References TaskNode.node_id within the flow |
+| file_name | String(255) | Yes | Original file name |
+| file_type | Enum | Yes | PDF, DXF, DWG, JPG, PNG |
+| file_size | Long | Yes | File size in bytes |
+| storage_path | String(500) | Yes | MinIO/S3 object path |
+| uploaded_by_id | FK | Yes | References User |
+| uploaded_at | Timestamp | Yes | UTC |
+
+**Validation Rules**:
+- file_size <= 50MB (52,428,800 bytes)
+- file_type must be one of: PDF, DXF, DWG, JPG, PNG
+- node_id must exist in the referenced TaskFlow
 
 **Relationships**:
-- M:1 → WorkProgressSheet
-- M:1 → WorkProgressStepTemplate
-- M:1 → User (completed_by)
+- M:1 → TaskFlow
+- M:1 → User (uploaded_by)
+
+---
+
+### 10. ~~WorkProgressStep~~ (DEPRECATED)
+
+> **Note**: WorkProgressStep and WorkProgressSheet have been replaced by TaskFlow/TaskNode/TaskEdge as of 2026-01-08. See section 9 above.
 
 ---
 
@@ -1108,14 +1149,18 @@ QuotationLineItem
 ├─ FK → Quotation (ON DELETE CASCADE—delete item if quotation deleted)
 └─ FK → Product (ON DELETE RESTRICT)
 
-WorkProgressSheet
-├─ FK → Project (ON DELETE CASCADE)
-└─ FK → Product (ON DELETE RESTRICT)
+TaskFlow (UPDATED 2026-01-08 - replaces WorkProgressSheet)
+└─ FK → Project (ON DELETE CASCADE, unique—one TaskFlow per project)
 
-WorkProgressStep
-├─ FK → WorkProgressSheet (ON DELETE CASCADE)
-├─ FK → WorkProgressStepTemplate (ON DELETE RESTRICT)
-└─ FK → User (ON DELETE RESTRICT)
+task_nodes (embedded collection)
+└─ FK → TaskFlow (flow_id, ON DELETE CASCADE)
+
+task_edges (embedded collection)
+└─ FK → TaskFlow (flow_id, ON DELETE CASCADE)
+
+BlueprintAttachment (UPDATED 2026-01-08 - for US7 outsourcing attachments)
+├─ FK → TaskFlow (ON DELETE CASCADE)
+└─ Composite reference → task_nodes (flow_id + node_id for logical integrity)
 
 Delivery
 ├─ FK → Project (ON DELETE CASCADE)
@@ -1138,9 +1183,8 @@ Payment
 ├─ FK → TaxInvoice (ON DELETE RESTRICT—preserve payment records)
 └─ FK → User (ON DELETE RESTRICT)
 
-Document
-├─ Polymorphic owner_id (may reference Project, Quotation, TaxInvoice, etc.)
-└─ FK → User (ON DELETE RESTRICT)
+~~Document~~ → See BlueprintAttachment (section 9c)
+(DEPRECATED 2026-01-08 - replaced by BlueprintAttachment for outsourcing task nodes)
 
 ServiceCategory
 └─ 1:N → VendorServiceOffering
@@ -1186,7 +1230,10 @@ UserRole (junction)
 | Quotation | (project_id, version) | Always | Prevent duplicate versions per Project |
 | TaxInvoice | (invoice_number) | Always | Prevent duplicate invoice numbers |
 | InvoiceLineItem | (invoice_id, product_id) | Always | One invoice line per product per invoice |
-| WorkProgressSheet | (project_id, product_id) | Always | One progress sheet per product per Project |
+| TaskFlow | (project_id) | Always | One TaskFlow per project (UPDATED 2026-01-08) |
+| task_nodes | (flow_id, node_id) | Always | Unique node_id within a TaskFlow |
+| task_edges | (flow_id, edge_id) | Always | Unique edge_id within a TaskFlow |
+| BlueprintAttachment | (flow_id, node_id, file_name) | Always | Unique file name per task node |
 | Product | (sku) | WHERE is_active = true | Allow archived duplicates; prevent active duplicates |
 | ServiceCategory | (name) | Always | Prevent duplicate service categories |
 | VendorServiceOffering | (vendor_company_id, service_category_id, effective_from) | Always | Prevent duplicate pricing periods |
@@ -1222,8 +1269,11 @@ CREATE INDEX idx_invoice_due_date ON tax_invoices(due_date); -- For aging analys
 -- Payment lookups
 CREATE INDEX idx_payment_invoice ON payments(invoice_id);
 
--- Work progress tracking
-CREATE INDEX idx_workprogress_project_product ON work_progress_sheets(project_id, product_id);
+-- TaskFlow tracking (UPDATED 2026-01-08 - replaces work_progress_sheets)
+CREATE INDEX idx_taskflow_project ON task_flows(project_id);
+CREATE INDEX idx_tasknode_deadline ON task_nodes(flow_id, deadline); -- For overdue task queries
+CREATE INDEX idx_tasknode_assignee ON task_nodes(flow_id, assignee); -- For assignee filtering
+CREATE INDEX idx_blueprint_node ON blueprint_attachments(flow_id, node_id); -- For attachment lookups
 
 -- Vendor service lookups (FR-053: select service → get vendors)
 CREATE INDEX idx_vendor_offering_service ON vendor_service_offerings(service_category_id, is_preferred, unit_price);
@@ -1239,8 +1289,8 @@ CREATE INDEX idx_purchase_request_status ON purchase_requests(status);
 CREATE INDEX idx_audit_entity ON audit_logs(entity_type, entity_id);
 CREATE INDEX idx_audit_user_time ON audit_logs(user_id, timestamp);
 
--- Document searches
-CREATE INDEX idx_document_owner ON documents(owner_type, owner_id);
+-- BlueprintAttachment searches (UPDATED 2026-01-08 - replaces documents)
+-- Note: idx_blueprint_node already covers the primary lookup pattern
 ```
 
 ---
