@@ -202,3 +202,23 @@ export const TASK_FLOW_ENDPOINTS = {
   /** GET/PUT /task-flows/:id */
   byId: (id: number) => `/task-flows/${id}`,
 } as const;
+
+// ============================================================================
+// Delivery Endpoints
+// ============================================================================
+
+export const DELIVERY_ENDPOINTS = {
+  /** Base path for delivery operations */
+  /** GET /deliveries?projectId={projectId}&status={status} - List deliveries with optional filters */
+  /** POST /deliveries?projectId={projectId} - Create delivery for a project */
+  BASE: '/deliveries',
+
+  /** GET /deliveries/:id - Get delivery detail */
+  byId: (id: number) => `/deliveries/${id}`,
+  /** POST /deliveries/:id/delivered - Mark as delivered */
+  markDelivered: (id: number) => `/deliveries/${id}/delivered`,
+  /** POST /deliveries/:id/returned - Mark as returned */
+  markReturned: (id: number) => `/deliveries/${id}/returned`,
+  /** GET /deliveries/:id/statement - Generate delivery statement PDF */
+  statement: (id: number) => `/deliveries/${id}/statement`,
+} as const;
