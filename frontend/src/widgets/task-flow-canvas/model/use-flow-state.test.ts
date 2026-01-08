@@ -419,7 +419,7 @@ describe('useFlowState', () => {
 
       act(() => {
         result.current.onConnect({
-          source: null,
+          source: null as unknown as string,
           target: 'node-2',
           sourceHandle: null,
           targetHandle: null,
@@ -435,7 +435,7 @@ describe('useFlowState', () => {
       act(() => {
         result.current.onConnect({
           source: 'node-1',
-          target: null,
+          target: null as unknown as string,
           sourceHandle: null,
           targetHandle: null,
         });

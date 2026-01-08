@@ -34,16 +34,16 @@ vi.mock('@/features/task-flow/edit-node', () => ({
 
 // Mock useFlowState hook
 const mockUseFlowState = {
-  nodes: [],
-  edges: [],
+  nodes: [] as unknown[],
+  edges: [] as unknown[],
   onNodesChange: vi.fn(),
   onEdgesChange: vi.fn(),
   onConnect: vi.fn(),
   onNodeClick: vi.fn(),
   hasChanges: false,
   markSaved: vi.fn(),
-  getTaskNodes: vi.fn(() => []),
-  getTaskEdges: vi.fn(() => []),
+  getTaskNodes: vi.fn().mockReturnValue([]),
+  getTaskEdges: vi.fn().mockReturnValue([]),
   addNode: vi.fn(),
   updateNode: vi.fn(),
   deleteNode: vi.fn(),
@@ -195,21 +195,20 @@ describe('TaskFlowCanvas', () => {
       const user = userEvent.setup();
       const onSave = vi.fn();
       mockUseFlowState.hasChanges = true;
-      mockUseFlowState.getTaskNodes.mockReturnValue([
-        { id: 'node-1', title: 'Task 1' },
-      ]);
-      mockUseFlowState.getTaskEdges.mockReturnValue([
+      const mockNodes = [
+        { id: 'node-1', title: 'Task 1', assignee: null, deadline: null, progress: 0, position: { x: 0, y: 0 } },
+      ];
+      const mockEdges = [
         { id: 'edge-1', source: 'node-1', target: 'node-2' },
-      ]);
+      ];
+      mockUseFlowState.getTaskNodes.mockReturnValue(mockNodes);
+      mockUseFlowState.getTaskEdges.mockReturnValue(mockEdges);
 
       renderComponent({ onSave });
 
       await user.click(screen.getByRole('button', { name: /save/i }));
 
-      expect(onSave).toHaveBeenCalledWith(
-        [{ id: 'node-1', title: 'Task 1' }],
-        [{ id: 'edge-1', source: 'node-1', target: 'node-2' }]
-      );
+      expect(onSave).toHaveBeenCalledWith(mockNodes, mockEdges);
     });
 
     it('should call markSaved after onSave', async () => {
