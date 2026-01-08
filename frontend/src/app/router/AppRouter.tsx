@@ -31,6 +31,8 @@ import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from '@/pages/c
 import { ItemsPage } from '@/pages/items';
 import { ProcurementPage } from '@/pages/procurement';
 import { DeliveriesPage, DeliveryCreatePage, DeliveryDetailPage } from '@/pages/deliveries';
+import { InvoicesPage, InvoiceSelectProjectPage, InvoiceCreatePage, InvoiceDetailPage } from '@/pages/invoices';
+import { ARReportPage } from '@/pages/reports';
 
 /**
  * Layout wrapper for protected routes.
@@ -120,8 +122,16 @@ export function AppRouter() {
         <Route path="/companies/:id/edit" element={<PlaceholderPage title="Edit Company" />} />
         <Route path="/items" element={<ItemsPage />} />
         <Route path="/procurement" element={<ProcurementPage />} />
-        <Route path="/invoices" element={<PlaceholderPage title="Invoices" />} />
-        <Route path="/reports" element={<PlaceholderPage title="AR/AP Reports" />} />
+
+        {/* Invoices */}
+        <Route path="/invoices" element={<InvoicesPage />} />
+        <Route path="/invoices/create" element={<InvoiceSelectProjectPage />} />
+        <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+        <Route path="/projects/:projectId/invoices/create" element={<InvoiceCreatePage />} />
+
+        {/* Reports */}
+        <Route path="/reports" element={<ARReportPage />} />
+        <Route path="/reports/ar" element={<ARReportPage />} />
       </Route>
 
       {/* ========== ADMIN ONLY ROUTES ========== */}
