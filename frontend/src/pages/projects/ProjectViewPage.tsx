@@ -34,7 +34,7 @@ import { ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton, projectQu
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
-import { DeliveryPanel, ProjectRelatedNavigationGrid, QuotationDetailsPanel, TaskFlowPanel, } from '@/widgets'; // Tab ID includes 'overview' (landing tab) + all project sections
+import { DeliveryPanel, InvoicePanel, ProjectRelatedNavigationGrid, QuotationDetailsPanel, TaskFlowPanel, } from '@/widgets';
 
 // Tab ID includes 'overview' (landing tab) + all project sections
 type TabId = 'overview' | ProjectSection;
@@ -273,15 +273,9 @@ export function ProjectViewPage() {
             </Card>
           </TabPanel>
 
-          {/* Finance Tab (Placeholder) */}
+          {/* Finance Tab */}
           <TabPanel id="finance">
-            <Card className="p-12 text-center">
-              <Icon name="banknotes" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-              <h3 className="text-lg font-semibold text-white">정산관리</h3>
-              <p className="mt-2 text-steel-500">
-                Finance management will be available in a future release.
-              </p>
-            </Card>
+            <InvoicePanel projectId={project.id} onDataChange={triggerKpiRefresh} />
           </TabPanel>
         </Tabs>
       </div>
