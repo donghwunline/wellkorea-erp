@@ -205,14 +205,16 @@ export function ProductForm({
         <h3 className="mb-4 border-b border-steel-800 pb-2 text-sm font-medium text-steel-400">
           Description
         </h3>
-        <FormField
-          label="Description"
-          value={formData.description}
-          onChange={value => setFormData(prev => ({ ...prev, description: value }))}
-          disabled={isSubmitting}
-          placeholder="Product description (optional)"
-          multiline
-        />
+        <FormField label="Description">
+          <textarea
+            value={formData.description}
+            onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            disabled={isSubmitting}
+            placeholder="Product description (optional)"
+            rows={3}
+            className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 transition-colors focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </FormField>
       </div>
 
       {/* Form Actions */}
