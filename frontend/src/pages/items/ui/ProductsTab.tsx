@@ -15,7 +15,12 @@
 
 import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { type Product, type ProductListItem, productQueries, ProductTable, } from '@/entities/product';
+import {
+  type Product,
+  type ProductListItem,
+  productQueries,
+  ProductTable,
+} from '@/entities/product';
 import { useAuth } from '@/entities/auth';
 import { ProductFormModal } from '@/features/product/form';
 import { Button, Card, Pagination, SearchBar, Spinner } from '@/shared/ui';

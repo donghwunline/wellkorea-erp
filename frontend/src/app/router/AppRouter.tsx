@@ -30,6 +30,7 @@ import {
 import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from '@/pages/companies';
 import { ItemsPage } from '@/pages/items';
 import { ProcurementPage } from '@/pages/procurement';
+import { DeliveriesPage, DeliveryCreatePage, DeliveryDetailPage } from '@/pages/deliveries';
 
 /**
  * Layout wrapper for protected routes.
@@ -79,7 +80,8 @@ export function AppRouter() {
         <Route path="/projects" element={<ProjectListPage />} />
         <Route path="/projects/:id" element={<ProjectViewPage />} />
         <Route path="/approvals" element={<ApprovalListPage />} />
-        <Route path="/delivery" element={<PlaceholderPage title="Delivery" />} />
+        <Route path="/deliveries" element={<DeliveriesPage />} />
+        <Route path="/deliveries/:id" element={<DeliveryDetailPage />} />
       </Route>
 
       {/* ========== SALES/FINANCE/ADMIN ROUTES ========== */}
@@ -110,6 +112,10 @@ export function AppRouter() {
 
       {/* ========== FINANCE/ADMIN ROUTES ========== */}
       <Route element={<RoleProtectedLayout requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']} />}>
+        {/* Delivery management */}
+        <Route path="/projects/:projectId/deliveries/create" element={<DeliveryCreatePage />} />
+
+        {/* Companies */}
         <Route path="/companies/new" element={<CreateCompanyPage />} />
         <Route path="/companies/:id/edit" element={<PlaceholderPage title="Edit Company" />} />
         <Route path="/items" element={<ItemsPage />} />

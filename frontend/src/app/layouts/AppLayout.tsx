@@ -44,7 +44,7 @@ const OPERATIONS_NAV_ITEMS: NavItem[] = [
   },
   {
     label: '출고',
-    path: '/delivery',
+    path: '/deliveries',
     icon: 'truck',
   },
   {
