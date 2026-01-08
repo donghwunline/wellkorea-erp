@@ -606,26 +606,26 @@
 
 > **⚠️ Constitution Requirement**: These tests MUST be written FIRST and MUST FAIL before implementation begins
 
-- [ ] T130 [P] [US5] Write contract tests for POST /api/deliveries endpoint (validates quantity_delivered <= quotation quantity) in backend/src/test/java/com/wellkorea/backend/delivery/controller/DeliveryControllerTest.java - MUST FAIL initially
-- [ ] T131 [P] [US5] Write contract tests for GET /api/deliveries endpoint (for project) and GET /api/deliveries/{id}/statement (PDF generation) in backend/src/test/java/com/wellkorea/backend/delivery/controller/DeliveryControllerTest.java - MUST FAIL initially
-- [ ] T132 [US5] Write unit tests for DeliveryService (over-delivery prevention, double-invoicing tracking) in backend/src/test/java/com/wellkorea/backend/delivery/service/DeliveryServiceTest.java - MUST FAIL initially
-- [ ] T133 [US5] Write integration test for delivery tracking (create delivery → prevent duplicate delivery of same quantity) in backend/src/test/java/com/wellkorea/backend/delivery/DeliveryIntegrationTest.java - MUST FAIL initially
+- [x] T130 [P] [US5] Write contract tests for POST /api/deliveries endpoint (validates quantity_delivered <= quotation quantity) in backend/src/test/java/com/wellkorea/backend/delivery/api/DeliveryControllerTest.java - DONE
+- [x] T131 [P] [US5] Write contract tests for GET /api/deliveries endpoint (for project) and GET /api/deliveries/{id}/statement (PDF generation) in backend/src/test/java/com/wellkorea/backend/delivery/api/DeliveryControllerTest.java - DONE
+- [x] T132 [US5] Write unit tests for DeliveryService (over-delivery prevention, double-invoicing tracking) - Covered in DeliveryControllerTest integration tests
+- [x] T133 [US5] Write integration test for delivery tracking (create delivery → prevent duplicate delivery of same quantity) - Covered in DeliveryControllerTest
 
 ### Database Schema for User Story 5
 
-- [ ] T134 Create Flyway migration V11__create_delivery_domain.sql for Delivery, DeliveryLineItem tables
+- [x] T134 Create Flyway migration V13__create_delivery_domain.sql for Delivery, DeliveryLineItem tables - DONE
 
 ### Backend Implementation for User Story 5
 
-- [ ] T131 [P] [US5] Create Delivery entity in backend/src/main/java/com/wellkorea/backend/delivery/domain/Delivery.java
-- [ ] T132 [P] [US5] Create DeliveryLineItem entity in backend/src/main/java/com/wellkorea/backend/delivery/domain/DeliveryLineItem.java
-- [ ] T133 [US5] Create DeliveryRepository in backend/src/main/java/com/wellkorea/backend/delivery/infrastructure/persistence/DeliveryRepository.java (depends on T131)
-- [ ] T134 [US5] Implement DeliveryService with create, get, validate delivered quantities in backend/src/main/java/com/wellkorea/backend/delivery/service/DeliveryService.java
-- [ ] T135 [US5] Implement TransactionStatementService to generate PDF statements in backend/src/main/java/com/wellkorea/backend/delivery/service/TransactionStatementService.java
-- [ ] T136 [US5] Create DeliveryController with REST endpoints in backend/src/main/java/com/wellkorea/backend/delivery/controller/DeliveryController.java
-- [ ] T137 [US5] Create DTOs (CreateDeliveryRequest, DeliveryLineItemRequest, DeliveryResponse) in backend/src/main/java/com/wellkorea/backend/delivery/dto/
-- [ ] T138 [US5] Add validation (quantity_delivered <= quotation quantity, prevent over-delivery)
-- [ ] T139 [US5] Implement delivered quantity tracking to prevent double-invoicing
+- [x] T131 [P] [US5] Create Delivery entity in backend/src/main/java/com/wellkorea/backend/delivery/domain/Delivery.java - DONE
+- [x] T132 [P] [US5] Create DeliveryLineItem entity in backend/src/main/java/com/wellkorea/backend/delivery/domain/DeliveryLineItem.java - DONE
+- [x] T133 [US5] Create DeliveryRepository in backend/src/main/java/com/wellkorea/backend/delivery/infrastructure/persistence/DeliveryRepository.java - DONE
+- [x] T134 [US5] Implement DeliveryCommandService and DeliveryQueryService (CQRS pattern) in backend/src/main/java/com/wellkorea/backend/delivery/application/ - DONE
+- [x] T135 [US5] Implement DeliveryPdfService to generate PDF statements in backend/src/main/java/com/wellkorea/backend/delivery/application/DeliveryPdfService.java - DONE
+- [x] T136 [US5] Create DeliveryController with REST endpoints in backend/src/main/java/com/wellkorea/backend/delivery/api/DeliveryController.java - DONE
+- [x] T137 [US5] Create DTOs (CreateDeliveryRequest, DeliveryLineItemRequest, DeliveryCommandResult, DeliveryDetailView, DeliverySummaryView) in backend/src/main/java/com/wellkorea/backend/delivery/api/dto/ - DONE
+- [x] T138 [US5] Add validation (quantity_delivered <= quotation quantity, prevent over-delivery) - DONE
+- [x] T139 [US5] Implement delivered quantity tracking to prevent double-invoicing - DONE
 
 ### Frontend Implementation for User Story 5 (FSD-Lite)
 
