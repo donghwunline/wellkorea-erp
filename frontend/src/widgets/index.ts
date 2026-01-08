@@ -28,3 +28,7 @@ export { UserMenu, type UserMenuProps, type UserMenuItem } from './user-menu';
 export { TaskFlowModal, type TaskFlowModalProps } from './task-flow-modal';
 
 export { TaskFlowCanvas, type TaskFlowCanvasProps } from './task-flow-canvas';
+
+export { TaskFlowPanel, type TaskFlowPanelProps } from './task-flow-panel';
+
+export { DeliveryPanel, type DeliveryPanelProps } from './delivery-panel';
