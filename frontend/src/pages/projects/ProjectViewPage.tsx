@@ -34,7 +34,13 @@ import { ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton, projectQu
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
-import { DeliveryPanel, InvoicePanel, ProjectRelatedNavigationGrid, QuotationDetailsPanel, TaskFlowPanel, } from '@/widgets';
+import {
+  DeliveryPanel,
+  InvoicePanel,
+  ProjectRelatedNavigationGrid,
+  QuotationDetailsPanel,
+  TaskFlowPanel,
+} from '@/widgets';
 
 // Tab ID includes 'overview' (landing tab) + all project sections
 type TabId = 'overview' | ProjectSection;
@@ -52,8 +58,8 @@ const ALL_TABS: readonly TabConfig[] = [
   { id: 'quotation', label: '견적', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
   { id: 'process', label: '공정' },
   { id: 'outsource', label: '외주관리' },
-  { id: 'delivery', label: '출고' },
   { id: 'documents', label: '문서' },
+  { id: 'delivery', label: '출고' },
   { id: 'finance', label: '정산관리', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE'] },
 ];
 
