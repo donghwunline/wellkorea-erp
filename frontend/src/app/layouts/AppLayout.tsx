@@ -8,8 +8,8 @@
  */
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import { Icon, type IconName, Navigation } from '@/shared/ui';
+import { useUIStore } from '@/shared/lib/stores/ui-store';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import { UserMenu } from '@/widgets';
@@ -122,7 +122,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const { user, hasAnyRole } = useAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarCollapsed, toggleSidebar } = useUIStore();
 
   // Filter nav items based on user roles
   const filterNavItems = (items: NavItem[]): NavItem[] => {
@@ -162,7 +162,7 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
             </div>
           )}
           <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onClick={toggleSidebar}
             className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
           >
             <Icon
