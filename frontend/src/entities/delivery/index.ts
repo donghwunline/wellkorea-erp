@@ -21,6 +21,8 @@ export type {
   CreateDeliveryLineItemInput,
 } from './api/create-delivery';
 export { downloadDeliveryStatement } from './api/delivery-statement';
+export { markDelivered } from './api/mark-delivered';
+export { markReturned } from './api/mark-returned';
 
 // UI - Presentation components
 export { DeliveryStatusBadge } from './ui/DeliveryStatusBadge';
