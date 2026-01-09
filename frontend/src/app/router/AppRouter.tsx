@@ -10,8 +10,7 @@
 import { Outlet, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AppLayout } from '../layouts';
-import { NotFoundPage } from './components/NotFoundPage';
-import { PlaceholderPage } from './components/PlaceholderPage';
+import { NotFoundPage, PlaceholderPage } from '@/pages/error';
 
 // Page imports
 import { LoginPage } from '@/pages/auth';
@@ -21,17 +20,12 @@ import { AuditLogPage } from '@/pages/admin/AuditLogPage';
 import { ApprovalChainConfigPage } from '@/pages/approval/ApprovalChainConfigPage';
 import { ApprovalListPage } from '@/pages/approval/ApprovalListPage';
 import { ProjectCreatePage, ProjectEditPage, ProjectListPage, ProjectViewPage, } from '@/pages/projects';
-import {
-  QuotationCreatePage,
-  QuotationDetailPage,
-  QuotationEditPage,
-  QuotationListPage,
-} from '@/pages/quotations';
+import { QuotationCreatePage, QuotationDetailPage, QuotationEditPage, QuotationListPage, } from '@/pages/quotations';
 import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from '@/pages/companies';
 import { ItemsPage } from '@/pages/items';
 import { ProcurementPage } from '@/pages/procurement';
 import { DeliveriesPage, DeliveryCreatePage, DeliveryDetailPage } from '@/pages/deliveries';
-import { InvoicesPage, InvoiceSelectProjectPage, InvoiceCreatePage, InvoiceDetailPage } from '@/pages/invoices';
+import { InvoiceCreatePage, InvoiceDetailPage, InvoiceSelectProjectPage, InvoicesPage, } from '@/pages/invoices';
 import { ARReportPage } from '@/pages/reports';
 
 /**
