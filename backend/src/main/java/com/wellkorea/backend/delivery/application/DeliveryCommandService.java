@@ -8,8 +8,6 @@ import com.wellkorea.backend.delivery.domain.DeliveryStatus;
 import com.wellkorea.backend.delivery.infrastructure.persistence.DeliveryRepository;
 import com.wellkorea.backend.product.domain.Product;
 import com.wellkorea.backend.product.infrastructure.repository.ProductRepository;
-import com.wellkorea.backend.project.domain.Project;
-import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
@@ -35,16 +33,13 @@ import java.util.Optional;
 public class DeliveryCommandService {
 
     private final DeliveryRepository deliveryRepository;
-    private final ProjectRepository projectRepository;
     private final ProductRepository productRepository;
     private final QuotationRepository quotationRepository;
 
     public DeliveryCommandService(DeliveryRepository deliveryRepository,
-                                  ProjectRepository projectRepository,
                                   ProductRepository productRepository,
                                   QuotationRepository quotationRepository) {
         this.deliveryRepository = deliveryRepository;
-        this.projectRepository = projectRepository;
         this.productRepository = productRepository;
         this.quotationRepository = quotationRepository;
     }
@@ -62,10 +57,6 @@ public class DeliveryCommandService {
      * @return ID of the created delivery
      */
     public Long createDelivery(Long projectId, CreateDeliveryRequest request, Long deliveredById) {
-        // Validate project exists
-        Project project = projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
-
         // Get approved quotation for the project (needed to validate quantities)
         Quotation quotation = findApprovedQuotationForProject(projectId);
         if (quotation == null) {
@@ -87,7 +78,7 @@ public class DeliveryCommandService {
         Delivery delivery = Delivery.builder()
                 .projectId(projectId)
                 .deliveryDate(request.deliveryDate())
-                .status(DeliveryStatus.DELIVERED) // Mark as delivered immediately
+                .status(DeliveryStatus.PENDING)
                 .deliveredById(deliveredById)
                 .notes(request.notes())
                 .build();
@@ -142,8 +133,8 @@ public class DeliveryCommandService {
         return quotationRepository.findAll().stream()
                 .filter(q -> q.getProject().getId().equals(projectId))
                 .filter(q -> q.getStatus() == QuotationStatus.APPROVED ||
-                             q.getStatus() == QuotationStatus.SENT ||
-                             q.getStatus() == QuotationStatus.ACCEPTED)
+                        q.getStatus() == QuotationStatus.SENT ||
+                        q.getStatus() == QuotationStatus.ACCEPTED)
                 .filter(q -> !q.isDeleted())
                 .max((q1, q2) -> Integer.compare(q1.getVersion(), q2.getVersion()))
                 .orElse(null);
