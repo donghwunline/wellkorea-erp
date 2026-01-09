@@ -157,12 +157,7 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
         <div className="flex h-16 items-center justify-between border-b border-steel-800/50 px-4">
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <div className="h-8 w-8 rotate-45 border-2 border-copper-500" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-mono text-xs font-semibold text-copper-500">WK</span>
-                </div>
-              </div>
+              <img src="/favicon.svg" alt="WellKorea logo" className="h-8 w-8" />
               <span className="font-semibold text-white">WellKorea</span>
             </div>
           )}
