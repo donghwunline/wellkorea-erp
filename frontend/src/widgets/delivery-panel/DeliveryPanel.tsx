@@ -4,6 +4,7 @@
  * Displays delivery information for a project including:
  * - Delivery summary stats
  * - List of deliveries with status
+ * - Detail modal for viewing delivery details inline
  * - Link to create new delivery
  *
  * FSD Layer: widgets
@@ -11,16 +12,9 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Alert,
-  Button,
-  Card,
-  Icon,
-  LoadingState,
-  Table,
-} from '@/shared/ui';
+import { Alert, Button, Card, Icon, LoadingState, Table } from '@/shared/ui';
 import {
   type Delivery,
   deliveryQueries,
@@ -31,6 +25,7 @@ import {
 import { quotationQueries, QuotationStatus } from '@/entities/quotation';
 import { useAuth } from '@/entities/auth';
 import { formatDate } from '@/shared/lib/formatting';
+import { DeliveryDetailModal } from './ui/DeliveryDetailModal';
 
 export interface DeliveryPanelProps {
   readonly projectId: number;
@@ -83,6 +78,9 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
     };
   }, [deliveries]);
 
+  // Modal state - which delivery to show in detail modal
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(null);
+
   // Track download state
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
@@ -110,11 +108,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
   }
 
   if (deliveriesError) {
-    return (
-      <Alert variant="error">
-        Failed to load deliveries: {deliveriesError.message}
-      </Alert>
-    );
+    return <Alert variant="error">Failed to load deliveries: {deliveriesError.message}</Alert>;
   }
 
   // Empty state - no approved quotation
@@ -136,9 +130,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
       <Card className="p-12 text-center">
         <Icon name="truck" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
         <h3 className="text-lg font-semibold text-white">No Deliveries Yet</h3>
-        <p className="mt-2 text-steel-500">
-          No deliveries have been recorded for this project.
-        </p>
+        <p className="mt-2 text-steel-500">No deliveries have been recorded for this project.</p>
         {canCreateDelivery && (
           <Button
             variant="primary"
@@ -159,9 +151,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card className="p-4">
           <div className="text-sm text-steel-400">Total Deliveries</div>
-          <div className="mt-1 text-2xl font-bold text-white">
-            {summary.totalDeliveries}
-          </div>
+          <div className="mt-1 text-2xl font-bold text-white">{summary.totalDeliveries}</div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-steel-400">Items Delivered</div>
@@ -171,15 +161,11 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
         </Card>
         <Card className="p-4">
           <div className="text-sm text-steel-400">Pending</div>
-          <div className="mt-1 text-2xl font-bold text-yellow-500">
-            {summary.pendingCount}
-          </div>
+          <div className="mt-1 text-2xl font-bold text-yellow-500">{summary.pendingCount}</div>
         </Card>
         <Card className="p-4">
           <div className="text-sm text-steel-400">Delivered</div>
-          <div className="mt-1 text-2xl font-bold text-green-500">
-            {summary.deliveredCount}
-          </div>
+          <div className="mt-1 text-2xl font-bold text-green-500">{summary.deliveredCount}</div>
         </Card>
       </div>
 
@@ -211,23 +197,21 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
           </Table.Header>
           <Table.Body>
             {deliveries.map((delivery: Delivery) => (
-              <Table.Row key={delivery.id}>
+              <Table.Row
+                key={delivery.id}
+                onClick={() => setSelectedDeliveryId(delivery.id)}
+                className="cursor-pointer transition-colors hover:bg-steel-800/50"
+              >
                 <Table.Cell>
-                  <Link
-                    to={`/deliveries/${delivery.id}`}
-                    className="font-medium text-copper-400 hover:underline"
-                  >
-                    #{delivery.id}
-                  </Link>
+                  <span className="font-medium text-copper-400">#{delivery.id}</span>
                 </Table.Cell>
                 <Table.Cell className="text-steel-300">
                   {formatDate(delivery.deliveryDate)}
                 </Table.Cell>
+                <Table.Cell className="text-steel-300">{delivery.deliveredByName}</Table.Cell>
                 <Table.Cell className="text-steel-300">
-                  {delivery.deliveredByName}
-                </Table.Cell>
-                <Table.Cell className="text-steel-300">
-                  {delivery.lineItems.length} items ({deliveryRules.getTotalQuantity(delivery)} units)
+                  {delivery.lineItems.length} items ({deliveryRules.getTotalQuantity(delivery)}{' '}
+                  units)
                 </Table.Cell>
                 <Table.Cell>
                   <DeliveryStatusBadge status={delivery.status} />
@@ -237,7 +221,10 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDownloadStatement(delivery.id)}
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleDownloadStatement(delivery.id);
+                      }}
                       disabled={downloadingId === delivery.id}
                       title="Download Statement PDF"
                     >
@@ -250,7 +237,10 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => navigate(`/deliveries/${delivery.id}`)}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setSelectedDeliveryId(delivery.id);
+                      }}
                       title="View Details"
                     >
                       <Icon name="eye" className="h-4 w-4" />
@@ -262,6 +252,19 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
           </Table.Body>
         </Table>
       </Card>
+
+      {/* Delivery Detail Modal */}
+      {selectedDeliveryId !== null && (
+        <DeliveryDetailModal
+          deliveryId={selectedDeliveryId}
+          isOpen={true}
+          onClose={() => setSelectedDeliveryId(null)}
+          onSuccess={() => {
+            // Refetch deliveries when status changes
+            // Query invalidation is handled by the mutation hooks
+          }}
+        />
+      )}
     </div>
   );
 }

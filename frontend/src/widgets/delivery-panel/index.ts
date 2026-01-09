@@ -8,3 +8,7 @@
  */
 
 export { DeliveryPanel, type DeliveryPanelProps } from './DeliveryPanel';
+export {
+  DeliveryDetailModal,
+  type DeliveryDetailModalProps,
+} from './ui/DeliveryDetailModal';
