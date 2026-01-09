@@ -107,6 +107,34 @@ public class DeliveryController {
                 .body(ApiResponse.success(result));
     }
 
+    /**
+     * Mark a delivery as delivered.
+     * POST /api/deliveries/{id}/delivered
+     * <p>
+     * Only valid for deliveries in PENDING status.
+     */
+    @PostMapping("/api/deliveries/{id}/delivered")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<DeliveryCommandResult>> markAsDelivered(@PathVariable Long id) {
+        Long deliveryId = commandService.markAsDelivered(id);
+        DeliveryCommandResult result = DeliveryCommandResult.delivered(deliveryId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * Mark a delivery as returned.
+     * POST /api/deliveries/{id}/returned
+     * <p>
+     * Valid for deliveries in PENDING or DELIVERED status.
+     */
+    @PostMapping("/api/deliveries/{id}/returned")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<DeliveryCommandResult>> markAsReturned(@PathVariable Long id) {
+        Long deliveryId = commandService.markAsReturned(id);
+        DeliveryCommandResult result = DeliveryCommandResult.returned(deliveryId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
     // ==================== SIDE-EFFECT ENDPOINTS ====================
 
     /**
