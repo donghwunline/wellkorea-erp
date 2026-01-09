@@ -14,20 +14,7 @@ export interface InvoiceSummaryStatsProps {
 }
 
 export function InvoiceSummaryStats({ invoices }: InvoiceSummaryStatsProps) {
-  const stats = useMemo(() => {
-    const totalAmount = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
-    const totalPaid = invoices.reduce((sum, inv) => sum + inv.totalPaid, 0);
-    const outstanding = invoices.reduce((sum, inv) => sum + inv.remainingBalance, 0);
-    const overdueCount = invoices.filter((inv) => inv.isOverdue).length;
-
-    return {
-      count: invoices.length,
-      totalAmount,
-      totalPaid,
-      outstanding,
-      overdueCount,
-    };
-  }, [invoices]);
+  const stats = useMemo(() => invoiceRules.calculateStats(invoices), [invoices]);
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

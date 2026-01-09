@@ -183,4 +183,20 @@ export const invoiceRules = {
         return 'gray';
     }
   },
+
+  /**
+   * Calculate aggregate statistics for a collection of invoices.
+   * Excludes cancelled invoices from all calculations.
+   */
+  calculateStats(invoices: readonly InvoiceSummary[]) {
+    const activeInvoices = invoices.filter((inv) => inv.status !== 'CANCELLED');
+
+    return {
+      count: activeInvoices.length,
+      totalAmount: activeInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0),
+      totalPaid: activeInvoices.reduce((sum, inv) => sum + inv.totalPaid, 0),
+      outstanding: activeInvoices.reduce((sum, inv) => sum + inv.remainingBalance, 0),
+      overdueCount: activeInvoices.filter((inv) => inv.isOverdue).length,
+    };
+  },
 };

@@ -77,4 +77,43 @@ export const deliveryRules = {
   getLineItemCount(delivery: Delivery): number {
     return delivery.lineItems.length;
   },
+
+  /**
+   * Calculate aggregate statistics for a collection of deliveries.
+   * Excludes RETURNED deliveries from count calculations.
+   */
+  calculateStats(deliveries: readonly Delivery[]) {
+    const activeDeliveries = deliveries.filter((d) => d.status !== 'RETURNED');
+
+    return {
+      totalDeliveries: activeDeliveries.length,
+      totalItemsDelivered: activeDeliveries.reduce(
+        (sum, d) => sum + this.getTotalQuantity(d),
+        0
+      ),
+      pendingCount: activeDeliveries.filter((d) => d.status === 'PENDING').length,
+      deliveredCount: activeDeliveries.filter((d) => d.status === 'DELIVERED').length,
+    };
+  },
+
+  /**
+   * Calculate total delivered quantity per product across multiple deliveries.
+   * Excludes RETURNED deliveries from calculations.
+   *
+   * @param deliveries - Collection of deliveries to aggregate
+   * @returns Map of productId to total delivered quantity
+   */
+  getDeliveredQuantityByProduct(deliveries: readonly Delivery[]): Map<number, number> {
+    const activeDeliveries = deliveries.filter((d) => d.status !== 'RETURNED');
+    const deliveredByProduct = new Map<number, number>();
+
+    for (const delivery of activeDeliveries) {
+      for (const item of delivery.lineItems) {
+        const current = deliveredByProduct.get(item.productId) || 0;
+        deliveredByProduct.set(item.productId, current + item.quantityDelivered);
+      }
+    }
+
+    return deliveredByProduct;
+  },
 };

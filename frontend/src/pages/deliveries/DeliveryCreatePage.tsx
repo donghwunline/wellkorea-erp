@@ -27,7 +27,7 @@ import {
   PageHeader,
 } from '@/shared/ui';
 import { quotationQueries, QuotationStatus, type LineItem } from '@/entities/quotation';
-import { deliveryQueries, type CreateDeliveryLineItemInput } from '@/entities/delivery';
+import { deliveryQueries, deliveryRules, type CreateDeliveryLineItemInput } from '@/entities/delivery';
 import { useCreateDelivery } from '@/features/delivery/create';
 
 interface DeliveryLineItemFormData {
@@ -97,14 +97,8 @@ export function DeliveryCreatePage() {
   const lineItemsData = useMemo<DeliveryLineItemFormData[]>(() => {
     if (!quotationDetail?.lineItems) return [];
 
-    // Build map of delivered quantities by productId
-    const deliveredByProduct = new Map<number, number>();
-    for (const delivery of deliveries) {
-      for (const item of delivery.lineItems) {
-        const current = deliveredByProduct.get(item.productId) || 0;
-        deliveredByProduct.set(item.productId, current + item.quantityDelivered);
-      }
-    }
+    // Get delivered quantities by product (excludes RETURNED deliveries)
+    const deliveredByProduct = deliveryRules.getDeliveredQuantityByProduct(deliveries);
 
     // Build form data with remaining quantities
     return quotationDetail.lineItems.map((item: LineItem) => {

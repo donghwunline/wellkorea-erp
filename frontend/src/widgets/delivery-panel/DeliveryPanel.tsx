@@ -26,6 +26,7 @@ import { quotationQueries, QuotationStatus } from '@/entities/quotation';
 import { useAuth } from '@/entities/auth';
 import { formatDate } from '@/shared/lib/formatting';
 import { DeliveryDetailModal } from './ui/DeliveryDetailModal';
+import { DeliverySummaryStats } from './ui/DeliverySummaryStats';
 
 export interface DeliveryPanelProps {
   readonly projectId: number;
@@ -59,24 +60,6 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
   const hasApprovedQuotation = useMemo(() => {
     return quotationsData && quotationsData.data.length > 0;
   }, [quotationsData]);
-
-  // Calculate summary statistics
-  const summary = useMemo(() => {
-    const totalDeliveries = deliveries.length;
-    const totalItemsDelivered = deliveries.reduce(
-      (sum, d) => sum + deliveryRules.getTotalQuantity(d),
-      0
-    );
-    const pendingCount = deliveries.filter(d => d.status === 'PENDING').length;
-    const deliveredCount = deliveries.filter(d => d.status === 'DELIVERED').length;
-
-    return {
-      totalDeliveries,
-      totalItemsDelivered,
-      pendingCount,
-      deliveredCount,
-    };
-  }, [deliveries]);
 
   // Modal state - which delivery to show in detail modal
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(null);
@@ -148,26 +131,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card className="p-4">
-          <div className="text-sm text-steel-400">Total Deliveries</div>
-          <div className="mt-1 text-2xl font-bold text-white">{summary.totalDeliveries}</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-steel-400">Items Delivered</div>
-          <div className="mt-1 text-2xl font-bold text-copper-400">
-            {summary.totalItemsDelivered}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-steel-400">Pending</div>
-          <div className="mt-1 text-2xl font-bold text-yellow-500">{summary.pendingCount}</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-steel-400">Delivered</div>
-          <div className="mt-1 text-2xl font-bold text-green-500">{summary.deliveredCount}</div>
-        </Card>
-      </div>
+      <DeliverySummaryStats deliveries={deliveries} />
 
       {/* Actions */}
       {canCreateDelivery && (
