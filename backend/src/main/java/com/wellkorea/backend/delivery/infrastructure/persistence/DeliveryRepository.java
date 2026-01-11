@@ -12,6 +12,9 @@ import java.util.List;
 /**
  * Repository for Delivery entities.
  * Provides queries for delivery tracking and over-delivery prevention.
+ * <p>
+ * Concurrency control is handled by {@link com.wellkorea.backend.shared.lock.ProjectLockService}
+ * at the service layer, not at the repository level.
  */
 @Repository
 public interface DeliveryRepository extends JpaRepository<Delivery, Long> {

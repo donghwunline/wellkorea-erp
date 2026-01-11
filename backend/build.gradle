@@ -38,6 +38,9 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
+    // Distributed Locking (Spring Integration JDBC)
+    implementation 'org.springframework.integration:spring-integration-jdbc'
+
     // MyBatis (for complex queries in QueryServices - CQRS read side)
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 

@@ -26,6 +26,7 @@ public enum ErrorCode {
     BUSINESS_RULE_VIOLATION(400, "BUS_001", "Business rule violation"),
     ILLEGAL_STATE(409, "BUS_002", "Illegal state - operation cannot be performed"),
     DUPLICATE_RESOURCE(409, "BUS_003", "Resource already exists"),
+    CONCURRENT_MODIFICATION(409, "BUS_004", "Concurrent modification detected - please retry"),
 
     // ========== Authentication Errors (401) ==========
     AUTHENTICATION_FAILED(401, "AUTH_001", "Authentication failed"),

@@ -4,6 +4,7 @@ import com.wellkorea.backend.auth.application.AuthenticationException;
 import com.wellkorea.backend.shared.audit.AuditContextHolder;
 import com.wellkorea.backend.shared.audit.AuditLogger;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
+import com.wellkorea.backend.shared.lock.LockAcquisitionException;
 import jakarta.validation.ConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -271,6 +272,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
 
         log.warn("Illegal state: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle distributed lock acquisition failures (409 Conflict).
+     * This occurs when a lock cannot be acquired within the timeout period,
+     * indicating a concurrent operation on the same resource.
+     *
+     * @see com.wellkorea.backend.shared.lock.LockAcquisitionException
+     * @see com.wellkorea.backend.shared.lock.ProjectLockService
+     */
+    @ExceptionHandler(LockAcquisitionException.class)
+    public ResponseEntity<ErrorResponse> handleLockAcquisitionFailure(
+            LockAcquisitionException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.CONCURRENT_MODIFICATION,
+                ex.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        log.warn("Lock acquisition failed: {} at {}", ex.getMessage(), request.getDescription(false));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
