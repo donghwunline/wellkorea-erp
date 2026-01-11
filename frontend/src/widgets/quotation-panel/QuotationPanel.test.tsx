@@ -1,11 +1,12 @@
 /**
- * QuotationDetailsPanel Widget Tests.
+ * QuotationPanel Widget Tests.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QuotationPanel } from './QuotationPanel.tsx';
 
 const mockNavigate = vi.fn();
 
@@ -71,12 +72,19 @@ const mockGetQuotationList = vi.hoisted(() => vi.fn());
 const mockGetQuotationDetail = vi.hoisted(() => vi.fn());
 
 vi.mock('@/entities/quotation', async () => {
-  const actual = await vi.importActual<typeof import('@/entities/quotation')>('@/entities/quotation');
+  const actual =
+    await vi.importActual<typeof import('@/entities/quotation')>('@/entities/quotation');
   return {
     ...actual,
     quotationQueries: {
       ...actual.quotationQueries,
-      list: (params: { page: number; size: number; search: string; status: string | null; projectId: number }) => ({
+      list: (params: {
+        page: number;
+        size: number;
+        search: string;
+        status: string | null;
+        projectId: number;
+      }) => ({
         queryKey: ['quotations', 'list', params],
         queryFn: () => mockGetQuotationList(params),
       }),
@@ -127,8 +135,6 @@ vi.mock('@/features/quotation/notify', () => ({
     isOpen ? <div data-testid="email-modal">Email Modal</div> : null,
 }));
 
-import { QuotationDetailsPanel } from './QuotationDetailsPanel';
-
 function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
@@ -140,14 +146,10 @@ function createQueryClient() {
 
 function renderWithProviders(ui: React.ReactElement) {
   const queryClient = createQueryClient();
-  return render(
-    <QueryClientProvider client={queryClient}>
-      {ui}
-    </QueryClientProvider>
-  );
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
-describe('QuotationDetailsPanel', () => {
+describe('QuotationPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -156,7 +158,7 @@ describe('QuotationDetailsPanel', () => {
     it('should show loading state while fetching quotations', () => {
       mockGetQuotationList.mockImplementation(() => new Promise(() => {}));
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       expect(screen.getByText(/Loading quotations/i)).toBeInTheDocument();
     });
@@ -166,7 +168,7 @@ describe('QuotationDetailsPanel', () => {
     it('should show error message on fetch failure', async () => {
       mockGetQuotationList.mockRejectedValue(new Error('Failed to load quotations'));
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByText(/Failed to load quotations/i)).toBeInTheDocument();
@@ -176,7 +178,7 @@ describe('QuotationDetailsPanel', () => {
     it('should show retry button on error', async () => {
       mockGetQuotationList.mockRejectedValue(new Error('Failed to load quotations'));
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
@@ -196,7 +198,7 @@ describe('QuotationDetailsPanel', () => {
         },
       });
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByText(/No Quotations Yet/i)).toBeInTheDocument();
@@ -214,7 +216,7 @@ describe('QuotationDetailsPanel', () => {
         },
       });
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /New Quotation/i })).toBeInTheDocument();
@@ -227,7 +229,7 @@ describe('QuotationDetailsPanel', () => {
       mockGetQuotationList.mockResolvedValue(mockQuotationList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByText(/v2/)).toBeInTheDocument();
@@ -238,7 +240,7 @@ describe('QuotationDetailsPanel', () => {
       mockGetQuotationList.mockResolvedValue(mockQuotationList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         // Should show version counter
@@ -257,7 +259,7 @@ describe('QuotationDetailsPanel', () => {
       mockGetQuotationList.mockResolvedValue(singleVersionList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByText(/v2/)).toBeInTheDocument();
@@ -265,9 +267,10 @@ describe('QuotationDetailsPanel', () => {
 
       // Find previous button (chevron-left)
       const prevButtons = screen.getAllByRole('button');
-      const prevButton = prevButtons.find(btn =>
-        btn.querySelector('svg')?.classList.contains('lucide-chevron-left') ||
-        btn.getAttribute('title')?.includes('Previous')
+      const prevButton = prevButtons.find(
+        btn =>
+          btn.querySelector('svg')?.classList.contains('lucide-chevron-left') ||
+          btn.getAttribute('title')?.includes('Previous')
       );
 
       if (prevButton) {
@@ -281,7 +284,7 @@ describe('QuotationDetailsPanel', () => {
       mockGetQuotationList.mockResolvedValue(mockQuotationList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
@@ -292,7 +295,7 @@ describe('QuotationDetailsPanel', () => {
       mockGetQuotationList.mockResolvedValue(mockQuotationList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
@@ -303,19 +306,19 @@ describe('QuotationDetailsPanel', () => {
       mockGetQuotationList.mockResolvedValue(mockQuotationList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /^new$/i })).toBeInTheDocument();
       });
     });
 
-    it('should navigate to create page when New button clicked', async () => {
+    it('should open create modal when New button clicked', async () => {
       const user = userEvent.setup();
       mockGetQuotationList.mockResolvedValue(mockQuotationList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /^new$/i })).toBeInTheDocument();
@@ -323,15 +326,18 @@ describe('QuotationDetailsPanel', () => {
 
       await user.click(screen.getByRole('button', { name: /^new$/i }));
 
-      expect(mockNavigate).toHaveBeenCalledWith('/projects/1/quotations/create');
+      // Modal should be opened - check for the modal title
+      await waitFor(() => {
+        expect(screen.getByText('Create Quotation')).toBeInTheDocument();
+      });
     });
 
-    it('should navigate to edit page when Edit button clicked', async () => {
+    it('should open edit modal when Edit button clicked', async () => {
       const user = userEvent.setup();
       mockGetQuotationList.mockResolvedValue(mockQuotationList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
@@ -339,7 +345,10 @@ describe('QuotationDetailsPanel', () => {
 
       await user.click(screen.getByRole('button', { name: /edit/i }));
 
-      expect(mockNavigate).toHaveBeenCalledWith('/projects/1/quotations/1/edit');
+      // Modal should be opened - check for the modal title
+      await waitFor(() => {
+        expect(screen.getByText(/Edit Quotation/i)).toBeInTheDocument();
+      });
     });
   });
 
@@ -349,7 +358,7 @@ describe('QuotationDetailsPanel', () => {
       mockGetQuotationList.mockResolvedValue(mockQuotationList);
       mockGetQuotationDetail.mockResolvedValue(mockQuotationDetail);
 
-      renderWithProviders(<QuotationDetailsPanel projectId={1} />);
+      renderWithProviders(<QuotationPanel projectId={1} />);
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
@@ -368,9 +377,7 @@ describe('QuotationDetailsPanel', () => {
       const onError = vi.fn();
       mockGetQuotationList.mockRejectedValue(new Error('Query error occurred'));
 
-      renderWithProviders(
-        <QuotationDetailsPanel projectId={1} onError={onError} />
-      );
+      renderWithProviders(<QuotationPanel projectId={1} onError={onError} />);
 
       // onError is called from mutation failures, not query failures
       // The error from query shows in the Alert

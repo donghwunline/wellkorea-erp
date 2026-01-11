@@ -14,28 +14,29 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Card, ConfirmationModal, Icon, Spinner } from '@/shared/ui';
 
 // Entity imports
 import {
   QuotationCard,
-  QuotationStatusBadge,
-  quotationRules,
   quotationQueries,
+  quotationRules,
+  QuotationStatusBadge,
 } from '@/entities/quotation';
 
 // Feature imports
 import { useSubmitQuotation } from '@/features/quotation/submit';
 import { useCreateVersion } from '@/features/quotation/version';
 import { useDownloadPdf } from '@/features/quotation/download-pdf';
-import {
-  useSendNotification,
-  EmailNotificationModal,
-} from '@/features/quotation/notify';
+import { EmailNotificationModal, useSendNotification } from '@/features/quotation/notify';
 
-export interface QuotationDetailsPanelProps {
+// Widget modals
+import { QuotationCreateModal } from './ui/QuotationCreateModal';
+import { QuotationEditModal } from './ui/QuotationEditModal';
+import { QuotationDetailModal } from './ui/QuotationDetailModal';
+
+export interface QuotationPanelProps {
   /** Project ID to fetch quotations for */
   readonly projectId: number;
   /** Callback when quotation data changes (for KPI refresh) */
@@ -47,20 +48,19 @@ export interface QuotationDetailsPanelProps {
 /**
  * Inline quotation details panel with version navigation.
  */
-export function QuotationDetailsPanel({
-  projectId,
-  onDataChange,
-  onError,
-}: QuotationDetailsPanelProps) {
-  const navigate = useNavigate();
-
+export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPanelProps) {
   // Version navigation state
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Modal states
+  // Confirmation modal states
   const [submitConfirm, setSubmitConfirm] = useState(false);
   const [versionConfirm, setVersionConfirm] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+
+  // Form modal states
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editModalId, setEditModalId] = useState<number | null>(null);
+  const [detailModalId, setDetailModalId] = useState<number | null>(null);
 
   // Success message state
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -81,13 +81,15 @@ export function QuotationDetailsPanel({
     isLoading: isLoadingList,
     error: listError,
     refetch: refetchList,
-  } = useQuery(quotationQueries.list({
-    page: 0,
-    size: 100, // Get all versions
-    search: '',
-    status: null,
-    projectId,
-  }));
+  } = useQuery(
+    quotationQueries.list({
+      page: 0,
+      size: 100, // Get all versions
+      search: '',
+      status: null,
+      projectId,
+    })
+  );
 
   // Sort by version descending (latest first)
   const quotations = useMemo(() => {
@@ -117,20 +119,21 @@ export function QuotationDetailsPanel({
       void refetchDetails();
       onDataChange?.();
     },
-    onError: (err) => onError?.(err.message),
+    onError: err => onError?.(err.message),
   });
 
   const versionMutation = useCreateVersion({
-    onSuccess: (result) => {
+    onSuccess: result => {
       showSuccess('New version created');
       setVersionConfirm(false);
-      navigate(`/projects/${projectId}/quotations/${result.id}/edit`);
+      // Open edit modal for the new version
+      setEditModalId(result.id);
     },
-    onError: (err) => onError?.(err.message),
+    onError: err => onError?.(err.message),
   });
 
   const pdfMutation = useDownloadPdf({
-    onError: (err) => onError?.(err.message),
+    onError: err => onError?.(err.message),
   });
 
   const notifyMutation = useSendNotification({
@@ -141,7 +144,7 @@ export function QuotationDetailsPanel({
       onDataChange?.();
       showSuccess('Email notification sent successfully');
     },
-    onError: (err) => onError?.(err.message),
+    onError: err => onError?.(err.message),
   });
 
   const isActing =
@@ -176,11 +179,11 @@ export function QuotationDetailsPanel({
     }
   }, [currentIndex]);
 
-  // Handle edit
+  // Handle edit - open modal
   const handleEdit = useCallback(() => {
     if (!quotation) return;
-    navigate(`/projects/${projectId}/quotations/${quotation.id}/edit`);
-  }, [navigate, projectId, quotation]);
+    setEditModalId(quotation.id);
+  }, [quotation]);
 
   // Handle submit for approval
   const handleSubmitConfirm = useCallback(() => {
@@ -209,10 +212,17 @@ export function QuotationDetailsPanel({
     notifyMutation.mutate(quotation.id);
   }, [quotation, notifyMutation]);
 
-  // Handle create new quotation
+  // Handle create new quotation - open modal
   const handleCreate = useCallback(() => {
-    navigate(`/projects/${projectId}/quotations/create`);
-  }, [navigate, projectId]);
+    setShowCreateModal(true);
+  }, []);
+
+  // Handle modal success - refetch data
+  const handleModalSuccess = useCallback(() => {
+    void refetchList();
+    void refetchDetails();
+    onDataChange?.();
+  }, [refetchList, refetchDetails, onDataChange]);
 
   // Loading state
   if (isLoadingList) {
@@ -229,12 +239,7 @@ export function QuotationDetailsPanel({
     return (
       <Alert variant="error">
         {listError.message}
-        <Button
-          variant="secondary"
-          size="sm"
-          className="ml-4"
-          onClick={() => void refetchList()}
-        >
+        <Button variant="secondary" size="sm" className="ml-4" onClick={() => void refetchList()}>
           Retry
         </Button>
       </Alert>
@@ -427,6 +432,36 @@ export function QuotationDetailsPanel({
         }
         isLoading={notifyMutation.isPending}
       />
+
+      {/* Form Modals */}
+      <QuotationCreateModal
+        projectId={projectId}
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleModalSuccess}
+      />
+
+      {editModalId !== null && (
+        <QuotationEditModal
+          quotationId={editModalId}
+          isOpen={true}
+          onClose={() => setEditModalId(null)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
+
+      {detailModalId !== null && (
+        <QuotationDetailModal
+          quotationId={detailModalId}
+          isOpen={true}
+          onClose={() => setDetailModalId(null)}
+          onSuccess={handleModalSuccess}
+          onEdit={id => {
+            setDetailModalId(null);
+            setEditModalId(id);
+          }}
+        />
+      )}
     </div>
   );
 }
