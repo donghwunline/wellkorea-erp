@@ -12,7 +12,6 @@
  */
 
 import { useCallback, useMemo, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -32,6 +31,8 @@ import { quotationQueries, QuotationStatus } from '@/entities/quotation';
 import { useAuth } from '@/entities/auth';
 import { useIssueInvoice } from '@/features/invoice/issue';
 import { useCancelInvoice } from '@/features/invoice/cancel';
+import { InvoiceCreateModal } from './ui/InvoiceCreateModal';
+import { InvoiceDetailModal } from './ui/InvoiceDetailModal';
 import { InvoiceSummaryStats } from './ui/InvoiceSummaryStats';
 import { RecordPaymentModal } from './ui/RecordPaymentModal';
 
@@ -41,7 +42,6 @@ export interface InvoicePanelProps {
 }
 
 export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
-  const navigate = useNavigate();
   const { hasAnyRole } = useAuth();
 
   // Check if user can manage invoices (Finance/Admin)
@@ -74,6 +74,8 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
   const [issueConfirm, setIssueConfirm] = useState<InvoiceSummary | null>(null);
   const [cancelConfirm, setCancelConfirm] = useState<InvoiceSummary | null>(null);
   const [paymentInvoice, setPaymentInvoice] = useState<InvoiceSummary | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [detailInvoiceId, setDetailInvoiceId] = useState<number | null>(null);
 
   // Success message with auto-dismiss
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -110,15 +112,18 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
 
   // Handlers
   const handleCreateInvoice = useCallback(() => {
-    navigate(`/projects/${projectId}/invoices/create`);
-  }, [navigate, projectId]);
+    setShowCreateModal(true);
+  }, []);
 
-  const handleViewInvoice = useCallback(
-    (invoice: InvoiceSummary) => {
-      navigate(`/invoices/${invoice.id}`);
-    },
-    [navigate]
-  );
+  const handleCreateModalSuccess = useCallback(() => {
+    showSuccess('Invoice created successfully');
+    void refetchInvoices();
+    onDataChange?.();
+  }, [refetchInvoices, onDataChange, showSuccess]);
+
+  const handleViewInvoice = useCallback((invoice: InvoiceSummary) => {
+    setDetailInvoiceId(invoice.id);
+  }, []);
 
   const handleIssueConfirm = useCallback(() => {
     if (issueConfirm) {
@@ -320,6 +325,27 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
           isOpen={true}
           onClose={() => setPaymentInvoice(null)}
           onSuccess={handlePaymentSuccess}
+        />
+      )}
+
+      {/* Create Invoice Modal */}
+      <InvoiceCreateModal
+        projectId={projectId}
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleCreateModalSuccess}
+      />
+
+      {/* Invoice Detail Modal */}
+      {detailInvoiceId !== null && (
+        <InvoiceDetailModal
+          invoiceId={detailInvoiceId}
+          isOpen={true}
+          onClose={() => setDetailInvoiceId(null)}
+          onSuccess={() => {
+            void refetchInvoices();
+            onDataChange?.();
+          }}
         />
       )}
     </div>
