@@ -12,7 +12,6 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Card, Icon, LoadingState, Table } from '@/shared/ui';
 import {
@@ -25,6 +24,7 @@ import {
 import { quotationQueries, QuotationStatus } from '@/entities/quotation';
 import { useAuth } from '@/entities/auth';
 import { formatDate } from '@/shared/lib/formatting';
+import { DeliveryCreateModal } from './ui/DeliveryCreateModal';
 import { DeliveryDetailModal } from './ui/DeliveryDetailModal';
 import { DeliverySummaryStats } from './ui/DeliverySummaryStats';
 
@@ -33,7 +33,6 @@ export interface DeliveryPanelProps {
 }
 
 export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
-  const navigate = useNavigate();
   const { hasAnyRole } = useAuth();
 
   // Check if user can create deliveries (Finance/Admin)
@@ -61,8 +60,9 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
     return quotationsData && quotationsData.data.length > 0;
   }, [quotationsData]);
 
-  // Modal state - which delivery to show in detail modal
+  // Modal states
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Track download state
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
@@ -118,12 +118,22 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
           <Button
             variant="primary"
             className="mt-6"
-            onClick={() => navigate(`/projects/${projectId}/deliveries/create`)}
+            onClick={() => setShowCreateModal(true)}
           >
             <Icon name="plus" className="h-4 w-4" />
             Record Delivery
           </Button>
         )}
+
+        {/* Create Modal */}
+        <DeliveryCreateModal
+          projectId={projectId}
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => {
+            // Query invalidation handled by mutation hook
+          }}
+        />
       </Card>
     );
   }
@@ -136,10 +146,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
       {/* Actions */}
       {canCreateDelivery && (
         <div className="flex justify-end">
-          <Button
-            variant="primary"
-            onClick={() => navigate(`/projects/${projectId}/deliveries/create`)}
-          >
+          <Button variant="primary" onClick={() => setShowCreateModal(true)}>
             <Icon name="plus" className="h-4 w-4" />
             Record Delivery
           </Button>
@@ -229,6 +236,16 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
           }}
         />
       )}
+
+      {/* Delivery Create Modal */}
+      <DeliveryCreateModal
+        projectId={projectId}
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => {
+          // Query invalidation handled by mutation hook
+        }}
+      />
     </div>
   );
 }
