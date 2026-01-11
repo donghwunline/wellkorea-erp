@@ -8,15 +8,9 @@
  * Can import from: features, entities, shared
  */
 
-export {
-  QuotationDetailsPanel,
-  type QuotationDetailsPanelProps,
-} from './quotation-details-panel';
+export { QuotationPanel, type QuotationPanelProps } from './quotation-panel';
 
-export {
-  CompanyManagementPanel,
-  type CompanyManagementPanelProps,
-} from './company-management';
+export { CompanyManagementPanel, type CompanyManagementPanelProps } from './company-management';
 
 export {
   ProjectRelatedNavigationGrid,

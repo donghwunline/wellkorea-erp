@@ -125,7 +125,7 @@ vi.mock('@/entities/auth', async () => {
 
 // Mock widgets
 vi.mock('@/widgets', () => ({
-  QuotationDetailsPanel: vi.fn(() => <div data-testid="quotation-panel">Quotation Panel</div>),
+  QuotationPanel: vi.fn(() => <div data-testid="quotation-panel">Quotation Panel</div>),
   ProjectRelatedNavigationGrid: vi.fn((props: Record<string, unknown>) => {
     navigationGridProps = props;
     return <div data-testid="navigation-grid">Project ID: {props.projectId as number}</div>;
@@ -133,6 +133,7 @@ vi.mock('@/widgets', () => ({
   TaskFlowModal: vi.fn(() => null),
   TaskFlowPanel: vi.fn(() => <div data-testid="task-flow-panel">Task Flow Panel</div>),
   DeliveryPanel: vi.fn(() => <div data-testid="delivery-panel">Delivery Panel</div>),
+  InvoicePanel: vi.fn(() => <div data-testid="invoice-panel">Invoice Panel</div>),
 }));
 
 // Mock UI tab components to simplify testing
