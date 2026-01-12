@@ -1,7 +1,9 @@
 package com.wellkorea.backend.quotation.domain;
 
 import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.delivery.domain.*;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.shared.exception.BusinessException;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -139,6 +141,74 @@ public class Quotation {
                 status == QuotationStatus.REJECTED ||
                 status == QuotationStatus.SENT ||
                 status == QuotationStatus.ACCEPTED;
+    }
+
+    /**
+     * Check if quotation is in an approved state.
+     * Approved states are: APPROVED, SENT, ACCEPTED
+     * (i.e., quotation has been approved and can be used for deliveries)
+     *
+     * @return true if quotation is approved
+     */
+    public boolean isApproved() {
+        return status == QuotationStatus.APPROVED ||
+                status == QuotationStatus.SENT ||
+                status == QuotationStatus.ACCEPTED;
+    }
+
+    // ========== Factory Methods ==========
+
+    /**
+     * Factory method to create a Delivery for this quotation.
+     * <p>
+     * This method uses the Double Dispatch pattern: the guard is passed in
+     * as a parameter, allowing the domain entity to delegate validation to
+     * infrastructure without having direct repository dependencies.
+     * <p>
+     * Similar pattern: {@link com.wellkorea.backend.approval.domain.ApprovalChainTemplate#createLevelDecisions()}
+     *
+     * @param quotationDeliveryGuard Guard that validates delivery against quotation limits
+     * @param deliveryDate           Date of the delivery
+     * @param notes                  Optional notes for the delivery
+     * @param lineItems              Line items to deliver
+     * @param deliveredById          User ID of who is recording the delivery
+     * @return New Delivery entity with all line items added
+     * @throws BusinessException if quotation is not approved or validation fails
+     */
+    public Delivery createDelivery(QuotationDeliveryGuard quotationDeliveryGuard,
+                                   LocalDate deliveryDate,
+                                   String notes,
+                                   List<DeliveryLineItemInput> lineItems,
+                                   Long deliveredById) {
+        // Quotation must be approved to create deliveries
+        if (!isApproved()) {
+            throw new BusinessException(
+                    "Cannot create delivery: quotation is not approved (current status: " + status + ")");
+        }
+
+        // Delegate validation to the guard (which has repository access)
+        quotationDeliveryGuard.validateAndThrow(this, lineItems);
+
+        // Build the delivery entity
+        Delivery delivery = Delivery.builder()
+                .projectId(project.getId())
+                .quotationId(id)
+                .deliveryDate(deliveryDate)
+                .status(DeliveryStatus.PENDING)
+                .deliveredById(deliveredById)
+                .notes(notes)
+                .build();
+
+        // Add all line items
+        for (DeliveryLineItemInput input : lineItems) {
+            DeliveryLineItem lineItem = DeliveryLineItem.builder()
+                    .productId(input.productId())
+                    .quantityDelivered(input.quantityDelivered())
+                    .build();
+            delivery.addLineItem(lineItem);
+        }
+
+        return delivery;
     }
 
     // Getters and Setters
