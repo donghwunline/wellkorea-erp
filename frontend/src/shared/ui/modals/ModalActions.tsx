@@ -29,7 +29,7 @@ export function ModalActions({
   return (
     <div
       className={cn(
-        'mt-6 flex items-center gap-3 border-t border-steel-800/50 pt-6',
+        'mt-6 flex items-center gap-3 border-t border-steel-800/50 pt-4',
         ALIGN_STYLES[align],
         className
       )}

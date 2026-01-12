@@ -17,10 +17,11 @@
  * ```
  */
 
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, useEffect, Children, isValidElement } from 'react';
 import { cn } from '@/shared/lib/cn';
 import { useFocusTrap } from '../lib/useFocusTrap';
 import { useBodyScrollLock } from '../lib/useBodyScrollLock';
+import { ModalActions } from './ModalActions';
 
 export interface ModalProps {
   /** Controls modal visibility */
@@ -86,6 +87,23 @@ export function Modal({
 
   const isFullscreen = size === 'fullscreen';
 
+  // Detect ModalActions child for fixed footer layout
+  const childrenArray = Children.toArray(children);
+  const actionsIndex = childrenArray.findIndex(
+    (child) =>
+      isValidElement(child) &&
+      (child.type === ModalActions ||
+        (typeof child.type === 'function' &&
+          (child.type as { displayName?: string }).displayName === 'ModalActions'))
+  );
+  const hasModalActions = actionsIndex !== -1;
+
+  // Split children: content vs actions
+  const contentChildren = hasModalActions
+    ? childrenArray.filter((_, index) => index !== actionsIndex)
+    : children;
+  const actionsChild = hasModalActions ? childrenArray[actionsIndex] : null;
+
   return (
     <div
       className={cn(
@@ -103,7 +121,7 @@ export function Modal({
           'flex w-full flex-col bg-steel-900 shadow-elevated',
           isFullscreen
             ? 'h-full border-0 p-0'
-            : 'rounded-xl border border-steel-800/50 p-6',
+            : 'max-h-[calc(100vh-4rem)] rounded-xl border border-steel-800/50 p-6',
           sizeClasses[size],
           className
         )}
@@ -136,9 +154,24 @@ export function Modal({
             </button>
           </div>
         )}
-        <div className={cn(isFullscreen ? 'flex-1 overflow-hidden' : '')}>
-          {children}
+        {/* Scrollable content area - always scrollable for non-fullscreen modals */}
+        <div
+          className={cn(
+            isFullscreen
+              ? 'flex-1 overflow-hidden'
+              : 'min-h-0 flex-1 overflow-y-auto overflow-x-hidden'
+          )}
+        >
+          {contentChildren}
         </div>
+
+        {/* Fixed footer - always visible when ModalActions is direct child */}
+        {actionsChild && !isFullscreen && (
+          <div className="flex-shrink-0">{actionsChild}</div>
+        )}
+
+        {/* Fullscreen mode - preserve original behavior */}
+        {actionsChild && isFullscreen && actionsChild}
       </div>
     </div>
   );
