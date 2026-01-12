@@ -14,6 +14,7 @@
 CREATE TABLE IF NOT EXISTS deliveries (
     id BIGSERIAL PRIMARY KEY,
     project_id BIGINT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    quotation_id BIGINT REFERENCES quotations(id) ON DELETE SET NULL,
     delivery_date DATE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'DELIVERED', 'RETURNED')),
     delivered_by_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS deliveries (
 -- Comments for documentation
 COMMENT ON TABLE deliveries IS 'Records when products are shipped to customer (US5)';
 COMMENT ON COLUMN deliveries.project_id IS 'References the project (JobCode) this delivery belongs to';
+COMMENT ON COLUMN deliveries.quotation_id IS 'References the quotation version this delivery was recorded against';
 COMMENT ON COLUMN deliveries.delivery_date IS 'Date of actual delivery';
 COMMENT ON COLUMN deliveries.status IS 'Delivery status: PENDING, DELIVERED, RETURNED';
 COMMENT ON COLUMN deliveries.delivered_by_id IS 'User who recorded/made the delivery';
@@ -58,6 +60,9 @@ COMMENT ON COLUMN delivery_line_items.quantity_delivered IS 'How many units deli
 -- Query: Get all deliveries for a project (most common query)
 CREATE INDEX IF NOT EXISTS idx_deliveries_project_id ON deliveries(project_id);
 
+-- Query: Get all deliveries for a quotation version
+CREATE INDEX IF NOT EXISTS idx_deliveries_quotation_id ON deliveries(quotation_id);
+
 -- Query: Get deliveries by status
 CREATE INDEX IF NOT EXISTS idx_deliveries_status ON deliveries(status);
 
@@ -74,21 +79,22 @@ CREATE INDEX IF NOT EXISTS idx_delivery_line_items_delivery_id ON delivery_line_
 CREATE INDEX IF NOT EXISTS idx_delivery_line_items_product_id ON delivery_line_items(product_id);
 
 -- ============================================================================
--- Helper View: Delivered Quantities per Project/Product
+-- Helper View: Delivered Quantities per Project/Quotation/Product
 -- ============================================================================
 -- This view helps calculate remaining deliverable quantities
--- Used by DeliveryService to prevent over-delivery
+-- Used by QuotationDeliveryGuard to prevent over-delivery
 CREATE OR REPLACE VIEW v_delivered_quantities AS
 SELECT
     d.project_id,
+    d.quotation_id,
     dli.product_id,
     SUM(dli.quantity_delivered) AS total_delivered
 FROM deliveries d
 JOIN delivery_line_items dli ON d.id = dli.delivery_id
 WHERE d.status != 'RETURNED'  -- Exclude returned deliveries
-GROUP BY d.project_id, dli.product_id;
+GROUP BY d.project_id, d.quotation_id, dli.product_id;
 
-COMMENT ON VIEW v_delivered_quantities IS 'Aggregated delivered quantities per project/product for over-delivery prevention';
+COMMENT ON VIEW v_delivered_quantities IS 'Aggregated delivered quantities per project/quotation/product for over-delivery prevention';
 
 -- ============================================================================
 -- Trigger: Auto-update updated_at timestamp

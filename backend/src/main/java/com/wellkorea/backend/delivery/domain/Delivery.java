@@ -31,6 +31,16 @@ public class Delivery {
     @Column(name = "project_id", nullable = false)
     private Long projectId;
 
+    /**
+     * References the quotation version this delivery was recorded against.
+     * Used for:
+     * - Tracking which quotation version was valid when delivery was made
+     * - Detecting conflicts when approving new quotation versions
+     * - Allowing reassignment of deliveries to new quotation versions
+     */
+    @Column(name = "quotation_id")
+    private Long quotationId;
+
     @Column(name = "delivery_date", nullable = false)
     private LocalDate deliveryDate;
 
@@ -60,6 +70,7 @@ public class Delivery {
     private Delivery(Builder builder) {
         this.id = builder.id;
         this.projectId = builder.projectId;
+        this.quotationId = builder.quotationId;
         this.deliveryDate = builder.deliveryDate;
         this.status = builder.status != null ? builder.status : DeliveryStatus.PENDING;
         this.deliveredById = builder.deliveredById;
@@ -83,6 +94,10 @@ public class Delivery {
 
     public Long getProjectId() {
         return projectId;
+    }
+
+    public Long getQuotationId() {
+        return quotationId;
     }
 
     public LocalDate getDeliveryDate() {
@@ -114,6 +129,18 @@ public class Delivery {
     }
 
     // ========== Domain Methods ==========
+
+    /**
+     * Reassign this delivery to a different quotation version.
+     * Used when a new quotation is approved and existing deliveries
+     * need to be linked to the new version.
+     *
+     * @param quotationId ID of the quotation to assign
+     */
+    public void reassignToQuotation(Long quotationId) {
+        this.quotationId = quotationId;
+        this.updatedAt = Instant.now();
+    }
 
     /**
      * Add a line item to this delivery.
@@ -199,6 +226,7 @@ public class Delivery {
     public static class Builder {
         private Long id;
         private Long projectId;
+        private Long quotationId;
         private LocalDate deliveryDate;
         private DeliveryStatus status;
         private Long deliveredById;
@@ -214,6 +242,11 @@ public class Delivery {
 
         public Builder projectId(Long projectId) {
             this.projectId = projectId;
+            return this;
+        }
+
+        public Builder quotationId(Long quotationId) {
+            this.quotationId = quotationId;
             return this;
         }
 
