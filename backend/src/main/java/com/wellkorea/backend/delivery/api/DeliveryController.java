@@ -55,11 +55,9 @@ public class DeliveryController {
      */
     @GetMapping("/api/deliveries")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES', 'PRODUCTION')")
-    public ResponseEntity<ApiResponse<List<DeliverySummaryView>>> listDeliveries(
-            @RequestParam(required = false) Long projectId,
-            @RequestParam(required = false) DeliveryStatus status,
-            Pageable pageable) {
-
+    public ResponseEntity<ApiResponse<List<DeliverySummaryView>>> listDeliveries(@RequestParam(required = false) Long projectId,
+                                                                                 @RequestParam(required = false) DeliveryStatus status,
+                                                                                 Pageable pageable) {
         // Validate project exists if provided
         if (projectId != null) {
             validateProjectExists(projectId);
@@ -93,10 +91,9 @@ public class DeliveryController {
      */
     @PostMapping("/api/deliveries")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<DeliveryCommandResult>> createDelivery(
-            @RequestParam Long projectId,
-            @Valid @RequestBody CreateDeliveryRequest request,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+    public ResponseEntity<ApiResponse<DeliveryCommandResult>> createDelivery(@RequestParam Long projectId,
+                                                                             @Valid @RequestBody CreateDeliveryRequest request,
+                                                                             @AuthenticationPrincipal AuthenticatedUser user) {
 
         Long userId = user.getUserId();
         Long deliveryId = commandService.createDelivery(projectId, request, userId);
@@ -132,6 +129,27 @@ public class DeliveryController {
     public ResponseEntity<ApiResponse<DeliveryCommandResult>> markAsReturned(@PathVariable Long id) {
         Long deliveryId = commandService.markAsReturned(id);
         DeliveryCommandResult result = DeliveryCommandResult.returned(deliveryId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * Reassign a delivery to a different quotation version.
+     * POST /api/deliveries/{id}/reassign?quotationId={quotationId}
+     * <p>
+     * Used when a new quotation is approved and existing deliveries
+     * need to be linked to the new version.
+     * <p>
+     * Validates that:
+     * - The quotation is approved
+     * - The quotation belongs to the same project as the delivery
+     */
+    @PostMapping("/api/deliveries/{id}/reassign")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<DeliveryCommandResult>> reassignToQuotation(
+            @PathVariable Long id,
+            @RequestParam Long quotationId) {
+        Long deliveryId = commandService.reassignToQuotation(id, quotationId);
+        DeliveryCommandResult result = DeliveryCommandResult.reassigned(deliveryId, quotationId);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 

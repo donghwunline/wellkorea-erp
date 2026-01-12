@@ -24,4 +24,9 @@ public record DeliveryCommandResult(
     public static DeliveryCommandResult returned(Long id) {
         return new DeliveryCommandResult(id, "Delivery marked as returned");
     }
+
+    public static DeliveryCommandResult reassigned(Long id, Long quotationId) {
+        return new DeliveryCommandResult(id,
+                String.format("Delivery reassigned to quotation %d", quotationId));
+    }
 }
