@@ -219,6 +219,8 @@ export const DELIVERY_ENDPOINTS = {
   markDelivered: (id: number) => `/deliveries/${id}/delivered`,
   /** POST /deliveries/:id/returned - Mark as returned */
   markReturned: (id: number) => `/deliveries/${id}/returned`,
+  /** POST /deliveries/:id/reassign?quotationId={quotationId} - Reassign to different quotation */
+  reassign: (id: number) => `/deliveries/${id}/reassign`,
   /** GET /deliveries/:id/statement - Generate delivery statement PDF */
   statement: (id: number) => `/deliveries/${id}/statement`,
 } as const;

@@ -60,6 +60,14 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
     return quotationsData && quotationsData.data.length > 0;
   }, [quotationsData]);
 
+  // Get the latest approved quotation ID for outdated detection
+  const latestApprovedQuotationId = useMemo(() => {
+    if (quotationsData && quotationsData.data.length > 0) {
+      return quotationsData.data[0].id;
+    }
+    return null;
+  }, [quotationsData]);
+
   // Modal states
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -185,7 +193,10 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
                   units)
                 </Table.Cell>
                 <Table.Cell>
-                  <DeliveryStatusBadge status={delivery.status} />
+                  <DeliveryStatusBadge
+                    status={delivery.status}
+                    isOutdated={deliveryRules.isOutdated(delivery, latestApprovedQuotationId)}
+                  />
                 </Table.Cell>
                 <Table.Cell className="text-right">
                   <div className="flex items-center justify-end gap-2">
@@ -234,6 +245,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
             // Refetch deliveries when status changes
             // Query invalidation is handled by the mutation hooks
           }}
+          latestApprovedQuotationId={latestApprovedQuotationId}
         />
       )}
 

@@ -29,6 +29,7 @@ import {
 import { useAuth } from '@/entities/auth';
 import { useMarkDelivered } from '@/features/delivery/mark-delivered';
 import { useMarkReturned } from '@/features/delivery/mark-returned';
+import { useReassignDelivery } from '@/features/delivery/reassign';
 import { formatDate, formatDateTime } from '@/shared/lib/formatting';
 
 export interface DeliveryDetailModalProps {
@@ -40,6 +41,8 @@ export interface DeliveryDetailModalProps {
   readonly onClose: () => void;
   /** Optional callback after successful status change */
   readonly onSuccess?: () => void;
+  /** Latest approved quotation ID for outdated detection */
+  readonly latestApprovedQuotationId?: number | null;
 }
 
 export function DeliveryDetailModal({
@@ -47,6 +50,7 @@ export function DeliveryDetailModal({
   isOpen,
   onClose,
   onSuccess,
+  latestApprovedQuotationId,
 }: DeliveryDetailModalProps) {
   const { hasAnyRole } = useAuth();
   const canManageDeliveries = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
@@ -112,6 +116,16 @@ export function DeliveryDetailModal({
     },
   });
 
+  const { mutate: reassignDelivery, isPending: isReassigning } = useReassignDelivery({
+    onSuccess: () => {
+      showSuccess('Delivery reassigned to latest quotation');
+      onSuccess?.();
+    },
+    onError: (err) => {
+      setError(err.message);
+    },
+  });
+
   // Handlers
   const handleClose = useCallback(() => {
     setSuccessMessage(null);
@@ -141,10 +155,21 @@ export function DeliveryDetailModal({
     markReturned(deliveryId);
   }, [deliveryId, markReturned]);
 
+  const handleReassign = useCallback(() => {
+    if (latestApprovedQuotationId) {
+      setError(null);
+      reassignDelivery({ deliveryId, quotationId: latestApprovedQuotationId });
+    }
+  }, [deliveryId, latestApprovedQuotationId, reassignDelivery]);
+
   // Check action permissions
   const canMarkDelivered = delivery && canManageDeliveries && deliveryRules.canMarkDelivered(delivery);
   const canMarkReturned = delivery && canManageDeliveries && deliveryRules.canMarkReturned(delivery);
-  const isActing = isMarkingDelivered || isMarkingReturned;
+  const isActing = isMarkingDelivered || isMarkingReturned || isReassigning;
+
+  // Check outdated status
+  const isOutdated = delivery && deliveryRules.isOutdated(delivery, latestApprovedQuotationId ?? null);
+  const canReassign = delivery && canManageDeliveries && isOutdated && deliveryRules.canReassign(delivery);
 
   // Calculate total quantity
   const totalQuantity = delivery ? deliveryRules.getTotalQuantity(delivery) : 0;
@@ -173,6 +198,21 @@ export function DeliveryDetailModal({
       {/* Content */}
       {delivery && !isLoading && (
         <div className="space-y-6">
+          {/* Outdated Warning Alert */}
+          {isOutdated && (
+            <Alert variant="warning">
+              <div className="flex items-center justify-between">
+                <div>
+                  <strong>Outdated Quotation Reference</strong>
+                  <p className="mt-1 text-sm">
+                    This delivery references an older version of the quotation. Consider
+                    reassigning it to the latest approved quotation to keep records consistent.
+                  </p>
+                </div>
+              </div>
+            </Alert>
+          )}
+
           {/* Success/Error Alerts */}
           {successMessage && (
             <Alert variant="success" onClose={() => setSuccessMessage(null)}>
@@ -190,7 +230,7 @@ export function DeliveryDetailModal({
             <div>
               <div className="text-sm text-steel-400">Status</div>
               <div className="mt-1">
-                <DeliveryStatusBadge status={delivery.status} />
+                <DeliveryStatusBadge status={delivery.status} isOutdated={isOutdated} />
               </div>
             </div>
             <div>
@@ -317,6 +357,20 @@ export function DeliveryDetailModal({
                   <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 Mark Returned
+              </Button>
+            )}
+            {canReassign && (
+              <Button
+                variant="secondary"
+                onClick={handleReassign}
+                disabled={isActing}
+              >
+                {isReassigning ? (
+                  <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Icon name="forward" className="mr-2 h-4 w-4" />
+                )}
+                Reassign to Latest
               </Button>
             )}
           </div>
