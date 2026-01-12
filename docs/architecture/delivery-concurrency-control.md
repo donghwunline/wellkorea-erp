@@ -278,18 +278,87 @@ if (error.status === 409 && error.code === 'BUS_004') {
 
 ## Files Modified/Created
 
-| File                                     | Change                                     |
-|------------------------------------------|--------------------------------------------|
-| `build.gradle`                           | Added `spring-integration-jdbc` dependency |
-| `V15__create_distributed_lock_table.sql` | New: Lock table migration                  |
-| `LockRegistryConfig.java`                | New: Spring Integration configuration      |
-| `ProjectLockService.java`                | New: Template API for locking              |
-| `LockAcquisitionException.java`          | New: Custom exception                      |
-| `DeliveryCommandService.java`            | Refactored to use ProjectLockService       |
-| `QuotationRepository.java`               | Removed `*WithLock` method                 |
-| `DeliveryRepository.java`                | Removed `*WithLock` method                 |
-| `GlobalExceptionHandler.java`            | Updated to handle LockAcquisitionException |
-| `application.yml`                        | Removed old JPA lock timeout config        |
+| File                                       | Change                                       |
+|--------------------------------------------|----------------------------------------------|
+| `build.gradle`                             | Added `spring-integration-jdbc` dependency   |
+| `V15__create_distributed_lock_table.sql`   | New: Lock table migration                    |
+| `V16__add_quotation_id_to_deliveries.sql`  | New: Add quotation_id to deliveries          |
+| `LockRegistryConfig.java`                  | New: Spring Integration configuration        |
+| `ProjectLockService.java`                  | New: Template API for locking                |
+| `LockAcquisitionException.java`            | New: Custom exception                        |
+| `DeliveryCommandService.java`              | Refactored to use ProjectLockService         |
+| `Delivery.java`                            | Added quotationId field                      |
+| `DeliveryRepository.java`                  | Added quotation-related queries              |
+| `QuotationDeliveryConflictService.java`    | New: Conflict detection service              |
+| `QuotationQueryService.java`               | Added checkDeliveryConflicts()               |
+| `QuotationController.java`                 | Added /delivery-conflicts endpoint           |
+| `DeliveryController.java`                  | Added reassign endpoints                     |
+| `GlobalExceptionHandler.java`              | Updated to handle LockAcquisitionException   |
+
+## Quotation Version Tracking
+
+### Problem: Lost Quotation Context
+
+When a delivery is created, it's validated against the currently approved quotation. However, if a new quotation version is later approved, the original context is lost:
+
+- Which quotation version was the delivery validated against?
+- Are existing deliveries compatible with the new quotation?
+
+### Solution: Quotation ID Tracking
+
+Each delivery now tracks the quotation version it was created against:
+
+```java
+// Delivery entity
+@Column(name = "quotation_id")
+private Long quotationId;
+
+// Set when creating delivery
+Delivery delivery = Delivery.builder()
+        .quotationId(quotation.getId())  // Track quotation version
+        ...
+        .build();
+```
+
+### Conflict Detection
+
+Before approving a new quotation version, the system can check for conflicts:
+
+```
+GET /api/quotations/{id}/delivery-conflicts
+```
+
+Returns:
+```json
+{
+  "hasConflicts": true,
+  "existingDeliveryCount": 3,
+  "conflicts": [
+    {
+      "productId": 5,
+      "productName": "Widget A",
+      "conflictType": "QUANTITY_EXCEEDED",
+      "conflictDescription": "Delivered quantity (100.00) exceeds quotation quantity (80.00)",
+      "quotationQuantity": 80.00,
+      "deliveredQuantity": 100.00
+    }
+  ]
+}
+```
+
+### Delivery Reassignment
+
+After approving a new quotation version, existing deliveries can be reassigned:
+
+**Single delivery:**
+```
+POST /api/deliveries/{id}/reassign?quotationId={quotationId}
+```
+
+**All project deliveries:**
+```
+POST /api/projects/{projectId}/deliveries/reassign?quotationId={quotationId}
+```
 
 ## Future Considerations
 
