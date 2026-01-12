@@ -21,6 +21,7 @@ export interface DeliveryLineItem {
 export interface Delivery {
   readonly id: number;
   readonly projectId: number;
+  readonly quotationId: number;
   readonly jobCode: string;
   readonly deliveryDate: string; // ISO date string
   readonly status: DeliveryStatus;
@@ -115,5 +116,31 @@ export const deliveryRules = {
     }
 
     return deliveredByProduct;
+  },
+
+  /**
+   * Check if delivery is outdated (references old quotation version).
+   * A delivery is outdated when its quotationId differs from the latest approved quotation.
+   *
+   * @param delivery - The delivery to check
+   * @param latestApprovedQuotationId - ID of the latest approved quotation for the project
+   * @returns true if delivery references an outdated quotation version
+   */
+  isOutdated(delivery: Delivery, latestApprovedQuotationId: number | null): boolean {
+    if (latestApprovedQuotationId === null) {
+      return false; // No approved quotation means no way to be outdated
+    }
+    return delivery.quotationId !== latestApprovedQuotationId;
+  },
+
+  /**
+   * Check if delivery can be reassigned to a new quotation.
+   * Only non-terminal deliveries can be reassigned.
+   *
+   * @param delivery - The delivery to check
+   * @returns true if delivery can be reassigned
+   */
+  canReassign(delivery: Delivery): boolean {
+    return !this.isTerminal(delivery);
   },
 };

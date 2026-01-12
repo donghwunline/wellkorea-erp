@@ -20,6 +20,7 @@
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="project_id" javaType="Long"/>
+            <arg column="quotation_id" javaType="Long"/>
             <arg column="job_code" javaType="String"/>
             <arg column="delivery_date" javaType="java.time.LocalDate"/>
             <arg column="status" javaType="String"/>
@@ -37,6 +38,7 @@
         SELECT
             d.id,
             d.project_id,
+            d.quotation_id,
             p.job_code,
             d.delivery_date,
             d.status,
@@ -70,6 +72,7 @@
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="project_id" javaType="Long"/>
+            <arg column="quotation_id" javaType="Long"/>
             <arg column="delivery_date" javaType="java.time.LocalDate"/>
             <arg column="status" javaType="String"/>
             <arg column="delivered_by_name" javaType="String"/>
@@ -85,6 +88,7 @@
         SELECT
             d.id,
             d.project_id,
+            d.quotation_id,
             d.delivery_date,
             d.status,
             u.full_name AS delivered_by_name,

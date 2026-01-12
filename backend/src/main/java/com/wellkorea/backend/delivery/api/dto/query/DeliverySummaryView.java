@@ -12,6 +12,7 @@ import java.util.List;
 public record DeliverySummaryView(
         Long id,
         Long projectId,
+        Long quotationId,
         LocalDate deliveryDate,
         String status,
         String deliveredByName,

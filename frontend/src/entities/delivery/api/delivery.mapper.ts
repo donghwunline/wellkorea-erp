@@ -31,6 +31,7 @@ interface DeliveryLineItemResponse {
 export interface DeliveryDetailResponse {
   id: number;
   projectId: number;
+  quotationId: number;
   jobCode: string;
   deliveryDate: string;
   status: DeliveryStatus;
@@ -49,6 +50,7 @@ export interface DeliveryDetailResponse {
 export interface DeliverySummaryResponse {
   id: number;
   projectId: number;
+  quotationId: number;
   deliveryDate: string;
   status: DeliveryStatus;
   deliveredByName: string;
@@ -82,6 +84,7 @@ export const deliveryMapper = {
     return {
       id: response.id,
       projectId: response.projectId,
+      quotationId: response.quotationId,
       jobCode: response.jobCode,
       deliveryDate: response.deliveryDate,
       status: response.status,
@@ -102,6 +105,7 @@ export const deliveryMapper = {
     return {
       id: response.id,
       projectId: response.projectId,
+      quotationId: response.quotationId,
       jobCode: '', // Not available in summary, will be fetched separately if needed
       deliveryDate: response.deliveryDate,
       status: response.status,

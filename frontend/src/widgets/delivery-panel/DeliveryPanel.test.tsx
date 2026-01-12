@@ -74,6 +74,7 @@ function createMockDelivery(overrides: Partial<Delivery> = {}): Delivery {
   return {
     id: 1,
     projectId: 100,
+    quotationId: 10,
     jobCode: 'WK2025-001',
     deliveryDate: '2025-01-07',
     status: 'PENDING' as DeliveryStatus,

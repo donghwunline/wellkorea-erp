@@ -11,6 +11,7 @@ import java.util.List;
 public record DeliveryDetailView(
         Long id,
         Long projectId,
+        Long quotationId,
         String jobCode,
         LocalDate deliveryDate,
         String status,
