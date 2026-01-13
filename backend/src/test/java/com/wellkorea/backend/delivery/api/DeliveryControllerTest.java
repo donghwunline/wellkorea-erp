@@ -118,6 +118,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0},
@@ -144,6 +145,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 3.0}
@@ -167,6 +169,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -189,6 +192,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Product 1 has quotation quantity of 10, trying to deliver 15
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 15.0}
@@ -224,6 +228,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Try to deliver 5 more units (total would be 13, exceeds quota of 10)
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -245,6 +250,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String futureDate = LocalDate.now().plusDays(7).format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -266,6 +272,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": []
                     }
@@ -285,6 +292,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 0}
@@ -307,6 +315,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Product 3 is not in the quotation
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 3, "quantityDelivered": 5.0}
@@ -328,6 +337,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -349,6 +359,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -613,6 +624,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // First delivery: 3 units of Product 1 (quota: 10)
             String firstDelivery = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 3.0}
@@ -630,6 +642,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Second delivery: 5 more units of Product 1 (total: 8, remaining: 2)
             String secondDelivery = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -647,6 +660,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Third delivery: try to deliver 3 more units (would exceed quota of 10)
             String thirdDelivery = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 3.0}
@@ -664,6 +678,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Fourth delivery: deliver exactly remaining 2 units (should succeed)
             String fourthDelivery = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 2.0}
@@ -687,6 +702,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Deliver 5 units of Product 1 and 10 units of Product 2
             String createRequest = """
                     {
+                        "quotationId": 1000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0},

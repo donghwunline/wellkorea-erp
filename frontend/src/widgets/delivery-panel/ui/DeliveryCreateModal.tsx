@@ -185,12 +185,13 @@ export function DeliveryCreateModal({
 
       createDelivery({
         projectId,
+        quotationId: approvedQuotation!.id,
         deliveryDate,
         lineItems,
         notes: notes || undefined,
       });
     },
-    [projectId, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
+    [projectId, approvedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
   );
 
   // Handle cancel

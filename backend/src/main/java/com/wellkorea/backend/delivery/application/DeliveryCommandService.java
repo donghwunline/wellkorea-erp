@@ -58,14 +58,18 @@ public class DeliveryCommandService {
      *   <li>No over-delivery beyond quotation limits</li>
      * </ul>
      * <p>
+     * The quotationId is explicitly provided in the request to ensure the delivery
+     * is created against the exact quotation version the user was viewing, preventing
+     * race conditions where a new quotation could be approved between view and submit.
+     * <p>
      * Delegates to {@link Quotation#createDelivery} factory method which validates
      * using {@link QuotationDeliveryGuard} and creates the Delivery entity.
      *
-     * @param projectId     Project ID
-     * @param request       Create delivery request
+     * @param projectId     Project ID (used for distributed lock)
+     * @param request       Create delivery request containing explicit quotationId
      * @param deliveredById User ID of who is recording the delivery
      * @return ID of the created delivery
-     * @throws ResourceNotFoundException                                  if project doesn't exist
+     * @throws ResourceNotFoundException                                  if project or quotation doesn't exist
      * @throws BusinessException                                          if validation fails
      * @throws com.wellkorea.backend.shared.lock.LockAcquisitionException if lock cannot be acquired (concurrent operation in progress)
      */
@@ -76,10 +80,18 @@ public class DeliveryCommandService {
             throw new ResourceNotFoundException("Project", projectId);
         }
 
-        // Get approved quotation for the project
-        Quotation quotation = findApprovedQuotation(projectId);
-        if (quotation == null) {
-            throw new BusinessException("No approved quotation found for project. Quotation must be approved before recording deliveries.");
+        // Fetch the specific quotation by ID (explicit binding prevents race conditions)
+        Quotation quotation = quotationRepository.findByIdWithLineItems(request.quotationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", request.quotationId()));
+
+        // Validate quotation belongs to the project
+        if (!quotation.getProject().getId().equals(projectId)) {
+            throw new BusinessException("Quotation does not belong to the specified project");
+        }
+
+        // Validate quotation is in an approved state
+        if (!quotation.isApproved()) {
+            throw new BusinessException("Quotation must be approved before recording deliveries. Current status: " + quotation.getStatus());
         }
 
         // Convert DTO line items to domain input
@@ -183,14 +195,4 @@ public class DeliveryCommandService {
         return deliveryId;
     }
 
-    /**
-     * Find the latest approved quotation for a project.
-     *
-     * @param projectId Project ID
-     * @return Latest approved quotation, or null if none exists
-     */
-    private Quotation findApprovedQuotation(Long projectId) {
-        var quotations = quotationRepository.findLatestApprovedForProject(projectId);
-        return quotations.isEmpty() ? null : quotations.getFirst();
-    }
 }

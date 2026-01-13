@@ -11,8 +11,15 @@ import java.util.List;
 /**
  * Request DTO for creating a new delivery.
  * Validates required fields before delivery creation.
+ * 
+ * The quotationId field explicitly binds the delivery to a specific quotation version,
+ * preventing race conditions where the "latest approved" quotation might change
+ * between when the user views the data and when they submit the delivery.
  */
 public record CreateDeliveryRequest(
+        @NotNull(message = "Quotation ID is required")
+        Long quotationId, // Explicit binding to prevent race conditions
+
         @NotNull(message = "Delivery date is required")
         @PastOrPresent(message = "Delivery date cannot be in the future")
         LocalDate deliveryDate,

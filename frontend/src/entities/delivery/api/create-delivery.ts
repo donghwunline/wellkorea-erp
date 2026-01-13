@@ -15,9 +15,14 @@ export interface CreateDeliveryLineItemInput {
 
 /**
  * Input for creating a delivery.
+ * 
+ * The quotationId explicitly binds the delivery to a specific quotation version,
+ * preventing race conditions where the "latest approved" quotation might change
+ * between when the user views the data and when they submit the delivery.
  */
 export interface CreateDeliveryInput {
   projectId: number;
+  quotationId: number; // Explicit binding to prevent race conditions
   deliveryDate: string; // ISO date string (YYYY-MM-DD)
   lineItems: CreateDeliveryLineItemInput[];
   notes?: string;
@@ -27,6 +32,7 @@ export interface CreateDeliveryInput {
  * Request DTO for backend (internal).
  */
 interface CreateDeliveryRequest {
+  quotationId: number;
   deliveryDate: string;
   lineItems: Array<{
     productId: number;
@@ -43,6 +49,10 @@ interface CreateDeliveryRequest {
 function validateCreateInput(input: CreateDeliveryInput): void {
   if (!input.projectId || input.projectId <= 0) {
     throw new DomainValidationError('REQUIRED', 'projectId', 'Project ID is required');
+  }
+
+  if (!input.quotationId || input.quotationId <= 0) {
+    throw new DomainValidationError('REQUIRED', 'quotationId', 'Quotation ID is required');
   }
 
   if (!input.deliveryDate) {
@@ -77,6 +87,7 @@ function validateCreateInput(input: CreateDeliveryInput): void {
  */
 function toCreateRequest(input: CreateDeliveryInput): CreateDeliveryRequest {
   return {
+    quotationId: input.quotationId,
     deliveryDate: input.deliveryDate,
     lineItems: input.lineItems.map(item => ({
       productId: item.productId,
