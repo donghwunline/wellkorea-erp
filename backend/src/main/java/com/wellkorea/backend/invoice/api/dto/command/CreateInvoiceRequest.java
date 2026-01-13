@@ -9,10 +9,17 @@ import java.util.List;
 
 /**
  * Request DTO for creating a new tax invoice.
+ * 
+ * The quotationId field explicitly binds the invoice to a specific quotation version,
+ * preventing race conditions where the "latest approved" quotation might change
+ * between when the user views the data and when they submit the invoice.
  */
 public record CreateInvoiceRequest(
         @NotNull(message = "Project ID is required")
         Long projectId,
+
+        @NotNull(message = "Quotation ID is required")
+        Long quotationId, // Explicit binding to prevent race conditions
 
         Long deliveryId, // Optional: link to specific delivery for auto-population
 

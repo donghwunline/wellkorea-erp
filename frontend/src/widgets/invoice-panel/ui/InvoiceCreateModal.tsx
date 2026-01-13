@@ -288,6 +288,7 @@ export function InvoiceCreateModal({
 
       createInvoice({
         projectId,
+        quotationId: approvedQuotation!.id,
         deliveryId: selectedDeliveryId,
         issueDate,
         dueDate,
@@ -298,6 +299,7 @@ export function InvoiceCreateModal({
     },
     [
       projectId,
+      approvedQuotation,
       issueDate,
       dueDate,
       taxRate,

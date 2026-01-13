@@ -141,6 +141,7 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
             String createRequest = """
                     {
                         "projectId": %d,
+                        "quotationId": 2000,
                         "deliveryId": %d,
                         "issueDate": "%s",
                         "dueDate": "%s",
@@ -172,6 +173,7 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
             String createRequest = """
                     {
                         "projectId": %d,
+                        "quotationId": 2000,
                         "issueDate": "%s",
                         "dueDate": "%s",
                         "lineItems": [
@@ -197,6 +199,7 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
             String createRequest = """
                     {
                         "projectId": %d,
+                        "quotationId": 2000,
                         "issueDate": "%s",
                         "dueDate": "%s",
                         "lineItems": [
@@ -220,6 +223,7 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
             String createRequest = """
                     {
                         "projectId": %d,
+                        "quotationId": 2000,
                         "issueDate": "%s",
                         "dueDate": "%s",
                         "lineItems": [
@@ -243,6 +247,7 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
             String createRequest = """
                     {
                         "projectId": %d,
+                        "quotationId": 2000,
                         "issueDate": "%s",
                         "dueDate": "%s",
                         "lineItems": []
@@ -445,6 +450,7 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
         String createRequest = """
                 {
                     "projectId": %d,
+                    "quotationId": 2000,
                     "deliveryId": %d,
                     "issueDate": "%s",
                     "dueDate": "%s",

@@ -22,9 +22,14 @@ export interface CreateInvoiceLineItemInput {
 
 /**
  * Input for creating an invoice.
+ * 
+ * The quotationId explicitly binds the invoice to a specific quotation version,
+ * preventing race conditions where the "latest approved" quotation might change
+ * between when the user views the data and when they submit the invoice.
  */
 export interface CreateInvoiceInput {
   projectId: number;
+  quotationId: number; // Explicit binding to prevent race conditions
   deliveryId?: number | null;
   issueDate: string; // ISO date string
   dueDate: string; // ISO date string
@@ -39,6 +44,7 @@ export interface CreateInvoiceInput {
  */
 interface CreateInvoiceRequest {
   projectId: number;
+  quotationId: number;
   deliveryId: number | null;
   issueDate: string;
   dueDate: string;
@@ -59,6 +65,10 @@ interface CreateInvoiceRequest {
 function validateCreateInput(input: CreateInvoiceInput): void {
   if (!input.projectId || input.projectId <= 0) {
     throw new Error('Project is required');
+  }
+
+  if (!input.quotationId || input.quotationId <= 0) {
+    throw new Error('Quotation is required');
   }
 
   if (!input.issueDate) {
@@ -100,6 +110,7 @@ function validateCreateInput(input: CreateInvoiceInput): void {
 function toCreateRequest(input: CreateInvoiceInput): CreateInvoiceRequest {
   return {
     projectId: input.projectId,
+    quotationId: input.quotationId,
     deliveryId: input.deliveryId ?? null,
     issueDate: input.issueDate,
     dueDate: input.dueDate,
