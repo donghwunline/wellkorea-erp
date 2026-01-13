@@ -243,19 +243,29 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
   // Empty state - no invoices yet
   if (invoices.length === 0) {
     return (
-      <Card className="p-12 text-center">
-        <Icon name="banknotes" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">No Invoices Yet</h3>
-        <p className="mt-2 text-steel-500">
-          No invoices have been created for this project.
-        </p>
-        {canManageInvoices && (
-          <Button variant="primary" className="mt-6" onClick={handleCreateInvoice}>
-            <Icon name="plus" className="h-4 w-4" />
-            Create Invoice
-          </Button>
-        )}
-      </Card>
+      <>
+        <Card className="p-12 text-center">
+          <Icon name="banknotes" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+          <h3 className="text-lg font-semibold text-white">No Invoices Yet</h3>
+          <p className="mt-2 text-steel-500">
+            No invoices have been created for this project.
+          </p>
+          {canManageInvoices && (
+            <Button variant="primary" className="mt-6" onClick={handleCreateInvoice}>
+              <Icon name="plus" className="h-4 w-4" />
+              Create Invoice
+            </Button>
+          )}
+        </Card>
+
+        {/* Create Invoice Modal - must be rendered for button to work */}
+        <InvoiceCreateModal
+          projectId={projectId}
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={handleCreateModalSuccess}
+        />
+      </>
     );
   }
 
