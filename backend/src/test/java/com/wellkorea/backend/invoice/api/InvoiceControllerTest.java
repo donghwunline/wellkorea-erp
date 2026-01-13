@@ -81,27 +81,51 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
         );
         testProjectId = 2000L;
 
-        // Create test delivery
+        // Create test quotation with APPROVED status (required for invoice creation validation)
         jdbcTemplate.update(
-                "INSERT INTO deliveries (id, project_id, delivery_date, status, delivered_by_id, created_at, updated_at) " +
-                        "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                2000L, testProjectId, LocalDate.now(), "DELIVERED", 1L
+                2000L, testProjectId, 1, "APPROVED", 100000.00, LocalDate.now(), 30, 1L
+        );
+
+        // Create quotation line items (products and quantities that can be delivered/invoiced)
+        // Product 1: 10 units, Product 2: 20 units
+        jdbcTemplate.update(
+                "INSERT INTO quotation_line_items (id, quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                        "ON CONFLICT (id) DO NOTHING",
+                2001L, 2000L, 1L, 1, 10.0, 10000.00, 100000.00
+        );
+        jdbcTemplate.update(
+                "INSERT INTO quotation_line_items (id, quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                        "ON CONFLICT (id) DO NOTHING",
+                2002L, 2000L, 2L, 2, 20.0, 5000.00, 100000.00
+        );
+
+        // Create test delivery (with DELIVERED status so quantities can be invoiced)
+        jdbcTemplate.update(
+                "INSERT INTO deliveries (id, project_id, quotation_id, delivery_date, status, delivered_by_id, created_at, updated_at) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                        "ON CONFLICT (id) DO NOTHING",
+                2000L, testProjectId, 2000L, LocalDate.now(), "DELIVERED", 1L
         );
         testDeliveryId = 2000L;
 
         // Create delivery line items (columns: id, delivery_id, product_id, quantity_delivered)
+        // These delivered quantities can be invoiced
         jdbcTemplate.update(
                 "INSERT INTO delivery_line_items (id, delivery_id, product_id, quantity_delivered) " +
                         "VALUES (?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                2001L, testDeliveryId, 1L, 5.0
+                2003L, testDeliveryId, 1L, 5.0
         );
         jdbcTemplate.update(
                 "INSERT INTO delivery_line_items (id, delivery_id, product_id, quantity_delivered) " +
                         "VALUES (?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                2002L, testDeliveryId, 2L, 10.0
+                2004L, testDeliveryId, 2L, 10.0
         );
     }
 

@@ -108,12 +108,13 @@ public class InvoiceController {
 
     /**
      * Create a new invoice.
+     * Uses distributed lock on project to prevent race conditions during concurrent invoice creation.
      */
     @PostMapping("/invoices")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
     public ResponseEntity<ApiResponse<InvoiceCommandResult>> createInvoice(@Valid @RequestBody CreateInvoiceRequest request,
                                                                            @AuthenticationPrincipal AuthenticatedUser user) {
-        Long invoiceId = commandService.createInvoice(request, user.getUserId());
+        Long invoiceId = commandService.createInvoice(request.projectId(), request, user.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(InvoiceCommandResult.created(invoiceId)));
     }

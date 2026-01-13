@@ -123,4 +123,24 @@ public interface TaxInvoiceRepository extends JpaRepository<TaxInvoice, Long> {
      */
     @Query("SELECT i FROM TaxInvoice i WHERE i.status IN :statuses")
     List<TaxInvoice> findWithOutstandingBalance(@Param("statuses") List<InvoiceStatus> statuses);
+
+    /**
+     * Get invoiced quantities for all products in a project.
+     * Returns a list of [productId, totalInvoiced] arrays.
+     * Excludes CANCELLED invoices.
+     * <p>
+     * Similar pattern: {@link com.wellkorea.backend.delivery.infrastructure.persistence.DeliveryRepository#getDeliveredQuantitiesByProject}
+     *
+     * @param projectId Project ID
+     * @return List of product invoice summaries
+     */
+    @Query("""
+            SELECT ili.productId, SUM(ili.quantityInvoiced)
+            FROM InvoiceLineItem ili
+            JOIN ili.invoice i
+            WHERE i.projectId = :projectId
+            AND i.status != 'CANCELLED'
+            GROUP BY ili.productId
+            """)
+    List<Object[]> getInvoicedQuantitiesByProject(@Param("projectId") Long projectId);
 }
