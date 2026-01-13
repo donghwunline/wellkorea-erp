@@ -118,22 +118,24 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
   // Empty state - no deliveries yet
   if (deliveries.length === 0) {
     return (
-      <Card className="p-12 text-center">
-        <Icon name="truck" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">No Deliveries Yet</h3>
-        <p className="mt-2 text-steel-500">No deliveries have been recorded for this project.</p>
-        {canCreateDelivery && (
-          <Button
-            variant="primary"
-            className="mt-6"
-            onClick={() => setShowCreateModal(true)}
-          >
-            <Icon name="plus" className="h-4 w-4" />
-            Record Delivery
-          </Button>
-        )}
+      <>
+        <Card className="p-12 text-center">
+          <Icon name="truck" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+          <h3 className="text-lg font-semibold text-white">No Deliveries Yet</h3>
+          <p className="mt-2 text-steel-500">No deliveries have been recorded for this project.</p>
+          {canCreateDelivery && (
+            <Button
+              variant="primary"
+              className="mt-6"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <Icon name="plus" className="h-4 w-4" />
+              Record Delivery
+            </Button>
+          )}
+        </Card>
 
-        {/* Create Modal */}
+        {/* Create Modal - rendered outside Card for proper portal behavior */}
         <DeliveryCreateModal
           projectId={projectId}
           isOpen={showCreateModal}
@@ -142,7 +144,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
             // Query invalidation handled by mutation hook
           }}
         />
-      </Card>
+      </>
     );
   }
 
