@@ -23,7 +23,7 @@ import {
   ModalActions,
 } from '@/shared/ui';
 import { quotationQueries, QuotationStatus, type LineItem } from '@/entities/quotation';
-import { deliveryQueries, type Delivery } from '@/entities/delivery';
+import { deliveryQueries, deliveryRules, type Delivery } from '@/entities/delivery';
 import { invoiceQueries, type CreateInvoiceLineItemInput } from '@/entities/invoice';
 import { useCreateInvoice } from '@/features/invoice/create';
 import { formatCurrency } from '@/shared/lib/formatting';
@@ -151,14 +151,8 @@ export function InvoiceCreateModal({
   const lineItemsData = useMemo<InvoiceLineItemFormData[]>(() => {
     if (!quotationDetail?.lineItems) return [];
 
-    // Build map of delivered quantities by productId
-    const deliveredByProduct = new Map<number, number>();
-    for (const delivery of deliveries) {
-      for (const item of delivery.lineItems) {
-        const current = deliveredByProduct.get(item.productId) || 0;
-        deliveredByProduct.set(item.productId, current + item.quantityDelivered);
-      }
-    }
+    // Build map of delivered quantities by productId (excludes RETURNED deliveries)
+    const deliveredByProduct = deliveryRules.getDeliveredQuantityByProduct(deliveries);
 
     // Build map of invoiced quantities by productId from full invoice details
     const invoicedByProduct = new Map<number, number>();
