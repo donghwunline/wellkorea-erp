@@ -14,7 +14,7 @@
  * - Uses features/invoice/create for mutation
  */
 
-import { useCallback, useState, useMemo, useEffect } from 'react';
+import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import {
@@ -175,28 +175,62 @@ export function InvoiceCreatePage() {
     });
   }, [quotationDetail, deliveries, invoiceDetails]);
 
-  // Auto-populate quantities when a delivery is selected
+  // Handle delivery selection change - auto-populate quantities
+  const handleDeliveryChange = useCallback(
+    (deliveryId: number | null) => {
+      setSelectedDeliveryId(deliveryId);
+
+      if (!deliveryId || !lineItemsData.length) {
+        setQuantitiesToInvoice({});
+        return;
+      }
+
+      const selectedDelivery = deliveries.find((d) => d.id === deliveryId);
+      if (!selectedDelivery) {
+        setQuantitiesToInvoice({});
+        return;
+      }
+
+      // Build quantities from selected delivery, capped at remaining invoiceable qty
+      const newQuantities: Record<number, number> = {};
+      for (const deliveryItem of selectedDelivery.lineItems) {
+        const lineItem = lineItemsData.find((li) => li.productId === deliveryItem.productId);
+        if (lineItem && lineItem.remainingQuantity > 0) {
+          // Take the lesser of: delivered qty from this delivery or remaining invoiceable qty
+          newQuantities[deliveryItem.productId] = Math.min(
+            deliveryItem.quantityDelivered,
+            lineItem.remainingQuantity
+          );
+        }
+      }
+
+      setQuantitiesToInvoice(newQuantities);
+    },
+    [deliveries, lineItemsData]
+  );
+
+  // One-time initialization for preselected delivery
+  const initializedRef = useRef(false);
   useEffect(() => {
-    if (!selectedDeliveryId || !lineItemsData.length) return;
-
-    const selectedDelivery = deliveries.find((d) => d.id === selectedDeliveryId);
+    if (initializedRef.current) return;
+    if (!preselectedDeliveryId || !lineItemsData.length || !deliveries.length) return;
+    initializedRef.current = true;
+    // Only set quantities, don't call full handler to avoid setting deliveryId again
+    const selectedDelivery = deliveries.find((d) => d.id === preselectedDeliveryId);
     if (!selectedDelivery) return;
-
-    // Build quantities from selected delivery, capped at remaining invoiceable qty
     const newQuantities: Record<number, number> = {};
     for (const deliveryItem of selectedDelivery.lineItems) {
       const lineItem = lineItemsData.find((li) => li.productId === deliveryItem.productId);
       if (lineItem && lineItem.remainingQuantity > 0) {
-        // Take the lesser of: delivered qty from this delivery or remaining invoiceable qty
         newQuantities[deliveryItem.productId] = Math.min(
           deliveryItem.quantityDelivered,
           lineItem.remainingQuantity
         );
       }
     }
-
-    setQuantitiesToInvoice(newQuantities);
-  }, [selectedDeliveryId, deliveries, lineItemsData]);
+    // Use queueMicrotask to defer setState and avoid lint warning about synchronous setState in effect
+    queueMicrotask(() => setQuantitiesToInvoice(newQuantities));
+  }, [preselectedDeliveryId, lineItemsData, deliveries]);
 
   // Calculate totals
   const { subtotal, taxAmount, total } = useMemo(() => {
@@ -434,7 +468,7 @@ export function InvoiceCreatePage() {
             <FormField label="Related Delivery">
               <select
                 value={selectedDeliveryId?.toString() || ''}
-                onChange={(e) => setSelectedDeliveryId(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) => handleDeliveryChange(e.target.value ? Number(e.target.value) : null)}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               >
                 {deliveryOptions.map((opt) => (

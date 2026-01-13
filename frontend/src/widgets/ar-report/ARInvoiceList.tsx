@@ -104,8 +104,8 @@ export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps)
     [navigate]
   );
 
-  // Sort indicator - using CSS rotation for ascending since chevron-up doesn't exist
-  const SortIndicator = ({ field }: { field: SortField }) => {
+  // Render sort indicator - using CSS rotation for ascending since chevron-up doesn't exist
+  const renderSortIndicator = (field: SortField) => {
     if (sortField !== field) return null;
     return (
       <Icon
@@ -174,14 +174,14 @@ export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps)
                 onClick={() => handleSort('customer')}
               >
                 Customer
-                <SortIndicator field="customer" />
+                {renderSortIndicator('customer')}
               </th>
               <th
                 className="cursor-pointer px-4 py-3 text-left text-sm font-medium text-steel-400 hover:text-white"
                 onClick={() => handleSort('dueDate')}
               >
                 Due Date
-                <SortIndicator field="dueDate" />
+                {renderSortIndicator('dueDate')}
               </th>
               <th className="px-4 py-3 text-left text-sm font-medium text-steel-400">Status</th>
               <th
@@ -189,14 +189,14 @@ export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps)
                 onClick={() => handleSort('amount')}
               >
                 Balance
-                <SortIndicator field="amount" />
+                {renderSortIndicator('amount')}
               </th>
               <th
                 className="cursor-pointer px-4 py-3 text-right text-sm font-medium text-steel-400 hover:text-white"
                 onClick={() => handleSort('daysOverdue')}
               >
                 Days Overdue
-                <SortIndicator field="daysOverdue" />
+                {renderSortIndicator('daysOverdue')}
               </th>
               <th className="px-4 py-3 text-center text-sm font-medium text-steel-400">Aging</th>
             </tr>
