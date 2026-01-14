@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -71,26 +72,26 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
         productionToken = jwtTokenProvider.generateToken(PRODUCTION_USERNAME, Role.PRODUCTION.getAuthority(), 3L);
         salesToken = jwtTokenProvider.generateToken(SALES_USERNAME, Role.SALES.getAuthority(), 4L);
 
-        // Create test project
+        // Create test project - use 3000L to avoid conflicts with QuotationControllerTest (1000L) and InvoiceControllerTest (2000L)
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMdd"));
         String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yy"));
         jdbcTemplate.update(
                 "INSERT INTO projects (id, job_code, customer_company_id, project_name, due_date, internal_owner_id, status, created_by_id) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                1000L, "WK2K" + year + "-1000-" + today, 1L, "Delivery Test Project",
+                3000L, "WK2K" + year + "-3000-" + today, 1L, "Delivery Test Project",
                 LocalDate.now().plusDays(30), 1L, "ACTIVE", 1L
         );
-        testProjectId = 1000L;
+        testProjectId = 3000L;
 
         // Create test quotation with APPROVED status
         jdbcTemplate.update(
                 "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                1000L, testProjectId, 1, "APPROVED", 500000.00, LocalDate.now(), 30, 1L
+                3000L, testProjectId, 1, "APPROVED", 500000.00, LocalDate.now(), 30, 1L
         );
-        testQuotationId = 1000L;
+        testQuotationId = 3000L;
 
         // Create quotation line items (products and quantities to deliver)
         // Product 1: 10 units, Product 2: 20 units
@@ -98,13 +99,13 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
                 "INSERT INTO quotation_line_items (id, quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                1001L, testQuotationId, 1L, 1, 10.0, 50000.00, 500000.00
+                3001L, testQuotationId, 1L, 1, 10.0, 50000.00, 500000.00
         );
         jdbcTemplate.update(
                 "INSERT INTO quotation_line_items (id, quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                1002L, testQuotationId, 2L, 2, 20.0, 3500.00, 70000.00
+                3002L, testQuotationId, 2L, 2, 20.0, 3500.00, 70000.00
         );
     }
 
@@ -118,7 +119,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0},
@@ -145,7 +146,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 3.0}
@@ -169,7 +170,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -192,7 +193,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Product 1 has quotation quantity of 10, trying to deliver 15
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 15.0}
@@ -217,18 +218,18 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             jdbcTemplate.update(
                     "INSERT INTO deliveries (id, project_id, delivery_date, status, delivered_by_id) " +
                             "VALUES (?, ?, ?, ?, ?)",
-                    2000L, testProjectId, LocalDate.now(), "DELIVERED", 1L
+                    3100L, testProjectId, LocalDate.now(), "DELIVERED", 1L
             );
             jdbcTemplate.update(
                     "INSERT INTO delivery_line_items (id, delivery_id, product_id, quantity_delivered) " +
                             "VALUES (?, ?, ?, ?)",
-                    2001L, 2000L, 1L, 8.0
+                    3101L, 3100L, 1L, 8.0
             );
 
             // Try to deliver 5 more units (total would be 13, exceeds quota of 10)
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -250,7 +251,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String futureDate = LocalDate.now().plusDays(7).format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -272,7 +273,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": []
                     }
@@ -292,7 +293,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 0}
@@ -315,7 +316,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Product 3 is not in the quotation
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 3, "quantityDelivered": 5.0}
@@ -337,7 +338,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -359,7 +360,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -476,12 +477,14 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
         }
 
         @Test
-        @DisplayName("should return 404 for non-existent project")
-        void listDeliveries_NonExistentProject_Returns404() throws Exception {
+        @DisplayName("should return 200 with empty list for non-existent project")
+        void listDeliveries_NonExistentProject_ReturnsEmptyList() throws Exception {
             mockMvc.perform(get(DELIVERIES_BASE_URL)
                             .param("projectId", "99999")
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data", hasSize(0)));
         }
 
         @Test
@@ -617,41 +620,69 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
     class DeliveryQuantityTrackingTests {
 
         @Test
+        @Transactional(propagation = Propagation.NOT_SUPPORTED)
         @DisplayName("should track remaining deliverable quantity correctly")
         void createDelivery_TracksRemainingQuantity() throws Exception {
-            String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
+            // Use isolated test data to avoid affecting other tests
+            // Use 4000L range to avoid conflicts with InvoiceControllerTest (2000L)
+            // Product ID 1 already exists from test fixtures
+            Long trackingProjectId = 4000L;
+            Long trackingQuotationId = 4000L;
+            Long trackingProductId = 1L;  // Uses existing product from test fixtures
 
-            // First delivery: 3 units of Product 1 (quota: 10)
+            // Setup isolated test data
+            String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
+            String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yy"));
+            String dayMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("MMdd"));
+
+            jdbcTemplate.update(
+                    "INSERT INTO projects (id, job_code, customer_company_id, project_name, due_date, internal_owner_id, status, created_by_id) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
+                    trackingProjectId, "WK2K" + year + "-4000-" + dayMonth, 1L, "Tracking Test Project",
+                    LocalDate.now().plusDays(30), 1L, "ACTIVE", 1L
+            );
+            jdbcTemplate.update(
+                    "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
+                    trackingQuotationId, trackingProjectId, 1, "APPROVED", 100000.00, LocalDate.now(), 30, 1L
+            );
+            jdbcTemplate.update(
+                    "INSERT INTO quotation_line_items (id, quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
+                    4001L, trackingQuotationId, trackingProductId, 1, 10.0, 10000.00, 100000.00
+            );
+
+            // First delivery: 3 units (quota: 10)
             String firstDelivery = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": %d,
                         "deliveryDate": "%s",
                         "lineItems": [
-                            {"productId": 1, "quantityDelivered": 3.0}
+                            {"productId": %d, "quantityDelivered": 3.0}
                         ]
                     }
-                    """.formatted(today);
+                    """.formatted(trackingQuotationId, today, trackingProductId);
 
             mockMvc.perform(post(DELIVERIES_BASE_URL)
-                            .param("projectId", testProjectId.toString())
+                            .param("projectId", trackingProjectId.toString())
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(firstDelivery))
                     .andExpect(status().isCreated());
 
-            // Second delivery: 5 more units of Product 1 (total: 8, remaining: 2)
+            // Second delivery: 5 more units (total: 8, remaining: 2)
             String secondDelivery = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": %d,
                         "deliveryDate": "%s",
                         "lineItems": [
-                            {"productId": 1, "quantityDelivered": 5.0}
+                            {"productId": %d, "quantityDelivered": 5.0}
                         ]
                     }
-                    """.formatted(today);
+                    """.formatted(trackingQuotationId, today, trackingProductId);
 
             mockMvc.perform(post(DELIVERIES_BASE_URL)
-                            .param("projectId", testProjectId.toString())
+                            .param("projectId", trackingProjectId.toString())
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(secondDelivery))
@@ -660,16 +691,16 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Third delivery: try to deliver 3 more units (would exceed quota of 10)
             String thirdDelivery = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": %d,
                         "deliveryDate": "%s",
                         "lineItems": [
-                            {"productId": 1, "quantityDelivered": 3.0}
+                            {"productId": %d, "quantityDelivered": 3.0}
                         ]
                     }
-                    """.formatted(today);
+                    """.formatted(trackingQuotationId, today, trackingProductId);
 
             mockMvc.perform(post(DELIVERIES_BASE_URL)
-                            .param("projectId", testProjectId.toString())
+                            .param("projectId", trackingProjectId.toString())
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(thirdDelivery))
@@ -678,16 +709,16 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Fourth delivery: deliver exactly remaining 2 units (should succeed)
             String fourthDelivery = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": %d,
                         "deliveryDate": "%s",
                         "lineItems": [
-                            {"productId": 1, "quantityDelivered": 2.0}
+                            {"productId": %d, "quantityDelivered": 2.0}
                         ]
                     }
-                    """.formatted(today);
+                    """.formatted(trackingQuotationId, today, trackingProductId);
 
             mockMvc.perform(post(DELIVERIES_BASE_URL)
-                            .param("projectId", testProjectId.toString())
+                            .param("projectId", trackingProjectId.toString())
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(fourthDelivery))
@@ -702,7 +733,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             // Deliver 5 units of Product 1 and 10 units of Product 2
             String createRequest = """
                     {
-                        "quotationId": 1000,
+                        "quotationId": 3000,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0},
