@@ -135,6 +135,8 @@
         Get delivered quantities for all products in a project.
         Excludes RETURNED deliveries.
         Uses enum value directly in SQL for type safety.
+
+        @deprecated Use getDeliveredQuantitiesByQuotation instead.
     -->
     <select id="getDeliveredQuantitiesByProject" resultMap="ProductQuantitySumResult">
         SELECT
@@ -144,6 +146,28 @@
         INNER JOIN deliveries d ON dli.delivery_id = d.id
         WHERE d.project_id = #{projectId}
           AND d.status != 'RETURNED'
+        GROUP BY dli.product_id
+    </select>
+
+    <!--
+        Get delivered quantities for all products linked to a specific quotation.
+        Excludes RETURNED deliveries.
+        Optionally excludes a specific delivery (for reassignment validation).
+
+        Used for validating deliveries against quotation limits.
+        Each quotation tracks its own delivery progress independently.
+    -->
+    <select id="getDeliveredQuantitiesByQuotation" resultMap="ProductQuantitySumResult">
+        SELECT
+            dli.product_id,
+            COALESCE(SUM(dli.quantity_delivered), 0) AS quantity
+        FROM delivery_line_items dli
+        INNER JOIN deliveries d ON dli.delivery_id = d.id
+        WHERE d.quotation_id = #{quotationId}
+          AND d.status != 'RETURNED'
+          <if test="excludeDeliveryId != null">
+              AND d.id != #{excludeDeliveryId}
+          </if>
         GROUP BY dli.product_id
     </select>
 

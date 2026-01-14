@@ -213,12 +213,12 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
         @Test
         @DisplayName("should return 400 when cumulative delivery exceeds quotation quantity")
         void createDelivery_CumulativeExceedsQuotationQuantity_Returns400() throws Exception {
-            // First, create a delivery with 8 units of Product 1
+            // First, create a delivery with 8 units of Product 1 linked to the same quotation
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             jdbcTemplate.update(
-                    "INSERT INTO deliveries (id, project_id, delivery_date, status, delivered_by_id) " +
-                            "VALUES (?, ?, ?, ?, ?)",
-                    3100L, testProjectId, LocalDate.now(), "DELIVERED", 1L
+                    "INSERT INTO deliveries (id, project_id, quotation_id, delivery_date, status, delivered_by_id) " +
+                            "VALUES (?, ?, ?, ?, ?, ?)",
+                    3100L, testProjectId, testQuotationId, LocalDate.now(), "DELIVERED", 1L
             );
             jdbcTemplate.update(
                     "INSERT INTO delivery_line_items (id, delivery_id, product_id, quantity_delivered) " +

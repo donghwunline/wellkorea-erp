@@ -185,10 +185,11 @@ public class DeliveryCommandService {
 
         // Validate delivery is compatible with the target quotation
         // (products exist and quantities don't exceed limits)
+        // Exclude the current delivery from validation since we're moving it
         List<DeliveryLineItemInput> lineItemInputs = delivery.getLineItems().stream()
                 .map(li -> new DeliveryLineItemInput(li.getProductId(), li.getQuantityDelivered()))
                 .toList();
-        quotationDeliveryGuard.validateAndThrow(quotation, lineItemInputs);
+        quotationDeliveryGuard.validateAndThrow(quotation, lineItemInputs, deliveryId);
 
         delivery.reassignToQuotation(quotationId);
         deliveryRepository.save(delivery);

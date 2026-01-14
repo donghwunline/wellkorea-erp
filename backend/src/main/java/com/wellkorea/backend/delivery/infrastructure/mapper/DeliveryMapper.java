@@ -47,6 +47,24 @@ public interface DeliveryMapper {
      *
      * @param projectId Project ID
      * @return List of product quantity summaries
+     * @deprecated Use {@link #getDeliveredQuantitiesByQuotation(Long, Long)} instead.
+     *             Deliveries are linked to specific quotations, not project-wide.
      */
+    @Deprecated
     List<ProductQuantitySum> getDeliveredQuantitiesByProject(@Param("projectId") Long projectId);
+
+    /**
+     * Get delivered quantities for all products linked to a specific quotation.
+     * Excludes RETURNED deliveries.
+     * <p>
+     * Used for validating new deliveries against quotation limits.
+     * Each quotation tracks its own delivery progress independently.
+     *
+     * @param quotationId     Quotation ID to query deliveries for
+     * @param excludeDeliveryId Optional delivery ID to exclude (for reassignment validation)
+     * @return List of product quantity summaries
+     */
+    List<ProductQuantitySum> getDeliveredQuantitiesByQuotation(
+            @Param("quotationId") Long quotationId,
+            @Param("excludeDeliveryId") Long excludeDeliveryId);
 }

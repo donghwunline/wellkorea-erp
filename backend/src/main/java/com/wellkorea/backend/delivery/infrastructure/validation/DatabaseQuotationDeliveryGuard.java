@@ -34,11 +34,16 @@ public class DatabaseQuotationDeliveryGuard implements QuotationDeliveryGuard {
 
     @Override
     public void validateAndThrow(Quotation quotation, List<DeliveryLineItemInput> lineItems) {
+        validateAndThrow(quotation, lineItems, null);
+    }
+
+    @Override
+    public void validateAndThrow(Quotation quotation, List<DeliveryLineItemInput> lineItems, Long excludeDeliveryId) {
         validateNotEmpty(lineItems);
         validateNoDuplicateProducts(lineItems);
 
         Map<Long, BigDecimal> quotationQuantities = buildQuotationQuantityMap(quotation);
-        Map<Long, BigDecimal> deliveredQuantities = buildDeliveredQuantityMap(quotation.getProject().getId());
+        Map<Long, BigDecimal> deliveredQuantities = buildDeliveredQuantityMap(quotation.getId(), excludeDeliveryId);
 
         for (DeliveryLineItemInput item : lineItems) {
             validatePositiveQuantity(item);
@@ -122,12 +127,18 @@ public class DatabaseQuotationDeliveryGuard implements QuotationDeliveryGuard {
     }
 
     /**
-     * Build a map of product ID to already-delivered quantity for the project.
+     * Build a map of product ID to already-delivered quantity for the quotation.
+     * <p>
+     * Queries deliveries linked to the specific quotation (not project-wide),
+     * as each quotation tracks its own delivery progress independently.
      * <p>
      * Uses MyBatis mapper for typed results (no manual Object[] conversion needed).
+     *
+     * @param quotationId       Quotation ID to query deliveries for
+     * @param excludeDeliveryId Optional delivery ID to exclude (for reassignment)
      */
-    private Map<Long, BigDecimal> buildDeliveredQuantityMap(Long projectId) {
-        return deliveryMapper.getDeliveredQuantitiesByProject(projectId).stream()
+    private Map<Long, BigDecimal> buildDeliveredQuantityMap(Long quotationId, Long excludeDeliveryId) {
+        return deliveryMapper.getDeliveredQuantitiesByQuotation(quotationId, excludeDeliveryId).stream()
                 .collect(Collectors.toMap(
                         ProductQuantitySum::productId,
                         ProductQuantitySum::quantity

@@ -36,4 +36,19 @@ public interface QuotationDeliveryGuard {
      * @throws BusinessException if any validation fails
      */
     void validateAndThrow(Quotation quotation, List<DeliveryLineItemInput> lineItems);
+
+    /**
+     * Validate that the delivery line items can be delivered against the quotation,
+     * excluding a specific delivery from the "already delivered" calculation.
+     * <p>
+     * Used for reassignment scenarios where an existing delivery is being moved
+     * to a different quotation - we need to exclude that delivery's quantities
+     * from the calculation to avoid double-counting.
+     *
+     * @param quotation         Quotation to validate against (must be approved)
+     * @param lineItems         Line items to validate
+     * @param excludeDeliveryId Delivery ID to exclude from existing delivery calculation
+     * @throws BusinessException if any validation fails
+     */
+    void validateAndThrow(Quotation quotation, List<DeliveryLineItemInput> lineItems, Long excludeDeliveryId);
 }
