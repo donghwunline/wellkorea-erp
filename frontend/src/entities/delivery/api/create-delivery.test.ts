@@ -50,6 +50,7 @@ function createValidLineItem(
 function createValidInput(overrides?: Partial<CreateDeliveryInput>): CreateDeliveryInput {
   return {
     projectId: 100,
+    quotationId: 200,
     deliveryDate: '2025-01-07',
     lineItems: [createValidLineItem()],
     notes: undefined,
@@ -331,6 +332,7 @@ describe('createDelivery', () => {
     it('should map all fields correctly to request', async () => {
       const input: CreateDeliveryInput = {
         projectId: 100,
+        quotationId: 200,
         deliveryDate: '2025-01-07',
         lineItems: [
           { productId: 1, quantityDelivered: 10 },
@@ -344,6 +346,7 @@ describe('createDelivery', () => {
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         '/api/deliveries?projectId=100',
         {
+          quotationId: 200,
           deliveryDate: '2025-01-07',
           lineItems: [
             { productId: 1, quantityDelivered: 10 },

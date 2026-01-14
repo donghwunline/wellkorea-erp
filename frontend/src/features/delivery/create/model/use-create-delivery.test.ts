@@ -43,6 +43,7 @@ vi.mock('@/entities/delivery', async () => {
 function createValidInput(overrides?: Partial<CreateDeliveryInput>): CreateDeliveryInput {
   return {
     projectId: 100,
+    quotationId: 200,
     deliveryDate: '2025-01-07',
     lineItems: [
       { productId: 1, quantityDelivered: 10 },

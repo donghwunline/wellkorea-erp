@@ -143,6 +143,12 @@ export function DeliveryCreatePage() {
       e.preventDefault();
       setError(null);
 
+      // Guard: approvedQuotation should exist when form is shown
+      if (!approvedQuotation) {
+        setError('No approved quotation found');
+        return;
+      }
+
       // Build line items for submission (only items with quantity > 0)
       const lineItems: CreateDeliveryLineItemInput[] = lineItemsData
         .filter(item => (quantitiesToDeliver[item.productId] || 0) > 0)
@@ -169,12 +175,13 @@ export function DeliveryCreatePage() {
 
       createDelivery({
         projectId: projectIdNum,
+        quotationId: approvedQuotation.id,
         deliveryDate,
         lineItems,
         notes: notes || undefined,
       });
     },
-    [projectIdNum, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
+    [projectIdNum, approvedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
   );
 
   // Loading state
