@@ -2,9 +2,10 @@ package com.wellkorea.backend.delivery.infrastructure.validation;
 
 import com.wellkorea.backend.delivery.domain.DeliveryLineItemInput;
 import com.wellkorea.backend.delivery.domain.QuotationDeliveryGuard;
-import com.wellkorea.backend.delivery.infrastructure.persistence.DeliveryRepository;
+import com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
+import com.wellkorea.backend.shared.dto.ProductQuantitySum;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Database-backed implementation of {@link QuotationDeliveryGuard}.
@@ -21,15 +23,17 @@ import java.util.Set;
  * Validates delivery line items against quotation limits by querying the database
  * for already-delivered quantities.
  * <p>
+ * Uses MyBatis mapper for typed query results instead of JPA Object[] arrays.
+ * <p>
  * Similar pattern: {@link com.wellkorea.backend.project.infrastructure.sequence.DatabaseJobCodeSequenceProvider}
  */
 @Component
 public class DatabaseQuotationDeliveryGuard implements QuotationDeliveryGuard {
 
-    private final DeliveryRepository deliveryRepository;
+    private final DeliveryMapper deliveryMapper;
 
-    public DatabaseQuotationDeliveryGuard(DeliveryRepository deliveryRepository) {
-        this.deliveryRepository = deliveryRepository;
+    public DatabaseQuotationDeliveryGuard(DeliveryMapper deliveryMapper) {
+        this.deliveryMapper = deliveryMapper;
     }
 
     @Override
@@ -123,25 +127,14 @@ public class DatabaseQuotationDeliveryGuard implements QuotationDeliveryGuard {
 
     /**
      * Build a map of product ID to already-delivered quantity for the project.
+     * <p>
+     * Uses MyBatis mapper for typed results (no manual Object[] conversion needed).
      */
     private Map<Long, BigDecimal> buildDeliveredQuantityMap(Long projectId) {
-        Map<Long, BigDecimal> map = new HashMap<>();
-        List<Object[]> results = deliveryRepository.getDeliveredQuantitiesByProject(projectId);
-        for (Object[] row : results) {
-            Long productId = (Long) row[0];
-            // JPA SUM returns Number (could be Long, Double, or BigDecimal depending on DB)
-            // Use toString() to preserve precision instead of doubleValue()
-            Number quantity = (Number) row[1];
-            BigDecimal quantityBd;
-            if (quantity instanceof BigDecimal bd) {
-                quantityBd = bd;
-            } else if (quantity != null) {
-                quantityBd = new BigDecimal(quantity.toString());
-            } else {
-                quantityBd = BigDecimal.ZERO;
-            }
-            map.put(productId, quantityBd);
-        }
-        return map;
+        return deliveryMapper.getDeliveredQuantitiesByProject(projectId).stream()
+                .collect(Collectors.toMap(
+                        ProductQuantitySum::productId,
+                        ProductQuantitySum::quantity
+                ));
     }
 }

@@ -123,4 +123,28 @@
         </where>
     </select>
 
+    <!-- ProductQuantitySum result map -->
+    <resultMap id="ProductQuantitySumResult" type="com.wellkorea.backend.shared.dto.ProductQuantitySum">
+        <constructor>
+            <arg column="product_id" javaType="Long"/>
+            <arg column="quantity" javaType="java.math.BigDecimal"/>
+        </constructor>
+    </resultMap>
+
+    <!--
+        Get delivered quantities for all products in a project.
+        Excludes RETURNED deliveries.
+        Uses enum value directly in SQL for type safety.
+    -->
+    <select id="getDeliveredQuantitiesByProject" resultMap="ProductQuantitySumResult">
+        SELECT
+            dli.product_id,
+            COALESCE(SUM(dli.quantity_delivered), 0) AS quantity
+        FROM delivery_line_items dli
+        INNER JOIN deliveries d ON dli.delivery_id = d.id
+        WHERE d.project_id = #{projectId}
+          AND d.status != 'RETURNED'
+        GROUP BY dli.product_id
+    </select>
+
 </mapper>

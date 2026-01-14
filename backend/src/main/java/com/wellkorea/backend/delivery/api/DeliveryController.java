@@ -9,9 +9,7 @@ import com.wellkorea.backend.delivery.application.DeliveryCommandService;
 import com.wellkorea.backend.delivery.application.DeliveryPdfService;
 import com.wellkorea.backend.delivery.application.DeliveryQueryService;
 import com.wellkorea.backend.delivery.domain.DeliveryStatus;
-import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.shared.dto.ApiResponse;
-import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,16 +33,13 @@ public class DeliveryController {
     private final DeliveryCommandService commandService;
     private final DeliveryQueryService queryService;
     private final DeliveryPdfService pdfService;
-    private final ProjectRepository projectRepository;
 
     public DeliveryController(DeliveryCommandService commandService,
                               DeliveryQueryService queryService,
-                              DeliveryPdfService pdfService,
-                              ProjectRepository projectRepository) {
+                              DeliveryPdfService pdfService) {
         this.commandService = commandService;
         this.queryService = queryService;
         this.pdfService = pdfService;
-        this.projectRepository = projectRepository;
     }
 
     // ==================== QUERY ENDPOINTS ====================
@@ -58,11 +53,6 @@ public class DeliveryController {
     public ResponseEntity<ApiResponse<List<DeliverySummaryView>>> listDeliveries(@RequestParam(required = false) Long projectId,
                                                                                  @RequestParam(required = false) DeliveryStatus status,
                                                                                  Pageable pageable) {
-        // Validate project exists if provided
-        if (projectId != null) {
-            validateProjectExists(projectId);
-        }
-
         Page<DeliverySummaryView> page = queryService.listDeliveries(projectId, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(page.getContent()));
     }
@@ -170,12 +160,5 @@ public class DeliveryController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .header("Content-Disposition", "attachment; filename=delivery-statement-" + id + ".pdf")
                 .body(pdfBytes);
-    }
-
-    // ==================== PRIVATE HELPERS ====================
-
-    private void validateProjectExists(Long projectId) {
-        projectRepository.findByIdAndIsDeletedFalse(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
     }
 }

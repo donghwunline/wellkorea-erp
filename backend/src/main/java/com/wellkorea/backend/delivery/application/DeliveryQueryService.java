@@ -45,6 +45,8 @@ public class DeliveryQueryService {
     /**
      * List deliveries with optional project and status filters.
      * Returns summary views with line items for display.
+     * <p>
+     * Returns empty list if project doesn't exist (no validation for simplicity).
      *
      * @param projectId Optional project ID filter
      * @param status    Optional filter by delivery status
