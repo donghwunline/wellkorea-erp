@@ -3,13 +3,7 @@ package com.wellkorea.backend.invoice.application;
 import com.wellkorea.backend.invoice.api.dto.command.CreateInvoiceRequest;
 import com.wellkorea.backend.invoice.api.dto.command.InvoiceLineItemRequest;
 import com.wellkorea.backend.invoice.api.dto.command.RecordPaymentRequest;
-import com.wellkorea.backend.invoice.domain.InvoiceLineItem;
-import com.wellkorea.backend.invoice.domain.InvoiceLineItemInput;
-import com.wellkorea.backend.invoice.domain.InvoiceStatus;
-import com.wellkorea.backend.invoice.domain.Payment;
-import com.wellkorea.backend.invoice.domain.QuotationInvoiceGuard;
-import com.wellkorea.backend.invoice.domain.TaxInvoice;
-import com.wellkorea.backend.invoice.infrastructure.persistence.PaymentRepository;
+import com.wellkorea.backend.invoice.domain.*;
 import com.wellkorea.backend.invoice.infrastructure.persistence.TaxInvoiceRepository;
 import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.quotation.domain.Quotation;
@@ -38,20 +32,17 @@ import java.util.List;
 public class InvoiceCommandService {
 
     private final TaxInvoiceRepository invoiceRepository;
-    private final PaymentRepository paymentRepository;
     private final ProjectRepository projectRepository;
     private final QuotationRepository quotationRepository;
     private final QuotationInvoiceGuard quotationInvoiceGuard;
     private final InvoiceNumberGenerator invoiceNumberGenerator;
 
     public InvoiceCommandService(TaxInvoiceRepository invoiceRepository,
-                                 PaymentRepository paymentRepository,
                                  ProjectRepository projectRepository,
                                  QuotationRepository quotationRepository,
                                  QuotationInvoiceGuard quotationInvoiceGuard,
                                  InvoiceNumberGenerator invoiceNumberGenerator) {
         this.invoiceRepository = invoiceRepository;
-        this.paymentRepository = paymentRepository;
         this.projectRepository = projectRepository;
         this.quotationRepository = quotationRepository;
         this.quotationInvoiceGuard = quotationInvoiceGuard;

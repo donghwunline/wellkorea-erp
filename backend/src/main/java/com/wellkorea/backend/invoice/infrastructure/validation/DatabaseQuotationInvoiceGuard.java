@@ -1,11 +1,12 @@
 package com.wellkorea.backend.invoice.infrastructure.validation;
 
-import com.wellkorea.backend.delivery.infrastructure.persistence.DeliveryRepository;
+import com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper;
 import com.wellkorea.backend.invoice.domain.InvoiceLineItemInput;
 import com.wellkorea.backend.invoice.domain.QuotationInvoiceGuard;
-import com.wellkorea.backend.invoice.infrastructure.persistence.TaxInvoiceRepository;
+import com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
+import com.wellkorea.backend.shared.dto.ProductQuantitySum;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Database-backed implementation of {@link QuotationInvoiceGuard}.
@@ -25,18 +27,20 @@ import java.util.Set;
  * Key validation: invoiceQty <= deliveredQty - alreadyInvoicedQty
  * (Cannot invoice more than what has been delivered minus what's already invoiced)
  * <p>
+ * Uses MyBatis mappers for typed query results instead of JPA Object[] arrays.
+ * <p>
  * Similar pattern: {@link com.wellkorea.backend.delivery.infrastructure.validation.DatabaseQuotationDeliveryGuard}
  */
 @Component
 public class DatabaseQuotationInvoiceGuard implements QuotationInvoiceGuard {
 
-    private final DeliveryRepository deliveryRepository;
-    private final TaxInvoiceRepository taxInvoiceRepository;
+    private final DeliveryMapper deliveryMapper;
+    private final InvoiceMapper invoiceMapper;
 
-    public DatabaseQuotationInvoiceGuard(DeliveryRepository deliveryRepository,
-                                         TaxInvoiceRepository taxInvoiceRepository) {
-        this.deliveryRepository = deliveryRepository;
-        this.taxInvoiceRepository = taxInvoiceRepository;
+    public DatabaseQuotationInvoiceGuard(DeliveryMapper deliveryMapper,
+                                         InvoiceMapper invoiceMapper) {
+        this.deliveryMapper = deliveryMapper;
+        this.invoiceMapper = invoiceMapper;
     }
 
     @Override
@@ -137,44 +141,28 @@ public class DatabaseQuotationInvoiceGuard implements QuotationInvoiceGuard {
     /**
      * Build a map of product ID to already-delivered quantity for the project.
      * Excludes RETURNED deliveries.
+     * <p>
+     * Uses MyBatis mapper for typed results (no manual Object[] conversion needed).
      */
     private Map<Long, BigDecimal> buildDeliveredQuantityMap(Long projectId) {
-        Map<Long, BigDecimal> map = new HashMap<>();
-        List<Object[]> results = deliveryRepository.getDeliveredQuantitiesByProject(projectId);
-        for (Object[] row : results) {
-            Long productId = (Long) row[0];
-            BigDecimal quantityBd = convertToDecimal(row[1]);
-            map.put(productId, quantityBd);
-        }
-        return map;
+        return deliveryMapper.getDeliveredQuantitiesByProject(projectId).stream()
+                .collect(Collectors.toMap(
+                        ProductQuantitySum::productId,
+                        ProductQuantitySum::quantity
+                ));
     }
 
     /**
      * Build a map of product ID to already-invoiced quantity for the project.
      * Excludes CANCELLED invoices.
+     * <p>
+     * Uses MyBatis mapper for typed results (no manual Object[] conversion needed).
      */
     private Map<Long, BigDecimal> buildInvoicedQuantityMap(Long projectId) {
-        Map<Long, BigDecimal> map = new HashMap<>();
-        List<Object[]> results = taxInvoiceRepository.getInvoicedQuantitiesByProject(projectId);
-        for (Object[] row : results) {
-            Long productId = (Long) row[0];
-            BigDecimal quantityBd = convertToDecimal(row[1]);
-            map.put(productId, quantityBd);
-        }
-        return map;
-    }
-
-    /**
-     * Convert JPA SUM result to BigDecimal.
-     * JPA SUM returns Number (could be Long, Double, or BigDecimal depending on DB).
-     * Use toString() to preserve precision instead of doubleValue().
-     */
-    private BigDecimal convertToDecimal(Object value) {
-        if (value instanceof BigDecimal bd) {
-            return bd;
-        } else if (value instanceof Number number) {
-            return new BigDecimal(number.toString());
-        }
-        return BigDecimal.ZERO;
+        return invoiceMapper.getInvoicedQuantitiesByProject(projectId).stream()
+                .collect(Collectors.toMap(
+                        ProductQuantitySum::productId,
+                        ProductQuantitySum::quantity
+                ));
     }
 }
