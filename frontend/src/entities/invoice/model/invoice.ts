@@ -116,11 +116,11 @@ export const invoiceRules = {
 
   /**
    * Check if invoice can be cancelled.
+   * All non-cancelled invoices can be cancelled (including PAID for refunds/corrections).
+   * Payments are preserved for accounting purposes.
    */
   canCancel(invoice: Invoice | InvoiceSummary): boolean {
-    return ['DRAFT', 'ISSUED', 'PARTIALLY_PAID', 'OVERDUE'].includes(
-      invoice.status
-    );
+    return invoice.status !== 'CANCELLED';
   },
 
   /**

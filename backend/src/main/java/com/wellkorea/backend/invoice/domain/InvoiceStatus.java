@@ -45,9 +45,10 @@ public enum InvoiceStatus {
         return switch (this) {
             case DRAFT -> target == ISSUED || target == CANCELLED;
             case ISSUED -> target == PARTIALLY_PAID || target == PAID || target == OVERDUE || target == CANCELLED;
-            case PARTIALLY_PAID -> target == PAID || target == OVERDUE;
-            case OVERDUE -> target == PARTIALLY_PAID || target == PAID;
-            case PAID, CANCELLED -> false; // Terminal states
+            case PARTIALLY_PAID -> target == PAID || target == OVERDUE || target == CANCELLED;
+            case OVERDUE -> target == PARTIALLY_PAID || target == PAID || target == CANCELLED;
+            case PAID -> target == CANCELLED; // Allow cancellation (e.g., for refunds, corrections)
+            case CANCELLED -> false; // Terminal state
         };
     }
 
