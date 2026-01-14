@@ -1,21 +1,42 @@
-## 1. Create a GitHub Secret
+# SonarCloud Setup & Usage
 
-In your GitHub repository, go to Settings > Secrets and variables > Actions and create a new secret
-with the following details:
+This document covers SonarCloud integration for code quality analysis in the WellKorea ERP project.
 
-1. In the Name field, enter `SONAR_TOKEN`
-2. In the Value field, enter ``
+## Overview
 
-## 2. Create or update a build file
+SonarCloud provides continuous code quality inspection for:
+- **Code smells**: Maintainability issues
+- **Bugs**: Potential runtime errors
+- **Vulnerabilities**: Security weaknesses
+- **Code coverage**: Test coverage metrics
+- **Duplications**: Copy-paste detection
 
-### For Gradle
+### Projects
 
-Update your `build.gradle` file with the `org.sonarqube` plugin and its configuration:
+| Project | Key | Language |
+|---------|-----|----------|
+| Backend | `wellkorea-erp-backend` | Java |
+| Frontend | `wellkorea-erp-frontend` | TypeScript |
+
+## Initial Setup
+
+### 1. Create GitHub Secret
+
+In your GitHub repository:
+1. Go to **Settings > Secrets and variables > Actions**
+2. Click **New repository secret**
+3. Name: `SONAR_TOKEN`
+4. Value: Your SonarCloud token (from My Account > Security > Generate Tokens)
+
+### 2. Backend Configuration (Gradle)
+
+Update `build.gradle`:
 
 ```groovy
 plugins {
     id "org.sonarqube" version "7.1.0.6387"
 }
+
 sonar {
     properties {
         property "sonar.projectKey", "wellkorea-erp-backend"
@@ -24,98 +45,163 @@ sonar {
 }
 ```
 
----
+### 3. Frontend Configuration
 
-Create or update your `.github/workflows/build.yml`
-Here is a base configuration to run a SonarQube Cloud analysis on your master branch and Pull Requests. If you already
-have some GitHub Actions, you might want to just add some of these new steps to an existing one.
-
-```yaml
-name: SonarQube
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [ opened, synchronize, reopened ]
-jobs:
-  build:
-    name: Build and analyze
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available
-      - name: Cache SonarQube packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
-      - name: Build and analyze
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonar --info
-```
-
----
-
-### For JS/TS & Web
-
-Create or update your `.github/workflows/build.yml`
-Here is a base configuration to run a SonarQube Cloud analysis on your master branch and Pull Requests. If you already
-have some GitHub Actions, you might want to just add some of these new steps to an existing one.
-
-```yaml
-name: Build
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [ opened, synchronize, reopened ]
-jobs:
-  sonarqube:
-    name: SonarQube
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-```
-
-Create a `sonar-project.properties` file
-
-Create a configuration file in the root directory of the project and name it `sonar-project.properties`
+Create `sonar-project.properties` in `frontend/`:
 
 ```properties
-sonar.projectKey=wellkorea-erp-backend
+sonar.projectKey=wellkorea-erp-frontend
 sonar.organization=donghwunline
-
-
-# This is the name and version displayed in the SonarCloud UI.
-#sonar.projectName=wellkorea-erp-backend
-#sonar.projectVersion=1.0
-
-
-# Path is relative to the sonar-project.properties file. Replace "\" by "/" on Windows.
-#sonar.sources=.
-
-# Encoding of the source code. Default is default system encoding
-#sonar.sourceEncoding=UTF-8
+sonar.sources=src
+sonar.tests=src
+sonar.test.inclusions=**/*.test.ts,**/*.test.tsx
+sonar.exclusions=**/node_modules/**,**/*.test.ts,**/*.test.tsx
+sonar.javascript.lcov.reportPaths=coverage/lcov.info
 ```
+
+## GitHub Actions Integration
+
+### Backend Workflow
+
+```yaml
+- name: Build and analyze
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  run: ./gradlew build sonar --info
+```
+
+### Frontend Workflow
+
+```yaml
+- name: Run tests with coverage
+  run: npm run test:coverage
+
+- name: SonarCloud Scan
+  uses: SonarSource/sonarqube-scan-action@v6
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  with:
+    projectBaseDir: frontend
+```
+
+## Quality Gates
+
+The CI pipeline enforces quality gates:
+
+| Metric | Threshold | Description |
+|--------|-----------|-------------|
+| Coverage | ≥ 70% | Line and branch coverage |
+| Duplications | < 3% | Duplicated code blocks |
+| Maintainability | A | Code smell density |
+| Reliability | A | Bug density |
+| Security | A | Vulnerability density |
+
+**Quality Gate Status**: PRs are blocked if quality gates fail.
+
+## Running Locally
+
+### Backend
+
+```bash
+cd backend
+
+# Run with coverage report
+./gradlew test jacocoTestReport
+
+# Run SonarCloud analysis (requires SONAR_TOKEN)
+SONAR_TOKEN=your_token ./gradlew sonar
+```
+
+### Frontend
+
+```bash
+cd frontend
+
+# Generate coverage report
+npm run test:coverage
+
+# Run SonarCloud scanner (requires sonar-scanner CLI)
+npx sonar-scanner -Dsonar.token=your_token
+```
+
+## Viewing Results
+
+1. Go to [SonarCloud Dashboard](https://sonarcloud.io/organizations/donghwunline/projects)
+2. Select `wellkorea-erp-backend` or `wellkorea-erp-frontend`
+3. View:
+   - **Overview**: Summary metrics
+   - **Issues**: Code smells, bugs, vulnerabilities
+   - **Measures**: Detailed metrics
+   - **Code**: Issue locations in source
+
+## Troubleshooting
+
+### "Quality Gate Failed" in PR
+
+1. Click the SonarCloud check details in the PR
+2. Review failing conditions (coverage, issues, etc.)
+3. Common fixes:
+   - Add unit tests for new code
+   - Fix highlighted code smells
+   - Address security hotspots
+
+### "No coverage data"
+
+**Backend:**
+```bash
+# Ensure JaCoCo runs before Sonar
+./gradlew test jacocoTestReport sonar
+```
+
+**Frontend:**
+```bash
+# Ensure coverage is generated first
+npm run test:coverage
+# Then run sonar-scanner
+```
+
+### Analysis Not Appearing
+
+1. Check GitHub Actions logs for errors
+2. Verify `SONAR_TOKEN` secret is set correctly
+3. Ensure project key matches SonarCloud configuration
+
+### Excluding Files
+
+Add to `sonar-project.properties`:
+
+```properties
+# Exclude generated files
+sonar.exclusions=**/generated/**,**/node_modules/**
+
+# Exclude test files from main source analysis
+sonar.test.inclusions=**/*.test.ts,**/*.spec.ts
+```
+
+## Best Practices
+
+### Writing Clean Code
+
+1. **Address issues promptly**: Fix code smells when they appear
+2. **Maintain coverage**: Write tests for new features
+3. **Review security hotspots**: Don't dismiss without reviewing
+
+### PR Workflow
+
+1. Push code to feature branch
+2. SonarCloud analyzes PR automatically
+3. Review new issues in PR decoration
+4. Fix issues before merging
+5. Quality gate must pass for merge
+
+### Coverage Tips
+
+- Focus on business logic, not boilerplate
+- Test edge cases and error paths
+- Use `@SuppressWarnings` sparingly and document why
+
+## Dashboard URLs
+
+- **Organization**: https://sonarcloud.io/organizations/donghwunline
+- **Backend**: https://sonarcloud.io/project/overview?id=wellkorea-erp-backend
+- **Frontend**: https://sonarcloud.io/project/overview?id=wellkorea-erp-frontend
