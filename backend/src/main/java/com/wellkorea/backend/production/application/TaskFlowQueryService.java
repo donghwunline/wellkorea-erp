@@ -21,7 +21,7 @@ public class TaskFlowQueryService {
     private final ProjectRepository projectRepository;
 
     public TaskFlowQueryService(TaskFlowMapper taskFlowMapper,
-                                 ProjectRepository projectRepository) {
+                                ProjectRepository projectRepository) {
         this.taskFlowMapper = taskFlowMapper;
         this.projectRepository = projectRepository;
     }

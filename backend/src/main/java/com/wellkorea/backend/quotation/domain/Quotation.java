@@ -1,7 +1,14 @@
 package com.wellkorea.backend.quotation.domain;
 
 import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.delivery.domain.*;
+import com.wellkorea.backend.invoice.application.InvoiceNumberGenerator;
+import com.wellkorea.backend.invoice.domain.InvoiceLineItem;
+import com.wellkorea.backend.invoice.domain.InvoiceLineItemInput;
+import com.wellkorea.backend.invoice.domain.QuotationInvoiceGuard;
+import com.wellkorea.backend.invoice.domain.TaxInvoice;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.shared.exception.BusinessException;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -139,6 +146,147 @@ public class Quotation {
                 status == QuotationStatus.REJECTED ||
                 status == QuotationStatus.SENT ||
                 status == QuotationStatus.ACCEPTED;
+    }
+
+    /**
+     * Check if quotation is in an approved state.
+     * Approved states are: APPROVED, SENT, ACCEPTED
+     * (i.e., quotation has been approved and can be used for deliveries)
+     *
+     * @return true if quotation is approved
+     */
+    public boolean isApproved() {
+        return status == QuotationStatus.APPROVED ||
+                status == QuotationStatus.SENT ||
+                status == QuotationStatus.ACCEPTED;
+    }
+
+    // ========== Factory Methods ==========
+
+    /**
+     * Factory method to create a Delivery for this quotation.
+     * <p>
+     * This method uses the Double Dispatch pattern: the guard is passed in
+     * as a parameter, allowing the domain entity to delegate validation to
+     * infrastructure without having direct repository dependencies.
+     * <p>
+     * Similar pattern: {@link com.wellkorea.backend.approval.domain.ApprovalChainTemplate#createLevelDecisions()}
+     *
+     * @param quotationDeliveryGuard Guard that validates delivery against quotation limits
+     * @param deliveryDate           Date of the delivery
+     * @param notes                  Optional notes for the delivery
+     * @param lineItems              Line items to deliver
+     * @param deliveredById          User ID of who is recording the delivery
+     * @return New Delivery entity with all line items added
+     * @throws BusinessException if quotation is not approved or validation fails
+     */
+    public Delivery createDelivery(QuotationDeliveryGuard quotationDeliveryGuard,
+                                   LocalDate deliveryDate,
+                                   String notes,
+                                   List<DeliveryLineItemInput> lineItems,
+                                   Long deliveredById) {
+        // Quotation must be approved to create deliveries
+        if (!isApproved()) {
+            throw new BusinessException(
+                    "Cannot create delivery: quotation is not approved (current status: " + status + ")");
+        }
+
+        // Delegate validation to the guard (which has repository access)
+        quotationDeliveryGuard.validateAndThrow(this, lineItems);
+
+        // Build the delivery entity
+        Delivery delivery = Delivery.builder()
+                .projectId(project.getId())
+                .quotationId(id)
+                .deliveryDate(deliveryDate)
+                .status(DeliveryStatus.PENDING)
+                .deliveredById(deliveredById)
+                .notes(notes)
+                .build();
+
+        // Add all line items
+        for (DeliveryLineItemInput input : lineItems) {
+            DeliveryLineItem lineItem = DeliveryLineItem.builder()
+                    .productId(input.productId())
+                    .quantityDelivered(input.quantityDelivered())
+                    .build();
+            delivery.addLineItem(lineItem);
+        }
+
+        return delivery;
+    }
+
+    /**
+     * Factory method to create a TaxInvoice for this quotation.
+     * <p>
+     * This method uses the Double Dispatch pattern: the guard and number generator
+     * are passed in as parameters, allowing the domain entity to delegate validation
+     * and number generation to infrastructure without having direct dependencies.
+     * <p>
+     * Similar pattern: {@link #createDelivery}
+     *
+     * @param quotationInvoiceGuard  Guard that validates invoice against delivered/invoiced limits
+     * @param invoiceNumberGenerator Generator for unique invoice numbers
+     * @param issueDate              Invoice issue date
+     * @param dueDate                Payment due date
+     * @param taxRate                Tax rate (nullable, defaults to 10%)
+     * @param notes                  Optional notes for the invoice
+     * @param lineItems              Line items to invoice
+     * @param createdById            User ID of who is creating the invoice
+     * @return New TaxInvoice entity with all line items added
+     * @throws BusinessException        if quotation is not approved or validation fails
+     * @throws IllegalArgumentException if due date is before issue date
+     */
+    public TaxInvoice createInvoice(QuotationInvoiceGuard quotationInvoiceGuard,
+                                    InvoiceNumberGenerator invoiceNumberGenerator,
+                                    LocalDate issueDate,
+                                    LocalDate dueDate,
+                                    BigDecimal taxRate,
+                                    String notes,
+                                    List<InvoiceLineItemInput> lineItems,
+                                    Long createdById) {
+        // Quotation must be approved to create invoices
+        if (!isApproved()) {
+            throw new BusinessException(
+                    "Cannot create invoice: quotation is not approved (current status: " + status + ")");
+        }
+
+        // Delegate validation to the guard (which has repository access)
+        quotationInvoiceGuard.validateAndThrow(this, lineItems);
+
+        // Validate dates
+        if (dueDate.isBefore(issueDate)) {
+            throw new IllegalArgumentException("Due date must be on or after issue date");
+        }
+
+        // Generate unique invoice number
+        String invoiceNumber = invoiceNumberGenerator.generate();
+
+        // Build the invoice entity
+        TaxInvoice invoice = TaxInvoice.builder()
+                .projectId(project.getId())
+                .quotationId(this.id)
+                .invoiceNumber(invoiceNumber)
+                .issueDate(issueDate)
+                .dueDate(dueDate)
+                .taxRate(taxRate)
+                .notes(notes)
+                .createdById(createdById)
+                .build();
+
+        // Add all line items
+        for (InvoiceLineItemInput input : lineItems) {
+            InvoiceLineItem lineItem = InvoiceLineItem.builder()
+                    .productId(input.productId())
+                    .productName(input.productName())
+                    .productSku(input.productSku())
+                    .quantityInvoiced(input.quantityInvoiced())
+                    .unitPrice(input.unitPrice())
+                    .build();
+            invoice.addLineItem(lineItem);
+        }
+
+        return invoice;
     }
 
     // Getters and Setters

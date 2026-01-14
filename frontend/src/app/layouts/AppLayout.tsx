@@ -8,8 +8,8 @@
  */
 
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import { Icon, type IconName, Navigation } from '@/shared/ui';
+import { useUIStore } from '@/shared/lib/stores/ui-store';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import { UserMenu } from '@/widgets';
@@ -44,7 +44,7 @@ const OPERATIONS_NAV_ITEMS: NavItem[] = [
   },
   {
     label: '출고',
-    path: '/delivery',
+    path: '/deliveries',
     icon: 'truck',
   },
   {
@@ -122,7 +122,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const { user, hasAnyRole } = useAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarCollapsed, toggleSidebar } = useUIStore();
 
   // Filter nav items based on user roles
   const filterNavItems = (items: NavItem[]): NavItem[] => {
@@ -157,17 +157,12 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
         <div className="flex h-16 items-center justify-between border-b border-steel-800/50 px-4">
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <div className="h-8 w-8 rotate-45 border-2 border-copper-500" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-mono text-xs font-semibold text-copper-500">WK</span>
-                </div>
-              </div>
+              <img src="/favicon.svg" alt="WellKorea logo" className="h-8 w-8" />
               <span className="font-semibold text-white">WellKorea</span>
             </div>
           )}
           <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onClick={toggleSidebar}
             className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
           >
             <Icon

@@ -63,7 +63,7 @@ describe('ModalActions', () => {
     );
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper).toHaveClass('border-t');
-    expect(wrapper).toHaveClass('pt-6');
+    expect(wrapper).toHaveClass('pt-4');
     expect(wrapper).toHaveClass('mt-6');
   });
 

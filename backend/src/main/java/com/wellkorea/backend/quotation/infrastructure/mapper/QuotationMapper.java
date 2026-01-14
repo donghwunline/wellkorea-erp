@@ -37,16 +37,14 @@ public interface QuotationMapper {
      * @param offset    Page offset
      * @return List of QuotationSummaryView with project and user data
      */
-    List<QuotationSummaryView> findWithFilters(
-            @Param("status") QuotationStatus status,
-            @Param("projectId") Long projectId,
-            @Param("limit") int limit,
-            @Param("offset") long offset);
+    List<QuotationSummaryView> findWithFilters(@Param("status") QuotationStatus status,
+                                               @Param("projectId") Long projectId,
+                                               @Param("limit") int limit,
+                                               @Param("offset") long offset);
 
     /**
      * Count quotations with filters (for pagination).
      */
-    long countWithFilters(
-            @Param("status") QuotationStatus status,
-            @Param("projectId") Long projectId);
+    long countWithFilters(@Param("status") QuotationStatus status,
+                          @Param("projectId") Long projectId);
 }

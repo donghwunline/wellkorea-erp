@@ -26,7 +26,7 @@ public class TaskFlowCommandService {
     private final ProjectRepository projectRepository;
 
     public TaskFlowCommandService(TaskFlowRepository taskFlowRepository,
-                                   ProjectRepository projectRepository) {
+                                  ProjectRepository projectRepository) {
         this.taskFlowRepository = taskFlowRepository;
         this.projectRepository = projectRepository;
     }

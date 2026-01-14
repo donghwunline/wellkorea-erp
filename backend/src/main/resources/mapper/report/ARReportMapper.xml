@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.report.infrastructure.mapper.ARReportMapper">
+
+    <!-- ARInvoiceView result map for record -->
+    <resultMap id="ARInvoiceViewResult" type="com.wellkorea.backend.report.api.dto.ARInvoiceView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="invoice_number" javaType="String"/>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="customer_id" javaType="Long"/>
+            <arg column="customer_name" javaType="String"/>
+            <arg column="issue_date" javaType="java.time.LocalDate"/>
+            <arg column="due_date" javaType="java.time.LocalDate"/>
+            <arg column="status" javaType="com.wellkorea.backend.invoice.domain.InvoiceStatus"/>
+            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <arg column="total_paid" javaType="java.math.BigDecimal"/>
+            <arg column="remaining_balance" javaType="java.math.BigDecimal"/>
+            <arg column="days_overdue" javaType="_long"/>
+            <arg column="aging_bucket" javaType="String"/>
+        </constructor>
+    </resultMap>
+
+    <!--
+        Find all unpaid invoices with aging information.
+
+        Includes:
+        - Invoice details
+        - Project job code
+        - Customer company info
+        - Computed aging fields (days overdue, bucket)
+
+        Excludes:
+        - DRAFT, PAID, CANCELLED invoices
+        - Invoices with zero remaining balance
+    -->
+    <select id="findUnpaidInvoicesWithAgingInfo" resultMap="ARInvoiceViewResult">
+        SELECT
+            i.id,
+            i.invoice_number,
+            i.project_id,
+            p.job_code,
+            p.customer_company_id AS customer_id,
+            c.name AS customer_name,
+            i.issue_date,
+            i.due_date,
+            i.status,
+            i.total_amount,
+            COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0) AS total_paid,
+            (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0)) AS remaining_balance,
+            CASE WHEN i.due_date &lt; CURRENT_DATE THEN CURRENT_DATE - i.due_date ELSE 0 END AS days_overdue,
+            CASE
+                WHEN i.due_date >= CURRENT_DATE THEN 'Current'
+                WHEN CURRENT_DATE - i.due_date &lt;= 30 THEN '30 Days'
+                WHEN CURRENT_DATE - i.due_date &lt;= 60 THEN '60 Days'
+                ELSE '90+ Days'
+            END AS aging_bucket
+        FROM tax_invoices i
+        INNER JOIN projects p ON i.project_id = p.id
+        LEFT JOIN companies c ON p.customer_company_id = c.id
+        WHERE i.status IN ('ISSUED', 'PARTIALLY_PAID', 'OVERDUE')
+          AND (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0)) > 0
+        ORDER BY i.due_date ASC, i.invoice_number ASC
+    </select>
+
+</mapper>

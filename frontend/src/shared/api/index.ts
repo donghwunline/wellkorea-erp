@@ -83,4 +83,5 @@ export {
   COMPANY_ENDPOINTS,
   WORK_PROGRESS_ENDPOINTS,
   TASK_FLOW_ENDPOINTS,
+  DELIVERY_ENDPOINTS,
 } from '../config/endpoints';

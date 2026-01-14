@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper">
+
+    <!-- InvoiceLineItemView result map for record -->
+    <resultMap id="InvoiceLineItemViewResult" type="com.wellkorea.backend.invoice.api.dto.query.InvoiceLineItemView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="product_id" javaType="Long"/>
+            <arg column="product_name" javaType="String"/>
+            <arg column="product_sku" javaType="String"/>
+            <arg column="quantity_invoiced" javaType="java.math.BigDecimal"/>
+            <arg column="unit_price" javaType="java.math.BigDecimal"/>
+            <arg column="line_total" javaType="java.math.BigDecimal"/>
+        </constructor>
+    </resultMap>
+
+    <!-- PaymentView result map for record -->
+    <resultMap id="PaymentViewResult" type="com.wellkorea.backend.invoice.api.dto.query.PaymentView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="invoice_id" javaType="Long"/>
+            <arg column="payment_date" javaType="java.time.LocalDate"/>
+            <arg column="amount" javaType="java.math.BigDecimal"/>
+            <arg column="payment_method" javaType="com.wellkorea.backend.invoice.domain.PaymentMethod"/>
+            <arg column="payment_method_label_ko" javaType="String"/>
+            <arg column="reference_number" javaType="String"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="recorded_by_id" javaType="Long"/>
+            <arg column="recorded_by_name" javaType="String"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
+    <!-- InvoiceDetailView result map with nested selects -->
+    <resultMap id="InvoiceDetailViewResult" type="com.wellkorea.backend.invoice.api.dto.query.InvoiceDetailView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="quotation_id" javaType="Long"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="invoice_number" javaType="String"/>
+            <arg column="issue_date" javaType="java.time.LocalDate"/>
+            <arg column="status" javaType="com.wellkorea.backend.invoice.domain.InvoiceStatus"/>
+            <arg column="status_label_ko" javaType="String"/>
+            <arg column="total_before_tax" javaType="java.math.BigDecimal"/>
+            <arg column="tax_rate" javaType="java.math.BigDecimal"/>
+            <arg column="total_tax" javaType="java.math.BigDecimal"/>
+            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <arg column="total_paid" javaType="java.math.BigDecimal"/>
+            <arg column="remaining_balance" javaType="java.math.BigDecimal"/>
+            <arg column="due_date" javaType="java.time.LocalDate"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="created_by_id" javaType="Long"/>
+            <arg column="created_by_name" javaType="String"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+            <arg column="updated_at" javaType="java.time.Instant"/>
+            <arg column="issued_to_customer_date" javaType="java.time.LocalDate"/>
+            <arg column="is_overdue" javaType="_boolean"/>
+            <arg column="days_overdue" javaType="_long"/>
+            <arg column="aging_bucket" javaType="String"/>
+            <arg column="id" javaType="java.util.List" select="findLineItemsByInvoiceId"/>
+            <arg column="id" javaType="java.util.List" select="findPaymentsByInvoiceId"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Main query: Find invoice detail by ID -->
+    <select id="findDetailById" resultMap="InvoiceDetailViewResult">
+        SELECT
+            i.id,
+            i.project_id,
+            i.quotation_id,
+            p.job_code,
+            i.invoice_number,
+            i.issue_date,
+            i.status,
+            CASE i.status
+                WHEN 'DRAFT' THEN '임시저장'
+                WHEN 'ISSUED' THEN '발행됨'
+                WHEN 'PARTIALLY_PAID' THEN '부분결제'
+                WHEN 'PAID' THEN '결제완료'
+                WHEN 'OVERDUE' THEN '연체'
+                WHEN 'CANCELLED' THEN '취소됨'
+                ELSE i.status
+            END AS status_label_ko,
+            i.total_before_tax,
+            i.tax_rate,
+            i.total_tax,
+            i.total_amount,
+            COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0) AS total_paid,
+            (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0)) AS remaining_balance,
+            i.due_date,
+            i.notes,
+            i.created_by_id,
+            u.full_name AS created_by_name,
+            i.created_at,
+            i.updated_at,
+            i.issued_to_customer_date,
+            CASE WHEN i.due_date &lt; CURRENT_DATE AND i.status IN ('ISSUED', 'PARTIALLY_PAID') THEN true ELSE false END AS is_overdue,
+            CASE WHEN i.due_date &lt; CURRENT_DATE THEN CURRENT_DATE - i.due_date ELSE 0 END AS days_overdue,
+            CASE
+                WHEN i.due_date >= CURRENT_DATE THEN 'Current'
+                WHEN CURRENT_DATE - i.due_date &lt;= 30 THEN '30 Days'
+                WHEN CURRENT_DATE - i.due_date &lt;= 60 THEN '60 Days'
+                ELSE '90+ Days'
+            END AS aging_bucket
+        FROM tax_invoices i
+        INNER JOIN projects p ON i.project_id = p.id
+        INNER JOIN users u ON i.created_by_id = u.id
+        WHERE i.id = #{id}
+    </select>
+
+    <!-- Nested select: Find line items for an invoice -->
+    <select id="findLineItemsByInvoiceId" resultMap="InvoiceLineItemViewResult">
+        SELECT
+            li.id,
+            li.product_id,
+            li.product_name,
+            li.product_sku,
+            li.quantity_invoiced,
+            li.unit_price,
+            li.line_total
+        FROM invoice_line_items li
+        WHERE li.invoice_id = #{invoiceId}
+        ORDER BY li.id
+    </select>
+
+    <!-- Nested select: Find payments for an invoice -->
+    <select id="findPaymentsByInvoiceId" resultMap="PaymentViewResult">
+        SELECT
+            pay.id,
+            pay.invoice_id,
+            pay.payment_date,
+            pay.amount,
+            pay.payment_method,
+            CASE pay.payment_method
+                WHEN 'BANK_TRANSFER' THEN '계좌이체'
+                WHEN 'CARD' THEN '카드결제'
+                WHEN 'CASH' THEN '현금'
+                WHEN 'CHECK' THEN '수표'
+                ELSE pay.payment_method
+            END AS payment_method_label_ko,
+            pay.reference_number,
+            pay.notes,
+            pay.recorded_by_id,
+            u.full_name AS recorded_by_name,
+            pay.created_at
+        FROM payments pay
+        INNER JOIN users u ON pay.recorded_by_id = u.id
+        WHERE pay.invoice_id = #{invoiceId}
+        ORDER BY pay.payment_date DESC, pay.created_at DESC
+    </select>
+
+    <!-- InvoiceSummaryView result map -->
+    <resultMap id="InvoiceSummaryViewResult" type="com.wellkorea.backend.invoice.api.dto.query.InvoiceSummaryView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="project_id" javaType="Long"/>
+            <arg column="quotation_id" javaType="Long"/>
+            <arg column="job_code" javaType="String"/>
+            <arg column="invoice_number" javaType="String"/>
+            <arg column="issue_date" javaType="java.time.LocalDate"/>
+            <arg column="status" javaType="com.wellkorea.backend.invoice.domain.InvoiceStatus"/>
+            <arg column="status_label_ko" javaType="String"/>
+            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <arg column="total_paid" javaType="java.math.BigDecimal"/>
+            <arg column="remaining_balance" javaType="java.math.BigDecimal"/>
+            <arg column="due_date" javaType="java.time.LocalDate"/>
+            <arg column="is_overdue" javaType="_boolean"/>
+            <arg column="aging_bucket" javaType="String"/>
+            <arg column="line_item_count" javaType="_int"/>
+            <arg column="payment_count" javaType="_int"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find invoices with optional project and status filters -->
+    <select id="findWithFilters" resultMap="InvoiceSummaryViewResult">
+        SELECT
+            i.id,
+            i.project_id,
+            i.quotation_id,
+            p.job_code,
+            i.invoice_number,
+            i.issue_date,
+            i.status,
+            CASE i.status
+                WHEN 'DRAFT' THEN '임시저장'
+                WHEN 'ISSUED' THEN '발행됨'
+                WHEN 'PARTIALLY_PAID' THEN '부분결제'
+                WHEN 'PAID' THEN '결제완료'
+                WHEN 'OVERDUE' THEN '연체'
+                WHEN 'CANCELLED' THEN '취소됨'
+                ELSE i.status
+            END AS status_label_ko,
+            i.total_amount,
+            COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0) AS total_paid,
+            (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0)) AS remaining_balance,
+            i.due_date,
+            CASE WHEN i.due_date &lt; CURRENT_DATE AND i.status IN ('ISSUED', 'PARTIALLY_PAID') THEN true ELSE false END AS is_overdue,
+            CASE
+                WHEN i.due_date >= CURRENT_DATE THEN 'Current'
+                WHEN CURRENT_DATE - i.due_date &lt;= 30 THEN '30 Days'
+                WHEN CURRENT_DATE - i.due_date &lt;= 60 THEN '60 Days'
+                ELSE '90+ Days'
+            END AS aging_bucket,
+            (SELECT COUNT(*) FROM invoice_line_items li WHERE li.invoice_id = i.id) AS line_item_count,
+            (SELECT COUNT(*) FROM payments pay WHERE pay.invoice_id = i.id) AS payment_count
+        FROM tax_invoices i
+        INNER JOIN projects p ON i.project_id = p.id
+        <where>
+            <if test="projectId != null">
+                i.project_id = #{projectId}
+            </if>
+            <if test="status != null">
+                AND i.status = #{status}
+            </if>
+        </where>
+        ORDER BY i.issue_date DESC, i.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count for pagination with optional filters -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM tax_invoices i
+        <where>
+            <if test="projectId != null">
+                i.project_id = #{projectId}
+            </if>
+            <if test="status != null">
+                AND i.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- ProductQuantitySum result map -->
+    <resultMap id="ProductQuantitySumResult" type="com.wellkorea.backend.shared.dto.ProductQuantitySum">
+        <constructor>
+            <arg column="product_id" javaType="Long"/>
+            <arg column="quantity" javaType="java.math.BigDecimal"/>
+        </constructor>
+    </resultMap>
+
+    <!--
+        Get invoiced quantities for all products in a project.
+        Excludes CANCELLED invoices.
+        Uses enum value directly in SQL for type safety.
+
+        @deprecated Use getInvoicedQuantitiesByQuotation instead.
+    -->
+    <select id="getInvoicedQuantitiesByProject" resultMap="ProductQuantitySumResult">
+        SELECT
+            ili.product_id,
+            COALESCE(SUM(ili.quantity_invoiced), 0) AS quantity
+        FROM invoice_line_items ili
+        INNER JOIN tax_invoices i ON ili.invoice_id = i.id
+        WHERE i.project_id = #{projectId}
+          AND i.status != 'CANCELLED'
+        GROUP BY ili.product_id
+    </select>
+
+    <!--
+        Get invoiced quantities for all products linked to a specific quotation.
+        Excludes CANCELLED invoices.
+
+        Used for validating invoices against quotation/delivery limits.
+        Each quotation tracks its own invoice progress independently.
+    -->
+    <select id="getInvoicedQuantitiesByQuotation" resultMap="ProductQuantitySumResult">
+        SELECT
+            ili.product_id,
+            COALESCE(SUM(ili.quantity_invoiced), 0) AS quantity
+        FROM invoice_line_items ili
+        INNER JOIN tax_invoices i ON ili.invoice_id = i.id
+        WHERE i.quotation_id = #{quotationId}
+          AND i.status != 'CANCELLED'
+        GROUP BY ili.product_id
+    </select>
+
+</mapper>

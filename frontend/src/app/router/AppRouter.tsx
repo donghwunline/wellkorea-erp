@@ -10,8 +10,7 @@
 import { Outlet, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AppLayout } from '../layouts';
-import { NotFoundPage } from './components/NotFoundPage';
-import { PlaceholderPage } from './components/PlaceholderPage';
+import { NotFoundPage, PlaceholderPage } from '@/pages/error';
 
 // Page imports
 import { LoginPage } from '@/pages/auth';
@@ -21,15 +20,13 @@ import { AuditLogPage } from '@/pages/admin/AuditLogPage';
 import { ApprovalChainConfigPage } from '@/pages/approval/ApprovalChainConfigPage';
 import { ApprovalListPage } from '@/pages/approval/ApprovalListPage';
 import { ProjectCreatePage, ProjectEditPage, ProjectListPage, ProjectViewPage, } from '@/pages/projects';
-import {
-  QuotationCreatePage,
-  QuotationDetailPage,
-  QuotationEditPage,
-  QuotationListPage,
-} from '@/pages/quotations';
+import { QuotationCreatePage, QuotationDetailPage, QuotationEditPage, QuotationListPage, } from '@/pages/quotations';
 import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from '@/pages/companies';
 import { ItemsPage } from '@/pages/items';
 import { ProcurementPage } from '@/pages/procurement';
+import { DeliveriesPage, DeliveryCreatePage, DeliveryDetailPage } from '@/pages/deliveries';
+import { InvoiceCreatePage, InvoiceDetailPage, InvoiceSelectProjectPage, InvoicesPage, } from '@/pages/invoices';
+import { ARReportPage } from '@/pages/reports';
 
 /**
  * Layout wrapper for protected routes.
@@ -79,7 +76,8 @@ export function AppRouter() {
         <Route path="/projects" element={<ProjectListPage />} />
         <Route path="/projects/:id" element={<ProjectViewPage />} />
         <Route path="/approvals" element={<ApprovalListPage />} />
-        <Route path="/delivery" element={<PlaceholderPage title="Delivery" />} />
+        <Route path="/deliveries" element={<DeliveriesPage />} />
+        <Route path="/deliveries/:id" element={<DeliveryDetailPage />} />
       </Route>
 
       {/* ========== SALES/FINANCE/ADMIN ROUTES ========== */}
@@ -110,12 +108,24 @@ export function AppRouter() {
 
       {/* ========== FINANCE/ADMIN ROUTES ========== */}
       <Route element={<RoleProtectedLayout requiredRoles={['ROLE_ADMIN', 'ROLE_FINANCE']} />}>
+        {/* Delivery management */}
+        <Route path="/projects/:projectId/deliveries/create" element={<DeliveryCreatePage />} />
+
+        {/* Companies */}
         <Route path="/companies/new" element={<CreateCompanyPage />} />
         <Route path="/companies/:id/edit" element={<PlaceholderPage title="Edit Company" />} />
         <Route path="/items" element={<ItemsPage />} />
         <Route path="/procurement" element={<ProcurementPage />} />
-        <Route path="/invoices" element={<PlaceholderPage title="Invoices" />} />
-        <Route path="/reports" element={<PlaceholderPage title="AR/AP Reports" />} />
+
+        {/* Invoices */}
+        <Route path="/invoices" element={<InvoicesPage />} />
+        <Route path="/invoices/create" element={<InvoiceSelectProjectPage />} />
+        <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+        <Route path="/projects/:projectId/invoices/create" element={<InvoiceCreatePage />} />
+
+        {/* Reports */}
+        <Route path="/reports" element={<ARReportPage />} />
+        <Route path="/reports/ar" element={<ARReportPage />} />
       </Route>
 
       {/* ========== ADMIN ONLY ROUTES ========== */}

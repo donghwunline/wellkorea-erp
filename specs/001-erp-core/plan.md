@@ -1,6 +1,6 @@
 # Implementation Plan: WellKorea Integrated Work System (ERP)
 
-**Branch**: `001-erp-core` | **Date**: 2025-12-01 (Updated: 2026-01-05) | **Spec**: [spec.md](./spec.md)
+**Branch**: `001-erp-core` | **Date**: 2025-12-01 (Updated: 2026-01-08) | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-erp-core/spec.md`
 
 **Frontend Architecture Reference**:
@@ -15,6 +15,8 @@ The WellKorea Integrated Work System consolidates fragmented job lifecycle data 
 **Key Architectural Clarification**: **Project** is the core domain entity representing a customer work request. **JobCode** (format: WK2{year}-{sequence}-{date}) is the unique business identifier for each Project. All business logic centers around the Project entity, with JobCode serving as its human-readable, memorable key for cross-functional communication.
 
 **Key Update (2025-12-23)**: **Company Unification** - Customer and Supplier merged into unified `Company` entity with `CompanyRole` for CUSTOMER/VENDOR/OUTSOURCE differentiation. **VendorServiceOffering** added to support "select service category → get vendor/price list" functionality per FR-053.
+
+**Key Update (2026-01-08)**: **TaskFlow Architecture** - Production tracking redesigned from per-product WorkProgressSheet/WorkProgressStep to project-level DAG-based TaskFlow. Each project has one TaskFlow containing TaskNodes (tasks with title, assignee, deadline, progress, position) and TaskEdges (dependencies between nodes). Visualized using React Flow for interactive task management. BlueprintAttachment entity added to attach drawings to task nodes for outsourcing communication.
 
 **Technical Approach**: Spring Boot backend with REST APIs, PostgreSQL database, React frontend. Granular quotation-to-invoice tracking at product-quantity level to prevent double-billing. Role-based access control (Admin/Finance/Production/Sales) with audit logging for compliance.
 
@@ -146,19 +148,30 @@ backend/                                       # Spring Boot application
 │   │       └── persistence/
 │   │           └── ProductRepository.java
 │   │
-│   ├── production/                           # Production tracking domain module
+│   ├── production/                           # Production tracking domain module (DAG-based TaskFlow) - **UPDATED 2026-01-08**
 │   │   ├── domain/
-│   │   │   ├── WorkProgressSheet.java
-│   │   │   ├── WorkProgressStep.java
-│   │   │   └── StepStatus.java
+│   │   │   ├── TaskFlow.java                 # Aggregate root: DAG of tasks for a project (one per project)
+│   │   │   ├── TaskNode.java                 # Value object: task with title, assignee, deadline, progress, position
+│   │   │   ├── TaskEdge.java                 # Value object: dependency edge between nodes
+│   │   │   ├── BlueprintAttachment.java      # Entity: file attached to outsourced task node (for US7)
+│   │   │   ├── AllowedFileType.java          # Enum: PDF, DXF, DWG, JPG, PNG
+│   │   │   └── StepStatus.java               # Enum: NOT_STARTED, IN_PROGRESS, COMPLETED (legacy, may be removed)
 │   │   ├── application/
-│   │   │   └── WorkProgressService.java
+│   │   │   ├── TaskFlowCommandService.java   # Write operations (save, update)
+│   │   │   ├── TaskFlowQueryService.java     # Read operations (get by project)
+│   │   │   └── BlueprintAttachmentService.java # File upload/download for outsourced tasks
 │   │   ├── api/
-│   │   │   ├── WorkProgressController.java
+│   │   │   ├── TaskFlowController.java       # REST endpoints for task flow DAG
+│   │   │   ├── BlueprintAttachmentController.java # REST endpoints for file attachments
 │   │   │   └── dto/
+│   │   │       ├── command/                  # SaveTaskFlowRequest, TaskFlowCommandResult
+│   │   │       └── query/                    # TaskFlowView, TaskNodeView, TaskEdgeView
 │   │   └── infrastructure/
-│   │       └── persistence/
-│   │           └── WorkProgressSheetRepository.java
+│   │       ├── persistence/
+│   │       │   ├── TaskFlowRepository.java
+│   │       │   └── BlueprintAttachmentRepository.java
+│   │       └── mapper/
+│   │           └── TaskFlowMapper.java       # MyBatis mapper for read-optimized queries
 │   │
 │   ├── delivery/                             # Delivery tracking domain module
 │   │   ├── domain/
