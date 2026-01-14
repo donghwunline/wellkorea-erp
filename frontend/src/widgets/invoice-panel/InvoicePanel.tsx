@@ -49,11 +49,12 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
 
   // Fetch invoices for this project
   const {
-    data: invoices = [],
+    data: invoicesPage,
     isLoading: loadingInvoices,
     error: invoicesError,
     refetch: refetchInvoices,
-  } = useQuery(invoiceQueries.byProject(projectId));
+  } = useQuery(invoiceQueries.list({ projectId, size: 100 }));
+  const invoices = invoicesPage?.data ?? [];
 
   // Fetch approved quotation to check if invoices can be created
   const { data: quotationsData, isLoading: loadingQuotations } = useQuery(

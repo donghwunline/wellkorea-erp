@@ -120,18 +120,18 @@ export function InvoiceCreateModal({
   });
 
   // Fetch existing invoices for the project (summary list)
-  const { data: existingInvoiceSummaries = [], isLoading: loadingInvoices } = useQuery({
-    ...invoiceQueries.byProject(projectId),
+  const { data: existingInvoicesPage, isLoading: loadingInvoices } = useQuery({
+    ...invoiceQueries.list({ projectId, size: 100 }),
     enabled: isOpen && projectId > 0,
   });
 
   // Get IDs of non-cancelled invoices to fetch their full details
   const nonCancelledInvoiceIds = useMemo(
     () =>
-      existingInvoiceSummaries
+      (existingInvoicesPage?.data ?? [])
         .filter((inv) => inv.status !== 'CANCELLED')
         .map((inv) => inv.id),
-    [existingInvoiceSummaries]
+    [existingInvoicesPage?.data]
   );
 
   // Fetch full details for each non-cancelled invoice to get line items
