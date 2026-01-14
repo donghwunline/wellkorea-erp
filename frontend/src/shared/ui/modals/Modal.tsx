@@ -15,6 +15,14 @@
  *   <form>...</form>
  * </Modal>
  * ```
+ *
+ * TODO: Refactor to use explicit `actions` prop instead of auto-detecting ModalActions children.
+ * The current child detection logic (lines 90-105) using Children.toArray() and displayName
+ * is overly complex and fragile. Replace with:
+ *   - Add `actions?: ReactNode` prop to ModalProps
+ *   - Render actions in footer section directly
+ *   - Remove child detection logic
+ * This will make the API cleaner and more predictable.
  */
 
 import { type ReactNode, useEffect, Children, isValidElement } from 'react';
