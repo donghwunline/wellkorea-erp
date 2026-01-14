@@ -305,7 +305,6 @@ export function InvoiceCreatePage() {
       createInvoice({
         projectId: projectIdNum,
         quotationId: approvedQuotation!.id,
-        deliveryId: selectedDeliveryId,
         issueDate,
         dueDate,
         taxRate,
@@ -319,7 +318,6 @@ export function InvoiceCreatePage() {
       issueDate,
       dueDate,
       taxRate,
-      selectedDeliveryId,
       lineItemsData,
       quantitiesToInvoice,
       notes,

@@ -15,7 +15,6 @@ public record InvoiceDetailView(
         Long id,
         Long projectId,
         String jobCode,
-        Long deliveryId,
         String invoiceNumber,
         LocalDate issueDate,
         InvoiceStatus status,

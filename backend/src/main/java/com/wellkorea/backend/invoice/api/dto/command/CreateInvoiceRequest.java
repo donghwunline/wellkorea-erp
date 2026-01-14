@@ -24,8 +24,6 @@ public record CreateInvoiceRequest(
         @NotNull(message = "Quotation ID is required")
         Long quotationId, // Explicit binding to prevent race conditions
 
-        Long deliveryId, // Optional: link to specific delivery for auto-population
-
         @NotNull(message = "Issue date is required")
         LocalDate issueDate,
 

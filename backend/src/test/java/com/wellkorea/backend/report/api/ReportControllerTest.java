@@ -196,11 +196,11 @@ class ReportControllerTest extends BaseIntegrationTest implements TestFixtures {
 
             // Create test invoice (ISSUED status, due in 30 days - Current bucket)
             jdbcTemplate.update(
-                    "INSERT INTO tax_invoices (id, project_id, delivery_id, invoice_number, issue_date, due_date, status, " +
+                    "INSERT INTO tax_invoices (id, project_id, invoice_number, issue_date, due_date, status, " +
                             "total_before_tax, tax_rate, total_tax, total_amount, created_by_id) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                             "ON CONFLICT (id) DO NOTHING",
-                    9000L, 9000L, 9000L, "INV-2025-9000", LocalDate.now(), LocalDate.now().plusDays(30),
+                    9000L, 9000L, "INV-2025-9000", LocalDate.now(), LocalDate.now().plusDays(30),
                     "ISSUED", 100000.00, 10.0, 10000.00, 110000.00, 1L
             );
 
@@ -260,11 +260,11 @@ class ReportControllerTest extends BaseIntegrationTest implements TestFixtures {
 
             // Create OVERDUE invoice (due date was 45 days ago - should be in 60 Days bucket)
             jdbcTemplate.update(
-                    "INSERT INTO tax_invoices (id, project_id, delivery_id, invoice_number, issue_date, due_date, status, " +
+                    "INSERT INTO tax_invoices (id, project_id, invoice_number, issue_date, due_date, status, " +
                             "total_before_tax, tax_rate, total_tax, total_amount, created_by_id) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                             "ON CONFLICT (id) DO NOTHING",
-                    9100L, 9100L, 9100L, "INV-2025-9100", LocalDate.now().minusDays(60), LocalDate.now().minusDays(45),
+                    9100L, 9100L, "INV-2025-9100", LocalDate.now().minusDays(60), LocalDate.now().minusDays(45),
                     "OVERDUE", 50000.00, 10.0, 5000.00, 55000.00, 1L
             );
 

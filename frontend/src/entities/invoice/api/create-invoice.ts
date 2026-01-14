@@ -2,7 +2,7 @@
  * Create invoice command function.
  */
 
-import { httpClient } from '@/shared/api';
+import { httpClient, DomainValidationError } from '@/shared/api';
 import type { CommandResult } from './invoice.mapper';
 
 const INVOICE_ENDPOINTS = {
@@ -30,7 +30,6 @@ export interface CreateInvoiceLineItemInput {
 export interface CreateInvoiceInput {
   projectId: number;
   quotationId: number; // Explicit binding to prevent race conditions
-  deliveryId?: number | null;
   issueDate: string; // ISO date string
   dueDate: string; // ISO date string
   taxRate: number;
@@ -45,7 +44,6 @@ export interface CreateInvoiceInput {
 interface CreateInvoiceRequest {
   projectId: number;
   quotationId: number;
-  deliveryId: number | null;
   issueDate: string;
   dueDate: string;
   taxRate: number;
@@ -61,45 +59,60 @@ interface CreateInvoiceRequest {
 
 /**
  * Validates create invoice input.
+ *
+ * @throws DomainValidationError if validation fails
  */
 function validateCreateInput(input: CreateInvoiceInput): void {
   if (!input.projectId || input.projectId <= 0) {
-    throw new Error('Project is required');
+    throw new DomainValidationError('REQUIRED', 'projectId', 'Project is required');
   }
 
   if (!input.quotationId || input.quotationId <= 0) {
-    throw new Error('Quotation is required');
+    throw new DomainValidationError('REQUIRED', 'quotationId', 'Quotation is required');
   }
 
   if (!input.issueDate) {
-    throw new Error('Issue date is required');
+    throw new DomainValidationError('REQUIRED', 'issueDate', 'Issue date is required');
   }
 
   if (!input.dueDate) {
-    throw new Error('Due date is required');
+    throw new DomainValidationError('REQUIRED', 'dueDate', 'Due date is required');
   }
 
   if (new Date(input.dueDate) < new Date(input.issueDate)) {
-    throw new Error('Due date must be on or after issue date');
+    throw new DomainValidationError('INVALID', 'dueDate', 'Due date must be on or after issue date');
   }
 
   if (input.taxRate < 0 || input.taxRate > 100) {
-    throw new Error('Tax rate must be between 0 and 100');
+    throw new DomainValidationError('OUT_OF_RANGE', 'taxRate', 'Tax rate must be between 0 and 100');
   }
 
   if (!input.lineItems || input.lineItems.length === 0) {
-    throw new Error('At least one line item is required');
+    throw new DomainValidationError('REQUIRED', 'lineItems', 'At least one line item is required');
   }
 
-  for (const item of input.lineItems) {
+  for (let i = 0; i < input.lineItems.length; i++) {
+    const item = input.lineItems[i];
     if (!item.productId || item.productId <= 0) {
-      throw new Error('Product is required for each line item');
+      throw new DomainValidationError(
+        'REQUIRED',
+        `lineItems[${i}].productId`,
+        'Product is required for each line item'
+      );
     }
     if (item.quantityInvoiced <= 0) {
-      throw new Error('Quantity must be greater than 0');
+      throw new DomainValidationError(
+        'OUT_OF_RANGE',
+        `lineItems[${i}].quantityInvoiced`,
+        'Quantity must be greater than 0'
+      );
     }
     if (item.unitPrice < 0) {
-      throw new Error('Unit price cannot be negative');
+      throw new DomainValidationError(
+        'OUT_OF_RANGE',
+        `lineItems[${i}].unitPrice`,
+        'Unit price cannot be negative'
+      );
     }
   }
 }
@@ -111,7 +124,6 @@ function toCreateRequest(input: CreateInvoiceInput): CreateInvoiceRequest {
   return {
     projectId: input.projectId,
     quotationId: input.quotationId,
-    deliveryId: input.deliveryId ?? null,
     issueDate: input.issueDate,
     dueDate: input.dueDate,
     taxRate: input.taxRate,

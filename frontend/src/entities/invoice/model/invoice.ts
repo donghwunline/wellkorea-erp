@@ -63,7 +63,6 @@ export interface Invoice {
   readonly id: number;
   readonly projectId: number;
   readonly jobCode: string;
-  readonly deliveryId: number | null;
   readonly invoiceNumber: string;
   readonly issueDate: string;
   readonly status: InvoiceStatus;

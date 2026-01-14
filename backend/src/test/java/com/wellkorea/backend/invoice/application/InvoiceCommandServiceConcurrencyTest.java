@@ -150,7 +150,6 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
                             CreateInvoiceRequest request = new CreateInvoiceRequest(
                                     TEST_PROJECT_ID,
                                     TEST_QUOTATION_ID,
-                                    null, // deliveryId (optional)
                                     LocalDate.now(),
                                     LocalDate.now().plusDays(30),
                                     new BigDecimal("10.0"),
@@ -230,7 +229,6 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
         CreateInvoiceRequest request1 = new CreateInvoiceRequest(
                 TEST_PROJECT_ID,
                 TEST_QUOTATION_ID,
-                null, // deliveryId (optional)
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
                 new BigDecimal("10.0"),
@@ -250,7 +248,6 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
         CreateInvoiceRequest request2 = new CreateInvoiceRequest(
                 TEST_PROJECT_ID,
                 TEST_QUOTATION_ID,
-                null, // deliveryId (optional)
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
                 new BigDecimal("10.0"),
@@ -307,7 +304,6 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
         CreateInvoiceRequest validRequest = new CreateInvoiceRequest(
                 TEST_PROJECT_ID,
                 TEST_QUOTATION_ID,
-                null,
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
                 new BigDecimal("10.0"),
@@ -341,7 +337,6 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
         CreateInvoiceRequest invalidRequest = new CreateInvoiceRequest(
                 TEST_PROJECT_ID,
                 TEST_QUOTATION_ID,
-                null,
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
                 new BigDecimal("10.0"),

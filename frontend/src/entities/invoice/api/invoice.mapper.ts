@@ -67,7 +67,6 @@ export interface InvoiceDetailResponse {
   id: number;
   projectId: number;
   jobCode: string;
-  deliveryId: number | null;
   invoiceNumber: string;
   issueDate: string;
   status: InvoiceStatus;
@@ -159,7 +158,6 @@ export const invoiceMapper = {
       id: response.id,
       projectId: response.projectId,
       jobCode: response.jobCode,
-      deliveryId: response.deliveryId,
       invoiceNumber: response.invoiceNumber,
       issueDate: response.issueDate,
       status: response.status,

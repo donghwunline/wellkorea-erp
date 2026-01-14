@@ -231,7 +231,6 @@ public class Quotation {
      * @param dueDate                Payment due date
      * @param taxRate                Tax rate (nullable, defaults to 10%)
      * @param notes                  Optional notes for the invoice
-     * @param deliveryId             Optional delivery ID to link
      * @param lineItems              Line items to invoice
      * @param createdById            User ID of who is creating the invoice
      * @return New TaxInvoice entity with all line items added
@@ -244,7 +243,6 @@ public class Quotation {
                                     LocalDate dueDate,
                                     BigDecimal taxRate,
                                     String notes,
-                                    Long deliveryId,
                                     List<InvoiceLineItemInput> lineItems,
                                     Long createdById) {
         // Quotation must be approved to create invoices
@@ -267,7 +265,7 @@ public class Quotation {
         // Build the invoice entity
         TaxInvoice invoice = TaxInvoice.builder()
                 .projectId(project.getId())
-                .deliveryId(deliveryId)
+                .quotationId(this.id)
                 .invoiceNumber(invoiceNumber)
                 .issueDate(issueDate)
                 .dueDate(dueDate)

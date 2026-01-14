@@ -109,7 +109,6 @@ public class InvoiceCommandService {
                 request.dueDate(),
                 request.taxRate(),
                 request.notes(),
-                request.deliveryId(),
                 lineItemInputs,
                 creatorId
         );
