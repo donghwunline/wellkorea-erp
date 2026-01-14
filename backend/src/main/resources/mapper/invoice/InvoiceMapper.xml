@@ -40,7 +40,6 @@
             <idArg column="id" javaType="Long"/>
             <arg column="project_id" javaType="Long"/>
             <arg column="job_code" javaType="String"/>
-            <arg column="delivery_id" javaType="Long"/>
             <arg column="invoice_number" javaType="String"/>
             <arg column="issue_date" javaType="java.time.LocalDate"/>
             <arg column="status" javaType="com.wellkorea.backend.invoice.domain.InvoiceStatus"/>
@@ -72,7 +71,6 @@
             i.id,
             i.project_id,
             p.job_code,
-            i.delivery_id,
             i.invoice_number,
             i.issue_date,
             i.status,
@@ -245,6 +243,8 @@
         Get invoiced quantities for all products in a project.
         Excludes CANCELLED invoices.
         Uses enum value directly in SQL for type safety.
+
+        @deprecated Use getInvoicedQuantitiesByQuotation instead.
     -->
     <select id="getInvoicedQuantitiesByProject" resultMap="ProductQuantitySumResult">
         SELECT
@@ -253,6 +253,24 @@
         FROM invoice_line_items ili
         INNER JOIN tax_invoices i ON ili.invoice_id = i.id
         WHERE i.project_id = #{projectId}
+          AND i.status != 'CANCELLED'
+        GROUP BY ili.product_id
+    </select>
+
+    <!--
+        Get invoiced quantities for all products linked to a specific quotation.
+        Excludes CANCELLED invoices.
+
+        Used for validating invoices against quotation/delivery limits.
+        Each quotation tracks its own invoice progress independently.
+    -->
+    <select id="getInvoicedQuantitiesByQuotation" resultMap="ProductQuantitySumResult">
+        SELECT
+            ili.product_id,
+            COALESCE(SUM(ili.quantity_invoiced), 0) AS quantity
+        FROM invoice_line_items ili
+        INNER JOIN tax_invoices i ON ili.invoice_id = i.id
+        WHERE i.quotation_id = #{quotationId}
           AND i.status != 'CANCELLED'
         GROUP BY ili.product_id
     </select>

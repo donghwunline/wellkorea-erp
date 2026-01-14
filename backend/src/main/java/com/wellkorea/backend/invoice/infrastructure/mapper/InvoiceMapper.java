@@ -46,6 +46,21 @@ public interface InvoiceMapper {
      *
      * @param projectId Project ID
      * @return List of product quantity summaries
+     * @deprecated Use {@link #getInvoicedQuantitiesByQuotation(Long)} instead.
+     *             Invoices are linked to specific quotations, not project-wide.
      */
+    @Deprecated
     List<ProductQuantitySum> getInvoicedQuantitiesByProject(@Param("projectId") Long projectId);
+
+    /**
+     * Get invoiced quantities for all products linked to a specific quotation.
+     * Excludes CANCELLED invoices.
+     * <p>
+     * Used for validating new invoices against quotation/delivery limits.
+     * Each quotation tracks its own invoice progress independently.
+     *
+     * @param quotationId Quotation ID to query invoices for
+     * @return List of product quantity summaries
+     */
+    List<ProductQuantitySum> getInvoicedQuantitiesByQuotation(@Param("quotationId") Long quotationId);
 }

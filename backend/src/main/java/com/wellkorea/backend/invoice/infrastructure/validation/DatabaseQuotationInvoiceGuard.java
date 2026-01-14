@@ -44,10 +44,10 @@ public class DatabaseQuotationInvoiceGuard implements QuotationInvoiceGuard {
         validateNotEmpty(lineItems);
         validateNoDuplicateProducts(lineItems);
 
-        Long projectId = quotation.getProject().getId();
+        Long quotationId = quotation.getId();
         Map<Long, BigDecimal> quotationQuantities = buildQuotationQuantityMap(quotation);
-        Map<Long, BigDecimal> deliveredQuantities = buildDeliveredQuantityMap(projectId);
-        Map<Long, BigDecimal> invoicedQuantities = buildInvoicedQuantityMap(projectId);
+        Map<Long, BigDecimal> deliveredQuantities = buildDeliveredQuantityMap(quotationId);
+        Map<Long, BigDecimal> invoicedQuantities = buildInvoicedQuantityMap(quotationId);
 
         for (InvoiceLineItemInput item : lineItems) {
             validatePositiveQuantity(item);
@@ -135,13 +135,16 @@ public class DatabaseQuotationInvoiceGuard implements QuotationInvoiceGuard {
     }
 
     /**
-     * Build a map of product ID to already-delivered quantity for the project.
+     * Build a map of product ID to already-delivered quantity for the quotation.
      * Excludes RETURNED deliveries.
+     * <p>
+     * Queries deliveries linked to the specific quotation (not project-wide),
+     * as each quotation tracks its own delivery progress independently.
      * <p>
      * Uses MyBatis mapper for typed results (no manual Object[] conversion needed).
      */
-    private Map<Long, BigDecimal> buildDeliveredQuantityMap(Long projectId) {
-        return deliveryMapper.getDeliveredQuantitiesByProject(projectId).stream()
+    private Map<Long, BigDecimal> buildDeliveredQuantityMap(Long quotationId) {
+        return deliveryMapper.getDeliveredQuantitiesByQuotation(quotationId, null).stream()
                 .collect(Collectors.toMap(
                         ProductQuantitySum::productId,
                         ProductQuantitySum::quantity
@@ -149,13 +152,16 @@ public class DatabaseQuotationInvoiceGuard implements QuotationInvoiceGuard {
     }
 
     /**
-     * Build a map of product ID to already-invoiced quantity for the project.
+     * Build a map of product ID to already-invoiced quantity for the quotation.
      * Excludes CANCELLED invoices.
+     * <p>
+     * Queries invoices linked to the specific quotation (not project-wide),
+     * as each quotation tracks its own invoice progress independently.
      * <p>
      * Uses MyBatis mapper for typed results (no manual Object[] conversion needed).
      */
-    private Map<Long, BigDecimal> buildInvoicedQuantityMap(Long projectId) {
-        return invoiceMapper.getInvoicedQuantitiesByProject(projectId).stream()
+    private Map<Long, BigDecimal> buildInvoicedQuantityMap(Long quotationId) {
+        return invoiceMapper.getInvoicedQuantitiesByQuotation(quotationId).stream()
                 .collect(Collectors.toMap(
                         ProductQuantitySum::productId,
                         ProductQuantitySum::quantity

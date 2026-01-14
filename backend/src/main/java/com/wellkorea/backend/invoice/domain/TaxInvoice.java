@@ -37,8 +37,8 @@ public class TaxInvoice {
     @Column(name = "project_id", nullable = false)
     private Long projectId;
 
-    @Column(name = "delivery_id")
-    private Long deliveryId;
+    @Column(name = "quotation_id")
+    private Long quotationId;
 
     @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
     private String invoiceNumber;
@@ -93,7 +93,7 @@ public class TaxInvoice {
     private TaxInvoice(Builder builder) {
         this.id = builder.id;
         this.projectId = builder.projectId;
-        this.deliveryId = builder.deliveryId;
+        this.quotationId = builder.quotationId;
         this.invoiceNumber = builder.invoiceNumber;
         this.issueDate = builder.issueDate;
         this.status = builder.status != null ? builder.status : InvoiceStatus.DRAFT;
@@ -124,8 +124,8 @@ public class TaxInvoice {
         return projectId;
     }
 
-    public Long getDeliveryId() {
-        return deliveryId;
+    public Long getQuotationId() {
+        return quotationId;
     }
 
     public String getInvoiceNumber() {
@@ -390,7 +390,7 @@ public class TaxInvoice {
     public static class Builder {
         private Long id;
         private Long projectId;
-        private Long deliveryId;
+        private Long quotationId;
         private String invoiceNumber;
         private LocalDate issueDate;
         private InvoiceStatus status;
@@ -413,8 +413,8 @@ public class TaxInvoice {
             return this;
         }
 
-        public Builder deliveryId(Long deliveryId) {
-            this.deliveryId = deliveryId;
+        public Builder quotationId(Long quotationId) {
+            this.quotationId = quotationId;
             return this;
         }
 
