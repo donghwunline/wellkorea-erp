@@ -11,6 +11,7 @@ import java.time.LocalDate;
 public record InvoiceSummaryView(
         Long id,
         Long projectId,
+        Long quotationId,
         String jobCode,
         String invoiceNumber,
         LocalDate issueDate,

@@ -14,6 +14,7 @@ import java.util.List;
 public record InvoiceDetailView(
         Long id,
         Long projectId,
+        Long quotationId,
         String jobCode,
         String invoiceNumber,
         LocalDate issueDate,

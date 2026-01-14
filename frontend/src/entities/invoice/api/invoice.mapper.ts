@@ -66,6 +66,7 @@ interface PaymentResponse {
 export interface InvoiceDetailResponse {
   id: number;
   projectId: number;
+  quotationId: number;
   jobCode: string;
   invoiceNumber: string;
   issueDate: string;
@@ -97,6 +98,7 @@ export interface InvoiceDetailResponse {
 export interface InvoiceSummaryResponse {
   id: number;
   projectId: number;
+  quotationId: number;
   jobCode: string;
   invoiceNumber: string;
   issueDate: string;
@@ -157,6 +159,7 @@ export const invoiceMapper = {
     return {
       id: response.id,
       projectId: response.projectId,
+      quotationId: response.quotationId,
       jobCode: response.jobCode,
       invoiceNumber: response.invoiceNumber,
       issueDate: response.issueDate,
@@ -190,6 +193,7 @@ export const invoiceMapper = {
     return {
       id: response.id,
       projectId: response.projectId,
+      quotationId: response.quotationId,
       jobCode: response.jobCode,
       invoiceNumber: response.invoiceNumber,
       issueDate: response.issueDate,

@@ -38,21 +38,6 @@ public interface InvoiceMapper {
                           @Param("status") InvoiceStatus status);
 
     /**
-     * Get invoiced quantities for all products in a project.
-     * Excludes CANCELLED invoices.
-     * <p>
-     * Returns typed results via MyBatis mapping, eliminating need for
-     * manual Object[] conversion that was required with JPA.
-     *
-     * @param projectId Project ID
-     * @return List of product quantity summaries
-     * @deprecated Use {@link #getInvoicedQuantitiesByQuotation(Long)} instead.
-     *             Invoices are linked to specific quotations, not project-wide.
-     */
-    @Deprecated
-    List<ProductQuantitySum> getInvoicedQuantitiesByProject(@Param("projectId") Long projectId);
-
-    /**
      * Get invoiced quantities for all products linked to a specific quotation.
      * Excludes CANCELLED invoices.
      * <p>

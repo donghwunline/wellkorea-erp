@@ -41,6 +41,7 @@ export interface Payment {
 export interface InvoiceSummary {
   readonly id: number;
   readonly projectId: number;
+  readonly quotationId: number;
   readonly jobCode: string;
   readonly invoiceNumber: string;
   readonly issueDate: string;
@@ -62,6 +63,7 @@ export interface InvoiceSummary {
 export interface Invoice {
   readonly id: number;
   readonly projectId: number;
+  readonly quotationId: number;
   readonly jobCode: string;
   readonly invoiceNumber: string;
   readonly issueDate: string;
@@ -197,5 +199,23 @@ export const invoiceRules = {
       outstanding: activeInvoices.reduce((sum, inv) => sum + inv.remainingBalance, 0),
       overdueCount: activeInvoices.filter((inv) => inv.isOverdue).length,
     };
+  },
+
+  /**
+   * Check if invoice is outdated (references old quotation version).
+   * An invoice is outdated when its quotationId differs from the latest approved quotation.
+   *
+   * @param invoice - The invoice to check
+   * @param latestApprovedQuotationId - ID of the latest approved quotation for the project
+   * @returns true if invoice references an outdated quotation version
+   */
+  isOutdated(
+    invoice: Invoice | InvoiceSummary,
+    latestApprovedQuotationId: number | null
+  ): boolean {
+    if (latestApprovedQuotationId === null) {
+      return false; // No approved quotation means no way to be outdated
+    }
+    return invoice.quotationId !== latestApprovedQuotationId;
   },
 };

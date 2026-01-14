@@ -71,6 +71,14 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
     return quotationsData && quotationsData.data.length > 0;
   }, [quotationsData]);
 
+  // Get the latest approved quotation ID for outdated detection
+  const latestApprovedQuotationId = useMemo(() => {
+    if (quotationsData && quotationsData.data.length > 0) {
+      return quotationsData.data[0].id;
+    }
+    return null;
+  }, [quotationsData]);
+
   // Modal states
   const [issueConfirm, setIssueConfirm] = useState<InvoiceSummary | null>(null);
   const [cancelConfirm, setCancelConfirm] = useState<InvoiceSummary | null>(null);
@@ -297,6 +305,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
         invoices={invoices}
         onRowClick={handleViewInvoice}
         renderActions={renderActions}
+        latestApprovedQuotationId={latestApprovedQuotationId}
       />
 
       {/* Issue Confirmation Modal */}
