@@ -344,7 +344,7 @@ describe('createDelivery', () => {
       await createDelivery(input);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/api/deliveries?projectId=100',
+        '/api/deliveries',
         {
           quotationId: 200,
           deliveryDate: '2025-01-07',
@@ -396,13 +396,13 @@ describe('createDelivery', () => {
   // ==========================================================================
 
   describe('API call', () => {
-    it('should call httpClient.post with correct endpoint including projectId', async () => {
+    it('should call httpClient.post with correct endpoint', async () => {
       const input = createValidInput({ projectId: 123 });
 
       await createDelivery(input);
 
       expect(mockHttpClient.post).toHaveBeenCalledWith(
-        '/api/deliveries?projectId=123',
+        '/api/deliveries',
         expect.any(Object)
       );
     });

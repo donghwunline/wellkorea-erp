@@ -99,12 +99,12 @@ function toCreateRequest(input: CreateDeliveryInput): CreateDeliveryRequest {
 
 /**
  * Create a new delivery.
+ *
+ * Uses quotation-level distributed locking on the backend to prevent race conditions
+ * during concurrent delivery creation.
  */
 export async function createDelivery(input: CreateDeliveryInput): Promise<CommandResult> {
   validateCreateInput(input);
   const request = toCreateRequest(input);
-  return httpClient.post<CommandResult>(
-    `${DELIVERY_ENDPOINTS.BASE}?projectId=${input.projectId}`,
-    request
-  );
+  return httpClient.post<CommandResult>(DELIVERY_ENDPOINTS.BASE, request);
 }

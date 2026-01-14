@@ -210,7 +210,7 @@ export const TASK_FLOW_ENDPOINTS = {
 export const DELIVERY_ENDPOINTS = {
   /** Base path for delivery operations */
   /** GET /deliveries?projectId={projectId}&status={status} - List deliveries with optional filters */
-  /** POST /deliveries?projectId={projectId} - Create delivery for a project */
+  /** POST /deliveries - Create delivery (quotationId in request body) */
   BASE: '/deliveries',
 
   /** GET /deliveries/:id - Get delivery detail */
