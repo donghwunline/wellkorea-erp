@@ -90,6 +90,7 @@ public class TaskNode {
 
     /**
      * Get progress level for color coding.
+     *
      * @return "low" (0-33%), "medium" (34-66%), "high" (67-100%)
      */
     public String getProgressLevel() {

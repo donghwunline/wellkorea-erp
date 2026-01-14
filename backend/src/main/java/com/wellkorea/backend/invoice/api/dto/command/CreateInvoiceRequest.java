@@ -1,7 +1,10 @@
 package com.wellkorea.backend.invoice.api.dto.command;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,7 +12,7 @@ import java.util.List;
 
 /**
  * Request DTO for creating a new tax invoice.
- * 
+ * <p>
  * The quotationId field explicitly binds the invoice to a specific quotation version,
  * preventing race conditions where the "latest approved" quotation might change
  * between when the user views the data and when they submit the invoice.

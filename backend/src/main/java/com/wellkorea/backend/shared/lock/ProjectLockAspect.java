@@ -48,7 +48,7 @@ public class ProjectLockAspect {
     /**
      * Intercepts methods annotated with {@link ProjectLock} and wraps them with distributed locking.
      *
-     * @param joinPoint The method join point
+     * @param joinPoint   The method join point
      * @param projectLock The annotation instance
      * @return The method return value
      * @throws Throwable If the method throws an exception

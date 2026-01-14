@@ -11,7 +11,7 @@ import java.util.Set;
  * Task flow representing a DAG (Directed Acyclic Graph) of tasks for a project.
  * Each project has exactly one task flow.
  * Contains nodes (tasks) and edges (dependencies between tasks).
- *
+ * <p>
  * TaskFlow is the aggregate root - nodes and edges are value objects
  * managed entirely by this entity.
  */
@@ -70,7 +70,7 @@ public class TaskFlow {
         nodes.remove(node);
         edges.removeIf(edge ->
                 edge.getSourceNodeId().equals(node.getNodeId()) ||
-                edge.getTargetNodeId().equals(node.getNodeId())
+                        edge.getTargetNodeId().equals(node.getNodeId())
         );
     }
 

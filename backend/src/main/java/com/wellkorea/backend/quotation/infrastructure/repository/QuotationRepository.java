@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,26 +47,4 @@ public interface QuotationRepository extends JpaRepository<Quotation, Long> {
             "LEFT JOIN FETCH q.createdBy " +
             "WHERE q.id = :id AND q.deleted = false")
     Optional<Quotation> findByIdWithLineItems(@Param("id") Long id);
-
-    /**
-     * Find the latest approved quotation for a project.
-     * <p>
-     * Returns quotations with status APPROVED, SENT, or ACCEPTED, ordered by version DESC.
-     * Caller should take the first element for the latest version.
-     * <p>
-     * Concurrency is handled by {@link com.wellkorea.backend.shared.lock.ProjectLockService}
-     * at the service layer, not at the repository level.
-     *
-     * @param projectId Project ID
-     * @return List of approved quotations ordered by version DESC (take first for latest)
-     */
-    @Query("SELECT q FROM Quotation q " +
-            "LEFT JOIN FETCH q.lineItems li " +
-            "LEFT JOIN FETCH li.product " +
-            "LEFT JOIN FETCH q.project " +
-            "WHERE q.project.id = :projectId " +
-            "AND q.status IN ('APPROVED', 'SENT', 'ACCEPTED') " +
-            "AND q.deleted = false " +
-            "ORDER BY q.version DESC")
-    List<Quotation> findLatestApprovedForProject(@Param("projectId") Long projectId);
 }

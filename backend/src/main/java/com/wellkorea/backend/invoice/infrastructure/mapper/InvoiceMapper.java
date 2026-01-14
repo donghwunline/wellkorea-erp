@@ -26,18 +26,16 @@ public interface InvoiceMapper {
     /**
      * Find invoices with optional project and status filters.
      */
-    List<InvoiceSummaryView> findWithFilters(
-            @Param("projectId") Long projectId,
-            @Param("status") InvoiceStatus status,
-            @Param("limit") int limit,
-            @Param("offset") long offset);
+    List<InvoiceSummaryView> findWithFilters(@Param("projectId") Long projectId,
+                                             @Param("status") InvoiceStatus status,
+                                             @Param("limit") int limit,
+                                             @Param("offset") long offset);
 
     /**
      * Count invoices with optional project and status filters.
      */
-    long countWithFilters(
-            @Param("projectId") Long projectId,
-            @Param("status") InvoiceStatus status);
+    long countWithFilters(@Param("projectId") Long projectId,
+                          @Param("status") InvoiceStatus status);
 
     /**
      * Get invoiced quantities for all products in a project.

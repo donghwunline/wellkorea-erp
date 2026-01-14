@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Request DTO for creating a new delivery.
  * Validates required fields before delivery creation.
- * 
+ * <p>
  * The quotationId field explicitly binds the delivery to a specific quotation version,
  * preventing race conditions where the "latest approved" quotation might change
  * between when the user views the data and when they submit the delivery.
