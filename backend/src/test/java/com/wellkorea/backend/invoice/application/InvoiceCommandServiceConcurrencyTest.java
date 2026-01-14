@@ -272,4 +272,85 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
 
         assertThat(totalInvoiced).isEqualByComparingTo(new BigDecimal("8.0"));
     }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @DisplayName("Should exclude RETURNED deliveries from invoiceable quantity calculation")
+    void shouldExcludeReturnedDeliveriesFromInvoiceableQuantity() {
+        // Given: Setup a scenario with both DELIVERED and RETURNED deliveries
+        // - Delivery 9001: 10 units DELIVERED (from setUp)
+        // - Delivery 9002: 5 units RETURNED (should be excluded)
+        // - Net invoiceable: 10 units (not 15)
+
+        // Insert a RETURNED delivery with 5 units
+        jdbcTemplate.update(
+                "INSERT INTO deliveries (id, project_id, quotation_id, delivery_date, status, delivered_by_id) " +
+                        "VALUES (9002, ?, ?, ?, 'RETURNED', 1) " +
+                        "ON CONFLICT (id) DO NOTHING",
+                TEST_PROJECT_ID, TEST_QUOTATION_ID, LocalDate.now()
+        );
+        jdbcTemplate.update(
+                "INSERT INTO delivery_line_items (id, delivery_id, product_id, quantity_delivered) " +
+                        "VALUES (9002, 9002, ?, 5.0) " +
+                        "ON CONFLICT (id) DO NOTHING",
+                TEST_PRODUCT_ID
+        );
+
+        // When: Try to invoice 10 units (exactly what was DELIVERED, excluding RETURNED)
+        CreateInvoiceRequest validRequest = new CreateInvoiceRequest(
+                TEST_PROJECT_ID,
+                TEST_QUOTATION_ID,
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(30),
+                new BigDecimal("10.0"),
+                null,
+                List.of(new InvoiceLineItemRequest(
+                        TEST_PRODUCT_ID,
+                        "Concurrency Test Product",
+                        "CONC-TEST",
+                        new BigDecimal("10.0"), // Exactly the DELIVERED quantity
+                        new BigDecimal("1000.00")
+                ))
+        );
+
+        // Then: Should succeed since RETURNED delivery is excluded
+        Long invoiceId = invoiceCommandService.createInvoice(TEST_PROJECT_ID, validRequest, TEST_USER_ID);
+        assertThat(invoiceId).isNotNull();
+
+        // Verify the invoiced quantity
+        BigDecimal totalInvoiced = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(ili.quantity_invoiced), 0) " +
+                        "FROM invoice_line_items ili " +
+                        "JOIN tax_invoices ti ON ili.invoice_id = ti.id " +
+                        "WHERE ti.project_id = ? AND ti.status != 'CANCELLED'",
+                BigDecimal.class,
+                TEST_PROJECT_ID
+        );
+        assertThat(totalInvoiced).isEqualByComparingTo(new BigDecimal("10.0"));
+
+        // Verify that trying to invoice more than the net delivered quantity fails
+        // (this confirms RETURNED deliveries are not counted)
+        CreateInvoiceRequest invalidRequest = new CreateInvoiceRequest(
+                TEST_PROJECT_ID,
+                TEST_QUOTATION_ID,
+                null,
+                LocalDate.now(),
+                LocalDate.now().plusDays(30),
+                new BigDecimal("10.0"),
+                null,
+                List.of(new InvoiceLineItemRequest(
+                        TEST_PRODUCT_ID,
+                        "Concurrency Test Product",
+                        "CONC-TEST",
+                        new BigDecimal("1.0"), // Any additional amount should fail
+                        new BigDecimal("1000.00")
+                ))
+        );
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                        invoiceCommandService.createInvoice(TEST_PROJECT_ID, invalidRequest, TEST_USER_ID))
+                .isInstanceOf(com.wellkorea.backend.shared.exception.BusinessException.class)
+                .hasMessageContaining("exceeds invoiceable quantity");
+    }
 }
