@@ -1,4 +1,4 @@
-package com.wellkorea.backend.invoice.api.dto.query;
+package com.wellkorea.backend.report.api.dto;
 
 import java.math.BigDecimal;
 
