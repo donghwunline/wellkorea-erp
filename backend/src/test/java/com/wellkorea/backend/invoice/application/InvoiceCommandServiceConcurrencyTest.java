@@ -49,6 +49,13 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        // Clean up existing test data to ensure isolation between tests
+        // Delete in order respecting foreign key constraints
+        jdbcTemplate.update("DELETE FROM invoice_line_items WHERE invoice_id IN (SELECT id FROM tax_invoices WHERE project_id = ?)", TEST_PROJECT_ID);
+        jdbcTemplate.update("DELETE FROM tax_invoices WHERE project_id = ?", TEST_PROJECT_ID);
+        jdbcTemplate.update("DELETE FROM delivery_line_items WHERE delivery_id IN (SELECT id FROM deliveries WHERE project_id = ?)", TEST_PROJECT_ID);
+        jdbcTemplate.update("DELETE FROM deliveries WHERE project_id = ?", TEST_PROJECT_ID);
+
         // Insert test user
         jdbcTemplate.update(
                 "INSERT INTO users (id, username, email, password_hash, full_name) " +
