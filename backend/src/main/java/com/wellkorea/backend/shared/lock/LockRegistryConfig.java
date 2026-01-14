@@ -12,10 +12,17 @@ import javax.sql.DataSource;
  * Configuration for Spring Integration JDBC Lock Registry.
  * <p>
  * Provides distributed locking capabilities using PostgreSQL for coordination.
- * Used by {@link ProjectLockService} to prevent race conditions during
- * concurrent operations on the same project (e.g., delivery creation).
+ * Used by {@link ProjectLockService} and {@link QuotationLockService} to prevent
+ * race conditions during concurrent operations.
+ * <p>
+ * <b>Lock Key Prefixes:</b>
+ * <ul>
+ *   <li>{@code project:{id}} - Project-level locks (legacy, for operations without quotation context)</li>
+ *   <li>{@code quotation:{id}} - Quotation-level locks (preferred for delivery/invoice operations)</li>
+ * </ul>
  *
  * @see ProjectLockService
+ * @see QuotationLockService
  * @see <a href="https://docs.spring.io/spring-integration/reference/jdbc.html#jdbc-lock-registry">
  * Spring Integration JDBC Lock Registry</a>
  */

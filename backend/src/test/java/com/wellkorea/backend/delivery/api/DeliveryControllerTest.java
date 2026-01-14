@@ -333,12 +333,12 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
         }
 
         @Test
-        @DisplayName("should return 404 for non-existent project")
-        void createDelivery_NonExistentProject_Returns404() throws Exception {
+        @DisplayName("should return 404 for non-existent quotation")
+        void createDelivery_NonExistentQuotation_Returns404() throws Exception {
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 3000,
+                        "quotationId": 99999,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
@@ -347,7 +347,6 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
                     """.formatted(today);
 
             mockMvc.perform(post(DELIVERIES_BASE_URL)
-                            .param("projectId", "99999")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -360,16 +359,15 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             String today = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
             String createRequest = """
                     {
-                        "quotationId": 3000,
+                        "quotationId": %d,
                         "deliveryDate": "%s",
                         "lineItems": [
                             {"productId": 1, "quantityDelivered": 5.0}
                         ]
                     }
-                    """.formatted(today);
+                    """.formatted(testQuotationId, today);
 
             mockMvc.perform(post(DELIVERIES_BASE_URL)
-                            .param("projectId", testProjectId.toString())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
                     .andExpect(status().isUnauthorized());

@@ -71,22 +71,23 @@ public class DeliveryController {
     // ==================== COMMAND ENDPOINTS ====================
 
     /**
-     * Create a new delivery for a project.
-     * POST /api/deliveries?projectId={projectId}
+     * Create a new delivery for a quotation.
+     * POST /api/deliveries
+     * <p>
+     * Uses distributed lock on quotation to prevent race conditions during concurrent delivery creation.
      * <p>
      * Validates that:
-     * - Project exists and has an approved quotation
+     * - Quotation exists and is approved
      * - All products are in the quotation
      * - Quantities don't exceed remaining deliverable amounts
      */
     @PostMapping("/api/deliveries")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<DeliveryCommandResult>> createDelivery(@RequestParam Long projectId,
-                                                                             @Valid @RequestBody CreateDeliveryRequest request,
+    public ResponseEntity<ApiResponse<DeliveryCommandResult>> createDelivery(@Valid @RequestBody CreateDeliveryRequest request,
                                                                              @AuthenticationPrincipal AuthenticatedUser user) {
 
         Long userId = user.getUserId();
-        Long deliveryId = commandService.createDelivery(projectId, request, userId);
+        Long deliveryId = commandService.createDelivery(request.quotationId(), request, userId);
         DeliveryCommandResult result = DeliveryCommandResult.created(deliveryId);
 
         return ResponseEntity

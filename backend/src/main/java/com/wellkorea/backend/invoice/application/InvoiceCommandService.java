@@ -5,12 +5,11 @@ import com.wellkorea.backend.invoice.api.dto.command.InvoiceLineItemRequest;
 import com.wellkorea.backend.invoice.api.dto.command.RecordPaymentRequest;
 import com.wellkorea.backend.invoice.domain.*;
 import com.wellkorea.backend.invoice.infrastructure.persistence.TaxInvoiceRepository;
-import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import com.wellkorea.backend.shared.lock.ProjectLock;
+import com.wellkorea.backend.shared.lock.QuotationLock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,26 +23,28 @@ import java.util.List;
  * <p>
  * Following CQRS: returns only IDs, clients fetch fresh data via QueryService.
  * <p>
- * Uses {@link ProjectLock} annotation for distributed locking to prevent race conditions
- * during concurrent invoice creation for the same project.
+ * Uses {@link QuotationLock} annotation for distributed locking to prevent race conditions
+ * during concurrent invoice creation. Quotation-level locking is preferred because:
+ * <ul>
+ *   <li>Validation queries are quotation-scoped (quotation line items, delivered/invoiced quantities)</li>
+ *   <li>More granular than project-level - different quotations can be processed concurrently</li>
+ *   <li>Aligns with domain model where invoices are created against specific quotations</li>
+ * </ul>
  */
 @Service
 @Transactional
 public class InvoiceCommandService {
 
     private final TaxInvoiceRepository invoiceRepository;
-    private final ProjectRepository projectRepository;
     private final QuotationRepository quotationRepository;
     private final QuotationInvoiceGuard quotationInvoiceGuard;
     private final InvoiceNumberGenerator invoiceNumberGenerator;
 
     public InvoiceCommandService(TaxInvoiceRepository invoiceRepository,
-                                 ProjectRepository projectRepository,
                                  QuotationRepository quotationRepository,
                                  QuotationInvoiceGuard quotationInvoiceGuard,
                                  InvoiceNumberGenerator invoiceNumberGenerator) {
         this.invoiceRepository = invoiceRepository;
-        this.projectRepository = projectRepository;
         this.quotationRepository = quotationRepository;
         this.quotationInvoiceGuard = quotationInvoiceGuard;
         this.invoiceNumberGenerator = invoiceNumberGenerator;
@@ -52,7 +53,7 @@ public class InvoiceCommandService {
     /**
      * Create a new tax invoice.
      * <p>
-     * Acquires a distributed lock on the project (via {@link ProjectLock}) to prevent
+     * Acquires a distributed lock on the quotation (via {@link QuotationLock}) to prevent
      * race conditions during concurrent invoice creation. The lock ensures:
      * <ul>
      *   <li>Consistent quotation data during validation</li>
@@ -60,35 +61,30 @@ public class InvoiceCommandService {
      *   <li>No over-invoicing beyond delivered amounts</li>
      * </ul>
      * <p>
-     * The quotationId is explicitly provided in the request to ensure the invoice
-     * is created against the exact quotation version the user was viewing, preventing
-     * race conditions where a new quotation could be approved between view and submit.
+     * The quotationId is explicitly provided to ensure the invoice is created against
+     * the exact quotation version the user was viewing, preventing race conditions
+     * where a new quotation could be approved between view and submit.
      * <p>
      * Delegates to {@link Quotation#createInvoice} factory method which validates
      * using {@link QuotationInvoiceGuard} and creates the TaxInvoice entity.
      *
-     * @param projectId Project ID (used for distributed lock)
-     * @param request   Create request containing explicit quotationId
-     * @param creatorId User ID creating the invoice
+     * @param quotationId Quotation ID (used for distributed lock and invoice binding)
+     * @param request     Create request
+     * @param creatorId   User ID creating the invoice
      * @return Created invoice ID
-     * @throws ResourceNotFoundException                                  if project or quotation doesn't exist
+     * @throws ResourceNotFoundException                                  if quotation doesn't exist
      * @throws BusinessException                                          if validation fails
      * @throws com.wellkorea.backend.shared.lock.LockAcquisitionException if lock cannot be acquired
      */
-    @ProjectLock
-    public Long createInvoice(Long projectId, CreateInvoiceRequest request, Long creatorId) {
-        // Validate project exists
-        if (!projectRepository.existsById(projectId)) {
-            throw new ResourceNotFoundException("Project", projectId);
-        }
-
+    @QuotationLock
+    public Long createInvoice(Long quotationId, CreateInvoiceRequest request, Long creatorId) {
         // Fetch the specific quotation by ID (explicit binding prevents race conditions)
-        Quotation quotation = quotationRepository.findByIdWithLineItems(request.quotationId())
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation", request.quotationId()));
+        Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
-        // Validate quotation belongs to the project
-        if (!quotation.getProject().getId().equals(projectId)) {
-            throw new BusinessException("Quotation does not belong to the specified project");
+        // Validate quotationId in request matches parameter (defense in depth)
+        if (request.quotationId() != null && !request.quotationId().equals(quotationId)) {
+            throw new BusinessException("Request quotationId does not match path parameter");
         }
 
         // Validate quotation is in an approved state
