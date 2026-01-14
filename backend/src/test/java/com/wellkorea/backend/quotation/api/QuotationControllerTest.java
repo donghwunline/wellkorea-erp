@@ -491,7 +491,8 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
             // Insert line items
             jdbcTemplate.update(
                     "INSERT INTO quotation_line_items (quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)",
+                            "VALUES (?, ?, ?, ?, ?, ?) " +
+                            "ON CONFLICT (quotation_id, sequence) DO NOTHING",
                     quotationId, 1L, 1, 10.0, 50000.00, 500000.00
             );
         }
@@ -557,7 +558,8 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
             // Insert line items
             jdbcTemplate.update(
                     "INSERT INTO quotation_line_items (quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)",
+                            "VALUES (?, ?, ?, ?, ?, ?) " +
+                            "ON CONFLICT (quotation_id, sequence) DO NOTHING",
                     quotationId, 1L, 1, 10.0, 50000.00, 500000.00
             );
         }
@@ -678,7 +680,8 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
             // Insert line items (required for submission)
             jdbcTemplate.update(
                     "INSERT INTO quotation_line_items (quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)",
+                            "VALUES (?, ?, ?, ?, ?, ?) " +
+                            "ON CONFLICT (quotation_id, sequence) DO NOTHING",
                     quotationId, 1L, 1, 10.0, 50000.00, 500000.00
             );
 
@@ -757,7 +760,8 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
             // Insert line items
             jdbcTemplate.update(
                     "INSERT INTO quotation_line_items (quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)",
+                            "VALUES (?, ?, ?, ?, ?, ?) " +
+                            "ON CONFLICT (quotation_id, sequence) DO NOTHING",
                     quotationId, 1L, 1, 10.0, 50000.00, 500000.00
             );
         }
@@ -802,7 +806,8 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
             // Insert line items
             jdbcTemplate.update(
                     "INSERT INTO quotation_line_items (quotation_id, product_id, sequence, quantity, unit_price, line_total) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)",
+                            "VALUES (?, ?, ?, ?, ?, ?) " +
+                            "ON CONFLICT (quotation_id, sequence) DO NOTHING",
                     quotationId, 1L, 1, 10.0, 50000.00, 500000.00
             );
         }
