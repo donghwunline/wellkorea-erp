@@ -1,0 +1,127 @@
+# =============================================================================
+# WellKorea ERP - Production Docker Compose
+# =============================================================================
+# Usage: docker compose -f docker-compose.prod.yml up -d
+#
+# Prerequisites:
+#   1. Copy .env.prod.example to .env and configure all required values
+#   2. Configure host Nginx for SSL termination (see docs/deployment.md)
+#   3. Build and deploy frontend separately (npm run build -> copy dist/)
+#
+# Architecture:
+#   - All services bind to 127.0.0.1 (localhost only)
+#   - Host Nginx handles SSL termination and proxies to these ports
+#   - Frontend served as static files by host Nginx (no container)
+#
+# Subdomains:
+#   - https://wellkorea.mipllab.com -> Nginx serves /var/www/wellkorea-erp/dist
+#   - https://api.wellkorea.mipllab.com -> proxy to 127.0.0.1:8080
+#   - https://storage.wellkorea.mipllab.com -> proxy to 127.0.0.1:9000
+# =============================================================================
+
+services:
+  # PostgreSQL Database (internal only)
+  postgres:
+    image: postgres:16-alpine
+    container_name: wellkorea-erp-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # No port exposed - only accessible within Docker network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wellkorea-internal
+
+  # Backend Application
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/wellkorea/erp-backend:latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wellkorea-erp-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+
+      # MinIO Configuration (external URL for presigned URLs)
+      MINIO_URL: ${MINIO_URL}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+
+      # JWT Configuration (REQUIRED - must be strong secret)
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+
+      # Email Configuration
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      # Security Configuration
+      SECURITY_CORS_ALLOWED_ORIGINS: ${SECURITY_CORS_ALLOWED_ORIGINS}
+      SECURITY_SWAGGER_ENABLED: "false"
+    ports:
+      # Bind to localhost only - Nginx proxies external traffic
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - wellkorea-internal
+
+  # MinIO S3-compatible Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: wellkorea-erp-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    ports:
+      # Bind to localhost only - Nginx proxies external traffic
+      # Only API port exposed (9000), console (9001) is internal
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - wellkorea-internal
+
+volumes:
+  postgres_data:
+    driver: local
+  minio_data:
+    driver: local
+
+networks:
+  wellkorea-internal:
+    driver: bridge
