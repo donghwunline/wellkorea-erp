@@ -75,9 +75,10 @@ jwt:
   expiration: ${JWT_EXPIRATION:86400000}  # 24 hours default
 
 # MinIO Configuration
+# For Docker: uses minio.local (requires /etc/hosts entry: 127.0.0.1 minio.local)
+# For local dev: uses localhost (default)
 minio:
   url: ${MINIO_URL:http://localhost:9000}
-  public-url: ${MINIO_PUBLIC_URL:http://localhost:9000}  # Browser-accessible URL for presigned URLs
   access-key: ${MINIO_ACCESS_KEY:minioadmin}
   secret-key: ${MINIO_SECRET_KEY:minioadmin}
   bucket-name: ${MINIO_BUCKET_NAME:wellkorea-erp-documents}
