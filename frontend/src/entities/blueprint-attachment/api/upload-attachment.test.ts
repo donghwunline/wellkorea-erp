@@ -7,7 +7,7 @@
  * 3. Register attachment metadata in backend
  */
 
-import { describe, expect, it, vi, beforeEach, type Mock } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { uploadAttachment, type UploadAttachmentInput } from './upload-attachment';
 import { DomainValidationError } from '@/shared/api';
 
