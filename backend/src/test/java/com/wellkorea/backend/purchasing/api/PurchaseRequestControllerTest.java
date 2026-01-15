@@ -67,7 +67,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         // Insert test data
         insertTestServiceCategory(1L, "CNC Machining");
         insertTestCustomerCompany(10L, "Test Customer");
-        insertTestProject(1L, "WK22025-000001-20250115", 10L, 1L);
+        insertTestProject(1L, "WK2K25-0001-0115", 10L, 1L);
     }
 
     // ==========================================================================

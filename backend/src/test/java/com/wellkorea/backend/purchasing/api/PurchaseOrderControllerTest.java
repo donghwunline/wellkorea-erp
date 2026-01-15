@@ -14,6 +14,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -54,8 +56,20 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
     private String salesToken;
     private String productionToken;
 
+    // Dynamic date strings for test data (avoids hardcoded dates becoming stale)
+    private String today;
+    private String nextWeek;
+    private String nextMonth;
+    private String yesterday;  // For invalid date testing
+
     @BeforeEach
     void setUp() {
+        // Initialize dynamic dates
+        LocalDate now = LocalDate.now();
+        today = now.toString();
+        nextWeek = now.plusWeeks(1).toString();
+        nextMonth = now.plusMonths(1).toString();
+        yesterday = now.minusDays(1).toString();
         DatabaseTestHelper.insertTestUsersWithRoles(jdbcTemplate);
 
         // Generate tokens for different roles
@@ -68,7 +82,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         insertTestServiceCategory(1L, "CNC Machining");
         insertTestCustomerCompany(10L, "Test Customer");
         insertTestVendorCompany(50L, "Vendor A");
-        insertTestProject(1L, "WK22025-000001-20250115", 10L, 1L);
+        insertTestProject(1L, "WK2K25-0001-0115", 10L, 1L);
         insertTestPurchaseRequest(1L, 1L, 1L, "PR-2025-000001", "Test purchase request");
         insertTestRfqItem(1L, 1L, 50L, 50000.00);
     }
@@ -84,14 +98,14 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 201 with command result when Admin creates purchase order")
         void createPurchaseOrder_AsAdmin_Returns201() throws Exception {
-            String createRequest = """
+            String createRequest = String.format("""
                     {
                         "rfqItemId": 1,
-                        "orderDate": "2025-01-15",
-                        "expectedDeliveryDate": "2025-02-15",
+                        "orderDate": "%s",
+                        "expectedDeliveryDate": "%s",
                         "notes": "Rush order"
                     }
-                    """;
+                    """, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + adminToken)
@@ -107,13 +121,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 201 when Finance creates purchase order")
         void createPurchaseOrder_AsFinance_Returns201() throws Exception {
-            String createRequest = """
+            String createRequest = String.format("""
                     {
                         "rfqItemId": 1,
-                        "orderDate": "2025-01-15",
-                        "expectedDeliveryDate": "2025-02-15"
+                        "orderDate": "%s",
+                        "expectedDeliveryDate": "%s"
                     }
-                    """;
+                    """, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + financeToken)
@@ -126,13 +140,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 403 when Sales creates purchase order")
         void createPurchaseOrder_AsSales_Returns403() throws Exception {
-            String createRequest = """
+            String createRequest = String.format("""
                     {
                         "rfqItemId": 1,
-                        "orderDate": "2025-01-15",
-                        "expectedDeliveryDate": "2025-02-15"
+                        "orderDate": "%s",
+                        "expectedDeliveryDate": "%s"
                     }
-                    """;
+                    """, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + salesToken)
@@ -144,12 +158,12 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 400 when rfqItemId is missing")
         void createPurchaseOrder_MissingRfqItemId_Returns400() throws Exception {
-            String createRequest = """
+            String createRequest = String.format("""
                     {
-                        "orderDate": "2025-01-15",
-                        "expectedDeliveryDate": "2025-02-15"
+                        "orderDate": "%s",
+                        "expectedDeliveryDate": "%s"
                     }
-                    """;
+                    """, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + adminToken)
@@ -161,13 +175,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 400 when delivery date is before order date")
         void createPurchaseOrder_DeliveryBeforeOrder_Returns400() throws Exception {
-            String createRequest = """
+            String createRequest = String.format("""
                     {
                         "rfqItemId": 1,
-                        "orderDate": "2025-02-15",
-                        "expectedDeliveryDate": "2025-01-15"
+                        "orderDate": "%s",
+                        "expectedDeliveryDate": "%s"
                     }
-                    """;
+                    """, nextMonth, today);  // delivery before order
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + adminToken)
@@ -179,13 +193,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 404 when RFQ item not found")
         void createPurchaseOrder_RfqItemNotFound_Returns404() throws Exception {
-            String createRequest = """
+            String createRequest = String.format("""
                     {
                         "rfqItemId": 99999,
-                        "orderDate": "2025-01-15",
-                        "expectedDeliveryDate": "2025-02-15"
+                        "orderDate": "%s",
+                        "expectedDeliveryDate": "%s"
                     }
-                    """;
+                    """, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + adminToken)
@@ -197,13 +211,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 401 without authentication")
         void createPurchaseOrder_WithoutAuth_Returns401() throws Exception {
-            String createRequest = """
+            String createRequest = String.format("""
                     {
                         "rfqItemId": 1,
-                        "orderDate": "2025-01-15",
-                        "expectedDeliveryDate": "2025-02-15"
+                        "orderDate": "%s",
+                        "expectedDeliveryDate": "%s"
                     }
-                    """;
+                    """, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -342,12 +356,12 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 200 with command result when Admin updates purchase order")
         void updatePurchaseOrder_AsAdmin_Returns200() throws Exception {
-            String updateRequest = """
+            String updateRequest = String.format("""
                     {
-                        "expectedDeliveryDate": "2025-03-01",
+                        "expectedDeliveryDate": "%s",
                         "notes": "Updated delivery date"
                     }
-                    """;
+                    """, nextMonth);
 
             mockMvc.perform(put(PURCHASE_ORDERS_URL + "/200")
                             .header("Authorization", "Bearer " + adminToken)
@@ -416,13 +430,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         }
 
         @Test
-        @DisplayName("should return 400 when PO not in DRAFT status")
-        void sendPurchaseOrder_NotDraft_Returns400() throws Exception {
+        @DisplayName("should return 409 when PO not in DRAFT status")
+        void sendPurchaseOrder_NotDraft_Returns409() throws Exception {
             jdbcTemplate.update("UPDATE purchase_orders SET status = 'SENT' WHERE id = 300");
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL + "/300/send")
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isConflict());
         }
 
         @Test
@@ -444,6 +458,9 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpSentPurchaseOrder() {
+            // Receiving a PO closes the PR, so PR must be in VENDOR_SELECTED status
+            jdbcTemplate.update("UPDATE purchase_requests SET status = 'VENDOR_SELECTED' WHERE id = 1");
+            jdbcTemplate.update("UPDATE rfq_items SET status = 'SELECTED' WHERE id = 1");
             insertTestPurchaseOrder(400L, 1L, 50L, "PO-2025-000400", 50000.00);
             jdbcTemplate.update("UPDATE purchase_orders SET status = 'CONFIRMED' WHERE id = 400");
         }
@@ -468,13 +485,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         }
 
         @Test
-        @DisplayName("should return 400 when PO not in CONFIRMED status")
-        void receivePurchaseOrder_NotConfirmed_Returns400() throws Exception {
+        @DisplayName("should return 409 when PO not in CONFIRMED status")
+        void receivePurchaseOrder_NotConfirmed_Returns409() throws Exception {
             jdbcTemplate.update("UPDATE purchase_orders SET status = 'DRAFT' WHERE id = 400");
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL + "/400/receive")
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isConflict());
         }
     }
 
@@ -500,13 +517,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         }
 
         @Test
-        @DisplayName("should return 400 when PO is already received")
-        void cancelPurchaseOrder_AlreadyReceived_Returns400() throws Exception {
+        @DisplayName("should return 409 when PO is already received")
+        void cancelPurchaseOrder_AlreadyReceived_Returns409() throws Exception {
             jdbcTemplate.update("UPDATE purchase_orders SET status = 'RECEIVED' WHERE id = 500");
 
             mockMvc.perform(delete(PURCHASE_ORDERS_URL + "/500")
                             .header("Authorization", "Bearer " + adminToken))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isConflict());
         }
 
         @Test
@@ -582,7 +599,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         jdbcTemplate.update(
                 "INSERT INTO purchase_requests (id, project_id, service_category_id, request_number, " +
                         "description, quantity, required_date, status, created_by_id, created_at, updated_at) " +
-                        "VALUES (?, ?, ?, ?, ?, 10.0, CURRENT_DATE + 30, 'VENDOR_SELECTED', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                        "VALUES (?, ?, ?, ?, ?, 10.0, CURRENT_DATE + 30, 'RFQ_SENT', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
                         "ON CONFLICT (id) DO NOTHING",
                 id, projectId, serviceCategoryId, requestNumber, description
         );
@@ -592,7 +609,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         jdbcTemplate.update(
                 "INSERT INTO rfq_items (id, purchase_request_id, vendor_company_id, status, quoted_price, " +
                         "sent_at, replied_at, created_at) " +
-                        "VALUES (?, ?, ?, 'SELECTED', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                        "VALUES (?, ?, ?, 'REPLIED', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
                         "ON CONFLICT (id) DO NOTHING",
                 id, purchaseRequestId, vendorId, quotedPrice
         );
