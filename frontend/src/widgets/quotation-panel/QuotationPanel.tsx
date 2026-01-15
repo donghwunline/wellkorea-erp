@@ -249,15 +249,25 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   // Empty state - no quotations yet
   if (quotations.length === 0) {
     return (
-      <Card className="p-12 text-center">
-        <Icon name="document" className="mx-auto mb-4 h-16 w-16 text-steel-600" />
-        <h3 className="mb-2 text-lg font-semibold text-white">No Quotations Yet</h3>
-        <p className="mb-6 text-steel-400">Create your first quotation for this project.</p>
-        <Button onClick={handleCreate}>
-          <Icon name="plus" className="mr-2 h-4 w-4" />
-          New Quotation
-        </Button>
-      </Card>
+      <>
+        <Card className="p-12 text-center">
+          <Icon name="document" className="mx-auto mb-4 h-16 w-16 text-steel-600" />
+          <h3 className="mb-2 text-lg font-semibold text-white">No Quotations Yet</h3>
+          <p className="mb-6 text-steel-400">Create your first quotation for this project.</p>
+          <Button onClick={handleCreate}>
+            <Icon name="plus" className="mr-2 h-4 w-4" />
+            New Quotation
+          </Button>
+        </Card>
+
+        {/* Create Modal - rendered outside Card for proper portal behavior */}
+        <QuotationCreateModal
+          projectId={projectId}
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={handleModalSuccess}
+        />
+      </>
     );
   }
 
