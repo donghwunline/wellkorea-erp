@@ -110,23 +110,27 @@ npx playwright install
 ### Docker (from root directory)
 
 ```bash
+# === Local Development ===
 # Copy environment template
-cp .env.example .env
+cp .env.local.example .env
 
 # Build and start all services
-docker compose up -d
+docker compose -f docker-compose.local.yml up -d
 
 # View logs
-docker compose logs -f [service-name]
+docker compose -f docker-compose.local.yml logs -f [service-name]
 
 # Stop all services
-docker compose down
+docker compose -f docker-compose.local.yml down
 
 # Stop and remove volumes
-docker compose down -v
+docker compose -f docker-compose.local.yml down -v
 
 # Restart specific service
-docker compose restart [backend|frontend|postgres]
+docker compose -f docker-compose.local.yml restart [backend|frontend|postgres]
+
+# === Production (see docs/deployment.md for full guide) ===
+# docker compose -f docker-compose.prod.yml up -d
 ```
 
 ## Project Structure
@@ -167,6 +171,7 @@ wellkorea-erp/
 ├── docs/
 │   ├── ci-cd-setup.md        # Full CI/CD documentation (Korean)
 │   ├── ci-cd-quickstart.md   # Quick start guide (Korean)
+│   ├── deployment.md         # Deployment guide with architecture diagrams
 │   └── sonarqube.md          # SonarCloud setup
 │
 ├── specs/001-erp-core/       # Feature specifications
@@ -175,8 +180,10 @@ wellkorea-erp/
 │   ├── tasks.md              # Development tasks
 │   └── data-model.md         # Data models
 │
-├── docker-compose.yml        # Local development stack
-└── .env.example              # Environment variables template
+├── docker-compose.local.yml  # Local development stack
+├── docker-compose.prod.yml   # Production deployment stack
+├── .env.local.example        # Local development environment template
+└── .env.prod.example         # Production environment template
 ```
 
 ## Core Domain Concepts
@@ -473,10 +480,13 @@ const mutation = useMutation({
 **Configuration**:
 - `backend/build.gradle` - Gradle build, JaCoCo, SonarQube config
 - `frontend/package.json` - npm scripts, dependencies
-- `docker-compose.yml` - Local development stack
-- `.env.example` - Environment variables template
+- `docker-compose.local.yml` - Local development stack
+- `docker-compose.prod.yml` - Production deployment stack
+- `.env.local.example` - Local development environment template
+- `.env.prod.example` - Production environment template
 
 **Documentation**:
+- `docs/deployment.md` - Deployment guide with architecture diagrams
 - `docs/ci-cd-setup.md` - Complete CI/CD guide (Korean)
 - `docs/ci-cd-quickstart.md` - 5-min setup guide (Korean)
 - `specs/001-erp-core/spec.md` - Feature specification with user stories
@@ -519,10 +529,12 @@ const mutation = useMutation({
 
 4. **Full Stack (Docker)**:
    ```bash
-   cp .env.example .env
-   docker compose up -d
+   cp .env.local.example .env
+   docker compose -f docker-compose.local.yml up -d
    ```
    Access: Frontend http://localhost:80, Backend http://localhost:8080
+
+   **Note**: Add `127.0.0.1 minio.local` to `/etc/hosts` for MinIO presigned URLs
 
 5. **Install Playwright browsers** (first time):
    ```bash
