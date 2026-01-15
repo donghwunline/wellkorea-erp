@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseOrderMapper">
+
+    <!-- PurchaseOrderSummaryView result map -->
+    <resultMap id="PurchaseOrderSummaryViewResult" type="com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderSummaryView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="poNumber" javaType="String"/>
+            <arg column="rfqItemId" javaType="Long"/>
+            <arg column="projectId" javaType="Long"/>
+            <arg column="jobCode" javaType="String"/>
+            <arg column="vendorId" javaType="Long"/>
+            <arg column="vendorName" javaType="String"/>
+            <arg column="orderDate" javaType="java.time.LocalDate"/>
+            <arg column="expectedDeliveryDate" javaType="java.time.LocalDate"/>
+            <arg column="totalAmount" javaType="java.math.BigDecimal"/>
+            <arg column="currency" javaType="String"/>
+            <arg column="status" javaType="String"/>
+            <arg column="createdByName" javaType="String"/>
+            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- PurchaseOrderDetailView result map -->
+    <resultMap id="PurchaseOrderDetailViewResult" type="com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderDetailView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="poNumber" javaType="String"/>
+            <arg column="rfqItemId" javaType="Long"/>
+            <arg column="purchaseRequestId" javaType="Long"/>
+            <arg column="purchaseRequestNumber" javaType="String"/>
+            <arg column="projectId" javaType="Long"/>
+            <arg column="jobCode" javaType="String"/>
+            <arg column="projectName" javaType="String"/>
+            <arg column="vendorId" javaType="Long"/>
+            <arg column="vendorName" javaType="String"/>
+            <arg column="orderDate" javaType="java.time.LocalDate"/>
+            <arg column="expectedDeliveryDate" javaType="java.time.LocalDate"/>
+            <arg column="totalAmount" javaType="java.math.BigDecimal"/>
+            <arg column="currency" javaType="String"/>
+            <arg column="status" javaType="String"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="createdById" javaType="Long"/>
+            <arg column="createdByName" javaType="String"/>
+            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
+            <arg column="updatedAt" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find purchase orders with filters (status, vendorId) -->
+    <select id="findWithFilters" resultMap="PurchaseOrderSummaryViewResult">
+        SELECT
+            po.id,
+            po.po_number AS poNumber,
+            po.rfq_item_id AS rfqItemId,
+            po.project_id AS projectId,
+            p.job_code AS jobCode,
+            po.vendor_company_id AS vendorId,
+            c.name AS vendorName,
+            po.order_date AS orderDate,
+            po.expected_delivery_date AS expectedDeliveryDate,
+            po.total_amount AS totalAmount,
+            po.currency,
+            po.status,
+            u.full_name AS createdByName,
+            po.created_at AS createdAt
+        FROM purchase_orders po
+        LEFT JOIN projects p ON po.project_id = p.id
+        JOIN companies c ON po.vendor_company_id = c.id
+        JOIN users u ON po.created_by_id = u.id
+        <where>
+            <if test="status != null">
+                AND po.status = #{status}
+            </if>
+            <if test="vendorId != null">
+                AND po.vendor_company_id = #{vendorId}
+            </if>
+        </where>
+        ORDER BY po.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count for pagination -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM purchase_orders po
+        <where>
+            <if test="status != null">
+                AND po.status = #{status}
+            </if>
+            <if test="vendorId != null">
+                AND po.vendor_company_id = #{vendorId}
+            </if>
+        </where>
+    </select>
+
+    <!-- Find detail by ID -->
+    <select id="findDetailById" resultMap="PurchaseOrderDetailViewResult">
+        SELECT
+            po.id,
+            po.po_number AS poNumber,
+            po.rfq_item_id AS rfqItemId,
+            ri.purchase_request_id AS purchaseRequestId,
+            pr.request_number AS purchaseRequestNumber,
+            po.project_id AS projectId,
+            p.job_code AS jobCode,
+            p.project_name AS projectName,
+            po.vendor_company_id AS vendorId,
+            c.name AS vendorName,
+            po.order_date AS orderDate,
+            po.expected_delivery_date AS expectedDeliveryDate,
+            po.total_amount AS totalAmount,
+            po.currency,
+            po.status,
+            po.notes,
+            po.created_by_id AS createdById,
+            u.full_name AS createdByName,
+            po.created_at AS createdAt,
+            po.updated_at AS updatedAt
+        FROM purchase_orders po
+        JOIN rfq_items ri ON po.rfq_item_id = ri.id
+        JOIN purchase_requests pr ON ri.purchase_request_id = pr.id
+        LEFT JOIN projects p ON po.project_id = p.id
+        JOIN companies c ON po.vendor_company_id = c.id
+        JOIN users u ON po.created_by_id = u.id
+        WHERE po.id = #{id}
+    </select>
+
+</mapper>

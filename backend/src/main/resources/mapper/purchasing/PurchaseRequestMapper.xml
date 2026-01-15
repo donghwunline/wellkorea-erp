@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseRequestMapper">
+
+    <!-- RfqItemView result map -->
+    <resultMap id="RfqItemViewResult" type="com.wellkorea.backend.purchasing.api.dto.query.RfqItemView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="purchaseRequestId" javaType="Long"/>
+            <arg column="vendorId" javaType="Long"/>
+            <arg column="vendorName" javaType="String"/>
+            <arg column="vendorOfferingId" javaType="Long"/>
+            <arg column="status" javaType="String"/>
+            <arg column="quotedPrice" javaType="java.math.BigDecimal"/>
+            <arg column="quotedLeadTime" javaType="Integer"/>
+            <arg column="notes" javaType="String"/>
+            <arg column="sentAt" javaType="java.time.LocalDateTime"/>
+            <arg column="repliedAt" javaType="java.time.LocalDateTime"/>
+            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- PurchaseRequestDetailView result map with nested select for RFQ items -->
+    <resultMap id="PurchaseRequestDetailViewResult" type="com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestDetailView">
+        <constructor>
+            <idArg column="id" javaType="Long"/>
+            <arg column="requestNumber" javaType="String"/>
+            <arg column="projectId" javaType="Long"/>
+            <arg column="jobCode" javaType="String"/>
+            <arg column="projectName" javaType="String"/>
+            <arg column="serviceCategoryId" javaType="Long"/>
+            <arg column="serviceCategoryName" javaType="String"/>
+            <arg column="description" javaType="String"/>
+            <arg column="quantity" javaType="java.math.BigDecimal"/>
+            <arg column="uom" javaType="String"/>
+            <arg column="requiredDate" javaType="java.time.LocalDate"/>
+            <arg column="status" javaType="String"/>
+            <arg column="createdById" javaType="Long"/>
+            <arg column="createdByName" javaType="String"/>
+            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
+            <arg column="updatedAt" javaType="java.time.LocalDateTime"/>
+            <arg column="id" javaType="java.util.List" select="findRfqItemsByPurchaseRequestId"/>
+        </constructor>
+    </resultMap>
+
+    <!-- PurchaseRequestSummaryView result map -->
+    <resultMap id="PurchaseRequestSummaryViewResult" type="com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestSummaryView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="requestNumber" javaType="String"/>
+            <arg column="projectId" javaType="Long"/>
+            <arg column="jobCode" javaType="String"/>
+            <arg column="serviceCategoryId" javaType="Long"/>
+            <arg column="serviceCategoryName" javaType="String"/>
+            <arg column="description" javaType="String"/>
+            <arg column="quantity" javaType="java.math.BigDecimal"/>
+            <arg column="uom" javaType="String"/>
+            <arg column="requiredDate" javaType="java.time.LocalDate"/>
+            <arg column="status" javaType="String"/>
+            <arg column="createdByName" javaType="String"/>
+            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find purchase requests with filters (status, projectId) -->
+    <select id="findWithFilters" resultMap="PurchaseRequestSummaryViewResult">
+        SELECT
+            pr.id,
+            pr.request_number AS requestNumber,
+            pr.project_id AS projectId,
+            p.job_code AS jobCode,
+            pr.service_category_id AS serviceCategoryId,
+            sc.name AS serviceCategoryName,
+            pr.description,
+            pr.quantity,
+            pr.uom,
+            pr.required_date AS requiredDate,
+            pr.status,
+            u.full_name AS createdByName,
+            pr.created_at AS createdAt
+        FROM purchase_requests pr
+        LEFT JOIN projects p ON pr.project_id = p.id
+        JOIN service_categories sc ON pr.service_category_id = sc.id
+        JOIN users u ON pr.created_by_id = u.id
+        <where>
+            <if test="status != null">
+                AND pr.status = #{status}
+            </if>
+            <if test="projectId != null">
+                AND pr.project_id = #{projectId}
+            </if>
+        </where>
+        ORDER BY pr.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count for pagination -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM purchase_requests pr
+        <where>
+            <if test="status != null">
+                AND pr.status = #{status}
+            </if>
+            <if test="projectId != null">
+                AND pr.project_id = #{projectId}
+            </if>
+        </where>
+    </select>
+
+    <!-- Find detail by ID -->
+    <select id="findDetailById" resultMap="PurchaseRequestDetailViewResult">
+        SELECT
+            pr.id,
+            pr.request_number AS requestNumber,
+            pr.project_id AS projectId,
+            p.job_code AS jobCode,
+            p.project_name AS projectName,
+            pr.service_category_id AS serviceCategoryId,
+            sc.name AS serviceCategoryName,
+            pr.description,
+            pr.quantity,
+            pr.uom,
+            pr.required_date AS requiredDate,
+            pr.status,
+            pr.created_by_id AS createdById,
+            u.full_name AS createdByName,
+            pr.created_at AS createdAt,
+            pr.updated_at AS updatedAt
+        FROM purchase_requests pr
+        LEFT JOIN projects p ON pr.project_id = p.id
+        JOIN service_categories sc ON pr.service_category_id = sc.id
+        JOIN users u ON pr.created_by_id = u.id
+        WHERE pr.id = #{id}
+    </select>
+
+    <!-- Nested select: Find RFQ items for a purchase request -->
+    <select id="findRfqItemsByPurchaseRequestId" resultMap="RfqItemViewResult">
+        SELECT
+            ri.id,
+            ri.purchase_request_id AS purchaseRequestId,
+            ri.vendor_company_id AS vendorId,
+            c.name AS vendorName,
+            ri.vendor_offering_id AS vendorOfferingId,
+            ri.status,
+            ri.quoted_price AS quotedPrice,
+            ri.quoted_lead_time AS quotedLeadTime,
+            ri.notes,
+            ri.sent_at AS sentAt,
+            ri.replied_at AS repliedAt,
+            ri.created_at AS createdAt
+        FROM rfq_items ri
+        JOIN companies c ON ri.vendor_company_id = c.id
+        WHERE ri.purchase_request_id = #{purchaseRequestId}
+        ORDER BY ri.created_at
+    </select>
+
+</mapper>
