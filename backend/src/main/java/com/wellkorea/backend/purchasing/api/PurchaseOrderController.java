@@ -1,7 +1,9 @@
 package com.wellkorea.backend.purchasing.api;
 
 import com.wellkorea.backend.auth.domain.AuthenticatedUser;
-import com.wellkorea.backend.purchasing.api.dto.command.*;
+import com.wellkorea.backend.purchasing.api.dto.command.CreatePurchaseOrderRequest;
+import com.wellkorea.backend.purchasing.api.dto.command.PurchaseOrderCommandResult;
+import com.wellkorea.backend.purchasing.api.dto.command.UpdatePurchaseOrderRequest;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderDetailView;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderSummaryView;
 import com.wellkorea.backend.purchasing.application.PurchaseOrderCommandService;
@@ -40,28 +42,21 @@ public class PurchaseOrderController {
     // ========== QUERY ENDPOINTS ==========
 
     /**
-     * List all purchase orders (paginated).
+     * List purchase orders with optional filters (paginated).
      * <p>
      * GET /api/purchase-orders
+     * GET /api/purchase-orders?status=DRAFT
+     * GET /api/purchase-orders?vendorId=123
+     * GET /api/purchase-orders?status=SENT&vendorId=123
      * <p>
      * Access: All authenticated users
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<PurchaseOrderSummaryView>>> listPurchaseOrders(
-            @RequestParam(required = false) Long vendorId,
-            @RequestParam(required = false) String status,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<PurchaseOrderSummaryView>>> listPurchaseOrders(@RequestParam(required = false) String status,
+                                                                                          @RequestParam(required = false) Long vendorId,
+                                                                                          Pageable pageable) {
 
-        Page<PurchaseOrderSummaryView> result;
-
-        if (vendorId != null) {
-            result = queryService.listByVendorId(vendorId, pageable);
-        } else if (status != null) {
-            result = queryService.listByStatus(status, pageable);
-        } else {
-            result = queryService.listPurchaseOrders(pageable);
-        }
-
+        Page<PurchaseOrderSummaryView> result = queryService.listPurchaseOrders(status, vendorId, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -89,9 +84,8 @@ public class PurchaseOrderController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
-    public ResponseEntity<ApiResponse<PurchaseOrderCommandResult>> createPurchaseOrder(
-            @Valid @RequestBody CreatePurchaseOrderRequest request,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+    public ResponseEntity<ApiResponse<PurchaseOrderCommandResult>> createPurchaseOrder(@Valid @RequestBody CreatePurchaseOrderRequest request,
+                                                                                       @AuthenticationPrincipal AuthenticatedUser user) {
 
         Long userId = user.getUserId();
         Long id = commandService.createPurchaseOrder(request.toCommand(), userId);
@@ -109,9 +103,8 @@ public class PurchaseOrderController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
-    public ResponseEntity<ApiResponse<PurchaseOrderCommandResult>> updatePurchaseOrder(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdatePurchaseOrderRequest request) {
+    public ResponseEntity<ApiResponse<PurchaseOrderCommandResult>> updatePurchaseOrder(@PathVariable Long id,
+                                                                                       @Valid @RequestBody UpdatePurchaseOrderRequest request) {
 
         Long updatedId = commandService.updatePurchaseOrder(id, request.toCommand());
         PurchaseOrderCommandResult result = PurchaseOrderCommandResult.updated(updatedId);

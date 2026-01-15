@@ -14,6 +14,7 @@ import java.util.List;
 
 /**
  * Query service for purchase request read operations.
+ * Uses MyBatis mapper with dynamic filters for flexible querying.
  */
 @Service
 @Transactional(readOnly = true)
@@ -26,46 +27,34 @@ public class PurchaseRequestQueryService {
     }
 
     /**
-     * Get all purchase requests with pagination.
+     * List purchase requests with optional filters.
+     * Consolidates multiple query methods into one with dynamic filtering.
+     *
+     * @param status    Optional status filter (null for all statuses)
+     * @param projectId Optional project filter (null for all projects)
+     * @param pageable  Pagination parameters
+     * @return Page of purchase request summaries
      */
-    public Page<PurchaseRequestSummaryView> listPurchaseRequests(Pageable pageable) {
-        int offset = (int) pageable.getOffset();
-        int size = pageable.getPageSize();
-
-        List<PurchaseRequestSummaryView> content = purchaseRequestMapper.findAll(size, offset);
-        long total = purchaseRequestMapper.countAll();
-
-        return new PageImpl<>(content, pageable, total);
-    }
-
-    /**
-     * Get purchase requests by project ID with pagination.
-     */
-    public Page<PurchaseRequestSummaryView> listByProjectId(Long projectId, Pageable pageable) {
-        int offset = (int) pageable.getOffset();
-        int size = pageable.getPageSize();
-
-        List<PurchaseRequestSummaryView> content = purchaseRequestMapper.findByProjectId(projectId, size, offset);
-        long total = purchaseRequestMapper.countByProjectId(projectId);
-
-        return new PageImpl<>(content, pageable, total);
-    }
-
-    /**
-     * Get purchase requests by status with pagination.
-     */
-    public Page<PurchaseRequestSummaryView> listByStatus(String status, Pageable pageable) {
-        int offset = (int) pageable.getOffset();
-        int size = pageable.getPageSize();
-
-        List<PurchaseRequestSummaryView> content = purchaseRequestMapper.findByStatus(status, size, offset);
-        long total = purchaseRequestMapper.countByStatus(status);
+    public Page<PurchaseRequestSummaryView> listPurchaseRequests(String status,
+                                                                  Long projectId,
+                                                                  Pageable pageable) {
+        List<PurchaseRequestSummaryView> content = purchaseRequestMapper.findWithFilters(
+                status,
+                projectId,
+                pageable.getPageSize(),
+                pageable.getOffset()
+        );
+        long total = purchaseRequestMapper.countWithFilters(status, projectId);
 
         return new PageImpl<>(content, pageable, total);
     }
 
     /**
      * Get purchase request details by ID.
+     *
+     * @param id Purchase request ID
+     * @return Purchase request detail with RFQ items
+     * @throws ResourceNotFoundException if not found
      */
     public PurchaseRequestDetailView getPurchaseRequestDetail(Long id) {
         return purchaseRequestMapper.findDetailById(id)

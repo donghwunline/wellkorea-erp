@@ -43,27 +43,21 @@ public class PurchaseRequestController {
     // ========== QUERY ENDPOINTS ==========
 
     /**
-     * List all purchase requests (paginated).
+     * List purchase requests with optional filters (paginated).
      * <p>
      * GET /api/purchase-requests
+     * GET /api/purchase-requests?status=DRAFT
+     * GET /api/purchase-requests?projectId=123
+     * GET /api/purchase-requests?status=RFQ_SENT&projectId=123
      * <p>
      * Access: All authenticated users
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<PurchaseRequestSummaryView>>> listPurchaseRequests(@RequestParam(required = false) Long projectId,
-                                                                                              @RequestParam(required = false) String status,
+    public ResponseEntity<ApiResponse<Page<PurchaseRequestSummaryView>>> listPurchaseRequests(@RequestParam(required = false) String status,
+                                                                                              @RequestParam(required = false) Long projectId,
                                                                                               Pageable pageable) {
 
-        Page<PurchaseRequestSummaryView> result;
-
-        if (projectId != null) {
-            result = queryService.listByProjectId(projectId, pageable);
-        } else if (status != null) {
-            result = queryService.listByStatus(status, pageable);
-        } else {
-            result = queryService.listPurchaseRequests(pageable);
-        }
-
+        Page<PurchaseRequestSummaryView> result = queryService.listPurchaseRequests(status, projectId, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 

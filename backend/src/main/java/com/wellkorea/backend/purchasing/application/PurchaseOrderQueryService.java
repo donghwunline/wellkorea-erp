@@ -14,6 +14,7 @@ import java.util.List;
 
 /**
  * Query service for purchase order read operations.
+ * Uses MyBatis mapper with dynamic filters for flexible querying.
  */
 @Service
 @Transactional(readOnly = true)
@@ -26,46 +27,34 @@ public class PurchaseOrderQueryService {
     }
 
     /**
-     * Get all purchase orders with pagination.
+     * List purchase orders with optional filters.
+     * Consolidates multiple query methods into one with dynamic filtering.
+     *
+     * @param status   Optional status filter (null for all statuses)
+     * @param vendorId Optional vendor filter (null for all vendors)
+     * @param pageable Pagination parameters
+     * @return Page of purchase order summaries
      */
-    public Page<PurchaseOrderSummaryView> listPurchaseOrders(Pageable pageable) {
-        int offset = (int) pageable.getOffset();
-        int size = pageable.getPageSize();
-
-        List<PurchaseOrderSummaryView> content = purchaseOrderMapper.findAll(size, offset);
-        long total = purchaseOrderMapper.countAll();
-
-        return new PageImpl<>(content, pageable, total);
-    }
-
-    /**
-     * Get purchase orders by vendor ID with pagination.
-     */
-    public Page<PurchaseOrderSummaryView> listByVendorId(Long vendorId, Pageable pageable) {
-        int offset = (int) pageable.getOffset();
-        int size = pageable.getPageSize();
-
-        List<PurchaseOrderSummaryView> content = purchaseOrderMapper.findByVendorId(vendorId, size, offset);
-        long total = purchaseOrderMapper.countByVendorId(vendorId);
-
-        return new PageImpl<>(content, pageable, total);
-    }
-
-    /**
-     * Get purchase orders by status with pagination.
-     */
-    public Page<PurchaseOrderSummaryView> listByStatus(String status, Pageable pageable) {
-        int offset = (int) pageable.getOffset();
-        int size = pageable.getPageSize();
-
-        List<PurchaseOrderSummaryView> content = purchaseOrderMapper.findByStatus(status, size, offset);
-        long total = purchaseOrderMapper.countByStatus(status);
+    public Page<PurchaseOrderSummaryView> listPurchaseOrders(String status,
+                                                              Long vendorId,
+                                                              Pageable pageable) {
+        List<PurchaseOrderSummaryView> content = purchaseOrderMapper.findWithFilters(
+                status,
+                vendorId,
+                pageable.getPageSize(),
+                pageable.getOffset()
+        );
+        long total = purchaseOrderMapper.countWithFilters(status, vendorId);
 
         return new PageImpl<>(content, pageable, total);
     }
 
     /**
      * Get purchase order details by ID.
+     *
+     * @param id Purchase order ID
+     * @return Purchase order detail
+     * @throws ResourceNotFoundException if not found
      */
     public PurchaseOrderDetailView getPurchaseOrderDetail(Long id) {
         return purchaseOrderMapper.findDetailById(id)
