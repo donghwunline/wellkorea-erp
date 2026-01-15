@@ -98,8 +98,9 @@ public abstract class BaseIntegrationTest {
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         // MinIO configuration (manual - no @ServiceConnection support yet)
-        registry.add("minio.url", () ->
-                "http://" + minio.getHost() + ":" + minio.getMappedPort(9000));
+        String minioEndpoint = "http://" + minio.getHost() + ":" + minio.getMappedPort(9000);
+        registry.add("minio.url", () -> minioEndpoint);
+        registry.add("minio.public-url", () -> minioEndpoint);  // Same as url for tests (no Docker networking)
         registry.add("minio.access-key", () -> TestFixtures.MINIO_ROOT_USER);
         registry.add("minio.secret-key", () -> TestFixtures.MINIO_ROOT_PASSWORD);
         registry.add("minio.bucket-name", () -> TestFixtures.MINIO_BUCKET);

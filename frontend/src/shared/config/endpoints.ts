@@ -204,6 +204,30 @@ export const TASK_FLOW_ENDPOINTS = {
 } as const;
 
 // ============================================================================
+// Blueprint Attachment Endpoints
+// ============================================================================
+
+export const BLUEPRINT_ENDPOINTS = {
+  /** List all attachments for a flow: GET /task-flows/:flowId/attachments */
+  byFlow: (flowId: number) => `/task-flows/${flowId}/attachments`,
+  /** List attachments for a node: GET /task-flows/:flowId/nodes/:nodeId/attachments */
+  byNode: (flowId: number, nodeId: string) =>
+    `/task-flows/${flowId}/nodes/${nodeId}/attachments`,
+  /** Get presigned upload URL: POST /task-flows/:flowId/nodes/:nodeId/attachments/upload-url */
+  uploadUrl: (flowId: number, nodeId: string) =>
+    `/task-flows/${flowId}/nodes/${nodeId}/attachments/upload-url`,
+  /** Register attachment after upload: POST /task-flows/:flowId/nodes/:nodeId/attachments/register */
+  register: (flowId: number, nodeId: string) =>
+    `/task-flows/${flowId}/nodes/${nodeId}/attachments/register`,
+  /** Get attachment metadata: GET /blueprints/:id */
+  byId: (id: number) => `/blueprints/${id}`,
+  /** Get presigned download URL: GET /blueprints/:id/url */
+  url: (id: number) => `/blueprints/${id}/url`,
+  /** Delete attachment: DELETE /blueprints/:id */
+  delete: (id: number) => `/blueprints/${id}`,
+} as const;
+
+// ============================================================================
 // Delivery Endpoints
 // ============================================================================
 

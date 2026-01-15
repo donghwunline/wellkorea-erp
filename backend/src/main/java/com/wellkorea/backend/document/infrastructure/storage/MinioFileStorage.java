@@ -30,18 +30,28 @@ public class MinioFileStorage {
     private static final Logger log = LoggerFactory.getLogger(MinioFileStorage.class);
 
     private final MinioClient minioClient;
+    private final MinioClient publicMinioClient;  // For generating browser-accessible presigned URLs
     private final String bucketName;
 
     public MinioFileStorage(
             @Value("${minio.url}") String minioUrl,
+            @Value("${minio.public-url}") String publicUrl,
             @Value("${minio.access-key}") String accessKey,
             @Value("${minio.secret-key}") String secretKey,
             @Value("${minio.bucket-name}") String bucketName) {
 
+        // Internal client for uploads, downloads, deletes (uses Docker internal URL)
         this.minioClient = MinioClient.builder()
                 .endpoint(minioUrl)
                 .credentials(accessKey, secretKey)
                 .build();
+
+        // Public client for presigned URL generation (uses browser-accessible URL)
+        this.publicMinioClient = MinioClient.builder()
+                .endpoint(publicUrl)
+                .credentials(accessKey, secretKey)
+                .build();
+
         this.bucketName = bucketName;
 
         ensureBucketExists();
@@ -235,7 +245,7 @@ public class MinioFileStorage {
         try {
             int expirySeconds = (int) expiryUnit.toSeconds(expiryDuration);
 
-            String url = minioClient.getPresignedObjectUrl(
+            String url = publicMinioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.GET)
                             .bucket(bucketName)
@@ -256,6 +266,7 @@ public class MinioFileStorage {
     /**
      * Generate a presigned URL for file upload (PUT).
      * Allows clients to upload files directly to MinIO without proxying through backend.
+     * Uses publicMinioClient to generate browser-accessible URLs.
      *
      * @param objectName     File path/name in MinIO
      * @param expiryDuration Expiry duration
@@ -266,7 +277,7 @@ public class MinioFileStorage {
         try {
             int expirySeconds = (int) expiryUnit.toSeconds(expiryDuration);
 
-            String url = minioClient.getPresignedObjectUrl(
+            String url = publicMinioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.PUT)
                             .bucket(bucketName)
