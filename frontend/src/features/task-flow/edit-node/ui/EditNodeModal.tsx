@@ -4,15 +4,18 @@
  */
 
 import { useEffect } from 'react';
-import { Modal, FormField, DatePicker, Button } from '@/shared/ui';
-import { taskNodeRules, type TaskNode } from '@/entities/task-flow';
+import { Button, DatePicker, FormField, Modal } from '@/shared/ui';
+import { type TaskNode, taskNodeRules } from '@/entities/task-flow';
 import { useEditNode } from '../model/use-edit-node';
+import { AttachmentSection } from './AttachmentSection';
 
 export interface EditNodeModalProps {
   /** Whether the modal is open */
   isOpen: boolean;
   /** The node being edited (null for creating new node) */
   node: TaskNode | null;
+  /** TaskFlow ID for attachment operations */
+  flowId: number;
   /** Called when modal should close */
   onClose: () => void;
   /** Called when save is clicked with the updated/new node data */
@@ -24,21 +27,14 @@ export interface EditNodeModalProps {
 export function EditNodeModal({
   isOpen,
   node,
+  flowId,
   onClose,
   onSave,
   onDelete,
-}: EditNodeModalProps) {
+}: Readonly<EditNodeModalProps>) {
   const isEditing = node !== null;
-  const {
-    formState,
-    errors,
-    setTitle,
-    setAssignee,
-    setDeadline,
-    setProgress,
-    validate,
-    reset,
-  } = useEditNode(node ?? undefined);
+  const { formState, errors, setTitle, setAssignee, setDeadline, setProgress, validate, reset } =
+    useEditNode(node ?? undefined);
 
   // Reset form when node changes
   useEffect(() => {
@@ -75,12 +71,7 @@ export function EditNodeModal({
   const progressBarClass = taskNodeRules.getProgressBarClass(formState.progress);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEditing ? 'Edit Task' : 'Add Task'}
-      size="sm"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Edit Task' : 'Add Task'} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Title Field */}
         <FormField
@@ -105,7 +96,7 @@ export function EditNodeModal({
           label="Deadline"
           mode="single"
           value={formState.deadline}
-          onChange={(value) => setDeadline(value as string)}
+          onChange={value => setDeadline(value as string)}
           placeholder="Select deadline"
         />
 
@@ -121,11 +112,15 @@ export function EditNodeModal({
               max={100}
               step={1}
               value={formState.progress}
-              onChange={(e) => setProgress(Number(e.target.value))}
+              onChange={e => setProgress(Number(e.target.value))}
               className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-steel-700"
               style={{
-                accentColor: progressColor === 'blue' ? '#3b82f6' :
-                             progressColor === 'yellow' ? '#eab308' : '#22c55e',
+                accentColor:
+                  progressColor === 'blue'
+                    ? '#3b82f6'
+                    : progressColor === 'yellow'
+                      ? '#eab308'
+                      : '#22c55e',
               }}
             />
             <input
@@ -133,7 +128,7 @@ export function EditNodeModal({
               min={0}
               max={100}
               value={formState.progress}
-              onChange={(e) => setProgress(Number(e.target.value))}
+              onChange={e => setProgress(Number(e.target.value))}
               className="h-8 w-16 rounded-lg border border-steel-700/50 bg-steel-900/60 px-2 text-center text-sm text-white"
             />
           </div>
@@ -144,19 +139,19 @@ export function EditNodeModal({
               style={{ width: `${formState.progress}%` }}
             />
           </div>
-          {errors.progress && (
-            <span className="text-xs text-red-400">{errors.progress}</span>
-          )}
+          {errors.progress && <span className="text-xs text-red-400">{errors.progress}</span>}
+        </div>
+
+        {/* Attachments Section */}
+        <div className="border-t border-steel-700/50 pt-4">
+          <h4 className="mb-3 text-sm font-medium text-steel-300">Blueprints & Attachments</h4>
+          <AttachmentSection flowId={flowId} nodeId={isEditing ? node.id : null} />
         </div>
 
         {/* Actions */}
         <div className="mt-4 flex items-center justify-between">
           {isEditing && onDelete ? (
-            <Button
-              type="button"
-              variant="danger"
-              onClick={handleDelete}
-            >
+            <Button type="button" variant="danger" onClick={handleDelete}>
               Delete
             </Button>
           ) : (

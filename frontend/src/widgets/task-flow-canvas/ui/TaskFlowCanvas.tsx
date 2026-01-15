@@ -218,6 +218,7 @@ export function TaskFlowCanvas({
       <EditNodeModal
         isOpen={editingNode !== null}
         node={editingNode}
+        flowId={flow.id}
         onClose={handleCloseModal}
         onSave={handleSaveNode}
         onDelete={isAddingNode ? undefined : handleDeleteNode}

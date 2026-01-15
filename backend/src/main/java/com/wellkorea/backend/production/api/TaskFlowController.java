@@ -54,9 +54,7 @@ public class TaskFlowController {
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<TaskFlowView>> getTaskFlow(
-            @RequestParam Long projectId
-    ) {
+    public ResponseEntity<ApiResponse<TaskFlowView>> getTaskFlow(@RequestParam Long projectId) {
         TaskFlowView flow = queryService.getByProjectId(projectId);
 
         // If flow doesn't exist (id is null), create one
@@ -102,10 +100,8 @@ public class TaskFlowController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PRODUCTION', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<TaskFlowCommandResult>> saveTaskFlow(
-            @PathVariable Long id,
-            @Valid @RequestBody SaveTaskFlowRequest request
-    ) {
+    public ResponseEntity<ApiResponse<TaskFlowCommandResult>> saveTaskFlow(@PathVariable Long id,
+                                                                           @Valid @RequestBody SaveTaskFlowRequest request) {
         Long flowId = commandService.saveTaskFlow(id, request);
         return ResponseEntity.ok(ApiResponse.success(TaskFlowCommandResult.saved(flowId)));
     }

@@ -6,6 +6,7 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import { taskNodeRules, type TaskNode } from '../model/task-node';
+import { AttachmentCountBadge } from '@/entities/blueprint-attachment';
 
 /**
  * Node data structure expected by React Flow.
@@ -16,6 +17,7 @@ export interface TaskNodeData {
   readonly assignee: string | null;
   readonly deadline: string | null;
   readonly progress: number;
+  readonly attachmentCount?: number;
   readonly [key: string]: unknown;
 }
 
@@ -36,7 +38,7 @@ interface TaskNodeComponentProps extends NodeProps<TaskFlowNode> {
  * - Red border when overdue
  */
 function TaskNodeComponentBase({ id, data, selected }: TaskNodeComponentProps) {
-  const { title, assignee, deadline, progress } = data;
+  const { title, assignee, deadline, progress, attachmentCount = 0 } = data;
 
   // Create a TaskNode object for business rule checks
   const taskNode: TaskNode = {
@@ -89,12 +91,15 @@ function TaskNodeComponentBase({ id, data, selected }: TaskNodeComponentProps) {
             {assignee || '-'}
           </span>
 
-          {/* Deadline */}
-          {formattedDeadline && (
-            <span className={isOverdue ? 'font-medium text-red-600' : ''}>
-              {formattedDeadline}
-            </span>
-          )}
+          {/* Deadline and Attachment Badge */}
+          <div className="flex items-center gap-2">
+            <AttachmentCountBadge count={attachmentCount} />
+            {formattedDeadline && (
+              <span className={isOverdue ? 'font-medium text-red-600' : ''}>
+                {formattedDeadline}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Progress bar */}
