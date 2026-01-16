@@ -1,7 +1,8 @@
 package com.wellkorea.backend.purchasing.api;
 
 import com.wellkorea.backend.auth.domain.AuthenticatedUser;
-import com.wellkorea.backend.purchasing.api.dto.command.CreatePurchaseRequestRequest;
+import com.wellkorea.backend.purchasing.api.dto.command.CreateMaterialPurchaseRequestRequest;
+import com.wellkorea.backend.purchasing.api.dto.command.CreateServicePurchaseRequestRequest;
 import com.wellkorea.backend.purchasing.api.dto.command.PurchaseRequestCommandResult;
 import com.wellkorea.backend.purchasing.api.dto.command.SendRfqRequest;
 import com.wellkorea.backend.purchasing.api.dto.command.UpdatePurchaseRequestRequest;
@@ -48,16 +49,19 @@ public class PurchaseRequestController {
      * GET /api/purchase-requests
      * GET /api/purchase-requests?status=DRAFT
      * GET /api/purchase-requests?projectId=123
-     * GET /api/purchase-requests?status=RFQ_SENT&projectId=123
+     * GET /api/purchase-requests?dtype=SERVICE
+     * GET /api/purchase-requests?dtype=MATERIAL
+     * GET /api/purchase-requests?status=RFQ_SENT&projectId=123&dtype=SERVICE
      * <p>
      * Access: All authenticated users
      */
     @GetMapping
     public ResponseEntity<ApiResponse<Page<PurchaseRequestSummaryView>>> listPurchaseRequests(@RequestParam(required = false) String status,
                                                                                               @RequestParam(required = false) Long projectId,
+                                                                                              @RequestParam(required = false) String dtype,
                                                                                               Pageable pageable) {
 
-        Page<PurchaseRequestSummaryView> result = queryService.listPurchaseRequests(status, projectId, pageable);
+        Page<PurchaseRequestSummaryView> result = queryService.listPurchaseRequests(status, projectId, dtype, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -77,19 +81,40 @@ public class PurchaseRequestController {
     // ========== COMMAND ENDPOINTS ==========
 
     /**
-     * Create a new purchase request.
+     * Create a new service purchase request (outsourcing).
      * <p>
-     * POST /api/purchase-requests
+     * POST /api/purchase-requests/service
      * <p>
      * Access: ADMIN, FINANCE, PRODUCTION
      */
-    @PostMapping
+    @PostMapping("/service")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
-    public ResponseEntity<ApiResponse<PurchaseRequestCommandResult>> createPurchaseRequest(@Valid @RequestBody CreatePurchaseRequestRequest request,
-                                                                                           @AuthenticationPrincipal AuthenticatedUser user) {
+    public ResponseEntity<ApiResponse<PurchaseRequestCommandResult>> createServicePurchaseRequest(
+            @Valid @RequestBody CreateServicePurchaseRequestRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user) {
 
         Long userId = user.getUserId();
-        Long id = commandService.createPurchaseRequest(request.toCommand(), userId);
+        Long id = commandService.createServicePurchaseRequest(request.toCommand(), userId);
+        PurchaseRequestCommandResult result = PurchaseRequestCommandResult.created(id);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(result));
+    }
+
+    /**
+     * Create a new material purchase request (physical items).
+     * <p>
+     * POST /api/purchase-requests/material
+     * <p>
+     * Access: ADMIN, FINANCE, PRODUCTION
+     */
+    @PostMapping("/material")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
+    public ResponseEntity<ApiResponse<PurchaseRequestCommandResult>> createMaterialPurchaseRequest(
+            @Valid @RequestBody CreateMaterialPurchaseRequestRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+
+        Long userId = user.getUserId();
+        Long id = commandService.createMaterialPurchaseRequest(request.toCommand(), userId);
         PurchaseRequestCommandResult result = PurchaseRequestCommandResult.created(id);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(result));

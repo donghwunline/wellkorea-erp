@@ -1,7 +1,6 @@
 package com.wellkorea.backend.purchasing.domain;
 
 import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.catalog.domain.ServiceCategory;
 import com.wellkorea.backend.project.domain.Project;
 import jakarta.persistence.*;
 
@@ -12,13 +11,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PurchaseRequest entity representing an internal request for purchasing
- * materials or outsourcing services.
- * Can be tied to a specific Project or be a general purchase (project is null).
+ * Abstract base class for purchase requests.
+ * Uses JPA SINGLE_TABLE inheritance with dtype discriminator column.
+ *
+ * Concrete subclasses:
+ * - ServicePurchaseRequest: For outsourcing services (linked to ServiceCategory)
+ * - MaterialPurchaseRequest: For physical materials (linked to Material)
+ *
+ * Both types share the same workflow: DRAFT → RFQ_SENT → VENDOR_SELECTED → CLOSED
  */
 @Entity
 @Table(name = "purchase_requests")
-public class PurchaseRequest {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING, length = 31)
+public abstract class PurchaseRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,10 +33,6 @@ public class PurchaseRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_category_id", nullable = false)
-    private ServiceCategory serviceCategory;
 
     @Column(name = "request_number", nullable = false, unique = true, length = 50)
     private String requestNumber;
@@ -74,6 +76,9 @@ public class PurchaseRequest {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    // Abstract method to get the item name for display
+    public abstract String getItemName();
 
     // Domain methods
 
@@ -154,14 +159,6 @@ public class PurchaseRequest {
 
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public ServiceCategory getServiceCategory() {
-        return serviceCategory;
-    }
-
-    public void setServiceCategory(ServiceCategory serviceCategory) {
-        this.serviceCategory = serviceCategory;
     }
 
     public String getRequestNumber() {

@@ -250,14 +250,40 @@ export const DELIVERY_ENDPOINTS = {
 } as const;
 
 // ============================================================================
+// Material Endpoints
+// ============================================================================
+
+export const MATERIAL_ENDPOINTS = {
+  /** Base path for material operations */
+  /** GET /materials - List materials with pagination */
+  /** POST /materials - Create material */
+  BASE: '/materials',
+
+  /** GET/PUT/DELETE /materials/:id */
+  byId: (id: number) => `/materials/${id}`,
+  /** GET /materials/all - Get all materials for dropdown */
+  all: '/materials/all',
+  /** GET /materials/categories - List material categories */
+  categories: '/materials/categories',
+  /** GET /materials/categories/all - Get all categories for dropdown */
+  allCategories: '/materials/categories/all',
+  /** GET/PUT/DELETE /materials/categories/:id */
+  category: (id: number) => `/materials/categories/${id}`,
+} as const;
+
+// ============================================================================
 // Purchase Request Endpoints
 // ============================================================================
 
 export const PURCHASE_REQUEST_ENDPOINTS = {
   /** Base path for purchase request operations */
   /** GET /purchase-requests - List purchase requests */
-  /** POST /purchase-requests - Create purchase request */
   BASE: '/purchase-requests',
+
+  /** POST /purchase-requests/service - Create service purchase request */
+  SERVICE: '/purchase-requests/service',
+  /** POST /purchase-requests/material - Create material purchase request */
+  MATERIAL: '/purchase-requests/material',
 
   /** GET/PUT /purchase-requests/:id */
   byId: (id: number) => `/purchase-requests/${id}`,

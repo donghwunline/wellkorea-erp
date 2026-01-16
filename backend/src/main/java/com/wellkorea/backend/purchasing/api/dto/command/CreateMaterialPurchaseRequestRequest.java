@@ -1,6 +1,6 @@
 package com.wellkorea.backend.purchasing.api.dto.command;
 
-import com.wellkorea.backend.purchasing.application.CreatePurchaseRequestCommand;
+import com.wellkorea.backend.purchasing.application.CreateMaterialPurchaseRequestCommand;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,13 +9,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * Request DTO for creating a purchase request.
+ * Request DTO for creating a material purchase request (physical items).
  */
-public record CreatePurchaseRequestRequest(
+public record CreateMaterialPurchaseRequestRequest(
         Long projectId,
 
-        @NotNull(message = "Service category ID is required")
-        Long serviceCategoryId,
+        @NotNull(message = "Material ID is required")
+        Long materialId,
 
         @NotBlank(message = "Description is required")
         String description,
@@ -32,10 +32,10 @@ public record CreatePurchaseRequestRequest(
     /**
      * Convert to internal command.
      */
-    public CreatePurchaseRequestCommand toCommand() {
-        return new CreatePurchaseRequestCommand(
+    public CreateMaterialPurchaseRequestCommand toCommand() {
+        return new CreateMaterialPurchaseRequestCommand(
                 projectId,
-                serviceCategoryId,
+                materialId,
                 description,
                 quantity,
                 uom,

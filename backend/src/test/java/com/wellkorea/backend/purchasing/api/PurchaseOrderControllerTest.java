@@ -78,13 +78,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         salesToken = jwtTokenProvider.generateToken(SALES_USERNAME, Role.SALES.getAuthority(), 4L);
         productionToken = jwtTokenProvider.generateToken(PRODUCTION_USERNAME, Role.PRODUCTION.getAuthority(), 3L);
 
-        // Insert base test data
-        insertTestServiceCategory(1L, "CNC Machining");
-        insertTestCustomerCompany(10L, "Test Customer");
-        insertTestVendorCompany(50L, "Vendor A");
-        insertTestProject(1L, "WK2K25-0001-0115", 10L, 1L);
-        insertTestPurchaseRequest(1L, 1L, 1L, "PR-2025-000001", "Test purchase request");
-        insertTestRfqItem(1L, 1L, 50L, 50000.00);
+        // Insert base test data - use IDs 900+ to avoid conflicts with seed data
+        insertTestServiceCategory(900L, "CNC Machining");
+        insertTestCustomerCompany(900L, "Test Customer");
+        insertTestVendorCompany(950L, "Vendor A");
+        insertTestProject(900L, "WK2K25-9001-0115", 900L, 1L);
+        insertTestPurchaseRequest(900L, 900L, 900L, "PR-TEST-000001", "Test purchase request");
+        insertTestRfqItem(900L, 900L, 950L, 50000.00);
     }
 
     // ==========================================================================
@@ -100,7 +100,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_AsAdmin_Returns201() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 1,
+                        "rfqItemId": 900,
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s",
                         "notes": "Rush order"
@@ -123,7 +123,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_AsFinance_Returns201() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 1,
+                        "rfqItemId": 900,
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
@@ -142,7 +142,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_AsSales_Returns403() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 1,
+                        "rfqItemId": 900,
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
@@ -177,7 +177,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_DeliveryBeforeOrder_Returns400() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 1,
+                        "rfqItemId": 900,
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
@@ -213,7 +213,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_WithoutAuth_Returns401() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 1,
+                        "rfqItemId": 900,
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
@@ -236,8 +236,8 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrders() {
-            insertTestPurchaseOrder(100L, 1L, 50L, "PO-2025-000001", 50000.00);
-            insertTestPurchaseOrder(101L, 1L, 50L, "PO-2025-000002", 75000.00);
+            insertTestPurchaseOrder(100L, 900L, 950L, "PO-TEST-000001", 50000.00);
+            insertTestPurchaseOrder(101L, 900L, 950L, "PO-TEST-000002", 75000.00);
         }
 
         @Test
@@ -275,7 +275,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void listPurchaseOrders_FilterByVendor_ReturnsMatchingOrders() throws Exception {
             mockMvc.perform(get(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + adminToken)
-                            .param("vendorId", "50"))
+                            .param("vendorId", "950"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(2))));
         }
@@ -308,7 +308,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrder() {
-            insertTestPurchaseOrder(100L, 1L, 50L, "PO-2025-000100", 50000.00);
+            insertTestPurchaseOrder(100L, 900L, 950L, "PO-2025-000100", 50000.00);
         }
 
         @Test
@@ -350,7 +350,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrder() {
-            insertTestPurchaseOrder(200L, 1L, 50L, "PO-2025-000200", 50000.00);
+            insertTestPurchaseOrder(200L, 900L, 950L, "PO-2025-000200", 50000.00);
         }
 
         @Test
@@ -416,7 +416,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrder() {
-            insertTestPurchaseOrder(300L, 1L, 50L, "PO-2025-000300", 50000.00);
+            insertTestPurchaseOrder(300L, 900L, 950L, "PO-2025-000300", 50000.00);
         }
 
         @Test
@@ -459,9 +459,9 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @BeforeEach
         void setUpSentPurchaseOrder() {
             // Receiving a PO closes the PR, so PR must be in VENDOR_SELECTED status
-            jdbcTemplate.update("UPDATE purchase_requests SET status = 'VENDOR_SELECTED' WHERE id = 1");
-            jdbcTemplate.update("UPDATE rfq_items SET status = 'SELECTED' WHERE id = 1");
-            insertTestPurchaseOrder(400L, 1L, 50L, "PO-2025-000400", 50000.00);
+            jdbcTemplate.update("UPDATE purchase_requests SET status = 'VENDOR_SELECTED' WHERE id = 900");
+            jdbcTemplate.update("UPDATE rfq_items SET status = 'SELECTED' WHERE id = 900");
+            insertTestPurchaseOrder(400L, 900L, 950L, "PO-2025-000400", 50000.00);
             jdbcTemplate.update("UPDATE purchase_orders SET status = 'CONFIRMED' WHERE id = 400");
         }
 
@@ -505,7 +505,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrder() {
-            insertTestPurchaseOrder(500L, 1L, 50L, "PO-2025-000500", 50000.00);
+            insertTestPurchaseOrder(500L, 900L, 950L, "PO-2025-000500", 50000.00);
         }
 
         @Test

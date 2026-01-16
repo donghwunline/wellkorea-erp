@@ -27,11 +27,19 @@
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="requestNumber" javaType="String"/>
+            <arg column="dtype" javaType="String"/>
             <arg column="projectId" javaType="Long"/>
             <arg column="jobCode" javaType="String"/>
             <arg column="projectName" javaType="String"/>
             <arg column="serviceCategoryId" javaType="Long"/>
             <arg column="serviceCategoryName" javaType="String"/>
+            <arg column="materialId" javaType="Long"/>
+            <arg column="materialName" javaType="String"/>
+            <arg column="materialSku" javaType="String"/>
+            <arg column="materialCategoryId" javaType="Long"/>
+            <arg column="materialCategoryName" javaType="String"/>
+            <arg column="materialStandardPrice" javaType="java.math.BigDecimal"/>
+            <arg column="itemName" javaType="String"/>
             <arg column="description" javaType="String"/>
             <arg column="quantity" javaType="java.math.BigDecimal"/>
             <arg column="uom" javaType="String"/>
@@ -50,10 +58,15 @@
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="requestNumber" javaType="String"/>
+            <arg column="dtype" javaType="String"/>
             <arg column="projectId" javaType="Long"/>
             <arg column="jobCode" javaType="String"/>
             <arg column="serviceCategoryId" javaType="Long"/>
             <arg column="serviceCategoryName" javaType="String"/>
+            <arg column="materialId" javaType="Long"/>
+            <arg column="materialName" javaType="String"/>
+            <arg column="materialSku" javaType="String"/>
+            <arg column="itemName" javaType="String"/>
             <arg column="description" javaType="String"/>
             <arg column="quantity" javaType="java.math.BigDecimal"/>
             <arg column="uom" javaType="String"/>
@@ -64,15 +77,20 @@
         </constructor>
     </resultMap>
 
-    <!-- Find purchase requests with filters (status, projectId) -->
+    <!-- Find purchase requests with filters (status, projectId, dtype) -->
     <select id="findWithFilters" resultMap="PurchaseRequestSummaryViewResult">
         SELECT
             pr.id,
             pr.request_number AS requestNumber,
+            pr.dtype,
             pr.project_id AS projectId,
             p.job_code AS jobCode,
             pr.service_category_id AS serviceCategoryId,
             sc.name AS serviceCategoryName,
+            pr.material_id AS materialId,
+            m.name AS materialName,
+            m.sku AS materialSku,
+            COALESCE(sc.name, m.name) AS itemName,
             pr.description,
             pr.quantity,
             pr.uom,
@@ -82,7 +100,8 @@
             pr.created_at AS createdAt
         FROM purchase_requests pr
         LEFT JOIN projects p ON pr.project_id = p.id
-        JOIN service_categories sc ON pr.service_category_id = sc.id
+        LEFT JOIN service_categories sc ON pr.service_category_id = sc.id
+        LEFT JOIN materials m ON pr.material_id = m.id
         JOIN users u ON pr.created_by_id = u.id
         <where>
             <if test="status != null">
@@ -90,6 +109,9 @@
             </if>
             <if test="projectId != null">
                 AND pr.project_id = #{projectId}
+            </if>
+            <if test="dtype != null">
+                AND pr.dtype = #{dtype}
             </if>
         </where>
         ORDER BY pr.created_at DESC
@@ -107,6 +129,9 @@
             <if test="projectId != null">
                 AND pr.project_id = #{projectId}
             </if>
+            <if test="dtype != null">
+                AND pr.dtype = #{dtype}
+            </if>
         </where>
     </select>
 
@@ -115,11 +140,19 @@
         SELECT
             pr.id,
             pr.request_number AS requestNumber,
+            pr.dtype,
             pr.project_id AS projectId,
             p.job_code AS jobCode,
             p.project_name AS projectName,
             pr.service_category_id AS serviceCategoryId,
             sc.name AS serviceCategoryName,
+            pr.material_id AS materialId,
+            m.name AS materialName,
+            m.sku AS materialSku,
+            m.category_id AS materialCategoryId,
+            mc.name AS materialCategoryName,
+            m.standard_price AS materialStandardPrice,
+            COALESCE(sc.name, m.name) AS itemName,
             pr.description,
             pr.quantity,
             pr.uom,
@@ -131,7 +164,9 @@
             pr.updated_at AS updatedAt
         FROM purchase_requests pr
         LEFT JOIN projects p ON pr.project_id = p.id
-        JOIN service_categories sc ON pr.service_category_id = sc.id
+        LEFT JOIN service_categories sc ON pr.service_category_id = sc.id
+        LEFT JOIN materials m ON pr.material_id = m.id
+        LEFT JOIN material_categories mc ON m.category_id = mc.id
         JOIN users u ON pr.created_by_id = u.id
         WHERE pr.id = #{id}
     </select>

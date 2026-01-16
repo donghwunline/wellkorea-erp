@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * MyBatis mapper for purchase request queries.
- * Uses XML mapping for dynamic filters with optional status/projectId.
+ * Uses XML mapping for dynamic filters with optional status/projectId/dtype.
  */
 @Mapper
 public interface PurchaseRequestMapper {
@@ -21,12 +21,14 @@ public interface PurchaseRequestMapper {
      *
      * @param status    Optional status filter (null for all)
      * @param projectId Optional project filter (null for all)
+     * @param dtype     Optional dtype filter: 'SERVICE' or 'MATERIAL' (null for all)
      * @param limit     Page size
      * @param offset    Starting offset
      * @return List of purchase request summaries
      */
     List<PurchaseRequestSummaryView> findWithFilters(@Param("status") String status,
                                                      @Param("projectId") Long projectId,
+                                                     @Param("dtype") String dtype,
                                                      @Param("limit") int limit,
                                                      @Param("offset") long offset);
 
@@ -35,10 +37,12 @@ public interface PurchaseRequestMapper {
      *
      * @param status    Optional status filter (null for all)
      * @param projectId Optional project filter (null for all)
+     * @param dtype     Optional dtype filter: 'SERVICE' or 'MATERIAL' (null for all)
      * @return Total count matching filters
      */
     long countWithFilters(@Param("status") String status,
-                          @Param("projectId") Long projectId);
+                          @Param("projectId") Long projectId,
+                          @Param("dtype") String dtype);
 
     /**
      * Find purchase request detail by ID with RFQ items.

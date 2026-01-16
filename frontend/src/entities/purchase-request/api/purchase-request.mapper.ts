@@ -2,9 +2,10 @@
  * Purchase Request Response ↔ Domain mappers.
  *
  * Transforms API responses to domain models.
+ * Supports both SERVICE and MATERIAL types via dtype discriminator.
  */
 
-import type { PurchaseRequest, PurchaseRequestListItem } from '../model/purchase-request';
+import type { PurchaseRequest, PurchaseRequestListItem, PurchaseRequestType } from '../model/purchase-request';
 import type { RfqItem } from '../model/rfq-item';
 import type { PurchaseRequestStatus } from '../model/purchase-request-status';
 import type { RfqItemStatus } from '../model/rfq-item-status';
@@ -39,10 +40,18 @@ export interface RfqItemResponse {
 export interface PurchaseRequestSummaryResponse {
   id: number;
   requestNumber: string;
-  projectId: number;
-  jobCode: string;
-  serviceCategoryId: number;
-  serviceCategoryName: string;
+  dtype: string;
+  projectId: number | null;
+  jobCode: string | null;
+  // Service-specific fields
+  serviceCategoryId: number | null;
+  serviceCategoryName: string | null;
+  // Material-specific fields
+  materialId: number | null;
+  materialName: string | null;
+  materialSku: string | null;
+  // Common fields
+  itemName: string;
   description: string;
   quantity: number;
   uom: string;
@@ -55,11 +64,22 @@ export interface PurchaseRequestSummaryResponse {
 export interface PurchaseRequestDetailResponse {
   id: number;
   requestNumber: string;
-  projectId: number;
-  jobCode: string;
-  projectName: string;
-  serviceCategoryId: number;
-  serviceCategoryName: string;
+  dtype: string;
+  projectId: number | null;
+  jobCode: string | null;
+  projectName: string | null;
+  // Service-specific fields
+  serviceCategoryId: number | null;
+  serviceCategoryName: string | null;
+  // Material-specific fields
+  materialId: number | null;
+  materialName: string | null;
+  materialSku: string | null;
+  materialCategoryId: number | null;
+  materialCategoryName: string | null;
+  materialStandardPrice: number | null;
+  // Common fields
+  itemName: string;
   description: string;
   quantity: number;
   uom: string;
@@ -77,6 +97,7 @@ export interface PurchaseRequestListParams {
   size?: number;
   status?: string;
   projectId?: number;
+  dtype?: PurchaseRequestType;
 }
 
 // =============================================================================
@@ -112,11 +133,22 @@ export const purchaseRequestMapper = {
     return {
       id: response.id,
       requestNumber: response.requestNumber,
+      dtype: response.dtype as PurchaseRequestType,
       projectId: response.projectId,
       jobCode: response.jobCode,
-      projectName: response.projectName.trim(),
+      projectName: response.projectName?.trim() ?? null,
+      // Service-specific fields
       serviceCategoryId: response.serviceCategoryId,
-      serviceCategoryName: response.serviceCategoryName.trim(),
+      serviceCategoryName: response.serviceCategoryName?.trim() ?? null,
+      // Material-specific fields
+      materialId: response.materialId,
+      materialName: response.materialName?.trim() ?? null,
+      materialSku: response.materialSku,
+      materialCategoryId: response.materialCategoryId,
+      materialCategoryName: response.materialCategoryName?.trim() ?? null,
+      materialStandardPrice: response.materialStandardPrice,
+      // Common fields
+      itemName: response.itemName.trim(),
       description: response.description.trim(),
       quantity: response.quantity,
       uom: response.uom,
@@ -137,10 +169,18 @@ export const purchaseRequestMapper = {
     return {
       id: response.id,
       requestNumber: response.requestNumber,
+      dtype: response.dtype as PurchaseRequestType,
       projectId: response.projectId,
       jobCode: response.jobCode,
+      // Service-specific fields
       serviceCategoryId: response.serviceCategoryId,
-      serviceCategoryName: response.serviceCategoryName.trim(),
+      serviceCategoryName: response.serviceCategoryName?.trim() ?? null,
+      // Material-specific fields
+      materialId: response.materialId,
+      materialName: response.materialName?.trim() ?? null,
+      materialSku: response.materialSku,
+      // Common fields
+      itemName: response.itemName.trim(),
       description: response.description.trim(),
       quantity: response.quantity,
       uom: response.uom,

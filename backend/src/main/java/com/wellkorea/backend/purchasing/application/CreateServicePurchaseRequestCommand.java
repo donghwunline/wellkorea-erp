@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * Internal command for creating a purchase request.
+ * Internal command for creating a service purchase request (outsourcing).
  */
-public record CreatePurchaseRequestCommand(
+public record CreateServicePurchaseRequestCommand(
         Long projectId,
         Long serviceCategoryId,
         String description,

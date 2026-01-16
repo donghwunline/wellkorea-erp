@@ -71,16 +71,16 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
     }
 
     // ==========================================================================
-    // POST /api/purchase-requests - Create Purchase Request
+    // POST /api/purchase-requests/service - Create Service Purchase Request
     // ==========================================================================
 
     @Nested
-    @DisplayName("POST /api/purchase-requests - Create Purchase Request")
-    class CreatePurchaseRequestTests {
+    @DisplayName("POST /api/purchase-requests/service - Create Service Purchase Request")
+    class CreateServicePurchaseRequestTests {
 
         @Test
-        @DisplayName("should return 201 with command result when Admin creates purchase request")
-        void createPurchaseRequest_AsAdmin_Returns201() throws Exception {
+        @DisplayName("should return 201 with command result when Admin creates service purchase request")
+        void createServicePurchaseRequest_AsAdmin_Returns201() throws Exception {
             String createRequest = """
                     {
                         "projectId": 1,
@@ -92,7 +92,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -104,8 +104,8 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         }
 
         @Test
-        @DisplayName("should return 201 when Finance creates purchase request")
-        void createPurchaseRequest_AsFinance_Returns201() throws Exception {
+        @DisplayName("should return 201 when Finance creates service purchase request")
+        void createServicePurchaseRequest_AsFinance_Returns201() throws Exception {
             String createRequest = """
                     {
                         "serviceCategoryId": 1,
@@ -115,7 +115,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
                             .header("Authorization", "Bearer " + financeToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -124,8 +124,8 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         }
 
         @Test
-        @DisplayName("should return 201 when Production creates purchase request")
-        void createPurchaseRequest_AsProduction_Returns201() throws Exception {
+        @DisplayName("should return 201 when Production creates service purchase request")
+        void createServicePurchaseRequest_AsProduction_Returns201() throws Exception {
             String createRequest = """
                     {
                         "projectId": 1,
@@ -136,7 +136,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
                             .header("Authorization", "Bearer " + productionToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -145,8 +145,8 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         }
 
         @Test
-        @DisplayName("should return 403 when Sales creates purchase request")
-        void createPurchaseRequest_AsSales_Returns403() throws Exception {
+        @DisplayName("should return 403 when Sales creates service purchase request")
+        void createServicePurchaseRequest_AsSales_Returns403() throws Exception {
             String createRequest = """
                     {
                         "serviceCategoryId": 1,
@@ -156,7 +156,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
                             .header("Authorization", "Bearer " + salesToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -165,7 +165,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
 
         @Test
         @DisplayName("should return 400 when serviceCategoryId is missing")
-        void createPurchaseRequest_MissingServiceCategoryId_Returns400() throws Exception {
+        void createServicePurchaseRequest_MissingServiceCategoryId_Returns400() throws Exception {
             String createRequest = """
                     {
                         "description": "Missing category",
@@ -174,7 +174,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -183,7 +183,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
 
         @Test
         @DisplayName("should return 400 when description is missing")
-        void createPurchaseRequest_MissingDescription_Returns400() throws Exception {
+        void createServicePurchaseRequest_MissingDescription_Returns400() throws Exception {
             String createRequest = """
                     {
                         "serviceCategoryId": 1,
@@ -192,7 +192,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -201,7 +201,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
 
         @Test
         @DisplayName("should return 400 when quantity is zero or negative")
-        void createPurchaseRequest_InvalidQuantity_Returns400() throws Exception {
+        void createServicePurchaseRequest_InvalidQuantity_Returns400() throws Exception {
             String createRequest = """
                     {
                         "serviceCategoryId": 1,
@@ -211,7 +211,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -220,7 +220,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
 
         @Test
         @DisplayName("should return 404 when service category not found")
-        void createPurchaseRequest_ServiceCategoryNotFound_Returns404() throws Exception {
+        void createServicePurchaseRequest_ServiceCategoryNotFound_Returns404() throws Exception {
             String createRequest = """
                     {
                         "serviceCategoryId": 99999,
@@ -230,7 +230,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
@@ -239,7 +239,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
 
         @Test
         @DisplayName("should return 401 without authentication")
-        void createPurchaseRequest_WithoutAuth_Returns401() throws Exception {
+        void createServicePurchaseRequest_WithoutAuth_Returns401() throws Exception {
             String createRequest = """
                     {
                         "serviceCategoryId": 1,
@@ -249,7 +249,198 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                     }
                     """;
 
-            mockMvc.perform(post(PURCHASE_REQUESTS_URL)
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/service")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    // ==========================================================================
+    // POST /api/purchase-requests/material - Create Material Purchase Request
+    // ==========================================================================
+
+    @Nested
+    @DisplayName("POST /api/purchase-requests/material - Create Material Purchase Request")
+    class CreateMaterialPurchaseRequestTests {
+
+        @BeforeEach
+        void setUpMaterial() {
+            insertTestMaterial(1L, "Steel Plate 10mm", "EA");
+        }
+
+        @Test
+        @DisplayName("should return 201 with command result when Admin creates material purchase request")
+        void createMaterialPurchaseRequest_AsAdmin_Returns201() throws Exception {
+            String createRequest = """
+                    {
+                        "projectId": 1,
+                        "materialId": 1,
+                        "description": "Steel plates for project",
+                        "quantity": 50.0,
+                        "uom": "EA",
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").isNumber())
+                    .andExpect(jsonPath("$.data.message").value("Purchase request created successfully"));
+        }
+
+        @Test
+        @DisplayName("should return 201 when Finance creates material purchase request")
+        void createMaterialPurchaseRequest_AsFinance_Returns201() throws Exception {
+            String createRequest = """
+                    {
+                        "materialId": 1,
+                        "description": "Material purchasing",
+                        "quantity": 25.0,
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
+                            .header("Authorization", "Bearer " + financeToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.success").value(true));
+        }
+
+        @Test
+        @DisplayName("should return 201 when Production creates material purchase request")
+        void createMaterialPurchaseRequest_AsProduction_Returns201() throws Exception {
+            String createRequest = """
+                    {
+                        "projectId": 1,
+                        "materialId": 1,
+                        "description": "Production materials",
+                        "quantity": 100.0,
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
+                            .header("Authorization", "Bearer " + productionToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.success").value(true));
+        }
+
+        @Test
+        @DisplayName("should return 403 when Sales creates material purchase request")
+        void createMaterialPurchaseRequest_AsSales_Returns403() throws Exception {
+            String createRequest = """
+                    {
+                        "materialId": 1,
+                        "description": "Unauthorized request",
+                        "quantity": 5.0,
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
+                            .header("Authorization", "Bearer " + salesToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("should return 400 when materialId is missing")
+        void createMaterialPurchaseRequest_MissingMaterialId_Returns400() throws Exception {
+            String createRequest = """
+                    {
+                        "description": "Missing material",
+                        "quantity": 5.0,
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 400 when description is missing")
+        void createMaterialPurchaseRequest_MissingDescription_Returns400() throws Exception {
+            String createRequest = """
+                    {
+                        "materialId": 1,
+                        "quantity": 5.0,
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 400 when quantity is zero or negative")
+        void createMaterialPurchaseRequest_InvalidQuantity_Returns400() throws Exception {
+            String createRequest = """
+                    {
+                        "materialId": 1,
+                        "description": "Invalid quantity",
+                        "quantity": 0,
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 404 when material not found")
+        void createMaterialPurchaseRequest_MaterialNotFound_Returns404() throws Exception {
+            String createRequest = """
+                    {
+                        "materialId": 99999,
+                        "description": "Non-existent material",
+                        "quantity": 5.0,
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("should return 401 without authentication")
+        void createMaterialPurchaseRequest_WithoutAuth_Returns401() throws Exception {
+            String createRequest = """
+                    {
+                        "materialId": 1,
+                        "description": "Unauthorized",
+                        "quantity": 5.0,
+                        "requiredDate": "2025-02-15"
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/material")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createRequest))
                     .andExpect(status().isUnauthorized());
@@ -266,9 +457,9 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
 
         @BeforeEach
         void setUpPurchaseRequests() {
-            insertTestPurchaseRequest(100L, 1L, 1L, "PR-2025-000001", "CNC components");
-            insertTestPurchaseRequest(101L, 1L, 1L, "PR-2025-000002", "Laser cutting");
-            insertTestPurchaseRequest(102L, null, 1L, "PR-2025-000003", "General purchase");
+            insertTestPurchaseRequest(100L, 1L, 1L, "PR-TEST-000001", "CNC components");
+            insertTestPurchaseRequest(101L, 1L, 1L, "PR-TEST-000002", "Laser cutting");
+            insertTestPurchaseRequest(102L, null, 1L, "PR-TEST-000003", "General purchase");
         }
 
         @Test
@@ -648,6 +839,22 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                         "VALUES (?, ?, ?, ?, ?, 10.0, CURRENT_DATE + 30, 'DRAFT', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
                         "ON CONFLICT (id) DO NOTHING",
                 id, projectId, serviceCategoryId, requestNumber, description
+        );
+    }
+
+    private void insertTestMaterial(Long id, String name, String unit) {
+        // Insert material category first
+        jdbcTemplate.update(
+                "INSERT INTO material_categories (id, name, is_active, created_at, updated_at) " +
+                        "VALUES (1, 'Test Category', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                        "ON CONFLICT (id) DO NOTHING"
+        );
+        String sku = "TEST-MAT-" + id;
+        jdbcTemplate.update(
+                "INSERT INTO materials (id, sku, name, category_id, unit, is_active, created_at, updated_at) " +
+                        "VALUES (?, ?, ?, 1, ?, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                        "ON CONFLICT (id) DO NOTHING",
+                id, sku, name, unit
         );
     }
 }
