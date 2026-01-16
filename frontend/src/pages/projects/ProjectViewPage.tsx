@@ -37,8 +37,8 @@ import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabPanel, Tabs } 
 import {
   DeliveryPanel,
   InvoicePanel,
+  OutsourcePanel,
   ProjectRelatedNavigationGrid,
-  PurchasePanel,
   QuotationPanel,
   TaskFlowPanel,
 } from '@/widgets';
@@ -255,7 +255,7 @@ export function ProjectViewPage() {
 
           {/* Outsource Tab */}
           <TabPanel id="outsource">
-            <PurchasePanel projectId={project.id} />
+            <OutsourcePanel projectId={project.id} />
           </TabPanel>
 
           {/* Delivery Tab */}

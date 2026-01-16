@@ -1,8 +1,8 @@
 /**
- * Purchase Panel Widget
+ * Outsource Panel Widget
  *
- * Displays purchase request information for a project including:
- * - Purchase request summary stats
+ * Displays outsourcing/subcontracting request information for a project including:
+ * - Purchase request summary stats (for outsourced services)
  * - List of purchase requests with status
  * - Link to create new purchase request (future)
  *
@@ -23,7 +23,7 @@ import {
 import { useAuth } from '@/entities/auth';
 import { formatDate } from '@/shared/lib/formatting';
 
-export interface PurchasePanelProps {
+export interface OutsourcePanelProps {
   readonly projectId: number;
 }
 
@@ -102,7 +102,7 @@ function PurchaseRequestStatusBadge({
   );
 }
 
-export function PurchasePanel({ projectId }: PurchasePanelProps) {
+export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
   const { hasAnyRole } = useAuth();
 
   // Check if user can create purchase requests (Finance/Admin/Production)
@@ -127,7 +127,7 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
   if (isLoading) {
     return (
       <Card>
-        <LoadingState message="Loading purchase requests..." />
+        <LoadingState message="Loading outsource requests..." />
       </Card>
     );
   }
@@ -135,7 +135,7 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
   if (error) {
     return (
       <Alert variant="error">
-        Failed to load purchase requests: {error.message}
+        Failed to load outsource requests: {error.message}
       </Alert>
     );
   }
@@ -144,15 +144,15 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
   if (purchaseRequests.length === 0) {
     return (
       <Card className="p-12 text-center">
-        <Icon name="shopping-cart" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">구매 요청 없음</h3>
+        <Icon name="handshake" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
+        <h3 className="text-lg font-semibold text-white">외주 요청 없음</h3>
         <p className="mt-2 text-steel-500">
-          이 프로젝트에 대한 구매 요청이 아직 없습니다.
+          이 프로젝트에 대한 외주 요청이 아직 없습니다.
         </p>
         {canCreatePurchaseRequest && (
           <Button variant="primary" className="mt-6" disabled>
             <Icon name="plus" className="h-4 w-4" />
-            구매 요청 생성 (개발 중)
+            외주 요청 생성 (개발 중)
           </Button>
         )}
       </Card>
@@ -169,7 +169,7 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
         <div className="flex justify-end">
           <Button variant="primary" disabled>
             <Icon name="plus" className="h-4 w-4" />
-            구매 요청 생성 (개발 중)
+            외주 요청 생성 (개발 중)
           </Button>
         </div>
       )}
