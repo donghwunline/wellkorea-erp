@@ -19,11 +19,14 @@ export type ProjectStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
 /**
  * Project status display configuration.
  */
-export const ProjectStatusConfig: Record<ProjectStatus, {
-  label: string;
-  labelKo: string;
-  color: 'default' | 'info' | 'success' | 'warning';
-}> = {
+export const ProjectStatusConfig: Record<
+  ProjectStatus,
+  {
+    label: string;
+    labelKo: string;
+    color: 'default' | 'info' | 'success' | 'warning';
+  }
+> = {
   DRAFT: { label: 'Draft', labelKo: '초안', color: 'default' },
   ACTIVE: { label: 'Active', labelKo: '진행중', color: 'info' },
   COMPLETED: { label: 'Completed', labelKo: '완료', color: 'success' },

@@ -30,12 +30,7 @@ import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ProjectSection } from '@/entities/project';
-import {
-  ProjectDetailsCard,
-  ProjectKPIStrip,
-  ProjectKPIStripSkeleton,
-  projectQueries,
-} from '@/entities/project';
+import { ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton, projectQueries, } from '@/entities/project';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
@@ -43,6 +38,7 @@ import {
   DeliveryPanel,
   InvoicePanel,
   ProjectRelatedNavigationGrid,
+  PurchasePanel,
   QuotationPanel,
   TaskFlowPanel,
 } from '@/widgets';
@@ -62,10 +58,10 @@ const ALL_TABS: readonly TabConfig[] = [
   { id: 'overview', label: '개요' },
   { id: 'quotation', label: '견적', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
   { id: 'process', label: '공정' },
-  { id: 'outsource', label: '외주관리' },
+  { id: 'outsource', label: '외주' },
   { id: 'documents', label: '문서' },
   { id: 'delivery', label: '출고' },
-  { id: 'finance', label: '정산관리', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE'] },
+  { id: 'finance', label: '정산', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE'] },
 ];
 
 export function ProjectViewPage() {
@@ -257,15 +253,9 @@ export function ProjectViewPage() {
             <TaskFlowPanel projectId={project.id} projectName={project.projectName} />
           </TabPanel>
 
-          {/* Outsource Tab (Placeholder) */}
+          {/* Outsource Tab */}
           <TabPanel id="outsource">
-            <Card className="p-12 text-center">
-              <Icon name="handshake" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-              <h3 className="text-lg font-semibold text-white">외주관리</h3>
-              <p className="mt-2 text-steel-500">
-                Outsource management will be available in a future release.
-              </p>
-            </Card>
+            <PurchasePanel projectId={project.id} />
           </TabPanel>
 
           {/* Delivery Tab */}
