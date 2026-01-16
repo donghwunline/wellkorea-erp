@@ -42,6 +42,13 @@ function generateMockSummary(projectId: number): ProjectSectionsSummary {
       lastUpdated: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
     },
     {
+      section: 'purchase',
+      label: '구매',
+      totalCount: baseMultiplier * 2,
+      pendingCount: Math.max(0, baseMultiplier - 1),
+      lastUpdated: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    },
+    {
       section: 'outsource',
       label: '외주',
       totalCount: baseMultiplier + 1,

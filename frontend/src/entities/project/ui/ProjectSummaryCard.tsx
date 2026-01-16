@@ -30,9 +30,10 @@ export interface ProjectSummaryCardProps {
 const SECTION_ICONS: Record<ProjectSection, IconName> = {
   quotation: 'document',
   process: 'cog',
+  purchase: 'shopping-cart',
   outsource: 'handshake',
-  delivery: 'truck',
   documents: 'folder',
+  delivery: 'truck',
   finance: 'banknotes',
 };
 
@@ -99,10 +100,7 @@ function formatRelativeTime(dateStr: string | null): string {
  * }
  * ```
  */
-export function ProjectSummaryCard({
-  summary,
-  onClick,
-}: Readonly<ProjectSummaryCardProps>) {
+export function ProjectSummaryCard({ summary, onClick }: Readonly<ProjectSummaryCardProps>) {
   const handleClick = () => {
     onClick?.(summary.section);
   };
@@ -142,9 +140,7 @@ export function ProjectSummaryCard({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-sm">
               <span className="text-steel-500">Progress</span>
-              <span
-                className={cn('font-medium', getProgressTextColor(summary.progressPercent))}
-              >
+              <span className={cn('font-medium', getProgressTextColor(summary.progressPercent))}>
                 {summary.progressPercent}%
               </span>
             </div>

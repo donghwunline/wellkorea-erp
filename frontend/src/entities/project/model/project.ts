@@ -92,9 +92,10 @@ export interface ProjectListItem {
 export type ProjectSection =
   | 'quotation'
   | 'process'
+  | 'purchase'
   | 'outsource'
-  | 'delivery'
   | 'documents'
+  | 'delivery'
   | 'finance';
 
 /**

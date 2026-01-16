@@ -30,3 +30,5 @@ export { DeliveryPanel, type DeliveryPanelProps } from './delivery-panel';
 export { InvoicePanel, type InvoicePanelProps } from './invoice-panel';
 
 export { OutsourcePanel, type OutsourcePanelProps } from './outsource-panel';
+
+export { PurchasePanel, type PurchasePanelProps } from './purchase-panel';

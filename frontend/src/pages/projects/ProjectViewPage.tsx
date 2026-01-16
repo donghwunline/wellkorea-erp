@@ -39,6 +39,7 @@ import {
   InvoicePanel,
   OutsourcePanel,
   ProjectRelatedNavigationGrid,
+  PurchasePanel,
   QuotationPanel,
   TaskFlowPanel,
 } from '@/widgets';
@@ -58,6 +59,7 @@ const ALL_TABS: readonly TabConfig[] = [
   { id: 'overview', label: '개요' },
   { id: 'quotation', label: '견적', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
   { id: 'process', label: '공정' },
+  { id: 'purchase', label: '구매' },
   { id: 'outsource', label: '외주' },
   { id: 'documents', label: '문서' },
   { id: 'delivery', label: '출고' },
@@ -251,6 +253,11 @@ export function ProjectViewPage() {
           {/* Process Tab */}
           <TabPanel id="process">
             <TaskFlowPanel projectId={project.id} projectName={project.projectName} />
+          </TabPanel>
+
+          {/* Purchase Tab */}
+          <TabPanel id="purchase">
+            <PurchasePanel projectId={project.id} />
           </TabPanel>
 
           {/* Outsource Tab */}
