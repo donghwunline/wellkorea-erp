@@ -28,3 +28,5 @@ export { TaskFlowPanel, type TaskFlowPanelProps } from './task-flow-panel';
 export { DeliveryPanel, type DeliveryPanelProps } from './delivery-panel';
 
 export { InvoicePanel, type InvoicePanelProps } from './invoice-panel';
+
+export { PurchasePanel, type PurchasePanelProps } from './purchase-panel';
