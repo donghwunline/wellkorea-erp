@@ -1,0 +1,81 @@
+package com.wellkorea.backend.catalog.application;
+
+import com.wellkorea.backend.catalog.api.dto.query.MaterialDetailView;
+import com.wellkorea.backend.catalog.api.dto.query.MaterialSummaryView;
+import com.wellkorea.backend.catalog.infrastructure.mapper.MaterialMapper;
+import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+/**
+ * Query service for material read operations.
+ */
+@Service
+@Transactional(readOnly = true)
+public class MaterialQueryService {
+
+    private final MaterialMapper materialMapper;
+
+    public MaterialQueryService(MaterialMapper materialMapper) {
+        this.materialMapper = materialMapper;
+    }
+
+    /**
+     * List materials with optional filters.
+     *
+     * @param categoryId Optional category filter
+     * @param search     Optional search term
+     * @param activeOnly Only active materials
+     * @param pageable   Pagination
+     * @return Page of materials
+     */
+    public Page<MaterialSummaryView> listMaterials(Long categoryId,
+                                                    String search,
+                                                    boolean activeOnly,
+                                                    Pageable pageable) {
+        List<MaterialSummaryView> content = materialMapper.findWithFilters(
+                categoryId,
+                search,
+                activeOnly,
+                pageable.getPageSize(),
+                pageable.getOffset()
+        );
+        long total = materialMapper.countWithFilters(categoryId, search, activeOnly);
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    /**
+     * List materials with pagination (default: active only).
+     */
+    public Page<MaterialSummaryView> listMaterials(Pageable pageable) {
+        return listMaterials(null, null, true, pageable);
+    }
+
+    /**
+     * Search materials by name or SKU.
+     */
+    public Page<MaterialSummaryView> searchMaterials(String search, Pageable pageable) {
+        return listMaterials(null, search, true, pageable);
+    }
+
+    /**
+     * Get all active materials (for dropdown).
+     */
+    public List<MaterialSummaryView> getAllActiveMaterials() {
+        return materialMapper.findAllActive();
+    }
+
+    /**
+     * Get material detail by ID.
+     */
+    public MaterialDetailView getMaterialDetail(Long id) {
+        return materialMapper.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Material not found with ID: " + id));
+    }
+}

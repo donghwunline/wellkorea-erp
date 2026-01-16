@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.catalog.infrastructure.mapper.MaterialMapper">
+
+    <!-- MaterialSummaryView result map -->
+    <resultMap id="MaterialSummaryViewResult" type="com.wellkorea.backend.catalog.api.dto.query.MaterialSummaryView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="sku" javaType="String"/>
+            <arg column="name" javaType="String"/>
+            <arg column="description" javaType="String"/>
+            <arg column="categoryId" javaType="Long"/>
+            <arg column="categoryName" javaType="String"/>
+            <arg column="unit" javaType="String"/>
+            <arg column="standardPrice" javaType="java.math.BigDecimal"/>
+            <arg column="preferredVendorId" javaType="Long"/>
+            <arg column="preferredVendorName" javaType="String"/>
+            <arg column="active" javaType="boolean"/>
+            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
+            <arg column="updatedAt" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- MaterialDetailView result map -->
+    <resultMap id="MaterialDetailViewResult" type="com.wellkorea.backend.catalog.api.dto.query.MaterialDetailView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="sku" javaType="String"/>
+            <arg column="name" javaType="String"/>
+            <arg column="description" javaType="String"/>
+            <arg column="categoryId" javaType="Long"/>
+            <arg column="categoryName" javaType="String"/>
+            <arg column="unit" javaType="String"/>
+            <arg column="standardPrice" javaType="java.math.BigDecimal"/>
+            <arg column="preferredVendorId" javaType="Long"/>
+            <arg column="preferredVendorName" javaType="String"/>
+            <arg column="active" javaType="boolean"/>
+            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
+            <arg column="updatedAt" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find materials with filters -->
+    <select id="findWithFilters" resultMap="MaterialSummaryViewResult">
+        SELECT
+            m.id,
+            m.sku,
+            m.name,
+            m.description,
+            m.category_id AS categoryId,
+            mc.name AS categoryName,
+            m.unit,
+            m.standard_price AS standardPrice,
+            m.preferred_vendor_id AS preferredVendorId,
+            c.name AS preferredVendorName,
+            m.is_active AS active,
+            m.created_at AS createdAt,
+            m.updated_at AS updatedAt
+        FROM materials m
+        JOIN material_categories mc ON m.category_id = mc.id
+        LEFT JOIN companies c ON m.preferred_vendor_id = c.id
+        <where>
+            <if test="categoryId != null">
+                AND m.category_id = #{categoryId}
+            </if>
+            <if test="search != null and search != ''">
+                AND (m.name ILIKE '%' || #{search} || '%' OR m.sku ILIKE '%' || #{search} || '%')
+            </if>
+            <if test="activeOnly">
+                AND m.is_active = true
+            </if>
+        </where>
+        ORDER BY m.name
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count materials -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM materials m
+        <where>
+            <if test="categoryId != null">
+                AND m.category_id = #{categoryId}
+            </if>
+            <if test="search != null and search != ''">
+                AND (m.name ILIKE '%' || #{search} || '%' OR m.sku ILIKE '%' || #{search} || '%')
+            </if>
+            <if test="activeOnly">
+                AND m.is_active = true
+            </if>
+        </where>
+    </select>
+
+    <!-- Find all active materials -->
+    <select id="findAllActive" resultMap="MaterialSummaryViewResult">
+        SELECT
+            m.id,
+            m.sku,
+            m.name,
+            m.description,
+            m.category_id AS categoryId,
+            mc.name AS categoryName,
+            m.unit,
+            m.standard_price AS standardPrice,
+            m.preferred_vendor_id AS preferredVendorId,
+            c.name AS preferredVendorName,
+            m.is_active AS active,
+            m.created_at AS createdAt,
+            m.updated_at AS updatedAt
+        FROM materials m
+        JOIN material_categories mc ON m.category_id = mc.id
+        LEFT JOIN companies c ON m.preferred_vendor_id = c.id
+        WHERE m.is_active = true
+        ORDER BY m.name
+    </select>
+
+    <!-- Find material by ID -->
+    <select id="findById" resultMap="MaterialDetailViewResult">
+        SELECT
+            m.id,
+            m.sku,
+            m.name,
+            m.description,
+            m.category_id AS categoryId,
+            mc.name AS categoryName,
+            m.unit,
+            m.standard_price AS standardPrice,
+            m.preferred_vendor_id AS preferredVendorId,
+            c.name AS preferredVendorName,
+            m.is_active AS active,
+            m.created_at AS createdAt,
+            m.updated_at AS updatedAt
+        FROM materials m
+        JOIN material_categories mc ON m.category_id = mc.id
+        LEFT JOIN companies c ON m.preferred_vendor_id = c.id
+        WHERE m.id = #{id}
+    </select>
+
+</mapper>
