@@ -248,3 +248,43 @@ export const DELIVERY_ENDPOINTS = {
   /** GET /deliveries/:id/statement - Generate delivery statement PDF */
   statement: (id: number) => `/deliveries/${id}/statement`,
 } as const;
+
+// ============================================================================
+// Purchase Request Endpoints
+// ============================================================================
+
+export const PURCHASE_REQUEST_ENDPOINTS = {
+  /** Base path for purchase request operations */
+  /** GET /purchase-requests - List purchase requests */
+  /** POST /purchase-requests - Create purchase request */
+  BASE: '/purchase-requests',
+
+  /** GET/PUT /purchase-requests/:id */
+  byId: (id: number) => `/purchase-requests/${id}`,
+  /** POST /purchase-requests/:id/send-rfq - Send RFQ to vendors */
+  sendRfq: (id: number) => `/purchase-requests/${id}/send-rfq`,
+  /** DELETE /purchase-requests/:id - Cancel purchase request */
+  cancel: (id: number) => `/purchase-requests/${id}`,
+} as const;
+
+// ============================================================================
+// Purchase Order Endpoints
+// ============================================================================
+
+export const PURCHASE_ORDER_ENDPOINTS = {
+  /** Base path for purchase order operations */
+  /** GET /purchase-orders - List purchase orders */
+  /** POST /purchase-orders - Create purchase order from RFQ item */
+  BASE: '/purchase-orders',
+
+  /** GET/PUT /purchase-orders/:id */
+  byId: (id: number) => `/purchase-orders/${id}`,
+  /** POST /purchase-orders/:id/send - Send PO to vendor */
+  send: (id: number) => `/purchase-orders/${id}/send`,
+  /** POST /purchase-orders/:id/confirm - Vendor confirmed */
+  confirm: (id: number) => `/purchase-orders/${id}/confirm`,
+  /** POST /purchase-orders/:id/receive - Mark as received */
+  receive: (id: number) => `/purchase-orders/${id}/receive`,
+  /** DELETE /purchase-orders/:id - Cancel purchase order */
+  cancel: (id: number) => `/purchase-orders/${id}`,
+} as const;
