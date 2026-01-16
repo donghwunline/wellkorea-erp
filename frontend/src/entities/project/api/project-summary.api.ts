@@ -35,7 +35,7 @@ function generateMockSummary(projectId: number): ProjectSectionsSummary {
     },
     {
       section: 'process',
-      label: '공정/진행률',
+      label: '공정',
       totalCount: 6,
       pendingCount: Math.min(6, baseMultiplier),
       progressPercent: Math.min(100, 20 * baseMultiplier),
@@ -56,18 +56,18 @@ function generateMockSummary(projectId: number): ProjectSectionsSummary {
       lastUpdated: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
-      section: 'delivery',
-      label: '납품',
-      totalCount: baseMultiplier * 2,
-      pendingCount: baseMultiplier,
-      lastUpdated: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    },
-    {
       section: 'documents',
-      label: '도면/문서',
+      label: '문서',
       totalCount: baseMultiplier * 3,
       pendingCount: 0,
       lastUpdated: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      section: 'delivery',
+      label: '출고',
+      totalCount: baseMultiplier * 2,
+      pendingCount: baseMultiplier,
+      lastUpdated: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
     },
     {
       section: 'finance',
