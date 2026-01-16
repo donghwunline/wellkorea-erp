@@ -1,5 +1,5 @@
 /**
- * Purchased Items Tab - Displays service categories I buy.
+ * Outsource Items Tab - Displays service categories for outsourcing.
  *
  * FSD pattern:
  * - Server state via Query Factory (catalogQueries)
@@ -21,9 +21,9 @@ import { Button, Card, Icon, Modal, Pagination, SearchBar, Spinner } from '@/sha
 const PAGE_SIZE = 20;
 
 /**
- * Purchased Items tab content.
+ * Outsource Items tab content.
  */
-export function PurchasedItemsTab() {
+export function OutsourceItemsTab() {
   const { hasAnyRole } = useAuth();
   const canManage = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
 
