@@ -29,7 +29,7 @@ export function DownloadButton({
         `${BLUEPRINT_ENDPOINTS.url(attachment.id)}?expiryMinutes=5`
       );
       triggerDownload(url, attachment.fileName);
-    } catch (error) {
+    } catch {
       onError?.(`Failed to download ${attachment.fileName}`);
     } finally {
       setIsLoading(false);

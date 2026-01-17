@@ -38,7 +38,7 @@ export async function downloadAttachment(
   try {
     const url = await getDownloadUrl();
     window.open(url, '_blank');
-  } catch (error) {
+  } catch {
     throw new Error(`Failed to download ${attachment.fileName}`);
   }
 }
