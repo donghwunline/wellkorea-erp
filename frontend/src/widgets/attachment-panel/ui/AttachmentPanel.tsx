@@ -1,18 +1,24 @@
 /**
  * Attachment panel widget for task node detail view.
  * Combines attachment listing with upload, download, and delete features.
+ *
+ * Supports two color variants:
+ * - 'light': Default light theme (gray/white)
+ * - 'dark': Dark theme for modal contexts (steel colors)
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { blueprintQueries } from '@/entities/blueprint-attachment';
 import type { BlueprintAttachment } from '@/entities/blueprint-attachment';
+import { blueprintQueries } from '@/entities/blueprint-attachment';
 import { AttachmentUploader } from '@/features/blueprint/upload';
 import { DownloadButton } from '@/features/blueprint/download';
 import { DeleteAttachmentButton } from '@/features/blueprint/delete';
 
-interface AttachmentPanelProps {
+export interface AttachmentPanelProps {
   flowId: number;
   nodeId: string;
+  /** Color variant - 'light' for pages, 'dark' for modals */
+  variant?: 'light' | 'dark';
   canUpload?: boolean;
   canDelete?: boolean;
   onUploadSuccess?: () => void;
@@ -20,15 +26,41 @@ interface AttachmentPanelProps {
   onError?: (message: string) => void;
 }
 
+// Variant-specific styles
+const variantStyles = {
+  light: {
+    container: '',
+    header: 'text-gray-900',
+    text: 'text-gray-500',
+    textMuted: 'text-gray-400',
+    item: 'bg-white border-gray-200 hover:bg-gray-50',
+    itemText: 'text-gray-900',
+    itemMeta: 'text-gray-500',
+    empty: 'text-gray-500 bg-gray-50',
+  },
+  dark: {
+    container: '',
+    header: 'text-steel-300',
+    text: 'text-steel-400',
+    textMuted: 'text-steel-400',
+    item: 'bg-steel-800/50 border-steel-700/50 hover:bg-steel-800/70',
+    itemText: 'text-white',
+    itemMeta: 'text-steel-400',
+    empty: 'text-steel-400 bg-steel-800/30',
+  },
+} as const;
+
 export function AttachmentPanel({
   flowId,
   nodeId,
+  variant = 'light',
   canUpload = true,
   canDelete = true,
   onUploadSuccess,
   onDeleteSuccess,
   onError,
-}: AttachmentPanelProps) {
+}: Readonly<AttachmentPanelProps>) {
+  const styles = variantStyles[variant];
   const {
     data: attachments = [],
     isLoading,
@@ -37,12 +69,8 @@ export function AttachmentPanel({
 
   if (isLoading) {
     return (
-      <div className="p-4 text-center text-gray-500">
-        <svg
-          className="w-6 h-6 mx-auto animate-spin"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
+      <div className={`p-4 text-center ${styles.text}`}>
+        <svg className="mx-auto h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle
             className="opacity-25"
             cx="12"
@@ -74,9 +102,7 @@ export function AttachmentPanel({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-900">
-          Blueprints ({attachments.length})
-        </h3>
+        <h3 className={`text-sm font-medium ${styles.header}`}>Blueprints ({attachments.length})</h3>
       </div>
 
       {/* Upload area */}
@@ -92,10 +118,11 @@ export function AttachmentPanel({
       {/* Attachment list */}
       {attachments.length > 0 ? (
         <div className="space-y-2">
-          {attachments.map((attachment) => (
+          {attachments.map(attachment => (
             <AttachmentItem
               key={attachment.id}
               attachment={attachment}
+              variant={variant}
               canDelete={canDelete}
               onDeleteSuccess={onDeleteSuccess}
               onError={onError}
@@ -103,9 +130,9 @@ export function AttachmentPanel({
           ))}
         </div>
       ) : (
-        <div className="p-4 text-center text-gray-500 bg-gray-50 rounded-lg">
+        <div className={`rounded-lg p-4 text-center ${styles.empty}`}>
           <svg
-            className="w-8 h-8 mx-auto text-gray-400"
+            className={`mx-auto h-8 w-8 ${styles.textMuted}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -129,6 +156,7 @@ export function AttachmentPanel({
  */
 interface AttachmentItemProps {
   attachment: BlueprintAttachment;
+  variant: 'light' | 'dark';
   canDelete: boolean;
   onDeleteSuccess?: () => void;
   onError?: (message: string) => void;
@@ -136,25 +164,24 @@ interface AttachmentItemProps {
 
 function AttachmentItem({
   attachment,
+  variant,
   canDelete,
   onDeleteSuccess,
   onError,
-}: AttachmentItemProps) {
+}: Readonly<AttachmentItemProps>) {
+  const styles = variantStyles[variant];
+
   return (
-    <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
-      <div className="flex items-center gap-3 min-w-0">
+    <div className={`flex items-center justify-between rounded-lg border p-3 ${styles.item}`}>
+      <div className="flex min-w-0 items-center gap-3">
         <FileTypeIcon fileType={attachment.fileType} />
         <div className="min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">
-            {attachment.fileName}
-          </p>
-          <p className="text-xs text-gray-500">
-            {attachment.formattedFileSize}
-          </p>
+          <p className={`truncate text-sm font-medium ${styles.itemText}`}>{attachment.fileName}</p>
+          <p className={`text-xs ${styles.itemMeta}`}>{attachment.formattedFileSize}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-1 ml-4">
+      <div className="ml-4 flex items-center gap-1">
         <DownloadButton attachment={attachment} onError={onError} />
         {canDelete && (
           <DeleteAttachmentButton
@@ -171,7 +198,7 @@ function AttachmentItem({
 /**
  * File type icon component.
  */
-function FileTypeIcon({ fileType }: { fileType: string }) {
+function FileTypeIcon({ fileType }: Readonly<{ fileType: string }>) {
   const getColor = () => {
     switch (fileType) {
       case 'PDF':
