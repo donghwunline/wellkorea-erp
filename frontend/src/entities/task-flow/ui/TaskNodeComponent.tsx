@@ -4,9 +4,9 @@
  */
 
 import { memo } from 'react';
-import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import { taskNodeRules, type TaskNode } from '../model/task-node';
-import { AttachmentCountBadge } from '@/entities/blueprint-attachment';
+import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
+import { type TaskNode, taskNodeRules } from '../model/task-node';
+import { AttachmentCountBadge } from './AttachmentCountBadge';
 
 /**
  * Node data structure expected by React Flow.
@@ -37,7 +37,7 @@ interface TaskNodeComponentProps extends NodeProps<TaskFlowNode> {
  * - Progress bar with color coding (blue/yellow/green)
  * - Red border when overdue
  */
-function TaskNodeComponentBase({ id, data, selected }: TaskNodeComponentProps) {
+function TaskNodeComponentBase({ id, data, selected }: Readonly<TaskNodeComponentProps>) {
   const { title, assignee, deadline, progress, attachmentCount = 0 } = data;
 
   // Create a TaskNode object for business rule checks
@@ -111,9 +111,7 @@ function TaskNodeComponentBase({ id, data, selected }: TaskNodeComponentProps) {
         </div>
 
         {/* Progress percentage */}
-        <div className="text-right text-xs font-medium text-gray-600">
-          {progress}%
-        </div>
+        <div className="text-right text-xs font-medium text-gray-600">{progress}%</div>
       </div>
 
       {/* Source Handle (Output) - Right side, Blue */}

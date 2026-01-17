@@ -1,6 +1,9 @@
 /**
  * Badge showing attachment count for a task node.
  * Used in TaskNodeCard to indicate files are attached.
+ *
+ * Note: This component lives in task-flow entity because it's only used
+ * by TaskNodeComponent. Keeping it here avoids entity-to-entity imports.
  */
 
 interface AttachmentCountBadgeProps {
@@ -11,22 +14,17 @@ interface AttachmentCountBadgeProps {
 export function AttachmentCountBadge({
   count,
   className = '',
-}: AttachmentCountBadgeProps) {
+}: Readonly<AttachmentCountBadgeProps>) {
   if (count === 0) {
     return null;
   }
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-medium ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800 ${className}`}
       title={`${count} attachment${count === 1 ? '' : 's'}`}
     >
-      <svg
-        className="w-3 h-3"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

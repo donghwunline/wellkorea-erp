@@ -6,7 +6,9 @@
  * - Business rules (blueprintRules, fileTypeRules)
  * - Query factory (blueprintQueries)
  * - Command functions (uploadAttachment, deleteAttachment)
- * - UI components (FileTypeBadge, AttachmentListItem, AttachmentCountBadge)
+ * - UI components (FileTypeBadge, AttachmentListItem)
+ *
+ * Note: AttachmentCountBadge moved to entities/task-flow (only consumer).
  */
 
 // ============================================================================
@@ -59,4 +61,3 @@ export type { CommandResult } from './api/blueprint-attachment.mapper';
 
 export { FileTypeBadge } from './ui/FileTypeBadge';
 export { AttachmentListItem } from './ui/AttachmentListItem';
-export { AttachmentCountBadge } from './ui/AttachmentCountBadge';
