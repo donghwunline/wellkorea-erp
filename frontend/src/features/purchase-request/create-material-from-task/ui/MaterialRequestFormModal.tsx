@@ -26,6 +26,7 @@ export interface MaterialRequestFormModalProps {
 }
 
 interface FormState {
+  categoryId: number | null;
   materialId: number | null;
   description: string;
   quantity: string;
@@ -34,6 +35,7 @@ interface FormState {
 }
 
 const initialFormState: FormState = {
+  categoryId: null,
   materialId: null,
   description: '',
   quantity: '1',
@@ -52,6 +54,12 @@ export function MaterialRequestFormModal({
 }: Readonly<MaterialRequestFormModalProps>) {
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch material categories for dropdown
+  const { data: categories, isLoading: categoriesLoading } = useQuery({
+    ...materialQueries.categoryList(),
+    enabled: isOpen,
+  });
 
   // Fetch all materials for dropdown
   const { data: materials, isLoading: materialsLoading } = useQuery({
@@ -73,6 +81,17 @@ export function MaterialRequestFormModal({
     setFormState(initialFormState);
     setError(null);
     onClose();
+  };
+
+  // When category is selected, reset material selection
+  const handleCategoryChange = (categoryIdStr: string) => {
+    const categoryId = categoryIdStr ? Number(categoryIdStr) : null;
+    setFormState(s => ({
+      ...s,
+      categoryId,
+      materialId: null, // Reset material when category changes
+      uom: '', // Reset UOM when category changes
+    }));
   };
 
   // When material is selected, auto-fill UOM
@@ -124,11 +143,41 @@ export function MaterialRequestFormModal({
     createMutation.mutate(input);
   };
 
-  const activeMaterials = materials?.filter((m: MaterialListItem) => m.isActive) ?? [];
+  const activeCategories = categories?.filter(c => c.isActive) ?? [];
+
+  // Filter materials: active only, and by category if selected
+  const filteredMaterials = (materials ?? []).filter(m => {
+    if (!m.isActive) return false;
+    if (formState.categoryId !== null && m.categoryId !== formState.categoryId) return false;
+    return true;
+  });
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="구매 요청" size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Category Dropdown */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-steel-300">자재 카테고리</label>
+          {categoriesLoading ? (
+            <div className="flex h-10 items-center justify-center rounded-lg border border-steel-700/50 bg-steel-900/60">
+              <Spinner size="sm" />
+            </div>
+          ) : (
+            <select
+              value={formState.categoryId ?? ''}
+              onChange={e => handleCategoryChange(e.target.value)}
+              className="h-10 rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white focus:border-copper-500 focus:outline-none"
+            >
+              <option value="">전체 카테고리</option>
+              {activeCategories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
         {/* Material Dropdown */}
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-steel-300">
@@ -146,9 +195,10 @@ export function MaterialRequestFormModal({
               required
             >
               <option value="">자재 선택</option>
-              {activeMaterials.map((material: MaterialListItem) => (
+              {filteredMaterials.map(material => (
                 <option key={material.id} value={material.id}>
-                  [{material.sku}] {material.name} ({material.categoryName})
+                  [{material.sku}] {material.name}
+                  {formState.categoryId === null && ` (${material.categoryName})`}
                 </option>
               ))}
             </select>
