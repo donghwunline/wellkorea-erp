@@ -111,14 +111,86 @@ ON CONFLICT DO NOTHING;
 -- MATERIAL CATEGORIES
 -- =====================================================================
 
-INSERT INTO material_categories (name, description)
+INSERT INTO material_categories (id, name, description)
 VALUES
-    ('패스너', 'Fasteners - bolts, nuts, screws, washers'),
-    ('원자재', 'Raw materials - steel, aluminum, copper sheets and bars'),
-    ('공구', 'Tools - cutting tools, measuring instruments'),
-    ('소모품', 'Consumables - lubricants, adhesives, abrasives'),
-    ('전기부품', 'Electrical components - cables, connectors, switches'),
-    ('기타', 'Other materials');
+    (1, '패스너', 'Fasteners - bolts, nuts, screws, washers'),
+    (2, '원자재', 'Raw materials - steel, aluminum, copper sheets and bars'),
+    (3, '공구', 'Tools - cutting tools, measuring instruments'),
+    (4, '소모품', 'Consumables - lubricants, adhesives, abrasives'),
+    (5, '전기부품', 'Electrical components - cables, connectors, switches'),
+    (6, '기타', 'Other materials')
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('material_categories_id_seq', (SELECT MAX(id) FROM material_categories));
+
+-- =====================================================================
+-- MATERIALS
+-- =====================================================================
+
+INSERT INTO materials (id, sku, name, description, category_id, unit, standard_price, preferred_vendor_id)
+VALUES
+    -- 패스너 (Fasteners)
+    (1, 'FST-BOLT-M8X30', '육각볼트 M8x30', 'Hex bolt M8x30mm, Grade 8.8, Zinc plated', 1, 'EA', 150.00, NULL),
+    (2, 'FST-BOLT-M10X40', '육각볼트 M10x40', 'Hex bolt M10x40mm, Grade 8.8, Zinc plated', 1, 'EA', 250.00, NULL),
+    (3, 'FST-BOLT-M12X50', '육각볼트 M12x50', 'Hex bolt M12x50mm, Grade 10.9, Black oxide', 1, 'EA', 450.00, NULL),
+    (4, 'FST-NUT-M8', '육각너트 M8', 'Hex nut M8, Grade 8, Zinc plated', 1, 'EA', 50.00, NULL),
+    (5, 'FST-NUT-M10', '육각너트 M10', 'Hex nut M10, Grade 8, Zinc plated', 1, 'EA', 80.00, NULL),
+    (6, 'FST-NUT-M12', '육각너트 M12', 'Hex nut M12, Grade 10, Black oxide', 1, 'EA', 120.00, NULL),
+    (7, 'FST-WSHR-M8', '평와셔 M8', 'Flat washer M8, Zinc plated', 1, 'EA', 30.00, NULL),
+    (8, 'FST-WSHR-M10', '평와셔 M10', 'Flat washer M10, Zinc plated', 1, 'EA', 40.00, NULL),
+    (9, 'FST-SCRW-M4X10', '접시머리 나사 M4x10', 'Countersunk screw M4x10mm, Stainless steel', 1, 'EA', 80.00, NULL),
+    (10, 'FST-SCRW-M5X15', '접시머리 나사 M5x15', 'Countersunk screw M5x15mm, Stainless steel', 1, 'EA', 100.00, NULL),
+
+    -- 원자재 (Raw Materials)
+    (11, 'RAW-SS304-1.0T', 'SUS304 판재 1.0T', 'Stainless steel 304, 1.0mm thickness, 4x8 sheet', 2, 'SHEET', 85000.00, 13),
+    (12, 'RAW-SS304-1.5T', 'SUS304 판재 1.5T', 'Stainless steel 304, 1.5mm thickness, 4x8 sheet', 2, 'SHEET', 125000.00, 13),
+    (13, 'RAW-SS304-2.0T', 'SUS304 판재 2.0T', 'Stainless steel 304, 2.0mm thickness, 4x8 sheet', 2, 'SHEET', 165000.00, 13),
+    (14, 'RAW-SPCC-1.0T', 'SPCC 냉연강판 1.0T', 'Cold rolled steel, 1.0mm thickness, 4x8 sheet', 2, 'SHEET', 45000.00, NULL),
+    (15, 'RAW-SPCC-1.6T', 'SPCC 냉연강판 1.6T', 'Cold rolled steel, 1.6mm thickness, 4x8 sheet', 2, 'SHEET', 72000.00, NULL),
+    (16, 'RAW-SPCC-2.0T', 'SPCC 냉연강판 2.0T', 'Cold rolled steel, 2.0mm thickness, 4x8 sheet', 2, 'SHEET', 90000.00, NULL),
+    (17, 'RAW-AL5052-1.5T', '알루미늄 5052 판재 1.5T', 'Aluminum 5052-H32, 1.5mm thickness, 4x8 sheet', 2, 'SHEET', 95000.00, NULL),
+    (18, 'RAW-AL5052-2.0T', '알루미늄 5052 판재 2.0T', 'Aluminum 5052-H32, 2.0mm thickness, 4x8 sheet', 2, 'SHEET', 125000.00, NULL),
+    (19, 'RAW-PIPE-25A', '배관 파이프 25A', 'Carbon steel pipe 25A, SCH40, 6m length', 2, 'EA', 28000.00, NULL),
+    (20, 'RAW-PIPE-50A', '배관 파이프 50A', 'Carbon steel pipe 50A, SCH40, 6m length', 2, 'EA', 55000.00, NULL),
+
+    -- 공구 (Tools)
+    (21, 'TL-DRILL-6.0', '드릴비트 6.0mm', 'HSS drill bit 6.0mm, for metal', 3, 'EA', 3500.00, NULL),
+    (22, 'TL-DRILL-8.0', '드릴비트 8.0mm', 'HSS drill bit 8.0mm, for metal', 3, 'EA', 4500.00, NULL),
+    (23, 'TL-DRILL-10.0', '드릴비트 10.0mm', 'HSS drill bit 10.0mm, for metal', 3, 'EA', 5500.00, NULL),
+    (24, 'TL-TAP-M8', '탭 M8x1.25', 'Hand tap M8x1.25, HSS, set of 3', 3, 'SET', 15000.00, NULL),
+    (25, 'TL-TAP-M10', '탭 M10x1.5', 'Hand tap M10x1.5, HSS, set of 3', 3, 'SET', 18000.00, NULL),
+    (26, 'TL-ENDMILL-10', '엔드밀 10mm', 'Carbide end mill 10mm, 4-flute', 3, 'EA', 35000.00, NULL),
+    (27, 'TL-ENDMILL-12', '엔드밀 12mm', 'Carbide end mill 12mm, 4-flute', 3, 'EA', 42000.00, NULL),
+    (28, 'TL-INSERT-CNMG', '인서트 CNMG120408', 'Carbide turning insert CNMG120408, coated', 3, 'EA', 8500.00, NULL),
+
+    -- 소모품 (Consumables)
+    (29, 'CON-WELD-1.2', '용접봉 1.2mm', 'MIG welding wire 1.2mm, 15kg spool, ER70S-6', 4, 'SPOOL', 85000.00, NULL),
+    (30, 'CON-WELD-1.0', '용접봉 1.0mm', 'MIG welding wire 1.0mm, 15kg spool, ER70S-6', 4, 'SPOOL', 82000.00, NULL),
+    (31, 'CON-GRIND-125', '연마디스크 125mm', 'Grinding disc 125mm, for angle grinder', 4, 'EA', 2500.00, NULL),
+    (32, 'CON-CUTOFF-125', '절단석 125mm', 'Cut-off wheel 125mm, for metal', 4, 'EA', 1800.00, NULL),
+    (33, 'CON-SANDPAPER-120', '사포 #120', 'Sandpaper #120 grit, 230x280mm', 4, 'SHEET', 500.00, NULL),
+    (34, 'CON-SANDPAPER-240', '사포 #240', 'Sandpaper #240 grit, 230x280mm', 4, 'SHEET', 500.00, NULL),
+    (35, 'CON-LUBRICANT', '절삭유 20L', 'Water-soluble cutting fluid, 20L can', 4, 'CAN', 65000.00, NULL),
+    (36, 'CON-THINNER', '신나 18L', 'Paint thinner, 18L can', 4, 'CAN', 45000.00, NULL),
+
+    -- 전기부품 (Electrical Components)
+    (37, 'ELC-CABLE-2.5', '전선 2.5sq', 'Electric wire 2.5sq mm, 100m roll, black', 5, 'ROLL', 75000.00, NULL),
+    (38, 'ELC-CABLE-4.0', '전선 4.0sq', 'Electric wire 4.0sq mm, 100m roll, black', 5, 'ROLL', 120000.00, NULL),
+    (39, 'ELC-TERM-4', '압착단자 4sq', 'Crimp terminal for 4sq cable, ring type', 5, 'PK', 8000.00, NULL),
+    (40, 'ELC-CONN-4P', '커넥터 4핀', '4-pin connector, waterproof, with housing', 5, 'SET', 3500.00, NULL),
+    (41, 'ELC-SWITCH-20A', '토글스위치 20A', 'Toggle switch 20A, SPST, panel mount', 5, 'EA', 4500.00, NULL),
+    (42, 'ELC-RELAY-24V', '릴레이 24V 10A', 'Relay 24VDC coil, 10A contacts, with socket', 5, 'EA', 12000.00, NULL),
+    (43, 'ELC-FUSE-10A', '퓨즈 10A', 'Blade fuse 10A, automotive type', 5, 'EA', 300.00, NULL),
+    (44, 'ELC-LED-24V', 'LED 표시등 24V', 'LED indicator 24V, panel mount, green', 5, 'EA', 2500.00, NULL),
+
+    -- 기타 (Other)
+    (45, 'ETC-GASKET-NBR', '가스켓 NBR', 'NBR rubber gasket sheet, 3mm, 1mx1m', 6, 'SHEET', 45000.00, NULL),
+    (46, 'ETC-TAPE-TEFLON', '테프론 테이프', 'PTFE tape for pipe sealing, 12mm x 10m', 6, 'EA', 1500.00, NULL),
+    (47, 'ETC-SILICONE', '실리콘 실란트', 'RTV silicone sealant, 300ml cartridge', 6, 'EA', 8500.00, NULL),
+    (48, 'ETC-LABEL', '라벨 스티커', 'Warning label stickers, assorted pack', 6, 'PK', 12000.00, NULL)
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('materials_id_seq', (SELECT MAX(id) FROM materials));
 
 -- =====================================================================
 -- PRODUCT TYPES & PRODUCTS
