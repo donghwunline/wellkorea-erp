@@ -17,7 +17,7 @@
             <arg column="standardPrice" javaType="java.math.BigDecimal"/>
             <arg column="preferredVendorId" javaType="Long"/>
             <arg column="preferredVendorName" javaType="String"/>
-            <arg column="active" javaType="boolean"/>
+            <arg column="active" javaType="Boolean"/>
             <arg column="createdAt" javaType="java.time.LocalDateTime"/>
             <arg column="updatedAt" javaType="java.time.LocalDateTime"/>
         </constructor>
@@ -36,7 +36,7 @@
             <arg column="standardPrice" javaType="java.math.BigDecimal"/>
             <arg column="preferredVendorId" javaType="Long"/>
             <arg column="preferredVendorName" javaType="String"/>
-            <arg column="active" javaType="boolean"/>
+            <arg column="active" javaType="Boolean"/>
             <arg column="createdAt" javaType="java.time.LocalDateTime"/>
             <arg column="updatedAt" javaType="java.time.LocalDateTime"/>
         </constructor>

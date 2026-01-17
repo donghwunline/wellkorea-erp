@@ -10,8 +10,8 @@
             <arg column="id" javaType="Long"/>
             <arg column="name" javaType="String"/>
             <arg column="description" javaType="String"/>
-            <arg column="active" javaType="boolean"/>
-            <arg column="materialCount" javaType="int"/>
+            <arg column="active" javaType="Boolean"/>
+            <arg column="materialCount" javaType="Integer"/>
             <arg column="createdAt" javaType="java.time.LocalDateTime"/>
             <arg column="updatedAt" javaType="java.time.LocalDateTime"/>
         </constructor>

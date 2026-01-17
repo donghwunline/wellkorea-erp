@@ -9,8 +9,8 @@ public record MaterialCategorySummaryView(
         Long id,
         String name,
         String description,
-        boolean active,
-        int materialCount,
+        Boolean active,
+        Integer materialCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

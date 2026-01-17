@@ -17,7 +17,7 @@ public record MaterialDetailView(
         BigDecimal standardPrice,
         Long preferredVendorId,
         String preferredVendorName,
-        boolean active,
+        Boolean active,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
