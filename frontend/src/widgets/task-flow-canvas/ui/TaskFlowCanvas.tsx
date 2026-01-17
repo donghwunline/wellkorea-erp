@@ -14,6 +14,7 @@ import {
   BackgroundVariant,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/shared/ui';
 import { Icon } from '@/shared/ui/primitives/Icon';
@@ -24,9 +25,11 @@ import {
   type TaskEdge,
   type TaskFlowNode,
 } from '@/entities/task-flow';
+import { blueprintQueries } from '@/entities/blueprint-attachment';
 import { EditNodeModal } from '@/features/task-flow/edit-node';
 import { ServiceRequestFormModal } from '@/features/purchase-request/create-service-from-task';
 import { MaterialRequestFormModal } from '@/features/purchase-request/create-material-from-task';
+import { AttachmentPanel } from '@/widgets/attachment-panel';
 import { useFlowState } from '../model/use-flow-state';
 
 export interface TaskFlowCanvasProps {
@@ -55,6 +58,8 @@ export function TaskFlowCanvas({
   onSave,
   onChangesStatusChange,
 }: TaskFlowCanvasProps) {
+  const queryClient = useQueryClient();
+
   // Edit modal state
   const [editingNode, setEditingNode] = useState<TaskNode | null>(null);
   const [isAddingNode, setIsAddingNode] = useState(false);
@@ -155,6 +160,29 @@ export function TaskFlowCanvas({
     }
   }, [onSave, getTaskNodes, getTaskEdges, markSaved]);
 
+  // Invalidate attachment queries on upload/delete to update counts everywhere
+  const handleAttachmentChange = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: blueprintQueries.lists(),
+    });
+  }, [queryClient]);
+
+  // Render attachments panel (passed to feature via render prop for FSD compliance)
+  const renderAttachments = useCallback(
+    (nodeId: string) => (
+      <AttachmentPanel
+        flowId={flow.id}
+        nodeId={nodeId}
+        variant="dark"
+        canUpload={true}
+        canDelete={true}
+        onUploadSuccess={handleAttachmentChange}
+        onDeleteSuccess={handleAttachmentChange}
+      />
+    ),
+    [flow.id, handleAttachmentChange]
+  );
+
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
@@ -224,12 +252,12 @@ export function TaskFlowCanvas({
       <EditNodeModal
         isOpen={editingNode !== null}
         node={editingNode}
-        flowId={flow.id}
         onClose={handleCloseModal}
         onSave={handleSaveNode}
         onDelete={isAddingNode ? undefined : handleDeleteNode}
         onServiceRequest={() => setIsServiceRequestOpen(true)}
         onMaterialRequest={() => setIsMaterialRequestOpen(true)}
+        renderAttachments={renderAttachments}
       />
 
       {/* Service (Outsourcing) Purchase Request Modal */}

@@ -3,23 +3,22 @@
  * Provides form fields for title, assignee, deadline, and progress.
  * Includes buttons to create purchase requests (service/material) for existing tasks.
  *
- * FSD Note: Purchase request modals are rendered at the widget layer (TaskFlowCanvas)
- * via callback props to avoid feature-to-feature imports.
+ * FSD Notes:
+ * - Purchase request modals are rendered at the widget layer (TaskFlowCanvas)
+ *   via callback props to avoid feature-to-feature imports.
+ * - Attachment panel is passed via render prop to avoid feature→widget import.
  */
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Button, DatePicker, FormField, Modal } from '@/shared/ui';
 import { type TaskNode, taskNodeRules } from '@/entities/task-flow';
 import { useEditNode } from '../model/use-edit-node';
-import { AttachmentSection } from './AttachmentSection';
 
 export interface EditNodeModalProps {
   /** Whether the modal is open */
   isOpen: boolean;
   /** The node being edited (null for creating new node) */
   node: TaskNode | null;
-  /** TaskFlow ID for attachment operations */
-  flowId: number;
   /** Called when modal should close */
   onClose: () => void;
   /** Called when save is clicked with the updated/new node data */
@@ -30,17 +29,19 @@ export interface EditNodeModalProps {
   onServiceRequest?: () => void;
   /** Called when user wants to create a material purchase request */
   onMaterialRequest?: () => void;
+  /** Render prop for attachment panel (passed from widget layer to avoid FSD violation) */
+  renderAttachments?: (nodeId: string) => ReactNode;
 }
 
 export function EditNodeModal({
   isOpen,
   node,
-  flowId,
   onClose,
   onSave,
   onDelete,
   onServiceRequest,
   onMaterialRequest,
+  renderAttachments,
 }: Readonly<EditNodeModalProps>) {
   const isEditing = node !== null;
   const { formState, errors, setTitle, setAssignee, setDeadline, setProgress, validate, reset } =
@@ -153,10 +154,28 @@ export function EditNodeModal({
         </div>
 
         {/* Attachments Section */}
-        <div className="border-t border-steel-700/50 pt-4">
-          <h4 className="mb-3 text-sm font-medium text-steel-300">Blueprints & Attachments</h4>
-          <AttachmentSection flowId={flowId} nodeId={isEditing ? node.id : null} />
-        </div>
+        {renderAttachments && (
+          <div className="border-t border-steel-700/50 pt-4">
+            <h4 className="mb-3 text-sm font-medium text-steel-300">Blueprints & Attachments</h4>
+            {isEditing ? (
+              renderAttachments(node.id)
+            ) : (
+              <div className="rounded-lg border border-steel-700/50 bg-steel-800/30 p-4">
+                <div className="flex items-center gap-2 text-steel-400">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="text-sm">Save task first to attach blueprints</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Actions */}
         <div className="mt-4 flex flex-col gap-3">
