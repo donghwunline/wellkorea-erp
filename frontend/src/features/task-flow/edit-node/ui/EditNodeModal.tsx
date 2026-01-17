@@ -2,13 +2,14 @@
  * Modal for editing a task node.
  * Provides form fields for title, assignee, deadline, and progress.
  * Includes buttons to create purchase requests (service/material) for existing tasks.
+ *
+ * FSD Note: Purchase request modals are rendered at the widget layer (TaskFlowCanvas)
+ * via callback props to avoid feature-to-feature imports.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Button, DatePicker, FormField, Modal } from '@/shared/ui';
 import { type TaskNode, taskNodeRules } from '@/entities/task-flow';
-import { ServiceRequestFormModal } from '@/features/purchase-request/create-service-from-task';
-import { MaterialRequestFormModal } from '@/features/purchase-request/create-material-from-task';
 import { useEditNode } from '../model/use-edit-node';
 import { AttachmentSection } from './AttachmentSection';
 
@@ -19,32 +20,31 @@ export interface EditNodeModalProps {
   node: TaskNode | null;
   /** TaskFlow ID for attachment operations */
   flowId: number;
-  /** Project ID for purchase request creation */
-  projectId: number;
   /** Called when modal should close */
   onClose: () => void;
   /** Called when save is clicked with the updated/new node data */
   onSave: (nodeData: Omit<TaskNode, 'id' | 'position'>) => void;
   /** Called when delete is clicked (only for existing nodes) */
   onDelete?: () => void;
+  /** Called when user wants to create a service (outsource) purchase request */
+  onServiceRequest?: () => void;
+  /** Called when user wants to create a material purchase request */
+  onMaterialRequest?: () => void;
 }
 
 export function EditNodeModal({
   isOpen,
   node,
   flowId,
-  projectId,
   onClose,
   onSave,
   onDelete,
+  onServiceRequest,
+  onMaterialRequest,
 }: Readonly<EditNodeModalProps>) {
   const isEditing = node !== null;
   const { formState, errors, setTitle, setAssignee, setDeadline, setProgress, validate, reset } =
     useEditNode(node ?? undefined);
-
-  // Purchase request modal states
-  const [isServiceRequestOpen, setIsServiceRequestOpen] = useState(false);
-  const [isMaterialRequestOpen, setIsMaterialRequestOpen] = useState(false);
 
   // Reset form when node changes
   useEffect(() => {
@@ -161,26 +161,30 @@ export function EditNodeModal({
         {/* Actions */}
         <div className="mt-4 flex flex-col gap-3">
           {/* Purchase Request Buttons - only for existing tasks */}
-          {isEditing && (
+          {isEditing && (onServiceRequest || onMaterialRequest) && (
             <div className="flex gap-2 border-b border-steel-700/50 pb-3">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsServiceRequestOpen(true)}
-                className="flex-1"
-              >
-                외주 요청
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsMaterialRequestOpen(true)}
-                className="flex-1"
-              >
-                구매 요청
-              </Button>
+              {onServiceRequest && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={onServiceRequest}
+                  className="flex-1"
+                >
+                  외주 요청
+                </Button>
+              )}
+              {onMaterialRequest && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={onMaterialRequest}
+                  className="flex-1"
+                >
+                  구매 요청
+                </Button>
+              )}
             </div>
           )}
 
@@ -204,22 +208,6 @@ export function EditNodeModal({
           </div>
         </div>
       </form>
-
-      {/* Service (Outsourcing) Purchase Request Modal */}
-      <ServiceRequestFormModal
-        isOpen={isServiceRequestOpen}
-        onClose={() => setIsServiceRequestOpen(false)}
-        projectId={projectId}
-        flowId={flowId}
-        nodeId={isEditing ? node.id : null}
-      />
-
-      {/* Material Purchase Request Modal */}
-      <MaterialRequestFormModal
-        isOpen={isMaterialRequestOpen}
-        onClose={() => setIsMaterialRequestOpen(false)}
-        projectId={projectId}
-      />
     </Modal>
   );
 }

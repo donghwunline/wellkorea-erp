@@ -25,6 +25,8 @@ import {
   type TaskFlowNode,
 } from '@/entities/task-flow';
 import { EditNodeModal } from '@/features/task-flow/edit-node';
+import { ServiceRequestFormModal } from '@/features/purchase-request/create-service-from-task';
+import { MaterialRequestFormModal } from '@/features/purchase-request/create-material-from-task';
 import { useFlowState } from '../model/use-flow-state';
 
 export interface TaskFlowCanvasProps {
@@ -56,6 +58,10 @@ export function TaskFlowCanvas({
   // Edit modal state
   const [editingNode, setEditingNode] = useState<TaskNode | null>(null);
   const [isAddingNode, setIsAddingNode] = useState(false);
+
+  // Purchase request modal states
+  const [isServiceRequestOpen, setIsServiceRequestOpen] = useState(false);
+  const [isMaterialRequestOpen, setIsMaterialRequestOpen] = useState(false);
 
   // Flow state management
   const {
@@ -219,10 +225,27 @@ export function TaskFlowCanvas({
         isOpen={editingNode !== null}
         node={editingNode}
         flowId={flow.id}
-        projectId={flow.projectId}
         onClose={handleCloseModal}
         onSave={handleSaveNode}
         onDelete={isAddingNode ? undefined : handleDeleteNode}
+        onServiceRequest={() => setIsServiceRequestOpen(true)}
+        onMaterialRequest={() => setIsMaterialRequestOpen(true)}
+      />
+
+      {/* Service (Outsourcing) Purchase Request Modal */}
+      <ServiceRequestFormModal
+        isOpen={isServiceRequestOpen}
+        onClose={() => setIsServiceRequestOpen(false)}
+        projectId={flow.projectId}
+        flowId={flow.id}
+        nodeId={editingNode?.id ?? null}
+      />
+
+      {/* Material Purchase Request Modal */}
+      <MaterialRequestFormModal
+        isOpen={isMaterialRequestOpen}
+        onClose={() => setIsMaterialRequestOpen(false)}
+        projectId={flow.projectId}
       />
     </div>
   );
