@@ -32,3 +32,10 @@ export { InvoicePanel, type InvoicePanelProps } from './invoice-panel';
 export { OutsourcePanel, type OutsourcePanelProps } from './outsource-panel';
 
 export { PurchasePanel, type PurchasePanelProps } from './purchase-panel';
+
+export {
+  PurchaseRequestDetailModal,
+  type PurchaseRequestDetailModalProps,
+  SendRfqModal,
+  type SendRfqModalProps,
+} from './purchase-request-panel';
