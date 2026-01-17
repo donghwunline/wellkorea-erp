@@ -119,6 +119,7 @@ export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
       size: 100,
       status: null,
       projectId,
+      dtype: 'SERVICE',
     })
   );
 
