@@ -3,9 +3,10 @@
  *
  * Shows requests that have been sent for quotes or are awaiting vendor selection.
  * RFQ (Request for Quotation) stage includes RFQ_SENT and VENDOR_SELECTED statuses.
+ * Click on row to open detail modal to view vendor quotes.
  */
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   type PurchaseRequestListItem,
@@ -16,6 +17,7 @@ import {
 } from '@/entities/purchase-request';
 import { Badge, Card, Icon, Pagination, Spinner, Table } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting';
+import { PurchaseRequestDetailModal } from '@/widgets/purchase-request-panel';
 
 const PAGE_SIZE = 20;
 
@@ -37,6 +39,10 @@ function RfqStatusBadge({ status }: { readonly status: PurchaseRequestStatus }) 
 export function RfqTab() {
   const [page, setPage] = useState(0);
 
+  // Modal state
+  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+
   // Fetch RFQ_SENT requests (primary RFQ stage)
   const {
     data: rfqSentData,
@@ -54,7 +60,11 @@ export function RfqTab() {
   );
 
   // Also fetch VENDOR_SELECTED for pending PO creation
-  const { data: vendorSelectedData, isLoading: vendorSelectedLoading } = useQuery(
+  const {
+    data: vendorSelectedData,
+    isLoading: vendorSelectedLoading,
+    refetch: refetchVendorSelected,
+  } = useQuery(
     purchaseRequestQueries.list({
       page: 0,
       size: 100,
@@ -69,12 +79,24 @@ export function RfqTab() {
   const pagination = rfqSentData?.pagination;
   const isLoading = rfqSentLoading || vendorSelectedLoading;
 
+  // Row click handler
+  const handleRowClick = useCallback((request: PurchaseRequestListItem) => {
+    setSelectedRequestId(request.id);
+    setDetailModalOpen(true);
+  }, []);
+
+  // Refetch all data
+  const refetchAll = useCallback(() => {
+    refetchRfqSent();
+    refetchVendorSelected();
+  }, [refetchRfqSent, refetchVendorSelected]);
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Card className="p-4">
-          <div className="text-sm text-steel-400">RFQ 발송 대기</div>
+          <div className="text-sm text-steel-400">RFQ 발송 완료</div>
           <div className="mt-1 text-2xl font-bold text-blue-400">
             {rfqSentData?.pagination?.totalElements ?? 0}
           </div>
@@ -147,6 +169,7 @@ export function RfqTab() {
                     return (
                       <Table.Row
                         key={request.id}
+                        onClick={() => handleRowClick(request)}
                         className="cursor-pointer transition-colors hover:bg-steel-800/50"
                       >
                         <Table.Cell>
@@ -221,6 +244,7 @@ export function RfqTab() {
                   return (
                     <Table.Row
                       key={request.id}
+                      onClick={() => handleRowClick(request)}
                       className="cursor-pointer transition-colors hover:bg-steel-800/50"
                     >
                       <Table.Cell>
@@ -249,6 +273,16 @@ export function RfqTab() {
             </Table>
           </Card>
         </>
+      )}
+
+      {/* Detail Modal */}
+      {selectedRequestId !== null && (
+        <PurchaseRequestDetailModal
+          purchaseRequestId={selectedRequestId}
+          isOpen={detailModalOpen}
+          onClose={() => setDetailModalOpen(false)}
+          onSuccess={refetchAll}
+        />
       )}
     </div>
   );

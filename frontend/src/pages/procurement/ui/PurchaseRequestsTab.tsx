@@ -3,6 +3,7 @@
  *
  * Shows both SERVICE (outsourcing) and MATERIAL purchase requests.
  * Provides filtering by status and type.
+ * Click on row to open detail modal with RFQ management.
  */
 
 import { useCallback, useState } from 'react';
@@ -16,6 +17,10 @@ import {
 } from '@/entities/purchase-request';
 import { Badge, Card, Pagination, Spinner, Table } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting';
+import {
+  PurchaseRequestDetailModal,
+  SendRfqModal,
+} from '@/widgets/purchase-request-panel';
 
 const PAGE_SIZE = 20;
 
@@ -51,6 +56,15 @@ export function PurchaseRequestsTab() {
   const [statusFilter, setStatusFilter] = useState<PurchaseRequestStatus | null>(null);
   const [typeFilter, setTypeFilter] = useState<'SERVICE' | 'MATERIAL' | null>(null);
 
+  // Modal state
+  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [sendRfqState, setSendRfqState] = useState<{
+    isOpen: boolean;
+    requestId: number | null;
+    serviceCategoryId: number | null;
+  }>({ isOpen: false, requestId: null, serviceCategoryId: null });
+
   // Handle filter changes with pagination reset
   const handleStatusChange = useCallback((status: PurchaseRequestStatus | null) => {
     setStatusFilter(status);
@@ -80,6 +94,28 @@ export function PurchaseRequestsTab() {
 
   const requests = requestsData?.data ?? [];
   const pagination = requestsData?.pagination;
+
+  // Row click handler
+  const handleRowClick = useCallback((request: PurchaseRequestListItem) => {
+    setSelectedRequestId(request.id);
+    setDetailModalOpen(true);
+  }, []);
+
+  // Open send RFQ modal
+  const handleOpenSendRfq = useCallback((requestId: number, serviceCategoryId: number) => {
+    setDetailModalOpen(false); // Close detail modal first
+    setSendRfqState({ isOpen: true, requestId, serviceCategoryId });
+  }, []);
+
+  // Close send RFQ modal
+  const handleCloseSendRfq = useCallback(() => {
+    setSendRfqState({ isOpen: false, requestId: null, serviceCategoryId: null });
+  }, []);
+
+  // Handle successful RFQ send
+  const handleSendRfqSuccess = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return (
     <div className="space-y-6">
@@ -164,6 +200,7 @@ export function PurchaseRequestsTab() {
                     return (
                       <Table.Row
                         key={request.id}
+                        onClick={() => handleRowClick(request)}
                         className="cursor-pointer transition-colors hover:bg-steel-800/50"
                       >
                         <Table.Cell>
@@ -208,6 +245,28 @@ export function PurchaseRequestsTab() {
             />
           )}
         </>
+      )}
+
+      {/* Detail Modal */}
+      {selectedRequestId !== null && (
+        <PurchaseRequestDetailModal
+          purchaseRequestId={selectedRequestId}
+          isOpen={detailModalOpen}
+          onClose={() => setDetailModalOpen(false)}
+          onSuccess={() => refetch()}
+          onOpenSendRfq={handleOpenSendRfq}
+        />
+      )}
+
+      {/* Send RFQ Modal */}
+      {sendRfqState.requestId !== null && sendRfqState.serviceCategoryId !== null && (
+        <SendRfqModal
+          purchaseRequestId={sendRfqState.requestId}
+          serviceCategoryId={sendRfqState.serviceCategoryId}
+          isOpen={sendRfqState.isOpen}
+          onClose={handleCloseSendRfq}
+          onSuccess={handleSendRfqSuccess}
+        />
       )}
     </div>
   );
