@@ -12,7 +12,11 @@
 // DOMAIN TYPES
 // =============================================================================
 
-export type { PurchaseRequest, PurchaseRequestListItem } from './model/purchase-request';
+export type {
+  PurchaseRequest,
+  PurchaseRequestListItem,
+  PurchaseRequestType,
+} from './model/purchase-request';
 export type { RfqItem } from './model/rfq-item';
 
 // =============================================================================

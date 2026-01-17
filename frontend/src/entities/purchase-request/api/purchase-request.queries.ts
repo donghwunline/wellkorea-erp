@@ -25,6 +25,7 @@ export interface PurchaseRequestListQueryParams {
   size: number;
   status: PurchaseRequestStatus | null;
   projectId: number | null;
+  dtype: 'SERVICE' | 'MATERIAL' | null;
 }
 
 /**
@@ -55,6 +56,7 @@ export const purchaseRequestQueries = {
         params.size,
         params.status,
         params.projectId,
+        params.dtype,
       ] as const,
       queryFn: async (): Promise<Paginated<PurchaseRequestListItem>> => {
         const response = await getPurchaseRequests({
@@ -62,6 +64,7 @@ export const purchaseRequestQueries = {
           size: params.size,
           status: params.status ?? undefined,
           projectId: params.projectId ?? undefined,
+          dtype: params.dtype ?? undefined,
         });
 
         return {
