@@ -1,16 +1,19 @@
 /**
- * Procurement Page - Placeholder
+ * Procurement Page - Unified procurement management.
  *
- * Future features:
- * - Purchase Requests
- * - RFQ (Request for Quotation)
- * - Purchase Orders
+ * Displays tabbed interface for:
+ * - Purchase Requests: All procurement requests (service and material)
+ * - RFQ: Requests in RFQ stage (sent to vendors, awaiting quotes)
+ * - Purchase Orders: Confirmed orders to vendors
  */
 
-import { Card, Icon, PageHeader } from '@/shared/ui';
+import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
+import { PurchaseRequestsTab } from './ui/PurchaseRequestsTab';
+import { RfqTab } from './ui/RfqTab';
+import { PurchaseOrdersTab } from './ui/PurchaseOrdersTab';
 
 /**
- * Procurement page placeholder.
+ * Procurement page with tabbed navigation.
  */
 export function ProcurementPage() {
   return (
@@ -23,19 +26,31 @@ export function ProcurementPage() {
       </PageHeader>
 
       <div className="mt-6">
-        <Card className="p-12 text-center">
-          <Icon name="shopping-cart" className="mx-auto h-16 w-16 text-steel-600" />
-          <h2 className="mt-4 text-xl font-semibold text-white">Coming Soon</h2>
-          <p className="mt-2 text-steel-400">
-            The procurement module is under development. It will include:
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-steel-300">
-            <li>Purchase Requests - Request materials and services</li>
-            <li>RFQ Management - Request quotes from vendors</li>
-            <li>Purchase Orders - Create and manage POs</li>
-            <li>Vendor Comparison - Compare prices and lead times</li>
-          </ul>
-        </Card>
+        <Tabs defaultTab="requests" hash>
+          <TabList>
+            <Tab id="requests" icon="document">
+              구매 요청
+            </Tab>
+            <Tab id="rfq" icon="paper-airplane">
+              RFQ
+            </Tab>
+            <Tab id="orders" icon="shopping-cart">
+              발주서
+            </Tab>
+          </TabList>
+
+          <TabPanel id="requests">
+            <PurchaseRequestsTab />
+          </TabPanel>
+
+          <TabPanel id="rfq">
+            <RfqTab />
+          </TabPanel>
+
+          <TabPanel id="orders">
+            <PurchaseOrdersTab />
+          </TabPanel>
+        </Tabs>
       </div>
     </div>
   );
