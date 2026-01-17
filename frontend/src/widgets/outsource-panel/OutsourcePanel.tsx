@@ -12,7 +12,7 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Badge, Button, Card, Icon, LoadingState, Table } from '@/shared/ui';
+import { Alert, Badge, Card, Icon, LoadingState, Table } from '@/shared/ui';
 import {
   type PurchaseRequestListItem,
   purchaseRequestQueries,
@@ -20,10 +20,10 @@ import {
   PurchaseRequestStatus,
   PurchaseRequestStatusConfig,
 } from '@/entities/purchase-request';
-import { useAuth } from '@/entities/auth';
 import { formatDate } from '@/shared/lib/formatting';
 
 export interface OutsourcePanelProps {
+  /** Project ID to filter purchase requests */
   readonly projectId: number;
 }
 
@@ -103,10 +103,6 @@ function PurchaseRequestStatusBadge({
 }
 
 export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
-  const { hasAnyRole } = useAuth();
-
-  // Check if user can create purchase requests (Finance/Admin/Production)
-  const canCreatePurchaseRequest = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_PRODUCTION']);
 
   // Fetch purchase requests for this project
   const {
@@ -150,12 +146,9 @@ export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
         <p className="mt-2 text-steel-500">
           이 프로젝트에 대한 외주 요청이 아직 없습니다.
         </p>
-        {canCreatePurchaseRequest && (
-          <Button variant="primary" className="mt-6" disabled>
-            <Icon name="plus" className="h-4 w-4" />
-            외주 요청 생성 (개발 중)
-          </Button>
-        )}
+        <p className="mt-1 text-sm text-steel-600">
+          작업 노드에서 외주 요청을 생성할 수 있습니다.
+        </p>
       </Card>
     );
   }
@@ -164,16 +157,6 @@ export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
     <div className="space-y-6">
       {/* Summary Stats */}
       <PurchaseRequestSummaryStats requests={purchaseRequests} />
-
-      {/* Actions */}
-      {canCreatePurchaseRequest && (
-        <div className="flex justify-end">
-          <Button variant="primary" disabled>
-            <Icon name="plus" className="h-4 w-4" />
-            외주 요청 생성 (개발 중)
-          </Button>
-        </div>
-      )}
 
       {/* Purchase Requests Table */}
       <Card className="overflow-hidden">
