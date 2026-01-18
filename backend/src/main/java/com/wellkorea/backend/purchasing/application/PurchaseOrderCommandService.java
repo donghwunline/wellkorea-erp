@@ -10,6 +10,7 @@ import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.RfqItem;
 import com.wellkorea.backend.purchasing.domain.RfqItemStatus;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCanceledEvent;
+import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderReceivedEvent;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseOrderRepository;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
@@ -164,20 +165,26 @@ public class PurchaseOrderCommandService {
 
     /**
      * Mark a purchase order as received.
+     * Publishes a PurchaseOrderReceivedEvent to close the PurchaseRequest.
      */
     public Long receivePurchaseOrder(Long id) {
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with ID: " + id));
 
-        purchaseOrder.receive();
-        purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
-
-        // Also close the purchase request
         PurchaseRequest purchaseRequest = purchaseOrder.getPurchaseRequest();
-        if (purchaseRequest != null) {
-            purchaseRequest.close();
-            purchaseRequestRepository.save(purchaseRequest);
+        if (purchaseRequest == null) {
+            throw new BusinessException("Purchase order has no associated purchase request");
         }
+
+        purchaseOrder.receive();
+        purchaseOrderRepository.save(purchaseOrder);
+
+        // Publish event to close the PurchaseRequest
+        eventPublisher.publish(new PurchaseOrderReceivedEvent(
+                purchaseOrder.getId(),
+                purchaseRequest.getId(),
+                purchaseOrder.getPoNumber()
+        ));
 
         return purchaseOrder.getId();
     }

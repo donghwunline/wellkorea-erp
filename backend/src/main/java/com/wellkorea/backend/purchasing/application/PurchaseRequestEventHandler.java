@@ -3,6 +3,7 @@ package com.wellkorea.backend.purchasing.application;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCanceledEvent;
+import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderReceivedEvent;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -54,6 +55,36 @@ public class PurchaseRequestEventHandler {
         purchaseRequestRepository.save(purchaseRequest);
 
         log.info("Purchase request {} reverted to RFQ_SENT after PO {} was canceled",
+                event.purchaseRequestId(), event.poNumber());
+    }
+
+    /**
+     * Handle purchase order received events.
+     * Closes the PurchaseRequest when the associated PO is received,
+     * completing the purchasing workflow.
+     *
+     * @param event the PO received event
+     */
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onPurchaseOrderReceived(PurchaseOrderReceivedEvent event) {
+        log.debug("Handling PO received event: poId={}, prId={}",
+                event.purchaseOrderId(), event.purchaseRequestId());
+
+        PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(event.purchaseRequestId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Purchase request not found with ID: " + event.purchaseRequestId()));
+
+        // Only close if PR is in VENDOR_SELECTED status
+        if (purchaseRequest.getStatus() != PurchaseRequestStatus.VENDOR_SELECTED) {
+            log.info("Purchase request {} is not in VENDOR_SELECTED status (current: {}), skipping close",
+                    event.purchaseRequestId(), purchaseRequest.getStatus());
+            return;
+        }
+
+        purchaseRequest.close();
+        purchaseRequestRepository.save(purchaseRequest);
+
+        log.info("Purchase request {} closed after PO {} was received",
                 event.purchaseRequestId(), event.poNumber());
     }
 }
