@@ -38,3 +38,9 @@ export {
   purchaseOrderQueries,
   type PurchaseOrderListQueryParams,
 } from './api/purchase-order.queries';
+
+// =============================================================================
+// COMMAND FUNCTIONS
+// =============================================================================
+
+export { createPurchaseOrder, type CreatePurchaseOrderInput } from './api/create-purchase-order';
