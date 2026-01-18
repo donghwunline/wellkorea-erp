@@ -22,7 +22,8 @@ export interface CommandResult {
 export interface PurchaseOrderSummaryResponse {
   id: number;
   poNumber: string;
-  rfqItemId: number;
+  rfqItemId: string; // UUID string
+  purchaseRequestId: number;
   projectId: number;
   jobCode: string;
   vendorId: number;
@@ -39,7 +40,7 @@ export interface PurchaseOrderSummaryResponse {
 export interface PurchaseOrderDetailResponse {
   id: number;
   poNumber: string;
-  rfqItemId: number;
+  rfqItemId: string; // UUID string
   purchaseRequestId: number;
   purchaseRequestNumber: string;
   projectId: number;
@@ -107,6 +108,7 @@ export const purchaseOrderMapper = {
     return {
       id: response.id,
       poNumber: response.poNumber,
+      purchaseRequestId: response.purchaseRequestId,
       rfqItemId: response.rfqItemId,
       projectId: response.projectId,
       jobCode: response.jobCode,

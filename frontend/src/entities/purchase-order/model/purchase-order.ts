@@ -16,7 +16,7 @@ import { PurchaseOrderStatus, PurchaseOrderStatusConfig } from './purchase-order
 export interface PurchaseOrder {
   readonly id: number;
   readonly poNumber: string;
-  readonly rfqItemId: number;
+  readonly rfqItemId: string; // UUID string
   readonly purchaseRequestId: number;
   readonly purchaseRequestNumber: string;
   readonly projectId: number;
@@ -42,7 +42,8 @@ export interface PurchaseOrder {
 export interface PurchaseOrderListItem {
   readonly id: number;
   readonly poNumber: string;
-  readonly rfqItemId: number;
+  readonly purchaseRequestId: number;
+  readonly rfqItemId: string; // UUID string
   readonly projectId: number;
   readonly jobCode: string;
   readonly vendorId: number;

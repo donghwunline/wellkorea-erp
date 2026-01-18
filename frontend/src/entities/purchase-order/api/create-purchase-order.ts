@@ -16,7 +16,8 @@ import type { CommandResult } from './purchase-order.mapper';
  * This is the public contract for the command function.
  */
 export interface CreatePurchaseOrderInput {
-  readonly rfqItemId: number;
+  readonly purchaseRequestId: number;
+  readonly rfqItemId: string; // UUID string
   readonly orderDate: string; // ISO date
   readonly expectedDeliveryDate: string; // ISO date
   readonly notes?: string | null;
@@ -31,7 +32,8 @@ export interface CreatePurchaseOrderInput {
  * @internal
  */
 interface CreatePurchaseOrderRequest {
-  rfqItemId: number;
+  purchaseRequestId: number;
+  rfqItemId: string;
   orderDate: string;
   expectedDeliveryDate: string;
   notes: string | null;
@@ -46,6 +48,9 @@ interface CreatePurchaseOrderRequest {
  * @throws DomainValidationError if validation fails
  */
 function validateCreateInput(input: CreatePurchaseOrderInput): void {
+  if (!input.purchaseRequestId) {
+    throw new DomainValidationError('REQUIRED', 'purchaseRequestId', 'Purchase request is required');
+  }
   if (!input.rfqItemId) {
     throw new DomainValidationError('REQUIRED', 'rfqItemId', 'RFQ item is required');
   }
@@ -82,6 +87,7 @@ export async function createPurchaseOrder(
   validateCreateInput(input);
 
   const request: CreatePurchaseOrderRequest = {
+    purchaseRequestId: input.purchaseRequestId,
     rfqItemId: input.rfqItemId,
     orderDate: input.orderDate,
     expectedDeliveryDate: input.expectedDeliveryDate,
