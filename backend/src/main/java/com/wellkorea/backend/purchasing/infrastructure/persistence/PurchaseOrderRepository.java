@@ -28,14 +28,14 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
 
     Page<PurchaseOrder> findByVendorIdAndStatus(Long vendorId, PurchaseOrderStatus status, Pageable pageable);
 
-    List<PurchaseOrder> findByRfqItemId(Long rfqItemId);
+    List<PurchaseOrder> findByPurchaseRequestIdAndRfqItemId(Long purchaseRequestId, String rfqItemId);
 
     @Query("SELECT MAX(CAST(SUBSTRING(po.poNumber, 9) AS int)) FROM PurchaseOrder po WHERE po.poNumber LIKE :prefix%")
     Integer findMaxSequenceForYear(@Param("prefix") String prefix);
 
     @Query("SELECT po FROM PurchaseOrder po " +
            "LEFT JOIN FETCH po.vendor " +
-           "LEFT JOIN FETCH po.rfqItem " +
+           "LEFT JOIN FETCH po.purchaseRequest " +
            "LEFT JOIN FETCH po.project " +
            "LEFT JOIN FETCH po.createdBy " +
            "WHERE po.id = :id")
@@ -43,5 +43,5 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
 
     boolean existsByPoNumber(String poNumber);
 
-    boolean existsByRfqItemId(Long rfqItemId);
+    boolean existsByPurchaseRequestIdAndRfqItemId(Long purchaseRequestId, String rfqItemId);
 }

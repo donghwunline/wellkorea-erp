@@ -1,35 +1,39 @@
 package com.wellkorea.backend.purchasing.domain;
 
-import com.wellkorea.backend.catalog.domain.VendorServiceOffering;
-import com.wellkorea.backend.company.domain.Company;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
- * RfqItem entity representing an individual RFQ sent to a specific vendor
- * for a PurchaseRequest.
+ * RfqItem embeddable representing an individual RFQ sent to a specific vendor
+ * for a PurchaseRequest. Part of the PurchaseRequest aggregate.
  */
-@Entity
-@Table(name = "rfq_items")
+@Embeddable
 public class RfqItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    /**
+     * UUID identifier for this RFQ item within the purchase request.
+     */
+    @Column(name = "item_id", nullable = false, length = 36)
+    private String itemId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "purchase_request_id", nullable = false)
-    private PurchaseRequest purchaseRequest;
+    /**
+     * Reference to vendor company (Long ID instead of @ManyToOne for embeddable).
+     */
+    @Column(name = "vendor_company_id", nullable = false)
+    private Long vendorCompanyId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_company_id", nullable = false)
-    private Company vendor;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_offering_id")
-    private VendorServiceOffering vendorOffering;
+    /**
+     * Reference to vendor offering (optional, Long ID instead of @ManyToOne for embeddable).
+     */
+    @Column(name = "vendor_offering_id")
+    private Long vendorOfferingId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
@@ -50,24 +54,19 @@ public class RfqItem {
     @Column(name = "replied_at")
     private LocalDateTime repliedAt;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (status == RfqItemStatus.SENT && sentAt == null) {
-            sentAt = LocalDateTime.now();
-        }
+    // Default constructor for JPA
+    public RfqItem() {
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    /**
+     * Constructor for creating new RFQ item.
+     */
+    public RfqItem(Long vendorCompanyId, Long vendorOfferingId) {
+        this.itemId = UUID.randomUUID().toString();
+        this.vendorCompanyId = vendorCompanyId;
+        this.vendorOfferingId = vendorOfferingId;
+        this.status = RfqItemStatus.SENT;
+        this.sentAt = LocalDateTime.now();
     }
 
     // Domain methods
@@ -118,36 +117,28 @@ public class RfqItem {
 
     // Getters and Setters
 
-    public Long getId() {
-        return id;
+    public String getItemId() {
+        return itemId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setItemId(String itemId) {
+        this.itemId = itemId;
     }
 
-    public PurchaseRequest getPurchaseRequest() {
-        return purchaseRequest;
+    public Long getVendorCompanyId() {
+        return vendorCompanyId;
     }
 
-    public void setPurchaseRequest(PurchaseRequest purchaseRequest) {
-        this.purchaseRequest = purchaseRequest;
+    public void setVendorCompanyId(Long vendorCompanyId) {
+        this.vendorCompanyId = vendorCompanyId;
     }
 
-    public Company getVendor() {
-        return vendor;
+    public Long getVendorOfferingId() {
+        return vendorOfferingId;
     }
 
-    public void setVendor(Company vendor) {
-        this.vendor = vendor;
-    }
-
-    public VendorServiceOffering getVendorOffering() {
-        return vendorOffering;
-    }
-
-    public void setVendorOffering(VendorServiceOffering vendorOffering) {
-        this.vendorOffering = vendorOffering;
+    public void setVendorOfferingId(Long vendorOfferingId) {
+        this.vendorOfferingId = vendorOfferingId;
     }
 
     public RfqItemStatus getStatus() {
@@ -198,11 +189,18 @@ public class RfqItem {
         this.repliedAt = repliedAt;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    // ========== Equals and HashCode (value-based on itemId) ==========
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RfqItem rfqItem = (RfqItem) o;
+        return Objects.equals(itemId, rfqItem.itemId);
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    @Override
+    public int hashCode() {
+        return Objects.hash(itemId);
     }
 }

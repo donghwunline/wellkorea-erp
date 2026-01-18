@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 /**
  * PurchaseOrder entity representing an official order to a vendor
  * based on a selected RFQ response.
+ *
+ * References the RfqItem via purchaseRequest + rfqItemId (composite reference)
+ * since RfqItem is now an @Embeddable within PurchaseRequest.
  */
 @Entity
 @Table(name = "purchase_orders")
@@ -21,9 +24,19 @@ public class PurchaseOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Reference to the parent purchase request.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rfq_item_id", nullable = false)
-    private RfqItem rfqItem;
+    @JoinColumn(name = "purchase_request_id", nullable = false)
+    private PurchaseRequest purchaseRequest;
+
+    /**
+     * UUID reference to the selected RFQ item within the purchase request.
+     * Used with purchaseRequest to identify the specific RfqItem.
+     */
+    @Column(name = "rfq_item_id", nullable = false, length = 36)
+    private String rfqItemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
@@ -77,6 +90,19 @@ public class PurchaseOrder {
     }
 
     // Domain methods
+
+    /**
+     * Get the RfqItem from the parent purchase request.
+     * Convenience method to access the embedded RfqItem.
+     *
+     * @return the RfqItem referenced by rfqItemId
+     */
+    public RfqItem getRfqItem() {
+        if (purchaseRequest == null) {
+            return null;
+        }
+        return purchaseRequest.findRfqItemById(rfqItemId).orElse(null);
+    }
 
     /**
      * Check if the PO can be sent to vendor.
@@ -163,12 +189,20 @@ public class PurchaseOrder {
         this.id = id;
     }
 
-    public RfqItem getRfqItem() {
-        return rfqItem;
+    public PurchaseRequest getPurchaseRequest() {
+        return purchaseRequest;
     }
 
-    public void setRfqItem(RfqItem rfqItem) {
-        this.rfqItem = rfqItem;
+    public void setPurchaseRequest(PurchaseRequest purchaseRequest) {
+        this.purchaseRequest = purchaseRequest;
+    }
+
+    public String getRfqItemId() {
+        return rfqItemId;
+    }
+
+    public void setRfqItemId(String rfqItemId) {
+        this.rfqItemId = rfqItemId;
     }
 
     public Project getProject() {

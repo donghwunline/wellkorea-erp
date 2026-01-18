@@ -83,32 +83,29 @@ CREATE INDEX idx_purchase_requests_created_by ON purchase_requests (created_by_i
 CREATE INDEX idx_purchase_requests_required_date ON purchase_requests (required_date);
 
 -- =====================================================================
--- RFQ ITEMS
+-- RFQ ITEMS (ElementCollection table for PurchaseRequest aggregate)
 -- =====================================================================
 
 CREATE TABLE rfq_items
 (
-    id                  BIGSERIAL PRIMARY KEY,
     purchase_request_id BIGINT         NOT NULL REFERENCES purchase_requests (id) ON DELETE CASCADE,
-    vendor_company_id   BIGINT         NOT NULL REFERENCES companies (id) ON DELETE RESTRICT,
-    vendor_offering_id  BIGINT REFERENCES vendor_service_offerings (id) ON DELETE SET NULL,
+    item_id             VARCHAR(36)    NOT NULL,
+    vendor_company_id   BIGINT         NOT NULL,
+    vendor_offering_id  BIGINT,
     status              VARCHAR(20)    NOT NULL DEFAULT 'SENT',
     quoted_price        DECIMAL(15, 2),
     quoted_lead_time    INTEGER,
     notes               TEXT,
     sent_at             TIMESTAMP,
     replied_at          TIMESTAMP,
-    created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_rfq_items PRIMARY KEY (purchase_request_id, item_id),
     CONSTRAINT chk_rfq_status CHECK (status IN ('SENT', 'REPLIED', 'NO_RESPONSE', 'SELECTED', 'REJECTED')),
     CONSTRAINT chk_rfq_quoted_price_positive CHECK (quoted_price IS NULL OR quoted_price >= 0),
     CONSTRAINT chk_rfq_lead_time_positive CHECK (quoted_lead_time IS NULL OR quoted_lead_time >= 0)
 );
 
-CREATE INDEX idx_rfq_items_purchase_request ON rfq_items (purchase_request_id);
 CREATE INDEX idx_rfq_items_vendor ON rfq_items (vendor_company_id);
 CREATE INDEX idx_rfq_items_status ON rfq_items (status);
-CREATE INDEX idx_rfq_items_vendor_offering ON rfq_items (vendor_offering_id);
 
 CREATE UNIQUE INDEX idx_rfq_items_one_selected
     ON rfq_items (purchase_request_id)
@@ -121,7 +118,8 @@ CREATE UNIQUE INDEX idx_rfq_items_one_selected
 CREATE TABLE purchase_orders
 (
     id                     BIGSERIAL PRIMARY KEY,
-    rfq_item_id            BIGINT         NOT NULL REFERENCES rfq_items (id) ON DELETE RESTRICT,
+    purchase_request_id    BIGINT         NOT NULL REFERENCES purchase_requests (id) ON DELETE RESTRICT,
+    rfq_item_id            VARCHAR(36)    NOT NULL,
     project_id             BIGINT REFERENCES projects (id) ON DELETE SET NULL,
     vendor_company_id      BIGINT         NOT NULL REFERENCES companies (id) ON DELETE RESTRICT,
     po_number              VARCHAR(50)    NOT NULL UNIQUE,
@@ -139,7 +137,8 @@ CREATE TABLE purchase_orders
     CONSTRAINT chk_po_status CHECK (status IN ('DRAFT', 'SENT', 'CONFIRMED', 'RECEIVED', 'CANCELED'))
 );
 
-CREATE INDEX idx_purchase_orders_rfq_item ON purchase_orders (rfq_item_id);
+CREATE INDEX idx_purchase_orders_purchase_request ON purchase_orders (purchase_request_id);
+CREATE INDEX idx_purchase_orders_rfq_item ON purchase_orders (purchase_request_id, rfq_item_id);
 CREATE INDEX idx_purchase_orders_project ON purchase_orders (project_id);
 CREATE INDEX idx_purchase_orders_vendor ON purchase_orders (vendor_company_id);
 CREATE INDEX idx_purchase_orders_status ON purchase_orders (status);
@@ -163,11 +162,15 @@ COMMENT ON COLUMN purchase_requests.request_number IS 'Unique request ID: PR-YYY
 COMMENT ON COLUMN purchase_requests.status IS 'DRAFT → RFQ_SENT → VENDOR_SELECTED → CLOSED, or CANCELED';
 COMMENT ON COLUMN purchase_requests.material_id IS 'Reference to material (only for dtype=MATERIAL)';
 
-COMMENT ON TABLE rfq_items IS 'Individual RFQ sent to a specific vendor for a purchase request';
-COMMENT ON COLUMN rfq_items.vendor_offering_id IS 'Reference to vendor catalog offering (optional)';
+COMMENT ON TABLE rfq_items IS 'Individual RFQ sent to a specific vendor (embedded in PurchaseRequest aggregate)';
+COMMENT ON COLUMN rfq_items.item_id IS 'UUID identifier for the RFQ item within the purchase request';
+COMMENT ON COLUMN rfq_items.vendor_company_id IS 'Reference to vendor company (Long ID, not FK for embeddable)';
+COMMENT ON COLUMN rfq_items.vendor_offering_id IS 'Reference to vendor catalog offering (optional, Long ID)';
 COMMENT ON COLUMN rfq_items.status IS 'SENT → REPLIED → SELECTED/REJECTED, or NO_RESPONSE';
 COMMENT ON COLUMN rfq_items.quoted_price IS 'Vendor quoted price (required when status = REPLIED)';
 
 COMMENT ON TABLE purchase_orders IS 'Official order to vendor based on selected RFQ response';
+COMMENT ON COLUMN purchase_orders.purchase_request_id IS 'Reference to parent purchase request';
+COMMENT ON COLUMN purchase_orders.rfq_item_id IS 'UUID reference to the selected RFQ item within purchase request';
 COMMENT ON COLUMN purchase_orders.po_number IS 'Unique PO ID: PO-YYYY-NNNNNN';
 COMMENT ON COLUMN purchase_orders.status IS 'DRAFT → SENT → CONFIRMED → RECEIVED, or CANCELED';

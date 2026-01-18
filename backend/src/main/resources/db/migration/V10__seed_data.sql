@@ -359,21 +359,21 @@ ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('purchase_requests_id_seq', (SELECT COALESCE(MAX(id), 1) FROM purchase_requests));
 
-INSERT INTO rfq_items (id, purchase_request_id, vendor_company_id, vendor_offering_id, status, quoted_price, quoted_lead_time, notes, sent_at, replied_at, created_at, updated_at)
+-- RFQ Items (Embeddable collection - composite PK: purchase_request_id + item_id)
+INSERT INTO rfq_items (purchase_request_id, item_id, vendor_company_id, vendor_offering_id, status, quoted_price, quoted_lead_time, notes, sent_at, replied_at)
 VALUES
-    (1, 1, 9, 2, 'SELECTED', 4000000.00, 5, '스테인리스 레이저 컷팅 50EA - 특별가', CURRENT_TIMESTAMP - INTERVAL '9 days', CURRENT_TIMESTAMP - INTERVAL '7 days', CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP),
-    (2, 1, 10, NULL, 'REJECTED', 4500000.00, 7, '외주 레이저 위탁 가능', CURRENT_TIMESTAMP - INTERVAL '9 days', CURRENT_TIMESTAMP - INTERVAL '6 days', CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP),
-    (3, 2, 10, 5, 'REPLIED', 9500000.00, 10, 'TIG 용접 포함', CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP),
-    (4, 2, 11, NULL, 'SENT', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '4 days', NULL, CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP),
-    (5, 4, 11, 7, 'SELECTED', 1200000.00, 7, 'CNC 정밀 밀링 - 20EA', CURRENT_TIMESTAMP - INTERVAL '18 days', CURRENT_TIMESTAMP - INTERVAL '16 days', CURRENT_TIMESTAMP - INTERVAL '20 days', CURRENT_TIMESTAMP)
-ON CONFLICT (id) DO NOTHING;
+    (1, '550e8400-e29b-41d4-a716-446655440001', 9, 2, 'SELECTED', 4000000.00, 5, '스테인리스 레이저 컷팅 50EA - 특별가', CURRENT_TIMESTAMP - INTERVAL '9 days', CURRENT_TIMESTAMP - INTERVAL '7 days'),
+    (1, '550e8400-e29b-41d4-a716-446655440002', 10, NULL, 'REJECTED', 4500000.00, 7, '외주 레이저 위탁 가능', CURRENT_TIMESTAMP - INTERVAL '9 days', CURRENT_TIMESTAMP - INTERVAL '6 days'),
+    (2, '550e8400-e29b-41d4-a716-446655440003', 10, 5, 'REPLIED', 9500000.00, 10, 'TIG 용접 포함', CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+    (2, '550e8400-e29b-41d4-a716-446655440004', 11, NULL, 'SENT', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '4 days', NULL),
+    (4, '550e8400-e29b-41d4-a716-446655440005', 11, 7, 'SELECTED', 1200000.00, 7, 'CNC 정밀 밀링 - 20EA', CURRENT_TIMESTAMP - INTERVAL '18 days', CURRENT_TIMESTAMP - INTERVAL '16 days')
+ON CONFLICT (purchase_request_id, item_id) DO NOTHING;
 
-SELECT setval('rfq_items_id_seq', (SELECT COALESCE(MAX(id), 1) FROM rfq_items));
-
-INSERT INTO purchase_orders (id, rfq_item_id, project_id, vendor_company_id, po_number, order_date, expected_delivery_date, total_amount, currency, status, notes, created_by_id, created_at, updated_at)
+-- Purchase Orders (references purchase_request_id + rfq_item_id UUID)
+INSERT INTO purchase_orders (id, purchase_request_id, rfq_item_id, project_id, vendor_company_id, po_number, order_date, expected_delivery_date, total_amount, currency, status, notes, created_by_id, created_at, updated_at)
 VALUES
-    (1, 1, 1, 9, 'PO-2025-000001', CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE + INTERVAL '3 days', 4000000.00, 'KRW', 'CONFIRMED', '레이저 컷팅 솔루션 - 스테인리스 패널 50EA', 1, CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP),
-    (2, 5, 1, 11, 'PO-2025-000002', CURRENT_DATE - INTERVAL '14 days', CURRENT_DATE - INTERVAL '5 days', 1200000.00, 'KRW', 'RECEIVED', '정밀 가공 - CNC 밀링 20EA 수령 완료', 1, CURRENT_TIMESTAMP - INTERVAL '14 days', CURRENT_TIMESTAMP)
+    (1, 1, '550e8400-e29b-41d4-a716-446655440001', 1, 9, 'PO-2025-000001', CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE + INTERVAL '3 days', 4000000.00, 'KRW', 'CONFIRMED', '레이저 컷팅 솔루션 - 스테인리스 패널 50EA', 1, CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP),
+    (2, 4, '550e8400-e29b-41d4-a716-446655440005', 1, 11, 'PO-2025-000002', CURRENT_DATE - INTERVAL '14 days', CURRENT_DATE - INTERVAL '5 days', 1200000.00, 'KRW', 'RECEIVED', '정밀 가공 - CNC 밀링 20EA 수령 완료', 1, CURRENT_TIMESTAMP - INTERVAL '14 days', CURRENT_TIMESTAMP)
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('purchase_orders_id_seq', (SELECT COALESCE(MAX(id), 1) FROM purchase_orders));
