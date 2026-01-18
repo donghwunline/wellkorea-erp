@@ -272,6 +272,32 @@ public abstract class PurchaseRequest {
                 .findFirst();
     }
 
+    /**
+     * Revert vendor selection after a purchase order is canceled.
+     * This transitions the purchase request back to RFQ_SENT status
+     * and deselects the RFQ item so a different vendor can be selected.
+     *
+     * <p>This method is idempotent - if the RFQ item is already in REPLIED status,
+     * it will only update the purchase request status.
+     *
+     * @param itemId the RFQ item ID that was selected for the canceled PO
+     */
+    public void revertVendorSelection(String itemId) {
+        if (status != PurchaseRequestStatus.VENDOR_SELECTED) {
+            throw new IllegalStateException("Cannot revert vendor selection for purchase request in " + status + " status");
+        }
+
+        RfqItem rfqItem = getRfqItemById(itemId);
+
+        // Only deselect if currently selected (idempotent)
+        if (rfqItem.getStatus() == RfqItemStatus.SELECTED) {
+            rfqItem.deselect();
+        }
+
+        // Transition back to RFQ_SENT so user can select another vendor
+        this.status = PurchaseRequestStatus.RFQ_SENT;
+    }
+
     // ========== Getters and Setters ==========
 
     public Long getId() {

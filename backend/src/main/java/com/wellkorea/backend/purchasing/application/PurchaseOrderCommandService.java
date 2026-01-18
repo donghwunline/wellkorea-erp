@@ -9,8 +9,10 @@ import com.wellkorea.backend.purchasing.domain.PurchaseOrderStatus;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.RfqItem;
 import com.wellkorea.backend.purchasing.domain.RfqItemStatus;
+import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCanceledEvent;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseOrderRepository;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
+import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -29,15 +31,18 @@ public class PurchaseOrderCommandService {
     private final PurchaseRequestRepository purchaseRequestRepository;
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
+    private final DomainEventPublisher eventPublisher;
 
     public PurchaseOrderCommandService(PurchaseOrderRepository purchaseOrderRepository,
                                        PurchaseRequestRepository purchaseRequestRepository,
                                        CompanyRepository companyRepository,
-                                       UserRepository userRepository) {
+                                       UserRepository userRepository,
+                                       DomainEventPublisher eventPublisher) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -177,13 +182,27 @@ public class PurchaseOrderCommandService {
 
     /**
      * Cancel a purchase order.
+     * Publishes a PurchaseOrderCanceledEvent to revert the PurchaseRequest status.
      */
     public void cancelPurchaseOrder(Long id) {
-        PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(id)
+        PurchaseOrder purchaseOrder = purchaseOrderRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with ID: " + id));
+
+        PurchaseRequest purchaseRequest = purchaseOrder.getPurchaseRequest();
+        if (purchaseRequest == null) {
+            throw new BusinessException("Purchase order has no associated purchase request");
+        }
 
         purchaseOrder.cancel();
         purchaseOrderRepository.save(purchaseOrder);
+
+        // Publish event to revert PurchaseRequest status
+        eventPublisher.publish(new PurchaseOrderCanceledEvent(
+                purchaseOrder.getId(),
+                purchaseRequest.getId(),
+                purchaseOrder.getRfqItemId(),
+                purchaseOrder.getPoNumber()
+        ));
     }
 
     /**

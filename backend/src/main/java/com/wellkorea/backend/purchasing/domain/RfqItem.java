@@ -115,6 +115,17 @@ public class RfqItem {
         this.status = RfqItemStatus.REJECTED;
     }
 
+    /**
+     * Deselect this vendor's quote (revert from SELECTED to REPLIED).
+     * Called when the associated purchase order is canceled.
+     */
+    public void deselect() {
+        if (status != RfqItemStatus.SELECTED) {
+            throw new IllegalStateException("Cannot deselect RFQ item in " + status + " status");
+        }
+        this.status = RfqItemStatus.REPLIED;
+    }
+
     // Getters and Setters
 
     public String getItemId() {
