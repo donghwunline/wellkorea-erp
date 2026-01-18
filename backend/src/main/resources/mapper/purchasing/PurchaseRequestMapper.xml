@@ -18,6 +18,7 @@
             <arg column="notes" javaType="String"/>
             <arg column="sentAt" javaType="java.time.LocalDateTime"/>
             <arg column="repliedAt" javaType="java.time.LocalDateTime"/>
+            <arg column="purchaseOrderId" javaType="Long"/>
         </constructor>
     </resultMap>
 
@@ -183,9 +184,12 @@
             ri.quoted_lead_time AS quotedLeadTime,
             ri.notes,
             ri.sent_at AS sentAt,
-            ri.replied_at AS repliedAt
+            ri.replied_at AS repliedAt,
+            po.id AS purchaseOrderId
         FROM rfq_items ri
         JOIN companies c ON ri.vendor_company_id = c.id
+        LEFT JOIN purchase_orders po ON ri.purchase_request_id = po.purchase_request_id
+            AND ri.item_id = po.rfq_item_id
         WHERE ri.purchase_request_id = #{purchaseRequestId}
         ORDER BY ri.sent_at
     </select>

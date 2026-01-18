@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 /**
  * View DTO for RFQ item.
+ * Includes purchaseOrderId to indicate if a PO has been created for this RFQ item.
  */
 public record RfqItemView(
         String itemId,
@@ -17,6 +18,7 @@ public record RfqItemView(
         Integer quotedLeadTime,
         String notes,
         LocalDateTime sentAt,
-        LocalDateTime repliedAt
+        LocalDateTime repliedAt,
+        Long purchaseOrderId  // null if no PO created yet
 ) {
 }
