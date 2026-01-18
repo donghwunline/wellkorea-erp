@@ -23,7 +23,7 @@ export interface CommandResult {
 // =============================================================================
 
 export interface RfqItemResponse {
-  id: number;
+  itemId: string; // UUID string
   purchaseRequestId: number;
   vendorId: number;
   vendorName: string;
@@ -34,7 +34,6 @@ export interface RfqItemResponse {
   notes: string | null;
   sentAt: string | null;
   repliedAt: string | null;
-  createdAt: string;
 }
 
 export interface PurchaseRequestSummaryResponse {
@@ -107,7 +106,7 @@ export interface PurchaseRequestListParams {
 const rfqItemMapper = {
   toDomain(response: RfqItemResponse): RfqItem {
     return {
-      id: response.id,
+      itemId: response.itemId,
       purchaseRequestId: response.purchaseRequestId,
       vendorId: response.vendorId,
       vendorName: response.vendorName.trim(),
@@ -118,7 +117,6 @@ const rfqItemMapper = {
       notes: response.notes?.trim() ?? null,
       sentAt: response.sentAt,
       repliedAt: response.repliedAt,
-      createdAt: response.createdAt,
     };
   },
 };

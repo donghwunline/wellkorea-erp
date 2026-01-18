@@ -228,7 +228,7 @@ export function PurchaseRequestDetailModal({
                 </Table.Header>
                 <Table.Body>
                   {request.rfqItems.map((item: RfqItem) => (
-                    <Table.Row key={item.id}>
+                    <Table.Row key={item.itemId}>
                       <Table.Cell className="font-medium text-white">
                         {item.vendorName}
                       </Table.Cell>

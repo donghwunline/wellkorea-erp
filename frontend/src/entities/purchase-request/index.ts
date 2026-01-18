@@ -67,4 +67,15 @@ export type { UpdatePurchaseRequestInput } from './api/update-purchase-request';
 export { sendRfq } from './api/send-rfq';
 export type { SendRfqInput } from './api/send-rfq';
 
+export {
+  recordRfqReply,
+  markRfqNoResponse,
+  selectVendor,
+  rejectRfq,
+} from './api/rfq-operations';
+export type {
+  RecordRfqReplyInput,
+  RfqItemOperationInput,
+} from './api/rfq-operations';
+
 export { cancelPurchaseRequest } from './api/cancel-purchase-request';

@@ -5,7 +5,7 @@
 import { RfqItemStatus, RfqItemStatusConfig, type StatusConfig } from './rfq-item-status';
 
 export interface RfqItem {
-  readonly id: number;
+  readonly itemId: string; // UUID string
   readonly purchaseRequestId: number;
   readonly vendorId: number;
   readonly vendorName: string;
@@ -16,7 +16,6 @@ export interface RfqItem {
   readonly notes: string | null;
   readonly sentAt: string | null; // ISO datetime
   readonly repliedAt: string | null; // ISO datetime
-  readonly createdAt: string; // ISO datetime
 }
 
 /**
@@ -35,6 +34,27 @@ export const rfqItemRules = {
    */
   canCreateOrder(item: RfqItem): boolean {
     return item.status === RfqItemStatus.REPLIED && item.quotedPrice !== null;
+  },
+
+  /**
+   * Check if the RFQ item can record a reply.
+   */
+  canRecordReply(item: RfqItem): boolean {
+    return item.status === RfqItemStatus.SENT;
+  },
+
+  /**
+   * Check if the RFQ item can be marked as no response.
+   */
+  canMarkNoResponse(item: RfqItem): boolean {
+    return item.status === RfqItemStatus.SENT;
+  },
+
+  /**
+   * Check if the RFQ item can be rejected.
+   */
+  canReject(item: RfqItem): boolean {
+    return item.status === RfqItemStatus.REPLIED;
   },
 
   /**

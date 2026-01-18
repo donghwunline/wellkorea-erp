@@ -289,6 +289,14 @@ export const PURCHASE_REQUEST_ENDPOINTS = {
   byId: (id: number) => `/purchase-requests/${id}`,
   /** POST /purchase-requests/:id/send-rfq - Send RFQ to vendors */
   sendRfq: (id: number) => `/purchase-requests/${id}/send-rfq`,
+  /** POST /purchase-requests/:id/record-reply - Record vendor reply */
+  recordReply: (id: number) => `/purchase-requests/${id}/record-reply`,
+  /** POST /purchase-requests/:id/mark-no-response - Mark vendor as non-responsive */
+  markNoResponse: (id: number) => `/purchase-requests/${id}/mark-no-response`,
+  /** POST /purchase-requests/:id/select-vendor - Select vendor for the request */
+  selectVendor: (id: number) => `/purchase-requests/${id}/select-vendor`,
+  /** POST /purchase-requests/:id/reject-rfq - Reject vendor quote */
+  rejectRfq: (id: number) => `/purchase-requests/${id}/reject-rfq`,
   /** DELETE /purchase-requests/:id - Cancel purchase request */
   cancel: (id: number) => `/purchase-requests/${id}`,
 } as const;
