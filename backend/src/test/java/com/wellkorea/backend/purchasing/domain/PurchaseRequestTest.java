@@ -628,6 +628,49 @@ class PurchaseRequestTest {
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.VENDOR_SELECTED);
             assertThat(vendor2.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
         }
+
+        @Test
+        @DisplayName("Add new vendors when all existing RfqItems are NO_RESPONSE or REJECTED")
+        void addNewVendorsWhenAllItemsNoResponseOrRejected() {
+            // Given - send RFQ to 3 vendors
+            RfqItem vendor1 = purchaseRequest.addRfqItem(1L, null);
+            RfqItem vendor2 = purchaseRequest.addRfqItem(2L, null);
+            RfqItem vendor3 = purchaseRequest.addRfqItem(3L, null);
+            purchaseRequest.sendRfq();
+
+            // Vendor 1 doesn't respond
+            purchaseRequest.markRfqNoResponse(vendor1.getItemId());
+
+            // Vendors 2 and 3 reply but get rejected
+            purchaseRequest.recordRfqReply(vendor2.getItemId(), new BigDecimal("5000"), 30, "Too expensive");
+            purchaseRequest.recordRfqReply(vendor3.getItemId(), new BigDecimal("4500"), 45, "Lead time too long");
+            purchaseRequest.rejectRfq(vendor2.getItemId());
+            purchaseRequest.rejectRfq(vendor3.getItemId());
+
+            // Verify - all items are in terminal or rejected state
+            assertThat(vendor1.getStatus()).isEqualTo(RfqItemStatus.NO_RESPONSE);
+            assertThat(vendor2.getStatus()).isEqualTo(RfqItemStatus.REJECTED);
+            assertThat(vendor3.getStatus()).isEqualTo(RfqItemStatus.REJECTED);
+
+            // PR should still be in RFQ_SENT, allowing user to add more vendors
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
+            assertThat(purchaseRequest.canSendRfq()).isTrue();
+
+            // When - add new vendor
+            RfqItem vendor4 = purchaseRequest.addRfqItem(4L, null);
+            purchaseRequest.sendRfq(); // idempotent
+
+            // Then - new vendor added successfully
+            assertThat(purchaseRequest.getRfqItems()).hasSize(4);
+            assertThat(vendor4.getStatus()).isEqualTo(RfqItemStatus.SENT);
+
+            // And - can complete the workflow with the new vendor
+            purchaseRequest.recordRfqReply(vendor4.getItemId(), new BigDecimal("2000"), 7, "Good price");
+            purchaseRequest.selectVendor(vendor4.getItemId());
+
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.VENDOR_SELECTED);
+            assertThat(vendor4.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
+        }
     }
 
     @Nested

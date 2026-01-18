@@ -255,12 +255,18 @@ sequenceDiagram
    - Revert vendor selection
    - Can select again or add vendors
 
-4. **Cancel from Any Non-Terminal State**
+4. **Add Vendors When All Items NO_RESPONSE/REJECTED**
+   - All existing RfqItems are in NO_RESPONSE or REJECTED status
+   - PR remains in RFQ_SENT (not terminal)
+   - User can add new vendors via sendRfq()
+   - New vendors can be quoted and selected
+
+5. **Cancel from Any Non-Terminal State**
    - DRAFT → CANCELED
    - RFQ_SENT → CANCELED
    - VENDOR_SELECTED → CANCELED
 
-5. **Invalid Transitions**
+6. **Invalid Transitions**
    - Cannot close from RFQ_SENT (must select vendor first)
    - Cannot revert from RFQ_SENT
    - Cannot cancel from CLOSED
