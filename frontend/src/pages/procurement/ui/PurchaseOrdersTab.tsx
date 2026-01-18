@@ -2,6 +2,7 @@
  * Purchase Orders Tab - Displays all purchase orders.
  *
  * Shows POs across all stages with filtering by status.
+ * Click on a row to view PO details with workflow actions.
  */
 
 import { useCallback, useState } from 'react';
@@ -15,6 +16,7 @@ import {
 } from '@/entities/purchase-order';
 import { Badge, Card, Pagination, Spinner, Table } from '@/shared/ui';
 import { formatDate, Money } from '@/shared/lib/formatting';
+import { PurchaseOrderDetailModal } from '@/widgets';
 
 const PAGE_SIZE = 20;
 
@@ -38,10 +40,23 @@ export function PurchaseOrdersTab() {
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | null>(null);
 
+  // Modal state
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+
   // Handle filter changes with pagination reset
   const handleStatusChange = useCallback((status: PurchaseOrderStatus | null) => {
     setStatusFilter(status);
     setPage(0);
+  }, []);
+
+  // Handle row click to open detail modal
+  const handleRowClick = useCallback((orderId: number) => {
+    setSelectedOrderId(orderId);
+  }, []);
+
+  // Handle modal close
+  const handleCloseModal = useCallback(() => {
+    setSelectedOrderId(null);
   }, []);
 
   // Server state via Query Factory
@@ -133,6 +148,7 @@ export function PurchaseOrdersTab() {
                       <Table.Row
                         key={order.id}
                         className="cursor-pointer transition-colors hover:bg-steel-800/50"
+                        onClick={() => handleRowClick(order.id)}
                       >
                         <Table.Cell>
                           <span className="font-medium text-copper-400">{order.poNumber}</span>
@@ -171,6 +187,16 @@ export function PurchaseOrdersTab() {
             />
           )}
         </>
+      )}
+
+      {/* Detail Modal */}
+      {selectedOrderId && (
+        <PurchaseOrderDetailModal
+          purchaseOrderId={selectedOrderId}
+          isOpen={Boolean(selectedOrderId)}
+          onClose={handleCloseModal}
+          onSuccess={() => refetch()}
+        />
       )}
     </div>
   );
