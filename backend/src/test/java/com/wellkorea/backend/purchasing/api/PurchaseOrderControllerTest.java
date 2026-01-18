@@ -62,6 +62,9 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
     private String nextMonth;
     private String yesterday;  // For invalid date testing
 
+    // Test UUID for RFQ item (consistent across all tests)
+    private static final String TEST_RFQ_ITEM_ID = "test0000-0000-0000-0000-000000000900";
+
     @BeforeEach
     void setUp() {
         // Initialize dynamic dates
@@ -84,7 +87,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         insertTestVendorCompany(950L, "Vendor A");
         insertTestProject(900L, "WK2K25-9001-0115", 900L, 1L);
         insertTestPurchaseRequest(900L, 900L, 900L, "PR-TEST-000001", "Test purchase request");
-        insertTestRfqItem(900L, 900L, 950L, 50000.00);
+        insertTestRfqItem(TEST_RFQ_ITEM_ID, 900L, 950L, 50000.00);
     }
 
     // ==========================================================================
@@ -100,12 +103,13 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_AsAdmin_Returns201() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 900,
+                        "purchaseRequestId": 900,
+                        "rfqItemId": "%s",
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s",
                         "notes": "Rush order"
                     }
-                    """, today, nextMonth);
+                    """, TEST_RFQ_ITEM_ID, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + adminToken)
@@ -123,11 +127,12 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_AsFinance_Returns201() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 900,
+                        "purchaseRequestId": 900,
+                        "rfqItemId": "%s",
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
-                    """, today, nextMonth);
+                    """, TEST_RFQ_ITEM_ID, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + financeToken)
@@ -142,11 +147,12 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_AsSales_Returns403() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 900,
+                        "purchaseRequestId": 900,
+                        "rfqItemId": "%s",
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
-                    """, today, nextMonth);
+                    """, TEST_RFQ_ITEM_ID, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + salesToken)
@@ -177,11 +183,12 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_DeliveryBeforeOrder_Returns400() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 900,
+                        "purchaseRequestId": 900,
+                        "rfqItemId": "%s",
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
-                    """, nextMonth, today);  // delivery before order
+                    """, TEST_RFQ_ITEM_ID, nextMonth, today);  // delivery before order
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .header("Authorization", "Bearer " + adminToken)
@@ -195,7 +202,8 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_RfqItemNotFound_Returns404() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 99999,
+                        "purchaseRequestId": 900,
+                        "rfqItemId": "nonexist-0000-0000-0000-000000000000",
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
@@ -213,11 +221,12 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void createPurchaseOrder_WithoutAuth_Returns401() throws Exception {
             String createRequest = String.format("""
                     {
-                        "rfqItemId": 900,
+                        "purchaseRequestId": 900,
+                        "rfqItemId": "%s",
                         "orderDate": "%s",
                         "expectedDeliveryDate": "%s"
                     }
-                    """, today, nextMonth);
+                    """, TEST_RFQ_ITEM_ID, today, nextMonth);
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL)
                             .contentType(MediaType.APPLICATION_JSON)
@@ -236,8 +245,8 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrders() {
-            insertTestPurchaseOrder(100L, 900L, 950L, "PO-TEST-000001", 50000.00);
-            insertTestPurchaseOrder(101L, 900L, 950L, "PO-TEST-000002", 75000.00);
+            insertTestPurchaseOrder(100L, 900L, TEST_RFQ_ITEM_ID, 950L, "PO-TEST-000001", 50000.00);
+            insertTestPurchaseOrder(101L, 900L, TEST_RFQ_ITEM_ID, 950L, "PO-TEST-000002", 75000.00);
         }
 
         @Test
@@ -308,7 +317,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrder() {
-            insertTestPurchaseOrder(100L, 900L, 950L, "PO-2025-000100", 50000.00);
+            insertTestPurchaseOrder(100L, 900L, TEST_RFQ_ITEM_ID, 950L, "PO-2025-000100", 50000.00);
         }
 
         @Test
@@ -350,7 +359,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrder() {
-            insertTestPurchaseOrder(200L, 900L, 950L, "PO-2025-000200", 50000.00);
+            insertTestPurchaseOrder(200L, 900L, TEST_RFQ_ITEM_ID, 950L, "PO-2025-000200", 50000.00);
         }
 
         @Test
@@ -416,7 +425,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrder() {
-            insertTestPurchaseOrder(300L, 900L, 950L, "PO-2025-000300", 50000.00);
+            insertTestPurchaseOrder(300L, 900L, TEST_RFQ_ITEM_ID, 950L, "PO-2025-000300", 50000.00);
         }
 
         @Test
@@ -460,8 +469,8 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         void setUpSentPurchaseOrder() {
             // Receiving a PO closes the PR, so PR must be in VENDOR_SELECTED status
             jdbcTemplate.update("UPDATE purchase_requests SET status = 'VENDOR_SELECTED' WHERE id = 900");
-            jdbcTemplate.update("UPDATE rfq_items SET status = 'SELECTED' WHERE id = 900");
-            insertTestPurchaseOrder(400L, 900L, 950L, "PO-2025-000400", 50000.00);
+            jdbcTemplate.update("UPDATE rfq_items SET status = 'SELECTED' WHERE purchase_request_id = 900 AND item_id = ?", TEST_RFQ_ITEM_ID);
+            insertTestPurchaseOrder(400L, 900L, TEST_RFQ_ITEM_ID, 950L, "PO-2025-000400", 50000.00);
             jdbcTemplate.update("UPDATE purchase_orders SET status = 'CONFIRMED' WHERE id = 400");
         }
 
@@ -505,7 +514,7 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
 
         @BeforeEach
         void setUpPurchaseOrder() {
-            insertTestPurchaseOrder(500L, 900L, 950L, "PO-2025-000500", 50000.00);
+            insertTestPurchaseOrder(500L, 900L, TEST_RFQ_ITEM_ID, 950L, "PO-2025-000500", 50000.00);
         }
 
         @Test
@@ -605,23 +614,23 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         );
     }
 
-    private void insertTestRfqItem(Long id, Long purchaseRequestId, Long vendorId, Double quotedPrice) {
+    private void insertTestRfqItem(String itemId, Long purchaseRequestId, Long vendorId, Double quotedPrice) {
         jdbcTemplate.update(
-                "INSERT INTO rfq_items (id, purchase_request_id, vendor_company_id, status, quoted_price, " +
-                        "sent_at, replied_at, created_at) " +
-                        "VALUES (?, ?, ?, 'REPLIED', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
-                        "ON CONFLICT (id) DO NOTHING",
-                id, purchaseRequestId, vendorId, quotedPrice
+                "INSERT INTO rfq_items (purchase_request_id, item_id, vendor_company_id, status, quoted_price, " +
+                        "sent_at, replied_at) " +
+                        "VALUES (?, ?, ?, 'REPLIED', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                        "ON CONFLICT (purchase_request_id, item_id) DO NOTHING",
+                purchaseRequestId, itemId, vendorId, quotedPrice
         );
     }
 
-    private void insertTestPurchaseOrder(Long id, Long rfqItemId, Long vendorId, String poNumber, Double totalAmount) {
+    private void insertTestPurchaseOrder(Long id, Long purchaseRequestId, String rfqItemId, Long vendorId, String poNumber, Double totalAmount) {
         jdbcTemplate.update(
-                "INSERT INTO purchase_orders (id, rfq_item_id, project_id, vendor_company_id, po_number, " +
+                "INSERT INTO purchase_orders (id, purchase_request_id, rfq_item_id, project_id, vendor_company_id, po_number, " +
                         "order_date, expected_delivery_date, total_amount, status, created_by_id, created_at, updated_at) " +
-                        "VALUES (?, ?, 1, ?, ?, CURRENT_DATE, CURRENT_DATE + 30, ?, 'DRAFT', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                        "VALUES (?, ?, ?, 1, ?, ?, CURRENT_DATE, CURRENT_DATE + 30, ?, 'DRAFT', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
                         "ON CONFLICT (id) DO NOTHING",
-                id, rfqItemId, vendorId, poNumber, totalAmount
+                id, purchaseRequestId, rfqItemId, vendorId, poNumber, totalAmount
         );
     }
 }
