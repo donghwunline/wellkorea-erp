@@ -4,6 +4,7 @@ import com.wellkorea.backend.catalog.api.dto.command.*;
 import com.wellkorea.backend.catalog.api.dto.query.MaterialCategorySummaryView;
 import com.wellkorea.backend.catalog.api.dto.query.MaterialDetailView;
 import com.wellkorea.backend.catalog.api.dto.query.MaterialSummaryView;
+import com.wellkorea.backend.catalog.api.dto.query.VendorMaterialOfferingView;
 import com.wellkorea.backend.catalog.application.MaterialCategoryCommandService;
 import com.wellkorea.backend.catalog.application.MaterialCategoryQueryService;
 import com.wellkorea.backend.catalog.application.MaterialCommandService;
@@ -86,6 +87,32 @@ public class MaterialController {
     public ResponseEntity<ApiResponse<MaterialDetailView>> getMaterial(@PathVariable Long id) {
         MaterialDetailView material = materialQueryService.getMaterialDetail(id);
         return ResponseEntity.ok(ApiResponse.success(material));
+    }
+
+    /**
+     * Get current vendor offerings for a material.
+     * Returns only offerings within their effective date range.
+     * <p>
+     * GET /api/materials/{id}/offerings/current
+     */
+    @GetMapping("/{id}/offerings/current")
+    public ResponseEntity<ApiResponse<List<VendorMaterialOfferingView>>> getCurrentOfferingsForMaterial(
+            @PathVariable Long id) {
+        List<VendorMaterialOfferingView> offerings = materialQueryService.getCurrentOfferingsForMaterial(id);
+        return ResponseEntity.ok(ApiResponse.success(offerings));
+    }
+
+    /**
+     * Get all vendor offerings for a material (paginated).
+     * <p>
+     * GET /api/materials/{id}/offerings
+     */
+    @GetMapping("/{id}/offerings")
+    public ResponseEntity<ApiResponse<Page<VendorMaterialOfferingView>>> getOfferingsForMaterial(
+            @PathVariable Long id,
+            Pageable pageable) {
+        Page<VendorMaterialOfferingView> offerings = materialQueryService.getOfferingsForMaterial(id, pageable);
+        return ResponseEntity.ok(ApiResponse.success(offerings));
     }
 
     // ========== MATERIAL COMMAND ENDPOINTS ==========

@@ -138,4 +138,96 @@
         WHERE m.id = #{id}
     </select>
 
+    <!-- ========== VENDOR MATERIAL OFFERING QUERIES ========== -->
+
+    <!-- VendorMaterialOfferingView result map -->
+    <resultMap id="VendorMaterialOfferingViewResult" type="com.wellkorea.backend.catalog.api.dto.query.VendorMaterialOfferingView">
+        <constructor>
+            <arg column="id" javaType="java.lang.Long"/>
+            <arg column="vendor_id" javaType="java.lang.Long"/>
+            <arg column="vendor_name" javaType="java.lang.String"/>
+            <arg column="material_id" javaType="java.lang.Long"/>
+            <arg column="material_name" javaType="java.lang.String"/>
+            <arg column="material_sku" javaType="java.lang.String"/>
+            <arg column="vendor_material_code" javaType="java.lang.String"/>
+            <arg column="vendor_material_name" javaType="java.lang.String"/>
+            <arg column="unit_price" javaType="java.math.BigDecimal"/>
+            <arg column="currency" javaType="java.lang.String"/>
+            <arg column="lead_time_days" javaType="java.lang.Integer"/>
+            <arg column="min_order_quantity" javaType="java.lang.Integer"/>
+            <arg column="effective_from" javaType="java.time.LocalDate"/>
+            <arg column="effective_to" javaType="java.time.LocalDate"/>
+            <arg column="is_preferred" javaType="_boolean"/>
+            <arg column="notes" javaType="java.lang.String"/>
+            <arg column="created_at" javaType="java.time.LocalDateTime"/>
+            <arg column="updated_at" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Common SELECT columns for vendor material offerings -->
+    <sql id="vendorMaterialOfferingColumns">
+        vmo.id,
+        vmo.vendor_company_id AS vendor_id,
+        c.name AS vendor_name,
+        vmo.material_id,
+        m.name AS material_name,
+        m.sku AS material_sku,
+        vmo.vendor_material_code,
+        vmo.vendor_material_name,
+        vmo.unit_price,
+        vmo.currency,
+        vmo.lead_time_days,
+        vmo.min_order_quantity,
+        vmo.effective_from,
+        vmo.effective_to,
+        vmo.is_preferred,
+        vmo.notes,
+        vmo.created_at,
+        vmo.updated_at
+    </sql>
+
+    <!-- Find current offerings by material ID -->
+    <!-- NULL effective_from means always effective (no start date restriction) -->
+    <!-- NULL effective_to means no expiry -->
+    <select id="findCurrentOfferingsByMaterialId" resultMap="VendorMaterialOfferingViewResult">
+        SELECT
+            <include refid="vendorMaterialOfferingColumns"/>
+        FROM vendor_material_offerings vmo
+        INNER JOIN companies c ON vmo.vendor_company_id = c.id
+        INNER JOIN materials m ON vmo.material_id = m.id
+        WHERE vmo.material_id = #{materialId}
+          AND (vmo.effective_from IS NULL OR vmo.effective_from &lt;= #{currentDate})
+          AND (vmo.effective_to IS NULL OR vmo.effective_to &gt;= #{currentDate})
+        ORDER BY vmo.is_preferred DESC, c.name
+    </select>
+
+    <!-- Find offerings by material ID for pagination -->
+    <select id="findOfferingsByMaterialId" resultMap="VendorMaterialOfferingViewResult">
+        SELECT
+            <include refid="vendorMaterialOfferingColumns"/>
+        FROM vendor_material_offerings vmo
+        INNER JOIN companies c ON vmo.vendor_company_id = c.id
+        INNER JOIN materials m ON vmo.material_id = m.id
+        WHERE vmo.material_id = #{materialId}
+        ORDER BY vmo.is_preferred DESC, c.name
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count offerings by material ID -->
+    <select id="countOfferingsByMaterialId" resultType="long">
+        SELECT COUNT(*)
+        FROM vendor_material_offerings vmo
+        WHERE vmo.material_id = #{materialId}
+    </select>
+
+    <!-- Find offering by ID -->
+    <select id="findOfferingById" resultMap="VendorMaterialOfferingViewResult">
+        SELECT
+            <include refid="vendorMaterialOfferingColumns"/>
+        FROM vendor_material_offerings vmo
+        INNER JOIN companies c ON vmo.vendor_company_id = c.id
+        INNER JOIN materials m ON vmo.material_id = m.id
+        WHERE vmo.id = #{id}
+    </select>
+
 </mapper>

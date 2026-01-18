@@ -2,9 +2,11 @@ package com.wellkorea.backend.catalog.infrastructure.mapper;
 
 import com.wellkorea.backend.catalog.api.dto.query.MaterialDetailView;
 import com.wellkorea.backend.catalog.api.dto.query.MaterialSummaryView;
+import com.wellkorea.backend.catalog.api.dto.query.VendorMaterialOfferingView;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,4 +48,41 @@ public interface MaterialMapper {
      * Find material by ID.
      */
     Optional<MaterialDetailView> findById(@Param("id") Long id);
+
+    // ========== VENDOR MATERIAL OFFERING QUERIES ==========
+
+    /**
+     * Find current vendor offerings by material ID.
+     * Only includes offerings within their effective date range.
+     *
+     * @param materialId  Material ID
+     * @param currentDate Current date for effective date filtering
+     * @return List of current vendor offerings
+     */
+    List<VendorMaterialOfferingView> findCurrentOfferingsByMaterialId(
+            @Param("materialId") Long materialId,
+            @Param("currentDate") LocalDate currentDate);
+
+    /**
+     * Find all vendor offerings by material ID (paginated).
+     *
+     * @param materialId Material ID
+     * @param limit      Page size
+     * @param offset     Starting offset
+     * @return List of vendor offerings
+     */
+    List<VendorMaterialOfferingView> findOfferingsByMaterialId(
+            @Param("materialId") Long materialId,
+            @Param("limit") int limit,
+            @Param("offset") long offset);
+
+    /**
+     * Count vendor offerings by material ID.
+     */
+    long countOfferingsByMaterialId(@Param("materialId") Long materialId);
+
+    /**
+     * Find vendor offering by ID.
+     */
+    Optional<VendorMaterialOfferingView> findOfferingById(@Param("id") Long id);
 }
