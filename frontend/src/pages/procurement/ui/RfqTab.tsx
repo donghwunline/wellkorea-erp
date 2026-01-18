@@ -17,7 +17,11 @@ import {
 } from '@/entities/purchase-request';
 import { Badge, Card, Icon, Pagination, Spinner, Table } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting';
-import { PurchaseRequestDetailModal } from '@/widgets/purchase-request-panel';
+import {
+  PurchaseRequestDetailModal,
+  SendRfqModal,
+  type SendRfqData,
+} from '@/widgets/purchase-request-panel';
 
 const PAGE_SIZE = 20;
 
@@ -42,6 +46,10 @@ export function RfqTab() {
   // Modal state
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [sendRfqState, setSendRfqState] = useState<{
+    isOpen: boolean;
+    data: SendRfqData | null;
+  }>({ isOpen: false, data: null });
 
   // Fetch RFQ_SENT requests (primary RFQ stage)
   const {
@@ -83,6 +91,17 @@ export function RfqTab() {
   const handleRowClick = useCallback((request: PurchaseRequestListItem) => {
     setSelectedRequestId(request.id);
     setDetailModalOpen(true);
+  }, []);
+
+  // Open send RFQ modal (handles both SERVICE and MATERIAL types)
+  const handleOpenSendRfq = useCallback((data: SendRfqData) => {
+    setDetailModalOpen(false); // Close detail modal first
+    setSendRfqState({ isOpen: true, data });
+  }, []);
+
+  // Close send RFQ modal
+  const handleCloseSendRfq = useCallback(() => {
+    setSendRfqState({ isOpen: false, data: null });
   }, []);
 
   // Refetch all data
@@ -281,6 +300,21 @@ export function RfqTab() {
           purchaseRequestId={selectedRequestId}
           isOpen={detailModalOpen}
           onClose={() => setDetailModalOpen(false)}
+          onSuccess={refetchAll}
+          onOpenSendRfq={handleOpenSendRfq}
+        />
+      )}
+
+      {/* Send RFQ Modal - supports both SERVICE and MATERIAL types */}
+      {sendRfqState.data && (
+        <SendRfqModal
+          type={sendRfqState.data.type}
+          purchaseRequestId={sendRfqState.data.requestId}
+          {...(sendRfqState.data.type === 'SERVICE'
+            ? { serviceCategoryId: sendRfqState.data.serviceCategoryId }
+            : { materialId: sendRfqState.data.materialId })}
+          isOpen={sendRfqState.isOpen}
+          onClose={handleCloseSendRfq}
           onSuccess={refetchAll}
         />
       )}

@@ -63,8 +63,10 @@ public class PurchaseOrderCommandService {
             throw new BusinessException("RFQ item must be in REPLIED or SELECTED status to create PO");
         }
 
-        // Check if PO already exists for this RFQ
-        if (purchaseOrderRepository.existsByPurchaseRequestIdAndRfqItemId(command.purchaseRequestId(), command.rfqItemId())) {
+        // Check if an active (non-canceled) PO already exists for this RFQ
+        // This allows re-creating a PO after the previous one was canceled
+        if (purchaseOrderRepository.existsByPurchaseRequestIdAndRfqItemIdAndStatusNot(
+                command.purchaseRequestId(), command.rfqItemId(), PurchaseOrderStatus.CANCELED)) {
             throw new BusinessException("Purchase order already exists for this RFQ item");
         }
 

@@ -549,6 +549,39 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
             mockMvc.perform(delete(PURCHASE_ORDERS_URL + "/500"))
                     .andExpect(status().isUnauthorized());
         }
+
+        @Test
+        @DisplayName("should allow re-creating PO after cancellation")
+        void cancelAndRecreate_ShouldSucceed() throws Exception {
+            // Given: Set PR to VENDOR_SELECTED state for proper event handling
+            jdbcTemplate.update("UPDATE purchase_requests SET status = 'VENDOR_SELECTED' WHERE id = 900");
+            jdbcTemplate.update("UPDATE rfq_items SET status = 'SELECTED' WHERE purchase_request_id = 900 AND item_id = ?", TEST_RFQ_ITEM_ID);
+
+            // When: Cancel the existing PO
+            mockMvc.perform(delete(PURCHASE_ORDERS_URL + "/500")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isNoContent());
+
+            // Then: Should be able to create a new PO for the same RFQ item
+            // (The event handler reverts the RfqItem status to REPLIED)
+            String createRequest = String.format("""
+                    {
+                        "purchaseRequestId": 900,
+                        "rfqItemId": "%s",
+                        "orderDate": "%s",
+                        "expectedDeliveryDate": "%s",
+                        "notes": "Re-created after cancellation"
+                    }
+                    """, TEST_RFQ_ITEM_ID, today, nextMonth);
+
+            mockMvc.perform(post(PURCHASE_ORDERS_URL)
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(createRequest))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").isNumber());
+        }
     }
 
     // ==========================================================================

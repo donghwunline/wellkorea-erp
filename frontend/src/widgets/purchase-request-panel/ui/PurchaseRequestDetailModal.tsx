@@ -3,7 +3,7 @@
  *
  * Displays full purchase request details including RFQ items (vendor quotes).
  * Provides actions for RFQ management:
- * - Send RFQ (DRAFT status SERVICE requests)
+ * - Send RFQ (DRAFT or RFQ_SENT status - allows adding more vendors)
  * - Record Reply (SENT status RFQ items)
  * - Mark No Response (SENT status RFQ items)
  * - Select Vendor (REPLIED status RFQ items)
@@ -146,16 +146,20 @@ export function PurchaseRequestDetailModal({
   const canManageRfq = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
 
   // Check if RFQ can be sent for this request (SERVICE type)
+  // Allowed in DRAFT (initial send) or RFQ_SENT (adding more vendors)
   const canSendRfqForService =
     request &&
-    request.status === PurchaseRequestStatus.DRAFT &&
+    (request.status === PurchaseRequestStatus.DRAFT ||
+      request.status === PurchaseRequestStatus.RFQ_SENT) &&
     request.dtype === 'SERVICE' &&
     request.serviceCategoryId !== null;
 
   // Check if RFQ can be sent for this request (MATERIAL type)
+  // Allowed in DRAFT (initial send) or RFQ_SENT (adding more vendors)
   const canSendRfqForMaterial =
     request &&
-    request.status === PurchaseRequestStatus.DRAFT &&
+    (request.status === PurchaseRequestStatus.DRAFT ||
+      request.status === PurchaseRequestStatus.RFQ_SENT) &&
     request.dtype === 'MATERIAL' &&
     request.materialId !== null;
 

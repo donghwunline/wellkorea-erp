@@ -18,30 +18,20 @@ import java.util.Optional;
 @Repository
 public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long> {
 
-    Optional<PurchaseOrder> findByPoNumber(String poNumber);
-
-    Page<PurchaseOrder> findByVendorId(Long vendorId, Pageable pageable);
-
-    Page<PurchaseOrder> findByProjectId(Long projectId, Pageable pageable);
-
-    Page<PurchaseOrder> findByStatus(PurchaseOrderStatus status, Pageable pageable);
-
-    Page<PurchaseOrder> findByVendorIdAndStatus(Long vendorId, PurchaseOrderStatus status, Pageable pageable);
-
-    List<PurchaseOrder> findByPurchaseRequestIdAndRfqItemId(Long purchaseRequestId, String rfqItemId);
-
     @Query("SELECT MAX(CAST(SUBSTRING(po.poNumber, 9) AS int)) FROM PurchaseOrder po WHERE po.poNumber LIKE :prefix%")
     Integer findMaxSequenceForYear(@Param("prefix") String prefix);
 
     @Query("SELECT po FROM PurchaseOrder po " +
-           "LEFT JOIN FETCH po.vendor " +
-           "LEFT JOIN FETCH po.purchaseRequest " +
-           "LEFT JOIN FETCH po.project " +
-           "LEFT JOIN FETCH po.createdBy " +
-           "WHERE po.id = :id")
+            "LEFT JOIN FETCH po.vendor " +
+            "LEFT JOIN FETCH po.purchaseRequest " +
+            "LEFT JOIN FETCH po.project " +
+            "LEFT JOIN FETCH po.createdBy " +
+            "WHERE po.id = :id")
     Optional<PurchaseOrder> findByIdWithDetails(@Param("id") Long id);
 
-    boolean existsByPoNumber(String poNumber);
-
-    boolean existsByPurchaseRequestIdAndRfqItemId(Long purchaseRequestId, String rfqItemId);
+    /**
+     * Check if an active (non-canceled) PO exists for the given RFQ item.
+     * Used for duplicate PO validation when creating a new PO.
+     */
+    boolean existsByPurchaseRequestIdAndRfqItemIdAndStatusNot(Long purchaseRequestId, String rfqItemId, PurchaseOrderStatus status);
 }
