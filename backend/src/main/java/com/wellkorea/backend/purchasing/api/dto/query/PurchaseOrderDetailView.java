@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 public record PurchaseOrderDetailView(
         Long id,
         String poNumber,
-        Long rfqItemId,
         Long purchaseRequestId,
         String purchaseRequestNumber,
+        String rfqItemId,
         Long projectId,
         String jobCode,
         String projectName,

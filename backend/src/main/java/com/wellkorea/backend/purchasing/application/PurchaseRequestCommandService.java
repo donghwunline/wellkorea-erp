@@ -14,16 +14,13 @@ import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository
 import com.wellkorea.backend.purchasing.domain.MaterialPurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequestStatus;
-import com.wellkorea.backend.purchasing.domain.RfqItem;
 import com.wellkorea.backend.purchasing.domain.ServicePurchaseRequest;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
-import com.wellkorea.backend.purchasing.infrastructure.persistence.RfqItemRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
 
@@ -36,7 +33,6 @@ import java.util.List;
 public class PurchaseRequestCommandService {
 
     private final PurchaseRequestRepository purchaseRequestRepository;
-    private final RfqItemRepository rfqItemRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final MaterialRepository materialRepository;
     private final ProjectRepository projectRepository;
@@ -44,14 +40,12 @@ public class PurchaseRequestCommandService {
     private final UserRepository userRepository;
 
     public PurchaseRequestCommandService(PurchaseRequestRepository purchaseRequestRepository,
-                                         RfqItemRepository rfqItemRepository,
                                          ServiceCategoryRepository serviceCategoryRepository,
                                          MaterialRepository materialRepository,
                                          ProjectRepository projectRepository,
                                          CompanyRepository companyRepository,
                                          UserRepository userRepository) {
         this.purchaseRequestRepository = purchaseRequestRepository;
-        this.rfqItemRepository = rfqItemRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.materialRepository = materialRepository;
         this.projectRepository = projectRepository;
@@ -179,6 +173,7 @@ public class PurchaseRequestCommandService {
 
     /**
      * Send RFQ to vendors.
+     * Creates RFQ items for each vendor using the aggregate method.
      *
      * @return the number of RFQs sent
      */
@@ -190,7 +185,7 @@ public class PurchaseRequestCommandService {
             throw new BusinessException("Cannot send RFQ for purchase request in " + purchaseRequest.getStatus() + " status");
         }
 
-        // Create RFQ items for each vendor
+        // Validate vendors and create RFQ items using aggregate method
         for (Long vendorId : vendorIds) {
             Company vendor = companyRepository.findById(vendorId)
                     .orElseThrow(() -> new ResourceNotFoundException("Vendor not found with ID: " + vendorId));
@@ -199,13 +194,11 @@ public class PurchaseRequestCommandService {
                 throw new BusinessException("Company with ID " + vendorId + " is not a vendor");
             }
 
-            RfqItem rfqItem = new RfqItem();
-            rfqItem.setVendor(vendor);
-            rfqItem.setSentAt(LocalDateTime.now());
-            purchaseRequest.addRfqItem(rfqItem);
+            // Use aggregate method to add RFQ item (no vendorOfferingId for now)
+            purchaseRequest.addRfqItem(vendorId, null);
         }
 
-        // Update status
+        // Transition status to RFQ_SENT
         purchaseRequest.sendRfq();
         purchaseRequestRepository.save(purchaseRequest);
 

@@ -1,6 +1,7 @@
 package com.wellkorea.backend.purchasing.api.dto.command;
 
 import com.wellkorea.backend.purchasing.application.CreatePurchaseOrderCommand;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
@@ -9,8 +10,11 @@ import java.time.LocalDate;
  * Request DTO for creating a purchase order from an RFQ item.
  */
 public record CreatePurchaseOrderRequest(
-        @NotNull(message = "RFQ item ID is required")
-        Long rfqItemId,
+        @NotNull(message = "Purchase request ID is required")
+        Long purchaseRequestId,
+
+        @NotBlank(message = "RFQ item ID is required")
+        String rfqItemId,
 
         @NotNull(message = "Order date is required")
         LocalDate orderDate,
@@ -25,6 +29,7 @@ public record CreatePurchaseOrderRequest(
      */
     public CreatePurchaseOrderCommand toCommand() {
         return new CreatePurchaseOrderCommand(
+                purchaseRequestId,
                 rfqItemId,
                 orderDate,
                 expectedDeliveryDate,

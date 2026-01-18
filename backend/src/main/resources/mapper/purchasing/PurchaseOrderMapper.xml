@@ -9,7 +9,8 @@
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="poNumber" javaType="String"/>
-            <arg column="rfqItemId" javaType="Long"/>
+            <arg column="purchaseRequestId" javaType="Long"/>
+            <arg column="rfqItemId" javaType="String"/>
             <arg column="projectId" javaType="Long"/>
             <arg column="jobCode" javaType="String"/>
             <arg column="vendorId" javaType="Long"/>
@@ -29,9 +30,9 @@
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="poNumber" javaType="String"/>
-            <arg column="rfqItemId" javaType="Long"/>
             <arg column="purchaseRequestId" javaType="Long"/>
             <arg column="purchaseRequestNumber" javaType="String"/>
+            <arg column="rfqItemId" javaType="String"/>
             <arg column="projectId" javaType="Long"/>
             <arg column="jobCode" javaType="String"/>
             <arg column="projectName" javaType="String"/>
@@ -55,6 +56,7 @@
         SELECT
             po.id,
             po.po_number AS poNumber,
+            po.purchase_request_id AS purchaseRequestId,
             po.rfq_item_id AS rfqItemId,
             po.project_id AS projectId,
             p.job_code AS jobCode,
@@ -102,9 +104,9 @@
         SELECT
             po.id,
             po.po_number AS poNumber,
-            po.rfq_item_id AS rfqItemId,
-            ri.purchase_request_id AS purchaseRequestId,
+            po.purchase_request_id AS purchaseRequestId,
             pr.request_number AS purchaseRequestNumber,
+            po.rfq_item_id AS rfqItemId,
             po.project_id AS projectId,
             p.job_code AS jobCode,
             p.project_name AS projectName,
@@ -121,8 +123,7 @@
             po.created_at AS createdAt,
             po.updated_at AS updatedAt
         FROM purchase_orders po
-        JOIN rfq_items ri ON po.rfq_item_id = ri.id
-        JOIN purchase_requests pr ON ri.purchase_request_id = pr.id
+        JOIN purchase_requests pr ON po.purchase_request_id = pr.id
         LEFT JOIN projects p ON po.project_id = p.id
         JOIN companies c ON po.vendor_company_id = c.id
         JOIN users u ON po.created_by_id = u.id

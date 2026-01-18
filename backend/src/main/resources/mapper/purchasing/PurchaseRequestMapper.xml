@@ -7,7 +7,7 @@
     <!-- RfqItemView result map -->
     <resultMap id="RfqItemViewResult" type="com.wellkorea.backend.purchasing.api.dto.query.RfqItemView">
         <constructor>
-            <arg column="id" javaType="Long"/>
+            <arg column="itemId" javaType="String"/>
             <arg column="purchaseRequestId" javaType="Long"/>
             <arg column="vendorId" javaType="Long"/>
             <arg column="vendorName" javaType="String"/>
@@ -18,7 +18,6 @@
             <arg column="notes" javaType="String"/>
             <arg column="sentAt" javaType="java.time.LocalDateTime"/>
             <arg column="repliedAt" javaType="java.time.LocalDateTime"/>
-            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
         </constructor>
     </resultMap>
 
@@ -174,7 +173,7 @@
     <!-- Nested select: Find RFQ items for a purchase request -->
     <select id="findRfqItemsByPurchaseRequestId" resultMap="RfqItemViewResult">
         SELECT
-            ri.id,
+            ri.item_id AS itemId,
             ri.purchase_request_id AS purchaseRequestId,
             ri.vendor_company_id AS vendorId,
             c.name AS vendorName,
@@ -184,12 +183,11 @@
             ri.quoted_lead_time AS quotedLeadTime,
             ri.notes,
             ri.sent_at AS sentAt,
-            ri.replied_at AS repliedAt,
-            ri.created_at AS createdAt
+            ri.replied_at AS repliedAt
         FROM rfq_items ri
         JOIN companies c ON ri.vendor_company_id = c.id
         WHERE ri.purchase_request_id = #{purchaseRequestId}
-        ORDER BY ri.created_at
+        ORDER BY ri.sent_at
     </select>
 
 </mapper>

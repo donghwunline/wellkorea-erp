@@ -6,7 +6,8 @@ import java.time.LocalDate;
  * Internal command for creating a purchase order.
  */
 public record CreatePurchaseOrderCommand(
-        Long rfqItemId,
+        Long purchaseRequestId,
+        String rfqItemId,
         LocalDate orderDate,
         LocalDate expectedDeliveryDate,
         String notes

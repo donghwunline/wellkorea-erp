@@ -2,6 +2,8 @@ package com.wellkorea.backend.purchasing.application;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.company.domain.Company;
+import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
 import com.wellkorea.backend.purchasing.domain.PurchaseOrderStatus;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
@@ -9,7 +11,6 @@ import com.wellkorea.backend.purchasing.domain.RfqItem;
 import com.wellkorea.backend.purchasing.domain.RfqItemStatus;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseOrderRepository;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
-import com.wellkorea.backend.purchasing.infrastructure.persistence.RfqItemRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -26,16 +27,16 @@ public class PurchaseOrderCommandService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PurchaseRequestRepository purchaseRequestRepository;
-    private final RfqItemRepository rfqItemRepository;
+    private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
 
     public PurchaseOrderCommandService(PurchaseOrderRepository purchaseOrderRepository,
                                        PurchaseRequestRepository purchaseRequestRepository,
-                                       RfqItemRepository rfqItemRepository,
+                                       CompanyRepository companyRepository,
                                        UserRepository userRepository) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.purchaseRequestRepository = purchaseRequestRepository;
-        this.rfqItemRepository = rfqItemRepository;
+        this.companyRepository = companyRepository;
         this.userRepository = userRepository;
     }
 
@@ -45,16 +46,20 @@ public class PurchaseOrderCommandService {
      * @return the created purchase order ID
      */
     public Long createPurchaseOrder(CreatePurchaseOrderCommand command, Long userId) {
-        // Validate RFQ item
-        RfqItem rfqItem = rfqItemRepository.findByIdWithDetails(command.rfqItemId())
-                .orElseThrow(() -> new ResourceNotFoundException("RFQ item not found with ID: " + command.rfqItemId()));
+        // Validate purchase request and get RFQ item
+        PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(command.purchaseRequestId())
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + command.purchaseRequestId()));
+
+        RfqItem rfqItem = purchaseRequest.findRfqItemById(command.rfqItemId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "RFQ item not found with ID: " + command.rfqItemId() + " in purchase request: " + command.purchaseRequestId()));
 
         if (rfqItem.getStatus() != RfqItemStatus.REPLIED && rfqItem.getStatus() != RfqItemStatus.SELECTED) {
             throw new BusinessException("RFQ item must be in REPLIED or SELECTED status to create PO");
         }
 
         // Check if PO already exists for this RFQ
-        if (purchaseOrderRepository.existsByRfqItemId(command.rfqItemId())) {
+        if (purchaseOrderRepository.existsByPurchaseRequestIdAndRfqItemId(command.purchaseRequestId(), command.rfqItemId())) {
             throw new BusinessException("Purchase order already exists for this RFQ item");
         }
 
@@ -67,25 +72,25 @@ public class PurchaseOrderCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
+        // Get vendor company
+        Company vendor = companyRepository.findById(rfqItem.getVendorCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vendor not found with ID: " + rfqItem.getVendorCompanyId()));
+
         // Generate PO number
         String poNumber = generatePoNumber();
 
-        // Mark RFQ item as selected
+        // If RFQ item is in REPLIED status, select it through the aggregate
         if (rfqItem.getStatus() == RfqItemStatus.REPLIED) {
-            rfqItem.select();
-            rfqItemRepository.save(rfqItem);
+            purchaseRequest.selectVendor(command.rfqItemId());
+            purchaseRequestRepository.save(purchaseRequest);
         }
-
-        // Update purchase request status
-        PurchaseRequest purchaseRequest = rfqItem.getPurchaseRequest();
-        purchaseRequest.selectVendor();
-        purchaseRequestRepository.save(purchaseRequest);
 
         // Create purchase order
         PurchaseOrder purchaseOrder = new PurchaseOrder();
-        purchaseOrder.setRfqItem(rfqItem);
+        purchaseOrder.setPurchaseRequest(purchaseRequest);
+        purchaseOrder.setRfqItemId(command.rfqItemId());
         purchaseOrder.setProject(purchaseRequest.getProject());
-        purchaseOrder.setVendor(rfqItem.getVendor());
+        purchaseOrder.setVendor(vendor);
         purchaseOrder.setPoNumber(poNumber);
         purchaseOrder.setOrderDate(command.orderDate());
         purchaseOrder.setExpectedDeliveryDate(command.expectedDeliveryDate());
@@ -160,15 +165,11 @@ public class PurchaseOrderCommandService {
         purchaseOrder.receive();
         purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
 
-        // Also close the purchase request if this was the last PO
-        // (Simple implementation - just close the related purchase request)
-        RfqItem rfqItem = purchaseOrder.getRfqItem();
-        if (rfqItem != null) {
-            PurchaseRequest purchaseRequest = rfqItem.getPurchaseRequest();
-            if (purchaseRequest != null) {
-                purchaseRequest.close();
-                purchaseRequestRepository.save(purchaseRequest);
-            }
+        // Also close the purchase request
+        PurchaseRequest purchaseRequest = purchaseOrder.getPurchaseRequest();
+        if (purchaseRequest != null) {
+            purchaseRequest.close();
+            purchaseRequestRepository.save(purchaseRequest);
         }
 
         return purchaseOrder.getId();

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
  * View DTO for RFQ item.
  */
 public record RfqItemView(
-        Long id,
+        String itemId,
         Long purchaseRequestId,
         Long vendorId,
         String vendorName,
@@ -17,7 +17,6 @@ public record RfqItemView(
         Integer quotedLeadTime,
         String notes,
         LocalDateTime sentAt,
-        LocalDateTime repliedAt,
-        LocalDateTime createdAt
+        LocalDateTime repliedAt
 ) {
 }
