@@ -15,7 +15,6 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Badge,
@@ -30,6 +29,7 @@ import {
 import {
   purchaseRequestQueries,
   purchaseRequestRules,
+  rfqItemRules,
   PurchaseRequestStatus,
   PurchaseRequestStatusConfig,
   RfqItemStatus,
@@ -40,6 +40,7 @@ import { useAuth } from '@/entities/auth';
 import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatting';
 import { useMarkNoResponse, useSelectVendor, useRejectRfq } from '@/features/rfq/manage';
 import { RecordReplyModal } from '@/features/rfq/record-reply';
+import { CreatePurchaseOrderModal } from '@/features/purchase-order/create';
 
 /**
  * Send RFQ callback data - discriminated union for SERVICE vs MATERIAL.
@@ -121,7 +122,6 @@ export function PurchaseRequestDetailModal({
   onSuccess,
   onOpenSendRfq,
 }: PurchaseRequestDetailModalProps) {
-  const navigate = useNavigate();
   const { hasAnyRole } = useAuth();
 
   // Modal states for RFQ actions
@@ -129,6 +129,7 @@ export function PurchaseRequestDetailModal({
   const [selectVendorItem, setSelectVendorItem] = useState<RfqItem | null>(null);
   const [showPoPrompt, setShowPoPrompt] = useState(false);
   const [selectedVendorForPo, setSelectedVendorForPo] = useState<RfqItem | null>(null);
+  const [createPoItem, setCreatePoItem] = useState<RfqItem | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Fetch purchase request detail
@@ -161,8 +162,11 @@ export function PurchaseRequestDetailModal({
   // Combined check for either type
   const canSendRfqForRequest = canSendRfqForService || canSendRfqForMaterial;
 
-  // Check if RFQ status allows management
-  const canManageRfqItems = request && request.status === PurchaseRequestStatus.RFQ_SENT;
+  // Check if RFQ status allows management (RFQ_SENT for quotes, VENDOR_SELECTED for PO creation)
+  const canManageRfqItems =
+    request &&
+    (request.status === PurchaseRequestStatus.RFQ_SENT ||
+      request.status === PurchaseRequestStatus.VENDOR_SELECTED);
 
   // Mutation hooks
   const { mutate: markNoResponse, isPending: isMarkingNoResponse } = useMarkNoResponse({
@@ -253,15 +257,25 @@ export function PurchaseRequestDetailModal({
   const handleCreatePo = useCallback(() => {
     if (selectedVendorForPo) {
       setShowPoPrompt(false);
-      // Navigate to PO creation with pre-filled data
-      navigate(`/procurement/purchase-orders/create?requestId=${purchaseRequestId}&rfqItemId=${selectedVendorForPo.itemId}`);
+      // Open create PO modal
+      setCreatePoItem(selectedVendorForPo);
     }
-  }, [selectedVendorForPo, purchaseRequestId, navigate]);
+  }, [selectedVendorForPo]);
 
   const handleSkipCreatePo = useCallback(() => {
     setShowPoPrompt(false);
     setSelectedVendorForPo(null);
   }, []);
+
+  const handleOpenCreatePoModal = useCallback((item: RfqItem) => {
+    setCreatePoItem(item);
+  }, []);
+
+  const handleCreatePoSuccess = useCallback(() => {
+    setCreatePoItem(null);
+    setSelectedVendorForPo(null);
+    onSuccess?.();
+  }, [onSuccess]);
 
   const modalTitle = request
     ? `구매 요청: ${request.requestNumber}`
@@ -325,8 +339,25 @@ export function PurchaseRequestDetailModal({
       );
     }
 
-    // Terminal states: show status indicator
+    // SELECTED status: show PO creation button if no PO exists
     if (item.status === RfqItemStatus.SELECTED) {
+      if (rfqItemRules.canCreateOrder(item)) {
+        return (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleOpenCreatePoModal(item)}
+            disabled={isActing}
+          >
+            <Icon name="document" className="mr-1 h-3 w-3" />
+            발주서 생성
+          </Button>
+        );
+      }
+      // PO already exists
+      if (rfqItemRules.hasPurchaseOrder(item)) {
+        return <Badge variant="success" size="sm">발주완료</Badge>;
+      }
       return <Badge variant="success" size="sm">선정완료</Badge>;
     }
 
@@ -529,6 +560,19 @@ export function PurchaseRequestDetailModal({
           variant="warning"
           confirmLabel="발주서 생성"
           cancelLabel="나중에"
+        />
+      )}
+
+      {/* Create Purchase Order Modal */}
+      {createPoItem && request && (
+        <CreatePurchaseOrderModal
+          key={createPoItem.itemId}
+          isOpen={Boolean(createPoItem)}
+          purchaseRequestId={purchaseRequestId}
+          rfqItem={createPoItem}
+          quantity={request.quantity}
+          onClose={() => setCreatePoItem(null)}
+          onSuccess={handleCreatePoSuccess}
         />
       )}
     </>
