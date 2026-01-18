@@ -39,3 +39,8 @@ export {
   SendRfqModal,
   type SendRfqModalProps,
 } from './purchase-request-panel';
+
+export {
+  PurchaseOrderDetailModal,
+  type PurchaseOrderDetailModalProps,
+} from './purchase-order-panel';
