@@ -126,6 +126,18 @@ public class RfqItem {
         this.status = RfqItemStatus.REPLIED;
     }
 
+    /**
+     * Unreject this vendor's quote (revert from REJECTED to REPLIED).
+     * Called when the associated purchase order is canceled and
+     * user needs to re-evaluate previously rejected vendors.
+     */
+    public void unreject() {
+        if (status != RfqItemStatus.REJECTED) {
+            throw new IllegalStateException("Cannot unreject RFQ item in " + status + " status");
+        }
+        this.status = RfqItemStatus.REPLIED;
+    }
+
     // Getters and Setters
 
     public String getItemId() {

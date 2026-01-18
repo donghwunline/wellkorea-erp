@@ -93,9 +93,10 @@ public abstract class PurchaseRequest {
 
     /**
      * Check if the purchase request can be sent to vendors (RFQ).
+     * Allowed in DRAFT status (initial send) or RFQ_SENT status (adding more vendors).
      */
     public boolean canSendRfq() {
-        return status == PurchaseRequestStatus.DRAFT;
+        return status == PurchaseRequestStatus.DRAFT || status == PurchaseRequestStatus.RFQ_SENT;
     }
 
     /**
@@ -116,11 +117,13 @@ public abstract class PurchaseRequest {
 
     /**
      * Send RFQ to vendors - transition to RFQ_SENT status.
+     * This is idempotent when already in RFQ_SENT (allows adding more vendors).
      */
     public void sendRfq() {
         if (!canSendRfq()) {
             throw new IllegalStateException("Cannot send RFQ for purchase request in " + status + " status");
         }
+        // Idempotent: no-op if already RFQ_SENT (adding more vendors)
         this.status = PurchaseRequestStatus.RFQ_SENT;
     }
 
@@ -274,11 +277,11 @@ public abstract class PurchaseRequest {
 
     /**
      * Revert vendor selection after a purchase order is canceled.
-     * This transitions the purchase request back to RFQ_SENT status
-     * and deselects the RFQ item so a different vendor can be selected.
+     * This transitions the purchase request back to RFQ_SENT status,
+     * deselects the RFQ item, and unrejects all previously rejected vendors
+     * so they can be re-evaluated and potentially selected.
      *
-     * <p>This method is idempotent - if the RFQ item is already in REPLIED status,
-     * it will only update the purchase request status.
+     * <p>This method is idempotent - multiple calls produce the same result.
      *
      * @param itemId the RFQ item ID that was selected for the canceled PO
      */
@@ -294,7 +297,12 @@ public abstract class PurchaseRequest {
             rfqItem.deselect();
         }
 
-        // Transition back to RFQ_SENT so user can select another vendor
+        // Revert all REJECTED items back to REPLIED so they can be reconsidered
+        rfqItems.stream()
+                .filter(item -> item.getStatus() == RfqItemStatus.REJECTED)
+                .forEach(RfqItem::unreject);
+
+        // Transition back to RFQ_SENT so user can select another vendor or add new vendors
         this.status = PurchaseRequestStatus.RFQ_SENT;
     }
 
