@@ -10,8 +10,8 @@ The purchasing workflow follows this high-level flow:
 3. Vendors reply with quotes (RfqItem: SENT → REPLIED)
 4. Select one vendor (VENDOR_SELECTED, RfqItem: SELECTED)
 5. Create Purchase Order
-6. If PO is canceled, revert to allow re-selection
-7. Close when PO is received (CLOSED)
+6. If PO is canceled, revert to allow re-selection (via `PurchaseOrderCanceledEvent`)
+7. When PO is received, close the PR (via `PurchaseOrderReceivedEvent`)
 
 ---
 
@@ -205,6 +205,44 @@ sequenceDiagram
 
 ---
 
+## Combined Workflow: PO Receive Completion
+
+When a Purchase Order is received, the PurchaseRequest is automatically closed via an event:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant PO as PurchaseOrder
+    participant Event as DomainEvent
+    participant PR as PurchaseRequest
+
+    User->>PO: receivePurchaseOrder()
+    PO->>PO: receive() [status → RECEIVED]
+    PO->>Event: publish(PurchaseOrderReceivedEvent)
+
+    Event->>PR: onPurchaseOrderReceived()
+    PR->>PR: close() [status → CLOSED]
+
+    Note over PR: Workflow complete<br/>PR is now in terminal CLOSED state
+```
+
+### State Changes Summary
+
+| Entity | Before Receive | After Receive |
+|--------|---------------|---------------|
+| PurchaseOrder | CONFIRMED | RECEIVED |
+| PurchaseRequest | VENDOR_SELECTED | CLOSED |
+| Selected RfqItem | SELECTED | SELECTED (unchanged) |
+
+### Guard Conditions
+
+The event handler includes an idempotency guard:
+- Only closes PR if current status is `VENDOR_SELECTED`
+- Skips if PR is already `CLOSED` or in another state
+- This prevents errors on event replay or duplicate processing
+
+---
+
 ## Test Scenarios
 
 ### RfqItem Test Cases
@@ -283,4 +321,5 @@ sequenceDiagram
 | `PurchaseRequest.java` | Aggregate root with orchestration |
 | `PurchaseRequestStatus.java` | Status enum |
 | `PurchaseOrderCanceledEvent.java` | Domain event for PO cancellation |
-| `PurchaseRequestEventHandler.java` | Event handler for revert |
+| `PurchaseOrderReceivedEvent.java` | Domain event for PO receive completion |
+| `PurchaseRequestEventHandler.java` | Event handler for PR status updates |
