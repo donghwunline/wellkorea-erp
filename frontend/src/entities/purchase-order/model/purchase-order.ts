@@ -122,4 +122,44 @@ export const purchaseOrderRules = {
   isCompleted(order: PurchaseOrderBase): boolean {
     return order.status === PurchaseOrderStatus.RECEIVED;
   },
+
+  // ==================== STATUS TRANSITION RULES ====================
+
+  /**
+   * Check if order can be sent to vendor.
+   */
+  canSend(order: PurchaseOrderBase): boolean {
+    return order.status === PurchaseOrderStatus.DRAFT;
+  },
+
+  /**
+   * Check if order can be confirmed (vendor confirmation).
+   */
+  canConfirm(order: PurchaseOrderBase): boolean {
+    return order.status === PurchaseOrderStatus.SENT;
+  },
+
+  /**
+   * Check if order can be marked as received.
+   */
+  canReceive(order: PurchaseOrderBase): boolean {
+    return order.status === PurchaseOrderStatus.CONFIRMED;
+  },
+
+  /**
+   * Check if order can be canceled.
+   */
+  canCancel(order: PurchaseOrderBase): boolean {
+    return (
+      order.status !== PurchaseOrderStatus.RECEIVED &&
+      order.status !== PurchaseOrderStatus.CANCELED
+    );
+  },
+
+  /**
+   * Check if order can be updated (notes, dates).
+   */
+  canUpdate(order: PurchaseOrderBase): boolean {
+    return order.status === PurchaseOrderStatus.DRAFT;
+  },
 };
