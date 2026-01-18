@@ -9,13 +9,16 @@ import { MATERIAL_ENDPOINTS } from '@/shared/config/endpoints';
 import { transformPagedResponse, type Paginated } from '@/shared/lib/pagination';
 import type { Material, MaterialListItem } from '../model/material';
 import type { MaterialCategory, MaterialCategoryListItem } from '../model/material-category';
+import type { VendorMaterialOffering } from '../model/vendor-material-offering';
 import {
   type MaterialResponse,
   type MaterialCategoryResponse,
+  type VendorMaterialOfferingResponse,
   mapMaterial,
   mapMaterialListItem,
   mapMaterialCategory,
   mapMaterialCategoryListItem,
+  mapVendorMaterialOffering,
 } from './material.mapper';
 
 // =============================================================================
@@ -136,4 +139,45 @@ export async function getMaterialCategory(id: number): Promise<MaterialCategory>
     url: MATERIAL_ENDPOINTS.category(id),
   });
   return mapMaterialCategory(response);
+}
+
+// =============================================================================
+// VENDOR MATERIAL OFFERING QUERIES
+// =============================================================================
+
+/**
+ * Get current (effective) vendor offerings for a material.
+ * Only includes offerings within their effective date range.
+ */
+export async function getCurrentOfferingsForMaterial(materialId: number): Promise<VendorMaterialOffering[]> {
+  const response = await httpClient.request<VendorMaterialOfferingResponse[]>({
+    method: 'GET',
+    url: MATERIAL_ENDPOINTS.currentOfferings(materialId),
+  });
+  return response.map(mapVendorMaterialOffering);
+}
+
+/**
+ * Get paginated list of vendor offerings for a material.
+ */
+export async function getOfferingsForMaterial(
+  materialId: number,
+  params: { page?: number; size?: number } = {}
+): Promise<Paginated<VendorMaterialOffering>> {
+  const { page = 0, size = 20 } = params;
+
+  const response = await httpClient.requestWithMeta<PagedResponse<VendorMaterialOfferingResponse>>({
+    method: 'GET',
+    url: MATERIAL_ENDPOINTS.offerings(materialId),
+    params: {
+      page: page.toString(),
+      size: size.toString(),
+    },
+  });
+
+  const paginated = transformPagedResponse(response.data, response.metadata);
+  return {
+    data: paginated.data.map(mapVendorMaterialOffering),
+    pagination: paginated.pagination,
+  };
 }

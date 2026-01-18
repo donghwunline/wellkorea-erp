@@ -21,6 +21,7 @@ import { queryOptions, keepPreviousData } from '@tanstack/react-query';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { Material, MaterialListItem } from '../model/material';
 import type { MaterialCategory, MaterialCategoryListItem } from '../model/material-category';
+import type { VendorMaterialOffering } from '../model/vendor-material-offering';
 import {
   getMaterials,
   getAllMaterials,
@@ -28,6 +29,8 @@ import {
   getMaterialCategories,
   getAllMaterialCategories,
   getMaterialCategory,
+  getCurrentOfferingsForMaterial,
+  getOfferingsForMaterial,
 } from './get-material';
 
 // =============================================================================
@@ -72,6 +75,13 @@ export const materialQueries = {
 
   /** Key for category list queries */
   categoryLists: () => [...materialQueries.categories(), 'list'] as const,
+
+  /** Key for vendor offering queries */
+  offerings: () => [...materialQueries.all(), 'offerings'] as const,
+
+  /** Key for offerings by material */
+  offeringsByMaterial: (materialId: number) =>
+    [...materialQueries.offerings(), 'byMaterial', materialId] as const,
 
   // -------------------------------------------------------------------------
   // Material Queries
@@ -164,5 +174,39 @@ export const materialQueries = {
         return getMaterialCategory(id);
       },
       enabled: id > 0,
+    }),
+
+  // -------------------------------------------------------------------------
+  // Vendor Material Offering Queries
+  // -------------------------------------------------------------------------
+
+  /**
+   * Query options for current (effective) vendor offerings by material.
+   */
+  currentOfferings: (materialId: number) =>
+    queryOptions({
+      queryKey: [...materialQueries.offeringsByMaterial(materialId), 'current'] as const,
+      queryFn: async (): Promise<VendorMaterialOffering[]> => {
+        return getCurrentOfferingsForMaterial(materialId);
+      },
+      enabled: materialId > 0,
+    }),
+
+  /**
+   * Query options for paginated vendor offerings by material.
+   */
+  offeringList: (materialId: number, params: { page?: number; size?: number } = {}) =>
+    queryOptions({
+      queryKey: [
+        ...materialQueries.offeringsByMaterial(materialId),
+        'list',
+        params.page ?? 0,
+        params.size ?? 20,
+      ] as const,
+      queryFn: async (): Promise<Paginated<VendorMaterialOffering>> => {
+        return getOfferingsForMaterial(materialId, params);
+      },
+      placeholderData: keepPreviousData,
+      enabled: materialId > 0,
     }),
 };

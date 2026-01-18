@@ -269,6 +269,13 @@ export const MATERIAL_ENDPOINTS = {
   allCategories: '/materials/categories/all',
   /** GET/PUT/DELETE /materials/categories/:id */
   category: (id: number) => `/materials/categories/${id}`,
+
+  // ========== VENDOR MATERIAL OFFERINGS ==========
+
+  /** GET /materials/:id/offerings/current - Get current vendor offerings for a material */
+  currentOfferings: (materialId: number) => `/materials/${materialId}/offerings/current`,
+  /** GET /materials/:id/offerings - Get all vendor offerings for a material (paginated) */
+  offerings: (materialId: number) => `/materials/${materialId}/offerings`,
 } as const;
 
 // ============================================================================

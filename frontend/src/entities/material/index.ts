@@ -34,6 +34,7 @@
 
 export type { Material, MaterialListItem } from './model/material';
 export type { MaterialCategory, MaterialCategoryListItem } from './model/material-category';
+export type { VendorMaterialOffering } from './model/vendor-material-offering';
 
 // =============================================================================
 // BUSINESS RULES
@@ -42,6 +43,7 @@ export type { MaterialCategory, MaterialCategoryListItem } from './model/materia
 
 export { materialRules } from './model/material';
 export { materialCategoryRules } from './model/material-category';
+export { vendorMaterialOfferingRules } from './model/vendor-material-offering';
 
 // =============================================================================
 // QUERY FACTORY (TanStack Query v5)

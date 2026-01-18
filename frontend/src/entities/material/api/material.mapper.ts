@@ -7,6 +7,7 @@
 
 import type { Material, MaterialListItem } from '../model/material';
 import type { MaterialCategory, MaterialCategoryListItem } from '../model/material-category';
+import type { VendorMaterialOffering } from '../model/vendor-material-offering';
 
 // =============================================================================
 // MATERIAL RESPONSE TYPES (Backend DTO shapes)
@@ -107,5 +108,63 @@ export function mapMaterialCategoryListItem(response: MaterialCategoryResponse):
     description: response.description,
     isActive: response.active,
     materialCount: response.materialCount,
+  };
+}
+
+// =============================================================================
+// VENDOR MATERIAL OFFERING RESPONSE TYPES
+// =============================================================================
+
+/**
+ * Vendor material offering response from API.
+ */
+export interface VendorMaterialOfferingResponse {
+  id: number;
+  vendorId: number;
+  vendorName: string;
+  materialId: number;
+  materialName: string;
+  materialSku: string;
+  vendorMaterialCode?: string | null;
+  vendorMaterialName?: string | null;
+  unitPrice?: number | null;
+  currency: string;
+  leadTimeDays?: number | null;
+  minOrderQuantity?: number | null;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  isPreferred: boolean;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// =============================================================================
+// VENDOR MATERIAL OFFERING MAPPERS
+// =============================================================================
+
+/**
+ * Map vendor material offering response to domain model.
+ */
+export function mapVendorMaterialOffering(response: VendorMaterialOfferingResponse): VendorMaterialOffering {
+  return {
+    id: response.id,
+    vendorId: response.vendorId,
+    vendorName: response.vendorName,
+    materialId: response.materialId,
+    materialName: response.materialName,
+    materialSku: response.materialSku,
+    vendorMaterialCode: response.vendorMaterialCode ?? null,
+    vendorMaterialName: response.vendorMaterialName ?? null,
+    unitPrice: response.unitPrice ?? null,
+    currency: response.currency,
+    leadTimeDays: response.leadTimeDays ?? null,
+    minOrderQuantity: response.minOrderQuantity ?? null,
+    effectiveFrom: response.effectiveFrom ?? null,
+    effectiveTo: response.effectiveTo ?? null,
+    isPreferred: response.isPreferred,
+    notes: response.notes ?? null,
+    createdAt: response.createdAt,
+    updatedAt: response.updatedAt,
   };
 }
