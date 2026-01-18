@@ -20,6 +20,7 @@ import { formatDate } from '@/shared/lib/formatting';
 import {
   PurchaseRequestDetailModal,
   SendRfqModal,
+  type SendRfqData,
 } from '@/widgets/purchase-request-panel';
 
 const PAGE_SIZE = 20;
@@ -61,9 +62,8 @@ export function PurchaseRequestsTab() {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [sendRfqState, setSendRfqState] = useState<{
     isOpen: boolean;
-    requestId: number | null;
-    serviceCategoryId: number | null;
-  }>({ isOpen: false, requestId: null, serviceCategoryId: null });
+    data: SendRfqData | null;
+  }>({ isOpen: false, data: null });
 
   // Handle filter changes with pagination reset
   const handleStatusChange = useCallback((status: PurchaseRequestStatus | null) => {
@@ -101,15 +101,15 @@ export function PurchaseRequestsTab() {
     setDetailModalOpen(true);
   }, []);
 
-  // Open send RFQ modal
-  const handleOpenSendRfq = useCallback((requestId: number, serviceCategoryId: number) => {
+  // Open send RFQ modal (handles both SERVICE and MATERIAL types)
+  const handleOpenSendRfq = useCallback((data: SendRfqData) => {
     setDetailModalOpen(false); // Close detail modal first
-    setSendRfqState({ isOpen: true, requestId, serviceCategoryId });
+    setSendRfqState({ isOpen: true, data });
   }, []);
 
   // Close send RFQ modal
   const handleCloseSendRfq = useCallback(() => {
-    setSendRfqState({ isOpen: false, requestId: null, serviceCategoryId: null });
+    setSendRfqState({ isOpen: false, data: null });
   }, []);
 
   // Handle successful RFQ send
@@ -258,11 +258,14 @@ export function PurchaseRequestsTab() {
         />
       )}
 
-      {/* Send RFQ Modal */}
-      {sendRfqState.requestId !== null && sendRfqState.serviceCategoryId !== null && (
+      {/* Send RFQ Modal - supports both SERVICE and MATERIAL types */}
+      {sendRfqState.data && (
         <SendRfqModal
-          purchaseRequestId={sendRfqState.requestId}
-          serviceCategoryId={sendRfqState.serviceCategoryId}
+          type={sendRfqState.data.type}
+          purchaseRequestId={sendRfqState.data.requestId}
+          {...(sendRfqState.data.type === 'SERVICE'
+            ? { serviceCategoryId: sendRfqState.data.serviceCategoryId }
+            : { materialId: sendRfqState.data.materialId })}
           isOpen={sendRfqState.isOpen}
           onClose={handleCloseSendRfq}
           onSuccess={handleSendRfqSuccess}

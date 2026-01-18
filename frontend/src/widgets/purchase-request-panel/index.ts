@@ -11,6 +11,7 @@
 export {
   PurchaseRequestDetailModal,
   type PurchaseRequestDetailModalProps,
+  type SendRfqData,
 } from './ui/PurchaseRequestDetailModal';
 
 export {

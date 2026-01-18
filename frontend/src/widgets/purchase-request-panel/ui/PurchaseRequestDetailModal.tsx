@@ -41,6 +41,13 @@ import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatt
 import { useMarkNoResponse, useSelectVendor, useRejectRfq } from '@/features/rfq/manage';
 import { RecordReplyModal } from '@/features/rfq/record-reply';
 
+/**
+ * Send RFQ callback data - discriminated union for SERVICE vs MATERIAL.
+ */
+export type SendRfqData =
+  | { type: 'SERVICE'; requestId: number; serviceCategoryId: number }
+  | { type: 'MATERIAL'; requestId: number; materialId: number };
+
 export interface PurchaseRequestDetailModalProps {
   /** ID of the purchase request to display */
   readonly purchaseRequestId: number;
@@ -50,8 +57,8 @@ export interface PurchaseRequestDetailModalProps {
   readonly onClose: () => void;
   /** Optional callback after successful action (e.g., for refetching parent data) */
   readonly onSuccess?: () => void;
-  /** Callback to open send RFQ modal (SERVICE type only) */
-  readonly onOpenSendRfq?: (requestId: number, serviceCategoryId: number) => void;
+  /** Callback to open send RFQ modal (supports both SERVICE and MATERIAL types) */
+  readonly onOpenSendRfq?: (data: SendRfqData) => void;
 }
 
 /**
@@ -137,12 +144,22 @@ export function PurchaseRequestDetailModal({
   // Check if user can manage RFQ (ADMIN, FINANCE only)
   const canManageRfq = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
 
-  // Check if RFQ can be sent for this request
-  const canSendRfqForRequest =
+  // Check if RFQ can be sent for this request (SERVICE type)
+  const canSendRfqForService =
     request &&
     request.status === PurchaseRequestStatus.DRAFT &&
     request.dtype === 'SERVICE' &&
     request.serviceCategoryId !== null;
+
+  // Check if RFQ can be sent for this request (MATERIAL type)
+  const canSendRfqForMaterial =
+    request &&
+    request.status === PurchaseRequestStatus.DRAFT &&
+    request.dtype === 'MATERIAL' &&
+    request.materialId !== null;
+
+  // Combined check for either type
+  const canSendRfqForRequest = canSendRfqForService || canSendRfqForMaterial;
 
   // Check if RFQ status allows management
   const canManageRfqItems = request && request.status === PurchaseRequestStatus.RFQ_SENT;
@@ -183,8 +200,20 @@ export function PurchaseRequestDetailModal({
 
   // Handlers
   const handleOpenSendRfq = useCallback(() => {
-    if (request && request.serviceCategoryId && onOpenSendRfq) {
-      onOpenSendRfq(request.id, request.serviceCategoryId);
+    if (!request || !onOpenSendRfq) return;
+
+    if (request.dtype === 'SERVICE' && request.serviceCategoryId) {
+      onOpenSendRfq({
+        type: 'SERVICE',
+        requestId: request.id,
+        serviceCategoryId: request.serviceCategoryId,
+      });
+    } else if (request.dtype === 'MATERIAL' && request.materialId) {
+      onOpenSendRfq({
+        type: 'MATERIAL',
+        requestId: request.id,
+        materialId: request.materialId,
+      });
     }
   }, [request, onOpenSendRfq]);
 
@@ -457,11 +486,6 @@ export function PurchaseRequestDetailModal({
                   <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
                   RFQ 발송
                 </Button>
-              )}
-              {request.dtype === 'MATERIAL' && request.status === PurchaseRequestStatus.DRAFT && (
-                <span className="text-sm text-steel-500">
-                  자재 RFQ 기능은 개발 예정입니다
-                </span>
               )}
             </div>
           </ModalActions>

@@ -1,7 +1,8 @@
 /**
  * Send RFQ Modal.
  *
- * Modal for selecting vendors and sending RFQ for a service purchase request.
+ * Modal for selecting vendors and sending RFQ for a purchase request.
+ * Supports both SERVICE (outsourcing) and MATERIAL purchase request types.
  * Displays vendor offerings with pricing and lead time information.
  *
  * FSD Layer: widgets
@@ -20,13 +21,23 @@ import {
   Icon,
 } from '@/shared/ui';
 import { catalogQueries, vendorOfferingRules, type VendorOffering } from '@/entities/catalog';
+import {
+  materialQueries,
+  vendorMaterialOfferingRules,
+  type VendorMaterialOffering,
+} from '@/entities/material';
 import { useSendRfq } from '@/features/rfq/send';
 
-export interface SendRfqModalProps {
+// =============================================================================
+// TYPES
+// =============================================================================
+
+/**
+ * Base props for SendRfqModal.
+ */
+interface BaseProps {
   /** ID of the purchase request */
   readonly purchaseRequestId: number;
-  /** Service category ID for fetching vendor offerings */
-  readonly serviceCategoryId: number;
   /** Whether the modal is open */
   readonly isOpen: boolean;
   /** Callback when modal should close */
@@ -36,6 +47,89 @@ export interface SendRfqModalProps {
 }
 
 /**
+ * Props for SERVICE type (outsourcing).
+ */
+interface ServiceTypeProps extends BaseProps {
+  /** Type discriminator */
+  readonly type: 'SERVICE';
+  /** Service category ID for fetching vendor offerings */
+  readonly serviceCategoryId: number;
+}
+
+/**
+ * Props for MATERIAL type.
+ */
+interface MaterialTypeProps extends BaseProps {
+  /** Type discriminator */
+  readonly type: 'MATERIAL';
+  /** Material ID for fetching vendor offerings */
+  readonly materialId: number;
+}
+
+export type SendRfqModalProps = ServiceTypeProps | MaterialTypeProps;
+
+// =============================================================================
+// UNIFIED OFFERING TYPE
+// =============================================================================
+
+/**
+ * Normalized offering for display.
+ * Abstracts differences between VendorOffering and VendorMaterialOffering.
+ */
+interface NormalizedOffering {
+  readonly id: number;
+  readonly vendorId: number;
+  readonly vendorName: string;
+  readonly displayName: string;
+  readonly unitPrice: number | null;
+  readonly currency: string;
+  readonly leadTimeDays: number | null;
+  readonly minOrderQuantity: number | null;
+  readonly isPreferred: boolean;
+  readonly notes: string | null;
+}
+
+/**
+ * Normalize a VendorOffering (SERVICE).
+ */
+function normalizeServiceOffering(offering: VendorOffering): NormalizedOffering {
+  return {
+    id: offering.id,
+    vendorId: offering.vendorId,
+    vendorName: offering.vendorName,
+    displayName: vendorOfferingRules.getDisplayName(offering),
+    unitPrice: offering.unitPrice,
+    currency: offering.currency,
+    leadTimeDays: offering.leadTimeDays,
+    minOrderQuantity: offering.minOrderQuantity,
+    isPreferred: offering.isPreferred,
+    notes: offering.notes,
+  };
+}
+
+/**
+ * Normalize a VendorMaterialOffering (MATERIAL).
+ */
+function normalizeMaterialOffering(offering: VendorMaterialOffering): NormalizedOffering {
+  return {
+    id: offering.id,
+    vendorId: offering.vendorId,
+    vendorName: offering.vendorName,
+    displayName: vendorMaterialOfferingRules.getDisplayName(offering),
+    unitPrice: offering.unitPrice,
+    currency: offering.currency,
+    leadTimeDays: offering.leadTimeDays,
+    minOrderQuantity: offering.minOrderQuantity,
+    isPreferred: offering.isPreferred,
+    notes: offering.notes,
+  };
+}
+
+// =============================================================================
+// COMPONENTS
+// =============================================================================
+
+/**
  * Vendor offering card with checkbox.
  */
 function VendorOfferingCard({
@@ -43,12 +137,21 @@ function VendorOfferingCard({
   isSelected,
   onToggle,
 }: {
-  readonly offering: VendorOffering;
+  readonly offering: NormalizedOffering;
   readonly isSelected: boolean;
   readonly onToggle: (vendorId: number, checked: boolean) => void;
 }) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onToggle(offering.vendorId, e.target.checked);
+  };
+
+  const formatPrice = (price: number | null, currency: string): string | null => {
+    if (price === null) return null;
+    return new Intl.NumberFormat('ko-KR', {
+      style: 'currency',
+      currency: currency || 'KRW',
+      maximumFractionDigits: 0,
+    }).format(price);
   };
 
   return (
@@ -75,35 +178,32 @@ function VendorOfferingCard({
           )}
         </div>
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-steel-400">
-          {vendorOfferingRules.hasPrice(offering) && (
+          {offering.unitPrice !== null && offering.unitPrice > 0 && (
             <span>
-              단가: <span className="text-copper-400">{vendorOfferingRules.formatPrice(offering)}</span>
+              단가:{' '}
+              <span className="text-copper-400">
+                {formatPrice(offering.unitPrice, offering.currency)}
+              </span>
             </span>
           )}
-          {vendorOfferingRules.hasLeadTime(offering) && (
+          {offering.leadTimeDays !== null && offering.leadTimeDays > 0 && (
             <span>
               납기: <span className="text-white">{offering.leadTimeDays}일</span>
             </span>
           )}
-          {offering.minOrderQuantity && offering.minOrderQuantity > 1 && (
+          {offering.minOrderQuantity !== null && offering.minOrderQuantity > 1 && (
             <span>최소수량: {offering.minOrderQuantity}</span>
           )}
         </div>
-        {offering.notes && (
-          <p className="mt-1 text-xs text-steel-500">{offering.notes}</p>
-        )}
+        {offering.notes && <p className="mt-1 text-xs text-steel-500">{offering.notes}</p>}
       </div>
     </label>
   );
 }
 
-export function SendRfqModal({
-  purchaseRequestId,
-  serviceCategoryId,
-  isOpen,
-  onClose,
-  onSuccess,
-}: SendRfqModalProps) {
+export function SendRfqModal(props: SendRfqModalProps) {
+  const { purchaseRequestId, isOpen, onClose, onSuccess, type } = props;
+
   // Selected vendor IDs - keyed by purchaseRequestId to auto-reset
   const [selectionState, setSelectionState] = useState<{
     requestId: number;
@@ -126,15 +226,42 @@ export function SendRfqModal({
     [purchaseRequestId]
   );
 
-  // Fetch current offerings for the service category
-  const {
-    data: offerings,
-    isLoading,
-    error: fetchError,
-  } = useQuery({
-    ...catalogQueries.currentOfferings(serviceCategoryId),
-    enabled: isOpen && serviceCategoryId > 0,
+  // ==========================================================================
+  // FETCH OFFERINGS BASED ON TYPE
+  // ==========================================================================
+
+  // SERVICE type: Fetch service category offerings
+  const serviceQuery = useQuery({
+    ...catalogQueries.currentOfferings(
+      type === 'SERVICE' ? props.serviceCategoryId : 0
+    ),
+    enabled: isOpen && type === 'SERVICE' && props.serviceCategoryId > 0,
   });
+
+  // MATERIAL type: Fetch material offerings
+  const materialQuery = useQuery({
+    ...materialQueries.currentOfferings(type === 'MATERIAL' ? props.materialId : 0),
+    enabled: isOpen && type === 'MATERIAL' && props.materialId > 0,
+  });
+
+  // Determine which query to use based on type
+  const isLoading = type === 'SERVICE' ? serviceQuery.isLoading : materialQuery.isLoading;
+  const fetchError = type === 'SERVICE' ? serviceQuery.error : materialQuery.error;
+
+  // Normalize offerings to unified type
+  const offerings: NormalizedOffering[] | undefined = (() => {
+    if (type === 'SERVICE' && serviceQuery.data) {
+      return serviceQuery.data.map(normalizeServiceOffering);
+    }
+    if (type === 'MATERIAL' && materialQuery.data) {
+      return materialQuery.data.map(normalizeMaterialOffering);
+    }
+    return undefined;
+  })();
+
+  // ==========================================================================
+  // ACTIONS
+  // ==========================================================================
 
   // Send RFQ mutation
   const sendRfqMutation = useSendRfq({
@@ -185,9 +312,21 @@ export function SendRfqModal({
   }, [purchaseRequestId, selectedVendorIds, sendRfqMutation]);
 
   // Get unique vendor count
-  const uniqueVendorIds = offerings
-    ? [...new Set(offerings.map(o => o.vendorId))]
-    : [];
+  const uniqueVendorIds = offerings ? [...new Set(offerings.map((o) => o.vendorId))] : [];
+
+  // Empty state message based on type
+  const emptyStateMessage =
+    type === 'SERVICE' ? (
+      <>
+        이 서비스 카테고리에 등록된 업체가 없습니다.
+        <p className="mt-1 text-sm">설정 &gt; 서비스 카탈로그에서 업체를 등록해주세요.</p>
+      </>
+    ) : (
+      <>
+        이 자재에 등록된 공급업체가 없습니다.
+        <p className="mt-1 text-sm">설정 &gt; 자재 관리에서 공급업체를 등록해주세요.</p>
+      </>
+    );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="RFQ 발송" size="md">
@@ -214,12 +353,7 @@ export function SendRfqModal({
 
       {/* Empty State */}
       {!isLoading && offerings && offerings.length === 0 && (
-        <Alert variant="warning">
-          이 서비스 카테고리에 등록된 업체가 없습니다.
-          <p className="mt-1 text-sm">
-            설정 &gt; 서비스 카탈로그에서 업체를 등록해주세요.
-          </p>
-        </Alert>
+        <Alert variant="warning">{emptyStateMessage}</Alert>
       )}
 
       {/* Vendor List */}
@@ -252,7 +386,7 @@ export function SendRfqModal({
 
           {/* Vendor Cards */}
           <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
-            {offerings.map(offering => (
+            {offerings.map((offering) => (
               <VendorOfferingCard
                 key={offering.id}
                 offering={offering}
