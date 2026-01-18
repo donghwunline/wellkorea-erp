@@ -44,3 +44,21 @@ export {
 // =============================================================================
 
 export { createPurchaseOrder, type CreatePurchaseOrderInput } from './api/create-purchase-order';
+
+// =============================================================================
+// ACTION COMMANDS (Status Transitions)
+// =============================================================================
+
+export {
+  sendPurchaseOrder,
+  confirmPurchaseOrder,
+  receivePurchaseOrder,
+  cancelPurchaseOrder,
+} from './api/purchase-order-actions';
+
+// =============================================================================
+// UI COMPONENTS
+// =============================================================================
+
+export { PurchaseOrderStatusBadge } from './ui/PurchaseOrderStatusBadge';
+export { PurchaseOrderTimeline } from './ui/PurchaseOrderTimeline';
