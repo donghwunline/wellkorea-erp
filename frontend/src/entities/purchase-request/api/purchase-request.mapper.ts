@@ -34,6 +34,7 @@ export interface RfqItemResponse {
   notes: string | null;
   sentAt: string | null;
   repliedAt: string | null;
+  purchaseOrderId: number | null; // null if no PO created yet
 }
 
 export interface PurchaseRequestSummaryResponse {
@@ -117,6 +118,7 @@ const rfqItemMapper = {
       notes: response.notes?.trim() ?? null,
       sentAt: response.sentAt,
       repliedAt: response.repliedAt,
+      purchaseOrderId: response.purchaseOrderId,
     };
   },
 };

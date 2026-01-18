@@ -16,6 +16,7 @@ export interface RfqItem {
   readonly notes: string | null;
   readonly sentAt: string | null; // ISO datetime
   readonly repliedAt: string | null; // ISO datetime
+  readonly purchaseOrderId: number | null; // null if no PO created yet
 }
 
 /**
@@ -31,9 +32,21 @@ export const rfqItemRules = {
 
   /**
    * Check if RFQ item can be selected for order creation.
+   * Must be SELECTED status (vendor was selected for PO) and no existing PO.
    */
   canCreateOrder(item: RfqItem): boolean {
-    return item.status === RfqItemStatus.REPLIED && item.quotedPrice !== null;
+    return (
+      item.status === RfqItemStatus.SELECTED &&
+      item.quotedPrice !== null &&
+      item.purchaseOrderId === null
+    );
+  },
+
+  /**
+   * Check if a purchase order has been created for this RFQ item.
+   */
+  hasPurchaseOrder(item: RfqItem): boolean {
+    return item.purchaseOrderId !== null;
   },
 
   /**
