@@ -715,10 +715,29 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         }
 
         @Test
-        @DisplayName("should return 400 when purchase request not in DRAFT status")
-        void sendRfq_NotDraft_Returns400() throws Exception {
-            // Update status to RFQ_SENT
+        @DisplayName("should return 200 when adding vendors in RFQ_SENT status")
+        void sendRfq_InRfqSent_Returns200() throws Exception {
+            // Update status to RFQ_SENT (allowed - adding more vendors)
             jdbcTemplate.update("UPDATE purchase_requests SET status = 'RFQ_SENT' WHERE id = 300");
+
+            String sendRfqRequest = """
+                    {
+                        "vendorIds": [50, 51]
+                    }
+                    """;
+
+            mockMvc.perform(post(PURCHASE_REQUESTS_URL + "/300/send-rfq")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(sendRfqRequest))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("should return 400 when purchase request in VENDOR_SELECTED status")
+        void sendRfq_InVendorSelected_Returns400() throws Exception {
+            // Update status to VENDOR_SELECTED (not allowed)
+            jdbcTemplate.update("UPDATE purchase_requests SET status = 'VENDOR_SELECTED' WHERE id = 300");
 
             String sendRfqRequest = """
                     {
