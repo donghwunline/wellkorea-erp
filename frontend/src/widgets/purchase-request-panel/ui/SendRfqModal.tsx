@@ -9,7 +9,7 @@
  * Can import from: features, entities, shared
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -212,8 +212,10 @@ export function SendRfqModal(props: SendRfqModalProps) {
   const [error, setError] = useState<string | null>(null);
 
   // Derive selected vendor IDs, resetting when purchaseRequestId changes
-  const selectedVendorIds =
-    selectionState.requestId === purchaseRequestId ? selectionState.vendorIds : [];
+  const selectedVendorIds = useMemo(
+    () => (selectionState.requestId === purchaseRequestId ? selectionState.vendorIds : []),
+    [selectionState.requestId, selectionState.vendorIds, purchaseRequestId]
+  );
 
   // Update selection for current request
   const updateSelectedVendorIds = useCallback(
