@@ -276,6 +276,10 @@ export const MATERIAL_ENDPOINTS = {
   currentOfferings: (materialId: number) => `/materials/${materialId}/offerings/current`,
   /** GET /materials/:id/offerings - Get all vendor offerings for a material (paginated) */
   offerings: (materialId: number) => `/materials/${materialId}/offerings`,
+  /** POST /materials/offerings - Create vendor material offering */
+  createOffering: '/materials/offerings',
+  /** GET/PUT/DELETE /materials/offerings/:id */
+  offering: (id: number) => `/materials/offerings/${id}`,
 } as const;
 
 // ============================================================================
