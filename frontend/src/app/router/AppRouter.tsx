@@ -10,7 +10,7 @@
 import { Outlet, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AppLayout } from '../layouts';
-import { NotFoundPage, PlaceholderPage } from '@/pages/error';
+import { NotFoundPage } from '@/pages/error';
 
 // Page imports
 import { LoginPage } from '@/pages/auth';
@@ -21,7 +21,7 @@ import { ApprovalChainConfigPage } from '@/pages/approval/ApprovalChainConfigPag
 import { ApprovalListPage } from '@/pages/approval/ApprovalListPage';
 import { ProjectCreatePage, ProjectEditPage, ProjectListPage, ProjectViewPage, } from '@/pages/projects';
 import { QuotationCreatePage, QuotationDetailPage, QuotationEditPage, QuotationListPage, } from '@/pages/quotations';
-import { CompanyDetailPage, CompanyListPage, CreateCompanyPage } from '@/pages/companies';
+import { CompanyDetailPage, CompanyEditPage, CompanyListPage, CreateCompanyPage } from '@/pages/companies';
 import { ItemsPage } from '@/pages/items';
 import { ProcurementPage } from '@/pages/procurement';
 import { DeliveriesPage, DeliveryCreatePage, DeliveryDetailPage } from '@/pages/deliveries';
@@ -113,7 +113,7 @@ export function AppRouter() {
 
         {/* Companies */}
         <Route path="/companies/new" element={<CreateCompanyPage />} />
-        <Route path="/companies/:id/edit" element={<PlaceholderPage title="Edit Company" />} />
+        <Route path="/companies/:id/edit" element={<CompanyEditPage />} />
         <Route path="/items" element={<ItemsPage />} />
         <Route path="/procurement" element={<ProcurementPage />} />
 
