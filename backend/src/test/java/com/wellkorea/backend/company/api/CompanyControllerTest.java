@@ -498,10 +498,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
         void addRole_VendorToCustomer_Returns201() throws Exception {
             String addRoleRequest = """
                     {
-                        "roleType": "VENDOR",
-                        "creditLimit": 10000000.00,
-                        "defaultPaymentDays": 30,
-                        "notes": "Added as vendor for parts supply"
+                        "roleType": "VENDOR"
                     }
                     """;
 
@@ -520,8 +517,7 @@ class CompanyControllerTest extends BaseIntegrationTest implements TestFixtures 
         void addRole_Outsource_Returns201() throws Exception {
             String addRoleRequest = """
                     {
-                        "roleType": "OUTSOURCE",
-                        "notes": "외주 도장 업체"
+                        "roleType": "OUTSOURCE"
                     }
                     """;
 
