@@ -63,8 +63,7 @@ export function ServiceCategoryFormModal({
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: ({ id, input }: { id: number; input: UpdateServiceCategoryInput }) =>
-      updateServiceCategory(id, input),
+    mutationFn: (input: UpdateServiceCategoryInput) => updateServiceCategory(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: catalogQueries.categories() });
       onSuccess?.();
@@ -93,10 +92,8 @@ export function ServiceCategoryFormModal({
     } else if (category) {
       updateMutation.mutate({
         id: category.id,
-        input: {
-          name: data.name,
-          description: data.description || null,
-        },
+        name: data.name,
+        description: data.description || null,
       });
     }
   };
