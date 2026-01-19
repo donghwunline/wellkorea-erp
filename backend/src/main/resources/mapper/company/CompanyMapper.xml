@@ -99,6 +99,7 @@
             AND LOWER(c.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
         </if>
         ORDER BY c.name
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- Count for pagination -->
