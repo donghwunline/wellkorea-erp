@@ -8,16 +8,26 @@
  *
  * Features:
  * - Paginated material list with search and category filter
+ * - Drill-down to view vendor offerings per material
  * - Create/Edit/Delete materials (Admin, Finance only)
+ * - Manage vendor material offerings with set preferred vendor
  */
 
 import { useCallback, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { materialQueries, type MaterialListItem, type Material } from '@/entities/material';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  materialQueries,
+  setPreferredVendorOffering,
+  type MaterialListItem,
+  type Material,
+  type VendorMaterialOffering,
+} from '@/entities/material';
 import { useAuth } from '@/entities/auth';
 import { MaterialFormModal } from '@/features/items/material/form';
 import { DeleteMaterialModal } from '@/features/items/material/delete';
-import { Button, Card, FilterBar, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
+import { VendorMaterialOfferingFormModal } from '@/features/items/vendor-material-offering/form';
+import { DeleteVendorMaterialOfferingModal } from '@/features/items/vendor-material-offering/delete';
+import { Button, Card, FilterBar, Icon, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
 import { formatCurrency } from '@/shared/lib/formatting';
 
 const PAGE_SIZE = 20;
@@ -28,6 +38,7 @@ const PAGE_SIZE = 20;
 export function MaterialsTab() {
   const { hasAnyRole } = useAuth();
   const canManage = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
+  const queryClient = useQueryClient();
 
   // Local state for filters and pagination
   const [page, setPage] = useState(0);
@@ -44,6 +55,25 @@ export function MaterialsTab() {
   // Delete modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingMaterial, setDeletingMaterial] = useState<MaterialListItem | null>(null);
+
+  // Vendor offerings modal state
+  const [materialForOfferings, setMaterialForOfferings] = useState<MaterialListItem | null>(null);
+
+  // Vendor offering form modal state
+  const [isOfferingFormOpen, setIsOfferingFormOpen] = useState(false);
+  const [editingOffering, setEditingOffering] = useState<VendorMaterialOffering | undefined>(undefined);
+
+  // Vendor offering delete modal state
+  const [isOfferingDeleteOpen, setIsOfferingDeleteOpen] = useState(false);
+  const [deletingOffering, setDeletingOffering] = useState<VendorMaterialOffering | null>(null);
+
+  // Set preferred vendor mutation
+  const setPreferredMutation = useMutation({
+    mutationFn: setPreferredVendorOffering,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: materialQueries.offerings() });
+    },
+  });
 
   // Handle search change with pagination reset
   const handleSearchChange = useCallback((value: string) => {
@@ -73,6 +103,16 @@ export function MaterialsTab() {
     categoryId,
   }));
 
+  // Server state for offerings (only when material selected)
+  const {
+    data: offeringsData,
+    isLoading: offeringsLoading,
+  } = useQuery({
+    ...materialQueries.offeringList(materialForOfferings?.id ?? 0),
+    enabled: !!materialForOfferings,
+  });
+
+  const offerings = offeringsData?.data ?? [];
   const materials = materialsData?.data ?? [];
   const pagination = materialsData?.pagination;
   const categories = categoriesData ?? [];
@@ -139,6 +179,50 @@ export function MaterialsTab() {
   // Handle delete success
   const handleDeleteSuccess = () => {
     setSelectedMaterial(null);
+  };
+
+  // ========== Vendor Offerings Modal Handlers ==========
+  const handleOpenOfferingsModal = (material: MaterialListItem) => {
+    setMaterialForOfferings(material);
+  };
+
+  const handleCloseOfferingsModal = () => {
+    setMaterialForOfferings(null);
+  };
+
+  const handleOpenOfferingCreate = () => {
+    setEditingOffering(undefined);
+    setIsOfferingFormOpen(true);
+  };
+
+  const handleOpenOfferingEdit = (offering: VendorMaterialOffering) => {
+    setEditingOffering(offering);
+    setIsOfferingFormOpen(true);
+  };
+
+  const handleCloseOfferingForm = () => {
+    setIsOfferingFormOpen(false);
+    setEditingOffering(undefined);
+  };
+
+  const handleOpenOfferingDelete = (offering: VendorMaterialOffering) => {
+    setDeletingOffering(offering);
+    setIsOfferingDeleteOpen(true);
+  };
+
+  const handleCloseOfferingDelete = () => {
+    setIsOfferingDeleteOpen(false);
+    setDeletingOffering(null);
+  };
+
+  const handleSetPreferred = (offeringId: number) => {
+    setPreferredMutation.mutate(offeringId);
+  };
+
+  // Format price
+  const formatPrice = (price: number | null | undefined): string => {
+    if (price == null) return '-';
+    return formatCurrency(price);
   };
 
   return (
@@ -232,14 +316,16 @@ export function MaterialsTab() {
                   <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
                     Status
                   </th>
+                  <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-steel-700/30 bg-steel-900/40">
                 {materials.map(material => (
                   <tr
                     key={material.id}
-                    className="cursor-pointer hover:bg-steel-800/30"
-                    onClick={() => setSelectedMaterial(material)}
+                    className="hover:bg-steel-800/30"
                   >
                     <td className="whitespace-nowrap px-4 py-3 text-sm font-mono text-copper-400">
                       {material.sku}
@@ -269,6 +355,23 @@ export function MaterialsTab() {
                       >
                         {material.isActive ? 'Active' : 'Inactive'}
                       </span>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => setSelectedMaterial(material)}
+                          className="text-sm text-steel-400 hover:text-white"
+                        >
+                          Details
+                        </button>
+                        <button
+                          onClick={() => handleOpenOfferingsModal(material)}
+                          className="flex items-center gap-1 text-sm text-copper-400 hover:text-copper-300"
+                        >
+                          <Icon name="building-office" className="h-4 w-4" />
+                          Vendors
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -348,6 +451,130 @@ export function MaterialsTab() {
         </Modal>
       )}
 
+      {/* Vendor Offerings Modal */}
+      {materialForOfferings && (
+        <Modal
+          isOpen={true}
+          onClose={handleCloseOfferingsModal}
+          title={`Vendors for "${materialForOfferings.name}"`}
+          size="lg"
+        >
+          {offeringsLoading ? (
+            <div className="flex justify-center py-8">
+              <Spinner size="md" />
+            </div>
+          ) : offerings.length === 0 ? (
+            <div className="py-8 text-center text-steel-400">
+              <p>No vendors currently supply this material.</p>
+              {canManage && (
+                <Button
+                  variant="primary"
+                  className="mt-4"
+                  onClick={handleOpenOfferingCreate}
+                >
+                  Add Vendor Offering
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="overflow-hidden rounded-lg border border-steel-700/50">
+                <table className="min-w-full divide-y divide-steel-700/50">
+                  <thead className="bg-steel-800/60">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
+                        Vendor
+                      </th>
+                      <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
+                        Unit Price
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
+                        Lead Time
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
+                        Effective Period
+                      </th>
+                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
+                        Preferred
+                      </th>
+                      {canManage && (
+                        <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
+                          Actions
+                        </th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-steel-700/30 bg-steel-900/40">
+                    {offerings.map(offering => (
+                      <tr key={offering.id} className="hover:bg-steel-800/30">
+                        <td className="px-4 py-3 text-sm text-white">
+                          {offering.vendorName}
+                          {offering.vendorMaterialName && (
+                            <span className="ml-2 text-steel-400">
+                              ({offering.vendorMaterialName})
+                            </span>
+                          )}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-white">
+                          {formatPrice(offering.unitPrice)}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
+                          {offering.leadTimeDays ? `${offering.leadTimeDays} days` : '-'}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
+                          {offering.effectiveFrom && offering.effectiveTo
+                            ? `${offering.effectiveFrom} ~ ${offering.effectiveTo}`
+                            : '-'}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-center">
+                          {offering.isPreferred ? (
+                            <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
+                              Preferred
+                            </span>
+                          ) : canManage ? (
+                            <button
+                              onClick={() => handleSetPreferred(offering.id)}
+                              className="text-xs text-steel-400 hover:text-amber-400"
+                              disabled={setPreferredMutation.isPending}
+                            >
+                              Set as Preferred
+                            </button>
+                          ) : null}
+                        </td>
+                        {canManage && (
+                          <td className="whitespace-nowrap px-4 py-3 text-right">
+                            <button
+                              onClick={() => handleOpenOfferingEdit(offering)}
+                              className="text-sm text-steel-400 hover:text-white"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleOpenOfferingDelete(offering)}
+                              className="ml-3 text-sm text-red-400 hover:text-red-300"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {canManage && (
+                <div className="flex justify-end">
+                  <Button variant="secondary" onClick={handleOpenOfferingCreate}>
+                    Add Vendor Offering
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal>
+      )}
+
       {/* Create/Edit Material Modal */}
       <MaterialFormModal
         isOpen={isFormModalOpen}
@@ -362,6 +589,22 @@ export function MaterialsTab() {
         onClose={handleCloseDelete}
         material={deletingMaterial}
         onSuccess={handleDeleteSuccess}
+      />
+
+      {/* Vendor Material Offering Form Modal */}
+      <VendorMaterialOfferingFormModal
+        isOpen={isOfferingFormOpen}
+        onClose={handleCloseOfferingForm}
+        offering={editingOffering}
+        materialId={materialForOfferings?.id}
+        materialName={materialForOfferings?.name}
+      />
+
+      {/* Vendor Material Offering Delete Modal */}
+      <DeleteVendorMaterialOfferingModal
+        isOpen={isOfferingDeleteOpen}
+        onClose={handleCloseOfferingDelete}
+        offering={deletingOffering}
       />
     </div>
   );

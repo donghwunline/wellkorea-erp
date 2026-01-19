@@ -6,12 +6,12 @@
  * FSD Layer: features
  */
 
-import { useCallback, useState, type FormEvent } from 'react';
+import { type FormEvent, useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { VendorMaterialOffering } from '@/entities/material';
 import { materialQueries } from '@/entities/material';
 import { CompanyCombobox, RoleTypeEnum } from '@/entities/company';
-import { Button, FormField, ModalActions, Alert, DatePicker, type DateRange } from '@/shared/ui';
+import { Alert, Button, DatePicker, type DateRange, FormField, ModalActions } from '@/shared/ui';
 
 // =============================================================================
 // TYPES
@@ -35,6 +35,10 @@ export interface VendorMaterialOfferingFormData {
 interface VendorMaterialOfferingFormProps {
   /** Offering to edit (undefined for create mode) */
   offering?: VendorMaterialOffering;
+  /** Default material ID for create mode (pre-populate and lock the field) */
+  defaultMaterialId?: number;
+  /** Default material name for display when defaultMaterialId is provided */
+  defaultMaterialName?: string;
   /** Whether form is submitting */
   isSubmitting: boolean;
   /** Error message to display */
@@ -75,6 +79,8 @@ const textareaClassName =
 
 export function VendorMaterialOfferingForm({
   offering,
+  defaultMaterialId,
+  defaultMaterialName,
   isSubmitting,
   error,
   onSubmit,
@@ -82,14 +88,18 @@ export function VendorMaterialOfferingForm({
   onDismissError,
 }: Readonly<VendorMaterialOfferingFormProps>) {
   const isEditMode = !!offering;
+  const isMaterialLocked = isEditMode || !!defaultMaterialId;
 
-  // Fetch materials for dropdown
-  const { data: materials = [] } = useQuery(materialQueries.allMaterials());
+  // Fetch materials for dropdown (only needed if material is not locked)
+  const { data: materials = [] } = useQuery({
+    ...materialQueries.allMaterials(),
+    enabled: !isMaterialLocked,
+  });
 
   // Form state
   const [formData, setFormData] = useState<VendorMaterialOfferingFormData>(() => ({
     vendorId: offering?.vendorId ?? null,
-    materialId: offering?.materialId ?? null,
+    materialId: offering?.materialId ?? defaultMaterialId ?? null,
     vendorMaterialCode: offering?.vendorMaterialCode ?? '',
     vendorMaterialName: offering?.vendorMaterialName ?? '',
     unitPrice: offering?.unitPrice?.toString() ?? '',
@@ -173,7 +183,7 @@ export function VendorMaterialOfferingForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <Alert variant="error" onDismiss={onDismissError}>
+        <Alert variant="error" onClose={onDismissError}>
           {error}
         </Alert>
       )}
@@ -194,19 +204,30 @@ export function VendorMaterialOfferingForm({
 
         {/* Material */}
         <FormField label="Material" required error={errors.materialId}>
-          <select
-            value={formData.materialId ?? ''}
-            onChange={e => handleChange('materialId', e.target.value ? Number(e.target.value) : null)}
-            disabled={isSubmitting || isEditMode}
-            className={selectClassName}
-          >
-            <option value="">Select material...</option>
-            {materials.map(mat => (
-              <option key={mat.id} value={mat.id}>
-                {mat.sku} - {mat.name}
-              </option>
-            ))}
-          </select>
+          {isMaterialLocked ? (
+            <input
+              type="text"
+              value={offering?.materialName ?? defaultMaterialName ?? ''}
+              disabled
+              className={inputClassName}
+            />
+          ) : (
+            <select
+              value={formData.materialId ?? ''}
+              onChange={e =>
+                handleChange('materialId', e.target.value ? Number(e.target.value) : null)
+              }
+              disabled={isSubmitting}
+              className={selectClassName}
+            >
+              <option value="">Select material...</option>
+              {materials.map(mat => (
+                <option key={mat.id} value={mat.id}>
+                  {mat.sku} - {mat.name}
+                </option>
+              ))}
+            </select>
+          )}
         </FormField>
       </div>
 
@@ -332,19 +353,10 @@ export function VendorMaterialOfferingForm({
       </FormField>
 
       <ModalActions>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button
-          type="submit"
-          variant="primary"
-          isLoading={isSubmitting}
-        >
+        <Button type="submit" variant="primary" isLoading={isSubmitting}>
           {isEditMode ? 'Save Changes' : 'Create Offering'}
         </Button>
       </ModalActions>

@@ -30,6 +30,10 @@ export interface VendorMaterialOfferingFormModalProps {
   onClose: () => void;
   /** Offering to edit (undefined for create mode) */
   offering?: VendorMaterialOffering;
+  /** Material ID for create mode (pre-populate and lock the material field) */
+  materialId?: number;
+  /** Material name for display when materialId is provided */
+  materialName?: string;
   /** Called after successful create/update */
   onSuccess?: () => void;
 }
@@ -52,6 +56,8 @@ export function VendorMaterialOfferingFormModal({
   isOpen,
   onClose,
   offering,
+  materialId,
+  materialName,
   onSuccess,
 }: Readonly<VendorMaterialOfferingFormModalProps>) {
   const mode = offering ? 'edit' : 'create';
@@ -144,6 +150,8 @@ export function VendorMaterialOfferingFormModal({
     >
       <VendorMaterialOfferingForm
         offering={offering}
+        defaultMaterialId={materialId}
+        defaultMaterialName={materialName}
         isSubmitting={isSubmitting}
         error={error}
         onSubmit={handleSubmit}

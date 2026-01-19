@@ -95,7 +95,7 @@ export function MaterialCategoryForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <Alert variant="error" onDismiss={onDismissError}>
+        <Alert variant="error" onClose={onDismissError}>
           {error}
         </Alert>
       )}
