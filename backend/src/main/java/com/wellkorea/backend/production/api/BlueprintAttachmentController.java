@@ -74,6 +74,17 @@ public class BlueprintAttachmentController {
     }
 
     /**
+     * List all attachments for a Project (via TaskFlow relationship).
+     * GET /api/projects/{projectId}/attachments
+     */
+    @GetMapping("/projects/{projectId}/attachments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PRODUCTION', 'SALES')")
+    public ResponseEntity<ApiResponse<List<BlueprintAttachmentView>>> listAttachmentsByProject(@PathVariable Long projectId) {
+        List<BlueprintAttachmentView> attachments = attachmentService.getAttachmentsByProject(projectId);
+        return ResponseEntity.ok(ApiResponse.success(attachments));
+    }
+
+    /**
      * Get attachment metadata by ID.
      * GET /api/blueprints/{id}
      */

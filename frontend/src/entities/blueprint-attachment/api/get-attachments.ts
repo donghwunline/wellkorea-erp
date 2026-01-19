@@ -30,6 +30,17 @@ export async function getAttachmentsByNode(
 }
 
 /**
+ * Get all attachments for a project (via TaskFlow relationship).
+ */
+export async function getAttachmentsByProject(
+  projectId: number
+): Promise<BlueprintAttachmentResponse[]> {
+  return httpClient.get<BlueprintAttachmentResponse[]>(
+    BLUEPRINT_ENDPOINTS.byProject(projectId)
+  );
+}
+
+/**
  * Get attachment metadata by ID.
  */
 export async function getAttachmentById(

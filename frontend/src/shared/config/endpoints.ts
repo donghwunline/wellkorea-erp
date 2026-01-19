@@ -213,6 +213,8 @@ export const BLUEPRINT_ENDPOINTS = {
   /** List attachments for a node: GET /task-flows/:flowId/nodes/:nodeId/attachments */
   byNode: (flowId: number, nodeId: string) =>
     `/task-flows/${flowId}/nodes/${nodeId}/attachments`,
+  /** List all attachments for a project: GET /projects/:projectId/attachments */
+  byProject: (projectId: number) => `/projects/${projectId}/attachments`,
   /** Get presigned upload URL: POST /task-flows/:flowId/nodes/:nodeId/attachments/upload-url */
   uploadUrl: (flowId: number, nodeId: string) =>
     `/task-flows/${flowId}/nodes/${nodeId}/attachments/upload-url`,

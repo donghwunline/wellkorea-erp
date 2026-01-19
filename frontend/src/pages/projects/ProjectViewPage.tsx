@@ -36,6 +36,7 @@ import type { RoleName } from '@/entities/user';
 import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
 import {
   DeliveryPanel,
+  DocumentPanel,
   InvoicePanel,
   OutsourcePanel,
   ProjectRelatedNavigationGrid,
@@ -270,15 +271,9 @@ export function ProjectViewPage() {
             <DeliveryPanel projectId={project.id} />
           </TabPanel>
 
-          {/* Documents Tab (Placeholder) */}
+          {/* Documents Tab */}
           <TabPanel id="documents">
-            <Card className="p-12 text-center">
-              <Icon name="folder" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-              <h3 className="text-lg font-semibold text-white">문서</h3>
-              <p className="mt-2 text-steel-500">
-                Document management will be available in a future release.
-              </p>
-            </Card>
+            <DocumentPanel projectId={project.id} />
           </TabPanel>
 
           {/* Finance Tab */}
