@@ -168,8 +168,8 @@ export const COMPANY_ENDPOINTS = {
   byId: (id: number) => `/companies/${id}`,
   /** POST /companies/:id/roles - Add role to company */
   roles: (id: number) => `/companies/${id}/roles`,
-  /** DELETE /companies/:id/roles/:roleId - Remove role from company */
-  role: (id: number, roleId: number) => `/companies/${id}/roles/${roleId}`,
+  /** DELETE /companies/:id/roles/:roleType - Remove role from company */
+  role: (id: number, roleType: string) => `/companies/${id}/roles/${roleType}`,
 } as const;
 
 // ============================================================================

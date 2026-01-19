@@ -50,7 +50,6 @@ export { RoleType as RoleTypeEnum, ROLE_TYPE_LABELS, ROLE_TYPE_BADGE_VARIANTS } 
 // =============================================================================
 
 export { companyRules } from './model/company';
-export { roleRules } from './model/company-role';
 
 // =============================================================================
 // QUERY FACTORY (TanStack Query v5)

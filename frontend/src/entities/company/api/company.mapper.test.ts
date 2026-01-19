@@ -21,11 +21,7 @@ function createMockRoleResponse(
   overrides?: Partial<CompanyRoleResponse>
 ): CompanyRoleResponse {
   return {
-    id: 1,
     roleType: 'CUSTOMER',
-    creditLimit: 10000000,
-    defaultPaymentDays: 30,
-    notes: 'Test notes',
     createdAt: '2025-01-15T00:00:00Z',
     ...overrides,
   };
@@ -152,8 +148,8 @@ describe('companyMapper', () => {
 
     it('should map roles array correctly', () => {
       const roles = [
-        createMockRoleResponse({ id: 1, roleType: 'CUSTOMER' }),
-        createMockRoleResponse({ id: 2, roleType: 'VENDOR' }),
+        createMockRoleResponse({ roleType: 'CUSTOMER' }),
+        createMockRoleResponse({ roleType: 'VENDOR' }),
       ];
       const response = createMockCompanyDetailsResponse({ roles });
       const result = companyMapper.toDomain(response);
@@ -165,30 +161,14 @@ describe('companyMapper', () => {
 
     it('should map role fields correctly', () => {
       const role = createMockRoleResponse({
-        creditLimit: 50000000,
-        defaultPaymentDays: 45,
-        notes: 'VIP customer',
+        roleType: 'VENDOR',
+        createdAt: '2025-01-20T00:00:00Z',
       });
       const response = createMockCompanyDetailsResponse({ roles: [role] });
       const result = companyMapper.toDomain(response);
 
-      expect(result.roles[0].creditLimit).toBe(50000000);
-      expect(result.roles[0].defaultPaymentDays).toBe(45);
-      expect(result.roles[0].notes).toBe('VIP customer');
-    });
-
-    it('should handle null role fields', () => {
-      const role = createMockRoleResponse({
-        creditLimit: null,
-        defaultPaymentDays: null,
-        notes: null,
-      });
-      const response = createMockCompanyDetailsResponse({ roles: [role] });
-      const result = companyMapper.toDomain(response);
-
-      expect(result.roles[0].creditLimit).toBeNull();
-      expect(result.roles[0].defaultPaymentDays).toBeNull();
-      expect(result.roles[0].notes).toBeNull();
+      expect(result.roles[0].roleType).toBe('VENDOR');
+      expect(result.roles[0].createdAt).toBe('2025-01-20T00:00:00Z');
     });
 
     it('should default updatedAt to createdAt when null', () => {
