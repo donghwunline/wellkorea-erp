@@ -6,12 +6,12 @@
  * FSD Layer: features
  */
 
-import { useCallback, useState, type FormEvent } from 'react';
+import { type FormEvent, useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { VendorOffering } from '@/entities/catalog';
 import { catalogQueries } from '@/entities/catalog';
 import { CompanyCombobox, RoleTypeEnum } from '@/entities/company';
-import { Button, FormField, ModalActions, Alert, DatePicker, type DateRange } from '@/shared/ui';
+import { Alert, Button, DatePicker, type DateRange, FormField, ModalActions } from '@/shared/ui';
 
 // =============================================================================
 // TYPES
@@ -185,7 +185,7 @@ export function VendorOfferingForm({
           <CompanyCombobox
             value={formData.vendorId}
             onChange={id => handleChange('vendorId', id)}
-            roleType={RoleTypeEnum.VENDOR}
+            roleType={RoleTypeEnum.OUTSOURCE}
             placeholder="Search vendors..."
             initialLabel={offering?.vendorName}
             disabled={isSubmitting || isEditMode}
@@ -196,7 +196,9 @@ export function VendorOfferingForm({
         <FormField label="Service Category" required error={errors.serviceCategoryId}>
           <select
             value={formData.serviceCategoryId ?? ''}
-            onChange={e => handleChange('serviceCategoryId', e.target.value ? Number(e.target.value) : null)}
+            onChange={e =>
+              handleChange('serviceCategoryId', e.target.value ? Number(e.target.value) : null)
+            }
             disabled={isSubmitting || isEditMode}
             className={selectClassName}
           >
@@ -332,19 +334,10 @@ export function VendorOfferingForm({
       </FormField>
 
       <ModalActions>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button
-          type="submit"
-          variant="primary"
-          isLoading={isSubmitting}
-        >
+        <Button type="submit" variant="primary" isLoading={isSubmitting}>
           {isEditMode ? 'Save Changes' : 'Create Offering'}
         </Button>
       </ModalActions>
