@@ -49,21 +49,16 @@ public class ServiceCategoryController {
      * Access: All authenticated users
      *
      * @param search   Optional search term
+     * @param isActive Optional active status filter (null for all, true for active, false for inactive)
      * @param pageable Pagination parameters
      * @return Paginated list of service categories
      */
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ServiceCategorySummaryView>>> listServiceCategories(@RequestParam(required = false) String search,
+                                                                                               @RequestParam(required = false) Boolean isActive,
                                                                                                Pageable pageable) {
 
-        Page<ServiceCategorySummaryView> categoriesPage;
-
-        if (search != null && !search.isBlank()) {
-            categoriesPage = queryService.searchServiceCategories(search, pageable);
-        } else {
-            categoriesPage = queryService.listServiceCategories(pageable);
-        }
-
+        Page<ServiceCategorySummaryView> categoriesPage = queryService.listServiceCategories(search, isActive, pageable);
         return ResponseEntity.ok(ApiResponse.success(categoriesPage));
     }
 

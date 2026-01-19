@@ -41,6 +41,7 @@ export interface ServiceCategoryListQueryParams {
   page?: number;
   size?: number;
   search?: string;
+  isActive?: boolean;
 }
 
 export interface VendorOfferingListQueryParams {
@@ -90,12 +91,14 @@ export const catalogQueries = {
         params.page ?? 0,
         params.size ?? 20,
         params.search ?? '',
+        params.isActive,
       ] as const,
       queryFn: async (): Promise<Paginated<ServiceCategoryListItem>> => {
         return getServiceCategories({
           page: params.page ?? 0,
           size: params.size ?? 20,
           search: params.search,
+          isActive: params.isActive,
         });
       },
       placeholderData: keepPreviousData,

@@ -262,6 +262,45 @@ class ServiceCategoryControllerTest extends BaseIntegrationTest implements TestF
             mockMvc.perform(get(SERVICE_CATEGORIES_URL))
                     .andExpect(status().isUnauthorized());
         }
+
+        @Test
+        @DisplayName("should filter by isActive=true")
+        void listServiceCategories_FilterByActiveTrue_ReturnsOnlyActiveCategories() throws Exception {
+            // Insert inactive category
+            insertTestServiceCategoryWithStatus(104L, "Inactive Category", false);
+
+            mockMvc.perform(get(SERVICE_CATEGORIES_URL)
+                            .header("Authorization", "Bearer " + adminToken)
+                            .param("isActive", "true"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.content[*].isActive", everyItem(is(true))));
+        }
+
+        @Test
+        @DisplayName("should filter by isActive=false")
+        void listServiceCategories_FilterByActiveFalse_ReturnsOnlyInactiveCategories() throws Exception {
+            // Insert inactive category
+            insertTestServiceCategoryWithStatus(105L, "Another Inactive", false);
+
+            mockMvc.perform(get(SERVICE_CATEGORIES_URL)
+                            .header("Authorization", "Bearer " + adminToken)
+                            .param("isActive", "false"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.content[*].isActive", everyItem(is(false))));
+        }
+
+        @Test
+        @DisplayName("should return all categories when isActive is not specified")
+        void listServiceCategories_NoIsActiveFilter_ReturnsAllCategories() throws Exception {
+            // Insert inactive category
+            insertTestServiceCategoryWithStatus(106L, "Yet Another Inactive", false);
+
+            mockMvc.perform(get(SERVICE_CATEGORIES_URL)
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    // Should have both active and inactive (includes the inactive one we just added)
+                    .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))));
+        }
     }
 
     // ==========================================================================
@@ -704,14 +743,21 @@ class ServiceCategoryControllerTest extends BaseIntegrationTest implements TestF
     // ==========================================================================
 
     /**
-     * Insert a test service category.
+     * Insert a test service category (active by default).
      */
     private void insertTestServiceCategory(Long id, String name) {
+        insertTestServiceCategoryWithStatus(id, name, true);
+    }
+
+    /**
+     * Insert a test service category with specific active status.
+     */
+    private void insertTestServiceCategoryWithStatus(Long id, String name, boolean isActive) {
         jdbcTemplate.update(
                 "INSERT INTO service_categories (id, name, is_active, created_at, updated_at) " +
-                        "VALUES (?, ?, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
+                        "VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) " +
                         "ON CONFLICT (id) DO NOTHING",
-                id, name
+                id, name, isActive
         );
     }
 

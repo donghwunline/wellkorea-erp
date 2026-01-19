@@ -77,7 +77,9 @@
             (SELECT COUNT(*) FROM vendor_service_offerings vso WHERE vso.service_category_id = sc.id) AS vendor_count
         FROM service_categories sc
         <where>
-            sc.is_active = true
+            <if test="isActive != null">
+                sc.is_active = #{isActive}
+            </if>
             <if test="search != null and search != ''">
                 AND LOWER(sc.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
             </if>
@@ -91,7 +93,9 @@
         SELECT COUNT(*)
         FROM service_categories sc
         <where>
-            sc.is_active = true
+            <if test="isActive != null">
+                sc.is_active = #{isActive}
+            </if>
             <if test="search != null and search != ''">
                 AND LOWER(sc.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
             </if>
