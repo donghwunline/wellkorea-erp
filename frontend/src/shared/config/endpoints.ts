@@ -280,6 +280,8 @@ export const MATERIAL_ENDPOINTS = {
   createOffering: '/materials/offerings',
   /** GET/PUT/DELETE /materials/offerings/:id */
   offering: (id: number) => `/materials/offerings/${id}`,
+  /** PUT /materials/offerings/:id/preferred - Set vendor offering as preferred */
+  setPreferred: (id: number) => `/materials/offerings/${id}/preferred`,
 } as const;
 
 // ============================================================================

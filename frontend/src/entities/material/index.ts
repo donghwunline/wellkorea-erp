@@ -82,3 +82,4 @@ export { deleteMaterialCategory, type DeleteMaterialCategoryInput } from './api/
 export { createVendorMaterialOffering, type CreateVendorMaterialOfferingInput } from './api/create-vendor-material-offering';
 export { updateVendorMaterialOffering, type UpdateVendorMaterialOfferingInput } from './api/update-vendor-material-offering';
 export { deleteVendorMaterialOffering, type DeleteVendorMaterialOfferingInput } from './api/delete-vendor-material-offering';
+export { setPreferredVendorOffering } from './api/set-preferred-vendor-offering';

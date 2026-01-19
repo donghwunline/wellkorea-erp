@@ -37,9 +37,9 @@ public class MaterialQueryService {
      * @return Page of materials
      */
     public Page<MaterialSummaryView> listMaterials(Long categoryId,
-                                                    String search,
-                                                    boolean activeOnly,
-                                                    Pageable pageable) {
+                                                   String search,
+                                                   boolean activeOnly,
+                                                   Pageable pageable) {
         List<MaterialSummaryView> content = materialMapper.findWithFilters(
                 categoryId,
                 search,
@@ -50,20 +50,6 @@ public class MaterialQueryService {
         long total = materialMapper.countWithFilters(categoryId, search, activeOnly);
 
         return new PageImpl<>(content, pageable, total);
-    }
-
-    /**
-     * List materials with pagination (default: active only).
-     */
-    public Page<MaterialSummaryView> listMaterials(Pageable pageable) {
-        return listMaterials(null, null, true, pageable);
-    }
-
-    /**
-     * Search materials by name or SKU.
-     */
-    public Page<MaterialSummaryView> searchMaterials(String search, Pageable pageable) {
-        return listMaterials(null, search, true, pageable);
     }
 
     /**

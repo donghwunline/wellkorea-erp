@@ -38,9 +38,9 @@ public class MaterialController {
     private final MaterialCategoryQueryService categoryQueryService;
 
     public MaterialController(MaterialCommandService materialCommandService,
-                               MaterialQueryService materialQueryService,
-                               MaterialCategoryCommandService categoryCommandService,
-                               MaterialCategoryQueryService categoryQueryService) {
+                              MaterialQueryService materialQueryService,
+                              MaterialCategoryCommandService categoryCommandService,
+                              MaterialCategoryQueryService categoryQueryService) {
         this.materialCommandService = materialCommandService;
         this.materialQueryService = materialQueryService;
         this.categoryCommandService = categoryCommandService;
@@ -55,14 +55,12 @@ public class MaterialController {
      * GET /api/materials
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<MaterialSummaryView>>> listMaterials(
-            @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) String search,
-            @RequestParam(defaultValue = "true") boolean activeOnly,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<MaterialSummaryView>>> listMaterials(@RequestParam(required = false) Long categoryId,
+                                                                                @RequestParam(required = false) String search,
+                                                                                @RequestParam(defaultValue = "true") boolean activeOnly,
+                                                                                Pageable pageable) {
 
-        Page<MaterialSummaryView> materials = materialQueryService.listMaterials(
-                categoryId, search, activeOnly, pageable);
+        Page<MaterialSummaryView> materials = materialQueryService.listMaterials(categoryId, search, activeOnly, pageable);
 
         return ResponseEntity.ok(ApiResponse.success(materials));
     }
@@ -96,8 +94,7 @@ public class MaterialController {
      * GET /api/materials/{id}/offerings/current
      */
     @GetMapping("/{id}/offerings/current")
-    public ResponseEntity<ApiResponse<List<VendorMaterialOfferingView>>> getCurrentOfferingsForMaterial(
-            @PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<VendorMaterialOfferingView>>> getCurrentOfferingsForMaterial(@PathVariable Long id) {
         List<VendorMaterialOfferingView> offerings = materialQueryService.getCurrentOfferingsForMaterial(id);
         return ResponseEntity.ok(ApiResponse.success(offerings));
     }
@@ -108,9 +105,8 @@ public class MaterialController {
      * GET /api/materials/{id}/offerings
      */
     @GetMapping("/{id}/offerings")
-    public ResponseEntity<ApiResponse<Page<VendorMaterialOfferingView>>> getOfferingsForMaterial(
-            @PathVariable Long id,
-            Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<VendorMaterialOfferingView>>> getOfferingsForMaterial(@PathVariable Long id,
+                                                                                                 Pageable pageable) {
         Page<VendorMaterialOfferingView> offerings = materialQueryService.getOfferingsForMaterial(id, pageable);
         return ResponseEntity.ok(ApiResponse.success(offerings));
     }
@@ -124,8 +120,7 @@ public class MaterialController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
-    public ResponseEntity<ApiResponse<MaterialCommandResult>> createMaterial(
-            @Valid @RequestBody CreateMaterialRequest request) {
+    public ResponseEntity<ApiResponse<MaterialCommandResult>> createMaterial(@Valid @RequestBody CreateMaterialRequest request) {
 
         Long materialId = materialCommandService.createMaterial(request.toCommand());
         MaterialCommandResult result = MaterialCommandResult.created(materialId);
@@ -140,9 +135,8 @@ public class MaterialController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
-    public ResponseEntity<ApiResponse<MaterialCommandResult>> updateMaterial(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateMaterialRequest request) {
+    public ResponseEntity<ApiResponse<MaterialCommandResult>> updateMaterial(@PathVariable Long id,
+                                                                             @Valid @RequestBody UpdateMaterialRequest request) {
 
         Long materialId = materialCommandService.updateMaterial(id, request.toCommand());
         MaterialCommandResult result = MaterialCommandResult.updated(materialId);
@@ -160,6 +154,107 @@ public class MaterialController {
     public ResponseEntity<Void> deleteMaterial(@PathVariable Long id) {
         materialCommandService.deactivateMaterial(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ========== VENDOR MATERIAL OFFERING COMMAND ENDPOINTS ==========
+
+    /**
+     * Create a vendor material offering.
+     * <p>
+     * POST /api/materials/offerings
+     * <p>
+     * Access: ADMIN, FINANCE
+     *
+     * @param request Create request
+     * @return Created ID with 201 status
+     */
+    @PostMapping("/offerings")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<VendorMaterialOfferingCommandResult>> createVendorMaterialOffering(
+            @Valid @RequestBody CreateVendorMaterialOfferingRequest request) {
+
+        Long offeringId = materialCommandService.createVendorMaterialOffering(request.toCommand());
+        VendorMaterialOfferingCommandResult result = VendorMaterialOfferingCommandResult.created(offeringId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(result));
+    }
+
+    /**
+     * Update a vendor material offering.
+     * <p>
+     * PUT /api/materials/offerings/{offeringId}
+     * <p>
+     * Access: ADMIN, FINANCE
+     *
+     * @param offeringId Offering ID
+     * @param request    Update request
+     * @return Updated ID
+     */
+    @PutMapping("/offerings/{offeringId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<VendorMaterialOfferingCommandResult>> updateVendorMaterialOffering(
+            @PathVariable Long offeringId,
+            @Valid @RequestBody UpdateVendorMaterialOfferingRequest request) {
+
+        Long id = materialCommandService.updateVendorMaterialOffering(offeringId, request.toCommand());
+        VendorMaterialOfferingCommandResult result = VendorMaterialOfferingCommandResult.updated(id);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * Delete a vendor material offering (hard delete).
+     * <p>
+     * DELETE /api/materials/offerings/{offeringId}
+     * <p>
+     * Access: ADMIN, FINANCE
+     *
+     * @param offeringId Offering ID
+     * @return 204 No Content
+     */
+    @DeleteMapping("/offerings/{offeringId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<Void> deleteVendorMaterialOffering(@PathVariable Long offeringId) {
+        materialCommandService.deleteVendorMaterialOffering(offeringId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Get vendor material offering by ID.
+     * <p>
+     * GET /api/materials/offerings/{offeringId}
+     * <p>
+     * Access: All authenticated users
+     *
+     * @param offeringId Offering ID
+     * @return Vendor material offering details
+     */
+    @GetMapping("/offerings/{offeringId}")
+    public ResponseEntity<ApiResponse<VendorMaterialOfferingView>> getVendorMaterialOffering(
+            @PathVariable Long offeringId) {
+        VendorMaterialOfferingView offering = materialQueryService.getOfferingById(offeringId);
+        return ResponseEntity.ok(ApiResponse.success(offering));
+    }
+
+    /**
+     * Set a vendor material offering as preferred.
+     * <p>
+     * PUT /api/materials/offerings/{offeringId}/preferred
+     * <p>
+     * Access: ADMIN, FINANCE
+     *
+     * @param offeringId Offering ID to set as preferred
+     * @return Updated offering ID
+     */
+    @PutMapping("/offerings/{offeringId}/preferred")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<VendorMaterialOfferingCommandResult>> setPreferredVendorOffering(
+            @PathVariable Long offeringId) {
+
+        Long id = materialCommandService.setPreferredVendorOffering(offeringId);
+        VendorMaterialOfferingCommandResult result = VendorMaterialOfferingCommandResult.updated(id);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     // ========== CATEGORY QUERY ENDPOINTS ==========
