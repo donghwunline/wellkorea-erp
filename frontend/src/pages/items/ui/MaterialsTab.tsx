@@ -13,8 +13,10 @@
 
 import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { materialQueries, type MaterialListItem } from '@/entities/material';
+import { materialQueries, type MaterialListItem, type Material } from '@/entities/material';
 import { useAuth } from '@/entities/auth';
+import { MaterialFormModal } from '@/features/items/material/form';
+import { DeleteMaterialModal } from '@/features/items/material/delete';
 import { Button, Card, FilterBar, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
 import { formatCurrency } from '@/shared/lib/formatting';
 
@@ -34,6 +36,14 @@ export function MaterialsTab() {
 
   // Material detail modal state
   const [selectedMaterial, setSelectedMaterial] = useState<MaterialListItem | null>(null);
+
+  // Create/Edit modal state
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [editingMaterial, setEditingMaterial] = useState<Material | undefined>(undefined);
+
+  // Delete modal state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingMaterial, setDeletingMaterial] = useState<MaterialListItem | null>(null);
 
   // Handle search change with pagination reset
   const handleSearchChange = useCallback((value: string) => {
@@ -72,6 +82,65 @@ export function MaterialsTab() {
     setSelectedMaterial(null);
   };
 
+  // Open create modal
+  const handleOpenCreate = () => {
+    setEditingMaterial(undefined);
+    setIsFormModalOpen(true);
+  };
+
+  // Open edit modal (convert list item to full material type for the form)
+  const handleOpenEdit = () => {
+    if (!selectedMaterial) return;
+    // MaterialListItem has the same fields needed for editing
+    setEditingMaterial({
+      id: selectedMaterial.id,
+      sku: selectedMaterial.sku,
+      name: selectedMaterial.name,
+      description: selectedMaterial.description,
+      categoryId: selectedMaterial.categoryId,
+      categoryName: selectedMaterial.categoryName,
+      unit: selectedMaterial.unit,
+      standardPrice: selectedMaterial.standardPrice,
+      isActive: selectedMaterial.isActive,
+      preferredVendorId: selectedMaterial.preferredVendorId,
+      preferredVendorName: selectedMaterial.preferredVendorName,
+      createdAt: '',
+      updatedAt: '',
+    });
+    setIsFormModalOpen(true);
+  };
+
+  // Close form modal
+  const handleCloseForm = () => {
+    setIsFormModalOpen(false);
+    setEditingMaterial(undefined);
+  };
+
+  // Open delete modal
+  const handleOpenDelete = () => {
+    if (!selectedMaterial) return;
+    setDeletingMaterial(selectedMaterial);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Close delete modal
+  const handleCloseDelete = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingMaterial(null);
+  };
+
+  // Handle form success (close detail modal if we just edited)
+  const handleFormSuccess = () => {
+    if (editingMaterial) {
+      setSelectedMaterial(null);
+    }
+  };
+
+  // Handle delete success
+  const handleDeleteSuccess = () => {
+    setSelectedMaterial(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Toolbar */}
@@ -97,7 +166,7 @@ export function MaterialsTab() {
         </div>
 
         {canManage && (
-          <Button variant="primary" onClick={() => alert('Create material modal - TODO')}>
+          <Button variant="primary" onClick={handleOpenCreate}>
             Add Material
           </Button>
         )}
@@ -267,17 +336,33 @@ export function MaterialsTab() {
 
             {canManage && (
               <div className="flex justify-end gap-2 border-t border-steel-700/50 pt-4">
-                <Button variant="secondary" onClick={() => alert('Edit material - TODO')}>
+                <Button variant="secondary" onClick={handleOpenEdit}>
                   Edit
                 </Button>
-                <Button variant="danger" onClick={() => alert('Delete material - TODO')}>
-                  Delete
+                <Button variant="danger" onClick={handleOpenDelete}>
+                  Deactivate
                 </Button>
               </div>
             )}
           </div>
         </Modal>
       )}
+
+      {/* Create/Edit Material Modal */}
+      <MaterialFormModal
+        isOpen={isFormModalOpen}
+        onClose={handleCloseForm}
+        material={editingMaterial}
+        onSuccess={handleFormSuccess}
+      />
+
+      {/* Delete Material Modal */}
+      <DeleteMaterialModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDelete}
+        material={deletingMaterial}
+        onSuccess={handleDeleteSuccess}
+      />
     </div>
   );
 }
