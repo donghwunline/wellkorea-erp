@@ -42,13 +42,14 @@ function PurchaseRequestSummaryStats({
     const vendorSelected = requests.filter(
       r => r.status === PurchaseRequestStatus.VENDOR_SELECTED
     ).length;
+    const ordered = requests.filter(r => r.status === PurchaseRequestStatus.ORDERED).length;
     const closed = requests.filter(r => r.status === PurchaseRequestStatus.CLOSED).length;
 
-    return { total, draft, rfqSent, vendorSelected, closed };
+    return { total, draft, rfqSent, vendorSelected, ordered, closed };
   }, [requests]);
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
       <Card className="p-4">
         <div className="text-sm text-steel-400">전체</div>
         <div className="mt-1 text-2xl font-bold text-white">{stats.total}</div>
@@ -64,6 +65,10 @@ function PurchaseRequestSummaryStats({
       <Card className="p-4">
         <div className="text-sm text-steel-400">업체 선정</div>
         <div className="mt-1 text-2xl font-bold text-orange-400">{stats.vendorSelected}</div>
+      </Card>
+      <Card className="p-4">
+        <div className="text-sm text-steel-400">발주 완료</div>
+        <div className="mt-1 text-2xl font-bold text-cyan-400">{stats.ordered}</div>
       </Card>
       <Card className="p-4">
         <div className="text-sm text-steel-400">완료</div>

@@ -10,6 +10,7 @@ import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.RfqItem;
 import com.wellkorea.backend.purchasing.domain.RfqItemStatus;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCanceledEvent;
+import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCreatedEvent;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderReceivedEvent;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseOrderRepository;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
@@ -109,6 +110,14 @@ public class PurchaseOrderCommandService {
         purchaseOrder.setCreatedBy(user);
 
         purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
+
+        // Publish event to transition PurchaseRequest to ORDERED
+        eventPublisher.publish(new PurchaseOrderCreatedEvent(
+                purchaseOrder.getId(),
+                purchaseRequest.getId(),
+                purchaseOrder.getPoNumber()
+        ));
+
         return purchaseOrder.getId();
     }
 

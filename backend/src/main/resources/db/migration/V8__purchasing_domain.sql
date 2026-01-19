@@ -67,7 +67,7 @@ CREATE TABLE purchase_requests
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_pr_quantity_positive CHECK (quantity > 0),
-    CONSTRAINT chk_pr_status CHECK (status IN ('DRAFT', 'RFQ_SENT', 'VENDOR_SELECTED', 'CLOSED', 'CANCELED')),
+    CONSTRAINT chk_pr_status CHECK (status IN ('DRAFT', 'RFQ_SENT', 'VENDOR_SELECTED', 'ORDERED', 'CLOSED', 'CANCELED')),
     CONSTRAINT chk_purchase_request_item_type CHECK (
         (dtype = 'SERVICE' AND service_category_id IS NOT NULL AND material_id IS NULL) OR
         (dtype = 'MATERIAL' AND service_category_id IS NULL AND material_id IS NOT NULL)

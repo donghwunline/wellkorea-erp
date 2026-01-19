@@ -23,8 +23,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *     RFQ_SENT --> VENDOR_SELECTED (markVendorSelected)
  *     RFQ_SENT --> CANCELED (cancel)
  *     VENDOR_SELECTED --> RFQ_SENT (revertVendorSelection)
- *     VENDOR_SELECTED --> CLOSED (close)
+ *     VENDOR_SELECTED --> ORDERED (markOrdered) [when PO is created]
  *     VENDOR_SELECTED --> CANCELED (cancel)
+ *     ORDERED --> RFQ_SENT (revertVendorSelection) [when PO is canceled]
+ *     ORDERED --> CLOSED (close) [when PO is received]
+ *     ORDERED --> CANCELED (cancel)
  * </pre>
  *
  * @see PurchaseRequest
@@ -112,14 +115,19 @@ class PurchaseRequestTest {
             // VENDOR_SELECTED
             purchaseRequest.markVendorSelected();
             assertThat(purchaseRequest.canCancel()).isTrue();
+
+            // ORDERED
+            purchaseRequest.markOrdered();
+            assertThat(purchaseRequest.canCancel()).isTrue();
         }
 
         @Test
         @DisplayName("canCancel should return false for terminal states")
         void canCancelShouldReturnFalseForTerminalStates() {
-            // CLOSED
+            // CLOSED (now requires ORDERED state first)
             purchaseRequest.sendRfq();
             purchaseRequest.markVendorSelected();
+            purchaseRequest.markOrdered();
             purchaseRequest.close();
             assertThat(purchaseRequest.canCancel()).isFalse();
 
@@ -189,9 +197,10 @@ class PurchaseRequestTest {
         @Test
         @DisplayName("should throw when sending from CLOSED")
         void shouldThrowWhenSendingFromClosed() {
-            // Given
+            // Given (now requires ORDERED state before CLOSED)
             purchaseRequest.sendRfq();
             purchaseRequest.markVendorSelected();
+            purchaseRequest.markOrdered();
             purchaseRequest.close();
 
             // When / Then
@@ -239,8 +248,8 @@ class PurchaseRequestTest {
     }
 
     @Nested
-    @DisplayName("VENDOR_SELECTED → CLOSED transition (close)")
-    class CloseTransition {
+    @DisplayName("VENDOR_SELECTED → ORDERED transition (markOrdered)")
+    class MarkOrderedTransition {
 
         @BeforeEach
         void setUpVendorSelectedState() {
@@ -249,16 +258,83 @@ class PurchaseRequestTest {
         }
 
         @Test
-        @DisplayName("should transition from VENDOR_SELECTED to CLOSED")
-        void shouldTransitionFromVendorSelectedToClosed() {
+        @DisplayName("should transition from VENDOR_SELECTED to ORDERED")
+        void shouldTransitionFromVendorSelectedToOrdered() {
             // Given
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.VENDOR_SELECTED);
+
+            // When
+            purchaseRequest.markOrdered();
+
+            // Then
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.ORDERED);
+        }
+
+        @Test
+        @DisplayName("should throw when marking ordered from RFQ_SENT")
+        void shouldThrowWhenMarkingOrderedFromRfqSent() {
+            // Given
+            TestPurchaseRequest rfqSentRequest = new TestPurchaseRequest();
+            rfqSentRequest.sendRfq();
+
+            // When / Then
+            assertThatThrownBy(() -> rfqSentRequest.markOrdered())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Cannot mark as ordered")
+                    .hasMessageContaining("RFQ_SENT");
+        }
+
+        @Test
+        @DisplayName("should throw when marking ordered from DRAFT")
+        void shouldThrowWhenMarkingOrderedFromDraft() {
+            // Given
+            TestPurchaseRequest draftRequest = new TestPurchaseRequest();
+
+            // When / Then
+            assertThatThrownBy(() -> draftRequest.markOrdered())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Cannot mark as ordered")
+                    .hasMessageContaining("DRAFT");
+        }
+    }
+
+    @Nested
+    @DisplayName("ORDERED → CLOSED transition (close)")
+    class CloseTransition {
+
+        @BeforeEach
+        void setUpOrderedState() {
+            purchaseRequest.sendRfq();
+            purchaseRequest.markVendorSelected();
+            purchaseRequest.markOrdered();
+        }
+
+        @Test
+        @DisplayName("should transition from ORDERED to CLOSED")
+        void shouldTransitionFromOrderedToClosed() {
+            // Given
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.ORDERED);
 
             // When
             purchaseRequest.close();
 
             // Then
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.CLOSED);
+        }
+
+        @Test
+        @DisplayName("should throw when closing from VENDOR_SELECTED")
+        void shouldThrowWhenClosingFromVendorSelected() {
+            // Given
+            TestPurchaseRequest vendorSelectedRequest = new TestPurchaseRequest();
+            vendorSelectedRequest.sendRfq();
+            vendorSelectedRequest.markVendorSelected();
+
+            // When / Then
+            assertThatThrownBy(() -> vendorSelectedRequest.close())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Cannot close")
+                    .hasMessageContaining("VENDOR_SELECTED");
         }
 
         @Test
@@ -321,11 +397,27 @@ class PurchaseRequestTest {
         }
 
         @Test
-        @DisplayName("should throw when canceling from CLOSED")
-        void shouldThrowWhenCancelingFromClosed() {
+        @DisplayName("should transition from ORDERED to CANCELED")
+        void shouldTransitionFromOrderedToCanceled() {
             // Given
             purchaseRequest.sendRfq();
             purchaseRequest.markVendorSelected();
+            purchaseRequest.markOrdered();
+
+            // When
+            purchaseRequest.cancel();
+
+            // Then
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.CANCELED);
+        }
+
+        @Test
+        @DisplayName("should throw when canceling from CLOSED")
+        void shouldThrowWhenCancelingFromClosed() {
+            // Given (now requires ORDERED state before CLOSED)
+            purchaseRequest.sendRfq();
+            purchaseRequest.markVendorSelected();
+            purchaseRequest.markOrdered();
             purchaseRequest.close();
 
             // When / Then
@@ -546,8 +638,8 @@ class PurchaseRequestTest {
     class FullWorkflowScenarios {
 
         @Test
-        @DisplayName("Happy path: DRAFT → RFQ_SENT → VENDOR_SELECTED → CLOSED")
-        void happyPathDraftToRfqSentToVendorSelectedToClosed() {
+        @DisplayName("Happy path: DRAFT → RFQ_SENT → VENDOR_SELECTED → ORDERED → CLOSED")
+        void happyPathDraftToRfqSentToVendorSelectedToOrderedToClosed() {
             // Given
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.DRAFT);
             RfqItem item = purchaseRequest.addRfqItem(1L, null);
@@ -564,6 +656,10 @@ class PurchaseRequestTest {
             purchaseRequest.selectVendor(item.getItemId());
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.VENDOR_SELECTED);
             assertThat(item.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
+
+            // When - mark as ordered (PO created)
+            purchaseRequest.markOrdered();
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.ORDERED);
 
             // When - close (PO received)
             purchaseRequest.close();
@@ -680,9 +776,10 @@ class PurchaseRequestTest {
         @Test
         @DisplayName("CLOSED should not allow any transitions except terminal state checks")
         void closedShouldNotAllowAnyTransitions() {
-            // Given
+            // Given (now requires ORDERED state before CLOSED)
             purchaseRequest.sendRfq();
             purchaseRequest.markVendorSelected();
+            purchaseRequest.markOrdered();
             purchaseRequest.close();
 
             // Then
@@ -703,6 +800,86 @@ class PurchaseRequestTest {
                     .isInstanceOf(IllegalStateException.class);
             assertThatThrownBy(() -> purchaseRequest.cancel())
                     .isInstanceOf(IllegalStateException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("ORDERED → RFQ_SENT transition (revertVendorSelection from ORDERED)")
+    class RevertFromOrderedTransition {
+
+        private RfqItem selectedItem;
+        private RfqItem rejectedItem;
+
+        @BeforeEach
+        void setUpOrderedStateWithRfqItems() {
+            // Add RFQ items
+            selectedItem = purchaseRequest.addRfqItem(1L, null);
+            rejectedItem = purchaseRequest.addRfqItem(2L, null);
+
+            // Transition to RFQ_SENT
+            purchaseRequest.sendRfq();
+
+            // Record replies
+            purchaseRequest.recordRfqReply(selectedItem.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.recordRfqReply(rejectedItem.getItemId(), new BigDecimal("1500"), 10, null);
+
+            // Reject one item
+            purchaseRequest.rejectRfq(rejectedItem.getItemId());
+
+            // Select vendor
+            purchaseRequest.selectVendor(selectedItem.getItemId());
+
+            // Mark as ordered (PO created)
+            purchaseRequest.markOrdered();
+
+            // Verify initial state
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.ORDERED);
+            assertThat(selectedItem.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
+            assertThat(rejectedItem.getStatus()).isEqualTo(RfqItemStatus.REJECTED);
+        }
+
+        @Test
+        @DisplayName("should transition from ORDERED to RFQ_SENT when PO is canceled")
+        void shouldTransitionFromOrderedToRfqSent() {
+            // When - revert (PO canceled)
+            purchaseRequest.revertVendorSelection(selectedItem.getItemId());
+
+            // Then
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
+        }
+
+        @Test
+        @DisplayName("should deselect the selected RfqItem when reverting from ORDERED")
+        void shouldDeselectTheSelectedRfqItemWhenRevertingFromOrdered() {
+            // When
+            purchaseRequest.revertVendorSelection(selectedItem.getItemId());
+
+            // Then
+            assertThat(selectedItem.getStatus()).isEqualTo(RfqItemStatus.REPLIED);
+        }
+
+        @Test
+        @DisplayName("should unreject all REJECTED RfqItems when reverting from ORDERED")
+        void shouldUnrejectAllRejectedRfqItemsWhenRevertingFromOrdered() {
+            // When
+            purchaseRequest.revertVendorSelection(selectedItem.getItemId());
+
+            // Then
+            assertThat(rejectedItem.getStatus()).isEqualTo(RfqItemStatus.REPLIED);
+        }
+
+        @Test
+        @DisplayName("should allow selecting a different vendor after reverting from ORDERED")
+        void shouldAllowSelectingDifferentVendorAfterRevertFromOrdered() {
+            // When - revert
+            purchaseRequest.revertVendorSelection(selectedItem.getItemId());
+
+            // Then - can select the previously rejected vendor
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
+            purchaseRequest.selectVendor(rejectedItem.getItemId());
+
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.VENDOR_SELECTED);
+            assertThat(rejectedItem.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
         }
     }
 }

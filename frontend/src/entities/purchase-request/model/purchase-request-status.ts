@@ -6,6 +6,7 @@ export const PurchaseRequestStatus = {
   DRAFT: 'DRAFT',
   RFQ_SENT: 'RFQ_SENT',
   VENDOR_SELECTED: 'VENDOR_SELECTED',
+  ORDERED: 'ORDERED',
   CLOSED: 'CLOSED',
   CANCELED: 'CANCELED',
 } as const;
@@ -36,7 +37,13 @@ export const PurchaseRequestStatusConfig: Record<PurchaseRequestStatus, StatusCo
     label: 'Vendor Selected',
     labelKo: '업체 선정',
     color: 'warning',
-    description: 'Vendor selected, awaiting PO completion',
+    description: 'Vendor selected, awaiting PO creation',
+  },
+  [PurchaseRequestStatus.ORDERED]: {
+    label: 'Ordered',
+    labelKo: '발주 완료',
+    color: 'info',
+    description: 'PO created, awaiting delivery',
   },
   [PurchaseRequestStatus.CLOSED]: {
     label: 'Closed',

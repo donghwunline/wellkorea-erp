@@ -9,9 +9,9 @@ The purchasing workflow follows this high-level flow:
 2. Send RFQs to multiple vendors (RFQ_SENT)
 3. Vendors reply with quotes (RfqItem: SENT → REPLIED)
 4. Select one vendor (VENDOR_SELECTED, RfqItem: SELECTED)
-5. Create Purchase Order
-6. If PO is canceled, revert to allow re-selection (via `PurchaseOrderCanceledEvent`)
-7. When PO is received, close the PR (via `PurchaseOrderReceivedEvent`)
+5. Create Purchase Order → PR transitions to ORDERED (via `PurchaseOrderCreatedEvent`)
+6. If PO is canceled, revert to RFQ_SENT to allow re-selection (via `PurchaseOrderCanceledEvent`)
+7. When PO is received, close the PR: ORDERED → CLOSED (via `PurchaseOrderReceivedEvent`)
 
 ---
 
@@ -99,7 +99,8 @@ The `PurchaseRequest` is the aggregate root that contains multiple `RfqItem` ent
 |-------|-------------|
 | `DRAFT` | Initial state - request created, can edit |
 | `RFQ_SENT` | RFQs sent to vendors, awaiting quotes |
-| `VENDOR_SELECTED` | A vendor has been selected, PO created |
+| `VENDOR_SELECTED` | A vendor has been selected, ready for PO creation |
+| `ORDERED` | PO created, awaiting delivery |
 | `CLOSED` | PO received, workflow complete (terminal) |
 | `CANCELED` | Request canceled (terminal) |
 
@@ -117,8 +118,12 @@ stateDiagram-v2
     RFQ_SENT --> CANCELED: cancel()
 
     VENDOR_SELECTED --> RFQ_SENT: revertVendorSelection()
-    VENDOR_SELECTED --> CLOSED: close()
+    VENDOR_SELECTED --> ORDERED: markOrdered() [PO created]
     VENDOR_SELECTED --> CANCELED: cancel()
+
+    ORDERED --> RFQ_SENT: revertVendorSelection() [PO canceled]
+    ORDERED --> CLOSED: close() [PO received]
+    ORDERED --> CANCELED: cancel()
 
     CLOSED --> [*]: terminal
     CANCELED --> [*]: terminal
@@ -136,8 +141,14 @@ stateDiagram-v2
     end note
 
     note right of VENDOR_SELECTED
-        Vendor chosen, PO created
-        Can close when received
+        Vendor chosen
+        Awaiting PO creation
+        Can revert selection
+    end note
+
+    note right of ORDERED
+        PO created & active
+        Awaiting delivery
         Can revert if PO canceled
     end note
 ```
@@ -149,9 +160,10 @@ stateDiagram-v2
 | `sendRfq()` | DRAFT | RFQ_SENT | Initial RFQ send |
 | `sendRfq()` | RFQ_SENT | RFQ_SENT | Add more vendors (idempotent) |
 | `markVendorSelected()` | RFQ_SENT | VENDOR_SELECTED | User selects vendor |
-| `close()` | VENDOR_SELECTED | CLOSED | PO received |
-| `cancel()` | DRAFT, RFQ_SENT, VENDOR_SELECTED | CANCELED | User cancels |
-| `revertVendorSelection()` | VENDOR_SELECTED | RFQ_SENT | PO canceled |
+| `markOrdered()` | VENDOR_SELECTED | ORDERED | PO created (via event) |
+| `close()` | ORDERED | CLOSED | PO received (via event) |
+| `cancel()` | DRAFT, RFQ_SENT, VENDOR_SELECTED, ORDERED | CANCELED | User cancels |
+| `revertVendorSelection()` | VENDOR_SELECTED, ORDERED | RFQ_SENT | PO canceled (via event) |
 
 ### Guard Conditions
 
@@ -163,9 +175,47 @@ stateDiagram-v2
 
 ---
 
+## Combined Workflow: PO Creation
+
+When a Purchase Order is created, the PurchaseRequest automatically transitions to ORDERED via an event:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant PO as PurchaseOrder
+    participant Event as DomainEvent
+    participant PR as PurchaseRequest
+
+    User->>PO: createPurchaseOrder()
+    PO->>PO: new PurchaseOrder() [status = DRAFT]
+    PO->>Event: publish(PurchaseOrderCreatedEvent)
+
+    Event->>PR: onPurchaseOrderCreated()
+    PR->>PR: markOrdered() [status → ORDERED]
+
+    Note over PR: PR is now in ORDERED state<br/>Awaiting PO delivery
+```
+
+### State Changes Summary
+
+| Entity | Before Create | After Create |
+|--------|--------------|--------------|
+| PurchaseOrder | (new) | DRAFT |
+| PurchaseRequest | VENDOR_SELECTED | ORDERED |
+| Selected RfqItem | SELECTED | SELECTED (unchanged) |
+
+### Guard Conditions
+
+The event handler includes an idempotency guard:
+- Only marks PR as ordered if current status is `VENDOR_SELECTED`
+- Skips if PR is already `ORDERED` or in another state
+- This prevents errors on event replay or duplicate processing
+
+---
+
 ## Combined Workflow: PO Cancellation Revert
 
-When a Purchase Order is canceled, the following cascade occurs:
+When a Purchase Order is canceled, the following cascade occurs. Note that the PR can be in either VENDOR_SELECTED or ORDERED status when a PO is canceled:
 
 ```mermaid
 sequenceDiagram
@@ -180,6 +230,7 @@ sequenceDiagram
     PO->>Event: publish(PurchaseOrderCanceledEvent)
 
     Event->>PR: onPurchaseOrderCanceled()
+    Note over PR: PR status: VENDOR_SELECTED or ORDERED
     PR->>PR: revertVendorSelection(rfqItemId)
 
     PR->>RFQ: deselect() [SELECTED → REPLIED]
@@ -198,7 +249,7 @@ sequenceDiagram
 | Entity | Before Cancel | After Cancel |
 |--------|--------------|--------------|
 | PurchaseOrder | DRAFT/SENT/CONFIRMED | CANCELED |
-| PurchaseRequest | VENDOR_SELECTED | RFQ_SENT |
+| PurchaseRequest | VENDOR_SELECTED or ORDERED | RFQ_SENT |
 | Selected RfqItem | SELECTED | REPLIED |
 | Rejected RfqItems | REJECTED | REPLIED |
 | Other RfqItems | (unchanged) | (unchanged) |
@@ -231,13 +282,13 @@ sequenceDiagram
 | Entity | Before Receive | After Receive |
 |--------|---------------|---------------|
 | PurchaseOrder | CONFIRMED | RECEIVED |
-| PurchaseRequest | VENDOR_SELECTED | CLOSED |
+| PurchaseRequest | ORDERED | CLOSED |
 | Selected RfqItem | SELECTED | SELECTED (unchanged) |
 
 ### Guard Conditions
 
 The event handler includes an idempotency guard:
-- Only closes PR if current status is `VENDOR_SELECTED`
+- Only closes PR if current status is `ORDERED`
 - Skips if PR is already `CLOSED` or in another state
 - This prevents errors on event replay or duplicate processing
 
@@ -278,37 +329,46 @@ The event handler includes an idempotency guard:
 
 ### PurchaseRequest Test Cases
 
-1. **Happy Path: DRAFT → RFQ_SENT → VENDOR_SELECTED → CLOSED**
+1. **Happy Path: DRAFT → RFQ_SENT → VENDOR_SELECTED → ORDERED → CLOSED**
    - Create request (DRAFT)
    - Send RFQ (RFQ_SENT)
    - Select vendor (VENDOR_SELECTED)
-   - Close when received (CLOSED)
+   - Create PO (ORDERED via event)
+   - Close when received (CLOSED via event)
 
 2. **Add More Vendors: RFQ_SENT → RFQ_SENT**
    - Already in RFQ_SENT
    - Send RFQ again (idempotent, stays RFQ_SENT)
 
-3. **Revert Path: VENDOR_SELECTED → RFQ_SENT**
-   - PO canceled
+3. **Revert Path from VENDOR_SELECTED: VENDOR_SELECTED → RFQ_SENT**
+   - PO canceled before transition to ORDERED
    - Revert vendor selection
    - Can select again or add vendors
 
-4. **Add Vendors When All Items NO_RESPONSE/REJECTED**
+4. **Revert Path from ORDERED: ORDERED → RFQ_SENT**
+   - PO canceled after already in ORDERED
+   - Revert vendor selection
+   - Can select again or add vendors
+
+5. **Add Vendors When All Items NO_RESPONSE/REJECTED**
    - All existing RfqItems are in NO_RESPONSE or REJECTED status
    - PR remains in RFQ_SENT (not terminal)
    - User can add new vendors via sendRfq()
    - New vendors can be quoted and selected
 
-5. **Cancel from Any Non-Terminal State**
+6. **Cancel from Any Non-Terminal State**
    - DRAFT → CANCELED
    - RFQ_SENT → CANCELED
    - VENDOR_SELECTED → CANCELED
+   - ORDERED → CANCELED
 
-6. **Invalid Transitions**
-   - Cannot close from RFQ_SENT (must select vendor first)
+7. **Invalid Transitions**
+   - Cannot close from RFQ_SENT (must be in ORDERED)
+   - Cannot close from VENDOR_SELECTED (must be in ORDERED)
+   - Cannot mark ordered from RFQ_SENT (must be VENDOR_SELECTED)
    - Cannot revert from RFQ_SENT
    - Cannot cancel from CLOSED
-   - Cannot send RFQ from VENDOR_SELECTED
+   - Cannot send RFQ from VENDOR_SELECTED or ORDERED
 
 ---
 
@@ -319,7 +379,8 @@ The event handler includes an idempotency guard:
 | `RfqItem.java` | RfqItem entity with state transitions |
 | `RfqItemStatus.java` | Status enum |
 | `PurchaseRequest.java` | Aggregate root with orchestration |
-| `PurchaseRequestStatus.java` | Status enum |
-| `PurchaseOrderCanceledEvent.java` | Domain event for PO cancellation |
-| `PurchaseOrderReceivedEvent.java` | Domain event for PO receive completion |
-| `PurchaseRequestEventHandler.java` | Event handler for PR status updates |
+| `PurchaseRequestStatus.java` | Status enum (DRAFT, RFQ_SENT, VENDOR_SELECTED, ORDERED, CLOSED, CANCELED) |
+| `PurchaseOrderCreatedEvent.java` | Domain event for PO creation (triggers VENDOR_SELECTED → ORDERED) |
+| `PurchaseOrderCanceledEvent.java` | Domain event for PO cancellation (triggers ORDERED/VENDOR_SELECTED → RFQ_SENT) |
+| `PurchaseOrderReceivedEvent.java` | Domain event for PO receive completion (triggers ORDERED → CLOSED) |
+| `PurchaseRequestEventHandler.java` | Event handler for PR status updates (onPurchaseOrderCreated, onPurchaseOrderCanceled, onPurchaseOrderReceived) |

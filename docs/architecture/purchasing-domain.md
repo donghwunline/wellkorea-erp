@@ -132,7 +132,7 @@ erDiagram
         decimal quantity
         varchar uom
         date required_date
-        varchar status "DRAFT|RFQ_SENT|VENDOR_SELECTED|CLOSED|CANCELED"
+        varchar status "DRAFT|RFQ_SENT|VENDOR_SELECTED|ORDERED|CLOSED|CANCELED"
         bigint created_by_id FK
         timestamp created_at
         timestamp updated_at
@@ -211,11 +211,16 @@ stateDiagram-v2
     DRAFT --> RFQ_SENT : Send RFQ to Vendors
     DRAFT --> CANCELED : Cancel
 
-    RFQ_SENT --> VENDOR_SELECTED : Select Vendor (via PO creation)
+    RFQ_SENT --> VENDOR_SELECTED : Select Vendor
     RFQ_SENT --> CANCELED : Cancel
 
-    VENDOR_SELECTED --> CLOSED : PO Received
+    VENDOR_SELECTED --> ORDERED : PO Created (via event)
+    VENDOR_SELECTED --> RFQ_SENT : Revert Selection
     VENDOR_SELECTED --> CANCELED : Cancel
+
+    ORDERED --> CLOSED : PO Received (via event)
+    ORDERED --> RFQ_SENT : PO Canceled (via event)
+    ORDERED --> CANCELED : Cancel
 
     CLOSED --> [*]
     CANCELED --> [*]
@@ -231,6 +236,11 @@ stateDiagram-v2
     end note
 
     note right of VENDOR_SELECTED
+        Vendor chosen
+        Ready for PO creation
+    end note
+
+    note right of ORDERED
         PO created for selected vendor
         Awaiting delivery
     end note
@@ -308,6 +318,7 @@ sequenceDiagram
     participant RFQ as RfqItem[]
     participant Vendor as Vendors
     participant PO as PurchaseOrder
+    participant Event as DomainEvent
 
     User->>PR: Create Purchase Request (DRAFT)
     User->>PR: Add description, quantity, required date
@@ -324,10 +335,12 @@ sequenceDiagram
     User->>RFQ: Compare quotes
     User->>RFQ: Select best vendor
     RFQ->>RFQ: Status → SELECTED
+    PR->>PR: Status → VENDOR_SELECTED
 
     User->>PO: Create Purchase Order
-    PR->>PR: Status → VENDOR_SELECTED
     PO->>PO: Status = DRAFT
+    PO->>Event: publish(PurchaseOrderCreatedEvent)
+    Event->>PR: Status → ORDERED
 
     User->>PO: Send PO to vendor
     PO->>PO: Status → SENT
@@ -338,7 +351,8 @@ sequenceDiagram
     Vendor->>User: Deliver goods/services
     User->>PO: Mark as received
     PO->>PO: Status → RECEIVED
-    PR->>PR: Status → CLOSED
+    PO->>Event: publish(PurchaseOrderReceivedEvent)
+    Event->>PR: Status → CLOSED
 ```
 
 ---
@@ -737,6 +751,7 @@ listPurchaseRequests(PurchaseRequestStatus status, Long projectId, Pageable page
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1.0 | 2026-01-19 | Added ORDERED status to PurchaseRequest state machine; PO creation now triggers VENDOR_SELECTED → ORDERED via PurchaseOrderCreatedEvent |
 | 1.0.0 | 2026-01-15 | Initial implementation - PR, RFQ, PO entities |
 
 ---

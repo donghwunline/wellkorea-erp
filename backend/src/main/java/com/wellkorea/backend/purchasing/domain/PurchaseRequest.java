@@ -138,10 +138,20 @@ public abstract class PurchaseRequest {
     }
 
     /**
+     * Mark as ordered - transition to ORDERED status when PO is created.
+     */
+    public void markOrdered() {
+        if (status != PurchaseRequestStatus.VENDOR_SELECTED) {
+            throw new IllegalStateException("Cannot mark as ordered for purchase request in " + status + " status");
+        }
+        this.status = PurchaseRequestStatus.ORDERED;
+    }
+
+    /**
      * Close the purchase request after PO is received.
      */
     public void close() {
-        if (status != PurchaseRequestStatus.VENDOR_SELECTED) {
+        if (status != PurchaseRequestStatus.ORDERED) {
             throw new IllegalStateException("Cannot close purchase request in " + status + " status");
         }
         this.status = PurchaseRequestStatus.CLOSED;
@@ -282,11 +292,12 @@ public abstract class PurchaseRequest {
      * so they can be re-evaluated and potentially selected.
      *
      * <p>This method is idempotent - multiple calls produce the same result.
+     * <p>Works from both VENDOR_SELECTED and ORDERED statuses.
      *
      * @param itemId the RFQ item ID that was selected for the canceled PO
      */
     public void revertVendorSelection(String itemId) {
-        if (status != PurchaseRequestStatus.VENDOR_SELECTED) {
+        if (status != PurchaseRequestStatus.VENDOR_SELECTED && status != PurchaseRequestStatus.ORDERED) {
             throw new IllegalStateException("Cannot revert vendor selection for purchase request in " + status + " status");
         }
 
