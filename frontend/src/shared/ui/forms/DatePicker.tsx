@@ -53,6 +53,8 @@ export interface DatePickerProps {
   required?: boolean;
   /** Whether field is disabled */
   disabled?: boolean;
+  /** Whether to show clear button when value is selected */
+  clearable?: boolean;
   /** Error message */
   error?: string;
   /** Additional class name */
@@ -372,6 +374,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
       label,
       required,
       disabled,
+      clearable = true,
       error,
       className,
     },
@@ -380,7 +383,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
     const [isOpen, setIsOpen] = useState(display === 'inline');
     const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLDivElement>(null);
 
     // Parse current value
     const singleValue = mode === 'single' ? (value as string) : null;
@@ -442,6 +445,19 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
         }
       },
       [mode, onChange, rangeValue, display]
+    );
+
+    // Handle clear button click
+    const handleClear = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent dropdown from opening
+        if (mode === 'single') {
+          onChange('');
+        } else {
+          onChange({ start: null, end: null });
+        }
+      },
+      [mode, onChange]
     );
 
     // Keyboard handler
@@ -521,11 +537,17 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
         )}
 
         {/* Trigger button */}
-        <button
-          ref={inputRef as React.RefObject<HTMLButtonElement>}
-          type="button"
-          disabled={disabled}
-          onClick={() => setIsOpen(!isOpen)}
+        <div
+          ref={inputRef as React.RefObject<HTMLDivElement>}
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          onKeyDown={e => {
+            if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+              e.preventDefault();
+              setIsOpen(!isOpen);
+            }
+          }}
           className={cn(
             'flex h-10 w-full items-center justify-between rounded-lg border px-3',
             'text-left text-sm transition-all',
@@ -541,20 +563,41 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
           <span className={displayValue ? 'text-white' : 'text-steel-500'}>
             {displayValue || placeholder}
           </span>
-          <svg
-            className={cn('h-4 w-4 text-steel-400 transition-transform', isOpen && 'rotate-180')}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-        </button>
+          <div className="flex items-center gap-1">
+            {/* Clear button - hidden for required fields */}
+            {clearable && !required && displayValue && !disabled && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="rounded p-1 text-steel-400 transition-colors hover:bg-steel-700/50 hover:text-white"
+                aria-label="Clear date"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+            {/* Calendar icon */}
+            <svg
+              className={cn('h-4 w-4 text-steel-400 transition-transform', isOpen && 'rotate-180')}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+        </div>
 
         {error && <span className="mt-1 block text-xs text-red-400">{error}</span>}
 

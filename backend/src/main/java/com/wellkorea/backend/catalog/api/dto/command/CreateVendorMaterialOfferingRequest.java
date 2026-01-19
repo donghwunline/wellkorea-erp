@@ -35,10 +35,8 @@ public record CreateVendorMaterialOfferingRequest(
         @PositiveOrZero(message = "Min order quantity must be zero or positive")
         Integer minOrderQuantity,
 
-        @NotNull(message = "Effective from date is required")
         LocalDate effectiveFrom,
 
-        @NotNull(message = "Effective to date is required")
         LocalDate effectiveTo,
 
         Boolean isPreferred,
