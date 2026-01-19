@@ -21,8 +21,8 @@ export type RoleType = (typeof RoleType)[keyof typeof RoleType];
  */
 export const ROLE_TYPE_LABELS: Record<RoleType, string> = {
   [RoleType.CUSTOMER]: '고객사',
-  [RoleType.VENDOR]: '협력업체',
-  [RoleType.OUTSOURCE]: '외주업체',
+  [RoleType.VENDOR]: '구매사',
+  [RoleType.OUTSOURCE]: '외주사',
 };
 
 /**
