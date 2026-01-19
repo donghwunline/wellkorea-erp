@@ -55,3 +55,30 @@ export {
   type MaterialListQueryParams,
   type MaterialCategoryListQueryParams,
 } from './api/material.queries';
+
+// =============================================================================
+// MATERIAL COMMAND FUNCTIONS (with validation)
+// Use with useMutation() directly
+// =============================================================================
+
+export { createMaterial, type CreateMaterialInput } from './api/create-material';
+export { updateMaterial, type UpdateMaterialInput } from './api/update-material';
+export { deleteMaterial, type DeleteMaterialInput } from './api/delete-material';
+
+// =============================================================================
+// MATERIAL CATEGORY COMMAND FUNCTIONS (with validation)
+// Use with useMutation() directly
+// =============================================================================
+
+export { createMaterialCategory, type CreateMaterialCategoryInput } from './api/create-material-category';
+export { updateMaterialCategory, type UpdateMaterialCategoryInput } from './api/update-material-category';
+export { deleteMaterialCategory, type DeleteMaterialCategoryInput } from './api/delete-material-category';
+
+// =============================================================================
+// VENDOR MATERIAL OFFERING COMMAND FUNCTIONS (with validation)
+// Use with useMutation() directly
+// =============================================================================
+
+export { createVendorMaterialOffering, type CreateVendorMaterialOfferingInput } from './api/create-vendor-material-offering';
+export { updateVendorMaterialOffering, type UpdateVendorMaterialOfferingInput } from './api/update-vendor-material-offering';
+export { deleteVendorMaterialOffering, type DeleteVendorMaterialOfferingInput } from './api/delete-vendor-material-offering';
