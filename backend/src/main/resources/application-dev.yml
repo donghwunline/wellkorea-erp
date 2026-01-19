@@ -31,6 +31,12 @@ spring:
     port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:dev@wellkorea.com}
     password: ${MAIL_PASSWORD:dev-password-not-real}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   # Default admin user for development (bypasses JWT for quick testing)
   security:
