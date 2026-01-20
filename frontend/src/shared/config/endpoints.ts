@@ -108,6 +108,8 @@ export const APPROVAL_ENDPOINTS = {
   reject: (id: number) => `/approvals/${id}/reject`,
   /** GET /approvals/:id/history */
   history: (id: number) => `/approvals/${id}/history`,
+  /** GET /approvals/pending-count - Get pending approval count for current user */
+  PENDING_COUNT: '/approvals/pending-count',
 } as const;
 
 // ============================================================================

@@ -87,6 +87,19 @@ public class ApprovalController {
         return ResponseEntity.ok(ApiResponse.success(history));
     }
 
+    /**
+     * Get pending approval count for current user.
+     * GET /api/approvals/pending-count
+     * Used for badge display in navigation.
+     */
+    @GetMapping("/pending-count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES', 'PRODUCTION')")
+    public ResponseEntity<ApiResponse<Long>> getPendingCount(@AuthenticationPrincipal AuthenticatedUser user) {
+        Long userId = user.getUserId();
+        long count = queryService.countPendingForUser(userId);
+        return ResponseEntity.ok(ApiResponse.success(count));
+    }
+
     // ==================== COMMAND ENDPOINTS ====================
 
     /**

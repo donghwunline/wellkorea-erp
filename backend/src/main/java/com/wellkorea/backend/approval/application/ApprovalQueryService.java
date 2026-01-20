@@ -119,4 +119,15 @@ public class ApprovalQueryService {
     public boolean exists(Long approvalRequestId) {
         return approvalMapper.existsById(approvalRequestId);
     }
+
+    /**
+     * Count pending approvals for a user.
+     * Used for badge display in navigation.
+     *
+     * @param userId User ID to count pending approvals for
+     * @return Count of pending approvals where user is the expected approver at current level
+     */
+    public long countPendingForUser(Long userId) {
+        return approvalMapper.countPendingByApproverUserId(userId);
+    }
 }
