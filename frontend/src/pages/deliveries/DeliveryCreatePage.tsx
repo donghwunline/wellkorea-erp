@@ -55,7 +55,7 @@ export function DeliveryCreatePage() {
   const [quantitiesToDeliver, setQuantitiesToDeliver] = useState<Record<number, number>>({});
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch approved quotation for the project
+  // Fetch accepted quotation for the project
   const {
     data: quotationsData,
     isLoading: loadingQuotations,
@@ -65,7 +65,7 @@ export function DeliveryCreatePage() {
       page: 0,
       size: 100,
       search: '',
-      status: QuotationStatus.APPROVED,
+      status: QuotationStatus.ACCEPTED,
       projectId: projectIdNum,
     })
   );
@@ -78,8 +78,8 @@ export function DeliveryCreatePage() {
     deliveryQueries.list({ projectId: projectIdNum })
   );
 
-  // Find the latest approved quotation
-  const approvedQuotation = useMemo(() => {
+  // Find the latest accepted quotation
+  const acceptedQuotation = useMemo(() => {
     if (!quotationsData?.data.length) return null;
     return quotationsData.data[0];
   }, [quotationsData]);
@@ -89,8 +89,8 @@ export function DeliveryCreatePage() {
     data: quotationDetail,
     isLoading: loadingQuotationDetail,
   } = useQuery({
-    ...quotationQueries.detail(approvedQuotation?.id ?? 0),
-    enabled: !!approvedQuotation?.id,
+    ...quotationQueries.detail(acceptedQuotation?.id ?? 0),
+    enabled: !!acceptedQuotation?.id,
   });
 
   // Derive line items data from quotation and deliveries
@@ -143,9 +143,9 @@ export function DeliveryCreatePage() {
       e.preventDefault();
       setError(null);
 
-      // Guard: approvedQuotation should exist when form is shown
-      if (!approvedQuotation) {
-        setError('No approved quotation found');
+      // Guard: acceptedQuotation should exist when form is shown
+      if (!acceptedQuotation) {
+        setError('No accepted quotation found');
         return;
       }
 
@@ -175,13 +175,13 @@ export function DeliveryCreatePage() {
 
       createDelivery({
         projectId: projectIdNum,
-        quotationId: approvedQuotation.id,
+        quotationId: acceptedQuotation.id,
         deliveryDate,
         lineItems,
         notes: notes || undefined,
       });
     },
-    [projectIdNum, approvedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
+    [projectIdNum, acceptedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
   );
 
   // Loading state
@@ -216,15 +216,15 @@ export function DeliveryCreatePage() {
     );
   }
 
-  if (!approvedQuotation) {
+  if (!acceptedQuotation) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">No Approved Quotation</h3>
+          <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
           <p className="mt-2 text-steel-400">
-            This project does not have an approved quotation. A quotation must be approved before
-            recording deliveries.
+            This project does not have an accepted quotation. A quotation must be accepted by the
+            customer before recording deliveries.
           </p>
           <Button
             variant="secondary"

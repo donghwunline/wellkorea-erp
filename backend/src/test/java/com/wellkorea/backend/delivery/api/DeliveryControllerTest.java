@@ -89,7 +89,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
                 "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                3000L, testProjectId, 1, "APPROVED", 500000.00, LocalDate.now(), 30, 1L
+                3000L, testProjectId, 1, "ACCEPTED", 500000.00, LocalDate.now(), 30, 1L
         );
         testQuotationId = 3000L;
 
@@ -642,7 +642,7 @@ class DeliveryControllerTest extends BaseIntegrationTest implements TestFixtures
             jdbcTemplate.update(
                     "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING",
-                    trackingQuotationId, trackingProjectId, 1, "APPROVED", 100000.00, LocalDate.now(), 30, 1L
+                    trackingQuotationId, trackingProjectId, 1, "ACCEPTED", 100000.00, LocalDate.now(), 30, 1L
             );
             jdbcTemplate.update(
                     "INSERT INTO quotation_line_items (id, quotation_id, product_id, sequence, quantity, unit_price, line_total) " +

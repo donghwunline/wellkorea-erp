@@ -180,32 +180,32 @@ describe('DeliveryPanel', () => {
   });
 
   // ==========================================================================
-  // Empty State - No Approved Quotation
+  // Empty State - No Accepted Quotation
   // ==========================================================================
 
-  describe('no approved quotation state', () => {
-    it('should show no approved quotation message when quotation not approved', async () => {
+  describe('no accepted quotation state', () => {
+    it('should show no accepted quotation message when quotation not accepted', async () => {
       mockGetDeliveries.mockResolvedValue([]);
       mockGetQuotationList.mockResolvedValue(createMockQuotationList(false));
 
       renderWithProviders(<DeliveryPanel projectId={100} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/No Approved Quotation/i)).toBeInTheDocument();
+        expect(screen.getByText(/No Accepted Quotation/i)).toBeInTheDocument();
         expect(
-          screen.getByText(/A quotation must be approved before recording deliveries/i)
+          screen.getByText(/A quotation must be accepted by the customer before recording deliveries/i)
         ).toBeInTheDocument();
       });
     });
 
-    it('should not show Record Delivery button when no approved quotation', async () => {
+    it('should not show Record Delivery button when no accepted quotation', async () => {
       mockGetDeliveries.mockResolvedValue([]);
       mockGetQuotationList.mockResolvedValue(createMockQuotationList(false));
 
       renderWithProviders(<DeliveryPanel projectId={100} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/No Approved Quotation/i)).toBeInTheDocument();
+        expect(screen.getByText(/No Accepted Quotation/i)).toBeInTheDocument();
       });
 
       expect(screen.queryByRole('button', { name: /Record Delivery/i })).not.toBeInTheDocument();

@@ -102,7 +102,7 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
         // Insert approved quotation with 10 units of test product
         jdbcTemplate.update(
                 "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
-                        "VALUES (?, ?, 1, 'APPROVED', 10000.00, ?, 30, 1) " +
+                        "VALUES (?, ?, 1, 'ACCEPTED', 10000.00, ?, 30, 1) " +
                         "ON CONFLICT (id) DO NOTHING",
                 TEST_QUOTATION_ID, TEST_PROJECT_ID, LocalDate.now()
         );

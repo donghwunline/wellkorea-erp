@@ -86,7 +86,7 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
                 "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                2000L, testProjectId, 1, "APPROVED", 100000.00, LocalDate.now(), 30, 1L
+                2000L, testProjectId, 1, "ACCEPTED", 100000.00, LocalDate.now(), 30, 1L
         );
 
         // Create quotation line items (products and quantities that can be delivered/invoiced)

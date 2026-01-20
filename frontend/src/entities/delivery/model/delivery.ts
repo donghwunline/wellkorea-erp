@@ -120,17 +120,17 @@ export const deliveryRules = {
 
   /**
    * Check if delivery is outdated (references old quotation version).
-   * A delivery is outdated when its quotationId differs from the latest approved quotation.
+   * A delivery is outdated when its quotationId differs from the latest accepted quotation.
    *
    * @param delivery - The delivery to check
-   * @param latestApprovedQuotationId - ID of the latest approved quotation for the project
+   * @param latestAcceptedQuotationId - ID of the latest accepted quotation for the project
    * @returns true if delivery references an outdated quotation version
    */
-  isOutdated(delivery: Delivery, latestApprovedQuotationId: number | null): boolean {
-    if (latestApprovedQuotationId === null) {
-      return false; // No approved quotation means no way to be outdated
+  isOutdated(delivery: Delivery, latestAcceptedQuotationId: number | null): boolean {
+    if (latestAcceptedQuotationId === null) {
+      return false; // No accepted quotation means no way to be outdated
     }
-    return delivery.quotationId !== latestApprovedQuotationId;
+    return delivery.quotationId !== latestAcceptedQuotationId;
   },
 
   /**

@@ -203,19 +203,19 @@ export const invoiceRules = {
 
   /**
    * Check if invoice is outdated (references old quotation version).
-   * An invoice is outdated when its quotationId differs from the latest approved quotation.
+   * An invoice is outdated when its quotationId differs from the latest accepted quotation.
    *
    * @param invoice - The invoice to check
-   * @param latestApprovedQuotationId - ID of the latest approved quotation for the project
+   * @param latestAcceptedQuotationId - ID of the latest accepted quotation for the project
    * @returns true if invoice references an outdated quotation version
    */
   isOutdated(
     invoice: Invoice | InvoiceSummary,
-    latestApprovedQuotationId: number | null
+    latestAcceptedQuotationId: number | null
   ): boolean {
-    if (latestApprovedQuotationId === null) {
-      return false; // No approved quotation means no way to be outdated
+    if (latestAcceptedQuotationId === null) {
+      return false; // No accepted quotation means no way to be outdated
     }
-    return invoice.quotationId !== latestApprovedQuotationId;
+    return invoice.quotationId !== latestAcceptedQuotationId;
   },
 };

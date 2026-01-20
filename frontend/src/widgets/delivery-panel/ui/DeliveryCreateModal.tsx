@@ -63,7 +63,7 @@ export function DeliveryCreateModal({
   const [quantitiesToDeliver, setQuantitiesToDeliver] = useState<Record<number, number>>({});
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch approved quotation for the project
+  // Fetch accepted quotation for the project
   const {
     data: quotationsData,
     isLoading: loadingQuotations,
@@ -73,7 +73,7 @@ export function DeliveryCreateModal({
       page: 0,
       size: 100,
       search: '',
-      status: QuotationStatus.APPROVED,
+      status: QuotationStatus.ACCEPTED,
       projectId,
     }),
     enabled: isOpen && projectId > 0,
@@ -85,16 +85,16 @@ export function DeliveryCreateModal({
     enabled: isOpen && projectId > 0,
   });
 
-  // Find the latest approved quotation
-  const approvedQuotation = useMemo(() => {
+  // Find the latest accepted quotation
+  const acceptedQuotation = useMemo(() => {
     if (!quotationsData?.data.length) return null;
     return quotationsData.data[0];
   }, [quotationsData]);
 
   // Fetch full quotation detail to get line items
   const { data: quotationDetail, isLoading: loadingQuotationDetail } = useQuery({
-    ...quotationQueries.detail(approvedQuotation?.id ?? 0),
-    enabled: isOpen && !!approvedQuotation?.id,
+    ...quotationQueries.detail(acceptedQuotation?.id ?? 0),
+    enabled: isOpen && !!acceptedQuotation?.id,
   });
 
   // Derive line items data from quotation and deliveries
@@ -185,13 +185,13 @@ export function DeliveryCreateModal({
 
       createDelivery({
         projectId,
-        quotationId: approvedQuotation!.id,
+        quotationId: acceptedQuotation!.id,
         deliveryDate,
         lineItems,
         notes: notes || undefined,
       });
     },
-    [projectId, approvedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
+    [projectId, acceptedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
   );
 
   // Handle cancel
@@ -227,15 +227,15 @@ export function DeliveryCreateModal({
     );
   }
 
-  if (!approvedQuotation) {
+  if (!acceptedQuotation) {
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Record Delivery" size="lg">
         <div className="py-8 text-center">
           <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">No Approved Quotation</h3>
+          <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
           <p className="mt-2 text-steel-400">
-            This project does not have an approved quotation. A quotation must be approved before
-            recording deliveries.
+            This project does not have an accepted quotation. A quotation must be accepted by the
+            customer before recording deliveries.
           </p>
         </div>
         <ModalActions>

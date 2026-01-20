@@ -14,8 +14,8 @@ interface InvoiceTableProps {
   onRowClick?: (invoice: InvoiceSummary) => void;
   /** Render custom actions for each row */
   renderActions?: (invoice: InvoiceSummary) => React.ReactNode;
-  /** ID of the latest approved quotation for outdated detection */
-  latestApprovedQuotationId?: number | null;
+  /** ID of the latest accepted quotation for outdated detection */
+  latestAcceptedQuotationId?: number | null;
   loading?: boolean;
   emptyMessage?: string;
 }
@@ -24,7 +24,7 @@ export function InvoiceTable({
   invoices,
   onRowClick,
   renderActions,
-  latestApprovedQuotationId,
+  latestAcceptedQuotationId,
   loading = false,
   emptyMessage = 'No invoices found.',
 }: InvoiceTableProps) {
@@ -85,7 +85,7 @@ export function InvoiceTable({
             <Table.Cell>
               <InvoiceStatusBadge
                 status={invoice.status}
-                isOutdated={invoiceRules.isOutdated(invoice, latestApprovedQuotationId ?? null)}
+                isOutdated={invoiceRules.isOutdated(invoice, latestAcceptedQuotationId ?? null)}
               />
             </Table.Cell>
             <Table.Cell className="text-right font-mono">
