@@ -26,7 +26,7 @@
  */
 
 import { httpClient, MATERIAL_ENDPOINTS } from '@/shared/api';
-import type { CommandResult } from './material.mapper';
+import type { CommandResult } from './create-material';
 
 // =============================================================================
 // REQUEST TYPE (internal)
