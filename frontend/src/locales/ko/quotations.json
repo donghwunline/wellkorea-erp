@@ -128,6 +128,23 @@
     "sendSuccess": "이메일이 전송되었습니다",
     "sendError": "이메일 전송에 실패했습니다"
   },
+  "notify": {
+    "title": "이메일 알림 발송",
+    "contextWithInfo": "\"{{jobCode}} v{{version}}\" 견적서를 수신자에게 전송합니다.",
+    "contextDefault": "견적서를 수신자에게 전송합니다.",
+    "to": "받는 사람",
+    "toPlaceholder": "recipient@example.com",
+    "addCc": "참조 추가",
+    "ccLabel": "참조 (선택사항)",
+    "ccPlaceholder": "이메일 입력 후 Enter",
+    "pdfAttachNote": "견적서 PDF가 이메일에 첨부됩니다.",
+    "sending": "전송 중...",
+    "sendEmail": "이메일 전송",
+    "validation": {
+      "emailRequired": "이메일 주소가 필요합니다",
+      "emailInvalid": "이메일 형식이 올바르지 않습니다"
+    }
+  },
   "table": {
     "headers": {
       "quotationNumber": "견적 번호",
@@ -145,5 +162,67 @@
     "discount": "할인",
     "tax": "부가세 (10%)",
     "total": "합계"
+  },
+  "form": {
+    "quotationDetails": "견적 상세",
+    "project": "프로젝트",
+    "jobCode": "작업 코드",
+    "validityPeriod": "유효 기간 (일)",
+    "version": "버전",
+    "notes": "비고",
+    "notesPlaceholder": "추가 비고 또는 참고사항...",
+    "products": "제품",
+    "total": "합계:",
+    "itemCount": "{{count}}개 품목",
+    "itemCountSingle": "{{count}}개 품목",
+    "saving": "저장 중...",
+    "createQuotation": "견적 생성",
+    "saveChanges": "변경사항 저장",
+    "validation": {
+      "projectRequired": "프로젝트가 필요합니다",
+      "validityPositive": "유효 기간은 양수여야 합니다",
+      "productRequired": "최소 하나의 제품이 필요합니다"
+    }
+  },
+  "panel": {
+    "loadingQuotations": "견적을 불러오는 중...",
+    "loadingDetails": "견적 상세를 불러오는 중...",
+    "noQuotationsTitle": "견적이 없습니다",
+    "noQuotationsDescription": "이 프로젝트의 첫 견적을 생성하세요.",
+    "newQuotation": "새 견적",
+    "new": "새로 만들기",
+    "edit": "수정",
+    "submit": "제출",
+    "pdf": "PDF",
+    "sendEmail": "이메일 발송",
+    "accept": "수락",
+    "newVersion": "새 버전",
+    "prevVersion": "이전 버전 (구)",
+    "nextVersion": "다음 버전 (신)",
+    "versionOf": "{{current}} / {{total}}",
+    "submitSuccess": "결재가 요청되었습니다",
+    "acceptSuccess": "고객이 견적을 수락했습니다",
+    "versionSuccess": "새 버전이 생성되었습니다",
+    "emailSuccess": "이메일 알림이 발송되었습니다",
+    "confirmSubmit": {
+      "title": "결재 요청",
+      "message": "\"{{jobCode}}\" 견적서를 결재 요청하시겠습니까? 결재 프로세스가 시작됩니다.",
+      "confirm": "제출"
+    },
+    "confirmAccept": {
+      "title": "견적 수락",
+      "message": "\"{{jobCode}} v{{version}}\" 견적이 고객에게 수락되었음을 확인하시겠습니까? 이후 납품 및 정산이 진행됩니다.",
+      "confirm": "수락"
+    },
+    "confirmVersion": {
+      "title": "새 버전 생성",
+      "message": "\"{{jobCode}} v{{version}}\"을 기반으로 새 버전을 생성하시겠습니까? 새 버전은 초안 상태가 됩니다.",
+      "confirm": "버전 생성"
+    }
+  },
+  "createModal": {
+    "title": "견적 생성",
+    "loadingProject": "프로젝트 정보를 불러오는 중...",
+    "errorLoadingProject": "프로젝트 정보를 불러오지 못했습니다"
   }
 }

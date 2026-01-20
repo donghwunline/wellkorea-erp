@@ -128,6 +128,23 @@
     "sendSuccess": "Email sent successfully",
     "sendError": "Failed to send email"
   },
+  "notify": {
+    "title": "Send Email Notification",
+    "contextWithInfo": "Send quotation \"{{jobCode}} v{{version}}\" to the recipient.",
+    "contextDefault": "Send quotation to the recipient.",
+    "to": "To",
+    "toPlaceholder": "recipient@example.com",
+    "addCc": "Add CC recipients",
+    "ccLabel": "CC Recipients (optional)",
+    "ccPlaceholder": "Enter email and press Enter",
+    "pdfAttachNote": "The quotation PDF will be attached to the email.",
+    "sending": "Sending...",
+    "sendEmail": "Send Email",
+    "validation": {
+      "emailRequired": "Email address is required",
+      "emailInvalid": "Invalid email format"
+    }
+  },
   "table": {
     "headers": {
       "quotationNumber": "Quotation Number",
@@ -145,5 +162,67 @@
     "discount": "Discount",
     "tax": "Tax (10%)",
     "total": "Total"
+  },
+  "form": {
+    "quotationDetails": "Quotation Details",
+    "project": "Project",
+    "jobCode": "Job Code",
+    "validityPeriod": "Validity Period (Days)",
+    "version": "Version",
+    "notes": "Notes",
+    "notesPlaceholder": "Additional notes or remarks...",
+    "products": "Products",
+    "total": "Total:",
+    "itemCount": "{{count}} items",
+    "itemCountSingle": "{{count}} item",
+    "saving": "Saving...",
+    "createQuotation": "Create Quotation",
+    "saveChanges": "Save Changes",
+    "validation": {
+      "projectRequired": "Project is required",
+      "validityPositive": "Validity period must be positive",
+      "productRequired": "At least one product is required"
+    }
+  },
+  "panel": {
+    "loadingQuotations": "Loading quotations...",
+    "loadingDetails": "Loading quotation details...",
+    "noQuotationsTitle": "No Quotations Yet",
+    "noQuotationsDescription": "Create your first quotation for this project.",
+    "newQuotation": "New Quotation",
+    "new": "New",
+    "edit": "Edit",
+    "submit": "Submit",
+    "pdf": "PDF",
+    "sendEmail": "Send Email",
+    "accept": "Accept",
+    "newVersion": "New Version",
+    "prevVersion": "Previous version (older)",
+    "nextVersion": "Next version (newer)",
+    "versionOf": "{{current}} of {{total}}",
+    "submitSuccess": "Quotation submitted for approval",
+    "acceptSuccess": "Quotation accepted by customer",
+    "versionSuccess": "New version created",
+    "emailSuccess": "Email notification sent successfully",
+    "confirmSubmit": {
+      "title": "Submit for Approval",
+      "message": "Are you sure you want to submit \"{{jobCode}}\" for approval? This will start the approval workflow.",
+      "confirm": "Submit"
+    },
+    "confirmAccept": {
+      "title": "Accept Quotation",
+      "message": "Mark \"{{jobCode}} v{{version}}\" as accepted by customer? This will activate the project for delivery and invoicing.",
+      "confirm": "Accept"
+    },
+    "confirmVersion": {
+      "title": "Create New Version",
+      "message": "Create a new version based on \"{{jobCode}} v{{version}}\"? The new version will be in DRAFT status.",
+      "confirm": "Create Version"
+    }
+  },
+  "createModal": {
+    "title": "Create Quotation",
+    "loadingProject": "Loading project details...",
+    "errorLoadingProject": "Failed to load project details"
   }
 }

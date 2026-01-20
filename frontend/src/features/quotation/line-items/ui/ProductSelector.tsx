@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { productQueries, searchProductsApi } from '@/entities/product';
 import { formatCurrency } from '@/shared/lib/formatting';
@@ -56,6 +57,7 @@ export function ProductSelector({
   disabled = false,
   className = '',
 }: Readonly<ProductSelectorProps>) {
+  const { t } = useTranslation('common');
   // Local state for new product being added
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState<string>('1');
@@ -216,15 +218,15 @@ export function ProductSelector({
                 value={selectedProductId}
                 onChange={handleProductSelect}
                 loadOptions={loadProducts}
-                label="Search Product"
-                placeholder="Search by name or SKU..."
+                label={t('productSelector.searchProduct')}
+                placeholder={t('productSelector.searchPlaceholder')}
                 disabled={disabled}
               />
             </div>
 
             {/* Quantity */}
             <div className="md:col-span-2">
-              <FormField label="Quantity" required>
+              <FormField label={t('productSelector.quantity')} required>
                 <Input
                   type="number"
                   min="1"
@@ -237,7 +239,7 @@ export function ProductSelector({
 
             {/* Unit Price */}
             <div className="md:col-span-2">
-              <FormField label="Unit Price (KRW)" required>
+              <FormField label={t('productSelector.unitPrice')} required>
                 <Input
                   type="number"
                   min="0"
@@ -250,11 +252,11 @@ export function ProductSelector({
 
             {/* Note */}
             <div className="md:col-span-2">
-              <FormField label="Note">
+              <FormField label={t('productSelector.note')}>
                 <Input
                   value={note}
                   onChange={e => setNote(e.target.value)}
-                  placeholder="Optional"
+                  placeholder={t('productSelector.optional')}
                   disabled={!selectedProduct}
                 />
               </FormField>
@@ -272,11 +274,11 @@ export function ProductSelector({
           {selectedProduct && (
             <div className="mt-3 rounded-lg bg-steel-800/50 p-3">
               <div className="text-sm">
-                <span className="text-steel-400">Selected: </span>
+                <span className="text-steel-400">{t('productSelector.selected')}: </span>
                 <span className="font-medium text-white">{selectedProduct.name}</span>
                 <span className="ml-2 text-steel-400">({selectedProduct.sku})</span>
                 {selectedProduct.unit && (
-                  <span className="ml-2 text-steel-500">Unit: {selectedProduct.unit}</span>
+                  <span className="ml-2 text-steel-500">{t('productSelector.unit')}: {selectedProduct.unit}</span>
                 )}
               </div>
             </div>
@@ -290,12 +292,12 @@ export function ProductSelector({
           <Table>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell className="w-8">#</Table.HeaderCell>
-                <Table.HeaderCell>Product</Table.HeaderCell>
-                <Table.HeaderCell className="w-24 text-right">Qty</Table.HeaderCell>
-                <Table.HeaderCell className="w-32 text-right">Unit Price</Table.HeaderCell>
-                <Table.HeaderCell className="w-32 text-right">Amount</Table.HeaderCell>
-                <Table.HeaderCell className="w-32">Note</Table.HeaderCell>
+                <Table.HeaderCell className="w-8">{t('productSelector.tableHeaders.number')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('productSelector.tableHeaders.product')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-24 text-right">{t('productSelector.tableHeaders.qty')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-32 text-right">{t('productSelector.tableHeaders.unitPrice')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-32 text-right">{t('productSelector.tableHeaders.amount')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-32">{t('productSelector.tableHeaders.note')}</Table.HeaderCell>
                 {!disabled && <Table.HeaderCell className="w-12">{''}</Table.HeaderCell>}
               </Table.Row>
             </Table.Header>
@@ -344,8 +346,8 @@ export function ProductSelector({
                       <IconButton
                         onClick={() => handleRemoveItem(index)}
                         variant="danger"
-                        aria-label="Remove item"
-                        title="Remove item"
+                        aria-label={t('productSelector.removeItem')}
+                        title={t('productSelector.removeItem')}
                       >
                         <Icon name="trash" className="h-4 w-4" />
                       </IconButton>
@@ -360,7 +362,7 @@ export function ProductSelector({
           <div className="border-t border-steel-700/50 px-4 py-3">
             <div className="flex justify-end">
               <div className="text-right">
-                <span className="text-steel-400">Total Amount: </span>
+                <span className="text-steel-400">{t('productSelector.totalAmount')}: </span>
                 <span className="text-lg font-semibold text-copper-400">
                   {formatCurrency(totalAmount)}
                 </span>
@@ -374,9 +376,9 @@ export function ProductSelector({
       {lineItems.length === 0 && (
         <Card className="p-8 text-center">
           <Icon name="shopping-cart" className="mx-auto h-12 w-12 text-steel-600" />
-          <p className="mt-4 text-steel-400">No products added yet.</p>
+          <p className="mt-4 text-steel-400">{t('productSelector.emptyState.title')}</p>
           <p className="mt-1 text-sm text-steel-500">
-            Search and add products to create your quotation.
+            {t('productSelector.emptyState.description')}
           </p>
         </Card>
       )}
