@@ -122,6 +122,7 @@ export interface VendorMaterialOfferingResponse {
   id: number;
   vendorId: number;
   vendorName: string;
+  vendorEmail?: string | null;
   materialId: number;
   materialName: string;
   materialSku: string;
@@ -151,6 +152,7 @@ export function mapVendorMaterialOffering(response: VendorMaterialOfferingRespon
     id: response.id,
     vendorId: response.vendorId,
     vendorName: response.vendorName,
+    vendorEmail: response.vendorEmail ?? null,
     materialId: response.materialId,
     materialName: response.materialName,
     materialSku: response.materialSku,

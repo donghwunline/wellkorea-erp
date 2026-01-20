@@ -70,6 +70,7 @@ class ServiceCategoryQueryServiceTest {
                 1L,
                 1L,
                 "Metal Works Inc",
+                "vendor@test.com",
                 1L,
                 "Laser Cutting",
                 "LC-001",

@@ -13,6 +13,7 @@ export interface VendorMaterialOffering {
   readonly id: number;
   readonly vendorId: number;
   readonly vendorName: string;
+  readonly vendorEmail: string | null;
   readonly materialId: number;
   readonly materialName: string;
   readonly materialSku: string;

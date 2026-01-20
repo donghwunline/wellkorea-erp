@@ -146,6 +146,7 @@
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="vendor_id" javaType="java.lang.Long"/>
             <arg column="vendor_name" javaType="java.lang.String"/>
+            <arg column="vendor_email" javaType="java.lang.String"/>
             <arg column="material_id" javaType="java.lang.Long"/>
             <arg column="material_name" javaType="java.lang.String"/>
             <arg column="material_sku" javaType="java.lang.String"/>
@@ -169,6 +170,7 @@
         vmo.id,
         vmo.vendor_company_id AS vendor_id,
         c.name AS vendor_name,
+        c.email AS vendor_email,
         vmo.material_id,
         m.name AS material_name,
         m.sku AS material_sku,

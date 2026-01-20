@@ -74,6 +74,7 @@ function createMockVendorOffering(
     id: 1,
     vendorId: 1,
     vendorName: '',
+    vendorEmail: null,
     serviceCategoryId: 1,
     serviceCategoryName: '',
     vendorServiceCode: null,

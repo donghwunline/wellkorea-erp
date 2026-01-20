@@ -34,6 +34,7 @@
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="vendor_id" javaType="java.lang.Long"/>
             <arg column="vendor_name" javaType="java.lang.String"/>
+            <arg column="vendor_email" javaType="java.lang.String"/>
             <arg column="service_category_id" javaType="java.lang.Long"/>
             <arg column="service_category_name" javaType="java.lang.String"/>
             <arg column="vendor_service_code" javaType="java.lang.String"/>
@@ -122,6 +123,7 @@
         vso.id,
         vso.vendor_company_id AS vendor_id,
         c.name AS vendor_name,
+        c.email AS vendor_email,
         vso.service_category_id,
         sc.name AS service_category_name,
         vso.vendor_service_code,

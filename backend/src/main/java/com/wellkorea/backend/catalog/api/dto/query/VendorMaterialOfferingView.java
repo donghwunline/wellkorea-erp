@@ -11,6 +11,7 @@ public record VendorMaterialOfferingView(
         Long id,
         Long vendorId,
         String vendorName,
+        String vendorEmail,
         Long materialId,
         String materialName,
         String materialSku,
