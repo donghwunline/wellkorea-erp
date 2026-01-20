@@ -53,6 +53,11 @@ public class SmtpMailSender implements MailSender {
             helper.setSubject(message.subject());
             helper.setText(message.body(), message.html());
 
+            // Set CC recipients if present
+            if (!message.cc().isEmpty()) {
+                helper.setCc(message.cc().toArray(new String[0]));
+            }
+
             for (MailAttachment attachment : message.attachments()) {
                 helper.addAttachment(
                         attachment.filename(),
@@ -62,8 +67,8 @@ public class SmtpMailSender implements MailSender {
             }
 
             javaMailSender.send(mimeMessage);
-            log.info("SMTP: Sent MIME email to {} with subject: {} ({} attachments)",
-                    message.to(), message.subject(), message.attachments().size());
+            log.info("SMTP: Sent MIME email to {} (cc: {}) with subject: {} ({} attachments)",
+                    message.to(), message.cc().size(), message.subject(), message.attachments().size());
 
         } catch (MessagingException e) {
             throw new MailSendException("Failed to send email via SMTP: " + e.getMessage(), e);

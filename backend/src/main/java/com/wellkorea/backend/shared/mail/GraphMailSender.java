@@ -63,7 +63,8 @@ public class GraphMailSender implements MailSender {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 202) {
-                log.info("Graph: Sent email to {} with subject: {}", message.to(), message.subject());
+                log.info("Graph: Sent email to {} (cc: {}) with subject: {}",
+                        message.to(), message.cc().size(), message.subject());
             } else {
                 throw new MailSendException("Microsoft Graph API returned status " + response.statusCode()
                         + ": " + response.body());
@@ -125,6 +126,19 @@ public class GraphMailSender implements MailSender {
         json.append("},");
         json.append("\"toRecipients\":[{\"emailAddress\":{\"address\":\"")
                 .append(escapeJson(message.to())).append("\"}}]");
+
+        // Add CC recipients if present
+        if (!message.cc().isEmpty()) {
+            json.append(",\"ccRecipients\":[");
+            boolean first = true;
+            for (String ccRecipient : message.cc()) {
+                if (!first) json.append(",");
+                json.append("{\"emailAddress\":{\"address\":\"")
+                        .append(escapeJson(ccRecipient)).append("\"}}");
+                first = false;
+            }
+            json.append("]");
+        }
 
         if (!message.attachments().isEmpty()) {
             json.append(",\"attachments\":[");

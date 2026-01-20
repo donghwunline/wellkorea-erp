@@ -25,8 +25,8 @@ public class MockMailSender implements MailSender {
             throw new MailSendException(failureMessage);
         }
         sentMessages.add(message);
-        log.info("Mock: Recorded email to {} with subject: {} ({} attachments)",
-                message.to(), message.subject(), message.attachments().size());
+        log.info("Mock: Recorded email to {} (cc: {}) with subject: {} ({} attachments)",
+                message.to(), message.cc().size(), message.subject(), message.attachments().size());
     }
 
     @Override

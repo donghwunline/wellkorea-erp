@@ -10,12 +10,14 @@ import java.util.List;
 public record MailMessage(
         String from,
         String to,
+        List<String> cc,
         String subject,
         String body,
         boolean html,
         List<MailAttachment> attachments
 ) {
     public MailMessage {
+        cc = cc != null ? List.copyOf(cc) : List.of();
         attachments = attachments != null ? List.copyOf(attachments) : List.of();
     }
 
@@ -29,6 +31,7 @@ public record MailMessage(
     public static class Builder {
         private String from;
         private String to;
+        private final List<String> cc = new ArrayList<>();
         private String subject;
         private String body;
         private boolean html = false;
@@ -41,6 +44,22 @@ public record MailMessage(
 
         public Builder to(String to) {
             this.to = to;
+            return this;
+        }
+
+        public Builder cc(String ccRecipient) {
+            if (ccRecipient != null && !ccRecipient.isBlank()) {
+                this.cc.add(ccRecipient);
+            }
+            return this;
+        }
+
+        public Builder cc(List<String> ccRecipients) {
+            if (ccRecipients != null) {
+                ccRecipients.stream()
+                        .filter(r -> r != null && !r.isBlank())
+                        .forEach(this.cc::add);
+            }
             return this;
         }
 
@@ -89,7 +108,7 @@ public record MailMessage(
             if (body == null) {
                 throw new IllegalStateException("Body is required");
             }
-            return new MailMessage(from, to, subject, body, html, attachments);
+            return new MailMessage(from, to, cc, subject, body, html, attachments);
         }
     }
 }
