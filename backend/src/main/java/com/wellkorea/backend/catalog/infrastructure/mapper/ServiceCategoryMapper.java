@@ -30,13 +30,16 @@ public interface ServiceCategoryMapper {
      */
     List<ServiceCategorySummaryView> findWithFilters(
             @Param("search") String search,
+            @Param("isActive") Boolean isActive,
             @Param("limit") int limit,
             @Param("offset") long offset);
 
     /**
      * Count service categories with filters for pagination.
      */
-    long countWithFilters(@Param("search") String search);
+    long countWithFilters(
+            @Param("search") String search,
+            @Param("isActive") Boolean isActive);
 
     /**
      * Find all active service categories.

@@ -149,16 +149,17 @@ public class Quotation {
     }
 
     /**
-     * Check if quotation is in an approved state.
-     * Approved states are: APPROVED, SENT, ACCEPTED
-     * (i.e., quotation has been approved and can be used for deliveries)
+     * Check if quotation is in a customer-accepted state.
+     * Accepted states are: SENT, ACCEPTED
+     * (i.e., quotation has been sent to customer and can be used for deliveries/invoices)
      *
-     * @return true if quotation is approved
+     * Note: APPROVED status is internal approval only. Customer must accept (via ACCEPTED status)
+     * or at minimum receive the quotation (SENT status) before deliveries/invoices can be created.
+     *
+     * @return true if quotation is accepted by customer
      */
     public boolean isApproved() {
-        return status == QuotationStatus.APPROVED ||
-                status == QuotationStatus.SENT ||
-                status == QuotationStatus.ACCEPTED;
+        return status == QuotationStatus.SENT || status == QuotationStatus.ACCEPTED;
     }
 
     // ========== Factory Methods ==========

@@ -167,7 +167,7 @@ class ReportControllerTest extends BaseIntegrationTest implements TestFixtures {
                     "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                             "ON CONFLICT (id) DO NOTHING",
-                    9000L, 9000L, 1, "APPROVED", 100000.00, LocalDate.now(), 30, 1L
+                    9000L, 9000L, 1, "ACCEPTED", 100000.00, LocalDate.now(), 30, 1L
             );
 
             // Create quotation line item
@@ -231,7 +231,7 @@ class ReportControllerTest extends BaseIntegrationTest implements TestFixtures {
                     "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                             "ON CONFLICT (id) DO NOTHING",
-                    9100L, 9100L, 1, "APPROVED", 50000.00, LocalDate.now(), 30, 1L
+                    9100L, 9100L, 1, "ACCEPTED", 50000.00, LocalDate.now(), 30, 1L
             );
 
             // Create quotation line item

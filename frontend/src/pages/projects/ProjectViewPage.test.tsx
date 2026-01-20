@@ -134,13 +134,48 @@ vi.mock('@/widgets', () => ({
   TaskFlowPanel: vi.fn(() => <div data-testid="task-flow-panel">Task Flow Panel</div>),
   DeliveryPanel: vi.fn(() => <div data-testid="delivery-panel">Delivery Panel</div>),
   InvoicePanel: vi.fn(() => <div data-testid="invoice-panel">Invoice Panel</div>),
+  PurchasePanel: vi.fn(() => <div data-testid="purchase-panel">Purchase Panel</div>),
+  OutsourcePanel: vi.fn(() => <div data-testid="outsource-panel">Outsource Panel</div>),
+  DocumentPanel: vi.fn(() => <div data-testid="document-panel">Document Panel</div>),
 }));
 
 // Mock UI tab components to simplify testing
 vi.mock('@/shared/ui', async () => {
   const actual = await vi.importActual('@/shared/ui');
+
+  // PageHeader compound component mock
+  const PageHeaderMock = Object.assign(
+    vi.fn(({ children }: { children: React.ReactNode }) => (
+      <header data-testid="page-header">{children}</header>
+    )),
+    {
+      Title: vi.fn(({ title, description }: { title: string; description?: string }) => (
+        <div>
+          <h1>{title}</h1>
+          {description && <p>{description}</p>}
+        </div>
+      )),
+      Actions: vi.fn(({ children }: { children: React.ReactNode }) => (
+        <div data-testid="page-header-actions">{children}</div>
+      )),
+    }
+  );
+
   return {
     ...actual,
+    PageHeader: PageHeaderMock,
+    Alert: vi.fn(({ children, variant }: { children: React.ReactNode; variant?: string; className?: string }) => (
+      <div data-testid="alert" data-variant={variant}>{children}</div>
+    )),
+    Card: vi.fn(({ children, className }: { children: React.ReactNode; className?: string }) => (
+      <div data-testid="card" className={className}>{children}</div>
+    )),
+    Icon: vi.fn(({ name, className }: { name: string; className?: string }) => (
+      <span data-testid={`icon-${name}`} className={className} />
+    )),
+    Spinner: vi.fn(({ size, label }: { size?: string; label?: string }) => (
+      <div data-testid="spinner" data-size={size}>{label}</div>
+    )),
     Tabs: vi.fn(({ children, defaultTab }: { children: React.ReactNode; defaultTab?: string }) => (
       <div data-testid="tabs" data-default-tab={defaultTab}>
         {children}

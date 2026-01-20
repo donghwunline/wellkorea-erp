@@ -2,7 +2,7 @@
  * Invoice Select Project Page
  *
  * Entry point for creating a new invoice.
- * Shows projects with approved quotations that can have invoices created.
+ * Shows projects with accepted quotations that can have invoices created.
  *
  * Route: /invoices/create
  *
@@ -40,7 +40,7 @@ export function InvoiceSelectProjectPage() {
     })
   );
 
-  // Filter to projects that might have approved quotations
+  // Filter to projects that might have accepted quotations
   // (actual quotation check happens on InvoiceCreatePage)
   const projects = useMemo(() => {
     if (!projectsData?.data) return [];
@@ -100,7 +100,7 @@ export function InvoiceSelectProjectPage() {
           Select Project
         </h3>
         <p className="mb-6 text-sm text-steel-400">
-          Choose a project with an approved quotation to create an invoice.
+          Choose a project with an accepted quotation to create an invoice.
         </p>
 
         {projects.length === 0 ? (

@@ -47,29 +47,18 @@ public class ServiceCategoryQueryService {
     }
 
     /**
-     * List all active service categories (paginated).
+     * List service categories with optional filters (paginated).
      *
+     * @param search   Optional search term
+     * @param isActive Optional active status filter (null for all, true for active, false for inactive)
      * @param pageable Pagination parameters
      * @return Page of service category summary views
      */
-    public Page<ServiceCategorySummaryView> listServiceCategories(Pageable pageable) {
-        List<ServiceCategorySummaryView> content = serviceCategoryMapper.findWithFilters(null, pageable.getPageSize(), pageable.getOffset());
-        long total = serviceCategoryMapper.countWithFilters(null);
-        return new PageImpl<>(content, pageable, total);
-    }
-
-    /**
-     * Search service categories by name.
-     *
-     * @param search   Search term
-     * @param pageable Pagination parameters
-     * @return Page of matching service category summary views
-     */
-    public Page<ServiceCategorySummaryView> searchServiceCategories(String search, Pageable pageable) {
+    public Page<ServiceCategorySummaryView> listServiceCategories(String search, Boolean isActive, Pageable pageable) {
         String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
         List<ServiceCategorySummaryView> content = serviceCategoryMapper.findWithFilters(
-                searchTerm, pageable.getPageSize(), pageable.getOffset());
-        long total = serviceCategoryMapper.countWithFilters(searchTerm);
+                searchTerm, isActive, pageable.getPageSize(), pageable.getOffset());
+        long total = serviceCategoryMapper.countWithFilters(searchTerm, isActive);
         return new PageImpl<>(content, pageable, total);
     }
 

@@ -21,6 +21,7 @@ import { QuotationStatus, QuotationStatusConfig } from './quotation-status';
 export interface Quotation {
   readonly id: number;
   readonly projectId: number;
+  readonly customerId: number;
   readonly projectName: string;
   readonly jobCode: string;
   readonly version: number;
@@ -185,7 +186,7 @@ export const quotationRules = {
 
   /**
    * Check if a new version can be created.
-   * Available for APPROVED, REJECTED, or SENT quotations.
+   * Available for APPROVED, REJECTED, SENT, or ACCEPTED quotations.
    * Works with both Quotation and QuotationListItem.
    */
   canCreateNewVersion(quotation: QuotationBase): boolean {
@@ -193,6 +194,7 @@ export const quotationRules = {
       QuotationStatus.APPROVED,
       QuotationStatus.REJECTED,
       QuotationStatus.SENT,
+      QuotationStatus.ACCEPTED,
     ];
     return validStatuses.includes(quotation.status);
   },
@@ -231,10 +233,19 @@ export const quotationRules = {
    * Check if revision notification can be sent.
    * Typically for SENT or later versions.
    * Works with both Quotation and QuotationListItem.
+   * Note: SENDING is not included as user shouldn't re-trigger during send.
    */
   canSendNotification(quotation: QuotationBase): boolean {
     const validStatuses: QuotationStatus[] = [QuotationStatus.APPROVED, QuotationStatus.SENT];
     return quotation.version > 1 && validStatuses.includes(quotation.status);
+  },
+
+  /**
+   * Check if quotation is currently being sent.
+   * Works with both Quotation and QuotationListItem.
+   */
+  isSending(quotation: QuotationBase): boolean {
+    return quotation.status === QuotationStatus.SENDING;
   },
 
   /**
@@ -256,5 +267,14 @@ export const quotationRules = {
    */
   isPending(quotation: QuotationBase): boolean {
     return quotation.status === QuotationStatus.PENDING;
+  },
+
+  /**
+   * Check if quotation can be accepted by customer.
+   * Available for SENT or APPROVED quotations.
+   * Works with both Quotation and QuotationListItem.
+   */
+  canAccept(quotation: QuotationBase): boolean {
+    return quotation.status === QuotationStatus.SENT || quotation.status === QuotationStatus.APPROVED;
   },
 };

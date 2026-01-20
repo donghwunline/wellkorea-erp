@@ -29,6 +29,7 @@ export async function getServiceCategories(params: {
   page?: number;
   size?: number;
   search?: string;
+  isActive?: boolean;
 }): Promise<Paginated<ServiceCategoryListItem>> {
   const response = await httpClient.requestWithMeta<PagedResponse<ServiceCategorySummaryResponse>>({
     method: 'GET',
@@ -37,6 +38,7 @@ export async function getServiceCategories(params: {
       page: params.page,
       size: params.size,
       search: params.search || undefined,
+      isActive: params.isActive,
     },
   });
 

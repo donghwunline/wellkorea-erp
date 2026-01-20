@@ -49,6 +49,9 @@ export type { DatePickerProps, DateRange } from './forms/DatePicker';
 export { Combobox } from './forms/Combobox';
 export type { ComboboxProps, ComboboxOption } from './forms/Combobox';
 
+export { EmailTagInput } from './forms/EmailTagInput';
+export type { EmailTagInputProps } from './forms/EmailTagInput';
+
 // ============================================================================
 // Feedback - User feedback and status indicators
 // ============================================================================

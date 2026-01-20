@@ -24,6 +24,7 @@
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="project_id" javaType="Long"/>
+            <arg column="customer_id" javaType="Long"/>
             <arg column="project_name" javaType="String"/>
             <arg column="job_code" javaType="String"/>
             <arg column="version" javaType="Integer"/>
@@ -51,6 +52,7 @@
         SELECT
             q.id,
             q.project_id,
+            p.customer_company_id AS customer_id,
             p.project_name,
             p.job_code,
             q.version,

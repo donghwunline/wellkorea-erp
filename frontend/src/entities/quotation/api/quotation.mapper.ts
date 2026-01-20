@@ -41,6 +41,7 @@ export interface LineItemResponse {
 export interface QuotationDetailsResponse {
   id: number;
   projectId: number;
+  customerId: number;
   projectName: string;
   jobCode: string;
   version: number;
@@ -113,6 +114,7 @@ export const quotationMapper = {
     return {
       id: response.id,
       projectId: response.projectId,
+      customerId: response.customerId,
       projectName: response.projectName.trim(),
       jobCode: response.jobCode,
       version: response.version,

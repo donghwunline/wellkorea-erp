@@ -175,6 +175,7 @@ describe('catalogQueries', () => {
         page: 1,
         size: 50,
         search: 'laser',
+        isActive: true,
       };
       const options = catalogQueries.categoryList(params);
 
@@ -185,13 +186,23 @@ describe('catalogQueries', () => {
         1,
         50,
         'laser',
+        true,
       ]);
     });
 
     it('should include default values in query key when params are empty', () => {
       const options = catalogQueries.categoryList({});
 
-      expect(options.queryKey).toEqual(['catalog', 'categories', 'list', 0, 20, '']);
+      expect(options.queryKey).toEqual(['catalog', 'categories', 'list', 0, 20, '', undefined]);
+    });
+
+    it('should include isActive=false in query key', () => {
+      const params: ServiceCategoryListQueryParams = {
+        isActive: false,
+      };
+      const options = catalogQueries.categoryList(params);
+
+      expect(options.queryKey).toEqual(['catalog', 'categories', 'list', 0, 20, '', false]);
     });
 
     it('should have placeholderData set for smooth transitions', () => {
@@ -209,6 +220,7 @@ describe('catalogQueries', () => {
         page: 0,
         size: 20,
         search: 'test',
+        isActive: true,
       };
       const options = catalogQueries.categoryList(params);
       const result = await invokeQueryFn(options);
@@ -217,8 +229,24 @@ describe('catalogQueries', () => {
         page: 0,
         size: 20,
         search: 'test',
+        isActive: true,
       });
       expect(result).toEqual(mockResponse);
+    });
+
+    it('should pass isActive undefined when not specified', async () => {
+      const mockResponse = createMockPaginatedCategories([]);
+      vi.mocked(getServiceCategories).mockResolvedValue(mockResponse);
+
+      const options = catalogQueries.categoryList({});
+      await invokeQueryFn(options);
+
+      expect(getServiceCategories).toHaveBeenCalledWith({
+        page: 0,
+        size: 20,
+        search: undefined,
+        isActive: undefined,
+      });
     });
   });
 

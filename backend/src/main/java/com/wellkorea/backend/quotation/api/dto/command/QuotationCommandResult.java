@@ -24,4 +24,8 @@ public record QuotationCommandResult(
     public static QuotationCommandResult versionCreated(Long id) {
         return new QuotationCommandResult(id, "New quotation version created");
     }
+
+    public static QuotationCommandResult accepted(Long id) {
+        return new QuotationCommandResult(id, "Quotation accepted by customer");
+    }
 }

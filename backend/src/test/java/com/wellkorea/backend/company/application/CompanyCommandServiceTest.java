@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.Set;
 
@@ -168,12 +167,7 @@ class CompanyCommandServiceTest {
             // Given
             Long companyId = 1L;
             Company company = createCompanyWithRole(companyId, "Customer Company", RoleType.CUSTOMER);
-            AddRoleCommand command = new AddRoleCommand(
-                    RoleType.VENDOR,
-                    new BigDecimal("10000000"),
-                    30,
-                    "Added as vendor"
-            );
+            AddRoleCommand command = new AddRoleCommand(RoleType.VENDOR);
 
             when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
             when(companyRepository.save(any(Company.class))).thenReturn(company);
@@ -187,17 +181,12 @@ class CompanyCommandServiceTest {
         }
 
         @Test
-        @DisplayName("should add OUTSOURCE role with notes")
+        @DisplayName("should add OUTSOURCE role to existing company")
         void addRole_Outsource_Succeeds() {
             // Given
             Long companyId = 2L;
             Company company = createCompanyWithRole(companyId, "Vendor Company", RoleType.VENDOR);
-            AddRoleCommand command = new AddRoleCommand(
-                    RoleType.OUTSOURCE,
-                    null,
-                    null,
-                    "외주 도장 업체"
-            );
+            AddRoleCommand command = new AddRoleCommand(RoleType.OUTSOURCE);
 
             when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
             when(companyRepository.save(any(Company.class))).thenReturn(company);
@@ -215,7 +204,7 @@ class CompanyCommandServiceTest {
         void addRole_CompanyNotFound_ThrowsException() {
             // Given
             Long companyId = 99999L;
-            AddRoleCommand command = new AddRoleCommand(RoleType.VENDOR, null, null, null);
+            AddRoleCommand command = new AddRoleCommand(RoleType.VENDOR);
 
             when(companyRepository.findById(companyId)).thenReturn(Optional.empty());
 
@@ -231,7 +220,7 @@ class CompanyCommandServiceTest {
             // Given
             Long companyId = 1L;
             Company company = createCompanyWithRole(companyId, "Customer Company", RoleType.CUSTOMER);
-            AddRoleCommand command = new AddRoleCommand(RoleType.CUSTOMER, null, null, null);
+            AddRoleCommand command = new AddRoleCommand(RoleType.CUSTOMER);
 
             when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
 

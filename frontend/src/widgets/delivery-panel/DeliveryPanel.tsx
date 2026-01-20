@@ -45,23 +45,23 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
     error: deliveriesError,
   } = useQuery(deliveryQueries.list({ projectId }));
 
-  // Fetch approved quotation to check if deliveries can be created
+  // Fetch accepted quotation to check if deliveries can be created
   const { data: quotationsData, isLoading: loadingQuotations } = useQuery(
     quotationQueries.list({
       page: 0,
       size: 1,
       search: '',
-      status: QuotationStatus.APPROVED,
+      status: QuotationStatus.ACCEPTED,
       projectId,
     })
   );
 
-  const hasApprovedQuotation = useMemo(() => {
+  const hasAcceptedQuotation = useMemo(() => {
     return quotationsData && quotationsData.data.length > 0;
   }, [quotationsData]);
 
-  // Get the latest approved quotation ID for outdated detection
-  const latestApprovedQuotationId = useMemo(() => {
+  // Get the latest accepted quotation ID for outdated detection
+  const latestAcceptedQuotationId = useMemo(() => {
     if (quotationsData && quotationsData.data.length > 0) {
       return quotationsData.data[0].id;
     }
@@ -102,14 +102,14 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
     return <Alert variant="error">Failed to load deliveries: {deliveriesError.message}</Alert>;
   }
 
-  // Empty state - no approved quotation
-  if (!hasApprovedQuotation) {
+  // Empty state - no accepted quotation
+  if (!hasAcceptedQuotation) {
     return (
       <Card className="p-12 text-center">
         <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">No Approved Quotation</h3>
+        <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
         <p className="mt-2 text-steel-500">
-          A quotation must be approved before recording deliveries.
+          A quotation must be accepted by the customer before recording deliveries.
         </p>
       </Card>
     );
@@ -197,7 +197,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
                 <Table.Cell>
                   <DeliveryStatusBadge
                     status={delivery.status}
-                    isOutdated={deliveryRules.isOutdated(delivery, latestApprovedQuotationId)}
+                    isOutdated={deliveryRules.isOutdated(delivery, latestAcceptedQuotationId)}
                   />
                 </Table.Cell>
                 <Table.Cell className="text-right">
@@ -247,7 +247,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
             // Refetch deliveries when status changes
             // Query invalidation is handled by the mutation hooks
           }}
-          latestApprovedQuotationId={latestApprovedQuotationId}
+          latestAcceptedQuotationId={latestAcceptedQuotationId}
         />
       )}
 

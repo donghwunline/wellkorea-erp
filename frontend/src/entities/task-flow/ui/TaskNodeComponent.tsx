@@ -4,8 +4,9 @@
  */
 
 import { memo } from 'react';
-import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import { taskNodeRules, type TaskNode } from '../model/task-node';
+import { Handle, type Node, type NodeProps, Position } from '@xyflow/react';
+import { type TaskNode, taskNodeRules } from '../model/task-node';
+import { AttachmentCountBadge } from './AttachmentCountBadge';
 
 /**
  * Node data structure expected by React Flow.
@@ -16,6 +17,7 @@ export interface TaskNodeData {
   readonly assignee: string | null;
   readonly deadline: string | null;
   readonly progress: number;
+  readonly attachmentCount?: number;
   readonly [key: string]: unknown;
 }
 
@@ -35,8 +37,8 @@ interface TaskNodeComponentProps extends NodeProps<TaskFlowNode> {
  * - Progress bar with color coding (blue/yellow/green)
  * - Red border when overdue
  */
-function TaskNodeComponentBase({ id, data, selected }: TaskNodeComponentProps) {
-  const { title, assignee, deadline, progress } = data;
+function TaskNodeComponentBase({ id, data, selected }: Readonly<TaskNodeComponentProps>) {
+  const { title, assignee, deadline, progress, attachmentCount = 0 } = data;
 
   // Create a TaskNode object for business rule checks
   const taskNode: TaskNode = {
@@ -89,12 +91,15 @@ function TaskNodeComponentBase({ id, data, selected }: TaskNodeComponentProps) {
             {assignee || '-'}
           </span>
 
-          {/* Deadline */}
-          {formattedDeadline && (
-            <span className={isOverdue ? 'font-medium text-red-600' : ''}>
-              {formattedDeadline}
-            </span>
-          )}
+          {/* Deadline and Attachment Badge */}
+          <div className="flex items-center gap-2">
+            <AttachmentCountBadge count={attachmentCount} />
+            {formattedDeadline && (
+              <span className={isOverdue ? 'font-medium text-red-600' : ''}>
+                {formattedDeadline}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -106,9 +111,7 @@ function TaskNodeComponentBase({ id, data, selected }: TaskNodeComponentProps) {
         </div>
 
         {/* Progress percentage */}
-        <div className="text-right text-xs font-medium text-gray-600">
-          {progress}%
-        </div>
+        <div className="text-right text-xs font-medium text-gray-600">{progress}%</div>
       </div>
 
       {/* Source Handle (Output) - Right side, Blue */}

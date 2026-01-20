@@ -125,19 +125,19 @@ class ServiceCategoryQueryServiceTest {
     }
 
     @Nested
-    @DisplayName("listServiceCategories - List all service categories")
+    @DisplayName("listServiceCategories - List service categories with filters")
     class ListServiceCategoriesTests {
 
         @Test
-        @DisplayName("should return paginated results")
+        @DisplayName("should return paginated results without filters")
         void listServiceCategories_WithPagination_ReturnsPage() {
             // Given
             List<ServiceCategorySummaryView> content = List.of(testSummaryView);
-            given(serviceCategoryMapper.findWithFilters(null, 10, 0L)).willReturn(content);
-            given(serviceCategoryMapper.countWithFilters(null)).willReturn(1L);
+            given(serviceCategoryMapper.findWithFilters(null, null, 10, 0L)).willReturn(content);
+            given(serviceCategoryMapper.countWithFilters(null, null)).willReturn(1L);
 
             // When
-            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories(pageable);
+            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories(null, null, pageable);
 
             // Then
             assertThat(result).isNotNull();
@@ -150,68 +150,102 @@ class ServiceCategoryQueryServiceTest {
         @DisplayName("should return empty page when no results")
         void listServiceCategories_NoResults_ReturnsEmptyPage() {
             // Given
-            given(serviceCategoryMapper.findWithFilters(null, 10, 0L)).willReturn(List.of());
-            given(serviceCategoryMapper.countWithFilters(null)).willReturn(0L);
+            given(serviceCategoryMapper.findWithFilters(null, null, 10, 0L)).willReturn(List.of());
+            given(serviceCategoryMapper.countWithFilters(null, null)).willReturn(0L);
 
             // When
-            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories(pageable);
+            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories(null, null, pageable);
 
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).isEmpty();
             assertThat(result.getTotalElements()).isEqualTo(0L);
         }
-    }
-
-    @Nested
-    @DisplayName("searchServiceCategories - Search service categories by name")
-    class SearchServiceCategoriesTests {
 
         @Test
         @DisplayName("should trim search term")
-        void searchServiceCategories_WithSearchTerm_ReturnsFilteredPage() {
+        void listServiceCategories_WithSearchTerm_ReturnsFilteredPage() {
             // Given
             List<ServiceCategorySummaryView> content = List.of(testSummaryView);
-            given(serviceCategoryMapper.findWithFilters("laser", 10, 0L)).willReturn(content);
-            given(serviceCategoryMapper.countWithFilters("laser")).willReturn(1L);
+            given(serviceCategoryMapper.findWithFilters("laser", null, 10, 0L)).willReturn(content);
+            given(serviceCategoryMapper.countWithFilters("laser", null)).willReturn(1L);
 
             // When
-            Page<ServiceCategorySummaryView> result = queryService.searchServiceCategories("  laser  ", pageable);
+            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories("  laser  ", null, pageable);
 
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            verify(serviceCategoryMapper).findWithFilters("laser", 10, 0L);
-        }
-
-        @Test
-        @DisplayName("should handle null search term")
-        void searchServiceCategories_NullSearchTerm_PassesNullToMapper() {
-            // Given
-            given(serviceCategoryMapper.findWithFilters(null, 10, 0L)).willReturn(List.of());
-            given(serviceCategoryMapper.countWithFilters(null)).willReturn(0L);
-
-            // When
-            Page<ServiceCategorySummaryView> result = queryService.searchServiceCategories(null, pageable);
-
-            // Then
-            assertThat(result).isEmpty();
-            verify(serviceCategoryMapper).findWithFilters(null, 10, 0L);
+            verify(serviceCategoryMapper).findWithFilters("laser", null, 10, 0L);
         }
 
         @Test
         @DisplayName("should handle blank search term")
-        void searchServiceCategories_BlankSearchTerm_PassesNullToMapper() {
+        void listServiceCategories_BlankSearchTerm_PassesNullToMapper() {
             // Given
-            given(serviceCategoryMapper.findWithFilters(null, 10, 0L)).willReturn(List.of());
-            given(serviceCategoryMapper.countWithFilters(null)).willReturn(0L);
+            given(serviceCategoryMapper.findWithFilters(null, null, 10, 0L)).willReturn(List.of());
+            given(serviceCategoryMapper.countWithFilters(null, null)).willReturn(0L);
 
             // When
-            Page<ServiceCategorySummaryView> result = queryService.searchServiceCategories("   ", pageable);
+            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories("   ", null, pageable);
 
             // Then
             assertThat(result).isEmpty();
-            verify(serviceCategoryMapper).findWithFilters(null, 10, 0L);
+            verify(serviceCategoryMapper).findWithFilters(null, null, 10, 0L);
+        }
+
+        @Test
+        @DisplayName("should filter by isActive=true")
+        void listServiceCategories_ActiveOnly_ReturnsActiveCategories() {
+            // Given
+            List<ServiceCategorySummaryView> content = List.of(testSummaryView);
+            given(serviceCategoryMapper.findWithFilters(null, true, 10, 0L)).willReturn(content);
+            given(serviceCategoryMapper.countWithFilters(null, true)).willReturn(1L);
+
+            // When
+            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories(null, true, pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(1);
+            verify(serviceCategoryMapper).findWithFilters(null, true, 10, 0L);
+        }
+
+        @Test
+        @DisplayName("should filter by isActive=false")
+        void listServiceCategories_InactiveOnly_ReturnsInactiveCategories() {
+            // Given
+            ServiceCategorySummaryView inactiveView = new ServiceCategorySummaryView(
+                    2L, "Inactive Category", "Description", false, 0);
+            List<ServiceCategorySummaryView> content = List.of(inactiveView);
+            given(serviceCategoryMapper.findWithFilters(null, false, 10, 0L)).willReturn(content);
+            given(serviceCategoryMapper.countWithFilters(null, false)).willReturn(1L);
+
+            // When
+            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories(null, false, pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getContent().get(0).isActive()).isFalse();
+            verify(serviceCategoryMapper).findWithFilters(null, false, 10, 0L);
+        }
+
+        @Test
+        @DisplayName("should combine search and isActive filters")
+        void listServiceCategories_WithSearchAndIsActive_ReturnsCombinedFilter() {
+            // Given
+            List<ServiceCategorySummaryView> content = List.of(testSummaryView);
+            given(serviceCategoryMapper.findWithFilters("laser", true, 10, 0L)).willReturn(content);
+            given(serviceCategoryMapper.countWithFilters("laser", true)).willReturn(1L);
+
+            // When
+            Page<ServiceCategorySummaryView> result = queryService.listServiceCategories("laser", true, pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(1);
+            verify(serviceCategoryMapper).findWithFilters("laser", true, 10, 0L);
         }
     }
 

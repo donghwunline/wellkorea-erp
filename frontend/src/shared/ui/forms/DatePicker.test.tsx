@@ -79,15 +79,15 @@ describe('DatePicker', () => {
     it('should close calendar when clicking outside', async () => {
       vi.useRealTimers();
       const user = userEvent.setup();
-      const { container } = render(
+      render(
         <div>
-          <DatePicker value="" onChange={vi.fn()} />
+          <DatePicker value="" onChange={vi.fn()} placeholder="Select date" />
           <div data-testid="outside">Outside</div>
         </div>
       );
 
       // Open calendar
-      const trigger = container.querySelector('button')!;
+      const trigger = screen.getByRole('button', { name: /select date/i });
       await user.click(trigger);
       expect(screen.getByRole('button', { name: /previous month/i })).toBeInTheDocument();
 
@@ -121,10 +121,11 @@ describe('DatePicker', () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
       // Provide a January date so calendar opens to January
-      render(<DatePicker value="2025-01-01" onChange={handleChange} />);
+      render(<DatePicker value="2025-01-01" onChange={handleChange} clearable={false} />);
 
-      // Open calendar
-      await user.click(screen.getByRole('button'));
+      // Open calendar - use getAllByRole and get first one (the trigger)
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
 
       // Click on day 20 (aria-label format: "January 20, 2025")
       const day20 = screen.getByRole('button', { name: /january 20, 2025/i });
@@ -137,10 +138,11 @@ describe('DatePicker', () => {
       vi.useRealTimers();
       const user = userEvent.setup();
       // Provide a January date so calendar opens to January
-      render(<DatePicker value="2025-01-01" onChange={vi.fn()} />);
+      render(<DatePicker value="2025-01-01" onChange={vi.fn()} clearable={false} />);
 
       // Open calendar
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
       expect(screen.getByRole('button', { name: /previous month/i })).toBeInTheDocument();
 
       // Select a date (aria-label format: "January 15, 2025")
@@ -153,10 +155,11 @@ describe('DatePicker', () => {
     it('should highlight selected date', async () => {
       vi.useRealTimers();
       const user = userEvent.setup();
-      render(<DatePicker value="2025-01-15" onChange={vi.fn()} />);
+      render(<DatePicker value="2025-01-15" onChange={vi.fn()} clearable={false} />);
 
       // Open calendar
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
 
       // Find day 15 button and check it has selected styling (aria-label format: "January 15, 2025")
       const day15 = screen.getByRole('button', { name: /january 15, 2025/i });
@@ -168,10 +171,11 @@ describe('DatePicker', () => {
     it('should navigate to previous month when previous button clicked', async () => {
       vi.useRealTimers();
       const user = userEvent.setup();
-      render(<DatePicker value="2025-01-15" onChange={vi.fn()} />);
+      render(<DatePicker value="2025-01-15" onChange={vi.fn()} clearable={false} />);
 
       // Open calendar
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
 
       // Initially should show January (month select is first combobox)
       const monthSelects = screen.getAllByRole('combobox');
@@ -188,10 +192,11 @@ describe('DatePicker', () => {
     it('should navigate to next month when next button clicked', async () => {
       vi.useRealTimers();
       const user = userEvent.setup();
-      render(<DatePicker value="2025-01-15" onChange={vi.fn()} />);
+      render(<DatePicker value="2025-01-15" onChange={vi.fn()} clearable={false} />);
 
       // Open calendar
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
 
       // Click next month
       await user.click(screen.getByRole('button', { name: /next month/i }));
@@ -207,10 +212,11 @@ describe('DatePicker', () => {
       vi.useRealTimers();
       const user = userEvent.setup();
       // Provide a value in January so calendar opens to January
-      render(<DatePicker value="2025-01-20" onChange={vi.fn()} min="2025-01-15" />);
+      render(<DatePicker value="2025-01-20" onChange={vi.fn()} min="2025-01-15" clearable={false} />);
 
       // Open calendar
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
 
       // Day 10 should have disabled styling (opacity and cursor-not-allowed)
       const day10 = screen.getByRole('button', { name: /january 10, 2025/i });
@@ -222,10 +228,11 @@ describe('DatePicker', () => {
       vi.useRealTimers();
       const user = userEvent.setup();
       // Provide a value in January so calendar opens to January
-      render(<DatePicker value="2025-01-15" onChange={vi.fn()} max="2025-01-20" />);
+      render(<DatePicker value="2025-01-15" onChange={vi.fn()} max="2025-01-20" clearable={false} />);
 
       // Open calendar
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
 
       // Day 25 should have disabled styling
       const day25 = screen.getByRole('button', { name: /january 25, 2025/i });
@@ -237,10 +244,11 @@ describe('DatePicker', () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
       // Provide a value in January so calendar opens to January
-      render(<DatePicker value="2025-01-20" onChange={handleChange} min="2025-01-15" />);
+      render(<DatePicker value="2025-01-20" onChange={handleChange} min="2025-01-15" clearable={false} />);
 
       // Open calendar
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
 
       // Try to click disabled day 10 - it has disabled attribute
       const day10 = screen.getByRole('button', { name: /january 10, 2025/i });
@@ -257,10 +265,11 @@ describe('DatePicker', () => {
     it('should not open calendar when disabled', async () => {
       vi.useRealTimers();
       const user = userEvent.setup();
-      render(<DatePicker value="" onChange={vi.fn()} disabled />);
+      render(<DatePicker value="" onChange={vi.fn()} disabled placeholder="Select date" />);
 
-      const trigger = screen.getByRole('button');
-      expect(trigger).toBeDisabled();
+      const trigger = screen.getByRole('button', { name: /select date/i });
+      // Disabled state is indicated via tabIndex=-1 and disabled styling
+      expect(trigger).toHaveAttribute('tabindex', '-1');
 
       await user.click(trigger);
 
@@ -313,10 +322,11 @@ describe('DatePicker', () => {
       const handleChange = vi.fn();
       // Pass a start date so the calendar opens to January
       const rangeValue: DateRange = { start: '2025-01-01', end: null };
-      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} />);
+      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />);
 
       // Open calendar and select a different start date (this will reset range)
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
       await user.click(screen.getByRole('button', { name: /january 10, 2025/i }));
 
       // Since there's already a start without end, clicking completes the range
@@ -328,10 +338,11 @@ describe('DatePicker', () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
       const rangeValue: DateRange = { start: '2025-01-10', end: null };
-      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} />);
+      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />);
 
       // Open calendar and select end date
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
       await user.click(screen.getByRole('button', { name: /january 20, 2025/i }));
 
       expect(handleChange).toHaveBeenCalledWith({ start: '2025-01-10', end: '2025-01-20' });
@@ -342,10 +353,11 @@ describe('DatePicker', () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
       const rangeValue: DateRange = { start: '2025-01-20', end: null };
-      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} />);
+      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />);
 
       // Open calendar and select date before start
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
       await user.click(screen.getByRole('button', { name: /january 10, 2025/i }));
 
       expect(handleChange).toHaveBeenCalledWith({ start: '2025-01-10', end: '2025-01-20' });
@@ -398,9 +410,10 @@ describe('DatePicker', () => {
       const differentDay = today.getDate() === 15 ? 1 : 15;
       const nonTodayValue = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(differentDay).padStart(2, '0')}`;
 
-      render(<DatePicker value={nonTodayValue} onChange={vi.fn()} />);
+      render(<DatePicker value={nonTodayValue} onChange={vi.fn()} clearable={false} />);
 
-      await user.click(screen.getByRole('button'));
+      const buttons = screen.getAllByRole('button');
+      await user.click(buttons[0]);
 
       // Today should have ring-1 class (today indicator) when NOT selected
       // Find the button for today's date using aria-label format (e.g., "December 21, 2025")

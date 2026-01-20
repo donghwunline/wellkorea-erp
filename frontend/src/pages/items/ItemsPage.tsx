@@ -3,12 +3,14 @@
  *
  * Displays tabbed interface for:
  * - Products: Items I manufacture and sell
- * - Purchased Items: Service categories I buy (with vendor offerings)
+ * - Outsource Items: Service categories I outsource (with vendor offerings)
+ * - Materials: Physical materials/items I purchase
  */
 
 import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
 import { ProductsTab } from './ui/ProductsTab';
-import { PurchasedItemsTab } from './ui/PurchasedItemsTab';
+import { OutsourceItemsTab } from './ui/OutsourceItemsTab';
+import { MaterialsTab } from './ui/MaterialsTab';
 
 /**
  * Items page with tabbed navigation.
@@ -19,7 +21,7 @@ export function ItemsPage() {
       <PageHeader>
         <PageHeader.Title
           title="아이템"
-          description="Manage your product catalog and purchased item categories"
+          description="Manage your product catalog, outsourced services, and purchased materials"
         />
       </PageHeader>
 
@@ -29,8 +31,11 @@ export function ItemsPage() {
             <Tab id="products" icon="box">
               판매 품목
             </Tab>
-            <Tab id="purchased" icon="shopping-cart">
-              구매 품목
+            <Tab id="outsource" icon="users">
+              외주 품목
+            </Tab>
+            <Tab id="materials" icon="shopping-cart">
+              구매 자재
             </Tab>
           </TabList>
 
@@ -38,8 +43,12 @@ export function ItemsPage() {
             <ProductsTab />
           </TabPanel>
 
-          <TabPanel id="purchased">
-            <PurchasedItemsTab />
+          <TabPanel id="outsource">
+            <OutsourceItemsTab />
+          </TabPanel>
+
+          <TabPanel id="materials">
+            <MaterialsTab />
           </TabPanel>
         </Tabs>
       </div>

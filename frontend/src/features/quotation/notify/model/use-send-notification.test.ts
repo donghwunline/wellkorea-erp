@@ -64,7 +64,7 @@ describe('useSendNotification', () => {
       });
 
       await act(async () => {
-        result.current.mutate(1);
+        result.current.mutate({ quotationId: 1 });
       });
 
       await waitFor(() => {
@@ -72,7 +72,8 @@ describe('useSendNotification', () => {
       });
 
       expect(httpClient.post).toHaveBeenCalledWith(
-        '/quotations/1/send-revision-notification'
+        '/quotations/1/send-revision-notification',
+        {}
       );
     });
 
@@ -84,7 +85,7 @@ describe('useSendNotification', () => {
       });
 
       await act(async () => {
-        result.current.mutate(1);
+        result.current.mutate({ quotationId: 1 });
       });
 
       await waitFor(() => {
@@ -106,7 +107,7 @@ describe('useSendNotification', () => {
       });
 
       await act(async () => {
-        result.current.mutate(1);
+        result.current.mutate({ quotationId: 1 });
       });
 
       await waitFor(() => {
@@ -134,7 +135,7 @@ describe('useSendNotification', () => {
       );
 
       await act(async () => {
-        result.current.mutate(1);
+        result.current.mutate({ quotationId: 1 });
       });
 
       await waitFor(() => {
@@ -155,7 +156,7 @@ describe('useSendNotification', () => {
       );
 
       await act(async () => {
-        result.current.mutate(1);
+        result.current.mutate({ quotationId: 1 });
       });
 
       await waitFor(() => {

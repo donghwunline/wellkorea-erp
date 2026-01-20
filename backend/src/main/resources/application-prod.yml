@@ -18,10 +18,16 @@
 #   MINIO_ACCESS_KEY
 #   MINIO_SECRET_KEY
 #   MINIO_BUCKET_NAME
-#   MAIL_HOST
-#   MAIL_PORT
-#   MAIL_USERNAME
-#   MAIL_PASSWORD
+#   MAIL_HOST (required if MAIL_PROVIDER=smtp)
+#   MAIL_PORT (required if MAIL_PROVIDER=smtp)
+#   MAIL_USERNAME (required if MAIL_PROVIDER=smtp)
+#   MAIL_PASSWORD (required if MAIL_PROVIDER=smtp)
+#
+# Optional Environment Variables (for Microsoft Graph mail):
+#   MAIL_PROVIDER (smtp or graph, default: smtp)
+#   MICROSOFT_GRAPH_CLIENT_ID (required if MAIL_PROVIDER=graph)
+#   MICROSOFT_GRAPH_CLIENT_SECRET (required if MAIL_PROVIDER=graph)
+#   MICROSOFT_GRAPH_REFRESH_TOKEN (required if MAIL_PROVIDER=graph)
 # =====================================================================
 
 spring:
@@ -45,6 +51,12 @@ spring:
     port: ${MAIL_PORT}
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   # Security - NO default credentials in production
   # All authentication MUST go through JWT tokens
@@ -74,6 +86,19 @@ security:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}  # Default: 24 hours
+
+# Mail Provider Configuration
+# Options: smtp (default), graph (Microsoft Graph API for Outlook)
+mail:
+  provider: ${MAIL_PROVIDER:smtp}
+
+# Microsoft Graph Configuration (required when mail.provider=graph)
+# For Outlook/Microsoft 365 email via OAuth2 (personal accounts like hotmail.com)
+microsoft:
+  graph:
+    client-id: ${MICROSOFT_GRAPH_CLIENT_ID:}
+    client-secret: ${MICROSOFT_GRAPH_CLIENT_SECRET:}
+    refresh-token: ${MICROSOFT_GRAPH_REFRESH_TOKEN:}
 
 # MinIO Configuration
 # REQUIRED: All MinIO properties must be set via environment variables

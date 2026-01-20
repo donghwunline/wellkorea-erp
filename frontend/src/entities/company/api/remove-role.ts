@@ -6,6 +6,7 @@
  */
 
 import { httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
+import type { RoleType } from '../model/role-type';
 
 // =============================================================================
 // INPUT TYPES
@@ -16,7 +17,7 @@ import { httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
  */
 export interface RemoveRoleInput {
   companyId: number;
-  roleId: number;
+  roleType: RoleType;
 }
 
 // =============================================================================
@@ -26,15 +27,15 @@ export interface RemoveRoleInput {
 /**
  * Remove a role from a company.
  *
- * @param input - Company ID and role ID to remove
+ * @param input - Company ID and role type to remove
  * @throws Error if role cannot be removed (e.g., last role)
  *
  * @example
  * ```typescript
- * await removeRole({ companyId: 123, roleId: 456 });
+ * await removeRole({ companyId: 123, roleType: 'VENDOR' });
  * console.log('Role removed successfully');
  * ```
  */
 export async function removeRole(input: RemoveRoleInput): Promise<void> {
-  await httpClient.delete<void>(COMPANY_ENDPOINTS.role(input.companyId, input.roleId));
+  await httpClient.delete<void>(COMPANY_ENDPOINTS.role(input.companyId, input.roleType));
 }

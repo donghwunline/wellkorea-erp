@@ -16,11 +16,7 @@ import type { RoleType } from '../model/role-type';
  * Company role from backend response.
  */
 export interface CompanyRoleResponse {
-  id: number;
   roleType: RoleType;
-  creditLimit?: number | null;
-  defaultPaymentDays?: number | null;
-  notes?: string | null;
   createdAt: string;
 }
 
@@ -89,11 +85,7 @@ export interface CompanyListParams {
  */
 function mapRoleToDomain(response: CompanyRoleResponse): CompanyRole {
   return {
-    id: response.id,
     roleType: response.roleType,
-    creditLimit: response.creditLimit ?? null,
-    defaultPaymentDays: response.defaultPaymentDays ?? null,
-    notes: response.notes ?? null,
     createdAt: response.createdAt,
   };
 }

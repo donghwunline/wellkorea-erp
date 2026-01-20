@@ -24,9 +24,11 @@ import {
   quotationRules,
   QuotationStatusBadge,
 } from '@/entities/quotation';
+import { companyQueries } from '@/entities/company';
 
 // Feature imports
 import { useSubmitQuotation } from '@/features/quotation/submit';
+import { useAcceptQuotation } from '@/features/quotation/accept';
 import { useCreateVersion } from '@/features/quotation/version';
 import { useDownloadPdf } from '@/features/quotation/download-pdf';
 import { EmailNotificationModal, useSendNotification } from '@/features/quotation/notify';
@@ -54,6 +56,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
 
   // Confirmation modal states
   const [submitConfirm, setSubmitConfirm] = useState(false);
+  const [acceptConfirm, setAcceptConfirm] = useState(false);
   const [versionConfirm, setVersionConfirm] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
 
@@ -110,11 +113,28 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
     enabled: quotationFromList !== null,
   });
 
+  // Fetch customer email when email modal is open
+  const { data: customer } = useQuery({
+    ...companyQueries.detail(quotation?.customerId ?? 0),
+    enabled: showEmailModal && quotation !== null,
+  });
+
   // Feature mutation hooks
   const submitMutation = useSubmitQuotation({
     onSuccess: () => {
       showSuccess('Quotation submitted for approval');
       setSubmitConfirm(false);
+      void refetchList();
+      void refetchDetails();
+      onDataChange?.();
+    },
+    onError: err => onError?.(err.message),
+  });
+
+  const acceptMutation = useAcceptQuotation({
+    onSuccess: () => {
+      showSuccess('Quotation accepted by customer');
+      setAcceptConfirm(false);
       void refetchList();
       void refetchDetails();
       onDataChange?.();
@@ -149,6 +169,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
 
   const isActing =
     submitMutation.isPending ||
+    acceptMutation.isPending ||
     versionMutation.isPending ||
     pdfMutation.isPending ||
     notifyMutation.isPending;
@@ -191,6 +212,12 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
     submitMutation.mutate(quotation.id);
   }, [quotation, submitMutation]);
 
+  // Handle accept quotation
+  const handleAcceptConfirm = useCallback(() => {
+    if (!quotation) return;
+    acceptMutation.mutate(quotation.id);
+  }, [quotation, acceptMutation]);
+
   // Handle create new version
   const handleVersionConfirm = useCallback(() => {
     if (!quotation) return;
@@ -207,10 +234,17 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   }, [quotation, pdfMutation]);
 
   // Handle send email
-  const handleSendEmail = useCallback(() => {
-    if (!quotation) return;
-    notifyMutation.mutate(quotation.id);
-  }, [quotation, notifyMutation]);
+  const handleSendEmail = useCallback(
+    (to: string, ccEmails: string[]) => {
+      if (!quotation) return;
+      notifyMutation.mutate({
+        quotationId: quotation.id,
+        to,
+        ccEmails: ccEmails.length > 0 ? ccEmails : undefined,
+      });
+    },
+    [quotation, notifyMutation]
+  );
 
   // Handle create new quotation - open modal
   const handleCreate = useCallback(() => {
@@ -249,15 +283,25 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   // Empty state - no quotations yet
   if (quotations.length === 0) {
     return (
-      <Card className="p-12 text-center">
-        <Icon name="document" className="mx-auto mb-4 h-16 w-16 text-steel-600" />
-        <h3 className="mb-2 text-lg font-semibold text-white">No Quotations Yet</h3>
-        <p className="mb-6 text-steel-400">Create your first quotation for this project.</p>
-        <Button onClick={handleCreate}>
-          <Icon name="plus" className="mr-2 h-4 w-4" />
-          New Quotation
-        </Button>
-      </Card>
+      <>
+        <Card className="p-12 text-center">
+          <Icon name="document" className="mx-auto mb-4 h-16 w-16 text-steel-600" />
+          <h3 className="mb-2 text-lg font-semibold text-white">No Quotations Yet</h3>
+          <p className="mb-6 text-steel-400">Create your first quotation for this project.</p>
+          <Button onClick={handleCreate}>
+            <Icon name="plus" className="mr-2 h-4 w-4" />
+            New Quotation
+          </Button>
+        </Card>
+
+        {/* Create Modal - rendered outside Card for proper portal behavior */}
+        <QuotationCreateModal
+          projectId={projectId}
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={handleModalSuccess}
+        />
+      </>
     );
   }
 
@@ -269,6 +313,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   const canSendEmail = quotation
     ? ['APPROVED', 'SENT', 'ACCEPTED'].includes(quotation.status)
     : false;
+  const canAccept = quotation ? quotationRules.canAccept(quotation) : false;
 
   const hasPrevVersion = currentIndex < quotations.length - 1;
   const hasNextVersion = currentIndex > 0;
@@ -276,12 +321,14 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   // Mutation errors
   const mutationError =
     submitMutation.error?.message ||
+    acceptMutation.error?.message ||
     versionMutation.error?.message ||
     pdfMutation.error?.message ||
     notifyMutation.error?.message;
 
   const clearMutationError = () => {
     submitMutation.reset();
+    acceptMutation.reset();
     versionMutation.reset();
     pdfMutation.reset();
     notifyMutation.reset();
@@ -375,6 +422,18 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
             </Button>
           )}
 
+          {canAccept && (
+            <Button
+              onClick={() => setAcceptConfirm(true)}
+              disabled={isActing}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Icon name="check-circle" className="mr-2 h-4 w-4" />
+              Accept
+            </Button>
+          )}
+
           {canCreateVersion && (
             <Button
               variant="secondary"
@@ -415,6 +474,15 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
       />
 
       <ConfirmationModal
+        isOpen={acceptConfirm}
+        title="Accept Quotation"
+        message={`Mark "${quotation?.jobCode} v${quotation?.version}" as accepted by customer? This will activate the project for delivery and invoicing.`}
+        confirmLabel="Accept"
+        onConfirm={handleAcceptConfirm}
+        onClose={() => setAcceptConfirm(false)}
+      />
+
+      <ConfirmationModal
         isOpen={versionConfirm}
         title="Create New Version"
         message={`Create a new version based on "${quotation?.jobCode} v${quotation?.version}"? The new version will be in DRAFT status.`}
@@ -427,6 +495,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
         onSend={handleSendEmail}
+        customerEmail={customer?.email ?? undefined}
         quotationInfo={
           quotation ? { jobCode: quotation.jobCode, version: quotation.version } : undefined
         }

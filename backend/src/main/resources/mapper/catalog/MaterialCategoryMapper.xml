@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.catalog.infrastructure.mapper.MaterialCategoryMapper">
+
+    <!-- MaterialCategorySummaryView result map -->
+    <resultMap id="MaterialCategorySummaryViewResult" type="com.wellkorea.backend.catalog.api.dto.query.MaterialCategorySummaryView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="name" javaType="String"/>
+            <arg column="description" javaType="String"/>
+            <arg column="active" javaType="Boolean"/>
+            <arg column="materialCount" javaType="Integer"/>
+            <arg column="createdAt" javaType="java.time.LocalDateTime"/>
+            <arg column="updatedAt" javaType="java.time.LocalDateTime"/>
+        </constructor>
+    </resultMap>
+
+    <!-- Find categories with filters -->
+    <select id="findWithFilters" resultMap="MaterialCategorySummaryViewResult">
+        SELECT
+            mc.id,
+            mc.name,
+            mc.description,
+            mc.is_active AS active,
+            COALESCE(COUNT(m.id), 0) AS materialCount,
+            mc.created_at AS createdAt,
+            mc.updated_at AS updatedAt
+        FROM material_categories mc
+        LEFT JOIN materials m ON mc.id = m.category_id AND m.is_active = true
+        <where>
+            <if test="search != null and search != ''">
+                AND mc.name ILIKE '%' || #{search} || '%'
+            </if>
+            <if test="activeOnly">
+                AND mc.is_active = true
+            </if>
+        </where>
+        GROUP BY mc.id
+        ORDER BY mc.name
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count categories -->
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM material_categories mc
+        <where>
+            <if test="search != null and search != ''">
+                AND mc.name ILIKE '%' || #{search} || '%'
+            </if>
+            <if test="activeOnly">
+                AND mc.is_active = true
+            </if>
+        </where>
+    </select>
+
+    <!-- Find all active categories -->
+    <select id="findAllActive" resultMap="MaterialCategorySummaryViewResult">
+        SELECT
+            mc.id,
+            mc.name,
+            mc.description,
+            mc.is_active AS active,
+            COALESCE(COUNT(m.id), 0) AS materialCount,
+            mc.created_at AS createdAt,
+            mc.updated_at AS updatedAt
+        FROM material_categories mc
+        LEFT JOIN materials m ON mc.id = m.category_id AND m.is_active = true
+        WHERE mc.is_active = true
+        GROUP BY mc.id
+        ORDER BY mc.name
+    </select>
+
+    <!-- Find category by ID -->
+    <select id="findById" resultMap="MaterialCategorySummaryViewResult">
+        SELECT
+            mc.id,
+            mc.name,
+            mc.description,
+            mc.is_active AS active,
+            COALESCE(COUNT(m.id), 0) AS materialCount,
+            mc.created_at AS createdAt,
+            mc.updated_at AS updatedAt
+        FROM material_categories mc
+        LEFT JOIN materials m ON mc.id = m.category_id AND m.is_active = true
+        WHERE mc.id = #{id}
+        GROUP BY mc.id
+    </select>
+
+</mapper>

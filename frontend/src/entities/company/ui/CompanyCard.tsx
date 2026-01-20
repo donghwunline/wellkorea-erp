@@ -14,7 +14,6 @@
 import type { ReactNode } from 'react';
 import { Card } from '@/shared/ui';
 import type { Company } from '../model/company';
-import { roleRules } from '../model/company-role';
 import { formatDate } from '@/shared/lib/formatting/date';
 import { CompanyStatusBadge } from './CompanyStatusBadge';
 import { CompanyRoleBadge } from './CompanyRoleBadge';
@@ -95,7 +94,7 @@ export function CompanyCard({
           <h3 className="text-sm font-medium text-steel-400 mb-2">역할</h3>
           <div className="flex flex-wrap gap-2">
             {company.roles.map(role => (
-              <CompanyRoleBadge key={role.id} roleType={role.roleType} />
+              <CompanyRoleBadge key={role.roleType} roleType={role.roleType} />
             ))}
           </div>
         </div>
@@ -168,56 +167,6 @@ export function CompanyCard({
             </dl>
           </div>
         </div>
-
-        {/* Role Details Section */}
-        {company.roles.some(r => roleRules.hasFinancialSettings(r) || roleRules.hasNotes(r)) && (
-          <div className="mt-6">
-            <h3 className="text-sm font-medium text-steel-400 mb-3 border-b border-steel-800 pb-2">
-              역할별 상세 정보
-            </h3>
-            <div className="space-y-4">
-              {company.roles.map(role => (
-                <div
-                  key={role.id}
-                  className="p-4 bg-steel-900/50 rounded-lg border border-steel-800"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <CompanyRoleBadge roleType={role.roleType} />
-                    <span className="text-xs text-steel-500">
-                      등록일: {formatDate(role.createdAt)}
-                    </span>
-                  </div>
-                  {(roleRules.hasFinancialSettings(role) || roleRules.hasNotes(role)) && (
-                    <dl className="grid grid-cols-2 gap-2 text-sm mt-3">
-                      {role.creditLimit !== null && (
-                        <div>
-                          <dt className="text-steel-500">신용 한도</dt>
-                          <dd className="text-steel-200">
-                            {roleRules.formatCreditLimit(role)}
-                          </dd>
-                        </div>
-                      )}
-                      {role.defaultPaymentDays !== null && (
-                        <div>
-                          <dt className="text-steel-500">결제 기한</dt>
-                          <dd className="text-steel-200">
-                            {roleRules.getPaymentDaysText(role)}
-                          </dd>
-                        </div>
-                      )}
-                      {role.notes && (
-                        <div className="col-span-2">
-                          <dt className="text-steel-500">비고</dt>
-                          <dd className="text-steel-200">{role.notes}</dd>
-                        </div>
-                      )}
-                    </dl>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Timestamps */}
         <div className="mt-6 pt-4 border-t border-steel-800 text-xs text-steel-500 flex gap-4">

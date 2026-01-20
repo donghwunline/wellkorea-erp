@@ -326,8 +326,14 @@ export function QuotationListPage() {
       <EmailNotificationModal
         isOpen={!!emailConfirm}
         onClose={() => setEmailConfirm(null)}
-        onSend={() => {
-          if (emailConfirm) notifyMutation.mutate(emailConfirm.id);
+        onSend={(to, ccEmails) => {
+          if (emailConfirm) {
+            notifyMutation.mutate({
+              quotationId: emailConfirm.id,
+              to,
+              ccEmails,
+            });
+          }
         }}
         quotationInfo={
           emailConfirm

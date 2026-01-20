@@ -38,10 +38,14 @@ public class MinioFileStorage {
             @Value("${minio.secret-key}") String secretKey,
             @Value("${minio.bucket-name}") String bucketName) {
 
+        // Single client for all MinIO operations
+        // In Docker: uses minio.local hostname (resolvable both inside Docker and from browser via /etc/hosts)
+        // In local dev: uses localhost
         this.minioClient = MinioClient.builder()
                 .endpoint(minioUrl)
                 .credentials(accessKey, secretKey)
                 .build();
+
         this.bucketName = bucketName;
 
         ensureBucketExists();

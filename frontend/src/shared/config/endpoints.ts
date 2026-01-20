@@ -86,6 +86,8 @@ export const QUOTATION_ENDPOINTS = {
   pdf: (id: number) => `/quotations/${id}/pdf`,
   /** POST /quotations/:id/send-revision-notification - Send email notification */
   sendNotification: (id: number) => `/quotations/${id}/send-revision-notification`,
+  /** POST /quotations/:id/accept - Mark as accepted by customer */
+  accept: (id: number) => `/quotations/${id}/accept`,
 } as const;
 
 // ============================================================================
@@ -168,8 +170,8 @@ export const COMPANY_ENDPOINTS = {
   byId: (id: number) => `/companies/${id}`,
   /** POST /companies/:id/roles - Add role to company */
   roles: (id: number) => `/companies/${id}/roles`,
-  /** DELETE /companies/:id/roles/:roleId - Remove role from company */
-  role: (id: number, roleId: number) => `/companies/${id}/roles/${roleId}`,
+  /** DELETE /companies/:id/roles/:roleType - Remove role from company */
+  role: (id: number, roleType: string) => `/companies/${id}/roles/${roleType}`,
 } as const;
 
 // ============================================================================
@@ -204,6 +206,32 @@ export const TASK_FLOW_ENDPOINTS = {
 } as const;
 
 // ============================================================================
+// Blueprint Attachment Endpoints
+// ============================================================================
+
+export const BLUEPRINT_ENDPOINTS = {
+  /** List all attachments for a flow: GET /task-flows/:flowId/attachments */
+  byFlow: (flowId: number) => `/task-flows/${flowId}/attachments`,
+  /** List attachments for a node: GET /task-flows/:flowId/nodes/:nodeId/attachments */
+  byNode: (flowId: number, nodeId: string) =>
+    `/task-flows/${flowId}/nodes/${nodeId}/attachments`,
+  /** List all attachments for a project: GET /projects/:projectId/attachments */
+  byProject: (projectId: number) => `/projects/${projectId}/attachments`,
+  /** Get presigned upload URL: POST /task-flows/:flowId/nodes/:nodeId/attachments/upload-url */
+  uploadUrl: (flowId: number, nodeId: string) =>
+    `/task-flows/${flowId}/nodes/${nodeId}/attachments/upload-url`,
+  /** Register attachment after upload: POST /task-flows/:flowId/nodes/:nodeId/attachments/register */
+  register: (flowId: number, nodeId: string) =>
+    `/task-flows/${flowId}/nodes/${nodeId}/attachments/register`,
+  /** Get attachment metadata: GET /blueprints/:id */
+  byId: (id: number) => `/blueprints/${id}`,
+  /** Get presigned download URL: GET /blueprints/:id/url */
+  url: (id: number) => `/blueprints/${id}/url`,
+  /** Delete attachment: DELETE /blueprints/:id */
+  delete: (id: number) => `/blueprints/${id}`,
+} as const;
+
+// ============================================================================
 // Delivery Endpoints
 // ============================================================================
 
@@ -223,4 +251,91 @@ export const DELIVERY_ENDPOINTS = {
   reassign: (id: number) => `/deliveries/${id}/reassign`,
   /** GET /deliveries/:id/statement - Generate delivery statement PDF */
   statement: (id: number) => `/deliveries/${id}/statement`,
+} as const;
+
+// ============================================================================
+// Material Endpoints
+// ============================================================================
+
+export const MATERIAL_ENDPOINTS = {
+  /** Base path for material operations */
+  /** GET /materials - List materials with pagination */
+  /** POST /materials - Create material */
+  BASE: '/materials',
+
+  /** GET/PUT/DELETE /materials/:id */
+  byId: (id: number) => `/materials/${id}`,
+  /** GET /materials/all - Get all materials for dropdown */
+  all: '/materials/all',
+  /** GET /materials/categories - List material categories */
+  categories: '/materials/categories',
+  /** GET /materials/categories/all - Get all categories for dropdown */
+  allCategories: '/materials/categories/all',
+  /** GET/PUT/DELETE /materials/categories/:id */
+  category: (id: number) => `/materials/categories/${id}`,
+
+  // ========== VENDOR MATERIAL OFFERINGS ==========
+
+  /** GET /materials/:id/offerings/current - Get current vendor offerings for a material */
+  currentOfferings: (materialId: number) => `/materials/${materialId}/offerings/current`,
+  /** GET /materials/:id/offerings - Get all vendor offerings for a material (paginated) */
+  offerings: (materialId: number) => `/materials/${materialId}/offerings`,
+  /** POST /materials/offerings - Create vendor material offering */
+  createOffering: '/materials/offerings',
+  /** GET/PUT/DELETE /materials/offerings/:id */
+  offering: (id: number) => `/materials/offerings/${id}`,
+  /** PUT /materials/offerings/:id/preferred - Set vendor offering as preferred */
+  setPreferred: (id: number) => `/materials/offerings/${id}/preferred`,
+} as const;
+
+// ============================================================================
+// Purchase Request Endpoints
+// ============================================================================
+
+export const PURCHASE_REQUEST_ENDPOINTS = {
+  /** Base path for purchase request operations */
+  /** GET /purchase-requests - List purchase requests */
+  BASE: '/purchase-requests',
+
+  /** POST /purchase-requests/service - Create service purchase request */
+  SERVICE: '/purchase-requests/service',
+  /** POST /purchase-requests/material - Create material purchase request */
+  MATERIAL: '/purchase-requests/material',
+
+  /** GET/PUT /purchase-requests/:id */
+  byId: (id: number) => `/purchase-requests/${id}`,
+  /** POST /purchase-requests/:id/send-rfq - Send RFQ to vendors */
+  sendRfq: (id: number) => `/purchase-requests/${id}/send-rfq`,
+  /** POST /purchase-requests/:id/record-reply - Record vendor reply */
+  recordReply: (id: number) => `/purchase-requests/${id}/record-reply`,
+  /** POST /purchase-requests/:id/mark-no-response - Mark vendor as non-responsive */
+  markNoResponse: (id: number) => `/purchase-requests/${id}/mark-no-response`,
+  /** POST /purchase-requests/:id/select-vendor - Select vendor for the request */
+  selectVendor: (id: number) => `/purchase-requests/${id}/select-vendor`,
+  /** POST /purchase-requests/:id/reject-rfq - Reject vendor quote */
+  rejectRfq: (id: number) => `/purchase-requests/${id}/reject-rfq`,
+  /** DELETE /purchase-requests/:id - Cancel purchase request */
+  cancel: (id: number) => `/purchase-requests/${id}`,
+} as const;
+
+// ============================================================================
+// Purchase Order Endpoints
+// ============================================================================
+
+export const PURCHASE_ORDER_ENDPOINTS = {
+  /** Base path for purchase order operations */
+  /** GET /purchase-orders - List purchase orders */
+  /** POST /purchase-orders - Create purchase order from RFQ item */
+  BASE: '/purchase-orders',
+
+  /** GET/PUT /purchase-orders/:id */
+  byId: (id: number) => `/purchase-orders/${id}`,
+  /** POST /purchase-orders/:id/send - Send PO to vendor */
+  send: (id: number) => `/purchase-orders/${id}/send`,
+  /** POST /purchase-orders/:id/confirm - Vendor confirmed */
+  confirm: (id: number) => `/purchase-orders/${id}/confirm`,
+  /** POST /purchase-orders/:id/receive - Mark as received */
+  receive: (id: number) => `/purchase-orders/${id}/receive`,
+  /** DELETE /purchase-orders/:id - Cancel purchase order */
+  cancel: (id: number) => `/purchase-orders/${id}`,
 } as const;

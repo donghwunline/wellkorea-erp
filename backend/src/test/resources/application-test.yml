@@ -44,6 +44,10 @@ spring:
           timeout: 3000
           writetimeout: 5000
 
+# Mail Provider - SMTP for tests (MockMailSender injected in unit tests)
+mail:
+  provider: smtp
+
 # Server Configuration
 server:
   port: 0  # Random port for parallel test execution

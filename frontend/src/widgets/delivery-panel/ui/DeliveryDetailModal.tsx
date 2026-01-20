@@ -41,8 +41,8 @@ export interface DeliveryDetailModalProps {
   readonly onClose: () => void;
   /** Optional callback after successful status change */
   readonly onSuccess?: () => void;
-  /** Latest approved quotation ID for outdated detection */
-  readonly latestApprovedQuotationId?: number | null;
+  /** Latest accepted quotation ID for outdated detection */
+  readonly latestAcceptedQuotationId?: number | null;
 }
 
 export function DeliveryDetailModal({
@@ -50,7 +50,7 @@ export function DeliveryDetailModal({
   isOpen,
   onClose,
   onSuccess,
-  latestApprovedQuotationId,
+  latestAcceptedQuotationId,
 }: DeliveryDetailModalProps) {
   const { hasAnyRole } = useAuth();
   const canManageDeliveries = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
@@ -156,11 +156,11 @@ export function DeliveryDetailModal({
   }, [deliveryId, markReturned]);
 
   const handleReassign = useCallback(() => {
-    if (latestApprovedQuotationId) {
+    if (latestAcceptedQuotationId) {
       setError(null);
-      reassignDelivery({ deliveryId, quotationId: latestApprovedQuotationId });
+      reassignDelivery({ deliveryId, quotationId: latestAcceptedQuotationId });
     }
-  }, [deliveryId, latestApprovedQuotationId, reassignDelivery]);
+  }, [deliveryId, latestAcceptedQuotationId, reassignDelivery]);
 
   // Check action permissions
   const canMarkDelivered = delivery && canManageDeliveries && deliveryRules.canMarkDelivered(delivery);
@@ -168,7 +168,7 @@ export function DeliveryDetailModal({
   const isActing = isMarkingDelivered || isMarkingReturned || isReassigning;
 
   // Check outdated status
-  const isOutdated = delivery && deliveryRules.isOutdated(delivery, latestApprovedQuotationId ?? null);
+  const isOutdated = delivery && deliveryRules.isOutdated(delivery, latestAcceptedQuotationId ?? null);
   const canReassign = delivery && canManageDeliveries && isOutdated && deliveryRules.canReassign(delivery);
 
   // Calculate total quantity
@@ -206,7 +206,7 @@ export function DeliveryDetailModal({
                   <strong>Outdated Quotation Reference</strong>
                   <p className="mt-1 text-sm">
                     This delivery references an older version of the quotation. Consider
-                    reassigning it to the latest approved quotation to keep records consistent.
+                    reassigning it to the latest accepted quotation to keep records consistent.
                   </p>
                 </div>
               </div>

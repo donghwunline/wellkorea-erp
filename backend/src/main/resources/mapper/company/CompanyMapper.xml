@@ -8,9 +8,6 @@
     <resultMap id="CompanyRoleViewResult" type="com.wellkorea.backend.company.api.dto.query.CompanyRoleView">
         <constructor>
             <arg column="role_type" javaType="com.wellkorea.backend.company.domain.RoleType"/>
-            <arg column="credit_limit" javaType="java.math.BigDecimal"/>
-            <arg column="default_payment_days" javaType="Integer"/>
-            <arg column="notes" javaType="String"/>
             <arg column="created_at" javaType="java.time.Instant"/>
         </constructor>
     </resultMap>
@@ -54,9 +51,6 @@
     <select id="findRolesByCompanyId" resultMap="CompanyRoleViewResult">
         SELECT
             role_type,
-            credit_limit,
-            default_payment_days,
-            notes,
             created_at
         FROM company_roles
         WHERE company_id = #{id}
@@ -105,6 +99,7 @@
             AND LOWER(c.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
         </if>
         ORDER BY c.name
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- Count for pagination -->

@@ -28,6 +28,7 @@ import { ApprovalRequestCard, approvalQueries, approvalRules } from '@/entities/
 import { useSubmitQuotation } from '@/features/quotation/submit';
 import { useCreateVersion } from '@/features/quotation/version';
 import { useDownloadPdf } from '@/features/quotation/download-pdf';
+import { useAcceptQuotation } from '@/features/quotation/accept';
 import { useApproveApproval } from '@/features/approval/approve';
 import { RejectModal, useRejectApproval } from '@/features/approval/reject';
 
@@ -41,6 +42,7 @@ export function QuotationDetailPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitConfirm, setSubmitConfirm] = useState(false);
   const [versionConfirm, setVersionConfirm] = useState(false);
+  const [acceptConfirm, setAcceptConfirm] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
 
   // Query hooks
@@ -150,7 +152,19 @@ export function QuotationDetailPage() {
     },
   });
 
-  const isActing = isSubmitting || isCreatingVersion || isDownloading || isApproving || isRejecting;
+  const {
+    mutate: acceptQuotation,
+    isPending: isAccepting,
+    error: acceptError,
+  } = useAcceptQuotation({
+    onSuccess: () => {
+      showSuccess('Quotation accepted by customer');
+      setAcceptConfirm(false);
+      refetchQuotation();
+    },
+  });
+
+  const isActing = isSubmitting || isCreatingVersion || isDownloading || isApproving || isRejecting || isAccepting;
   const isLoading = isLoadingQuotation || isLoadingApprovals;
 
   // Collect all errors
@@ -161,6 +175,7 @@ export function QuotationDetailPage() {
     downloadError?.message ||
     approveError?.message ||
     rejectError?.message ||
+    acceptError?.message ||
     null;
 
   // Clear messages after delay
@@ -223,6 +238,12 @@ export function QuotationDetailPage() {
     [approval, rejectApproval]
   );
 
+  // Handle accept quotation
+  const handleAcceptConfirm = useCallback(() => {
+    if (!quotationId) return;
+    acceptQuotation(quotationId);
+  }, [quotationId, acceptQuotation]);
+
   // Check if current user can approve/reject
   const canApproveOrReject = approval && user ? approvalRules.canAct(approval, user.id) : false;
 
@@ -270,6 +291,7 @@ export function QuotationDetailPage() {
   const canSubmit = quotationRules.canSubmit(quotation);
   const canCreateVersion = quotationRules.canCreateNewVersion(quotation);
   const canDownloadPdf = quotationRules.canGeneratePdf(quotation);
+  const canAccept = quotationRules.canAccept(quotation);
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
@@ -411,6 +433,17 @@ export function QuotationDetailPage() {
                 </Button>
               )}
 
+              {canAccept && (
+                <Button
+                  className="w-full justify-start bg-success-600 hover:bg-success-700"
+                  onClick={() => setAcceptConfirm(true)}
+                  disabled={isActing}
+                >
+                  <Icon name="check-circle" className="mr-2 h-4 w-4" />
+                  Accept Quotation
+                </Button>
+              )}
+
               {canDownloadPdf && (
                 <Button
                   variant="secondary"
@@ -457,6 +490,16 @@ export function QuotationDetailPage() {
         confirmLabel="Create Version"
         onConfirm={handleVersionConfirm}
         onClose={() => setVersionConfirm(false)}
+      />
+
+      {/* Accept Quotation Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={acceptConfirm}
+        title="Accept Quotation"
+        message={`Mark "${quotation.jobCode} v${quotation.version}" as accepted by customer? This will activate the associated project.`}
+        confirmLabel="Accept"
+        onConfirm={handleAcceptConfirm}
+        onClose={() => setAcceptConfirm(false)}
       />
 
       {/* Reject Modal - FSD Feature Component */}

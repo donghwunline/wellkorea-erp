@@ -8,6 +8,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TaskFlowCanvas, type TaskFlowCanvasProps } from './TaskFlowCanvas';
 import type { TaskFlow } from '@/entities/task-flow';
 
@@ -69,12 +70,26 @@ function createTestTaskFlow(overrides: Partial<TaskFlow> = {}): TaskFlow {
   };
 }
 
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+}
+
 function renderComponent(props: Partial<TaskFlowCanvasProps> = {}) {
+  const queryClient = createTestQueryClient();
   const defaultProps: TaskFlowCanvasProps = {
     flow: createTestTaskFlow(),
     ...props,
   };
-  return render(<TaskFlowCanvas {...defaultProps} />);
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <TaskFlowCanvas {...defaultProps} />
+    </QueryClientProvider>
+  );
 }
 
 describe('TaskFlowCanvas', () => {

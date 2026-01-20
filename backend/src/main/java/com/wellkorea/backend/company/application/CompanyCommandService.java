@@ -118,9 +118,6 @@ public class CompanyCommandService {
         try {
             CompanyRole role = CompanyRole.builder()
                     .roleType(command.roleType())
-                    .creditLimit(command.creditLimit())
-                    .defaultPaymentDays(command.defaultPaymentDays())
-                    .notes(command.notes())
                     .build();
 
             company.addRole(role);

@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -47,13 +46,9 @@ class CompanyQueryServiceTest {
     void setUp() {
         pageable = PageRequest.of(0, 10);
 
-        // CompanyRoleView: (RoleType roleType, BigDecimal creditLimit,
-        //                   Integer defaultPaymentDays, String notes, Instant createdAt)
+        // CompanyRoleView: (RoleType roleType, Instant createdAt)
         testRoleView = new CompanyRoleView(
                 RoleType.CUSTOMER,
-                BigDecimal.valueOf(10000000),
-                30,
-                "Primary customer role",
                 Instant.now()
         );
         List<CompanyRoleView> roles = List.of(testRoleView);

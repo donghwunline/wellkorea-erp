@@ -52,6 +52,7 @@ export {
 } from './api/create-quotation';
 export { updateQuotation, type UpdateQuotationInput } from './api/update-quotation';
 export { submitQuotation } from './api/submit-quotation';
+export { acceptQuotation } from './api/accept-quotation';
 export { createQuotationVersion } from './api/create-quotation-version';
 
 // Command result type (shared across commands)
@@ -62,7 +63,10 @@ export type { CommandResult } from './api/quotation.mapper';
 // =============================================================================
 
 export { downloadQuotationPdf } from './api/quotation-pdf';
-export { sendQuotationNotification } from './api/send-quotation-notification';
+export {
+  sendQuotationNotification,
+  type SendNotificationInput,
+} from './api/send-quotation-notification';
 
 // =============================================================================
 // UI COMPONENTS

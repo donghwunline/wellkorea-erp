@@ -2,7 +2,6 @@ package com.wellkorea.backend.company.api.dto.query;
 
 import com.wellkorea.backend.company.domain.RoleType;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
@@ -13,9 +12,6 @@ import java.time.Instant;
  */
 public record CompanyRoleView(
         RoleType roleType,
-        BigDecimal creditLimit,
-        Integer defaultPaymentDays,
-        String notes,
         Instant createdAt
 ) {
 }
