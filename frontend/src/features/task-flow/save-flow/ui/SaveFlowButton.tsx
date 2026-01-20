@@ -3,6 +3,7 @@
  * Shows loading state during save operation.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui';
 import { Icon } from '@/shared/ui/primitives/Icon';
 import type { TaskNode, TaskEdge } from '@/entities/task-flow';
@@ -31,6 +32,7 @@ export function SaveFlowButton({
   onSaved,
   onError,
 }: SaveFlowButtonProps) {
+  const { t } = useTranslation(['items', 'common']);
   const { mutate: save, isPending } = useSaveFlow({
     onSuccess: () => onSaved?.(),
     onError,
@@ -53,7 +55,7 @@ export function SaveFlowButton({
       isLoading={isPending}
     >
       <Icon name="save" className="h-4 w-4" />
-      <span>Save</span>
+      <span>{t('common:buttons.save')}</span>
     </Button>
   );
 }
