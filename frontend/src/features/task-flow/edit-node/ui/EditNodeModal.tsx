@@ -10,6 +10,7 @@
  */
 
 import { useEffect, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, DatePicker, FormField, Modal } from '@/shared/ui';
 import { type TaskNode, taskNodeRules } from '@/entities/task-flow';
 import { useEditNode } from '../model/use-edit-node';
@@ -43,6 +44,7 @@ export function EditNodeModal({
   onMaterialRequest,
   renderAttachments,
 }: Readonly<EditNodeModalProps>) {
+  const { t } = useTranslation('common');
   const isEditing = node !== null;
   const { formState, errors, setTitle, setAssignee, setDeadline, setProgress, validate, reset } =
     useEditNode(node ?? undefined);
@@ -71,7 +73,7 @@ export function EditNodeModal({
   };
 
   const handleDelete = () => {
-    if (onDelete && window.confirm('Are you sure you want to delete this task?')) {
+    if (onDelete && window.confirm(t('taskFlow.deleteConfirm'))) {
       onDelete();
       // Note: Don't call onClose() here - the parent's onDelete handler
       // will close the modal by setting editingNode to null.
@@ -82,39 +84,39 @@ export function EditNodeModal({
   const progressBarClass = taskNodeRules.getProgressBarClass(formState.progress);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Edit Task' : 'Add Task'} size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? t('taskFlow.editTask') : t('taskFlow.addTask')} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Title Field */}
         <FormField
-          label="Task Title"
+          label={t('taskFlow.taskTitle')}
           value={formState.title}
           onChange={setTitle}
-          placeholder="Enter task title"
+          placeholder={t('taskFlow.enterTaskTitle')}
           required
           error={errors.title}
         />
 
         {/* Assignee Field */}
         <FormField
-          label="Assignee"
+          label={t('taskFlow.assignee')}
           value={formState.assignee}
           onChange={setAssignee}
-          placeholder="Enter assignee name"
+          placeholder={t('taskFlow.enterAssignee')}
         />
 
         {/* Deadline Field */}
         <DatePicker
-          label="Deadline"
+          label={t('taskFlow.deadline')}
           mode="single"
           value={formState.deadline}
           onChange={value => setDeadline(value as string)}
-          placeholder="Select deadline"
+          placeholder={t('taskFlow.selectDeadline')}
         />
 
         {/* Progress Field */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-steel-300">
-            Progress: {formState.progress}%
+            {t('taskFlow.progress')}: {formState.progress}%
           </label>
           <div className="flex items-center gap-3">
             <input
@@ -156,7 +158,7 @@ export function EditNodeModal({
         {/* Attachments Section */}
         {renderAttachments && (
           <div className="border-t border-steel-700/50 pt-4">
-            <h4 className="mb-3 text-sm font-medium text-steel-300">Blueprints & Attachments</h4>
+            <h4 className="mb-3 text-sm font-medium text-steel-300">{t('taskFlow.attachments')}</h4>
             {isEditing ? (
               renderAttachments(node.id)
             ) : (
@@ -170,7 +172,7 @@ export function EditNodeModal({
                       d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <span className="text-sm">Save task first to attach blueprints</span>
+                  <span className="text-sm">{t('taskFlow.saveFirst')}</span>
                 </div>
               </div>
             )}
@@ -190,7 +192,7 @@ export function EditNodeModal({
                   onClick={onServiceRequest}
                   className="flex-1"
                 >
-                  외주 요청
+                  {t('taskFlow.serviceRequest')}
                 </Button>
               )}
               {onMaterialRequest && (
@@ -201,7 +203,7 @@ export function EditNodeModal({
                   onClick={onMaterialRequest}
                   className="flex-1"
                 >
-                  구매 요청
+                  {t('taskFlow.materialRequest')}
                 </Button>
               )}
             </div>
@@ -211,17 +213,17 @@ export function EditNodeModal({
           <div className="flex items-center justify-between">
             {isEditing && onDelete ? (
               <Button type="button" variant="danger" onClick={handleDelete}>
-                Delete
+                {t('buttons.delete')}
               </Button>
             ) : (
               <div /> // Spacer for layout
             )}
             <div className="flex gap-2">
               <Button type="button" variant="secondary" onClick={onClose}>
-                Cancel
+                {t('buttons.cancel')}
               </Button>
               <Button type="submit" variant="primary">
-                {isEditing ? 'Save' : 'Add Task'}
+                {isEditing ? t('buttons.save') : t('taskFlow.addTask')}
               </Button>
             </div>
           </div>
