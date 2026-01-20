@@ -44,6 +44,19 @@ spring:
           starttls:
             enable: true
 
+# Mail Provider Configuration
+# Options: smtp (default), graph (Microsoft Graph API)
+mail:
+  provider: ${MAIL_PROVIDER:smtp}
+
+# Microsoft Graph Configuration (required when mail.provider=graph)
+# Used for Outlook/Microsoft 365 email via OAuth2 (for personal accounts like hotmail.com)
+microsoft:
+  graph:
+    client-id: ${MICROSOFT_GRAPH_CLIENT_ID:}
+    client-secret: ${MICROSOFT_GRAPH_CLIENT_SECRET:}
+    refresh-token: ${MICROSOFT_GRAPH_REFRESH_TOKEN:}
+
   # File Upload Configuration
   servlet:
     multipart:

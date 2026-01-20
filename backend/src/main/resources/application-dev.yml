@@ -44,6 +44,10 @@ spring:
       name: admin
       password: admin
 
+# Mail Provider - SMTP for development (default)
+mail:
+  provider: ${MAIL_PROVIDER:smtp}
+
 # Server Configuration
 server:
   port: ${SERVER_PORT:8080}
