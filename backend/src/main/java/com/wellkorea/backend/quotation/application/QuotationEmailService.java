@@ -1,10 +1,10 @@
 package com.wellkorea.backend.quotation.application;
 
-import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
-import com.wellkorea.backend.quotation.domain.Quotation;
+import com.wellkorea.backend.company.api.dto.query.CompanyDetailView;
+import com.wellkorea.backend.company.infrastructure.mapper.CompanyMapper;
+import com.wellkorea.backend.quotation.api.dto.query.QuotationDetailView;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
-import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
+import com.wellkorea.backend.quotation.infrastructure.mapper.QuotationMapper;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
@@ -43,22 +43,22 @@ public class QuotationEmailService {
             QuotationStatus.ACCEPTED
     );
 
-    private final QuotationRepository quotationRepository;
+    private final QuotationMapper quotationMapper;
     private final JavaMailSender mailSender;
-    private final CompanyRepository companyRepository;
+    private final CompanyMapper companyMapper;
     private final CompanyProperties companyProperties;
     private final TemplateEngine templateEngine;
     private final QuotationPdfService quotationPdfService;
 
-    public QuotationEmailService(QuotationRepository quotationRepository,
+    public QuotationEmailService(QuotationMapper quotationMapper,
                                  JavaMailSender mailSender,
-                                 CompanyRepository companyRepository,
+                                 CompanyMapper companyMapper,
                                  CompanyProperties companyProperties,
                                  TemplateEngine templateEngine,
                                  QuotationPdfService quotationPdfService) {
-        this.quotationRepository = quotationRepository;
+        this.quotationMapper = quotationMapper;
         this.mailSender = mailSender;
-        this.companyRepository = companyRepository;
+        this.companyMapper = companyMapper;
         this.companyProperties = companyProperties;
         this.templateEngine = templateEngine;
         this.quotationPdfService = quotationPdfService;
@@ -74,11 +74,11 @@ public class QuotationEmailService {
      * @throws BusinessException         if quotation status is not sendable
      */
     public void sendRevisionNotification(Long quotationId) {
-        Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
+        QuotationDetailView quotation = quotationMapper.findDetailById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         validateSendableStatus(quotation);
-        sendRevisionNotificationInternal(quotation);
+        sendRevisionNotificationInternal(quotationId, quotation);
     }
 
     /**
@@ -88,8 +88,8 @@ public class QuotationEmailService {
      * @return true if email can be sent
      */
     public boolean canSendEmail(Long quotationId) {
-        return quotationRepository.findById(quotationId)
-                .map(q -> SENDABLE_STATUSES.contains(q.getStatus()))
+        return quotationMapper.findDetailById(quotationId)
+                .map(q -> SENDABLE_STATUSES.contains(q.status()))
                 .orElse(false);
     }
 
@@ -100,97 +100,100 @@ public class QuotationEmailService {
      * @return true if quotation is currently APPROVED (needs to be marked as SENT)
      */
     public boolean needsStatusUpdateBeforeSend(Long quotationId) {
-        return quotationRepository.findById(quotationId)
-                .map(q -> q.getStatus() == QuotationStatus.APPROVED)
+        return quotationMapper.findDetailById(quotationId)
+                .map(q -> q.status() == QuotationStatus.APPROVED)
                 .orElse(false);
     }
 
-    private void validateSendableStatus(Quotation quotation) {
-        if (!SENDABLE_STATUSES.contains(quotation.getStatus())) {
+    private void validateSendableStatus(QuotationDetailView quotation) {
+        if (!SENDABLE_STATUSES.contains(quotation.status())) {
             throw new BusinessException(
                     "Email can only be sent for APPROVED, SENT, or ACCEPTED quotations. Current status: "
-                            + quotation.getStatus());
+                            + quotation.status());
         }
     }
 
-    private void sendRevisionNotificationInternal(Quotation quotation) {
-        Company customer = findCustomerOrThrow(quotation);
+    private void sendRevisionNotificationInternal(Long quotationId, QuotationDetailView quotation) {
+        CompanyDetailView customer = findCustomerOrThrow(quotation);
         validateCustomerEmail(customer);
 
         try {
-            byte[] pdfBytes = quotationPdfService.generatePdf(quotation);
+            byte[] pdfBytes = quotationPdfService.generatePdf(quotationId);
             String pdfFilename = formatQuotationNumber(quotation) + ".pdf";
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(companyProperties.getEmail());
-            helper.setTo(customer.getEmail());
+            helper.setTo(customer.email());
             helper.setSubject(buildSubject(quotation));
             helper.setText(buildEmailBody(quotation, customer), true);
             helper.addAttachment(pdfFilename, new ByteArrayResource(pdfBytes), "application/pdf");
 
             mailSender.send(message);
             log.info("Revision notification with PDF sent for quotation {} v{} to {}",
-                    quotation.getProject().getJobCode(),
-                    quotation.getVersion(),
-                    customer.getEmail());
+                    quotation.jobCode(),
+                    quotation.version(),
+                    customer.email());
 
         } catch (MessagingException e) {
-            log.error("Failed to send revision notification email for quotation {}", quotation.getId(), e);
+            log.error("Failed to send revision notification email for quotation {}", quotation.id(), e);
             throw new BusinessException("Failed to send revision notification email: " + e.getMessage());
         }
     }
 
-    public void sendSimpleNotification(Quotation quotation) {
-        Company customer = findCustomerOrThrow(quotation);
+    public void sendSimpleNotification(Long quotationId) {
+        QuotationDetailView quotation = quotationMapper.findDetailById(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
+
+        CompanyDetailView customer = findCustomerOrThrow(quotation);
         validateCustomerEmail(customer);
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(companyProperties.getEmail());
-        message.setTo(customer.getEmail());
+        message.setTo(customer.email());
         message.setSubject(buildSubject(quotation));
         message.setText(buildPlainTextBody(quotation, customer));
 
         mailSender.send(message);
         log.info("Simple notification sent for quotation {} v{} to {}",
-                quotation.getProject().getJobCode(),
-                quotation.getVersion(),
-                customer.getEmail());
+                quotation.jobCode(),
+                quotation.version(),
+                customer.email());
     }
 
-    private Company findCustomerOrThrow(Quotation quotation) {
-        return companyRepository.findById(quotation.getProject().getCustomerId())
+    private CompanyDetailView findCustomerOrThrow(QuotationDetailView quotation) {
+        return companyMapper.findDetailById(quotation.customerId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Company not found with ID: " + quotation.getProject().getCustomerId()));
+                        "Company not found with ID: " + quotation.customerId()));
     }
 
-    private void validateCustomerEmail(Company customer) {
-        if (customer.getEmail() == null || customer.getEmail().isBlank()) {
+    private void validateCustomerEmail(CompanyDetailView customer) {
+        if (customer.email() == null || customer.email().isBlank()) {
             throw new BusinessException("Company does not have an email address configured");
         }
     }
 
-    private String buildSubject(Quotation quotation) {
+    private String buildSubject(QuotationDetailView quotation) {
         return String.format("[%s] 견적서 안내 - %s (V%d)",
                 companyProperties.getName(),
-                quotation.getProject().getJobCode(),
-                quotation.getVersion());
+                quotation.jobCode(),
+                quotation.version());
     }
 
-    private String buildEmailBody(Quotation quotation, Company customer) {
+    private String buildEmailBody(QuotationDetailView quotation, CompanyDetailView customer) {
         Context context = new Context();
 
         context.setVariable("company", buildCompanyMap());
-        context.setVariable("customerName", customer.getName());
-        context.setVariable("contactPerson", customer.getContactPerson());
+        context.setVariable("customerName", customer.name());
+        context.setVariable("contactPerson", customer.contactPerson());
         context.setVariable("quotationNumber", formatQuotationNumber(quotation));
-        context.setVariable("projectName", quotation.getProject().getProjectName());
-        context.setVariable("quotationDate", quotation.getQuotationDate().format(DATE_FORMATTER));
-        context.setVariable("expiryDate", quotation.getExpiryDate().format(DATE_FORMATTER));
-        context.setVariable("totalAmount", CURRENCY_FORMAT.format(quotation.getTotalAmount()));
-        context.setVariable("version", quotation.getVersion());
-        context.setVariable("notes", quotation.getNotes());
+        context.setVariable("projectName", quotation.projectName());
+        context.setVariable("quotationDate", quotation.quotationDate().format(DATE_FORMATTER));
+        context.setVariable("expiryDate", quotation.expiryDate().format(DATE_FORMATTER));
+        context.setVariable("totalAmount", CURRENCY_FORMAT.format(quotation.totalAmount()));
+        context.setVariable("version", quotation.version());
+        context.setVariable("notes", quotation.notes());
 
         return templateEngine.process("quotation-email-ko", context);
     }
@@ -206,32 +209,32 @@ public class QuotationEmailService {
         return company;
     }
 
-    private String buildPlainTextBody(Quotation quotation, Company customer) {
+    private String buildPlainTextBody(QuotationDetailView quotation, CompanyDetailView customer) {
         StringBuilder text = new StringBuilder();
 
-        String greeting = customer.getContactPerson() != null
-                ? customer.getContactPerson() + " 님"
+        String greeting = customer.contactPerson() != null
+                ? customer.contactPerson() + " 님"
                 : "담당자 님";
 
-        text.append(customer.getName()).append(" ").append(greeting).append(" 귀하\n\n");
+        text.append(customer.name()).append(" ").append(greeting).append(" 귀하\n\n");
         text.append("안녕하세요, ").append(companyProperties.getName()).append("입니다.\n\n");
         text.append("아래와 같이 견적서를 송부 드리오니 검토하여 주시기 바랍니다.\n\n");
 
         text.append("■ 견적 정보\n");
         text.append("━━━━━━━━━━━━━━━━━━━━\n");
         text.append("견적번호: ").append(formatQuotationNumber(quotation)).append("\n");
-        text.append("프로젝트명: ").append(quotation.getProject().getProjectName()).append("\n");
-        text.append("견적일자: ").append(quotation.getQuotationDate().format(DATE_FORMATTER)).append("\n");
-        text.append("유효기간: ").append(quotation.getExpiryDate().format(DATE_FORMATTER)).append("\n");
-        text.append("견적금액: ").append(CURRENCY_FORMAT.format(quotation.getTotalAmount())).append(" 원 (부가세 별도)\n");
+        text.append("프로젝트명: ").append(quotation.projectName()).append("\n");
+        text.append("견적일자: ").append(quotation.quotationDate().format(DATE_FORMATTER)).append("\n");
+        text.append("유효기간: ").append(quotation.expiryDate().format(DATE_FORMATTER)).append("\n");
+        text.append("견적금액: ").append(CURRENCY_FORMAT.format(quotation.totalAmount())).append(" 원 (부가세 별도)\n");
 
-        if (quotation.getVersion() > 1) {
-            text.append("견적버전: V").append(quotation.getVersion()).append(" (수정 견적)\n");
+        if (quotation.version() > 1) {
+            text.append("견적버전: V").append(quotation.version()).append(" (수정 견적)\n");
         }
         text.append("\n");
 
-        if (quotation.getNotes() != null && !quotation.getNotes().isBlank()) {
-            text.append("■ 비고\n").append(quotation.getNotes()).append("\n\n");
+        if (quotation.notes() != null && !quotation.notes().isBlank()) {
+            text.append("■ 비고\n").append(quotation.notes()).append("\n\n");
         }
 
         text.append("첨부된 견적서(PDF)를 확인하여 주시기 바랍니다.\n");
@@ -250,7 +253,7 @@ public class QuotationEmailService {
         return text.toString();
     }
 
-    private String formatQuotationNumber(Quotation quotation) {
-        return quotation.getProject().getJobCode() + "-Q" + String.format("%02d", quotation.getVersion());
+    private String formatQuotationNumber(QuotationDetailView quotation) {
+        return quotation.jobCode() + "-Q" + String.format("%02d", quotation.version());
     }
 }
