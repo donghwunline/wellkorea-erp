@@ -21,6 +21,7 @@ import org.thymeleaf.context.Context;
 import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,15 +71,17 @@ public class QuotationEmailService {
      * and sends the email with PDF attachment.
      *
      * @param quotationId The quotation ID
+     * @param toEmail     Optional TO email override (if null, uses customer email)
+     * @param ccEmails    Optional list of CC recipients
      * @throws ResourceNotFoundException if quotation not found
      * @throws BusinessException         if quotation status is not sendable
      */
-    public void sendRevisionNotification(Long quotationId) {
+    public void sendRevisionNotification(Long quotationId, String toEmail, List<String> ccEmails) {
         QuotationDetailView quotation = quotationMapper.findDetailById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
         validateSendableStatus(quotation);
-        sendRevisionNotificationInternal(quotationId, quotation);
+        sendRevisionNotificationInternal(quotationId, quotation, toEmail, ccEmails);
     }
 
     /**
@@ -125,9 +128,15 @@ public class QuotationEmailService {
         }
     }
 
-    private void sendRevisionNotificationInternal(Long quotationId, QuotationDetailView quotation) {
+    private void sendRevisionNotificationInternal(Long quotationId, QuotationDetailView quotation,
+                                                  String toEmail, List<String> ccEmails) {
         CompanyDetailView customer = findCustomerOrThrow(quotation);
-        validateCustomerEmail(customer);
+
+        // Determine the actual TO email address
+        String actualToEmail = (toEmail != null && !toEmail.isBlank()) ? toEmail : customer.email();
+        if (actualToEmail == null || actualToEmail.isBlank()) {
+            throw new BusinessException("Customer email address is not available");
+        }
 
         try {
             byte[] pdfBytes = quotationPdfService.generatePdf(quotationId);
@@ -135,18 +144,29 @@ public class QuotationEmailService {
 
             MailMessage message = MailMessage.builder()
                     .from(companyProperties.getEmail())
-                    .to(customer.email())
+                    .to(actualToEmail)
+                    .cc(ccEmails != null ? ccEmails : List.of())
                     .subject(buildSubject(quotation))
                     .htmlBody(buildEmailBody(quotation, customer))
                     .attachment(MailAttachment.pdf(pdfFilename, pdfBytes))
                     .build();
 
             mailSender.send(message);
-            log.info("Revision notification with PDF sent via {} for quotation {} v{} to {}",
-                    mailSender.getType(),
-                    quotation.jobCode(),
-                    quotation.version(),
-                    customer.email());
+
+            if (ccEmails != null && !ccEmails.isEmpty()) {
+                log.info("Revision notification with PDF sent via {} for quotation {} v{} to {} (CC: {} recipients)",
+                        mailSender.getType(),
+                        quotation.jobCode(),
+                        quotation.version(),
+                        actualToEmail,
+                        ccEmails.size());
+            } else {
+                log.info("Revision notification with PDF sent via {} for quotation {} v{} to {}",
+                        mailSender.getType(),
+                        quotation.jobCode(),
+                        quotation.version(),
+                        actualToEmail);
+            }
 
         } catch (MailSendException e) {
             log.error("Failed to send revision notification email for quotation {}", quotation.id(), e);

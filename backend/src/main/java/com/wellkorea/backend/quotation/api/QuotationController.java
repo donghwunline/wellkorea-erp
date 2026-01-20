@@ -3,7 +3,10 @@ package com.wellkorea.backend.quotation.api;
 import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.quotation.api.dto.command.CreateQuotationRequest;
 import com.wellkorea.backend.quotation.api.dto.command.QuotationCommandResult;
+import com.wellkorea.backend.quotation.api.dto.command.SendNotificationRequest;
 import com.wellkorea.backend.quotation.api.dto.command.UpdateQuotationRequest;
+
+import java.util.List;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationDetailView;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView;
 import com.wellkorea.backend.quotation.application.*;
@@ -198,17 +201,25 @@ public class QuotationController {
      * Only quotations in APPROVED, SENDING, SENT, or ACCEPTED status can be sent.
      * If the quotation is APPROVED, it will be marked as SENDING before email,
      * then marked as SENT after successful email delivery.
+     * <p>
+     * Optionally accepts TO recipient override and CC recipients.
      */
     @PostMapping("/{id}/send-revision-notification")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
-    public ResponseEntity<ApiResponse<String>> sendRevisionNotification(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> sendRevisionNotification(
+            @PathVariable Long id,
+            @Valid @RequestBody(required = false) SendNotificationRequest request) {
+
+        String toEmail = request != null ? request.to() : null;
+        List<String> ccEmails = request != null ? request.ccEmails() : List.of();
+
         // Mark as SENDING before attempting to send email
         if (emailService.needsStatusUpdateBeforeSend(id)) {
             commandService.markAsSending(id);
         }
 
         // EmailService validates status and sends email
-        emailService.sendRevisionNotification(id);
+        emailService.sendRevisionNotification(id, toEmail, ccEmails);
 
         // Mark as SENT after successful email delivery
         if (emailService.needsStatusUpdateAfterSend(id)) {

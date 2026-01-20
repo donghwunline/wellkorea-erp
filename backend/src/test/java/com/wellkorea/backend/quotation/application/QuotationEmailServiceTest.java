@@ -155,7 +155,7 @@ class QuotationEmailServiceTest {
         void sendRevisionNotificationById_QuotationNotFound_ThrowsException() {
             given(quotationMapper.findDetailById(999L)).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(999L))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(999L, null, List.of()))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Quotation not found with id: 999");
         }
@@ -166,7 +166,7 @@ class QuotationEmailServiceTest {
             QuotationDetailView draftQuotation = createTestQuotationView(QuotationStatus.DRAFT, 1);
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(draftQuotation));
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of()))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("APPROVED, SENDING, SENT, or ACCEPTED");
         }
@@ -177,7 +177,7 @@ class QuotationEmailServiceTest {
             QuotationDetailView pendingQuotation = createTestQuotationView(QuotationStatus.PENDING, 1);
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(pendingQuotation));
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of()))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("APPROVED, SENDING, SENT, or ACCEPTED");
         }
@@ -188,7 +188,7 @@ class QuotationEmailServiceTest {
             QuotationDetailView rejectedQuotation = createTestQuotationView(QuotationStatus.REJECTED, 1);
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(rejectedQuotation));
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of()))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("APPROVED, SENDING, SENT, or ACCEPTED");
         }
@@ -202,7 +202,7 @@ class QuotationEmailServiceTest {
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
-            quotationEmailService.sendRevisionNotification(QUOTATION_ID);
+            quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of());
 
             assertThat(mockMailSender.hasSentMessages()).isTrue();
             MailMessage sentMessage = mockMailSender.getLastMessage();
@@ -223,7 +223,7 @@ class QuotationEmailServiceTest {
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
-            quotationEmailService.sendRevisionNotification(QUOTATION_ID);
+            quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of());
 
             assertThat(mockMailSender.hasSentMessages()).isTrue();
         }
@@ -238,7 +238,7 @@ class QuotationEmailServiceTest {
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
-            quotationEmailService.sendRevisionNotification(QUOTATION_ID);
+            quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of());
 
             assertThat(mockMailSender.hasSentMessages()).isTrue();
         }
@@ -253,7 +253,7 @@ class QuotationEmailServiceTest {
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
-            quotationEmailService.sendRevisionNotification(QUOTATION_ID);
+            quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of());
 
             assertThat(mockMailSender.hasSentMessages()).isTrue();
         }
@@ -264,7 +264,7 @@ class QuotationEmailServiceTest {
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.empty());
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of()))
                     .isInstanceOf(ResourceNotFoundException.class)
                     .hasMessageContaining("Company not found");
         }
@@ -276,7 +276,7 @@ class QuotationEmailServiceTest {
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(customerNoEmail));
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of()))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("email address");
         }
@@ -288,7 +288,7 @@ class QuotationEmailServiceTest {
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(customerBlankEmail));
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of()))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("email address");
         }
@@ -302,7 +302,7 @@ class QuotationEmailServiceTest {
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
-            quotationEmailService.sendRevisionNotification(QUOTATION_ID);
+            quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of());
 
             verify(templateEngine).process(eq("quotation-email-ko"), any(Context.class));
         }
@@ -323,7 +323,7 @@ class QuotationEmailServiceTest {
                         return "<html>Email Content</html>";
                     });
 
-            quotationEmailService.sendRevisionNotification(QUOTATION_ID);
+            quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of());
 
             verify(templateEngine).process(eq("quotation-email-ko"), any(Context.class));
         }
@@ -338,7 +338,7 @@ class QuotationEmailServiceTest {
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
-            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID, null, List.of()))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("Failed to send revision notification email");
         }
