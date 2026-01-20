@@ -7,6 +7,7 @@
  */
 
 import { type FormEvent, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import type { VendorMaterialOffering } from '@/entities/material';
 import { materialQueries } from '@/entities/material';
@@ -87,6 +88,7 @@ export function VendorMaterialOfferingForm({
   onCancel,
   onDismissError,
 }: Readonly<VendorMaterialOfferingFormProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const isEditMode = !!offering;
   const isMaterialLocked = isEditMode || !!defaultMaterialId;
 
@@ -119,28 +121,28 @@ export function VendorMaterialOfferingForm({
     const newErrors: FormErrors = {};
 
     if (!formData.vendorId) {
-      newErrors.vendorId = 'Vendor is required';
+      newErrors.vendorId = t('items:vendorMaterialOfferingForm.validation.vendorRequired');
     }
 
     if (!formData.materialId) {
-      newErrors.materialId = 'Material is required';
+      newErrors.materialId = t('items:vendorMaterialOfferingForm.validation.materialRequired');
     }
 
     if (formData.unitPrice && Number(formData.unitPrice) < 0) {
-      newErrors.unitPrice = 'Unit price cannot be negative';
+      newErrors.unitPrice = t('items:vendorMaterialOfferingForm.validation.priceNegative');
     }
 
     if (formData.leadTimeDays && Number(formData.leadTimeDays) < 0) {
-      newErrors.leadTimeDays = 'Lead time cannot be negative';
+      newErrors.leadTimeDays = t('items:vendorMaterialOfferingForm.validation.leadTimeNegative');
     }
 
     if (formData.minOrderQuantity && Number(formData.minOrderQuantity) < 0) {
-      newErrors.minOrderQuantity = 'Minimum quantity cannot be negative';
+      newErrors.minOrderQuantity = t('items:vendorMaterialOfferingForm.validation.minQuantityNegative');
     }
 
     if (formData.effectiveFrom && formData.effectiveTo) {
       if (formData.effectiveFrom > formData.effectiveTo) {
-        newErrors.effectiveFrom = 'Start date must be before end date';
+        newErrors.effectiveFrom = t('items:vendorMaterialOfferingForm.validation.dateRangeInvalid');
       }
     }
 
@@ -191,19 +193,19 @@ export function VendorMaterialOfferingForm({
       {/* Row 1: Vendor & Material */}
       <div className="grid grid-cols-2 gap-4">
         {/* Vendor */}
-        <FormField label="Vendor" required error={errors.vendorId}>
+        <FormField label={t('items:vendorMaterialOfferingForm.vendor')} required error={errors.vendorId}>
           <CompanyCombobox
             value={formData.vendorId}
             onChange={id => handleChange('vendorId', id)}
             roleType={RoleTypeEnum.VENDOR}
-            placeholder="Search vendors..."
+            placeholder={t('items:vendorMaterialOfferingForm.placeholders.searchVendors')}
             initialLabel={offering?.vendorName}
             disabled={isSubmitting || isEditMode}
           />
         </FormField>
 
         {/* Material */}
-        <FormField label="Material" required error={errors.materialId}>
+        <FormField label={t('items:vendorMaterialOfferingForm.material')} required error={errors.materialId}>
           {isMaterialLocked ? (
             <input
               type="text"
@@ -220,7 +222,7 @@ export function VendorMaterialOfferingForm({
               disabled={isSubmitting}
               className={selectClassName}
             >
-              <option value="">Select material...</option>
+              <option value="">{t('items:vendorMaterialOfferingForm.placeholders.selectMaterial')}</option>
               {materials.map(mat => (
                 <option key={mat.id} value={mat.id}>
                   {mat.sku} - {mat.name}
@@ -233,24 +235,24 @@ export function VendorMaterialOfferingForm({
 
       {/* Row 2: Vendor Material Code & Name */}
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Vendor Material Code">
+        <FormField label={t('items:vendorMaterialOfferingForm.vendorMaterialCode')}>
           <input
             type="text"
             value={formData.vendorMaterialCode}
             onChange={e => handleChange('vendorMaterialCode', e.target.value)}
             disabled={isSubmitting}
-            placeholder="e.g., VM-001"
+            placeholder={t('items:vendorMaterialOfferingForm.placeholders.vendorMaterialCode')}
             className={inputClassName}
           />
         </FormField>
 
-        <FormField label="Vendor Material Name">
+        <FormField label={t('items:vendorMaterialOfferingForm.vendorMaterialName')}>
           <input
             type="text"
             value={formData.vendorMaterialName}
             onChange={e => handleChange('vendorMaterialName', e.target.value)}
             disabled={isSubmitting}
-            placeholder="e.g., Premium Steel Plate"
+            placeholder={t('items:vendorMaterialOfferingForm.placeholders.vendorMaterialName')}
             className={inputClassName}
           />
         </FormField>
@@ -258,7 +260,7 @@ export function VendorMaterialOfferingForm({
 
       {/* Row 3: Price & Currency */}
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Unit Price" error={errors.unitPrice}>
+        <FormField label={t('items:vendorMaterialOfferingForm.unitPrice')} error={errors.unitPrice}>
           <input
             type="number"
             value={formData.unitPrice}
@@ -271,7 +273,7 @@ export function VendorMaterialOfferingForm({
           />
         </FormField>
 
-        <FormField label="Currency">
+        <FormField label={t('items:vendorMaterialOfferingForm.currency')}>
           <select
             value={formData.currency}
             onChange={e => handleChange('currency', e.target.value)}
@@ -289,7 +291,7 @@ export function VendorMaterialOfferingForm({
 
       {/* Row 4: Lead Time & Min Order */}
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Lead Time (days)" error={errors.leadTimeDays}>
+        <FormField label={t('items:vendorMaterialOfferingForm.leadTimeDays')} error={errors.leadTimeDays}>
           <input
             type="number"
             value={formData.leadTimeDays}
@@ -301,7 +303,7 @@ export function VendorMaterialOfferingForm({
           />
         </FormField>
 
-        <FormField label="Min Order Quantity" error={errors.minOrderQuantity}>
+        <FormField label={t('items:vendorMaterialOfferingForm.minOrderQuantity')} error={errors.minOrderQuantity}>
           <input
             type="number"
             value={formData.minOrderQuantity}
@@ -315,13 +317,13 @@ export function VendorMaterialOfferingForm({
       </div>
 
       {/* Row 5: Effective Date Range */}
-      <FormField label="Effective Period" error={errors.effectiveFrom}>
+      <FormField label={t('items:vendorMaterialOfferingForm.effectivePeriod')} error={errors.effectiveFrom}>
         <DatePicker
           mode="range"
           value={{ start: formData.effectiveFrom, end: formData.effectiveTo }}
           onChange={handleDateRangeChange}
           disabled={isSubmitting}
-          placeholder="Select date range..."
+          placeholder={t('items:vendorMaterialOfferingForm.placeholders.selectDateRange')}
         />
       </FormField>
 
@@ -336,17 +338,17 @@ export function VendorMaterialOfferingForm({
           className="h-4 w-4 rounded border-steel-700 bg-steel-900 text-copper-500 focus:ring-copper-500/20 focus:ring-offset-0"
         />
         <label htmlFor="isPreferred" className="text-sm text-steel-300">
-          Mark as preferred vendor for this material
+          {t('items:vendorMaterialOfferingForm.isPreferred')}
         </label>
       </div>
 
       {/* Notes */}
-      <FormField label="Notes">
+      <FormField label={t('items:vendorMaterialOfferingForm.notes')}>
         <textarea
           value={formData.notes}
           onChange={e => handleChange('notes', e.target.value)}
           disabled={isSubmitting}
-          placeholder="Optional notes about this offering"
+          placeholder={t('items:vendorMaterialOfferingForm.placeholders.notes')}
           rows={3}
           className={textareaClassName}
         />
@@ -354,10 +356,10 @@ export function VendorMaterialOfferingForm({
 
       <ModalActions>
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {t('common:buttons.cancel')}
         </Button>
         <Button type="submit" variant="primary" isLoading={isSubmitting}>
-          {isEditMode ? 'Save Changes' : 'Create Offering'}
+          {isEditMode ? t('items:vendorMaterialOfferingForm.saveChanges') : t('items:vendorMaterialOfferingForm.createOffering')}
         </Button>
       </ModalActions>
     </form>
