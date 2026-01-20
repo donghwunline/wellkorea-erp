@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/ui';
 import type { ServiceCategory } from '@/entities/catalog';
@@ -44,6 +45,7 @@ export function ServiceCategoryFormModal({
   category,
   onSuccess,
 }: Readonly<ServiceCategoryFormModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const mode = category ? 'edit' : 'create';
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function ServiceCategoryFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to create category');
+      setError(err.message || t('items:serviceCategoryFormModal.createError'));
     },
   });
 
@@ -70,7 +72,7 @@ export function ServiceCategoryFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to update category');
+      setError(err.message || t('items:serviceCategoryFormModal.updateError'));
     },
   });
 
@@ -106,7 +108,7 @@ export function ServiceCategoryFormModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'create' ? 'Add Service Category' : 'Edit Service Category'}
+      title={mode === 'create' ? t('items:serviceCategoryFormModal.addTitle') : t('items:serviceCategoryFormModal.editTitle')}
       size="md"
     >
       <ServiceCategoryForm

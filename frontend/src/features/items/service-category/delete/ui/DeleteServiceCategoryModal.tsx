@@ -6,6 +6,7 @@
  * FSD Layer: features
  */
 
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ConfirmationModal } from '@/shared/ui';
 import type { ServiceCategoryListItem } from '@/entities/catalog';
@@ -36,6 +37,7 @@ export function DeleteServiceCategoryModal({
   category,
   onSuccess,
 }: Readonly<DeleteServiceCategoryModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
@@ -55,7 +57,7 @@ export function DeleteServiceCategoryModal({
   if (!category) return null;
 
   const vendorCountWarning = category.vendorCount > 0
-    ? ` This category has ${category.vendorCount} vendor offering(s) associated with it.`
+    ? ` ${t('items:deleteServiceCategoryModal.vendorCountWarning', { count: category.vendorCount })}`
     : '';
 
   return (
@@ -63,10 +65,10 @@ export function DeleteServiceCategoryModal({
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={handleConfirm}
-      title="Deactivate Category"
-      message={`Are you sure you want to deactivate "${category.name}"?${vendorCountWarning} The category will no longer appear in active listings.`}
+      title={t('items:deleteServiceCategoryModal.title')}
+      message={t('items:deleteServiceCategoryModal.message', { name: category.name, warning: vendorCountWarning })}
       variant="danger"
-      confirmLabel="Deactivate"
+      confirmLabel={t('common:buttons.deactivate')}
     />
   );
 }
