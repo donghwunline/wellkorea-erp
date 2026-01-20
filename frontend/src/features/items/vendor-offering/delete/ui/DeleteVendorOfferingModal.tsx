@@ -6,6 +6,7 @@
  * FSD Layer: features
  */
 
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ConfirmationModal } from '@/shared/ui';
 import type { VendorOffering } from '@/entities/catalog';
@@ -36,6 +37,7 @@ export function DeleteVendorOfferingModal({
   offering,
   onSuccess,
 }: Readonly<DeleteVendorOfferingModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
@@ -62,10 +64,10 @@ export function DeleteVendorOfferingModal({
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={handleConfirm}
-      title="Delete Vendor Offering"
-      message={`Are you sure you want to delete the offering "${displayName}" from ${offering.vendorName}${priceInfo ? ` (${priceInfo})` : ''}? This action cannot be undone.`}
+      title={t('items:deleteVendorOfferingModal.title')}
+      message={t('items:deleteVendorOfferingModal.message', { name: displayName, vendor: offering.vendorName, price: priceInfo || '' })}
       variant="danger"
-      confirmLabel="Delete"
+      confirmLabel={t('common:buttons.delete')}
     />
   );
 }
