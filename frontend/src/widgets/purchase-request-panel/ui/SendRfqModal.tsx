@@ -5,11 +5,15 @@
  * Supports both SERVICE (outsourcing) and MATERIAL purchase request types.
  * Displays vendor offerings with pricing and lead time information.
  *
+ * Two-phase workflow:
+ * 1. Vendor Selection: Select which vendors to send RFQ to
+ * 2. Email Editing: Configure email recipients (TO/CC) per vendor
+ *
  * FSD Layer: widgets
  * Can import from: features, entities, shared
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -19,6 +23,8 @@ import {
   ModalActions,
   Button,
   Icon,
+  FormField,
+  EmailTagInput,
 } from '@/shared/ui';
 import { catalogQueries, vendorOfferingRules, type VendorOffering } from '@/entities/catalog';
 import {
@@ -80,6 +86,7 @@ interface NormalizedOffering {
   readonly id: number;
   readonly vendorId: number;
   readonly vendorName: string;
+  readonly vendorEmail: string | null;
   readonly displayName: string;
   readonly unitPrice: number | null;
   readonly currency: string;
@@ -90,6 +97,17 @@ interface NormalizedOffering {
 }
 
 /**
+ * Internal email info state per vendor.
+ */
+interface VendorEmailState {
+  to: string;
+  ccEmails: string[];
+}
+
+/** Modal step type */
+type ModalStep = 'vendor-selection' | 'email-editing';
+
+/**
  * Normalize a VendorOffering (SERVICE).
  */
 function normalizeServiceOffering(offering: VendorOffering): NormalizedOffering {
@@ -97,6 +115,7 @@ function normalizeServiceOffering(offering: VendorOffering): NormalizedOffering 
     id: offering.id,
     vendorId: offering.vendorId,
     vendorName: offering.vendorName,
+    vendorEmail: offering.vendorEmail,
     displayName: vendorOfferingRules.getDisplayName(offering),
     unitPrice: offering.unitPrice,
     currency: offering.currency,
@@ -115,6 +134,7 @@ function normalizeMaterialOffering(offering: VendorMaterialOffering): Normalized
     id: offering.id,
     vendorId: offering.vendorId,
     vendorName: offering.vendorName,
+    vendorEmail: offering.vendorEmail,
     displayName: vendorMaterialOfferingRules.getDisplayName(offering),
     unitPrice: offering.unitPrice,
     currency: offering.currency,
@@ -201,17 +221,90 @@ function VendorOfferingCard({
   );
 }
 
+/**
+ * Email editing form for a single vendor.
+ */
+function VendorEmailForm({
+  vendorName,
+  emailState,
+  onChange,
+}: {
+  readonly vendorName: string;
+  readonly emailState: VendorEmailState;
+  readonly onChange: (newState: VendorEmailState) => void;
+}) {
+  const [showCc, setShowCc] = useState(emailState.ccEmails.length > 0);
+
+  return (
+    <div className="rounded-lg border border-steel-700 bg-steel-800/50 p-4">
+      <div className="mb-3 font-medium text-white">{vendorName}</div>
+      <div className="space-y-3">
+        <FormField
+          label="To"
+          type="email"
+          value={emailState.to}
+          onChange={(val) => onChange({ ...emailState, to: val })}
+          placeholder="vendor@example.com"
+          required
+        />
+        
+        {!showCc ? (
+           <button
+             type="button"
+             onClick={() => setShowCc(true)}
+             className="flex items-center gap-1 text-xs text-copper-400 hover:text-copper-300"
+           >
+             <Icon name="plus" className="h-3 w-3" />
+             Add CC
+           </button>
+        ) : (
+          <EmailTagInput
+            label="CC"
+            emails={emailState.ccEmails}
+            onChange={(cc) => onChange({ ...emailState, ccEmails: cc })}
+            placeholder="cc@example.com"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function SendRfqModal(props: SendRfqModalProps) {
   const { purchaseRequestId, isOpen, onClose, onSuccess, type } = props;
 
+  // State
+  const [step, setStep] = useState<ModalStep>('vendor-selection');
+  
   // Selected vendor IDs - keyed by purchaseRequestId to auto-reset
   const [selectionState, setSelectionState] = useState<{
     requestId: number;
     vendorIds: number[];
   }>({ requestId: purchaseRequestId, vendorIds: [] });
+
+  // Email state: vendorId -> { to, ccEmails }
+  const [emailStates, setEmailStates] = useState<Record<number, VendorEmailState>>({});
+  
   const [error, setError] = useState<string | null>(null);
 
-  // Derive selected vendor IDs, resetting when purchaseRequestId changes
+  // Reset state when modal opens or request changes
+  useEffect(() => {
+    if (isOpen) {
+      setStep('vendor-selection');
+      setError(null);
+      // Note: we don't reset selection here to preserve it if user closes/reopens
+      // But we do ensuring requestId matches in selectionState
+      setSelectionState((prev) => {
+         if (prev.requestId !== purchaseRequestId) {
+             return { requestId: purchaseRequestId, vendorIds: [] };
+         }
+         return prev;
+      });
+      setEmailStates({});
+    }
+  }, [isOpen, purchaseRequestId]);
+
+  // Derive selected vendor IDs
   const selectedVendorIds = useMemo(
     () => (selectionState.requestId === purchaseRequestId ? selectionState.vendorIds : []),
     [selectionState.requestId, selectionState.vendorIds, purchaseRequestId]
@@ -300,18 +393,58 @@ export function SendRfqModal(props: SendRfqModalProps) {
     updateSelectedVendorIds(() => []);
   }, [updateSelectedVendorIds]);
 
+  // Handle "Next" - Prepare email states
+  const handleNext = useCallback(() => {
+     if (selectedVendorIds.length === 0) {
+       setError('최소 1개 업체를 선택해주세요');
+       return;
+     }
+
+     // Initialize email states for selected vendors
+     const newEmailStates: Record<number, VendorEmailState> = {};
+     
+     selectedVendorIds.forEach(vendorId => {
+         // Find vendor info (use first offering found for this vendor)
+         const offering = offerings?.find(o => o.vendorId === vendorId);
+         const vendorEmail = offering?.vendorEmail || '';
+         
+         // Preserve existing state if user went back and forth
+         if (emailStates[vendorId]) {
+             newEmailStates[vendorId] = emailStates[vendorId];
+         } else {
+             newEmailStates[vendorId] = {
+                 to: vendorEmail,
+                 ccEmails: [],
+             };
+         }
+     });
+
+     setEmailStates(newEmailStates);
+     setStep('email-editing');
+     setError(null);
+  }, [selectedVendorIds, offerings, emailStates]);
+
+  // Handle "Back"
+  const handleBack = useCallback(() => {
+    setStep('vendor-selection');
+    setError(null);
+  }, []);
+
   // Submit RFQ
   const handleSubmit = useCallback(() => {
-    if (selectedVendorIds.length === 0) {
-      setError('최소 1개 업체를 선택해주세요');
-      return;
+    // Validate emails
+    const invalidEmails = Object.entries(emailStates).some(([_, state]) => !state.to.trim());
+    if (invalidEmails) {
+        setError('모든 업체의 수신 이메일을 입력해주세요.');
+        return;
     }
 
     sendRfqMutation.mutate({
       purchaseRequestId,
       vendorIds: selectedVendorIds,
+      vendorEmails: emailStates,
     });
-  }, [purchaseRequestId, selectedVendorIds, sendRfqMutation]);
+  }, [purchaseRequestId, selectedVendorIds, emailStates, sendRfqMutation]);
 
   // Get unique vendor count
   const uniqueVendorIds = offerings ? [...new Set(offerings.map((o) => o.vendorId))] : [];
@@ -330,8 +463,9 @@ export function SendRfqModal(props: SendRfqModalProps) {
       </>
     );
 
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title="RFQ 발송" size="md">
+  // Render Vendor Selection Step
+  const renderSelectionStep = () => (
+    <>
       {/* Error Alert */}
       {error && (
         <Alert variant="error" onClose={() => setError(null)}>
@@ -400,22 +534,77 @@ export function SendRfqModal(props: SendRfqModalProps) {
         </div>
       )}
 
-      {/* Modal Actions */}
       <ModalActions>
         <Button variant="ghost" onClick={onClose}>
           취소
         </Button>
         <Button
           variant="primary"
-          onClick={handleSubmit}
-          disabled={selectedVendorIds.length === 0 || sendRfqMutation.isPending}
+          onClick={handleNext}
+          disabled={selectedVendorIds.length === 0}
         >
-          {sendRfqMutation.isPending && (
-            <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
-          )}
-          RFQ 발송 ({selectedVendorIds.length})
+          다음: 이메일 작성
         </Button>
       </ModalActions>
+    </>
+  );
+
+  // Render Email Editing Step
+  const renderEmailStep = () => (
+      <>
+        <div className="mb-4 text-sm text-steel-400">
+             각 업체의 담당자 이메일을 확인해주세요. PDF 견적요청서가 첨부되어 발송됩니다.
+        </div>
+
+        {error && (
+            <Alert variant="error" className="mb-4" onClose={() => setError(null)}>
+            {error}
+            </Alert>
+        )}
+
+        <div className="max-h-96 space-y-4 overflow-y-auto pr-1">
+            {selectedVendorIds.map(vendorId => {
+                const offering = offerings?.find(o => o.vendorId === vendorId);
+                const vendorName = offering?.vendorName || `Vendor ${vendorId}`;
+                const emailState = emailStates[vendorId] || { to: '', ccEmails: [] };
+
+                return (
+                    <VendorEmailForm 
+                        key={vendorId}
+                        vendorName={vendorName}
+                        emailState={emailState}
+                        onChange={(newState) => setEmailStates(prev => ({ ...prev, [vendorId]: newState }))}
+                    />
+                );
+            })}
+        </div>
+
+        <ModalActions>
+            <Button variant="secondary" onClick={handleBack} disabled={sendRfqMutation.isPending}>
+                이전
+            </Button>
+            <Button
+                variant="primary"
+                onClick={handleSubmit}
+                disabled={sendRfqMutation.isPending}
+            >
+                {sendRfqMutation.isPending && (
+                    <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                RFQ 발송 ({selectedVendorIds.length})
+            </Button>
+        </ModalActions>
+      </>
+  );
+
+  return (
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        title={step === 'vendor-selection' ? "RFQ 발송 - 업체 선택" : "RFQ 발송 - 이메일 확인"} 
+        size="md"
+    >
+      {step === 'vendor-selection' ? renderSelectionStep() : renderEmailStep()}
     </Modal>
   );
 }

@@ -19,6 +19,16 @@ public record PurchaseRequestCommandResult(
         return new PurchaseRequestCommandResult(id, "RFQ sent to " + vendorCount + " vendors");
     }
 
+    public static PurchaseRequestCommandResult rfqSent(Long id, int vendorCount, int emailsSent, int emailsFailed) {
+        String message;
+        if (emailsFailed == 0) {
+            message = "RFQ sent to " + vendorCount + " vendors, " + emailsSent + " emails sent successfully";
+        } else {
+            message = "RFQ sent to " + vendorCount + " vendors, " + emailsSent + " emails sent, " + emailsFailed + " failed";
+        }
+        return new PurchaseRequestCommandResult(id, message);
+    }
+
     public static PurchaseRequestCommandResult canceled(Long id) {
         return new PurchaseRequestCommandResult(id, "Purchase request canceled successfully");
     }

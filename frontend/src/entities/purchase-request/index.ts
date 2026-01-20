@@ -65,7 +65,7 @@ export { updatePurchaseRequest } from './api/update-purchase-request';
 export type { UpdatePurchaseRequestInput } from './api/update-purchase-request';
 
 export { sendRfq } from './api/send-rfq';
-export type { SendRfqInput } from './api/send-rfq';
+export type { SendRfqInput, VendorEmailInfo } from './api/send-rfq';
 
 export {
   recordRfqReply,
