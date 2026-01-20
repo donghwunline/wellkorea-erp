@@ -121,6 +121,9 @@ export type {
 export { ConfirmationModal } from './modals/ConfirmationModal';
 export type { ConfirmationModalProps } from './modals/ConfirmationModal';
 
+export { EmailSendModal } from './modals/EmailSendModal';
+export type { EmailSendModalProps } from './modals/EmailSendModal';
+
 export { Modal } from './modals/Modal';
 export type { ModalProps } from './modals/Modal';
 
