@@ -8,14 +8,12 @@ import com.wellkorea.backend.quotation.infrastructure.mapper.QuotationMapper;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.wellkorea.backend.shared.mail.MailAttachment;
+import com.wellkorea.backend.shared.mail.MailMessage;
+import com.wellkorea.backend.shared.mail.MailSendException;
+import com.wellkorea.backend.shared.mail.MailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -30,6 +28,7 @@ import java.util.Set;
  * Service for sending quotation-related emails.
  * Handles revision notifications and other quotation communications.
  * Self-contained: handles its own data access and validation.
+ * Uses MailSender abstraction to support multiple mail providers (SMTP, Microsoft Graph).
  */
 @Service
 public class QuotationEmailService {
@@ -44,14 +43,14 @@ public class QuotationEmailService {
     );
 
     private final QuotationMapper quotationMapper;
-    private final JavaMailSender mailSender;
+    private final MailSender mailSender;
     private final CompanyMapper companyMapper;
     private final CompanyProperties companyProperties;
     private final TemplateEngine templateEngine;
     private final QuotationPdfService quotationPdfService;
 
     public QuotationEmailService(QuotationMapper quotationMapper,
-                                 JavaMailSender mailSender,
+                                 MailSender mailSender,
                                  CompanyMapper companyMapper,
                                  CompanyProperties companyProperties,
                                  TemplateEngine templateEngine,
@@ -121,22 +120,22 @@ public class QuotationEmailService {
             byte[] pdfBytes = quotationPdfService.generatePdf(quotationId);
             String pdfFilename = formatQuotationNumber(quotation) + ".pdf";
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(companyProperties.getEmail());
-            helper.setTo(customer.email());
-            helper.setSubject(buildSubject(quotation));
-            helper.setText(buildEmailBody(quotation, customer), true);
-            helper.addAttachment(pdfFilename, new ByteArrayResource(pdfBytes), "application/pdf");
+            MailMessage message = MailMessage.builder()
+                    .from(companyProperties.getEmail())
+                    .to(customer.email())
+                    .subject(buildSubject(quotation))
+                    .htmlBody(buildEmailBody(quotation, customer))
+                    .attachment(MailAttachment.pdf(pdfFilename, pdfBytes))
+                    .build();
 
             mailSender.send(message);
-            log.info("Revision notification with PDF sent for quotation {} v{} to {}",
+            log.info("Revision notification with PDF sent via {} for quotation {} v{} to {}",
+                    mailSender.getType(),
                     quotation.jobCode(),
                     quotation.version(),
                     customer.email());
 
-        } catch (MessagingException e) {
+        } catch (MailSendException e) {
             log.error("Failed to send revision notification email for quotation {}", quotation.id(), e);
             throw new BusinessException("Failed to send revision notification email: " + e.getMessage());
         }
@@ -149,17 +148,25 @@ public class QuotationEmailService {
         CompanyDetailView customer = findCustomerOrThrow(quotation);
         validateCustomerEmail(customer);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(companyProperties.getEmail());
-        message.setTo(customer.email());
-        message.setSubject(buildSubject(quotation));
-        message.setText(buildPlainTextBody(quotation, customer));
+        try {
+            MailMessage message = MailMessage.builder()
+                    .from(companyProperties.getEmail())
+                    .to(customer.email())
+                    .subject(buildSubject(quotation))
+                    .plainTextBody(buildPlainTextBody(quotation, customer))
+                    .build();
 
-        mailSender.send(message);
-        log.info("Simple notification sent for quotation {} v{} to {}",
-                quotation.jobCode(),
-                quotation.version(),
-                customer.email());
+            mailSender.send(message);
+            log.info("Simple notification sent via {} for quotation {} v{} to {}",
+                    mailSender.getType(),
+                    quotation.jobCode(),
+                    quotation.version(),
+                    customer.email());
+
+        } catch (MailSendException e) {
+            log.error("Failed to send simple notification email for quotation {}", quotation.id(), e);
+            throw new BusinessException("Failed to send notification email: " + e.getMessage());
+        }
     }
 
     private CompanyDetailView findCustomerOrThrow(QuotationDetailView quotation) {

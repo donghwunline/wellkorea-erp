@@ -9,18 +9,15 @@ import com.wellkorea.backend.quotation.infrastructure.mapper.QuotationMapper;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import jakarta.mail.internet.MimeMessage;
+import com.wellkorea.backend.shared.mail.MailMessage;
+import com.wellkorea.backend.shared.mail.MockMailSender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -46,9 +43,6 @@ class QuotationEmailServiceTest {
     private QuotationMapper quotationMapper;
 
     @Mock
-    private JavaMailSender mailSender;
-
-    @Mock
     private CompanyMapper companyMapper;
 
     @Mock
@@ -60,11 +54,7 @@ class QuotationEmailServiceTest {
     @Mock
     private QuotationPdfService quotationPdfService;
 
-    @Mock
-    private MimeMessage mimeMessage;
-
-    @Captor
-    private ArgumentCaptor<SimpleMailMessage> simpleMailCaptor;
+    private MockMailSender mockMailSender;
 
     private QuotationEmailService quotationEmailService;
 
@@ -77,9 +67,11 @@ class QuotationEmailServiceTest {
 
     @BeforeEach
     void setUp() {
+        mockMailSender = new MockMailSender();
+
         quotationEmailService = new QuotationEmailService(
                 quotationMapper,
-                mailSender,
+                mockMailSender,
                 companyMapper,
                 companyProperties,
                 templateEngine,
@@ -207,13 +199,18 @@ class QuotationEmailServiceTest {
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
             given(quotationPdfService.generatePdf(QUOTATION_ID)).willReturn(new byte[]{1, 2, 3});
-            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
             quotationEmailService.sendRevisionNotification(QUOTATION_ID);
 
-            verify(mailSender).send(mimeMessage);
+            assertThat(mockMailSender.hasSentMessages()).isTrue();
+            MailMessage sentMessage = mockMailSender.getLastMessage();
+            assertThat(sentMessage.to()).isEqualTo("customer@test.com");
+            assertThat(sentMessage.from()).isEqualTo("info@wellkorea.com");
+            assertThat(sentMessage.html()).isTrue();
+            assertThat(sentMessage.attachments()).hasSize(1);
+            assertThat(sentMessage.attachments().get(0).filename()).endsWith(".pdf");
         }
 
         @Test
@@ -223,13 +220,12 @@ class QuotationEmailServiceTest {
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(sentQuotation));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
             given(quotationPdfService.generatePdf(QUOTATION_ID)).willReturn(new byte[]{1, 2, 3});
-            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
             quotationEmailService.sendRevisionNotification(QUOTATION_ID);
 
-            verify(mailSender).send(mimeMessage);
+            assertThat(mockMailSender.hasSentMessages()).isTrue();
         }
 
         @Test
@@ -239,13 +235,12 @@ class QuotationEmailServiceTest {
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(acceptedQuotation));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
             given(quotationPdfService.generatePdf(QUOTATION_ID)).willReturn(new byte[]{1, 2, 3});
-            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
             quotationEmailService.sendRevisionNotification(QUOTATION_ID);
 
-            verify(mailSender).send(mimeMessage);
+            assertThat(mockMailSender.hasSentMessages()).isTrue();
         }
 
         @Test
@@ -289,7 +284,6 @@ class QuotationEmailServiceTest {
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
             given(quotationPdfService.generatePdf(QUOTATION_ID)).willReturn(new byte[]{1, 2, 3});
-            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willReturn("<html>Email Content</html>");
 
@@ -304,7 +298,6 @@ class QuotationEmailServiceTest {
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
             given(quotationPdfService.generatePdf(QUOTATION_ID)).willReturn(new byte[]{1, 2, 3});
-            given(mailSender.createMimeMessage()).willReturn(mimeMessage);
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
                     .willAnswer(invocation -> {
                         Context context = invocation.getArgument(1);
@@ -318,6 +311,21 @@ class QuotationEmailServiceTest {
             quotationEmailService.sendRevisionNotification(QUOTATION_ID);
 
             verify(templateEngine).process(eq("quotation-email-ko"), any(Context.class));
+        }
+
+        @Test
+        @DisplayName("should throw BusinessException when mail send fails")
+        void sendRevisionNotificationById_MailSendFails_ThrowsBusinessException() {
+            mockMailSender.failOnNextSend("Simulated failure");
+            given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
+            given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
+            given(quotationPdfService.generatePdf(QUOTATION_ID)).willReturn(new byte[]{1, 2, 3});
+            given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
+                    .willReturn("<html>Email Content</html>");
+
+            assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("Failed to send revision notification email");
         }
     }
 
@@ -366,11 +374,12 @@ class QuotationEmailServiceTest {
 
             quotationEmailService.sendSimpleNotification(QUOTATION_ID);
 
-            verify(mailSender).send(simpleMailCaptor.capture());
-            SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
-
-            assertThat(sentMessage.getFrom()).isEqualTo("info@wellkorea.com");
-            assertThat(sentMessage.getTo()).contains("customer@test.com");
+            assertThat(mockMailSender.hasSentMessages()).isTrue();
+            MailMessage sentMessage = mockMailSender.getLastMessage();
+            assertThat(sentMessage.from()).isEqualTo("info@wellkorea.com");
+            assertThat(sentMessage.to()).isEqualTo("customer@test.com");
+            assertThat(sentMessage.html()).isFalse();
+            assertThat(sentMessage.attachments()).isEmpty();
         }
 
         @Test
@@ -381,12 +390,10 @@ class QuotationEmailServiceTest {
 
             quotationEmailService.sendSimpleNotification(QUOTATION_ID);
 
-            verify(mailSender).send(simpleMailCaptor.capture());
-            SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
-
-            assertThat(sentMessage.getSubject()).contains("웰코리아(주)");
-            assertThat(sentMessage.getSubject()).contains("견적서 안내");
-            assertThat(sentMessage.getSubject()).contains("WK2K25-0001-1219");
+            MailMessage sentMessage = mockMailSender.getLastMessage();
+            assertThat(sentMessage.subject()).contains("웰코리아(주)");
+            assertThat(sentMessage.subject()).contains("견적서 안내");
+            assertThat(sentMessage.subject()).contains("WK2K25-0001-1219");
         }
 
         @Test
@@ -397,9 +404,8 @@ class QuotationEmailServiceTest {
 
             quotationEmailService.sendSimpleNotification(QUOTATION_ID);
 
-            verify(mailSender).send(simpleMailCaptor.capture());
-            SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
-            String body = sentMessage.getText();
+            MailMessage sentMessage = mockMailSender.getLastMessage();
+            String body = sentMessage.body();
 
             assertThat(body).contains("Test Customer");
             assertThat(body).contains("김철수 님");
@@ -416,9 +422,8 @@ class QuotationEmailServiceTest {
 
             quotationEmailService.sendSimpleNotification(QUOTATION_ID);
 
-            verify(mailSender).send(simpleMailCaptor.capture());
-            SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
-            String body = sentMessage.getText();
+            MailMessage sentMessage = mockMailSender.getLastMessage();
+            String body = sentMessage.body();
 
             assertThat(body).contains("042-933-8115");
             assertThat(body).contains("042-935-8115");
@@ -434,9 +439,8 @@ class QuotationEmailServiceTest {
 
             quotationEmailService.sendSimpleNotification(QUOTATION_ID);
 
-            verify(mailSender).send(simpleMailCaptor.capture());
-            SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
-            String body = sentMessage.getText();
+            MailMessage sentMessage = mockMailSender.getLastMessage();
+            String body = sentMessage.body();
 
             assertThat(body).contains("V2");
             assertThat(body).contains("수정 견적");
@@ -451,11 +455,22 @@ class QuotationEmailServiceTest {
 
             quotationEmailService.sendSimpleNotification(QUOTATION_ID);
 
-            verify(mailSender).send(simpleMailCaptor.capture());
-            SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
-            String body = sentMessage.getText();
+            MailMessage sentMessage = mockMailSender.getLastMessage();
+            String body = sentMessage.body();
 
             assertThat(body).contains("담당자 님");
+        }
+
+        @Test
+        @DisplayName("should throw BusinessException when mail send fails")
+        void sendSimpleNotification_MailSendFails_ThrowsBusinessException() {
+            mockMailSender.failOnNextSend("Simulated failure");
+            given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
+            given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
+
+            assertThatThrownBy(() -> quotationEmailService.sendSimpleNotification(QUOTATION_ID))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("Failed to send notification email");
         }
     }
 
@@ -471,11 +486,9 @@ class QuotationEmailServiceTest {
 
             quotationEmailService.sendSimpleNotification(QUOTATION_ID);
 
-            verify(mailSender).send(simpleMailCaptor.capture());
-            SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
-
+            MailMessage sentMessage = mockMailSender.getLastMessage();
             // Format: "[웰코리아(주)] 견적서 안내 - WK2K25-0001-1219 (V1)"
-            assertThat(sentMessage.getSubject()).contains("(V1)");
+            assertThat(sentMessage.subject()).contains("(V1)");
         }
 
         @Test
@@ -487,11 +500,9 @@ class QuotationEmailServiceTest {
 
             quotationEmailService.sendSimpleNotification(QUOTATION_ID);
 
-            verify(mailSender).send(simpleMailCaptor.capture());
-            SimpleMailMessage sentMessage = simpleMailCaptor.getValue();
-
+            MailMessage sentMessage = mockMailSender.getLastMessage();
             // Format: "[웰코리아(주)] 견적서 안내 - WK2K25-0001-1219 (V12)"
-            assertThat(sentMessage.getSubject()).contains("(V12)");
+            assertThat(sentMessage.subject()).contains("(V12)");
         }
     }
 
@@ -630,6 +641,29 @@ class QuotationEmailServiceTest {
             boolean result = quotationEmailService.needsStatusUpdateBeforeSend(QUOTATION_ID);
 
             assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("MockMailSender integration")
+    class MockMailSenderTests {
+
+        @Test
+        @DisplayName("should report correct mail sender type")
+        void mailSender_ReturnsCorrectType() {
+            assertThat(mockMailSender.getType()).isEqualTo("Mock");
+        }
+
+        @Test
+        @DisplayName("should track sent message count")
+        void mailSender_TracksSentCount() {
+            given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(testQuotationView));
+            given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
+
+            quotationEmailService.sendSimpleNotification(QUOTATION_ID);
+            quotationEmailService.sendSimpleNotification(QUOTATION_ID);
+
+            assertThat(mockMailSender.getSentCount()).isEqualTo(2);
         }
     }
 }
