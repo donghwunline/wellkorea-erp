@@ -13,6 +13,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -42,6 +43,8 @@ interface EditingChain {
 }
 
 export function ApprovalChainConfigPage() {
+  const { t } = useTranslation('approval');
+
   // Server state via TanStack Query
   const { data: templates = [], isLoading, error: fetchError } = useQuery(chainTemplateQueries.list());
 
@@ -53,7 +56,7 @@ export function ApprovalChainConfigPage() {
     reset: resetSaveError,
   } = useUpdateChainLevels({
     onSuccess: () => {
-      showSuccess('Approval chain updated successfully');
+      showSuccess(t('chain.edit.success'));
       setEditingChain(null);
     },
   });
@@ -169,8 +172,8 @@ export function ApprovalChainConfigPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="결재 설정"
-          description="Configure approval workflows for different entity types"
+          title={t('chain.title')}
+          description={t('chain.description')}
         />
       </PageHeader>
 
@@ -191,7 +194,7 @@ export function ApprovalChainConfigPage() {
       {/* Loading State */}
       {isLoading && (
         <Card>
-          <LoadingState message="Loading approval chain templates..." />
+          <LoadingState message={t('chain.list.loading')} />
         </Card>
       )}
 
@@ -208,18 +211,18 @@ export function ApprovalChainConfigPage() {
           <Table>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>Entity Type</Table.HeaderCell>
-                <Table.HeaderCell>Name</Table.HeaderCell>
-                <Table.HeaderCell>Approval Levels</Table.HeaderCell>
-                <Table.HeaderCell>Approvers</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
+                <Table.HeaderCell>{t('chain.table.entityType')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('chain.table.name')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('chain.table.approvalLevels')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('chain.table.approvers')}</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">{t('table.headers.actions')}</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
               {templates.length === 0 ? (
                 <Table.Row>
                   <Table.Cell colSpan={5} className="text-center text-steel-400">
-                    No approval chain templates configured.
+                    {t('chain.list.empty')}
                   </Table.Cell>
                 </Table.Row>
               ) : (
@@ -271,30 +274,30 @@ export function ApprovalChainConfigPage() {
       <Modal
         isOpen={!!editingChain}
         onClose={() => setEditingChain(null)}
-        title={`Edit Approval Chain: ${editingChain?.template.name}`}
+        title={t('chain.edit.modalTitle', { name: editingChain?.template.name ?? '' })}
         size="lg"
       >
         {editingChain && (
           <div className="space-y-4">
             {/* Chain Info */}
             <div className="rounded-lg bg-steel-800/50 p-3">
-              <span className="text-sm text-steel-400">Entity Type: </span>
+              <span className="text-sm text-steel-400">{t('chain.table.entityType')}: </span>
               <Badge variant="info">{editingChain.template.entityType}</Badge>
             </div>
 
             {/* Levels */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <h4 className="text-sm font-medium text-white">Approval Levels</h4>
+                <h4 className="text-sm font-medium text-white">{t('chain.table.approvalLevels')}</h4>
                 <Button variant="secondary" size="sm" onClick={handleAddLevel} disabled={isSaving}>
                   <Icon name="plus" className="mr-1 h-4 w-4" />
-                  Add Level
+                  {t('chain.steps.add')}
                 </Button>
               </div>
 
               {editingChain.levels.length === 0 ? (
                 <p className="text-sm text-steel-400">
-                  No levels configured. Add at least one approval level.
+                  {t('chain.steps.noLevels')}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -310,7 +313,7 @@ export function ApprovalChainConfigPage() {
                         <UserCombobox
                           value={level.approverUserId || null}
                           onChange={value => handleApproverChange(index, value)}
-                          placeholder="Select approver..."
+                          placeholder={t('chain.steps.selectApprover')}
                           disabled={isSaving}
                         />
                       </div>
@@ -330,23 +333,22 @@ export function ApprovalChainConfigPage() {
             </div>
 
             <p className="text-xs text-steel-500">
-              Approvals will be processed in order from Level 1 to the highest level. Each level
-              must approve before moving to the next.
+              {t('chain.steps.processOrder')}
             </p>
 
             {/* Actions */}
             <div className="flex justify-end gap-3 border-t border-steel-700/50 pt-4">
               <Button variant="secondary" onClick={() => setEditingChain(null)} disabled={isSaving}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button onClick={handleSave} disabled={isSaving || editingChain.levels.length === 0}>
                 {isSaving ? (
                   <>
                     <Spinner className="mr-2 h-4 w-4" />
-                    Saving...
+                    {t('common.saving')}
                   </>
                 ) : (
-                  'Save Changes'
+                  t('common.save')
                 )}
               </Button>
             </div>
