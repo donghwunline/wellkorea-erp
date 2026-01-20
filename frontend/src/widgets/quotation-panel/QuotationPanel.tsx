@@ -24,6 +24,7 @@ import {
   quotationRules,
   QuotationStatusBadge,
 } from '@/entities/quotation';
+import { companyQueries } from '@/entities/company';
 
 // Feature imports
 import { useSubmitQuotation } from '@/features/quotation/submit';
@@ -110,6 +111,12 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   } = useQuery({
     ...quotationQueries.detail(quotationFromList?.id ?? 0),
     enabled: quotationFromList !== null,
+  });
+
+  // Fetch customer email when email modal is open
+  const { data: customer } = useQuery({
+    ...companyQueries.detail(quotation?.customerId ?? 0),
+    enabled: showEmailModal && quotation !== null,
   });
 
   // Feature mutation hooks
@@ -227,10 +234,17 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   }, [quotation, pdfMutation]);
 
   // Handle send email
-  const handleSendEmail = useCallback(() => {
-    if (!quotation) return;
-    notifyMutation.mutate(quotation.id);
-  }, [quotation, notifyMutation]);
+  const handleSendEmail = useCallback(
+    (to: string, ccEmails: string[]) => {
+      if (!quotation) return;
+      notifyMutation.mutate({
+        quotationId: quotation.id,
+        to,
+        ccEmails: ccEmails.length > 0 ? ccEmails : undefined,
+      });
+    },
+    [quotation, notifyMutation]
+  );
 
   // Handle create new quotation - open modal
   const handleCreate = useCallback(() => {
@@ -481,6 +495,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
         onSend={handleSendEmail}
+        customerEmail={customer?.email ?? undefined}
         quotationInfo={
           quotation ? { jobCode: quotation.jobCode, version: quotation.version } : undefined
         }

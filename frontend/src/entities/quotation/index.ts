@@ -63,7 +63,10 @@ export type { CommandResult } from './api/quotation.mapper';
 // =============================================================================
 
 export { downloadQuotationPdf } from './api/quotation-pdf';
-export { sendQuotationNotification } from './api/send-quotation-notification';
+export {
+  sendQuotationNotification,
+  type SendNotificationInput,
+} from './api/send-quotation-notification';
 
 // =============================================================================
 // UI COMPONENTS

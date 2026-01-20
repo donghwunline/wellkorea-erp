@@ -39,6 +39,7 @@ function createMockQuotationResponse(
   return {
     id: 1,
     projectId: 1,
+    customerId: 1,
     projectName: 'Test Project',
     jobCode: 'WK22025-000001-20250101',
     version: 1,

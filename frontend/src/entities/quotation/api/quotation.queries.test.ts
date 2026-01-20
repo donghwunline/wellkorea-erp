@@ -37,6 +37,7 @@ function createMockQuotationDetailsResponse(
   return {
     id: 1,
     projectId: 1,
+    customerId: 1,
     projectName: '',
     jobCode: '',
     version: 1,

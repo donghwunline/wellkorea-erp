@@ -21,6 +21,7 @@ import { QuotationStatus, QuotationStatusConfig } from './quotation-status';
 export interface Quotation {
   readonly id: number;
   readonly projectId: number;
+  readonly customerId: number;
   readonly projectName: string;
   readonly jobCode: string;
   readonly version: number;

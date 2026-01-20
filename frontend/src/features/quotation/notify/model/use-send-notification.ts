@@ -10,7 +10,11 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { sendQuotationNotification, quotationQueries } from '@/entities/quotation';
+import {
+  sendQuotationNotification,
+  quotationQueries,
+  type SendNotificationInput,
+} from '@/entities/quotation';
 
 export interface UseSendNotificationOptions {
   /**
@@ -40,7 +44,10 @@ export interface UseSendNotificationOptions {
  *   if (!quotationRules.canSend(quotation)) return null;
  *
  *   return (
- *     <Button onClick={() => mutate(quotation.id)} loading={isPending}>
+ *     <Button
+ *       onClick={() => mutate({ quotationId: quotation.id })}
+ *       loading={isPending}
+ *     >
  *       Send Email
  *     </Button>
  *   );
@@ -51,7 +58,7 @@ export function useSendNotification(options: UseSendNotificationOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (quotationId: number) => sendQuotationNotification(quotationId),
+    mutationFn: (input: SendNotificationInput) => sendQuotationNotification(input),
 
     onSuccess: () => {
       // Invalidate detail (status may change to SENT)
