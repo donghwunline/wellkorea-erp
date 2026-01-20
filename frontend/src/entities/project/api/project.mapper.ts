@@ -38,6 +38,7 @@ export interface ProjectDetailsResponse {
   createdByName: string | null;
   createdAt: string;
   updatedAt: string;
+  note: string | null;
 }
 
 /**
@@ -93,6 +94,7 @@ export const projectMapper = {
       createdByName: response.createdByName,
       createdAt: response.createdAt,
       updatedAt: response.updatedAt,
+      note: response.note,
     };
   },
 
