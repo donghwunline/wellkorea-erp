@@ -144,7 +144,7 @@ export const approvalQueries = {
     queryOptions({
       queryKey: approvalQueries.pendingCountKey(),
       queryFn: getPendingApprovalCount,
-      staleTime: 1000 * 60, // 1 minute
-      refetchInterval: 1000 * 60 * 2, // Refetch every 2 minutes
+      staleTime: 1000 * 15, // 15 seconds
+      refetchInterval: 1000 * 30, // Refetch every 30 seconds
     }),
 };
