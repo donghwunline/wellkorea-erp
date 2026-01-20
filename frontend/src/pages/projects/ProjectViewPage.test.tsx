@@ -361,7 +361,8 @@ describe('ProjectViewPage', () => {
       });
     });
 
-    it('should render overview tab with navigation grid', async () => {
+    // TODO: Re-enable when ProjectRelatedNavigationGrid is uncommented in ProjectViewPage.tsx
+    it.skip('should render overview tab with navigation grid', async () => {
       mockProjectData = createMockProject();
 
       renderProjectViewPage();
@@ -372,7 +373,8 @@ describe('ProjectViewPage', () => {
       });
     });
 
-    it('should render ProjectRelatedNavigationGrid', async () => {
+    // TODO: Re-enable when ProjectRelatedNavigationGrid is uncommented in ProjectViewPage.tsx
+    it.skip('should render ProjectRelatedNavigationGrid', async () => {
       mockProjectData = createMockProject();
 
       renderProjectViewPage();
@@ -382,7 +384,8 @@ describe('ProjectViewPage', () => {
       });
     });
 
-    it('should pass projectId to navigation grid', async () => {
+    // TODO: Re-enable when ProjectRelatedNavigationGrid is uncommented in ProjectViewPage.tsx
+    it.skip('should pass projectId to navigation grid', async () => {
       mockProjectData = createMockProject({ id: 42 });
 
       renderProjectViewPage();
