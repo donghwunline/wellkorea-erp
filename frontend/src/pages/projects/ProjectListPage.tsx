@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -31,6 +32,8 @@ import {
 import { usePaginatedSearch } from '@/shared/lib/pagination';
 
 export function ProjectListPage() {
+  const { t } = useTranslation('projects');
+  const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
 
   // Page UI State (Tier 2) - pagination and search
@@ -78,8 +81,8 @@ export function ProjectListPage() {
   const renderActions = (project: ProjectListItem) => (
     <IconButton
       onClick={() => handleView(project)}
-      aria-label="View project"
-      title="View project"
+      aria-label={t('actions.view')}
+      title={t('actions.view')}
     >
       <Icon name="eye" className="h-4 w-4" />
     </IconButton>
@@ -89,11 +92,11 @@ export function ProjectListPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="프로젝트" description="Manage customer projects and job codes" />
+        <PageHeader.Title title={t('title')} description={t('description')} />
         <PageHeader.Actions>
           <Button onClick={handleCreate}>
             <Icon name="plus" className="h-5 w-5" />
-            New Project
+            {t('list.new')}
           </Button>
         </PageHeader.Actions>
       </PageHeader>
@@ -104,19 +107,19 @@ export function ProjectListPage() {
           value={searchInput}
           onValueChange={handleSearchChange}
           onClear={handleClearSearch}
-          placeholder="Search by job code or project name..."
+          placeholder={t('list.searchPlaceholder')}
           className="flex-1"
           onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
         />
         <Button variant="secondary" onClick={handleSearchSubmit}>
-          Search
+          {tCommon('buttons.search')}
         </Button>
       </div>
 
       {/* Error Messages */}
       {(error || queryError) && (
         <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
-          {error || 'Failed to load projects'}
+          {error || t('list.loadError')}
         </Alert>
       )}
 
@@ -126,16 +129,16 @@ export function ProjectListPage() {
           <Table>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>Job Code</Table.HeaderCell>
-                <Table.HeaderCell>Project Name</Table.HeaderCell>
-                <Table.HeaderCell>Requester</Table.HeaderCell>
-                <Table.HeaderCell>Due Date</Table.HeaderCell>
-                <Table.HeaderCell>Status</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
+                <Table.HeaderCell>{t('table.headers.jobCode')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('table.headers.projectName')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('fields.contact')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('table.headers.dueDate')}</Table.HeaderCell>
+                <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">{t('table.headers.actions')}</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              <LoadingState variant="table" colspan={6} message="Loading projects..." />
+              <LoadingState variant="table" colspan={6} message={t('list.loading')} />
             </Table.Body>
           </Table>
         </Card>
@@ -145,12 +148,12 @@ export function ProjectListPage() {
       {queryError && !isLoading && (
         <Card variant="table">
           <div className="p-8 text-center">
-            <p className="text-red-400">Failed to load projects</p>
+            <p className="text-red-400">{t('list.loadError')}</p>
             <button
               onClick={() => refetch()}
               className="mt-4 text-sm text-copper-500 hover:underline"
             >
-              Retry
+              {tCommon('buttons.retry')}
             </button>
           </div>
         </Card>
@@ -163,7 +166,7 @@ export function ProjectListPage() {
             projects={projects}
             onRowClick={handleView}
             renderActions={renderActions}
-            emptyMessage={search ? 'No projects found matching your search.' : 'No projects found.'}
+            emptyMessage={search ? t('list.emptySearch') : t('list.empty')}
           />
 
           {/* Pagination */}

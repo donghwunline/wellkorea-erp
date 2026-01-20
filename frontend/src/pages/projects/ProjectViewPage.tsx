@@ -39,7 +39,6 @@ import {
   DocumentPanel,
   InvoicePanel,
   OutsourcePanel,
-  ProjectRelatedNavigationGrid,
   PurchasePanel,
   QuotationPanel,
   TaskFlowPanel,
@@ -57,7 +56,7 @@ interface TabConfig {
 }
 
 const ALL_TABS: readonly TabConfig[] = [
-  { id: 'overview', label: '개요' },
+  // { id: 'overview', label: '개요' },
   { id: 'quotation', label: '견적', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
   { id: 'process', label: '공정' },
   { id: 'purchase', label: '구매' },
@@ -127,9 +126,9 @@ export function ProjectViewPage() {
   const handleEdit = () => navigate(`/projects/${id}/edit`);
 
   // Handle section card click (switch to that tab via URL hash)
-  const handleSectionClick = useCallback((section: ProjectSection) => {
-    globalThis.location.hash = section;
-  }, []);
+  // const handleSectionClick = useCallback((section: ProjectSection) => {
+  //   globalThis.location.hash = section;
+  // }, []);
 
   // Loading state
   if (isProjectLoading) {
@@ -229,7 +228,7 @@ export function ProjectViewPage() {
         {kpis && <ProjectKPIStrip kpis={kpis} className="mt-6" />}
 
         {/* Tabbed Navigation */}
-        <Tabs defaultTab="overview" hash={true}>
+        <Tabs defaultTab="quotation" hash={true}>
           <TabList className="mt-6">
             {visibleTabs.map(tab => (
               <Tab key={tab.id} id={tab.id} badge={getBadgeCount(tab.id)} badgeVariant="warning">
@@ -239,12 +238,12 @@ export function ProjectViewPage() {
           </TabList>
 
           {/* Overview Tab */}
-          <TabPanel id="overview">
-            <ProjectRelatedNavigationGrid
-              projectId={project.id}
-              onSectionClick={handleSectionClick}
-            />
-          </TabPanel>
+          {/*<TabPanel id="overview">*/}
+          {/*  <ProjectRelatedNavigationGrid*/}
+          {/*    projectId={project.id}*/}
+          {/*    onSectionClick={handleSectionClick}*/}
+          {/*  />*/}
+          {/*</TabPanel>*/}
 
           {/* Quotation Tab */}
           <TabPanel id="quotation">
