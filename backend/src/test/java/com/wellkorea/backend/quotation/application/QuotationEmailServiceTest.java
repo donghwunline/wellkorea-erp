@@ -168,7 +168,7 @@ class QuotationEmailServiceTest {
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("APPROVED, SENT, or ACCEPTED");
+                    .hasMessageContaining("APPROVED, SENDING, SENT, or ACCEPTED");
         }
 
         @Test
@@ -179,7 +179,7 @@ class QuotationEmailServiceTest {
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("APPROVED, SENT, or ACCEPTED");
+                    .hasMessageContaining("APPROVED, SENDING, SENT, or ACCEPTED");
         }
 
         @Test
@@ -190,7 +190,7 @@ class QuotationEmailServiceTest {
 
             assertThatThrownBy(() -> quotationEmailService.sendRevisionNotification(QUOTATION_ID))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("APPROVED, SENT, or ACCEPTED");
+                    .hasMessageContaining("APPROVED, SENDING, SENT, or ACCEPTED");
         }
 
         @Test
@@ -218,6 +218,21 @@ class QuotationEmailServiceTest {
         void sendRevisionNotificationById_SentStatus_SendsEmail() {
             QuotationDetailView sentQuotation = createTestQuotationView(QuotationStatus.SENT, 1);
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(sentQuotation));
+            given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
+            given(quotationPdfService.generatePdf(QUOTATION_ID)).willReturn(new byte[]{1, 2, 3});
+            given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
+                    .willReturn("<html>Email Content</html>");
+
+            quotationEmailService.sendRevisionNotification(QUOTATION_ID);
+
+            assertThat(mockMailSender.hasSentMessages()).isTrue();
+        }
+
+        @Test
+        @DisplayName("should send email when quotation is SENDING")
+        void sendRevisionNotificationById_SendingStatus_SendsEmail() {
+            QuotationDetailView sendingQuotation = createTestQuotationView(QuotationStatus.SENDING, 1);
+            given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(sendingQuotation));
             given(companyMapper.findDetailById(CUSTOMER_ID)).willReturn(Optional.of(testCustomerView));
             given(quotationPdfService.generatePdf(QUOTATION_ID)).willReturn(new byte[]{1, 2, 3});
             given(templateEngine.process(eq("quotation-email-ko"), any(Context.class)))
@@ -611,14 +626,14 @@ class QuotationEmailServiceTest {
         }
 
         @Test
-        @DisplayName("should return false when quotation is in SENT status")
-        void needsStatusUpdateBeforeSend_SentStatus_ReturnsFalse() {
+        @DisplayName("should return true when quotation is in SENT status (for re-sending)")
+        void needsStatusUpdateBeforeSend_SentStatus_ReturnsTrue() {
             QuotationDetailView sentQuotation = createTestQuotationView(QuotationStatus.SENT, 1);
             given(quotationMapper.findDetailById(QUOTATION_ID)).willReturn(Optional.of(sentQuotation));
 
             boolean result = quotationEmailService.needsStatusUpdateBeforeSend(QUOTATION_ID);
 
-            assertThat(result).isFalse();
+            assertThat(result).isTrue();
         }
 
         @Test

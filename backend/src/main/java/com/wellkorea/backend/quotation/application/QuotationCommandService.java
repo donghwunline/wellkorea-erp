@@ -9,6 +9,7 @@ import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository
 import com.wellkorea.backend.quotation.domain.Quotation;
 import com.wellkorea.backend.quotation.domain.QuotationLineItem;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
+import com.wellkorea.backend.quotation.domain.event.QuotationAcceptedEvent;
 import com.wellkorea.backend.quotation.domain.event.QuotationSubmittedEvent;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
@@ -241,8 +242,29 @@ public class QuotationCommandService {
     }
 
     /**
+     * Mark quotation as sending (email in progress).
+     * Only quotations in APPROVED or SENT status can be marked as sending.
+     *
+     * @return ID of the quotation being sent
+     */
+    public Long markAsSending(Long quotationId) {
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
+
+        QuotationStatus currentStatus = quotation.getStatus();
+        if (currentStatus != QuotationStatus.APPROVED && currentStatus != QuotationStatus.SENT) {
+            throw new BusinessException("Only APPROVED or SENT quotations can be marked as sending");
+        }
+
+        quotation.setStatus(QuotationStatus.SENDING);
+
+        Quotation saved = quotationRepository.save(quotation);
+        return saved.getId();
+    }
+
+    /**
      * Mark quotation as sent to customer.
-     * Only quotations in APPROVED status can be marked as sent.
+     * Only quotations in SENDING status can be marked as sent.
      *
      * @return ID of the sent quotation
      */
@@ -250,13 +272,43 @@ public class QuotationCommandService {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
-        if (quotation.getStatus() != QuotationStatus.APPROVED) {
-            throw new BusinessException("Only APPROVED quotations can be marked as sent");
+        if (quotation.getStatus() != QuotationStatus.SENDING) {
+            throw new BusinessException("Only SENDING quotations can be marked as sent");
         }
 
         quotation.setStatus(QuotationStatus.SENT);
 
         Quotation saved = quotationRepository.save(quotation);
+        return saved.getId();
+    }
+
+    /**
+     * Mark quotation as accepted by customer.
+     * Only quotations in APPROVED or SENT status can be accepted.
+     * Publishes QuotationAcceptedEvent to trigger project status update.
+     *
+     * @return ID of the accepted quotation
+     */
+    public Long markAsAccepted(Long quotationId, Long acceptedByUserId) {
+        Quotation quotation = quotationRepository.findById(quotationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
+
+        QuotationStatus currentStatus = quotation.getStatus();
+        if (currentStatus != QuotationStatus.APPROVED && currentStatus != QuotationStatus.SENT) {
+            throw new BusinessException("Only APPROVED or SENT quotations can be accepted");
+        }
+
+        quotation.setStatus(QuotationStatus.ACCEPTED);
+
+        Quotation saved = quotationRepository.save(quotation);
+
+        // Publish event for project status update
+        eventPublisher.publish(new QuotationAcceptedEvent(
+                saved.getId(),
+                saved.getProject().getId(),
+                acceptedByUserId
+        ));
+
         return saved.getId();
     }
 

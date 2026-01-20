@@ -38,6 +38,7 @@ public class QuotationEmailService {
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,###");
     private static final Set<QuotationStatus> SENDABLE_STATUSES = Set.of(
             QuotationStatus.APPROVED,
+            QuotationStatus.SENDING,
             QuotationStatus.SENT,
             QuotationStatus.ACCEPTED
     );
@@ -93,21 +94,33 @@ public class QuotationEmailService {
     }
 
     /**
-     * Check if quotation needs status update to SENT before sending email.
+     * Check if quotation needs status update to SENDING before sending email.
      *
      * @param quotationId The quotation ID
-     * @return true if quotation is currently APPROVED (needs to be marked as SENT)
+     * @return true if quotation is currently APPROVED or SENT (needs to be marked as SENDING)
      */
     public boolean needsStatusUpdateBeforeSend(Long quotationId) {
         return quotationMapper.findDetailById(quotationId)
-                .map(q -> q.status() == QuotationStatus.APPROVED)
+                .map(q -> q.status() == QuotationStatus.APPROVED || q.status() == QuotationStatus.SENT)
+                .orElse(false);
+    }
+
+    /**
+     * Check if quotation needs status update to SENT after sending email.
+     *
+     * @param quotationId The quotation ID
+     * @return true if quotation is currently SENDING (needs to be marked as SENT)
+     */
+    public boolean needsStatusUpdateAfterSend(Long quotationId) {
+        return quotationMapper.findDetailById(quotationId)
+                .map(q -> q.status() == QuotationStatus.SENDING)
                 .orElse(false);
     }
 
     private void validateSendableStatus(QuotationDetailView quotation) {
         if (!SENDABLE_STATUSES.contains(quotation.status())) {
             throw new BusinessException(
-                    "Email can only be sent for APPROVED, SENT, or ACCEPTED quotations. Current status: "
+                    "Email can only be sent for APPROVED, SENDING, SENT, or ACCEPTED quotations. Current status: "
                             + quotation.status());
         }
     }

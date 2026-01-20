@@ -195,22 +195,45 @@ public class QuotationController {
      * POST /api/quotations/{id}/send-revision-notification
      * <p>
      * Admin can use this endpoint to notify the customer about a quotation.
-     * Only quotations in APPROVED, SENT, or ACCEPTED status can be sent.
-     * If the quotation is APPROVED, it will be automatically marked as SENT before sending.
-     * Status validation is handled by EmailService.
+     * Only quotations in APPROVED, SENDING, SENT, or ACCEPTED status can be sent.
+     * If the quotation is APPROVED, it will be marked as SENDING before email,
+     * then marked as SENT after successful email delivery.
      */
     @PostMapping("/{id}/send-revision-notification")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
     public ResponseEntity<ApiResponse<String>> sendRevisionNotification(@PathVariable Long id) {
-        // Update status to SENT if currently APPROVED (before email)
-        // This ensures status is updated even if email fails - user can retry
+        // Mark as SENDING before attempting to send email
         if (emailService.needsStatusUpdateBeforeSend(id)) {
-            commandService.markAsSent(id);
+            commandService.markAsSending(id);
         }
 
         // EmailService validates status and sends email
         emailService.sendRevisionNotification(id);
 
+        // Mark as SENT after successful email delivery
+        if (emailService.needsStatusUpdateAfterSend(id)) {
+            commandService.markAsSent(id);
+        }
+
         return ResponseEntity.ok(ApiResponse.success("Revision notification sent successfully"));
+    }
+
+    /**
+     * Accept a quotation (customer acceptance recorded by internal staff).
+     * POST /api/quotations/{id}/accept
+     * <p>
+     * Only quotations in APPROVED or SENT status can be accepted.
+     * Publishes QuotationAcceptedEvent which triggers project activation.
+     */
+    @PostMapping("/{id}/accept")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES')")
+    public ResponseEntity<ApiResponse<QuotationCommandResult>> acceptQuotation(@PathVariable Long id,
+                                                                               @AuthenticationPrincipal AuthenticatedUser user) {
+
+        Long userId = user.getUserId();
+        Long quotationId = commandService.markAsAccepted(id, userId);
+        QuotationCommandResult result = QuotationCommandResult.accepted(quotationId);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }

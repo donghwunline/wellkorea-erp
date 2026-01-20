@@ -7,11 +7,13 @@
 /**
  * Quotation lifecycle status.
  * Const object pattern provides both type safety and runtime values.
+ * Workflow: DRAFT → PENDING → APPROVED/REJECTED → SENDING → SENT → ACCEPTED
  */
 export const QuotationStatus = {
   DRAFT: 'DRAFT',
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
+  SENDING: 'SENDING',
   SENT: 'SENT',
   ACCEPTED: 'ACCEPTED',
   REJECTED: 'REJECTED',
@@ -42,6 +44,7 @@ export const QuotationStatusConfig: Record<QuotationStatus, StatusConfig> = {
   DRAFT: { label: 'Draft', labelKo: '작성중', color: 'steel' },
   PENDING: { label: 'Pending', labelKo: '결재중', color: 'warning' },
   APPROVED: { label: 'Approved', labelKo: '승인됨', color: 'info' },
+  SENDING: { label: 'Sending', labelKo: '발송중', color: 'copper' },
   SENT: { label: 'Sent', labelKo: '발송완료', color: 'purple' },
   ACCEPTED: { label: 'Accepted', labelKo: '수락됨', color: 'success' },
   REJECTED: { label: 'Rejected', labelKo: '반려됨', color: 'danger' },

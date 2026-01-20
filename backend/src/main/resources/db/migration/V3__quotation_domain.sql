@@ -23,7 +23,8 @@ CREATE TABLE quotations
     created_at       TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_deleted       BOOLEAN        NOT NULL DEFAULT false,
-    CONSTRAINT chk_quotation_status CHECK (status IN ('DRAFT', 'PENDING', 'APPROVED', 'SENT', 'REJECTED', 'ACCEPTED')),
+    CONSTRAINT chk_quotation_status CHECK (status IN
+                                           ('DRAFT', 'PENDING', 'APPROVED', 'SENDING', 'SENT', 'REJECTED', 'ACCEPTED')),
     CONSTRAINT chk_quotation_version_positive CHECK (version > 0),
     CONSTRAINT chk_validity_days_positive CHECK (validity_days > 0),
     CONSTRAINT uq_quotation_project_version UNIQUE (project_id, version)
@@ -68,7 +69,7 @@ CREATE INDEX idx_quotation_line_items_product_id ON quotation_line_items (produc
 
 COMMENT ON TABLE quotations IS 'Sales quotations linked to projects. Supports versioning and approval workflow.';
 COMMENT ON COLUMN quotations.version IS 'Quotation version number (incremented when creating new version)';
-COMMENT ON COLUMN quotations.status IS 'Quotation lifecycle: DRAFT → PENDING → APPROVED/REJECTED → SENT → ACCEPTED';
+COMMENT ON COLUMN quotations.status IS 'Quotation lifecycle: DRAFT → PENDING → APPROVED/REJECTED → SENDING → SENT → ACCEPTED';
 COMMENT ON COLUMN quotations.validity_days IS 'Number of days the quote is valid from quotation_date';
 COMMENT ON COLUMN quotations.total_amount IS 'Sum of all line item totals (denormalized for performance)';
 
