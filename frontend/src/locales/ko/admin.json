@@ -117,7 +117,57 @@
       "email": "이메일",
       "roles": "역할",
       "status": "상태",
-      "actions": "작업"
+      "actions": "작업",
+      "user": "사용자",
+      "lastLogin": "최근 로그인"
     }
+  },
+  "userForm": {
+    "createTitle": "새 사용자 생성",
+    "editTitle": "사용자 수정",
+    "username": "사용자 ID",
+    "email": "이메일",
+    "fullName": "이름",
+    "password": "비밀번호",
+    "roles": "역할",
+    "createUser": "사용자 생성",
+    "saveChanges": "변경사항 저장",
+    "placeholders": {
+      "username": "사용자 ID를 입력하세요",
+      "email": "user@example.com",
+      "fullName": "이름을 입력하세요",
+      "password": "비밀번호를 입력하세요"
+    }
+  },
+  "passwordForm": {
+    "title": "비밀번호 변경",
+    "user": "사용자",
+    "newPassword": "새 비밀번호",
+    "confirmPassword": "비밀번호 확인",
+    "changePassword": "비밀번호 변경",
+    "placeholders": {
+      "newPassword": "새 비밀번호 입력 (최소 8자)",
+      "confirmPassword": "새 비밀번호 재입력"
+    },
+    "validation": {
+      "passwordMismatch": "비밀번호가 일치하지 않습니다",
+      "passwordMinLength": "비밀번호는 최소 8자 이상이어야 합니다"
+    }
+  },
+  "userTable": {
+    "user": "사용자",
+    "roles": "역할",
+    "status": "상태",
+    "lastLogin": "최근 로그인",
+    "actions": "작업",
+    "active": "활성",
+    "inactive": "비활성",
+    "empty": "등록된 사용자가 없습니다.",
+    "editUser": "사용자 수정",
+    "manageRoles": "역할 관리",
+    "changePassword": "비밀번호 변경",
+    "assignCustomers": "고객사 할당",
+    "deactivateUser": "사용자 비활성화",
+    "activateUser": "사용자 활성화"
   }
 }

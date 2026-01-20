@@ -8,6 +8,7 @@
  */
 
 import { type FormEvent, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { UserDetails, UpdateUserInput } from '@/entities/user';
 import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 import { useUpdateUser } from '../model/use-update-user';
@@ -32,6 +33,7 @@ function UserEditFormInner({
   onClose: () => void;
   onSuccess?: () => void;
 }>) {
+  const { t } = useTranslation(['admin', 'common']);
   // Local UI State - form inputs with initial values from user
   const initialData = useMemo<UpdateUserInput>(
     () => ({
@@ -73,7 +75,7 @@ function UserEditFormInner({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField
-          label="Username"
+          label={t('userForm.username')}
           type="text"
           value={user.username}
           onChange={() => {}}
@@ -81,7 +83,7 @@ function UserEditFormInner({
         />
 
         <FormField
-          label="Email"
+          label={t('userForm.email')}
           type="email"
           value={formData.email}
           onChange={value => setFormData(prev => ({ ...prev, email: value }))}
@@ -90,7 +92,7 @@ function UserEditFormInner({
         />
 
         <FormField
-          label="Full Name"
+          label={t('userForm.fullName')}
           type="text"
           value={formData.fullName}
           onChange={value => setFormData(prev => ({ ...prev, fullName: value }))}
@@ -100,10 +102,10 @@ function UserEditFormInner({
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={handleClose} disabled={isPending}>
-            Cancel
+            {t('common:buttons.cancel')}
           </Button>
           <Button type="submit" isLoading={isPending}>
-            Save Changes
+            {t('userForm.saveChanges')}
           </Button>
         </div>
       </form>
@@ -121,10 +123,11 @@ export function UserEditForm({
   onClose,
   onSuccess,
 }: Readonly<UserEditFormProps>) {
+  const { t } = useTranslation('admin');
   if (!user) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Edit User">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('userForm.editTitle')}>
       <UserEditFormInner key={user.id} user={user} onClose={onClose} onSuccess={onSuccess} />
     </Modal>
   );

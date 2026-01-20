@@ -117,7 +117,57 @@
       "email": "Email",
       "roles": "Roles",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "user": "User",
+      "lastLogin": "Last Login"
     }
+  },
+  "userForm": {
+    "createTitle": "Create New User",
+    "editTitle": "Edit User",
+    "username": "Username",
+    "email": "Email",
+    "fullName": "Full Name",
+    "password": "Password",
+    "roles": "Roles",
+    "createUser": "Create User",
+    "saveChanges": "Save Changes",
+    "placeholders": {
+      "username": "Enter username",
+      "email": "user@example.com",
+      "fullName": "Enter full name",
+      "password": "Enter password"
+    }
+  },
+  "passwordForm": {
+    "title": "Change Password",
+    "user": "User",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "changePassword": "Change Password",
+    "placeholders": {
+      "newPassword": "Enter new password (min 8 characters)",
+      "confirmPassword": "Re-enter new password"
+    },
+    "validation": {
+      "passwordMismatch": "Passwords do not match",
+      "passwordMinLength": "Password must be at least 8 characters"
+    }
+  },
+  "userTable": {
+    "user": "User",
+    "roles": "Roles",
+    "status": "Status",
+    "lastLogin": "Last Login",
+    "actions": "Actions",
+    "active": "Active",
+    "inactive": "Inactive",
+    "empty": "No users found.",
+    "editUser": "Edit user",
+    "manageRoles": "Manage roles",
+    "changePassword": "Change password",
+    "assignCustomers": "Assign customers",
+    "deactivateUser": "Deactivate user",
+    "activateUser": "Activate user"
   }
 }
