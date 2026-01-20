@@ -65,6 +65,7 @@ class QuotationQueryServiceTest {
         testDetailView = new QuotationDetailView(
                 1L,
                 1L,
+                100L,
                 "Test Project",
                 "WK2K25-0001-1219",
                 1,
