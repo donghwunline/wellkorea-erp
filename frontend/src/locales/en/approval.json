@@ -49,7 +49,21 @@
     "reasonPlaceholder": "Enter rejection reason",
     "reasonRequired": "Please enter a rejection reason",
     "success": "Rejection submitted successfully",
-    "error": "Failed to reject"
+    "error": "Failed to reject",
+    "modal": {
+      "title": "Reject Approval Request",
+      "rejecting": "Rejecting",
+      "warning": "Rejection will return the quotation to DRAFT status. The requester will need to make changes and resubmit for approval.",
+      "reasonLabel": "Rejection Reason",
+      "reasonPlaceholder": "Please explain why this request is being rejected...",
+      "reasonHelp": "This reason will be visible to the requester and recorded in the approval history.",
+      "rejectButton": "Reject Request",
+      "rejectingButton": "Rejecting...",
+      "validation": {
+        "reasonRequired": "Rejection reason is required",
+        "reasonMinLength": "Please provide a more detailed reason (at least 10 characters)"
+      }
+    }
   },
   "history": {
     "title": "Approval History",
@@ -123,5 +137,18 @@
     "cancel": "Cancel",
     "save": "Save Changes",
     "saving": "Saving..."
+  },
+  "buttons": {
+    "approve": "Approve",
+    "reject": "Reject"
+  },
+  "card": {
+    "submittedBy": "Submitted By",
+    "submittedAt": "Submitted At",
+    "currentLevel": "Current Level",
+    "levelOf": "Level {{current}} of {{total}}",
+    "status": "Status",
+    "approvalProgress": "Approval Progress",
+    "viewDetails": "View Details"
   }
 }

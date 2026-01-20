@@ -49,7 +49,21 @@
     "reasonPlaceholder": "반려 사유를 입력하세요",
     "reasonRequired": "반려 사유를 입력해 주세요",
     "success": "결재가 반려되었습니다",
-    "error": "반려에 실패했습니다"
+    "error": "반려에 실패했습니다",
+    "modal": {
+      "title": "결재 요청 반려",
+      "rejecting": "반려",
+      "warning": "반려하면 견적서가 초안 상태로 돌아갑니다. 요청자는 수정 후 다시 결재 요청해야 합니다.",
+      "reasonLabel": "반려 사유",
+      "reasonPlaceholder": "이 요청이 반려되는 이유를 설명해 주세요...",
+      "reasonHelp": "이 사유는 요청자에게 표시되며 결재 이력에 기록됩니다.",
+      "rejectButton": "반려 요청",
+      "rejectingButton": "반려 중...",
+      "validation": {
+        "reasonRequired": "반려 사유를 입력해 주세요",
+        "reasonMinLength": "더 자세한 사유를 입력해 주세요 (최소 10자)"
+      }
+    }
   },
   "history": {
     "title": "결재 이력",
@@ -123,5 +137,18 @@
     "cancel": "취소",
     "save": "저장",
     "saving": "저장 중..."
+  },
+  "buttons": {
+    "approve": "승인",
+    "reject": "반려"
+  },
+  "card": {
+    "submittedBy": "요청자",
+    "submittedAt": "요청일시",
+    "currentLevel": "현재 단계",
+    "levelOf": "{{total}}단계 중 {{current}}단계",
+    "status": "상태",
+    "approvalProgress": "결재 진행 현황",
+    "viewDetails": "상세 보기"
   }
 }

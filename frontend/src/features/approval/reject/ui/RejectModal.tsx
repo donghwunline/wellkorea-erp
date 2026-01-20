@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Button, FormField, Modal, ModalActions, Spinner } from '@/shared/ui';
 
 export interface RejectModalProps {
@@ -70,6 +71,7 @@ export function RejectModal({
   onClose,
   onConfirm,
 }: Readonly<RejectModalProps>) {
+  const { t } = useTranslation(['approval', 'common']);
   const [reason, setReason] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -90,18 +92,18 @@ export function RejectModal({
     const trimmedReason = reason.trim();
 
     if (!trimmedReason) {
-      setValidationError('Rejection reason is required');
+      setValidationError(t('reject.modal.validation.reasonRequired'));
       return;
     }
 
     if (trimmedReason.length < 10) {
-      setValidationError('Please provide a more detailed reason (at least 10 characters)');
+      setValidationError(t('reject.modal.validation.reasonMinLength'));
       return;
     }
 
     setValidationError(null);
     onConfirm(trimmedReason);
-  }, [reason, onConfirm]);
+  }, [reason, onConfirm, t]);
 
   // Handle reason change
   const handleReasonChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -115,41 +117,40 @@ export function RejectModal({
     <Modal
       isOpen={isOpen}
       onClose={() => handleOpenChange(false)}
-      title="Reject Approval Request"
+      title={t('reject.modal.title')}
       size="md"
     >
       <div className="space-y-4">
         {/* Context */}
         {entityRef && (
           <div className="rounded-lg bg-steel-800/50 p-3">
-            <span className="text-sm text-steel-400">Rejecting: </span>
+            <span className="text-sm text-steel-400">{t('reject.modal.rejecting')}: </span>
             <span className="font-medium text-white">{entityRef}</span>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <Alert variant="error" title="Error">
+          <Alert variant="error" title={t('common:toast.error')}>
             {error}
           </Alert>
         )}
 
         {/* Warning */}
-        <Alert variant="warning" title="Important">
-          Rejection will return the quotation to DRAFT status. The requester will need to
-          make changes and resubmit for approval.
+        <Alert variant="warning" title={t('common:toast.warning')}>
+          {t('reject.modal.warning')}
         </Alert>
 
         {/* Reason Input */}
         <FormField
-          label="Rejection Reason"
+          label={t('reject.modal.reasonLabel')}
           required
           error={validationError || undefined}
         >
           <textarea
             value={reason}
             onChange={handleReasonChange}
-            placeholder="Please explain why this request is being rejected..."
+            placeholder={t('reject.modal.reasonPlaceholder')}
             rows={4}
             disabled={isSubmitting}
             className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 transition-all focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
@@ -157,7 +158,7 @@ export function RejectModal({
         </FormField>
 
         <p className="text-xs text-steel-500">
-          This reason will be visible to the requester and recorded in the approval history.
+          {t('reject.modal.reasonHelp')}
         </p>
 
         {/* Actions */}
@@ -167,7 +168,7 @@ export function RejectModal({
             onClick={onClose}
             disabled={isSubmitting}
           >
-            Cancel
+            {t('common:buttons.cancel')}
           </Button>
           <Button
             variant="warning"
@@ -177,10 +178,10 @@ export function RejectModal({
             {isSubmitting ? (
               <>
                 <Spinner className="mr-2 h-4 w-4" />
-                Rejecting...
+                {t('reject.modal.rejectingButton')}
               </>
             ) : (
-              'Reject Request'
+              t('reject.modal.rejectButton')
             )}
           </Button>
         </ModalActions>
