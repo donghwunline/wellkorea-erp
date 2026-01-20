@@ -30,12 +30,14 @@ export interface FormFieldProps extends Omit<InputHTMLAttributes<HTMLInputElemen
   onChange?: (value: string) => void;
   /** Error message to display */
   error?: string;
+  /** Hint text to display below the input */
+  hint?: string;
   /** Custom input children (wrapper pattern) */
   children?: ReactNode;
 }
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
-  ({ label, value, onChange, error, required, disabled, className, id, children, ...props }, ref) => {
+  ({ label, value, onChange, error, hint, required, disabled, className, id, children, ...props }, ref) => {
     const hasChildren = children !== undefined;
 
     return (
@@ -67,6 +69,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
             {...props}
           />
         )}
+        {hint && !error && <span className="text-xs text-steel-500">{hint}</span>}
         {error && <span className="text-xs text-red-400">{error}</span>}
       </div>
     );
