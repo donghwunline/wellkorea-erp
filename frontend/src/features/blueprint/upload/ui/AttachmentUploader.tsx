@@ -3,6 +3,7 @@
  */
 
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUploadAttachment } from '../model/use-upload-attachment';
 import { fileTypeRules, MAX_FILE_SIZE } from '@/entities/blueprint-attachment';
 
@@ -21,6 +22,7 @@ export function AttachmentUploader({
   onError,
   disabled = false,
 }: AttachmentUploaderProps) {
+  const { t } = useTranslation(['items', 'common']);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -40,7 +42,7 @@ export function AttachmentUploader({
     // Validate file type
     if (!fileTypeRules.isAllowedExtension(file.name)) {
       onError?.(
-        `File type not allowed. Allowed types: ${fileTypeRules.getAllowedExtensionsString()}`
+        t('items:attachmentUploader.validation.fileTypeNotAllowed', { types: fileTypeRules.getAllowedExtensionsString() })
       );
       return;
     }
@@ -48,7 +50,7 @@ export function AttachmentUploader({
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       onError?.(
-        `File size exceeds maximum of ${fileTypeRules.getMaxFileSizeFormatted()}`
+        t('items:attachmentUploader.validation.fileSizeExceeds', { maxSize: fileTypeRules.getMaxFileSizeFormatted() })
       );
       return;
     }
@@ -134,7 +136,7 @@ export function AttachmentUploader({
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <p className="text-sm text-gray-600">Uploading...</p>
+            <p className="text-sm text-gray-600">{t('items:attachmentUploader.uploading')}</p>
           </>
         ) : (
           <>
@@ -153,12 +155,11 @@ export function AttachmentUploader({
             </svg>
             <div>
               <p className="text-sm text-gray-600">
-                <span className="text-blue-600 font-medium">Click to upload</span>{' '}
-                or drag and drop
+                <span className="text-blue-600 font-medium">{t('items:attachmentUploader.clickToUpload')}</span>{' '}
+                {t('items:attachmentUploader.orDragDrop')}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                {fileTypeRules.getAllowedExtensionsString()} (max{' '}
-                {fileTypeRules.getMaxFileSizeFormatted()})
+                {fileTypeRules.getAllowedExtensionsString()} ({t('items:attachmentUploader.maxSize', { size: fileTypeRules.getMaxFileSizeFormatted() })})
               </p>
             </div>
           </>

@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { httpClient, BLUEPRINT_ENDPOINTS } from '@/shared/api';
 import { triggerDownload } from '../model/use-download-attachment';
 import type { BlueprintAttachment } from '@/entities/blueprint-attachment';
@@ -20,6 +21,7 @@ export function DownloadButton({
   className = '',
   onError,
 }: DownloadButtonProps) {
+  const { t } = useTranslation(['items', 'common']);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDownload = async () => {
@@ -30,7 +32,7 @@ export function DownloadButton({
       );
       triggerDownload(url, attachment.fileName);
     } catch {
-      onError?.(`Failed to download ${attachment.fileName}`);
+      onError?.(t('items:downloadButton.error', { fileName: attachment.fileName }));
     } finally {
       setIsLoading(false);
     }
@@ -43,7 +45,7 @@ export function DownloadButton({
         onClick={handleDownload}
         disabled={isLoading}
         className={`p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 ${className}`}
-        title="Download"
+        title={t('common:buttons.download')}
       >
         {isLoading ? (
           <svg
@@ -122,7 +124,7 @@ export function DownloadButton({
           />
         </svg>
       )}
-      Download
+      {t('common:buttons.download')}
     </button>
   );
 }
