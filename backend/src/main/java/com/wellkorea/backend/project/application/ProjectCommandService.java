@@ -139,6 +139,30 @@ public class ProjectCommandService {
     }
 
     /**
+     * Activate a project (transition from DRAFT to ACTIVE).
+     * Called when a quotation is accepted by the customer.
+     *
+     * @param id Project ID
+     * @return ID of the activated project
+     * @throws ResourceNotFoundException if project not found
+     * @throws IllegalStateException if transition is not allowed
+     */
+    public Long activateProject(Long id) {
+        Project project = projectRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", id));
+
+        // Only activate if currently in DRAFT status
+        if (project.getStatus() != ProjectStatus.DRAFT) {
+            // Already active or in another state - skip silently (idempotent)
+            return id;
+        }
+
+        Project activatedProject = project.withStatus(ProjectStatus.ACTIVE);
+        projectRepository.save(activatedProject);
+        return id;
+    }
+
+    /**
      * Check if company exists and is active (used for customer validation).
      */
     private boolean customerExists(Long customerId) {

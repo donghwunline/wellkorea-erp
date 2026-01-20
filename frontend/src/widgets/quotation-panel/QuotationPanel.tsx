@@ -27,6 +27,7 @@ import {
 
 // Feature imports
 import { useSubmitQuotation } from '@/features/quotation/submit';
+import { useAcceptQuotation } from '@/features/quotation/accept';
 import { useCreateVersion } from '@/features/quotation/version';
 import { useDownloadPdf } from '@/features/quotation/download-pdf';
 import { EmailNotificationModal, useSendNotification } from '@/features/quotation/notify';
@@ -54,6 +55,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
 
   // Confirmation modal states
   const [submitConfirm, setSubmitConfirm] = useState(false);
+  const [acceptConfirm, setAcceptConfirm] = useState(false);
   const [versionConfirm, setVersionConfirm] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
 
@@ -122,6 +124,17 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
     onError: err => onError?.(err.message),
   });
 
+  const acceptMutation = useAcceptQuotation({
+    onSuccess: () => {
+      showSuccess('Quotation accepted by customer');
+      setAcceptConfirm(false);
+      void refetchList();
+      void refetchDetails();
+      onDataChange?.();
+    },
+    onError: err => onError?.(err.message),
+  });
+
   const versionMutation = useCreateVersion({
     onSuccess: result => {
       showSuccess('New version created');
@@ -149,6 +162,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
 
   const isActing =
     submitMutation.isPending ||
+    acceptMutation.isPending ||
     versionMutation.isPending ||
     pdfMutation.isPending ||
     notifyMutation.isPending;
@@ -190,6 +204,12 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
     if (!quotation) return;
     submitMutation.mutate(quotation.id);
   }, [quotation, submitMutation]);
+
+  // Handle accept quotation
+  const handleAcceptConfirm = useCallback(() => {
+    if (!quotation) return;
+    acceptMutation.mutate(quotation.id);
+  }, [quotation, acceptMutation]);
 
   // Handle create new version
   const handleVersionConfirm = useCallback(() => {
@@ -279,6 +299,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   const canSendEmail = quotation
     ? ['APPROVED', 'SENT', 'ACCEPTED'].includes(quotation.status)
     : false;
+  const canAccept = quotation ? quotationRules.canAccept(quotation) : false;
 
   const hasPrevVersion = currentIndex < quotations.length - 1;
   const hasNextVersion = currentIndex > 0;
@@ -286,12 +307,14 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   // Mutation errors
   const mutationError =
     submitMutation.error?.message ||
+    acceptMutation.error?.message ||
     versionMutation.error?.message ||
     pdfMutation.error?.message ||
     notifyMutation.error?.message;
 
   const clearMutationError = () => {
     submitMutation.reset();
+    acceptMutation.reset();
     versionMutation.reset();
     pdfMutation.reset();
     notifyMutation.reset();
@@ -385,6 +408,18 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
             </Button>
           )}
 
+          {canAccept && (
+            <Button
+              onClick={() => setAcceptConfirm(true)}
+              disabled={isActing}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Icon name="check-circle" className="mr-2 h-4 w-4" />
+              Accept
+            </Button>
+          )}
+
           {canCreateVersion && (
             <Button
               variant="secondary"
@@ -422,6 +457,15 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
         onConfirm={handleSubmitConfirm}
         onClose={() => setSubmitConfirm(false)}
         variant="warning"
+      />
+
+      <ConfirmationModal
+        isOpen={acceptConfirm}
+        title="Accept Quotation"
+        message={`Mark "${quotation?.jobCode} v${quotation?.version}" as accepted by customer? This will activate the project for delivery and invoicing.`}
+        confirmLabel="Accept"
+        onConfirm={handleAcceptConfirm}
+        onClose={() => setAcceptConfirm(false)}
       />
 
       <ConfirmationModal

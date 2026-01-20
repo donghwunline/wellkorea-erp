@@ -86,6 +86,8 @@ export const QUOTATION_ENDPOINTS = {
   pdf: (id: number) => `/quotations/${id}/pdf`,
   /** POST /quotations/:id/send-revision-notification - Send email notification */
   sendNotification: (id: number) => `/quotations/${id}/send-revision-notification`,
+  /** POST /quotations/:id/accept - Mark as accepted by customer */
+  accept: (id: number) => `/quotations/${id}/accept`,
 } as const;
 
 // ============================================================================
