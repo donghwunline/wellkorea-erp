@@ -113,6 +113,24 @@
   "currency": {
     "krw": "원"
   },
+  "email": {
+    "title": "이메일 발송",
+    "to": "받는 사람",
+    "cc": "참조 (선택)",
+    "addCc": "참조 추가",
+    "send": "이메일 발송",
+    "sending": "발송 중...",
+    "pdfAttachment": "PDF 파일이 이메일에 첨부됩니다.",
+    "required": "이메일 주소를 입력하세요",
+    "invalidFormat": "올바른 이메일 형식이 아닙니다",
+    "placeholder": "이메일 주소 입력 후 Enter",
+    "success": "이메일이 발송되었습니다"
+  },
+  "modal": {
+    "creating": "생성 중...",
+    "updating": "수정 중...",
+    "details": "상세 정보"
+  },
   "error": {
     "title": "오류가 발생했습니다",
     "unexpectedError": "예기치 않은 오류가 발생했습니다",
@@ -136,5 +154,12 @@
     "description": "요청하신 페이지가 존재하지 않습니다",
     "goBack": "뒤로 가기",
     "goHome": "홈으로 이동"
+  },
+  "fields": {
+    "createdAt": "생성일",
+    "updatedAt": "수정일",
+    "deliveredBy": "출고 담당자",
+    "createdBy": "생성자",
+    "modifiedBy": "수정자"
   }
 }

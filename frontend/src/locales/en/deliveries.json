@@ -1,16 +1,30 @@
 {
   "title": "Deliveries",
+  "description": "View and manage delivery records",
   "list": {
     "title": "Delivery List",
     "create": "Create Delivery",
     "empty": "No deliveries registered",
-    "emptyDescription": "Create a new delivery to get started"
+    "emptyDescription": "Create a new delivery to get started",
+    "emptyFiltered": "No deliveries found with status \"{{status}}\"",
+    "allStatuses": "All Statuses",
+    "loading": "Loading deliveries...",
+    "loadError": "Failed to load deliveries"
   },
   "create": {
     "title": "Create New Delivery",
     "selectProject": "Select Project",
     "success": "Delivery created successfully",
-    "error": "Failed to create delivery"
+    "error": "Failed to create delivery",
+    "loading": "Loading quotation data...",
+    "noQuotation": "No Accepted Quotation",
+    "noQuotationDesc": "This project does not have an accepted quotation. A quotation must be accepted by the customer before recording deliveries.",
+    "allDelivered": "All Items Delivered",
+    "allDeliveredDesc": "All quotation items have been fully delivered. No remaining items to deliver.",
+    "deliveryInfo": "Delivery Information",
+    "description": "Record a new delivery for this project",
+    "createButton": "Create Delivery",
+    "saving": "Saving..."
   },
   "edit": {
     "title": "Edit Delivery",
@@ -21,7 +35,13 @@
     "title": "Delivery Details",
     "basicInfo": "Basic Information",
     "lineItems": "Line Items",
-    "history": "History"
+    "history": "History",
+    "loading": "Loading delivery details...",
+    "loadError": "Failed to load delivery",
+    "notFound": "Delivery not found",
+    "deliveredItems": "Delivered Items",
+    "itemCount": "{{count}} items, {{total}} total units",
+    "total": "Total"
   },
   "delete": {
     "title": "Delete Delivery",
@@ -70,7 +90,13 @@
     "orderedQuantity": "Ordered Qty",
     "shippedQuantity": "Shipped Qty",
     "remainingQuantity": "Remaining Qty",
-    "unit": "Unit"
+    "unit": "Unit",
+    "enterQuantityHint": "Enter the quantity delivered for each item. Only items with remaining quantity are shown.",
+    "quoted": "Quoted",
+    "delivered": "Delivered",
+    "remaining": "Remaining",
+    "toDeliver": "Qty to Deliver",
+    "totalToDeliver": "Total Quantity to Deliver:"
   },
   "actions": {
     "view": "View Details",
@@ -79,7 +105,10 @@
     "ship": "Ship",
     "confirm": "Confirm Delivery",
     "print": "Print",
-    "downloadPdf": "Download PDF"
+    "downloadPdf": "Download PDF",
+    "downloadStatement": "Download Statement",
+    "backToList": "Back to List",
+    "backToProject": "Back to Project"
   },
   "table": {
     "headers": {
@@ -103,5 +132,10 @@
       "message": "Has this delivery been completed?",
       "success": "Delivery confirmed"
     }
+  },
+  "validation": {
+    "noQuotationFound": "No accepted quotation found",
+    "enterAtLeastOne": "Please enter quantity for at least one item",
+    "exceedsRemaining": "Quantity for {{product}} exceeds remaining deliverable quantity ({{remaining}})"
   }
 }

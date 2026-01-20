@@ -1,9 +1,14 @@
 {
   "title": "Approval",
+  "description": "Review and process pending approval requests",
   "list": {
     "title": "Pending Approvals",
-    "empty": "No pending approvals",
-    "emptyDescription": "All documents have been processed"
+    "empty": "No pending approval requests.",
+    "emptyFiltered": "No approval requests found with selected status.",
+    "emptyDescription": "All documents have been processed",
+    "loading": "Loading approval requests...",
+    "loadError": "Failed to load approval requests",
+    "allStatuses": "All Statuses"
   },
   "tabs": {
     "pending": "Pending",
@@ -34,7 +39,7 @@
     "message": "Are you sure you want to approve this document?",
     "comment": "Comment",
     "commentPlaceholder": "Enter comment (optional)",
-    "success": "Approved successfully",
+    "success": "Approval submitted successfully",
     "error": "Failed to approve"
   },
   "reject": {
@@ -43,7 +48,7 @@
     "reason": "Rejection Reason",
     "reasonPlaceholder": "Enter rejection reason",
     "reasonRequired": "Please enter a rejection reason",
-    "success": "Rejected successfully",
+    "success": "Rejection submitted successfully",
     "error": "Failed to reject"
   },
   "history": {
@@ -57,17 +62,20 @@
   },
   "chain": {
     "title": "Approval Settings",
+    "description": "Configure approval workflows for different entity types",
     "list": {
       "title": "Approval Chain List",
       "create": "Create Approval Chain",
-      "empty": "No approval chains registered"
+      "empty": "No approval chain templates configured.",
+      "loading": "Loading approval chain templates..."
     },
+    "edit": {
+      "modalTitle": "Edit Approval Chain: {{name}}",
     "create": {
       "title": "Create New Approval Chain",
       "success": "Approval chain created successfully",
       "error": "Failed to create approval chain"
     },
-    "edit": {
       "title": "Edit Approval Chain",
       "success": "Approval chain updated successfully",
       "error": "Failed to update approval chain"
@@ -85,11 +93,20 @@
       "status": "Status"
     },
     "steps": {
-      "add": "Add Step",
-      "remove": "Remove Step",
+      "add": "Add Level",
+      "remove": "Remove Level",
       "order": "Order",
       "approver": "Approver",
-      "role": "Role"
+      "role": "Role",
+      "selectApprover": "Select approver...",
+      "noLevels": "No levels configured. Add at least one approval level.",
+      "processOrder": "Approvals will be processed in order from Level 1 to the highest level. Each level must approve before moving to the next."
+    },
+    "table": {
+      "entityType": "Entity Type",
+      "name": "Name",
+      "approvalLevels": "Approval Levels",
+      "approvers": "Approvers"
     }
   },
   "table": {
@@ -101,5 +118,10 @@
       "status": "Status",
       "actions": "Actions"
     }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "saving": "Saving..."
   }
 }

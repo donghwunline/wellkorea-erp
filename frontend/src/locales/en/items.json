@@ -1,5 +1,6 @@
 {
   "title": "Items",
+  "description": "Manage your product catalog, outsourced services, and purchased materials",
   "tabs": {
     "products": "Products",
     "materials": "Materials",
@@ -10,7 +11,11 @@
     "list": {
       "title": "Product List",
       "create": "Add Product",
-      "empty": "No products registered"
+      "empty": "No products found.",
+      "emptyWithAction": "No products found. Click \"Add Product\" to create your first product.",
+      "allTypes": "All Types",
+      "searchPlaceholder": "Search by name or SKU...",
+      "loadError": "Failed to load products"
     },
     "create": {
       "title": "Add New Product",
@@ -42,7 +47,22 @@
     "list": {
       "title": "Material List",
       "create": "Add Material",
-      "empty": "No materials registered"
+      "empty": "No materials found.",
+      "emptyWithAction": "No materials found. Click \"Add Material\" to create your first material.",
+      "allCategories": "All Categories",
+      "searchPlaceholder": "Search materials by name or SKU...",
+      "loadError": "Failed to load materials"
+    },
+    "view": {
+      "modalTitle": "Material: {{name}}",
+      "noDescription": "No description",
+      "preferredVendorNone": "None"
+    },
+    "offerings": {
+      "modalTitle": "Vendors for \"{{name}}\"",
+      "empty": "No vendors currently supply this material.",
+      "addOffering": "Add Vendor Offering",
+      "setAsPreferred": "Set as Preferred"
     },
     "create": {
       "title": "Add New Material",
@@ -74,8 +94,18 @@
     "title": "Outsource Items",
     "list": {
       "title": "Outsource Item List",
-      "create": "Add Outsource Item",
-      "empty": "No outsource items registered"
+      "create": "Add Category",
+      "empty": "No service categories found.",
+      "emptyWithAction": "No service categories found. Click \"Add Category\" to create your first service category.",
+      "searchPlaceholder": "Search service categories...",
+      "includeInactive": "Include Inactive",
+      "loadError": "Failed to load service categories"
+    },
+    "vendorCount": "{{count}} vendor(s)",
+    "offerings": {
+      "modalTitle": "Vendors for \"{{name}}\"",
+      "empty": "No vendors currently offer this service.",
+      "addOffering": "Add Vendor Offering"
     },
     "create": {
       "title": "Add New Outsource Item",
@@ -110,18 +140,38 @@
   },
   "table": {
     "headers": {
+      "sku": "SKU",
       "code": "Code",
       "name": "Name",
       "category": "Category",
       "unit": "Unit",
       "unitPrice": "Unit Price",
+      "standardPrice": "Standard Price",
+      "preferredVendor": "Preferred Vendor",
       "status": "Status",
+      "vendor": "Vendor",
+      "leadTime": "Lead Time",
+      "effectivePeriod": "Effective Period",
+      "preferred": "Preferred",
       "actions": "Actions"
     }
   },
   "actions": {
     "view": "View Details",
+    "viewDetails": "Details",
+    "vendors": "Vendors",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "activating": "Activating..."
+  },
+  "common": {
+    "retry": "Retry",
+    "addProduct": "Add Product",
+    "addMaterial": "Add Material",
+    "addCategory": "Add Category",
+    "days": "{{count}} days",
+    "noVendors": "None"
   }
 }

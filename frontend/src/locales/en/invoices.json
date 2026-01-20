@@ -1,10 +1,16 @@
 {
-  "title": "Invoices",
+  "title": "Tax Invoices",
+  "description": "View and manage tax invoices",
   "list": {
     "title": "Invoice List",
     "create": "Create Invoice",
+    "new": "New Invoice",
     "empty": "No invoices registered",
-    "emptyDescription": "Create a new invoice to get started"
+    "emptyDescription": "Create a new invoice to get started",
+    "emptyFiltered": "No invoices found with status \"{{status}}\"",
+    "allStatuses": "All Statuses",
+    "loading": "Loading invoices...",
+    "loadError": "Failed to load invoices"
   },
   "create": {
     "title": "Create New Invoice",
@@ -22,7 +28,20 @@
     "basicInfo": "Basic Information",
     "lineItems": "Line Items",
     "paymentInfo": "Payment Information",
-    "history": "History"
+    "history": "History",
+    "loading": "Loading invoice details...",
+    "loadError": "Failed to load invoice",
+    "notFound": "Invoice not found",
+    "amounts": "Invoice Amounts",
+    "paymentHistory": "Payment History",
+    "noPayments": "No payments have been recorded for this invoice",
+    "paymentProgress": "Payment Progress",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "aging": "Aging",
+    "daysOverdue": "{{days}} days overdue",
+    "items": "{{count}} items",
+    "payments": "{{count}} payments"
   },
   "delete": {
     "title": "Delete Invoice",
@@ -92,7 +111,13 @@
     "void": "Void",
     "print": "Print",
     "downloadPdf": "Download PDF",
-    "sendEmail": "Send Email"
+    "sendEmail": "Send Email",
+    "backToList": "Back to List",
+    "issue": "Issue Invoice",
+    "issuing": "Issuing...",
+    "cancel": "Cancel Invoice",
+    "cancelling": "Cancelling...",
+    "keepInvoice": "Keep Invoice"
   },
   "table": {
     "headers": {
@@ -114,9 +139,19 @@
       "method": "Payment Method",
       "date": "Payment Date",
       "reference": "Reference Number",
+      "referenceHint": "e.g., Check number, transaction ID",
       "notes": "Notes",
-      "success": "Payment recorded successfully"
+      "notesHint": "Optional notes about this payment",
+      "success": "Payment recorded successfully",
+      "remainingBalance": "Remaining balance: {{amount}}",
+      "recording": "Recording...",
+      "submit": "Record Payment"
     }
+  },
+  "cancel": {
+    "title": "Cancel Invoice",
+    "confirm": "Are you sure you want to cancel invoice {{number}}?",
+    "warning": "This action cannot be undone."
   },
   "summary": {
     "subtotal": "Subtotal",
@@ -130,5 +165,10 @@
     "sendTitle": "Send Invoice by Email",
     "sendSuccess": "Email sent successfully",
     "sendError": "Failed to send email"
+  },
+  "validation": {
+    "invalidAmount": "Please enter a valid payment amount",
+    "paymentDateRequired": "Please enter a payment date",
+    "exceedsBalance": "Payment amount ({{amount}}) exceeds remaining balance ({{balance}})"
   }
 }

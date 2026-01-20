@@ -1,10 +1,17 @@
 {
   "title": "CRM",
+  "description": "Manage customers, vendors, and outsource partners",
   "list": {
     "title": "Company List",
     "create": "Add Company",
+    "new": "New Company",
     "empty": "No companies registered",
-    "emptyDescription": "Add a new company to get started"
+    "emptyDescription": "Add a new company to get started",
+    "emptySearch": "No companies found matching \"{{search}}\"",
+    "emptyFiltered": "No {{type}} found",
+    "loading": "Loading companies...",
+    "loadError": "Failed to load companies",
+    "searchPlaceholder": "Search by company name, email, or registration number..."
   },
   "create": {
     "title": "Add New Company",
@@ -91,7 +98,13 @@
     "all": "All",
     "customer": "Customers",
     "vendor": "Vendors",
+    "outsource": "Outsource",
     "active": "Active",
     "inactive": "Inactive"
+  },
+  "roleType": {
+    "CUSTOMER": "Customer",
+    "VENDOR": "Vendor",
+    "OUTSOURCE": "Outsource"
   }
 }

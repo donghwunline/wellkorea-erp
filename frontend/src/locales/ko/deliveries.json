@@ -1,16 +1,30 @@
 {
-  "title": "출고",
+  "title": "출고 관리",
+  "description": "출고 기록 조회 및 관리",
   "list": {
     "title": "출고 목록",
     "create": "출고 생성",
     "empty": "등록된 출고가 없습니다",
-    "emptyDescription": "새 출고를 생성하여 시작하세요"
+    "emptyDescription": "새 출고를 생성하여 시작하세요",
+    "emptyFiltered": "\"{{status}}\" 상태의 출고가 없습니다",
+    "allStatuses": "전체 상태",
+    "loading": "출고 목록 로딩 중...",
+    "loadError": "출고 목록을 불러오지 못했습니다"
   },
   "create": {
-    "title": "새 출고 생성",
+    "title": "새 출고 등록",
     "selectProject": "프로젝트 선택",
-    "success": "출고가 생성되었습니다",
-    "error": "출고 생성에 실패했습니다"
+    "success": "출고가 등록되었습니다",
+    "error": "출고 등록에 실패했습니다",
+    "loading": "견적 정보 로딩 중...",
+    "noQuotation": "승인된 견적 없음",
+    "noQuotationDesc": "이 프로젝트에는 승인된 견적이 없습니다. 출고를 등록하려면 먼저 고객이 견적을 수락해야 합니다.",
+    "allDelivered": "전체 출고 완료",
+    "allDeliveredDesc": "모든 견적 품목이 출고되었습니다. 더 이상 출고할 품목이 없습니다.",
+    "deliveryInfo": "출고 정보",
+    "description": "이 프로젝트에 대한 새 출고를 등록합니다",
+    "createButton": "출고 등록",
+    "saving": "저장 중..."
   },
   "edit": {
     "title": "출고 수정",
@@ -21,7 +35,13 @@
     "title": "출고 상세",
     "basicInfo": "기본 정보",
     "lineItems": "품목",
-    "history": "이력"
+    "history": "이력",
+    "loading": "출고 정보 로딩 중...",
+    "loadError": "출고를 불러오지 못했습니다",
+    "notFound": "출고를 찾을 수 없습니다",
+    "deliveredItems": "출고 품목",
+    "itemCount": "{{count}}개 품목, 총 {{total}}개",
+    "total": "합계"
   },
   "delete": {
     "title": "출고 삭제",
@@ -70,7 +90,13 @@
     "orderedQuantity": "주문 수량",
     "shippedQuantity": "출고 수량",
     "remainingQuantity": "잔여 수량",
-    "unit": "단위"
+    "unit": "단위",
+    "enterQuantityHint": "품목별 출고 수량을 입력하세요. 잔여 수량이 있는 품목만 표시됩니다.",
+    "quoted": "견적 수량",
+    "delivered": "출고됨",
+    "remaining": "잔여",
+    "toDeliver": "출고할 수량",
+    "totalToDeliver": "총 출고 수량:"
   },
   "actions": {
     "view": "상세 보기",
@@ -79,7 +105,10 @@
     "ship": "출고 처리",
     "confirm": "배송 완료 확인",
     "print": "인쇄",
-    "downloadPdf": "PDF 다운로드"
+    "downloadPdf": "PDF 다운로드",
+    "downloadStatement": "명세서 다운로드",
+    "backToList": "목록으로",
+    "backToProject": "프로젝트로"
   },
   "table": {
     "headers": {
@@ -103,5 +132,10 @@
       "message": "배송이 완료되었습니까?",
       "success": "배송이 완료 처리되었습니다"
     }
+  },
+  "validation": {
+    "noQuotationFound": "승인된 견적을 찾을 수 없습니다",
+    "enterAtLeastOne": "최소 하나의 품목에 수량을 입력하세요",
+    "exceedsRemaining": "{{product}}의 수량이 잔여 수량({{remaining}})을 초과합니다"
   }
 }

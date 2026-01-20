@@ -2,11 +2,16 @@
   "title": "Administration",
   "users": {
     "title": "User Management",
+    "description": "Manage system users and their roles",
     "list": {
       "title": "User List",
-      "create": "Create User",
-      "empty": "No users registered"
+      "create": "Add User",
+      "empty": "No users found.",
+      "emptySearch": "No users found matching your search.",
+      "searchPlaceholder": "Search by username, email, or name...",
+      "loadError": "Failed to load users"
     },
+    "search": "Search",
     "create": {
       "title": "Create New User",
       "success": "User created successfully",
@@ -60,9 +65,11 @@
   },
   "audit": {
     "title": "Audit Logs",
+    "description": "System activity and security events",
     "list": {
       "title": "Audit Log",
-      "empty": "No audit logs"
+      "empty": "No audit logs found.",
+      "loadError": "Failed to load audit logs"
     },
     "fields": {
       "timestamp": "Timestamp",
@@ -86,13 +93,22 @@
       "dateRange": "Date Range",
       "user": "User",
       "action": "Action",
-      "entity": "Entity"
+      "entity": "Entity",
+      "entityType": "Entity Type",
+      "allTypes": "All Types",
+      "allActions": "All Actions",
+      "clearFilters": "Clear Filters"
     },
     "details": {
-      "title": "Details",
+      "title": "Audit Log Details",
       "before": "Before",
-      "after": "After"
+      "after": "After",
+      "entry": "Entry #{{id}}",
+      "metadata": "Metadata"
     }
+  },
+  "common": {
+    "retry": "Retry"
   },
   "table": {
     "headers": {

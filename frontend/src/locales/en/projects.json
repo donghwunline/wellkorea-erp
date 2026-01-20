@@ -1,10 +1,16 @@
 {
   "title": "Projects",
+  "description": "Manage customer projects and job codes",
   "list": {
     "title": "Project List",
     "create": "Create Project",
+    "new": "New Project",
     "empty": "No projects registered",
-    "emptyDescription": "Create a new project to get started"
+    "emptyDescription": "Create a new project to get started",
+    "emptySearch": "No projects found matching your search",
+    "loading": "Loading projects...",
+    "loadError": "Failed to load projects",
+    "searchPlaceholder": "Search by job code or project name..."
   },
   "create": {
     "title": "Create New Project",

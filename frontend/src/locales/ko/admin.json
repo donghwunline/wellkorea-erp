@@ -2,11 +2,16 @@
   "title": "관리",
   "users": {
     "title": "사용자 관리",
+    "description": "시스템 사용자 및 권한을 관리합니다",
     "list": {
       "title": "사용자 목록",
-      "create": "사용자 생성",
-      "empty": "등록된 사용자가 없습니다"
+      "create": "사용자 추가",
+      "empty": "등록된 사용자가 없습니다.",
+      "emptySearch": "검색 결과가 없습니다.",
+      "searchPlaceholder": "사용자 ID, 이메일, 이름으로 검색...",
+      "loadError": "사용자를 불러오지 못했습니다"
     },
+    "search": "검색",
     "create": {
       "title": "새 사용자 생성",
       "success": "사용자가 생성되었습니다",
@@ -59,10 +64,12 @@
     }
   },
   "audit": {
-    "title": "이력 확인",
+    "title": "이력 관리",
+    "description": "시스템 활동 및 보안 이벤트",
     "list": {
       "title": "감사 로그",
-      "empty": "이력이 없습니다"
+      "empty": "이력이 없습니다.",
+      "loadError": "이력을 불러오지 못했습니다"
     },
     "fields": {
       "timestamp": "일시",
@@ -86,13 +93,22 @@
       "dateRange": "기간",
       "user": "사용자",
       "action": "작업",
-      "entity": "대상"
+      "entity": "대상",
+      "entityType": "대상 유형",
+      "allTypes": "전체 유형",
+      "allActions": "전체 작업",
+      "clearFilters": "필터 초기화"
     },
     "details": {
-      "title": "상세 정보",
+      "title": "이력 상세",
       "before": "변경 전",
-      "after": "변경 후"
+      "after": "변경 후",
+      "entry": "항목 #{{id}}",
+      "metadata": "메타데이터"
     }
+  },
+  "common": {
+    "retry": "다시 시도"
   },
   "table": {
     "headers": {

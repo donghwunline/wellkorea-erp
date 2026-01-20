@@ -1,10 +1,16 @@
 {
   "title": "프로젝트",
+  "description": "고객 프로젝트 및 작업 코드 관리",
   "list": {
     "title": "프로젝트 목록",
     "create": "프로젝트 생성",
+    "new": "새 프로젝트",
     "empty": "등록된 프로젝트가 없습니다",
-    "emptyDescription": "새 프로젝트를 생성하여 시작하세요"
+    "emptyDescription": "새 프로젝트를 생성하여 시작하세요",
+    "emptySearch": "검색 결과가 없습니다",
+    "loading": "프로젝트 로딩 중...",
+    "loadError": "프로젝트를 불러오지 못했습니다",
+    "searchPlaceholder": "작업 코드 또는 프로젝트명으로 검색..."
   },
   "create": {
     "title": "새 프로젝트 생성",

@@ -113,6 +113,24 @@
   "currency": {
     "krw": "KRW"
   },
+  "email": {
+    "title": "Send Email",
+    "to": "To",
+    "cc": "CC Recipients (optional)",
+    "addCc": "Add CC recipients",
+    "send": "Send Email",
+    "sending": "Sending...",
+    "pdfAttachment": "A PDF attachment will be included with the email.",
+    "required": "Email address is required",
+    "invalidFormat": "Invalid email format",
+    "placeholder": "Enter email and press Enter",
+    "success": "Email sent successfully"
+  },
+  "modal": {
+    "creating": "Creating...",
+    "updating": "Updating...",
+    "details": "Details"
+  },
   "error": {
     "title": "An error occurred",
     "unexpectedError": "An unexpected error occurred",
@@ -136,5 +154,12 @@
     "description": "The page you requested does not exist",
     "goBack": "Go back",
     "goHome": "Go to home"
+  },
+  "fields": {
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "deliveredBy": "Delivered By",
+    "createdBy": "Created By",
+    "modifiedBy": "Modified By"
   }
 }

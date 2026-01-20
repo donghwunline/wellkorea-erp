@@ -1,10 +1,17 @@
 {
   "title": "Quotations",
+  "description": "View and manage all quotations",
   "list": {
     "title": "Quotation List",
     "create": "Create Quotation",
+    "new": "New Quotation",
     "empty": "No quotations registered",
-    "emptyDescription": "Create a new quotation to get started"
+    "emptyDescription": "Create a new quotation to get started",
+    "emptyFiltered": "No quotations found with selected status",
+    "loading": "Loading quotations...",
+    "loadError": "Failed to load quotations",
+    "searchPlaceholder": "Search by job code, project name...",
+    "allStatuses": "All Statuses"
   },
   "create": {
     "title": "Create New Quotation",
@@ -88,8 +95,10 @@
     "sendEmail": "Send Email"
   },
   "approval": {
+    "title": "Submit for Approval",
     "submit": "Submit for Approval",
-    "submitMessage": "Are you sure you want to submit this quotation for approval?",
+    "submitTitle": "Submit for Approval",
+    "submitMessage": "Are you sure you want to submit \"{{jobCode}}\" for approval? This will start the approval workflow.",
     "submitSuccess": "Submitted for approval",
     "approve": "Approve",
     "approveMessage": "Are you sure you want to approve this quotation?",
@@ -99,6 +108,13 @@
     "rejectSuccess": "Quotation rejected",
     "rejectReason": "Rejection Reason",
     "rejectReasonPlaceholder": "Enter rejection reason"
+  },
+  "version": {
+    "title": "Create New Version",
+    "createTitle": "Create New Version",
+    "createMessage": "Create a new version based on \"{{jobCode}} v{{version}}\"? The new version will be in DRAFT status.",
+    "createSuccess": "New version created",
+    "create": "Create Version"
   },
   "email": {
     "send": "Send Email",

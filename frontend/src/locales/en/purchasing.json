@@ -1,8 +1,9 @@
 {
   "title": "Procurement",
+  "description": "Manage purchase requests, RFQs, and purchase orders",
   "tabs": {
     "purchaseRequests": "Purchase Requests",
-    "rfq": "Request for Quotation (RFQ)",
+    "rfq": "RFQ",
     "purchaseOrders": "Purchase Orders"
   },
   "purchaseRequest": {
@@ -10,7 +11,11 @@
     "list": {
       "title": "Purchase Request List",
       "create": "Create Purchase Request",
-      "empty": "No purchase requests registered"
+      "empty": "No purchase requests found.",
+      "allStatuses": "All Statuses",
+      "allTypes": "All Types",
+      "loading": "Loading purchase requests...",
+      "loadError": "Failed to load purchase requests"
     },
     "create": {
       "title": "Create New Purchase Request",
@@ -42,12 +47,11 @@
     },
     "status": {
       "DRAFT": "Draft",
-      "PENDING_APPROVAL": "Pending Approval",
-      "APPROVED": "Approved",
-      "REJECTED": "Rejected",
-      "IN_PROGRESS": "In Progress",
-      "COMPLETED": "Completed",
-      "CANCELLED": "Cancelled"
+      "RFQ_SENT": "RFQ Sent",
+      "VENDOR_SELECTED": "Vendor Selected",
+      "ORDERED": "Ordered",
+      "CLOSED": "Closed",
+      "CANCELED": "Canceled"
     },
     "priority": {
       "LOW": "Low",
@@ -68,7 +72,20 @@
     "list": {
       "title": "RFQ List",
       "create": "Create RFQ",
-      "empty": "No RFQs registered"
+      "empty": "No RFQ requests found.",
+      "loading": "Loading RFQ list...",
+      "loadError": "Failed to load RFQ list"
+    },
+    "summary": {
+      "rfqSent": "RFQ Sent",
+      "vendorSelected": "Vendor Selected",
+      "ordered": "Ordered",
+      "count": "{{count}} items"
+    },
+    "sections": {
+      "rfqSent": "RFQ Sent",
+      "vendorSelectedPending": "Vendor Selected - Awaiting PO",
+      "orderedPending": "Ordered - Awaiting Delivery"
     },
     "create": {
       "title": "Create New RFQ",
@@ -125,7 +142,10 @@
     "list": {
       "title": "Purchase Order List",
       "create": "Create Purchase Order",
-      "empty": "No purchase orders registered"
+      "empty": "No purchase orders found.",
+      "allStatuses": "All Statuses",
+      "loading": "Loading purchase orders...",
+      "loadError": "Failed to load purchase orders"
     },
     "create": {
       "title": "Create New Purchase Order",
@@ -159,13 +179,10 @@
     },
     "status": {
       "DRAFT": "Draft",
-      "PENDING_APPROVAL": "Pending Approval",
-      "APPROVED": "Approved",
       "SENT": "Sent",
       "CONFIRMED": "Confirmed",
-      "PARTIALLY_RECEIVED": "Partially Received",
       "RECEIVED": "Received",
-      "CANCELLED": "Cancelled"
+      "CANCELED": "Canceled"
     },
     "actions": {
       "submit": "Submit for Approval",
@@ -200,12 +217,31 @@
   "table": {
     "headers": {
       "number": "Number",
+      "requestNumber": "Request No.",
+      "poNumber": "PO Number",
+      "type": "Type",
       "project": "Project",
       "vendor": "Vendor",
+      "item": "Item",
+      "description": "Description",
+      "quantity": "Quantity",
+      "requiredDate": "Required Date",
+      "orderDate": "Order Date",
+      "expectedDeliveryDate": "Expected Delivery",
+      "amount": "Amount",
       "status": "Status",
       "total": "Total",
       "date": "Date",
+      "requester": "Requester",
+      "manager": "Manager",
       "actions": "Actions"
     }
+  },
+  "type": {
+    "SERVICE": "Service",
+    "MATERIAL": "Material"
+  },
+  "common": {
+    "retry": "Retry"
   }
 }

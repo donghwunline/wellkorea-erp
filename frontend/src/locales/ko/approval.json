@@ -1,9 +1,14 @@
 {
   "title": "결재",
+  "description": "결재 대기 중인 문서를 검토하고 처리합니다",
   "list": {
     "title": "결재 대기 문서",
-    "empty": "결재 대기 중인 문서가 없습니다",
-    "emptyDescription": "모든 문서가 처리되었습니다"
+    "empty": "결재 대기 중인 문서가 없습니다.",
+    "emptyFiltered": "선택한 상태와 일치하는 결재 요청이 없습니다.",
+    "emptyDescription": "모든 문서가 처리되었습니다",
+    "loading": "결재 요청을 불러오는 중...",
+    "loadError": "결재 요청을 불러오지 못했습니다",
+    "allStatuses": "전체 상태"
   },
   "tabs": {
     "pending": "대기",
@@ -34,7 +39,7 @@
     "message": "이 문서를 승인하시겠습니까?",
     "comment": "승인 의견",
     "commentPlaceholder": "승인 의견을 입력하세요 (선택)",
-    "success": "승인되었습니다",
+    "success": "결재가 승인되었습니다",
     "error": "승인에 실패했습니다"
   },
   "reject": {
@@ -43,7 +48,7 @@
     "reason": "반려 사유",
     "reasonPlaceholder": "반려 사유를 입력하세요",
     "reasonRequired": "반려 사유를 입력해 주세요",
-    "success": "반려되었습니다",
+    "success": "결재가 반려되었습니다",
     "error": "반려에 실패했습니다"
   },
   "history": {
@@ -57,17 +62,20 @@
   },
   "chain": {
     "title": "결재 설정",
+    "description": "문서 유형별 결재 워크플로우를 설정합니다",
     "list": {
       "title": "결재 체계 목록",
       "create": "결재 체계 생성",
-      "empty": "등록된 결재 체계가 없습니다"
+      "empty": "등록된 결재 체계가 없습니다.",
+      "loading": "결재 체계를 불러오는 중..."
     },
+    "edit": {
+      "modalTitle": "결재 체계 수정: {{name}}",
     "create": {
       "title": "새 결재 체계 생성",
       "success": "결재 체계가 생성되었습니다",
       "error": "결재 체계 생성에 실패했습니다"
     },
-    "edit": {
       "title": "결재 체계 수정",
       "success": "결재 체계가 수정되었습니다",
       "error": "결재 체계 수정에 실패했습니다"
@@ -89,7 +97,16 @@
       "remove": "단계 삭제",
       "order": "순서",
       "approver": "결재자",
-      "role": "역할"
+      "role": "역할",
+      "selectApprover": "결재자 선택...",
+      "noLevels": "설정된 결재 단계가 없습니다. 최소 하나의 결재 단계를 추가하세요.",
+      "processOrder": "결재는 1단계부터 마지막 단계까지 순서대로 진행됩니다. 각 단계에서 승인되어야 다음 단계로 진행됩니다."
+    },
+    "table": {
+      "entityType": "문서 유형",
+      "name": "이름",
+      "approvalLevels": "결재 단계",
+      "approvers": "결재자"
     }
   },
   "table": {
@@ -101,5 +118,10 @@
       "status": "상태",
       "actions": "작업"
     }
+  },
+  "common": {
+    "cancel": "취소",
+    "save": "저장",
+    "saving": "저장 중..."
   }
 }

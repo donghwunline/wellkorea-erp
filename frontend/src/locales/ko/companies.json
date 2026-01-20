@@ -1,10 +1,17 @@
 {
   "title": "CRM",
+  "description": "고객사, 협력사, 외주업체 관리",
   "list": {
     "title": "회사 목록",
     "create": "회사 등록",
+    "new": "새 회사",
     "empty": "등록된 회사가 없습니다",
-    "emptyDescription": "새 회사를 등록하여 시작하세요"
+    "emptyDescription": "새 회사를 등록하여 시작하세요",
+    "emptySearch": "\"{{search}}\" 검색 결과가 없습니다",
+    "emptyFiltered": "등록된 {{type}}이(가) 없습니다",
+    "loading": "회사 목록 로딩 중...",
+    "loadError": "회사 목록을 불러오지 못했습니다",
+    "searchPlaceholder": "회사명, 이메일, 사업자등록번호로 검색..."
   },
   "create": {
     "title": "새 회사 등록",
@@ -91,7 +98,13 @@
     "all": "전체",
     "customer": "고객사",
     "vendor": "협력사",
+    "outsource": "외주업체",
     "active": "활성",
     "inactive": "비활성"
+  },
+  "roleType": {
+    "CUSTOMER": "고객사",
+    "VENDOR": "협력사",
+    "OUTSOURCE": "외주업체"
   }
 }

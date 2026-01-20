@@ -1,16 +1,21 @@
 {
   "title": "조달",
+  "description": "구매 요청, RFQ, 발주서를 관리합니다",
   "tabs": {
     "purchaseRequests": "구매 요청",
-    "rfq": "견적 요청 (RFQ)",
-    "purchaseOrders": "발주"
+    "rfq": "RFQ",
+    "purchaseOrders": "발주서"
   },
   "purchaseRequest": {
     "title": "구매 요청",
     "list": {
       "title": "구매 요청 목록",
       "create": "구매 요청 생성",
-      "empty": "등록된 구매 요청이 없습니다"
+      "empty": "조달 요청이 없습니다.",
+      "allStatuses": "전체 상태",
+      "allTypes": "전체 유형",
+      "loading": "구매 요청 로딩 중...",
+      "loadError": "구매 요청을 불러오지 못했습니다"
     },
     "create": {
       "title": "새 구매 요청 생성",
@@ -42,12 +47,11 @@
     },
     "status": {
       "DRAFT": "초안",
-      "PENDING_APPROVAL": "승인 대기",
-      "APPROVED": "승인",
-      "REJECTED": "반려",
-      "IN_PROGRESS": "진행중",
-      "COMPLETED": "완료",
-      "CANCELLED": "취소"
+      "RFQ_SENT": "RFQ 발송",
+      "VENDOR_SELECTED": "업체 선정",
+      "ORDERED": "발주 완료",
+      "CLOSED": "완료",
+      "CANCELED": "취소"
     },
     "priority": {
       "LOW": "낮음",
@@ -68,7 +72,20 @@
     "list": {
       "title": "RFQ 목록",
       "create": "RFQ 생성",
-      "empty": "등록된 RFQ가 없습니다"
+      "empty": "RFQ 발송된 요청이 없습니다.",
+      "loading": "RFQ 목록 로딩 중...",
+      "loadError": "RFQ 목록을 불러오지 못했습니다"
+    },
+    "summary": {
+      "rfqSent": "RFQ 발송 완료",
+      "vendorSelected": "업체 선정 완료",
+      "ordered": "발주 완료",
+      "count": "{{count}}건"
+    },
+    "sections": {
+      "rfqSent": "RFQ 발송 완료",
+      "vendorSelectedPending": "업체 선정 완료 - PO 생성 대기",
+      "orderedPending": "발주 완료 - 입고 대기"
     },
     "create": {
       "title": "새 RFQ 생성",
@@ -125,7 +142,10 @@
     "list": {
       "title": "발주 목록",
       "create": "발주 생성",
-      "empty": "등록된 발주가 없습니다"
+      "empty": "발주서가 없습니다.",
+      "allStatuses": "전체 상태",
+      "loading": "발주서 로딩 중...",
+      "loadError": "발주서를 불러오지 못했습니다"
     },
     "create": {
       "title": "새 발주 생성",
@@ -159,13 +179,10 @@
     },
     "status": {
       "DRAFT": "초안",
-      "PENDING_APPROVAL": "승인 대기",
-      "APPROVED": "승인",
-      "SENT": "전송됨",
+      "SENT": "발송",
       "CONFIRMED": "확정",
-      "PARTIALLY_RECEIVED": "부분 입고",
-      "RECEIVED": "입고 완료",
-      "CANCELLED": "취소"
+      "RECEIVED": "수령",
+      "CANCELED": "취소"
     },
     "actions": {
       "submit": "승인 요청",
@@ -200,12 +217,31 @@
   "table": {
     "headers": {
       "number": "번호",
+      "requestNumber": "요청번호",
+      "poNumber": "PO 번호",
+      "type": "유형",
       "project": "프로젝트",
       "vendor": "공급사",
+      "item": "품목",
+      "description": "내용",
+      "quantity": "수량",
+      "requiredDate": "납기일",
+      "orderDate": "주문일",
+      "expectedDeliveryDate": "예상 납품일",
+      "amount": "금액",
       "status": "상태",
       "total": "합계",
       "date": "날짜",
+      "requester": "요청자",
+      "manager": "담당자",
       "actions": "작업"
     }
+  },
+  "type": {
+    "SERVICE": "외주",
+    "MATERIAL": "자재"
+  },
+  "common": {
+    "retry": "다시 시도"
   }
 }

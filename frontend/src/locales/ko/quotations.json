@@ -1,10 +1,17 @@
 {
   "title": "견적",
+  "description": "모든 견적 조회 및 관리",
   "list": {
     "title": "견적 목록",
     "create": "견적 생성",
+    "new": "새 견적",
     "empty": "등록된 견적이 없습니다",
-    "emptyDescription": "새 견적을 생성하여 시작하세요"
+    "emptyDescription": "새 견적을 생성하여 시작하세요",
+    "emptyFiltered": "선택한 상태의 견적이 없습니다",
+    "loading": "견적 로딩 중...",
+    "loadError": "견적을 불러오지 못했습니다",
+    "searchPlaceholder": "작업 코드, 프로젝트명으로 검색...",
+    "allStatuses": "전체 상태"
   },
   "create": {
     "title": "새 견적 생성",
@@ -88,8 +95,10 @@
     "sendEmail": "이메일 전송"
   },
   "approval": {
+    "title": "결재 요청",
     "submit": "결재 요청",
-    "submitMessage": "이 견적서를 결재 요청하시겠습니까?",
+    "submitTitle": "결재 요청",
+    "submitMessage": "\"{{jobCode}}\" 견적서를 결재 요청하시겠습니까? 결재 프로세스가 시작됩니다.",
     "submitSuccess": "결재가 요청되었습니다",
     "approve": "승인",
     "approveMessage": "이 견적서를 승인하시겠습니까?",
@@ -99,6 +108,13 @@
     "rejectSuccess": "견적서가 반려되었습니다",
     "rejectReason": "반려 사유",
     "rejectReasonPlaceholder": "반려 사유를 입력하세요"
+  },
+  "version": {
+    "title": "새 버전 생성",
+    "createTitle": "새 버전 생성",
+    "createMessage": "\"{{jobCode}} v{{version}}\"을 기반으로 새 버전을 생성하시겠습니까? 새 버전은 초안 상태가 됩니다.",
+    "createSuccess": "새 버전이 생성되었습니다",
+    "create": "버전 생성"
   },
   "email": {
     "send": "이메일 전송",
