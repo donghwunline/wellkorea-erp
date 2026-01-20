@@ -8,6 +8,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Icon, type IconName, Navigation } from '@/shared/ui';
 import { useUIStore } from '@/shared/lib/stores/ui-store';
 import { useAuth } from '@/entities/auth';
@@ -15,7 +16,7 @@ import type { RoleName } from '@/entities/user';
 import { UserMenu } from '@/widgets';
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   path: string;
   icon: IconName;
   /** Roles that can see this item (if undefined, all authenticated users can see it) */
@@ -27,28 +28,28 @@ interface NavItem {
 // Operations - Main workflow menus
 const OPERATIONS_NAV_ITEMS: NavItem[] = [
   {
-    label: '대시보드',
+    labelKey: 'navigation:items.dashboard',
     path: '/',
     icon: 'home',
   },
   {
-    label: '프로젝트',
+    labelKey: 'navigation:items.projects',
     path: '/projects',
     icon: 'clipboard',
   },
   {
-    label: '견적',
+    labelKey: 'navigation:items.quotations',
     path: '/quotations',
     icon: 'document',
     hideFromRoles: ['ROLE_PRODUCTION'], // Production users cannot see quotations
   },
   {
-    label: '출고',
+    labelKey: 'navigation:items.deliveries',
     path: '/deliveries',
     icon: 'truck',
   },
   {
-    label: '정산',
+    labelKey: 'navigation:items.invoices',
     path: '/invoices',
     icon: 'cash',
     roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance can see invoices
@@ -58,19 +59,19 @@ const OPERATIONS_NAV_ITEMS: NavItem[] = [
 // Master Data - Reference/catalog data management
 const MASTER_DATA_NAV_ITEMS: NavItem[] = [
   {
-    label: '아이템',
+    labelKey: 'navigation:items.items',
     path: '/items',
     icon: 'box',
     roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance can manage items
   },
   {
-    label: 'CRM',
+    labelKey: 'navigation:items.companies',
     path: '/companies',
     icon: 'building-office',
     roles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'],
   },
   {
-    label: '조달',
+    labelKey: 'navigation:items.procurement',
     path: '/procurement',
     icon: 'shopping-cart',
     roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance can manage procurement
@@ -80,7 +81,7 @@ const MASTER_DATA_NAV_ITEMS: NavItem[] = [
 // Reports
 const REPORTS_NAV_ITEMS: NavItem[] = [
   {
-    label: 'AR/AP Reports',
+    labelKey: 'navigation:items.arApReports',
     path: '/reports',
     icon: 'chart-bar',
     roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance can see AR/AP reports
@@ -89,12 +90,12 @@ const REPORTS_NAV_ITEMS: NavItem[] = [
 
 const APPROVAL_NAV_ITEMS: NavItem[] = [
   {
-    label: '결재 대기 문서',
+    labelKey: 'navigation:items.pendingApprovals',
     path: '/approvals',
     icon: 'check-circle',
   },
   {
-    label: '결재 설정',
+    labelKey: 'navigation:items.approvalSettings',
     path: '/admin/approval-chains',
     icon: 'cog',
     roles: ['ROLE_ADMIN'],
@@ -103,13 +104,13 @@ const APPROVAL_NAV_ITEMS: NavItem[] = [
 
 const ADMIN_NAV_ITEMS: NavItem[] = [
   {
-    label: '사용자 관리',
+    labelKey: 'navigation:items.userManagement',
     path: '/admin/users',
     icon: 'users',
     roles: ['ROLE_ADMIN'],
   },
   {
-    label: '이력 확인',
+    labelKey: 'navigation:items.auditLogs',
     path: '/admin/audit',
     icon: 'document',
     roles: ['ROLE_ADMIN'],
@@ -121,6 +122,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: Readonly<AppLayoutProps>) {
+  const { t } = useTranslation('navigation');
   const { user, hasAnyRole } = useAuth();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
 
@@ -158,7 +160,7 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
               <img src="/favicon.svg" alt="WellKorea logo" className="h-8 w-8" />
-              <span className="font-semibold text-white">WellKorea</span>
+              <span className="font-semibold text-white">{t('brand.name')}</span>
             </div>
           )}
           <button
@@ -176,7 +178,7 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
         {/* Main Navigation */}
         <Navigation collapsed={sidebarCollapsed} aria-label="Main navigation">
           {/* Operations Section */}
-          <Navigation.Section title="Operations">
+          <Navigation.Section title={t('sections.operations')}>
             {visibleOperationsItems.map(item => (
               <Navigation.Link
                 key={item.path}
@@ -184,17 +186,17 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
                 icon={item.icon}
                 exact={item.path === '/'}
               >
-                {item.label}
+                {t(item.labelKey)}
               </Navigation.Link>
             ))}
           </Navigation.Section>
 
           {/* Master Data Section */}
           {visibleMasterDataItems.length > 0 && (
-            <Navigation.Section title="Master Data" showDivider>
+            <Navigation.Section title={t('sections.masterData')} showDivider>
               {visibleMasterDataItems.map(item => (
                 <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
-                  {item.label}
+                  {t(item.labelKey)}
                 </Navigation.Link>
               ))}
             </Navigation.Section>
@@ -202,10 +204,10 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
 
           {/* Reports Section */}
           {visibleReportsItems.length > 0 && (
-            <Navigation.Section title="Reports" showDivider>
+            <Navigation.Section title={t('sections.reports')} showDivider>
               {visibleReportsItems.map(item => (
                 <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
-                  {item.label}
+                  {t(item.labelKey)}
                 </Navigation.Link>
               ))}
             </Navigation.Section>
@@ -213,10 +215,10 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
 
           {/* Approval Section */}
           {visibleApprovalItems.length > 0 && (
-            <Navigation.Section title="Approval" showDivider>
+            <Navigation.Section title={t('sections.approval')} showDivider>
               {visibleApprovalItems.map(item => (
                 <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
-                  {item.label}
+                  {t(item.labelKey)}
                 </Navigation.Link>
               ))}
             </Navigation.Section>
@@ -224,10 +226,10 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
 
           {/* Admin Section */}
           {visibleAdminItems.length > 0 && (
-            <Navigation.Section title="Administration" showDivider>
+            <Navigation.Section title={t('sections.administration')} showDivider>
               {visibleAdminItems.map(item => (
                 <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
-                  {item.label}
+                  {t(item.labelKey)}
                 </Navigation.Link>
               ))}
             </Navigation.Section>

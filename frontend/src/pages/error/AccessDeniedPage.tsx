@@ -3,6 +3,7 @@
  * Displayed when user lacks required role(s) to access a protected route.
  */
 
+import { useTranslation } from 'react-i18next';
 import type { RoleName } from '@/entities/user';
 
 interface AccessDeniedPageProps {
@@ -10,6 +11,7 @@ interface AccessDeniedPageProps {
 }
 
 export function AccessDeniedPage({ requiredRoles }: Readonly<AccessDeniedPageProps>) {
+  const { t } = useTranslation('common');
   const rolesDisplay = requiredRoles.join(', ');
 
   return (
@@ -30,8 +32,8 @@ export function AccessDeniedPage({ requiredRoles }: Readonly<AccessDeniedPagePro
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
-        <p className="text-steel-400 mb-4">You do not have permission to access this page.</p>
+        <h1 className="text-2xl font-bold text-white mb-2">{t('accessDenied.title')}</h1>
+        <p className="text-steel-400 mb-4">{t('accessDenied.description')}</p>
         <p className="text-sm text-steel-500">
           Required role{requiredRoles.length > 1 ? 's' : ''}:{' '}
           <span className="font-mono text-copper-400">{rolesDisplay}</span>
@@ -40,7 +42,7 @@ export function AccessDeniedPage({ requiredRoles }: Readonly<AccessDeniedPagePro
           href="/"
           className="mt-6 inline-flex items-center gap-2 rounded-lg bg-copper-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-copper-600"
         >
-          Return to Dashboard
+          {t('accessDenied.goHome')}
         </a>
       </div>
     </div>
