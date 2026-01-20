@@ -4,7 +4,6 @@ import com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper;
 import com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper;
 import com.wellkorea.backend.production.domain.TaskFlow;
 import com.wellkorea.backend.production.domain.TaskNode;
-import com.wellkorea.backend.production.domain.TaskNodeStatus;
 import com.wellkorea.backend.production.infrastructure.persistence.BlueprintAttachmentRepository;
 import com.wellkorea.backend.production.infrastructure.persistence.TaskFlowRepository;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
@@ -453,9 +452,10 @@ class ProjectQueryServiceTest {
             Long projectId = 1L;
             TaskFlow taskFlow = new TaskFlow();
             Set<TaskNode> nodes = new HashSet<>();
-            nodes.add(new TaskNode("node1", "Task 1", TaskNodeStatus.PENDING, 0, 0));
-            nodes.add(new TaskNode("node2", "Task 2", TaskNodeStatus.IN_PROGRESS, 100, 0));
-            nodes.add(new TaskNode("node3", "Task 3", TaskNodeStatus.COMPLETED, 200, 0));
+            // TaskNode(nodeId, title, assignee, deadline, progress, positionX, positionY)
+            nodes.add(new TaskNode("node1", "Task 1", "User1", null, 0, 0.0, 0.0));
+            nodes.add(new TaskNode("node2", "Task 2", "User2", null, 50, 100.0, 0.0));
+            nodes.add(new TaskNode("node3", "Task 3", "User3", null, 100, 200.0, 0.0));
             taskFlow.setNodes(nodes);
 
             given(projectMapper.findDetailById(projectId)).willReturn(Optional.of(testDetailView));
