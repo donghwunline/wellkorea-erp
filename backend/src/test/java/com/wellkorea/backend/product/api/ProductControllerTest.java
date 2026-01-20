@@ -65,8 +65,8 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
         salesToken = jwtTokenProvider.generateToken(SALES_USERNAME, Role.SALES.getAuthority(), 4L);
         productionToken = jwtTokenProvider.generateToken(PRODUCTION_USERNAME, Role.PRODUCTION.getAuthority(), 3L);
 
-        // Product types are already seeded by V5__seed_initial_data.sql
-        // IDs 1-4: "Sheet Metal Parts", "Machined Components", "Welded Assemblies", "Custom Enclosures"
+        // Product types are already seeded by V10__seed_data.sql
+        // IDs 1-4: "판금 부품", "기계 가공품", "용접 조립품", "맞춤형 함체"
     }
 
     // ==========================================================================
@@ -324,7 +324,7 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))))
-                    .andExpect(jsonPath("$.data.content[*].productTypeName", everyItem(equalTo("Machined Components"))));
+                    .andExpect(jsonPath("$.data.content[*].productTypeName", everyItem(equalTo("기계 가공품"))));
         }
 
         @Test
@@ -406,7 +406,7 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
                     .andExpect(jsonPath("$.data.id").value(100))
                     .andExpect(jsonPath("$.data.sku").value("SKU-100"))
                     .andExpect(jsonPath("$.data.name").value("Detail Product"))
-                    .andExpect(jsonPath("$.data.productTypeName").value("Sheet Metal Parts"));
+                    .andExpect(jsonPath("$.data.productTypeName").value("판금 부품"));
         }
 
         @Test
@@ -450,8 +450,8 @@ class ProductControllerTest extends BaseIntegrationTest implements TestFixtures 
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data", hasSize(greaterThanOrEqualTo(2))))
-                    .andExpect(jsonPath("$.data[*].name", hasItem("Sheet Metal Parts")))
-                    .andExpect(jsonPath("$.data[*].name", hasItem("Machined Components")));
+                    .andExpect(jsonPath("$.data[*].name", hasItem("판금 부품")))
+                    .andExpect(jsonPath("$.data[*].name", hasItem("기계 가공품")));
         }
 
         @Test

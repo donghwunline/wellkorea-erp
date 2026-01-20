@@ -155,9 +155,9 @@ public final class DatabaseTestHelper {
     /**
      * Inserts test products for quotation tests.
      * Products created:
-     * - Product 1: Control Panel - Sheet Metal Parts (Type 1) - Base price 50000.00
-     * - Product 2: L-Bracket - Sheet Metal Parts (Type 1) - Base price 3500.00
-     * - Product 3: Enclosure - Custom Enclosures (Type 4) - Base price 150000.00
+     * - Product 1: Control Panel - 판금 부품 (Type 1) - Base price 50000.00
+     * - Product 2: L-Bracket - 판금 부품 (Type 1) - Base price 3500.00
+     * - Product 3: Enclosure - 맞춤형 함체 (Type 4) - Base price 150000.00
      *
      * @param jdbcTemplate Spring JDBC template
      */
