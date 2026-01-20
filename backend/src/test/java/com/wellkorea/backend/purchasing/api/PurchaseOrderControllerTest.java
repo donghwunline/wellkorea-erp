@@ -432,8 +432,16 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @Test
         @DisplayName("should return 200 when Admin sends purchase order")
         void sendPurchaseOrder_AsAdmin_Returns200() throws Exception {
+            String sendRequest = """
+                    {
+                        "to": "vendor@test.com"
+                    }
+                    """;
+
             mockMvc.perform(post(PURCHASE_ORDERS_URL + "/300/send")
-                            .header("Authorization", "Bearer " + adminToken))
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(sendRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.message").value(containsString("sent")));
@@ -445,7 +453,9 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
             jdbcTemplate.update("UPDATE purchase_orders SET status = 'SENT' WHERE id = 300");
 
             mockMvc.perform(post(PURCHASE_ORDERS_URL + "/300/send")
-                            .header("Authorization", "Bearer " + adminToken))
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
                     .andExpect(status().isConflict());
         }
 
@@ -453,7 +463,9 @@ class PurchaseOrderControllerTest extends BaseIntegrationTest implements TestFix
         @DisplayName("should return 403 when Sales sends purchase order")
         void sendPurchaseOrder_AsSales_Returns403() throws Exception {
             mockMvc.perform(post(PURCHASE_ORDERS_URL + "/300/send")
-                            .header("Authorization", "Bearer " + salesToken))
+                            .header("Authorization", "Bearer " + salesToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
                     .andExpect(status().isForbidden());
         }
     }

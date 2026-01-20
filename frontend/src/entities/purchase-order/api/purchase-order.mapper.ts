@@ -48,6 +48,7 @@ export interface PurchaseOrderDetailResponse {
   projectName: string;
   vendorId: number;
   vendorName: string;
+  vendorEmail: string | null;
   orderDate: string;
   expectedDeliveryDate: string;
   totalAmount: number;
@@ -88,6 +89,7 @@ export const purchaseOrderMapper = {
       projectName: response.projectName.trim(),
       vendorId: response.vendorId,
       vendorName: response.vendorName.trim(),
+      vendorEmail: response.vendorEmail?.trim() ?? null,
       orderDate: response.orderDate,
       expectedDeliveryDate: response.expectedDeliveryDate,
       totalAmount: response.totalAmount,

@@ -2,13 +2,16 @@
  * Send Purchase Order Mutation Hook.
  *
  * Wraps the sendPurchaseOrder command function with TanStack Query mutation.
- * Transitions PO from DRAFT → SENT status.
+ * Transitions PO from DRAFT → SENT status and sends email notification.
  *
  * FSD Layer: features
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { sendPurchaseOrder, purchaseOrderQueries } from '@/entities/purchase-order';
+import {
+  sendPurchaseOrder,
+  purchaseOrderQueries,
+} from '@/entities/purchase-order';
 
 export interface UseSendPurchaseOrderOptions {
   /** Called after successfully sending the purchase order */
@@ -18,7 +21,7 @@ export interface UseSendPurchaseOrderOptions {
 }
 
 /**
- * Mutation hook for sending a purchase order to the vendor.
+ * Mutation hook for sending a purchase order to the vendor with email notification.
  *
  * @example
  * const { mutate, isPending } = useSendPurchaseOrder({
@@ -26,7 +29,11 @@ export interface UseSendPurchaseOrderOptions {
  *   onError: (err) => showError(err.message),
  * });
  *
- * mutate(purchaseOrderId);
+ * mutate({
+ *   purchaseOrderId: 123,
+ *   to: 'vendor@example.com',
+ *   ccEmails: ['buyer@wellkorea.com'],
+ * });
  */
 export function useSendPurchaseOrder(options?: UseSendPurchaseOrderOptions) {
   const queryClient = useQueryClient();

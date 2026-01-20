@@ -18,6 +18,7 @@ public record PurchaseOrderDetailView(
         String projectName,
         Long vendorId,
         String vendorName,
+        String vendorEmail,
         LocalDate orderDate,
         LocalDate expectedDeliveryDate,
         BigDecimal totalAmount,

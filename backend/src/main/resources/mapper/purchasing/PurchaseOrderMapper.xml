@@ -38,6 +38,7 @@
             <arg column="projectName" javaType="String"/>
             <arg column="vendorId" javaType="Long"/>
             <arg column="vendorName" javaType="String"/>
+            <arg column="vendorEmail" javaType="String"/>
             <arg column="orderDate" javaType="java.time.LocalDate"/>
             <arg column="expectedDeliveryDate" javaType="java.time.LocalDate"/>
             <arg column="totalAmount" javaType="java.math.BigDecimal"/>
@@ -112,6 +113,7 @@
             p.project_name AS projectName,
             po.vendor_company_id AS vendorId,
             c.name AS vendorName,
+            c.email AS vendorEmail,
             po.order_date AS orderDate,
             po.expected_delivery_date AS expectedDeliveryDate,
             po.total_amount AS totalAmount,

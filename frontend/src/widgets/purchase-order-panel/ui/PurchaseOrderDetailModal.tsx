@@ -16,6 +16,7 @@ import {
   Button,
   Card,
   ConfirmationModal,
+  EmailSendModal,
   Icon,
   LoadingState,
   Modal,
@@ -156,9 +157,16 @@ export function PurchaseOrderDetailModal({
   const isActing = isSending || isConfirming || isReceiving || isCanceling;
 
   // Handlers
-  const handleSend = useCallback(() => {
-    sendOrder(purchaseOrderId);
-  }, [purchaseOrderId, sendOrder]);
+  const handleSend = useCallback(
+    (to: string, ccEmails: string[]) => {
+      sendOrder({
+        purchaseOrderId,
+        to,
+        ccEmails,
+      });
+    },
+    [purchaseOrderId, sendOrder]
+  );
 
   const handleConfirm = useCallback(() => {
     confirmOrder(purchaseOrderId);
@@ -374,14 +382,16 @@ export function PurchaseOrderDetailModal({
         </ModalActions>
       </Modal>
 
-      {/* Send Confirmation */}
-      <ConfirmationModal
+      {/* Send Purchase Order Email */}
+      <EmailSendModal
         isOpen={sendConfirm}
-        title="Send Purchase Order"
-        message={`Are you sure you want to send PO "${purchaseOrder.poNumber}" to ${purchaseOrder.vendorName}?`}
-        confirmLabel="Send"
-        onConfirm={handleSend}
         onClose={() => setSendConfirm(false)}
+        onSend={handleSend}
+        defaultEmail={purchaseOrder.vendorEmail ?? undefined}
+        title="Send Purchase Order"
+        contextMessage={`Send PO "${purchaseOrder.poNumber}" to ${purchaseOrder.vendorName}.`}
+        helpText="The purchase order PDF will be attached to the email."
+        isLoading={isSending}
       />
 
       {/* Confirm Confirmation */}
