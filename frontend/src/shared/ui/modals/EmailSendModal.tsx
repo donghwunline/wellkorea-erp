@@ -8,6 +8,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Modal, ModalActions, Spinner, FormField, EmailTagInput, Icon } from '@/shared/ui';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,24 +44,27 @@ export function EmailSendModal({
   onClose,
   onSend,
   defaultEmail,
-  title = 'Send Email',
+  title,
   contextMessage,
-  helpText = 'A PDF attachment will be included with the email.',
+  helpText,
   isLoading = false,
 }: EmailSendModalProps) {
+  const { t } = useTranslation('common');
+  const resolvedTitle = title ?? t('email.title');
+  const resolvedHelpText = helpText ?? t('email.pdfAttachment');
   // Only render content when modal is open - this ensures fresh state on each open
   if (!isOpen) {
     return null;
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title={resolvedTitle} size="md">
       <EmailSendModalContent
         onClose={onClose}
         onSend={onSend}
         defaultEmail={defaultEmail}
         contextMessage={contextMessage}
-        helpText={helpText}
+        helpText={resolvedHelpText}
         isLoading={isLoading}
       />
     </Modal>
@@ -88,6 +92,7 @@ function EmailSendModalContent({
   helpText,
   isLoading,
 }: EmailSendModalContentProps) {
+  const { t } = useTranslation('common');
   // Form state - initialized from props on mount
   const [toEmail, setToEmail] = useState(defaultEmail ?? '');
   const [ccEmails, setCcEmails] = useState<string[]>([]);
@@ -97,16 +102,16 @@ function EmailSendModalContent({
   // Validate TO email
   const validateToEmail = useCallback((email: string): boolean => {
     if (!email.trim()) {
-      setToError('Email address is required');
+      setToError(t('email.required'));
       return false;
     }
     if (!EMAIL_REGEX.test(email.trim())) {
-      setToError('Invalid email format');
+      setToError(t('email.invalidFormat'));
       return false;
     }
     setToError(undefined);
     return true;
-  }, []);
+  }, [t]);
 
   // Check if all CC emails are valid
   const hasInvalidCcEmails = ccEmails.some((email) => !EMAIL_REGEX.test(email.trim()));
@@ -143,7 +148,7 @@ function EmailSendModalContent({
 
       {/* TO Email Field */}
       <FormField
-        label="To"
+        label={t('email.to')}
         type="email"
         value={toEmail}
         onChange={handleToEmailChange}
@@ -162,14 +167,14 @@ function EmailSendModalContent({
           disabled={isLoading}
         >
           <Icon name="plus" className="h-4 w-4" />
-          Add CC recipients
+          {t('email.addCc')}
         </button>
       ) : (
         <EmailTagInput
-          label="CC Recipients (optional)"
+          label={t('email.cc')}
           emails={ccEmails}
           onChange={setCcEmails}
-          placeholder="Enter email and press Enter"
+          placeholder={t('email.placeholder')}
           disabled={isLoading}
         />
       )}
@@ -179,16 +184,16 @@ function EmailSendModalContent({
 
       <ModalActions>
         <Button variant="secondary" onClick={onClose} disabled={isLoading}>
-          Cancel
+          {t('buttons.cancel')}
         </Button>
         <Button onClick={handleSend} disabled={isLoading || !!toError || hasInvalidCcEmails}>
           {isLoading ? (
             <>
               <Spinner className="mr-2 h-4 w-4" />
-              Sending...
+              {t('email.sending')}
             </>
           ) : (
-            'Send Email'
+            t('email.send')
           )}
         </Button>
       </ModalActions>

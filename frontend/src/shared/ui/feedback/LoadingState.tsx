@@ -8,6 +8,7 @@
  */
 
 import type { HTMLAttributes } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SpinnerProps } from '../primitives/Spinner';
 import { Spinner } from '../primitives/Spinner';
 import { cn } from '@/shared/lib/cn';
@@ -23,12 +24,14 @@ export interface LoadingStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 
 
 export function LoadingState({
   variant = 'centered',
-  message = 'Loading...',
+  message,
   spinnerSize = 'lg',
   colspan,
   className,
   ...props
 }: Readonly<LoadingStateProps>) {
+  const { t } = useTranslation('common');
+  const resolvedMessage = message ?? t('status.loading');
   // Spinner-only variant
   if (variant === 'spinner') {
     return <Spinner size={spinnerSize} className={className} />;
@@ -40,7 +43,7 @@ export function LoadingState({
       <tr>
         <td colSpan={colspan} className={cn('px-6 py-12 text-center', className)} {...props}>
           <Spinner size={spinnerSize} className="mx-auto" />
-          {message && <p className="mt-2 text-sm text-steel-400">{message}</p>}
+          {resolvedMessage && <p className="mt-2 text-sm text-steel-400">{resolvedMessage}</p>}
         </td>
       </tr>
     );
@@ -51,7 +54,7 @@ export function LoadingState({
     <div className={cn('flex min-h-[200px] items-center justify-center', className)} {...props}>
       <div className="text-center">
         <Spinner size={spinnerSize} className="mx-auto" />
-        {message && <p className="mt-4 text-steel-400">{message}</p>}
+        {resolvedMessage && <p className="mt-4 text-steel-400">{resolvedMessage}</p>}
       </div>
     </div>
   );
