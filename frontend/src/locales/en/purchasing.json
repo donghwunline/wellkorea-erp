@@ -243,5 +243,47 @@
   },
   "common": {
     "retry": "Retry"
+  },
+  "recordReplyModal": {
+    "title": "Record Quote",
+    "vendor": "Vendor:",
+    "quotedPrice": "Quoted Price",
+    "quotedPriceHint": "Enter amount in KRW",
+    "quotedPricePlaceholder": "e.g., 1500000",
+    "quotedLeadTime": "Lead Time",
+    "quotedLeadTimeHint": "Days (e.g., 14 days)",
+    "quotedLeadTimePlaceholder": "e.g., 14",
+    "notes": "Notes",
+    "notesHint": "Enter additional information or special notes",
+    "notesPlaceholder": "e.g., Price negotiable based on quantity",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "validation": {
+      "quotedPriceRequired": "Please enter quoted price",
+      "quotedPriceInvalid": "Please enter a valid amount",
+      "quotedLeadTimeInvalid": "Please enter a valid lead time"
+    }
+  },
+  "createPurchaseOrderModal": {
+    "title": "Create Purchase Order",
+    "vendor": "Vendor",
+    "quotedPrice": "Quoted Price",
+    "quantity": "Quantity",
+    "leadTime": "Lead Time",
+    "leadTimeDays": "{{days}} days",
+    "totalAmount": "Total Amount",
+    "orderDate": "Order Date",
+    "orderDateRequired": "Please enter order date",
+    "expectedDeliveryDate": "Expected Delivery Date",
+    "expectedDeliveryDateRequired": "Please enter expected delivery date",
+    "expectedDeliveryDateInvalid": "Expected delivery date must be after order date",
+    "expectedDeliveryDateHint": "Based on vendor lead time: {{days}} days",
+    "notes": "Notes",
+    "notesHint": "Enter additional information or special notes",
+    "notesPlaceholder": "e.g., Rush order",
+    "cancel": "Cancel",
+    "create": "Create Purchase Order",
+    "creating": "Creating..."
   }
 }

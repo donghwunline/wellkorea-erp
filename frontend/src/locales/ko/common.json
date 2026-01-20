@@ -200,7 +200,41 @@
     "saveFirst": "도면을 첨부하려면 먼저 작업을 저장하세요",
     "deleteConfirm": "이 작업을 삭제하시겠습니까?",
     "serviceRequest": "외주 요청",
-    "materialRequest": "구매 요청"
+    "materialRequest": "구매 요청",
+    "save": "저장",
+    "saveButton": "저장"
+  },
+  "blueprint": {
+    "download": "다운로드",
+    "downloadError": "{{fileName}} 다운로드에 실패했습니다",
+    "upload": {
+      "title": "파일 업로드",
+      "clickToUpload": "클릭하여 업로드",
+      "dragAndDrop": "또는 드래그 앤 드롭",
+      "allowedTypes": "허용 파일 형식:",
+      "maxSize": "최대",
+      "uploading": "업로드 중...",
+      "fileTypeError": "허용되지 않는 파일 형식입니다. 허용 형식: {{types}}",
+      "fileSizeError": "파일 크기가 최대 {{size}}를 초과합니다"
+    },
+    "delete": {
+      "title": "삭제",
+      "confirm": "확인",
+      "cancel": "취소",
+      "deleting": "삭제 중..."
+    }
+  },
+  "project": {
+    "successModal": {
+      "title": "프로젝트가 생성되었습니다",
+      "message": "다음 Job Code로 프로젝트가 생성되었습니다:",
+      "copyToClipboard": "클립보드에 복사",
+      "copied": "복사됨!",
+      "copiedToClipboard": "클립보드에 복사되었습니다!",
+      "jobCodeInfo": "이 Job Code를 사용하여 견적, 생산, 청구서에서 이 프로젝트를 참조할 수 있습니다.",
+      "backToList": "목록으로 돌아가기",
+      "viewProject": "프로젝트 보기"
+    }
   },
   "purchaseRequest": {
     "title": "구매 요청",

@@ -169,5 +169,31 @@
     "assignCustomers": "고객사 할당",
     "deactivateUser": "사용자 비활성화",
     "activateUser": "사용자 활성화"
+  },
+  "userRolesForm": {
+    "title": "역할 할당",
+    "description": "이 사용자의 역할을 선택하세요",
+    "noRoles": "할당된 역할이 없습니다",
+    "save": "역할 저장",
+    "saving": "저장 중...",
+    "success": "역할이 업데이트되었습니다",
+    "error": "역할 업데이트에 실패했습니다"
+  },
+  "userDeactivate": {
+    "title": "사용자 비활성화",
+    "message": "\"{{username}}\" 사용자를 비활성화하시겠습니까? 해당 사용자는 더 이상 로그인할 수 없습니다.",
+    "confirm": "비활성화",
+    "success": "사용자가 비활성화되었습니다",
+    "error": "사용자 비활성화에 실패했습니다"
+  },
+  "userCustomersForm": {
+    "title": "고객사 할당",
+    "description": "이 사용자가 관리할 고객사를 선택하세요",
+    "noCustomers": "할당된 고객사가 없습니다",
+    "searchPlaceholder": "고객사 검색...",
+    "save": "할당 저장",
+    "saving": "저장 중...",
+    "success": "고객사 할당이 업데이트되었습니다",
+    "error": "고객사 할당 업데이트에 실패했습니다"
   }
 }

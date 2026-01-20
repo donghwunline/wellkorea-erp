@@ -169,5 +169,31 @@
     "assignCustomers": "Assign customers",
     "deactivateUser": "Deactivate user",
     "activateUser": "Activate user"
+  },
+  "userRolesForm": {
+    "title": "Assign Roles",
+    "description": "Select the roles for this user",
+    "noRoles": "No roles assigned",
+    "save": "Save Roles",
+    "saving": "Saving...",
+    "success": "Roles updated successfully",
+    "error": "Failed to update roles"
+  },
+  "userDeactivate": {
+    "title": "Deactivate User",
+    "message": "Are you sure you want to deactivate \"{{username}}\"? This user will no longer be able to log in.",
+    "confirm": "Deactivate",
+    "success": "User deactivated successfully",
+    "error": "Failed to deactivate user"
+  },
+  "userCustomersForm": {
+    "title": "Assign Customers",
+    "description": "Select the customers this user can manage",
+    "noCustomers": "No customers assigned",
+    "searchPlaceholder": "Search customers...",
+    "save": "Save Assignments",
+    "saving": "Saving...",
+    "success": "Customer assignments updated successfully",
+    "error": "Failed to update customer assignments"
   }
 }

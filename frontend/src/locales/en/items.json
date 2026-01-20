@@ -202,5 +202,185 @@
       "nameWhitespace": "Name cannot be whitespace only",
       "pricePositive": "Price must be a positive number"
     }
+  },
+  "productFormModal": {
+    "addTitle": "Add Product",
+    "editTitle": "Edit Product",
+    "createError": "Failed to create product",
+    "updateError": "Failed to update product"
+  },
+  "vendorOfferingForm": {
+    "vendor": "Vendor",
+    "serviceCategory": "Service Category",
+    "vendorServiceCode": "Vendor Service Code",
+    "vendorServiceName": "Vendor Service Name",
+    "unitPrice": "Unit Price",
+    "currency": "Currency",
+    "leadTimeDays": "Lead Time (days)",
+    "minOrderQuantity": "Min Order Quantity",
+    "effectivePeriod": "Effective Period",
+    "isPreferred": "Mark as preferred vendor for this service",
+    "notes": "Notes",
+    "placeholders": {
+      "searchVendors": "Search vendors...",
+      "selectCategory": "Select category...",
+      "vendorServiceCode": "e.g., LC-001",
+      "vendorServiceName": "e.g., Precision Laser Cutting",
+      "selectDateRange": "Select date range...",
+      "notes": "Optional notes about this offering"
+    },
+    "validation": {
+      "vendorRequired": "Vendor is required",
+      "categoryRequired": "Service category is required",
+      "priceNegative": "Unit price cannot be negative",
+      "leadTimeNegative": "Lead time cannot be negative",
+      "minQuantityNegative": "Minimum quantity cannot be negative",
+      "dateRangeInvalid": "Start date must be before end date"
+    },
+    "createOffering": "Create Offering",
+    "saveChanges": "Save Changes"
+  },
+  "vendorOfferingFormModal": {
+    "addTitle": "Add Vendor Offering",
+    "editTitle": "Edit Vendor Offering",
+    "requiredError": "Vendor and service category are required",
+    "createError": "Failed to create offering",
+    "updateError": "Failed to update offering"
+  },
+  "deleteVendorOfferingModal": {
+    "title": "Delete Vendor Offering",
+    "message": "Are you sure you want to delete the offering \"{{name}}\" from {{vendor}}{{price}}? This action cannot be undone.",
+    "confirm": "Delete"
+  },
+  "materialForm": {
+    "sku": "SKU",
+    "name": "Name",
+    "category": "Category",
+    "description": "Description",
+    "unit": "Unit",
+    "standardPrice": "Standard Price",
+    "placeholders": {
+      "sku": "e.g., BOLT-M8X20",
+      "name": "Material name",
+      "selectCategory": "Select a category",
+      "description": "Optional description"
+    },
+    "validation": {
+      "skuRequired": "SKU is required",
+      "skuMaxLength": "SKU must not exceed 50 characters",
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "categoryRequired": "Category is required"
+    },
+    "createMaterial": "Create Material",
+    "saveChanges": "Save Changes"
+  },
+  "materialFormModal": {
+    "addTitle": "Add Material",
+    "editTitle": "Edit Material",
+    "createError": "Failed to create material",
+    "updateError": "Failed to update material"
+  },
+  "deleteMaterialModal": {
+    "title": "Deactivate Material",
+    "message": "Are you sure you want to deactivate \"{{name}}\" ({{sku}})? This material will no longer appear in active listings.",
+    "confirm": "Deactivate"
+  },
+  "vendorMaterialOfferingForm": {
+    "vendor": "Vendor",
+    "material": "Material",
+    "vendorMaterialCode": "Vendor Material Code",
+    "vendorMaterialName": "Vendor Material Name",
+    "unitPrice": "Unit Price",
+    "currency": "Currency",
+    "leadTimeDays": "Lead Time (days)",
+    "minOrderQuantity": "Min Order Quantity",
+    "effectivePeriod": "Effective Period",
+    "isPreferred": "Mark as preferred vendor for this material",
+    "notes": "Notes",
+    "placeholders": {
+      "searchVendors": "Search vendors...",
+      "selectMaterial": "Select material...",
+      "vendorMaterialCode": "e.g., VM-001",
+      "vendorMaterialName": "e.g., Premium Steel Plate",
+      "selectDateRange": "Select date range...",
+      "notes": "Optional notes about this offering"
+    },
+    "validation": {
+      "vendorRequired": "Vendor is required",
+      "materialRequired": "Material is required",
+      "priceNegative": "Unit price cannot be negative",
+      "leadTimeNegative": "Lead time cannot be negative",
+      "minQuantityNegative": "Minimum quantity cannot be negative",
+      "dateRangeInvalid": "Start date must be before end date"
+    },
+    "createOffering": "Create Offering",
+    "saveChanges": "Save Changes"
+  },
+  "vendorMaterialOfferingFormModal": {
+    "addTitle": "Add Vendor Material Offering",
+    "editTitle": "Edit Vendor Material Offering",
+    "requiredError": "Vendor and material are required",
+    "createError": "Failed to create offering",
+    "updateError": "Failed to update offering"
+  },
+  "deleteVendorMaterialOfferingModal": {
+    "title": "Delete Vendor Material Offering",
+    "message": "Are you sure you want to delete the offering \"{{name}}\" from {{vendor}}{{price}}? This action cannot be undone.",
+    "confirm": "Delete"
+  },
+  "materialCategoryForm": {
+    "categoryName": "Category Name",
+    "description": "Description",
+    "placeholders": {
+      "name": "e.g., Fasteners",
+      "description": "Optional description of this category"
+    },
+    "validation": {
+      "nameRequired": "Category name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name must not exceed 100 characters"
+    },
+    "createCategory": "Create Category",
+    "saveChanges": "Save Changes"
+  },
+  "materialCategoryFormModal": {
+    "addTitle": "Add Material Category",
+    "editTitle": "Edit Material Category",
+    "createError": "Failed to create category",
+    "updateError": "Failed to update category"
+  },
+  "deleteMaterialCategoryModal": {
+    "title": "Deactivate Category",
+    "message": "Are you sure you want to deactivate \"{{name}}\"?{{warning}} The category will no longer appear in active listings.",
+    "materialCountWarning": " This category contains {{count}} material(s).",
+    "confirm": "Deactivate"
+  },
+  "serviceCategoryForm": {
+    "categoryName": "Category Name",
+    "description": "Description",
+    "placeholders": {
+      "name": "e.g., Laser Cutting",
+      "description": "Optional description of this service category"
+    },
+    "validation": {
+      "nameRequired": "Category name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name must not exceed 100 characters"
+    },
+    "createCategory": "Create Category",
+    "saveChanges": "Save Changes"
+  },
+  "serviceCategoryFormModal": {
+    "addTitle": "Add Service Category",
+    "editTitle": "Edit Service Category",
+    "createError": "Failed to create category",
+    "updateError": "Failed to update category"
+  },
+  "deleteServiceCategoryModal": {
+    "title": "Deactivate Category",
+    "message": "Are you sure you want to deactivate \"{{name}}\"?{{warning}} The category will no longer appear in active listings.",
+    "vendorCountWarning": " This category has {{count}} vendor offering(s) associated with it.",
+    "confirm": "Deactivate"
   }
 }

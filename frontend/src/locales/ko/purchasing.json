@@ -243,5 +243,47 @@
   },
   "common": {
     "retry": "다시 시도"
+  },
+  "recordReplyModal": {
+    "title": "견적 입력",
+    "vendor": "업체:",
+    "quotedPrice": "견적가",
+    "quotedPriceHint": "원 단위로 입력해주세요",
+    "quotedPricePlaceholder": "예: 1500000",
+    "quotedLeadTime": "납기일",
+    "quotedLeadTimeHint": "일 단위 (예: 14일)",
+    "quotedLeadTimePlaceholder": "예: 14",
+    "notes": "비고",
+    "notesHint": "추가 정보나 특이사항을 입력해주세요",
+    "notesPlaceholder": "예: 수량에 따라 단가 협의 가능",
+    "cancel": "취소",
+    "save": "저장",
+    "saving": "저장 중...",
+    "validation": {
+      "quotedPriceRequired": "견적가를 입력해주세요",
+      "quotedPriceInvalid": "올바른 금액을 입력해주세요",
+      "quotedLeadTimeInvalid": "올바른 납기일을 입력해주세요"
+    }
+  },
+  "createPurchaseOrderModal": {
+    "title": "발주서 생성",
+    "vendor": "업체",
+    "quotedPrice": "견적 단가",
+    "quantity": "수량",
+    "leadTime": "납기",
+    "leadTimeDays": "{{days}}일",
+    "totalAmount": "총 금액",
+    "orderDate": "주문일",
+    "orderDateRequired": "주문일을 입력해주세요",
+    "expectedDeliveryDate": "납기예정일",
+    "expectedDeliveryDateRequired": "납기예정일을 입력해주세요",
+    "expectedDeliveryDateInvalid": "납기예정일은 주문일 이후여야 합니다",
+    "expectedDeliveryDateHint": "업체 납기 기준: {{days}}일",
+    "notes": "비고",
+    "notesHint": "추가 정보나 특이사항을 입력해주세요",
+    "notesPlaceholder": "예: 긴급 발주",
+    "cancel": "취소",
+    "create": "발주서 생성",
+    "creating": "생성 중..."
   }
 }
