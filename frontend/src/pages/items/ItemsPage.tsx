@@ -7,6 +7,7 @@
  * - Materials: Physical materials/items I purchase
  */
 
+import { useTranslation } from 'react-i18next';
 import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
 import { ProductsTab } from './ui/ProductsTab';
 import { OutsourceItemsTab } from './ui/OutsourceItemsTab';
@@ -16,12 +17,14 @@ import { MaterialsTab } from './ui/MaterialsTab';
  * Items page with tabbed navigation.
  */
 export function ItemsPage() {
+  const { t } = useTranslation('items');
+
   return (
     <div className="min-h-screen bg-steel-950 p-6">
       <PageHeader>
         <PageHeader.Title
-          title="아이템"
-          description="Manage your product catalog, outsourced services, and purchased materials"
+          title={t('title')}
+          description={t('description')}
         />
       </PageHeader>
 
@@ -29,13 +32,13 @@ export function ItemsPage() {
         <Tabs defaultTab="products" hash>
           <TabList>
             <Tab id="products" icon="box">
-              판매 품목
+              {t('tabs.products')}
             </Tab>
             <Tab id="outsource" icon="users">
-              외주 품목
+              {t('tabs.outsourceItems')}
             </Tab>
             <Tab id="materials" icon="shopping-cart">
-              구매 자재
+              {t('tabs.materials')}
             </Tab>
           </TabList>
 

@@ -13,6 +13,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { catalogQueries, updateServiceCategory, type ServiceCategoryListItem, type ServiceCategory, type VendorOffering } from '@/entities/catalog';
 import { useAuth } from '@/entities/auth';
@@ -28,6 +29,7 @@ const PAGE_SIZE = 20;
  * Outsource Items tab content.
  */
 export function OutsourceItemsTab() {
+  const { t } = useTranslation('items');
   const { hasAnyRole } = useAuth();
   const canManage = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
   const queryClient = useQueryClient();
@@ -184,7 +186,7 @@ export function OutsourceItemsTab() {
           <SearchBar
             value={search}
             onValueChange={handleSearchChange}
-            placeholder="Search service categories..."
+            placeholder={t('outsourceItems.list.searchPlaceholder')}
             className="w-72"
           />
 
@@ -199,14 +201,14 @@ export function OutsourceItemsTab() {
                 }}
                 className="h-4 w-4 rounded border-steel-600 bg-steel-800 text-copper-500 focus:ring-copper-500"
               />
-              Include Inactive
+              {t('outsourceItems.list.includeInactive')}
             </label>
           )}
         </div>
 
         {canManage && (
           <Button variant="primary" onClick={handleOpenCategoryCreate}>
-            Add Category
+            {t('common.addCategory')}
           </Button>
         )}
       </div>
@@ -214,12 +216,12 @@ export function OutsourceItemsTab() {
       {/* Error */}
       {categoriesError && (
         <Card variant="table" className="p-8 text-center">
-          <p className="text-red-400">Failed to load service categories</p>
+          <p className="text-red-400">{t('outsourceItems.list.loadError')}</p>
           <button
             onClick={() => refetchCategories()}
             className="mt-4 text-sm text-copper-500 hover:underline"
           >
-            Retry
+            {t('common.retry')}
           </button>
         </Card>
       )}
@@ -234,12 +236,7 @@ export function OutsourceItemsTab() {
       {/* Category List */}
       {!categoriesLoading && !categoriesError && categories.length === 0 && (
         <Card className="p-8 text-center text-steel-400">
-          <p>No service categories found.</p>
-          {canManage && (
-            <p className="mt-2">
-              Click &quot;Add Category&quot; to create your first service category.
-            </p>
-          )}
+          <p>{canManage ? t('outsourceItems.list.emptyWithAction') : t('outsourceItems.list.empty')}</p>
         </Card>
       )}
 
@@ -268,14 +265,14 @@ export function OutsourceItemsTab() {
                         : 'bg-red-500/10 text-red-400'
                     }`}
                   >
-                    {category.isActive ? 'Active' : 'Inactive'}
+                    {category.isActive ? t('status.ACTIVE') : t('status.INACTIVE')}
                   </span>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-steel-700/30 pt-3">
                   <span className="flex items-center gap-1.5 text-sm text-steel-400">
                     <Icon name="building-office" className="h-4 w-4" />
-                    {category.vendorCount} vendor{category.vendorCount !== 1 ? 's' : ''}
+                    {t('outsourceItems.vendorCount', { count: category.vendorCount })}
                   </span>
                   <div className="flex items-center gap-2">
                     {canManage && (
@@ -284,14 +281,14 @@ export function OutsourceItemsTab() {
                           onClick={(e) => { e.stopPropagation(); handleOpenCategoryEdit(category); }}
                           className="text-sm text-steel-400 hover:text-white"
                         >
-                          Edit
+                          {t('actions.edit')}
                         </button>
                         {category.isActive ? (
                           <button
                             onClick={(e) => { e.stopPropagation(); handleOpenCategoryDelete(category); }}
                             className="text-sm text-red-400 hover:text-red-300"
                           >
-                            Deactivate
+                            {t('actions.deactivate')}
                           </button>
                         ) : (
                           <button
@@ -299,12 +296,12 @@ export function OutsourceItemsTab() {
                             className="text-sm text-emerald-400 hover:text-emerald-300"
                             disabled={activateMutation.isPending}
                           >
-                            {activateMutation.isPending ? 'Activating...' : 'Activate'}
+                            {activateMutation.isPending ? t('actions.activating') : t('actions.activate')}
                           </button>
                         )}
                       </>
                     )}
-                    <span className="text-sm text-copper-400">View →</span>
+                    <span className="text-sm text-copper-400">{t('actions.view')} →</span>
                   </div>
                 </div>
               </Card>
@@ -320,7 +317,7 @@ export function OutsourceItemsTab() {
               onPageChange={setPage}
               isFirst={pagination.first}
               isLast={pagination.last}
-              itemLabel="categories"
+              itemLabel={t('outsourceItems.title').toLowerCase()}
               className="border-0 bg-transparent px-0"
             />
           )}
@@ -332,7 +329,7 @@ export function OutsourceItemsTab() {
         <Modal
           isOpen={true}
           onClose={handleCloseOfferings}
-          title={`Vendors for "${selectedCategory.name}"`}
+          title={t('outsourceItems.offerings.modalTitle', { name: selectedCategory.name })}
           size="lg"
         >
           {offeringsLoading ? (
@@ -341,14 +338,14 @@ export function OutsourceItemsTab() {
             </div>
           ) : offerings.length === 0 ? (
             <div className="py-8 text-center text-steel-400">
-              <p>No vendors currently offer this service.</p>
+              <p>{t('outsourceItems.offerings.empty')}</p>
               {canManage && (
                 <Button
                   variant="primary"
                   className="mt-4"
                   onClick={handleOpenOfferingCreate}
                 >
-                  Add Vendor Offering
+                  {t('outsourceItems.offerings.addOffering')}
                 </Button>
               )}
             </div>
@@ -359,20 +356,20 @@ export function OutsourceItemsTab() {
                   <thead className="bg-steel-800/60">
                     <tr>
                       <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Vendor
+                        {t('table.headers.vendor')}
                       </th>
                       <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Unit Price
+                        {t('table.headers.unitPrice')}
                       </th>
                       <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Lead Time
+                        {t('table.headers.leadTime')}
                       </th>
                       <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Preferred
+                        {t('table.headers.preferred')}
                       </th>
                       {canManage && (
                         <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                          Actions
+                          {t('table.headers.actions')}
                         </th>
                       )}
                     </tr>
@@ -392,12 +389,12 @@ export function OutsourceItemsTab() {
                           {formatPrice(offering.unitPrice)}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
-                          {offering.leadTimeDays ? `${offering.leadTimeDays} days` : '-'}
+                          {offering.leadTimeDays ? t('common.days', { count: offering.leadTimeDays }) : '-'}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center">
                           {offering.isPreferred && (
                             <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
-                              Preferred
+                              {t('table.headers.preferred')}
                             </span>
                           )}
                         </td>
@@ -407,13 +404,13 @@ export function OutsourceItemsTab() {
                               onClick={() => handleOpenOfferingEdit(offering)}
                               className="text-sm text-steel-400 hover:text-white"
                             >
-                              Edit
+                              {t('actions.edit')}
                             </button>
                             <button
                               onClick={() => handleOpenOfferingDelete(offering)}
                               className="ml-3 text-sm text-red-400 hover:text-red-300"
                             >
-                              Delete
+                              {t('actions.delete')}
                             </button>
                           </td>
                         )}
@@ -426,7 +423,7 @@ export function OutsourceItemsTab() {
               {canManage && (
                 <div className="flex justify-end">
                   <Button variant="secondary" onClick={handleOpenOfferingCreate}>
-                    Add Vendor Offering
+                    {t('outsourceItems.offerings.addOffering')}
                   </Button>
                 </div>
               )}

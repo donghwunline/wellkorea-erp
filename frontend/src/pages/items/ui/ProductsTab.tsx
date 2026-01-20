@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   type Product,
@@ -31,6 +32,7 @@ const PAGE_SIZE = 20;
  * Products tab content.
  */
 export function ProductsTab() {
+  const { t } = useTranslation('items');
   const { hasAnyRole } = useAuth();
   const canManage = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
 
@@ -118,7 +120,7 @@ export function ProductsTab() {
           <SearchBar
             value={search}
             onValueChange={handleSearchChange}
-            placeholder="Search by name or SKU..."
+            placeholder={t('products.list.searchPlaceholder')}
             className="w-72"
           />
 
@@ -128,7 +130,7 @@ export function ProductsTab() {
             onChange={e => handleTypeChange(e.target.value ? Number(e.target.value) : null)}
             className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none"
           >
-            <option value="">All Types</option>
+            <option value="">{t('products.list.allTypes')}</option>
             {productTypes.map(type => (
               <option key={type.id} value={type.id}>
                 {type.name}
@@ -139,7 +141,7 @@ export function ProductsTab() {
 
         {canManage && (
           <Button variant="primary" onClick={handleOpenCreateModal}>
-            Add Product
+            {t('common.addProduct')}
           </Button>
         )}
       </div>
@@ -147,12 +149,12 @@ export function ProductsTab() {
       {/* Error */}
       {productsError && (
         <Card variant="table" className="p-8 text-center">
-          <p className="text-red-400">Failed to load products</p>
+          <p className="text-red-400">{t('products.list.loadError')}</p>
           <button
             onClick={() => refetchProducts()}
             className="mt-4 text-sm text-copper-500 hover:underline"
           >
-            Retry
+            {t('common.retry')}
           </button>
         </Card>
       )}
@@ -171,14 +173,14 @@ export function ProductsTab() {
             products={products}
             emptyMessage={
               canManage
-                ? 'No products found. Click "Add Product" to create your first product.'
-                : 'No products found.'
+                ? t('products.list.emptyWithAction')
+                : t('products.list.empty')
             }
             renderActions={
               canManage
                 ? product => (
                     <Button variant="ghost" size="sm" onClick={() => handleOpenEditModal(product)}>
-                      Edit
+                      {t('actions.edit')}
                     </Button>
                   )
                 : undefined
@@ -194,7 +196,7 @@ export function ProductsTab() {
               onPageChange={setPage}
               isFirst={pagination.first}
               isLast={pagination.last}
-              itemLabel="products"
+              itemLabel={t('products.title').toLowerCase()}
             />
           )}
         </>
