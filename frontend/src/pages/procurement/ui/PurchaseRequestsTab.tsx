@@ -7,6 +7,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   type PurchaseRequestListItem,
@@ -29,10 +30,11 @@ const PAGE_SIZE = 20;
  * Status badge for purchase request.
  */
 function StatusBadge({ status }: { readonly status: PurchaseRequestStatus }) {
+  const { t } = useTranslation('purchasing');
   const config = PurchaseRequestStatusConfig[status];
   return (
     <Badge variant={config.color} dot>
-      {config.labelKo}
+      {t(`purchaseRequest.status.${status}`)}
     </Badge>
   );
 }
@@ -41,9 +43,10 @@ function StatusBadge({ status }: { readonly status: PurchaseRequestStatus }) {
  * Type badge for purchase request.
  */
 function TypeBadge({ dtype }: { readonly dtype: 'SERVICE' | 'MATERIAL' }) {
+  const { t } = useTranslation('purchasing');
   return (
     <Badge variant={dtype === 'SERVICE' ? 'info' : 'copper'} size="sm">
-      {dtype === 'SERVICE' ? '외주' : '자재'}
+      {t(`type.${dtype}`)}
     </Badge>
   );
 }
@@ -52,6 +55,8 @@ function TypeBadge({ dtype }: { readonly dtype: 'SERVICE' | 'MATERIAL' }) {
  * Purchase requests tab content.
  */
 export function PurchaseRequestsTab() {
+  const { t } = useTranslation('purchasing');
+
   // Local state for filters and pagination
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<PurchaseRequestStatus | null>(null);
@@ -129,10 +134,10 @@ export function PurchaseRequestsTab() {
           }
           className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none"
         >
-          <option value="">전체 상태</option>
-          {Object.entries(PurchaseRequestStatusConfig).map(([status, config]) => (
+          <option value="">{t('purchaseRequest.list.allStatuses')}</option>
+          {Object.entries(PurchaseRequestStatusConfig).map(([status]) => (
             <option key={status} value={status}>
-              {config.labelKo}
+              {t(`purchaseRequest.status.${status}`)}
             </option>
           ))}
         </select>
@@ -145,18 +150,18 @@ export function PurchaseRequestsTab() {
           }
           className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none"
         >
-          <option value="">전체 유형</option>
-          <option value="SERVICE">외주</option>
-          <option value="MATERIAL">자재</option>
+          <option value="">{t('purchaseRequest.list.allTypes')}</option>
+          <option value="SERVICE">{t('type.SERVICE')}</option>
+          <option value="MATERIAL">{t('type.MATERIAL')}</option>
         </select>
       </div>
 
       {/* Error */}
       {error && (
         <Card variant="table" className="p-8 text-center">
-          <p className="text-red-400">Failed to load purchase requests</p>
+          <p className="text-red-400">{t('purchaseRequest.list.loadError')}</p>
           <button onClick={() => refetch()} className="mt-4 text-sm text-copper-500 hover:underline">
-            Retry
+            {t('common.retry')}
           </button>
         </Card>
       )}
@@ -175,22 +180,22 @@ export function PurchaseRequestsTab() {
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>요청번호</Table.HeaderCell>
-                  <Table.HeaderCell>유형</Table.HeaderCell>
-                  <Table.HeaderCell>프로젝트</Table.HeaderCell>
-                  <Table.HeaderCell>품목</Table.HeaderCell>
-                  <Table.HeaderCell>내용</Table.HeaderCell>
-                  <Table.HeaderCell>수량</Table.HeaderCell>
-                  <Table.HeaderCell>납기일</Table.HeaderCell>
-                  <Table.HeaderCell>상태</Table.HeaderCell>
-                  <Table.HeaderCell>요청자</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requestNumber')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.type')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.project')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.item')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.description')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.quantity')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requiredDate')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requester')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
                 {requests.length === 0 ? (
                   <Table.Row>
                     <Table.Cell colSpan={9} className="py-12 text-center text-steel-400">
-                      조달 요청이 없습니다.
+                      {t('purchaseRequest.list.empty')}
                     </Table.Cell>
                   </Table.Row>
                 ) : (
@@ -241,7 +246,7 @@ export function PurchaseRequestsTab() {
               onPageChange={setPage}
               isFirst={pagination.first}
               isLast={pagination.last}
-              itemLabel="requests"
+              itemLabel={t('purchaseRequest.title').toLowerCase()}
             />
           )}
         </>

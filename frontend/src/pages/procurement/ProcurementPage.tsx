@@ -7,6 +7,7 @@
  * - Purchase Orders: Confirmed orders to vendors
  */
 
+import { useTranslation } from 'react-i18next';
 import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
 import { PurchaseRequestsTab } from './ui/PurchaseRequestsTab';
 import { RfqTab } from './ui/RfqTab';
@@ -16,12 +17,14 @@ import { PurchaseOrdersTab } from './ui/PurchaseOrdersTab';
  * Procurement page with tabbed navigation.
  */
 export function ProcurementPage() {
+  const { t } = useTranslation('purchasing');
+
   return (
     <div className="min-h-screen bg-steel-950 p-6">
       <PageHeader>
         <PageHeader.Title
-          title="조달"
-          description="Manage purchase requests, RFQs, and purchase orders"
+          title={t('title')}
+          description={t('description')}
         />
       </PageHeader>
 
@@ -29,13 +32,13 @@ export function ProcurementPage() {
         <Tabs defaultTab="requests" hash>
           <TabList>
             <Tab id="requests" icon="document">
-              구매 요청
+              {t('tabs.purchaseRequests')}
             </Tab>
             <Tab id="rfq" icon="paper-airplane">
-              RFQ
+              {t('tabs.rfq')}
             </Tab>
             <Tab id="orders" icon="shopping-cart">
-              발주서
+              {t('tabs.purchaseOrders')}
             </Tab>
           </TabList>
 

@@ -7,6 +7,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   type PurchaseRequestListItem,
@@ -25,10 +26,11 @@ const PAGE_SIZE = 20;
  * Status badge for RFQ-stage requests.
  */
 function RfqStatusBadge({ status }: { readonly status: PurchaseRequestStatus }) {
+  const { t } = useTranslation('purchasing');
   const config = PurchaseRequestStatusConfig[status];
   return (
     <Badge variant={config.color} dot>
-      {config.labelKo}
+      {t(`purchaseRequest.status.${status}`)}
     </Badge>
   );
 }
@@ -37,6 +39,7 @@ function RfqStatusBadge({ status }: { readonly status: PurchaseRequestStatus }) 
  * RFQ tab content.
  */
 export function RfqTab() {
+  const { t } = useTranslation('purchasing');
   const [page, setPage] = useState(0);
 
   // Modal state
@@ -128,19 +131,19 @@ export function RfqTab() {
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <div className="text-sm text-steel-400">RFQ 발송 완료</div>
+          <div className="text-sm text-steel-400">{t('rfq.summary.rfqSent')}</div>
           <div className="mt-1 text-2xl font-bold text-blue-400">
             {rfqSentData?.pagination?.totalElements ?? 0}
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-steel-400">업체 선정 완료</div>
+          <div className="text-sm text-steel-400">{t('rfq.summary.vendorSelected')}</div>
           <div className="mt-1 text-2xl font-bold text-orange-400">
             {vendorSelectedData?.pagination?.totalElements ?? 0}
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-sm text-steel-400">발주 완료</div>
+          <div className="text-sm text-steel-400">{t('rfq.summary.ordered')}</div>
           <div className="mt-1 text-2xl font-bold text-cyan-400">
             {orderedData?.pagination?.totalElements ?? 0}
           </div>
@@ -150,12 +153,12 @@ export function RfqTab() {
       {/* Error */}
       {rfqSentError && (
         <Card variant="table" className="p-8 text-center">
-          <p className="text-red-400">Failed to load RFQ requests</p>
+          <p className="text-red-400">{t('rfq.list.loadError')}</p>
           <button
             onClick={() => refetchRfqSent()}
             className="mt-4 text-sm text-copper-500 hover:underline"
           >
-            Retry
+            {t('common.retry')}
           </button>
         </Card>
       )}
@@ -172,9 +175,9 @@ export function RfqTab() {
         <>
           <div className="flex items-center gap-2">
             <Icon name="paper-airplane" className="h-5 w-5 text-blue-400" />
-            <h3 className="text-lg font-semibold text-white">RFQ 발송 완료</h3>
+            <h3 className="text-lg font-semibold text-white">{t('rfq.sections.rfqSent')}</h3>
             <span className="text-sm text-steel-400">
-              ({rfqSentData?.pagination?.totalElements ?? 0}건)
+              ({t('rfq.summary.count', { count: rfqSentData?.pagination?.totalElements ?? 0 })})
             </span>
           </div>
 
@@ -182,21 +185,21 @@ export function RfqTab() {
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>요청번호</Table.HeaderCell>
-                  <Table.HeaderCell>유형</Table.HeaderCell>
-                  <Table.HeaderCell>프로젝트</Table.HeaderCell>
-                  <Table.HeaderCell>품목</Table.HeaderCell>
-                  <Table.HeaderCell>수량</Table.HeaderCell>
-                  <Table.HeaderCell>납기일</Table.HeaderCell>
-                  <Table.HeaderCell>상태</Table.HeaderCell>
-                  <Table.HeaderCell>요청자</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requestNumber')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.type')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.project')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.item')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.quantity')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requiredDate')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requester')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
                 {rfqSentRequests.length === 0 ? (
                   <Table.Row>
                     <Table.Cell colSpan={8} className="py-12 text-center text-steel-400">
-                      RFQ 발송된 요청이 없습니다.
+                      {t('rfq.list.empty')}
                     </Table.Cell>
                   </Table.Row>
                 ) : (
@@ -219,7 +222,7 @@ export function RfqTab() {
                             variant={request.dtype === 'SERVICE' ? 'info' : 'copper'}
                             size="sm"
                           >
-                            {request.dtype === 'SERVICE' ? '외주' : '자재'}
+                            {t(`type.${request.dtype}`)}
                           </Badge>
                         </Table.Cell>
                         <Table.Cell className="text-steel-300">{request.jobCode ?? '-'}</Table.Cell>
@@ -251,7 +254,7 @@ export function RfqTab() {
               onPageChange={setPage}
               isFirst={pagination.first}
               isLast={pagination.last}
-              itemLabel="requests"
+              itemLabel={t('purchaseRequest.title').toLowerCase()}
             />
           )}
         </>
@@ -262,21 +265,21 @@ export function RfqTab() {
         <>
           <div className="flex items-center gap-2">
             <Icon name="check-circle" className="h-5 w-5 text-orange-400" />
-            <h3 className="text-lg font-semibold text-white">업체 선정 완료 - PO 생성 대기</h3>
-            <span className="text-sm text-steel-400">({vendorSelectedRequests.length}건)</span>
+            <h3 className="text-lg font-semibold text-white">{t('rfq.sections.vendorSelectedPending')}</h3>
+            <span className="text-sm text-steel-400">({t('rfq.summary.count', { count: vendorSelectedRequests.length })})</span>
           </div>
 
           <Card className="overflow-hidden">
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>요청번호</Table.HeaderCell>
-                  <Table.HeaderCell>유형</Table.HeaderCell>
-                  <Table.HeaderCell>프로젝트</Table.HeaderCell>
-                  <Table.HeaderCell>품목</Table.HeaderCell>
-                  <Table.HeaderCell>수량</Table.HeaderCell>
-                  <Table.HeaderCell>납기일</Table.HeaderCell>
-                  <Table.HeaderCell>상태</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requestNumber')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.type')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.project')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.item')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.quantity')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requiredDate')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -294,7 +297,7 @@ export function RfqTab() {
                       </Table.Cell>
                       <Table.Cell>
                         <Badge variant={request.dtype === 'SERVICE' ? 'info' : 'copper'} size="sm">
-                          {request.dtype === 'SERVICE' ? '외주' : '자재'}
+                          {t(`type.${request.dtype}`)}
                         </Badge>
                       </Table.Cell>
                       <Table.Cell className="text-steel-300">{request.jobCode ?? '-'}</Table.Cell>
@@ -322,21 +325,21 @@ export function RfqTab() {
         <>
           <div className="flex items-center gap-2">
             <Icon name="truck" className="h-5 w-5 text-cyan-400" />
-            <h3 className="text-lg font-semibold text-white">발주 완료 - 입고 대기</h3>
-            <span className="text-sm text-steel-400">({orderedRequests.length}건)</span>
+            <h3 className="text-lg font-semibold text-white">{t('rfq.sections.orderedPending')}</h3>
+            <span className="text-sm text-steel-400">({t('rfq.summary.count', { count: orderedRequests.length })})</span>
           </div>
 
           <Card className="overflow-hidden">
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>요청번호</Table.HeaderCell>
-                  <Table.HeaderCell>유형</Table.HeaderCell>
-                  <Table.HeaderCell>프로젝트</Table.HeaderCell>
-                  <Table.HeaderCell>품목</Table.HeaderCell>
-                  <Table.HeaderCell>수량</Table.HeaderCell>
-                  <Table.HeaderCell>납기일</Table.HeaderCell>
-                  <Table.HeaderCell>상태</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requestNumber')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.type')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.project')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.item')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.quantity')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requiredDate')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -354,7 +357,7 @@ export function RfqTab() {
                       </Table.Cell>
                       <Table.Cell>
                         <Badge variant={request.dtype === 'SERVICE' ? 'info' : 'copper'} size="sm">
-                          {request.dtype === 'SERVICE' ? '외주' : '자재'}
+                          {t(`type.${request.dtype}`)}
                         </Badge>
                       </Table.Cell>
                       <Table.Cell className="text-steel-300">{request.jobCode ?? '-'}</Table.Cell>
