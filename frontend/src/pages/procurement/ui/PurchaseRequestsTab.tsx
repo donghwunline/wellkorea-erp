@@ -259,13 +259,21 @@ export function PurchaseRequestsTab() {
       )}
 
       {/* Send RFQ Modal - supports both SERVICE and MATERIAL types */}
-      {sendRfqState.data && (
+      {sendRfqState.data && sendRfqState.data.type === 'SERVICE' && (
         <SendRfqModal
-          type={sendRfqState.data.type}
+          type="SERVICE"
           purchaseRequestId={sendRfqState.data.requestId}
-          {...(sendRfqState.data.type === 'SERVICE'
-            ? { serviceCategoryId: sendRfqState.data.serviceCategoryId }
-            : { materialId: sendRfqState.data.materialId })}
+          serviceCategoryId={sendRfqState.data.serviceCategoryId}
+          isOpen={sendRfqState.isOpen}
+          onClose={handleCloseSendRfq}
+          onSuccess={handleSendRfqSuccess}
+        />
+      )}
+      {sendRfqState.data && sendRfqState.data.type === 'MATERIAL' && (
+        <SendRfqModal
+          type="MATERIAL"
+          purchaseRequestId={sendRfqState.data.requestId}
+          materialId={sendRfqState.data.materialId}
           isOpen={sendRfqState.isOpen}
           onClose={handleCloseSendRfq}
           onSuccess={handleSendRfqSuccess}
