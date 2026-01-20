@@ -161,5 +161,73 @@
     "deliveredBy": "출고 담당자",
     "createdBy": "생성자",
     "modifiedBy": "수정자"
+  },
+  "sections": {
+    "basicInfo": "기본 정보",
+    "contactInfo": "연락처 정보",
+    "financialInfo": "재무 정보",
+    "typeAndPricing": "유형 및 가격",
+    "description": "설명"
+  },
+  "productSelector": {
+    "searchProduct": "제품 검색",
+    "searchPlaceholder": "제품명 또는 SKU로 검색...",
+    "quantity": "수량",
+    "unitPrice": "단가 (KRW)",
+    "note": "비고",
+    "optional": "선택사항",
+    "selected": "선택됨:",
+    "unit": "단위:",
+    "product": "제품",
+    "qty": "수량",
+    "amount": "금액",
+    "totalAmount": "총 금액:",
+    "emptyTitle": "추가된 제품이 없습니다.",
+    "emptyDescription": "제품을 검색하고 추가하여 견적을 작성하세요.",
+    "removeItem": "품목 삭제"
+  },
+  "taskFlow": {
+    "editTask": "작업 수정",
+    "addTask": "작업 추가",
+    "taskTitle": "작업 제목",
+    "enterTaskTitle": "작업 제목 입력",
+    "assignee": "담당자",
+    "enterAssignee": "담당자 이름 입력",
+    "deadline": "마감일",
+    "selectDeadline": "마감일 선택",
+    "progress": "진행률",
+    "attachments": "도면 및 첨부파일",
+    "saveFirst": "도면을 첨부하려면 먼저 작업을 저장하세요",
+    "deleteConfirm": "이 작업을 삭제하시겠습니까?",
+    "serviceRequest": "외주 요청",
+    "materialRequest": "구매 요청"
+  },
+  "purchaseRequest": {
+    "title": "구매 요청",
+    "materialCategory": "자재 카테고리",
+    "allCategories": "전체 카테고리",
+    "material": "자재",
+    "selectMaterial": "자재 선택",
+    "content": "내용",
+    "enterContent": "구매 요청 내용을 입력하세요",
+    "quantity": "수량",
+    "unit": "단위",
+    "requiredDate": "납기일",
+    "selectRequiredDate": "납기일 선택",
+    "serviceCategory": "서비스 카테고리",
+    "selectCategory": "카테고리 선택",
+    "outsourceContent": "외주 작업 내용을 입력하세요",
+    "outsourceTitle": "외주 요청",
+    "attachmentsInfo": "이 작업에 {{count}}개의 도면이 첨부되어 있습니다.",
+    "andMore": "외 {{count}}개",
+    "errors": {
+      "selectMaterial": "자재를 선택해주세요",
+      "enterContent": "내용을 입력해주세요",
+      "quantityPositive": "수량은 0보다 커야 합니다",
+      "selectRequiredDate": "납기일을 선택해주세요",
+      "selectCategory": "서비스 카테고리를 선택해주세요",
+      "createFailed": "구매 요청 생성에 실패했습니다",
+      "outsourceFailed": "외주 요청 생성에 실패했습니다"
+    }
   }
 }

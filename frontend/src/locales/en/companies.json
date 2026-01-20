@@ -106,5 +106,40 @@
     "CUSTOMER": "Customer",
     "VENDOR": "Vendor",
     "OUTSOURCE": "Outsource"
+  },
+  "form": {
+    "companyName": "Company Name",
+    "registrationNumber": "Registration Number",
+    "representative": "Representative",
+    "businessType": "Business Type",
+    "businessCategory": "Business Category",
+    "contactPerson": "Contact Person",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "bankAccount": "Bank Account",
+    "paymentTerms": "Payment Terms",
+    "companyRoles": "Company Roles",
+    "rolesDescription": "Select at least one role for this company. A company can have multiple roles.",
+    "selectRole": "Please select at least one role",
+    "createCompany": "Create Company",
+    "saveChanges": "Save Changes",
+    "placeholders": {
+      "companyName": "Enter company name",
+      "registrationNumber": "000-00-00000",
+      "representative": "Company representative name",
+      "businessType": "e.g., Manufacturing",
+      "businessCategory": "e.g., Electronics",
+      "contactPerson": "Primary contact name",
+      "phone": "02-000-0000",
+      "email": "contact@company.com",
+      "address": "Company address",
+      "bankAccount": "Bank name, account number",
+      "paymentTerms": "e.g., Net 30"
+    },
+    "validation": {
+      "nameRequired": "Company name is required",
+      "nameWhitespace": "Company name cannot be whitespace only"
+    }
   }
 }

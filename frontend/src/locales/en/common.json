@@ -161,5 +161,73 @@
     "deliveredBy": "Delivered By",
     "createdBy": "Created By",
     "modifiedBy": "Modified By"
+  },
+  "sections": {
+    "basicInfo": "Basic Information",
+    "contactInfo": "Contact Information",
+    "financialInfo": "Financial Information",
+    "typeAndPricing": "Type and Pricing",
+    "description": "Description"
+  },
+  "productSelector": {
+    "searchProduct": "Search Product",
+    "searchPlaceholder": "Search by name or SKU...",
+    "quantity": "Quantity",
+    "unitPrice": "Unit Price (KRW)",
+    "note": "Note",
+    "optional": "Optional",
+    "selected": "Selected:",
+    "unit": "Unit:",
+    "product": "Product",
+    "qty": "Qty",
+    "amount": "Amount",
+    "totalAmount": "Total Amount:",
+    "emptyTitle": "No products added yet.",
+    "emptyDescription": "Search and add products to create your quotation.",
+    "removeItem": "Remove item"
+  },
+  "taskFlow": {
+    "editTask": "Edit Task",
+    "addTask": "Add Task",
+    "taskTitle": "Task Title",
+    "enterTaskTitle": "Enter task title",
+    "assignee": "Assignee",
+    "enterAssignee": "Enter assignee name",
+    "deadline": "Deadline",
+    "selectDeadline": "Select deadline",
+    "progress": "Progress",
+    "attachments": "Blueprints & Attachments",
+    "saveFirst": "Save task first to attach blueprints",
+    "deleteConfirm": "Are you sure you want to delete this task?",
+    "serviceRequest": "Service Request",
+    "materialRequest": "Material Request"
+  },
+  "purchaseRequest": {
+    "title": "Purchase Request",
+    "materialCategory": "Material Category",
+    "allCategories": "All Categories",
+    "material": "Material",
+    "selectMaterial": "Select material",
+    "content": "Content",
+    "enterContent": "Enter purchase request content",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "requiredDate": "Required Date",
+    "selectRequiredDate": "Select required date",
+    "serviceCategory": "Service Category",
+    "selectCategory": "Select category",
+    "outsourceContent": "Enter outsourcing work content",
+    "outsourceTitle": "Outsourcing Request",
+    "attachmentsInfo": "{{count}} blueprints attached to this task.",
+    "andMore": "and {{count}} more",
+    "errors": {
+      "selectMaterial": "Please select a material",
+      "enterContent": "Please enter content",
+      "quantityPositive": "Quantity must be greater than 0",
+      "selectRequiredDate": "Please select a required date",
+      "selectCategory": "Please select a service category",
+      "createFailed": "Failed to create purchase request",
+      "outsourceFailed": "Failed to create outsourcing request"
+    }
   }
 }

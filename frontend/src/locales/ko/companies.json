@@ -106,5 +106,40 @@
     "CUSTOMER": "고객사",
     "VENDOR": "협력사",
     "OUTSOURCE": "외주업체"
+  },
+  "form": {
+    "companyName": "회사명",
+    "registrationNumber": "사업자등록번호",
+    "representative": "대표자",
+    "businessType": "업태",
+    "businessCategory": "업종",
+    "contactPerson": "담당자",
+    "phone": "전화번호",
+    "email": "이메일",
+    "address": "주소",
+    "bankAccount": "계좌번호",
+    "paymentTerms": "결제 조건",
+    "companyRoles": "회사 유형",
+    "rolesDescription": "이 회사의 역할을 최소 하나 이상 선택하세요. 여러 역할을 가질 수 있습니다.",
+    "selectRole": "역할을 하나 이상 선택하세요",
+    "createCompany": "회사 등록",
+    "saveChanges": "변경사항 저장",
+    "placeholders": {
+      "companyName": "회사명을 입력하세요",
+      "registrationNumber": "000-00-00000",
+      "representative": "대표자 이름",
+      "businessType": "예: 제조업",
+      "businessCategory": "예: 전자부품",
+      "contactPerson": "주 담당자 이름",
+      "phone": "02-000-0000",
+      "email": "contact@company.com",
+      "address": "회사 주소",
+      "bankAccount": "은행명, 계좌번호",
+      "paymentTerms": "예: 월말 마감"
+    },
+    "validation": {
+      "nameRequired": "회사명을 입력해주세요",
+      "nameWhitespace": "회사명은 공백만으로 구성될 수 없습니다"
+    }
   }
 }
