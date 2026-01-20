@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -32,6 +33,8 @@ import {
 import { formatDate, formatDateTime } from '@/shared/lib/formatting';
 
 export function DeliveryDetailPage() {
+  const { t } = useTranslation('deliveries');
+  const { t: tCommon } = useTranslation('common');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const deliveryId = Number(id);
@@ -62,7 +65,7 @@ export function DeliveryDetailPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Card>
-          <LoadingState message="Loading delivery details..." />
+          <LoadingState message={t('view.loading')} />
         </Card>
       </div>
     );
@@ -72,14 +75,14 @@ export function DeliveryDetailPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Alert variant="error">
-          Failed to load delivery: {fetchError.message}
+          {t('view.loadError')}: {fetchError.message}
         </Alert>
         <Button
           variant="secondary"
           className="mt-4"
           onClick={() => navigate('/deliveries')}
         >
-          Back to Deliveries
+          {t('actions.backToList')}
         </Button>
       </div>
     );
@@ -88,13 +91,13 @@ export function DeliveryDetailPage() {
   if (!delivery) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">Delivery not found</Alert>
+        <Alert variant="error">{t('view.notFound')}</Alert>
         <Button
           variant="secondary"
           className="mt-4"
           onClick={() => navigate('/deliveries')}
         >
-          Back to Deliveries
+          {t('actions.backToList')}
         </Button>
       </div>
     );
@@ -107,12 +110,12 @@ export function DeliveryDetailPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title={`출고 #${delivery.id}`}
-          description={`Delivery for Job Code: ${delivery.jobCode}`}
+          title={`${t('title')} #${delivery.id}`}
+          description={`${t('fields.project')}: ${delivery.jobCode}`}
         />
         <PageHeader.Actions>
           <Button variant="ghost" onClick={() => navigate('/deliveries')}>
-            Back to List
+            {t('actions.backToList')}
           </Button>
           <Button variant="secondary" onClick={handleDownloadStatement} disabled={isDownloading}>
             {isDownloading ? (
@@ -120,7 +123,7 @@ export function DeliveryDetailPage() {
             ) : (
               <Icon name="document-arrow-down" className="mr-2 h-4 w-4" />
             )}
-            Download Statement
+            {t('actions.downloadStatement')}
           </Button>
         </PageHeader.Actions>
       </PageHeader>
@@ -129,21 +132,21 @@ export function DeliveryDetailPage() {
       <Card className="mb-6 p-6">
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           <div>
-            <div className="text-sm text-steel-400">Status</div>
+            <div className="text-sm text-steel-400">{t('fields.status')}</div>
             <div className="mt-1">
               <DeliveryStatusBadge status={delivery.status} />
             </div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Delivery Date</div>
+            <div className="text-sm text-steel-400">{t('fields.deliveryDate')}</div>
             <div className="mt-1 text-white">{formatDate(delivery.deliveryDate)}</div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Delivered By</div>
+            <div className="text-sm text-steel-400">{tCommon('fields.deliveredBy')}</div>
             <div className="mt-1 text-white">{delivery.deliveredByName}</div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Project</div>
+            <div className="text-sm text-steel-400">{t('fields.project')}</div>
             <div className="mt-1">
               <Link
                 to={`/projects/${delivery.projectId}`}
@@ -157,13 +160,13 @@ export function DeliveryDetailPage() {
 
         {delivery.notes && (
           <div className="mt-6 border-t border-steel-700 pt-4">
-            <div className="text-sm text-steel-400">Notes</div>
+            <div className="text-sm text-steel-400">{t('fields.notes')}</div>
             <div className="mt-1 text-steel-300">{delivery.notes}</div>
           </div>
         )}
 
         <div className="mt-6 border-t border-steel-700 pt-4 text-xs text-steel-500">
-          Created: {formatDateTime(delivery.createdAt)} | Updated:{' '}
+          {tCommon('fields.createdAt')}: {formatDateTime(delivery.createdAt)} | {tCommon('fields.updatedAt')}:{' '}
           {formatDateTime(delivery.updatedAt)}
         </div>
       </Card>
@@ -171,18 +174,18 @@ export function DeliveryDetailPage() {
       {/* Line Items Card */}
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Delivered Items</h3>
+          <h3 className="text-lg font-semibold text-white">{t('view.deliveredItems')}</h3>
           <span className="text-steel-400">
-            {delivery.lineItems.length} items, {totalQuantity} total units
+            {t('view.itemCount', { count: delivery.lineItems.length, total: totalQuantity })}
           </span>
         </div>
 
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>Product</Table.HeaderCell>
+              <Table.HeaderCell>{t('lineItems.product')}</Table.HeaderCell>
               <Table.HeaderCell>SKU</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Quantity Delivered</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">{t('lineItems.shippedQuantity')}</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -203,7 +206,7 @@ export function DeliveryDetailPage() {
           <tfoot>
             <tr className="border-t border-steel-700">
               <td colSpan={2} className="px-4 py-3 text-right font-medium text-white">
-                Total:
+                {t('view.total')}:
               </td>
               <td className="px-4 py-3 text-right font-bold text-copper-400">
                 {totalQuantity}
