@@ -152,6 +152,36 @@ const mockTranslations: Record<string, string> = {
   'quotations:email.sendSuccess': 'Email sent successfully',
   'quotations:email.sendError': 'Failed to send email',
 
+  // Quotation Panel translations
+  'quotations:panel.loadingQuotations': 'Loading quotations...',
+  'quotations:panel.loadingDetails': 'Loading quotation details...',
+  'quotations:panel.noQuotationsTitle': 'No Quotations Yet',
+  'quotations:panel.noQuotationsDescription': 'Create your first quotation for this project.',
+  'quotations:panel.newQuotation': 'New Quotation',
+  'quotations:panel.new': 'New',
+  'quotations:panel.edit': 'Edit',
+  'quotations:panel.submit': 'Submit',
+  'quotations:panel.pdf': 'PDF',
+  'quotations:panel.sendEmail': 'Send Email',
+  'quotations:panel.accept': 'Accept',
+  'quotations:panel.newVersion': 'New Version',
+  'quotations:panel.submitSuccess': 'Quotation submitted for approval',
+  'quotations:panel.acceptSuccess': 'Quotation accepted by customer',
+  'quotations:panel.versionSuccess': 'New version created',
+  'quotations:panel.emailSuccess': 'Email notification sent successfully',
+  'quotations:panel.confirmSubmit.title': 'Submit for Approval',
+  'quotations:panel.confirmSubmit.message': 'Are you sure you want to submit "{{jobCode}}" for approval?',
+  'quotations:panel.confirmSubmit.confirm': 'Submit',
+  'quotations:panel.confirmAccept.title': 'Accept Quotation',
+  'quotations:panel.confirmAccept.message': 'Mark "{{jobCode}} v{{version}}" as accepted by customer?',
+  'quotations:panel.confirmAccept.confirm': 'Accept',
+  'quotations:panel.confirmVersion.title': 'Create New Version',
+  'quotations:panel.confirmVersion.message': 'Create a new version based on "{{jobCode}} v{{version}}"?',
+  'quotations:panel.confirmVersion.confirm': 'Create Version',
+  'quotations:createModal.title': 'Create Quotation',
+  'quotations:createModal.loadingProject': 'Loading project details...',
+  'quotations:createModal.errorLoadingProject': 'Failed to load project details',
+
   // Company translations
   'companies:title': 'CRM',
   'companies:description': 'Manage customers, vendors, and outsource partners',
@@ -496,6 +526,33 @@ const mockTranslations: Record<string, string> = {
   'admin:audit.actions.LOGIN': 'LOGIN',
   'admin:audit.actions.LOGOUT': 'LOGOUT',
   'admin:common.retry': 'Retry',
+
+  // User Table translations
+  'admin:userTable.user': 'User',
+  'admin:userTable.roles': 'Roles',
+  'admin:userTable.status': 'Status',
+  'admin:userTable.lastLogin': 'Last Login',
+  'admin:userTable.actions': 'Actions',
+  'admin:userTable.active': 'Active',
+  'admin:userTable.inactive': 'Inactive',
+  'admin:userTable.empty': 'No users found.',
+  'admin:userTable.editUser': 'Edit user',
+  'admin:userTable.manageRoles': 'Manage roles',
+  'admin:userTable.changePassword': 'Change password',
+  'admin:userTable.assignCustomers': 'Assign customers',
+  'admin:userTable.deactivateUser': 'Deactivate user',
+  'admin:userTable.activateUser': 'Activate user',
+
+  // Approval Card translations
+  'approval:card.submittedBy': 'Submitted By',
+  'approval:card.submittedAt': 'Submitted At',
+  'approval:card.currentLevel': 'Current Level',
+  'approval:card.levelOf': 'Level {{current}} of {{total}}',
+  'approval:card.status': 'Status',
+  'approval:card.approvalProgress': 'Approval Progress',
+  'approval:card.viewDetails': 'View Details',
+  'approval:buttons.approve': 'Approve',
+  'approval:buttons.reject': 'Reject',
 };
 
 /**
@@ -517,12 +574,26 @@ function mockT(key: string, options?: Record<string, unknown>): string {
 
 // Mock i18next for tests
 vi.mock('react-i18next', () => ({
-  useTranslation: (namespace?: string) => ({
+  useTranslation: (namespace?: string | string[]) => ({
     t: (key: string, options?: Record<string, unknown>) => {
       // If key already has namespace prefix, use as-is
       if (key.includes(':')) {
         return mockT(key, options);
       }
+
+      // Handle array of namespaces - try each in order
+      if (Array.isArray(namespace)) {
+        for (const ns of namespace) {
+          const fullKey = `${ns}:${key}`;
+          const result = mockT(fullKey, options);
+          if (result !== fullKey) {
+            return result;
+          }
+        }
+        // If no namespace matched, try without namespace
+        return mockT(key, options);
+      }
+
       // Otherwise, prepend namespace if provided
       const fullKey = namespace ? `${namespace}:${key}` : key;
       // Try with namespace first, then without
