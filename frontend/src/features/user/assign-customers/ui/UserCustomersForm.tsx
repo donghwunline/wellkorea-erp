@@ -8,6 +8,7 @@
  */
 
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { getCustomerAssignments, type UserDetails } from '@/entities/user';
 import { companyQueries } from '@/entities/company';
@@ -27,6 +28,7 @@ export function UserCustomersForm({
   onClose,
   onSuccess,
 }: Readonly<UserCustomersFormProps>) {
+  const { t } = useTranslation(['admin', 'common']);
   // Local UI State
   const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +56,7 @@ export function UserCustomersForm({
       const customerIds = await getCustomerAssignments(user.id);
       setSelectedCustomers(customerIds);
     } catch {
-      setError('Failed to load customer assignments');
+      setError(t('admin:userCustomersForm.error'));
       setSelectedCustomers([]);
     } finally {
       setIsLoadingAssignments(false);
@@ -103,26 +105,26 @@ export function UserCustomersForm({
   const isLoading = isLoadingCustomers || isLoadingAssignments;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Assign Customers">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('admin:userCustomersForm.title')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
         <div>
-          <p className="mb-1 text-sm font-medium text-steel-300">User</p>
+          <p className="mb-1 text-sm font-medium text-steel-300">{t('admin:users.fields.username')}</p>
           <p className="text-white">{user.fullName}</p>
           <p className="text-sm text-steel-400">{user.email}</p>
         </div>
 
         {isLoading ? (
-          <LoadingState message="Loading customers..." />
+          <LoadingState message={t('common:status.loading')} />
         ) : availableCustomers.length === 0 ? (
           <div className="rounded-lg bg-steel-800/50 p-4 text-center text-steel-400">
-            No customers available. Add companies with the Customer role first.
+            {t('admin:userCustomersForm.noCustomers')}
           </div>
         ) : (
           <div>
             <span className="mb-3 block text-sm font-medium text-steel-300">
-              Select Customers
+              {t('admin:userCustomersForm.description')}
             </span>
             <div className="max-h-64 space-y-2 overflow-y-auto">
               {availableCustomers.map(customer => (
@@ -166,10 +168,10 @@ export function UserCustomersForm({
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={handleClose} disabled={isPending}>
-            Cancel
+            {t('common:buttons.cancel')}
           </Button>
           <Button type="submit" isLoading={isPending}>
-            Save Assignments
+            {t('admin:userCustomersForm.save')}
           </Button>
         </div>
       </form>
