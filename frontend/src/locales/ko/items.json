@@ -173,5 +173,34 @@
     "addCategory": "카테고리 추가",
     "days": "{{count}}일",
     "noVendors": "없음"
+  },
+  "productForm": {
+    "sku": "SKU (품목코드)",
+    "name": "품목명",
+    "productType": "제품 유형",
+    "selectProductType": "제품 유형 선택",
+    "unit": "단위",
+    "baseUnitPrice": "기준 단가",
+    "description": "설명",
+    "descriptionPlaceholder": "제품 설명 (선택사항)",
+    "createProduct": "제품 등록",
+    "saveChanges": "변경사항 저장",
+    "units": {
+      "EA": "EA (개)",
+      "SET": "SET",
+      "BOX": "BOX",
+      "KG": "KG",
+      "M": "M (미터)"
+    },
+    "placeholders": {
+      "sku": "예: PRD-001",
+      "name": "제품명을 입력하세요",
+      "baseUnitPrice": "예: 10000"
+    },
+    "validation": {
+      "skuWhitespace": "SKU는 공백만으로 구성될 수 없습니다",
+      "nameWhitespace": "품목명은 공백만으로 구성될 수 없습니다",
+      "pricePositive": "단가는 양수여야 합니다"
+    }
   }
 }

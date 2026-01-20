@@ -173,5 +173,34 @@
     "addCategory": "Add Category",
     "days": "{{count}} days",
     "noVendors": "None"
+  },
+  "productForm": {
+    "sku": "SKU",
+    "name": "Name",
+    "productType": "Product Type",
+    "selectProductType": "Select product type",
+    "unit": "Unit",
+    "baseUnitPrice": "Base Unit Price",
+    "description": "Description",
+    "descriptionPlaceholder": "Product description (optional)",
+    "createProduct": "Create Product",
+    "saveChanges": "Save Changes",
+    "units": {
+      "EA": "EA (Each)",
+      "SET": "SET",
+      "BOX": "BOX",
+      "KG": "KG",
+      "M": "M (Meter)"
+    },
+    "placeholders": {
+      "sku": "e.g., PRD-001",
+      "name": "Enter product name",
+      "baseUnitPrice": "e.g., 10000"
+    },
+    "validation": {
+      "skuWhitespace": "SKU cannot be whitespace only",
+      "nameWhitespace": "Name cannot be whitespace only",
+      "pricePositive": "Price must be a positive number"
+    }
   }
 }
