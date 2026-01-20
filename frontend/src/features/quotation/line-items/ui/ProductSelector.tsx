@@ -292,12 +292,12 @@ export function ProductSelector({
           <Table>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell className="w-8">{t('productSelector.tableHeaders.number')}</Table.HeaderCell>
-                <Table.HeaderCell>{t('productSelector.tableHeaders.product')}</Table.HeaderCell>
-                <Table.HeaderCell className="w-24 text-right">{t('productSelector.tableHeaders.qty')}</Table.HeaderCell>
-                <Table.HeaderCell className="w-32 text-right">{t('productSelector.tableHeaders.unitPrice')}</Table.HeaderCell>
-                <Table.HeaderCell className="w-32 text-right">{t('productSelector.tableHeaders.amount')}</Table.HeaderCell>
-                <Table.HeaderCell className="w-32">{t('productSelector.tableHeaders.note')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-8">#</Table.HeaderCell>
+                <Table.HeaderCell>{t('productSelector.product')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-24 text-right">{t('productSelector.qty')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-32 text-right">{t('productSelector.unitPrice')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-32 text-right">{t('productSelector.amount')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-32">{t('productSelector.note')}</Table.HeaderCell>
                 {!disabled && <Table.HeaderCell className="w-12">{''}</Table.HeaderCell>}
               </Table.Row>
             </Table.Header>
