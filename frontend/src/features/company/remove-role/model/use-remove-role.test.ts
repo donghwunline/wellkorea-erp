@@ -62,7 +62,7 @@ describe('useRemoveRole', () => {
       await act(async () => {
         result.current.mutate({
           companyId: 1,
-          roleId: 10,
+          roleType: 'CUSTOMER',
         });
       });
 
@@ -83,7 +83,7 @@ describe('useRemoveRole', () => {
       await act(async () => {
         result.current.mutate({
           companyId: 1,
-          roleId: 10,
+          roleType: 'CUSTOMER',
         });
       });
 
@@ -108,7 +108,7 @@ describe('useRemoveRole', () => {
       await act(async () => {
         result.current.mutate({
           companyId: 5,
-          roleId: 10,
+          roleType: 'VENDOR',
         });
       });
 
@@ -137,7 +137,7 @@ describe('useRemoveRole', () => {
       await act(async () => {
         result.current.mutate({
           companyId: 1,
-          roleId: 10,
+          roleType: 'CUSTOMER',
         });
       });
 
@@ -161,7 +161,7 @@ describe('useRemoveRole', () => {
       await act(async () => {
         result.current.mutate({
           companyId: 1,
-          roleId: 10,
+          roleType: 'CUSTOMER',
         });
       });
 

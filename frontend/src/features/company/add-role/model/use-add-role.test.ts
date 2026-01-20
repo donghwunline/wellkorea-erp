@@ -67,7 +67,6 @@ describe('useAddRole', () => {
         result.current.mutate({
           companyId: 1,
           roleType: 'CUSTOMER',
-          notes: '',
         });
       });
 
@@ -90,7 +89,6 @@ describe('useAddRole', () => {
         result.current.mutate({
           companyId: 1,
           roleType: 'VENDOR',
-          notes: 'Test vendor',
         });
       });
 
@@ -112,7 +110,6 @@ describe('useAddRole', () => {
         result.current.mutate({
           companyId: 1,
           roleType: 'CUSTOMER',
-          notes: '',
         });
       });
 
@@ -138,7 +135,6 @@ describe('useAddRole', () => {
         result.current.mutate({
           companyId: 5,
           roleType: 'CUSTOMER',
-          notes: '',
         });
       });
 
@@ -169,7 +165,6 @@ describe('useAddRole', () => {
         result.current.mutate({
           companyId: 1,
           roleType: 'CUSTOMER',
-          notes: '',
         });
       });
 
@@ -193,7 +188,6 @@ describe('useAddRole', () => {
         result.current.mutate({
           companyId: 1,
           roleType: 'CUSTOMER',
-          notes: '',
         });
       });
 

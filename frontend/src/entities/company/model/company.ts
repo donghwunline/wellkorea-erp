@@ -123,9 +123,9 @@ export const companyRules = {
    * Check if a role can be removed.
    * Cannot remove the last role from a company.
    */
-  canRemoveRole(company: CompanyWithRoles, roleId: number): boolean {
+  canRemoveRole(company: CompanyWithRoles, roleType: RoleType): boolean {
     if (company.roles.length <= 1) return false;
-    return company.roles.some(r => r.id === roleId);
+    return company.roles.some(r => r.roleType === roleType);
   },
 
   /**

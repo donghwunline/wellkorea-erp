@@ -125,9 +125,9 @@ export function CompanyTable({
                 </Table.Cell>
                 <Table.Cell>
                   <div className="flex flex-wrap gap-1">
-                    {company.roles.map((role, index) => (
+                    {company.roles.map((role) => (
                       <CompanyRoleBadge
-                        key={role.id ?? `${role.roleType}-${index}`}
+                        key={role.roleType}
                         roleType={role.roleType}
                         size="sm"
                       />
