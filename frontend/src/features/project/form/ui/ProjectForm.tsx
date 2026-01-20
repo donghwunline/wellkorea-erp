@@ -9,6 +9,7 @@
  */
 
 import { type FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type {
   CreateProjectInput,
   Project,
@@ -117,6 +118,8 @@ export function ProjectForm({
   error,
   onDismissError,
 }: Readonly<ProjectFormProps>) {
+  const { t } = useTranslation(['projects', 'common']);
+
   // Form state - initialize from initialData if editing, otherwise use empty defaults
   const [formData, setFormData] = useState<ProjectFormData>(
     initialData ? toFormData(initialData) : EMPTY_FORM_DATA
@@ -141,7 +144,7 @@ export function ProjectForm({
 
   // Validation error messages
   const validationErrors = {
-    projectName: hasWhitespaceOnlyName ? 'Project name cannot be whitespace only' : undefined,
+    projectName: hasWhitespaceOnlyName ? t('form.validation.nameWhitespace') : undefined,
   };
 
   // Get today's date in YYYY-MM-DD format for min date
@@ -153,81 +156,81 @@ export function ProjectForm({
 
       {/* Customer Selection (Company with CUSTOMER role) */}
       <CompanyCombobox
-        label="Customer"
+        label={t('form.customer')}
         value={formData.customerId}
         onChange={value => setFormData(prev => ({ ...prev, customerId: value }))}
         roleType="CUSTOMER"
         required
         disabled={isSubmitting || mode === 'edit'}
-        helpText={mode === 'edit' ? 'Customer cannot be changed after creation' : undefined}
+        helpText={mode === 'edit' ? t('form.cannotChangeAfterCreation') : undefined}
         initialLabel={initialData?.customerName}
       />
 
       {/* Project Name */}
       <FormField
-        label="Project Name"
+        label={t('form.projectName')}
         type="text"
         value={formData.projectName}
         onChange={value => setFormData(prev => ({ ...prev, projectName: value }))}
         required
         disabled={isSubmitting}
-        placeholder="Enter project name"
+        placeholder={t('form.placeholders.projectName')}
         maxLength={255}
         error={validationErrors.projectName}
       />
 
       {/* Requester Name */}
       <FormField
-        label="Requester Name"
+        label={t('form.requesterName')}
         type="text"
         value={formData.requesterName}
         onChange={value => setFormData(prev => ({ ...prev, requesterName: value }))}
         disabled={isSubmitting}
-        placeholder="Enter requester name (optional)"
+        placeholder={t('form.placeholders.requesterName')}
         maxLength={100}
       />
 
       {/* Due Date */}
       <DatePicker
-        label="Due Date"
+        label={t('form.dueDate')}
         value={formData.dueDate}
         onChange={value => setFormData(prev => ({ ...prev, dueDate: value as string }))}
         required
         disabled={isSubmitting}
         min={today}
-        placeholder="Select due date..."
+        placeholder={t('form.placeholders.selectDueDate')}
       />
 
       {/* Internal Owner Selection */}
       <UserCombobox
-        label="Internal Owner"
+        label={t('form.internalOwner')}
         value={formData.internalOwnerId}
         onChange={value => setFormData(prev => ({ ...prev, internalOwnerId: value }))}
-        placeholder="Search or select internal owner..."
+        placeholder={t('form.placeholders.searchOwner')}
         required
         disabled={isSubmitting || mode === 'edit'}
-        helpText={mode === 'edit' ? 'Internal owner cannot be changed after creation' : undefined}
+        helpText={mode === 'edit' ? t('form.cannotChangeAfterCreation') : undefined}
         initialLabel={initialData?.internalOwnerName}
       />
 
       {/* Job Code (read-only in edit mode) */}
       {mode === 'edit' && initialData && (
         <div>
-          <span className="mb-2 block text-sm font-medium text-steel-300">Job Code</span>
+          <span className="mb-2 block text-sm font-medium text-steel-300">{t('form.jobCode')}</span>
           <div className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-4 py-2.5">
             <span className="font-mono text-copper-400">{initialData.jobCode}</span>
           </div>
-          <p className="mt-1 text-xs text-steel-500">Job Code is auto-generated and read-only</p>
+          <p className="mt-1 text-xs text-steel-500">{t('form.jobCodeReadonly')}</p>
         </div>
       )}
 
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {t('common:buttons.cancel')}
         </Button>
         <Button type="submit" isLoading={isSubmitting} disabled={!isValid}>
-          {mode === 'create' ? 'Create Project' : 'Save Changes'}
+          {mode === 'create' ? t('form.createProject') : t('form.saveChanges')}
         </Button>
       </div>
     </form>

@@ -30,7 +30,12 @@ import { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ProjectSection } from '@/entities/project';
-import { ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton, projectQueries, } from '@/entities/project';
+import {
+  ProjectDetailsCard,
+  ProjectKPIStrip,
+  ProjectKPIStripSkeleton,
+  projectQueries,
+} from '@/entities/project';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';

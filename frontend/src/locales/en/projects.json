@@ -69,7 +69,27 @@
   "form": {
     "selectCompany": "Select Company",
     "selectContact": "Select Contact",
-    "selectStatus": "Select Status"
+    "selectStatus": "Select Status",
+    "customer": "Customer",
+    "projectName": "Project Name",
+    "requesterName": "Requester Name",
+    "dueDate": "Due Date",
+    "internalOwner": "Internal Owner",
+    "jobCode": "Job Code",
+    "jobCodeReadonly": "Job Code is auto-generated and read-only",
+    "cannotChangeAfterCreation": "Cannot be changed after creation",
+    "createProject": "Create Project",
+    "saveChanges": "Save Changes",
+    "placeholders": {
+      "projectName": "Enter project name",
+      "requesterName": "Enter requester name (optional)",
+      "searchCustomer": "Search or select customer...",
+      "searchOwner": "Search or select internal owner...",
+      "selectDueDate": "Select due date..."
+    },
+    "validation": {
+      "nameWhitespace": "Project name cannot be whitespace only"
+    }
   },
   "actions": {
     "view": "View Details",
