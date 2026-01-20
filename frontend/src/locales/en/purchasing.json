@@ -1,0 +1,211 @@
+{
+  "title": "Procurement",
+  "tabs": {
+    "purchaseRequests": "Purchase Requests",
+    "rfq": "Request for Quotation (RFQ)",
+    "purchaseOrders": "Purchase Orders"
+  },
+  "purchaseRequest": {
+    "title": "Purchase Requests",
+    "list": {
+      "title": "Purchase Request List",
+      "create": "Create Purchase Request",
+      "empty": "No purchase requests registered"
+    },
+    "create": {
+      "title": "Create New Purchase Request",
+      "success": "Purchase request created successfully",
+      "error": "Failed to create purchase request"
+    },
+    "edit": {
+      "title": "Edit Purchase Request",
+      "success": "Purchase request updated successfully",
+      "error": "Failed to update purchase request"
+    },
+    "view": {
+      "title": "Purchase Request Details"
+    },
+    "delete": {
+      "title": "Delete Purchase Request",
+      "message": "Are you sure you want to delete this purchase request?",
+      "success": "Purchase request deleted successfully"
+    },
+    "fields": {
+      "prNumber": "PR Number",
+      "project": "Project",
+      "requestedBy": "Requested By",
+      "requestDate": "Request Date",
+      "requiredDate": "Required Date",
+      "status": "Status",
+      "priority": "Priority",
+      "notes": "Notes"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PENDING_APPROVAL": "Pending Approval",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "IN_PROGRESS": "In Progress",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "priority": {
+      "LOW": "Low",
+      "NORMAL": "Normal",
+      "HIGH": "High",
+      "URGENT": "Urgent"
+    },
+    "actions": {
+      "submit": "Submit for Approval",
+      "approve": "Approve",
+      "reject": "Reject",
+      "createRfq": "Create RFQ",
+      "createPo": "Create PO"
+    }
+  },
+  "rfq": {
+    "title": "Request for Quotation (RFQ)",
+    "list": {
+      "title": "RFQ List",
+      "create": "Create RFQ",
+      "empty": "No RFQs registered"
+    },
+    "create": {
+      "title": "Create New RFQ",
+      "success": "RFQ created successfully",
+      "error": "Failed to create RFQ"
+    },
+    "edit": {
+      "title": "Edit RFQ",
+      "success": "RFQ updated successfully",
+      "error": "Failed to update RFQ"
+    },
+    "view": {
+      "title": "RFQ Details"
+    },
+    "delete": {
+      "title": "Delete RFQ",
+      "message": "Are you sure you want to delete this RFQ?",
+      "success": "RFQ deleted successfully"
+    },
+    "fields": {
+      "rfqNumber": "RFQ Number",
+      "vendor": "Vendor",
+      "vendors": "Vendor List",
+      "issueDate": "Issue Date",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "notes": "Notes"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "SENT": "Sent",
+      "RECEIVED": "Quote Received",
+      "EVALUATED": "Evaluated",
+      "SELECTED": "Selected",
+      "CANCELLED": "Cancelled"
+    },
+    "actions": {
+      "send": "Send",
+      "receiveQuote": "Receive Quote",
+      "evaluate": "Evaluate",
+      "select": "Select",
+      "createPo": "Create PO",
+      "sendEmail": "Send Email"
+    },
+    "email": {
+      "send": "Send Email",
+      "sendTitle": "Send RFQ by Email",
+      "sendSuccess": "Email sent successfully",
+      "sendError": "Failed to send email"
+    }
+  },
+  "purchaseOrder": {
+    "title": "Purchase Orders",
+    "list": {
+      "title": "Purchase Order List",
+      "create": "Create Purchase Order",
+      "empty": "No purchase orders registered"
+    },
+    "create": {
+      "title": "Create New Purchase Order",
+      "success": "Purchase order created successfully",
+      "error": "Failed to create purchase order"
+    },
+    "edit": {
+      "title": "Edit Purchase Order",
+      "success": "Purchase order updated successfully",
+      "error": "Failed to update purchase order"
+    },
+    "view": {
+      "title": "Purchase Order Details"
+    },
+    "delete": {
+      "title": "Delete Purchase Order",
+      "message": "Are you sure you want to delete this purchase order?",
+      "success": "Purchase order deleted successfully"
+    },
+    "fields": {
+      "poNumber": "PO Number",
+      "vendor": "Vendor",
+      "issueDate": "Issue Date",
+      "deliveryDate": "Delivery Date",
+      "status": "Status",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total",
+      "notes": "Notes",
+      "terms": "Terms & Conditions"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PENDING_APPROVAL": "Pending Approval",
+      "APPROVED": "Approved",
+      "SENT": "Sent",
+      "CONFIRMED": "Confirmed",
+      "PARTIALLY_RECEIVED": "Partially Received",
+      "RECEIVED": "Received",
+      "CANCELLED": "Cancelled"
+    },
+    "actions": {
+      "submit": "Submit for Approval",
+      "approve": "Approve",
+      "reject": "Reject",
+      "send": "Send",
+      "confirm": "Confirm",
+      "receive": "Receive",
+      "downloadPdf": "Download PDF",
+      "sendEmail": "Send Email"
+    },
+    "email": {
+      "send": "Send Email",
+      "sendTitle": "Send Purchase Order by Email",
+      "sendSuccess": "Email sent successfully",
+      "sendError": "Failed to send email"
+    }
+  },
+  "lineItems": {
+    "title": "Line Items",
+    "add": "Add Item",
+    "remove": "Remove Item",
+    "empty": "No items registered",
+    "item": "Item",
+    "material": "Material",
+    "description": "Description",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "unitPrice": "Unit Price",
+    "amount": "Amount"
+  },
+  "table": {
+    "headers": {
+      "number": "Number",
+      "project": "Project",
+      "vendor": "Vendor",
+      "status": "Status",
+      "total": "Total",
+      "date": "Date",
+      "actions": "Actions"
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "title": "프로젝트",
+  "list": {
+    "title": "프로젝트 목록",
+    "create": "프로젝트 생성",
+    "empty": "등록된 프로젝트가 없습니다",
+    "emptyDescription": "새 프로젝트를 생성하여 시작하세요"
+  },
+  "create": {
+    "title": "새 프로젝트 생성",
+    "success": "프로젝트가 생성되었습니다",
+    "error": "프로젝트 생성에 실패했습니다"
+  },
+  "edit": {
+    "title": "프로젝트 수정",
+    "success": "프로젝트가 수정되었습니다",
+    "error": "프로젝트 수정에 실패했습니다"
+  },
+  "view": {
+    "title": "프로젝트 상세",
+    "basicInfo": "기본 정보",
+    "quotations": "견적",
+    "deliveries": "출고",
+    "invoices": "정산"
+  },
+  "delete": {
+    "title": "프로젝트 삭제",
+    "message": "이 프로젝트를 삭제하시겠습니까?",
+    "success": "프로젝트가 삭제되었습니다",
+    "error": "프로젝트 삭제에 실패했습니다"
+  },
+  "fields": {
+    "jobCode": "작업 코드",
+    "projectName": "프로젝트명",
+    "company": "회사",
+    "contact": "담당자",
+    "status": "상태",
+    "requestDate": "요청일",
+    "dueDate": "납기일",
+    "description": "설명",
+    "notes": "비고",
+    "createdAt": "생성일",
+    "updatedAt": "수정일"
+  },
+  "status": {
+    "DRAFT": "초안",
+    "ACTIVE": "진행중",
+    "COMPLETED": "완료",
+    "CANCELLED": "취소",
+    "ON_HOLD": "보류"
+  },
+  "table": {
+    "headers": {
+      "jobCode": "작업 코드",
+      "projectName": "프로젝트명",
+      "company": "회사",
+      "status": "상태",
+      "requestDate": "요청일",
+      "dueDate": "납기일",
+      "actions": "작업"
+    }
+  },
+  "form": {
+    "selectCompany": "회사 선택",
+    "selectContact": "담당자 선택",
+    "selectStatus": "상태 선택"
+  },
+  "actions": {
+    "view": "상세 보기",
+    "edit": "수정",
+    "delete": "삭제",
+    "createQuotation": "견적 생성",
+    "createDelivery": "출고 생성",
+    "createInvoice": "정산 생성"
+  }
+}

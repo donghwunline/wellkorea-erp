@@ -1,0 +1,97 @@
+{
+  "title": "CRM",
+  "list": {
+    "title": "Company List",
+    "create": "Add Company",
+    "empty": "No companies registered",
+    "emptyDescription": "Add a new company to get started"
+  },
+  "create": {
+    "title": "Add New Company",
+    "success": "Company added successfully",
+    "error": "Failed to add company"
+  },
+  "edit": {
+    "title": "Edit Company",
+    "success": "Company updated successfully",
+    "error": "Failed to update company"
+  },
+  "view": {
+    "title": "Company Details",
+    "basicInfo": "Basic Information",
+    "contacts": "Contacts",
+    "projects": "Projects",
+    "transactions": "Transaction History"
+  },
+  "delete": {
+    "title": "Delete Company",
+    "message": "Are you sure you want to delete this company?",
+    "success": "Company deleted successfully",
+    "error": "Failed to delete company"
+  },
+  "fields": {
+    "companyName": "Company Name",
+    "businessNumber": "Business Registration Number",
+    "representativeName": "Representative",
+    "companyType": "Company Type",
+    "industry": "Industry",
+    "address": "Address",
+    "addressDetail": "Address Detail",
+    "zipCode": "Zip Code",
+    "phone": "Phone",
+    "fax": "Fax",
+    "email": "Email",
+    "website": "Website",
+    "notes": "Notes",
+    "status": "Status",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At"
+  },
+  "companyType": {
+    "CUSTOMER": "Customer",
+    "VENDOR": "Vendor",
+    "BOTH": "Customer/Vendor"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "INACTIVE": "Inactive"
+  },
+  "contacts": {
+    "title": "Contact List",
+    "add": "Add Contact",
+    "edit": "Edit Contact",
+    "delete": "Delete Contact",
+    "empty": "No contacts registered",
+    "name": "Name",
+    "position": "Position",
+    "department": "Department",
+    "phone": "Phone",
+    "mobile": "Mobile",
+    "email": "Email",
+    "isPrimary": "Primary Contact",
+    "notes": "Notes"
+  },
+  "table": {
+    "headers": {
+      "companyName": "Company Name",
+      "businessNumber": "Business Number",
+      "companyType": "Type",
+      "phone": "Phone",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "actions": {
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "addContact": "Add Contact"
+  },
+  "filters": {
+    "all": "All",
+    "customer": "Customers",
+    "vendor": "Vendors",
+    "active": "Active",
+    "inactive": "Inactive"
+  }
+}

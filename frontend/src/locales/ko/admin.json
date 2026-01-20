@@ -1,0 +1,107 @@
+{
+  "title": "관리",
+  "users": {
+    "title": "사용자 관리",
+    "list": {
+      "title": "사용자 목록",
+      "create": "사용자 생성",
+      "empty": "등록된 사용자가 없습니다"
+    },
+    "create": {
+      "title": "새 사용자 생성",
+      "success": "사용자가 생성되었습니다",
+      "error": "사용자 생성에 실패했습니다"
+    },
+    "edit": {
+      "title": "사용자 수정",
+      "success": "사용자가 수정되었습니다",
+      "error": "사용자 수정에 실패했습니다"
+    },
+    "delete": {
+      "title": "사용자 삭제",
+      "message": "이 사용자를 삭제하시겠습니까?",
+      "success": "사용자가 삭제되었습니다",
+      "error": "사용자 삭제에 실패했습니다"
+    },
+    "fields": {
+      "username": "사용자 ID",
+      "fullName": "이름",
+      "email": "이메일",
+      "roles": "역할",
+      "status": "상태",
+      "createdAt": "생성일",
+      "lastLogin": "최근 로그인"
+    },
+    "status": {
+      "ACTIVE": "활성",
+      "INACTIVE": "비활성",
+      "LOCKED": "잠김"
+    },
+    "roles": {
+      "ROLE_ADMIN": "관리자",
+      "ROLE_FINANCE": "재무",
+      "ROLE_SALES": "영업",
+      "ROLE_PRODUCTION": "생산",
+      "ROLE_USER": "일반 사용자"
+    },
+    "actions": {
+      "edit": "수정",
+      "delete": "삭제",
+      "resetPassword": "비밀번호 초기화",
+      "lock": "잠금",
+      "unlock": "잠금 해제"
+    },
+    "resetPassword": {
+      "title": "비밀번호 초기화",
+      "message": "이 사용자의 비밀번호를 초기화하시겠습니까?",
+      "success": "비밀번호가 초기화되었습니다",
+      "newPassword": "새 비밀번호"
+    }
+  },
+  "audit": {
+    "title": "이력 확인",
+    "list": {
+      "title": "감사 로그",
+      "empty": "이력이 없습니다"
+    },
+    "fields": {
+      "timestamp": "일시",
+      "user": "사용자",
+      "action": "작업",
+      "entity": "대상",
+      "entityId": "대상 ID",
+      "changes": "변경 내용",
+      "ipAddress": "IP 주소"
+    },
+    "actions": {
+      "CREATE": "생성",
+      "UPDATE": "수정",
+      "DELETE": "삭제",
+      "LOGIN": "로그인",
+      "LOGOUT": "로그아웃",
+      "APPROVE": "승인",
+      "REJECT": "반려"
+    },
+    "filters": {
+      "dateRange": "기간",
+      "user": "사용자",
+      "action": "작업",
+      "entity": "대상"
+    },
+    "details": {
+      "title": "상세 정보",
+      "before": "변경 전",
+      "after": "변경 후"
+    }
+  },
+  "table": {
+    "headers": {
+      "username": "사용자 ID",
+      "fullName": "이름",
+      "email": "이메일",
+      "roles": "역할",
+      "status": "상태",
+      "actions": "작업"
+    }
+  }
+}

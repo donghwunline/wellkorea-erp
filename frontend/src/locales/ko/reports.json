@@ -1,0 +1,75 @@
+{
+  "title": "보고서",
+  "arAp": {
+    "title": "AR/AP 보고서",
+    "tabs": {
+      "ar": "매출채권 (AR)",
+      "ap": "매입채무 (AP)",
+      "summary": "요약"
+    },
+    "ar": {
+      "title": "매출채권 현황",
+      "description": "고객사별 미수금 현황",
+      "totalReceivables": "총 매출채권",
+      "overdueAmount": "연체 금액",
+      "currentDue": "금월 만기",
+      "empty": "매출채권 데이터가 없습니다"
+    },
+    "ap": {
+      "title": "매입채무 현황",
+      "description": "공급사별 미지급금 현황",
+      "totalPayables": "총 매입채무",
+      "overdueAmount": "연체 금액",
+      "currentDue": "금월 만기",
+      "empty": "매입채무 데이터가 없습니다"
+    },
+    "summary": {
+      "title": "AR/AP 요약",
+      "netPosition": "순 포지션",
+      "arTotal": "매출채권 총액",
+      "apTotal": "매입채무 총액"
+    },
+    "aging": {
+      "title": "경과일 분석",
+      "current": "당기",
+      "days30": "1-30일",
+      "days60": "31-60일",
+      "days90": "61-90일",
+      "over90": "90일 초과"
+    },
+    "filters": {
+      "dateRange": "기간",
+      "company": "회사",
+      "status": "상태"
+    },
+    "fields": {
+      "company": "회사",
+      "invoiceNumber": "정산 번호",
+      "issueDate": "발행일",
+      "dueDate": "만기일",
+      "amount": "금액",
+      "paidAmount": "결제 금액",
+      "balance": "잔액",
+      "daysOverdue": "연체일수",
+      "status": "상태"
+    }
+  },
+  "table": {
+    "headers": {
+      "company": "회사",
+      "documentNumber": "문서 번호",
+      "issueDate": "발행일",
+      "dueDate": "만기일",
+      "amount": "금액",
+      "balance": "잔액",
+      "status": "상태"
+    }
+  },
+  "actions": {
+    "export": "내보내기",
+    "exportExcel": "엑셀 내보내기",
+    "exportPdf": "PDF 내보내기",
+    "print": "인쇄",
+    "refresh": "새로고침"
+  }
+}

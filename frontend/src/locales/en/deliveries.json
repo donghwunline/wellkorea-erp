@@ -1,0 +1,107 @@
+{
+  "title": "Deliveries",
+  "list": {
+    "title": "Delivery List",
+    "create": "Create Delivery",
+    "empty": "No deliveries registered",
+    "emptyDescription": "Create a new delivery to get started"
+  },
+  "create": {
+    "title": "Create New Delivery",
+    "selectProject": "Select Project",
+    "success": "Delivery created successfully",
+    "error": "Failed to create delivery"
+  },
+  "edit": {
+    "title": "Edit Delivery",
+    "success": "Delivery updated successfully",
+    "error": "Failed to update delivery"
+  },
+  "view": {
+    "title": "Delivery Details",
+    "basicInfo": "Basic Information",
+    "lineItems": "Line Items",
+    "history": "History"
+  },
+  "delete": {
+    "title": "Delete Delivery",
+    "message": "Are you sure you want to delete this delivery?",
+    "success": "Delivery deleted successfully",
+    "error": "Failed to delete delivery"
+  },
+  "fields": {
+    "deliveryNumber": "Delivery Number",
+    "project": "Project",
+    "company": "Company",
+    "status": "Status",
+    "deliveryDate": "Delivery Date",
+    "shippingMethod": "Shipping Method",
+    "trackingNumber": "Tracking Number",
+    "carrier": "Carrier",
+    "recipientName": "Recipient Name",
+    "recipientPhone": "Recipient Phone",
+    "deliveryAddress": "Delivery Address",
+    "notes": "Notes",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "PENDING": "Pending",
+    "PREPARING": "Preparing",
+    "SHIPPED": "Shipped",
+    "IN_TRANSIT": "In Transit",
+    "DELIVERED": "Delivered",
+    "CANCELLED": "Cancelled"
+  },
+  "shippingMethod": {
+    "PARCEL": "Parcel",
+    "FREIGHT": "Freight",
+    "PICKUP": "Pickup",
+    "COURIER": "Courier"
+  },
+  "lineItems": {
+    "title": "Delivery Items",
+    "add": "Add Item",
+    "remove": "Remove Item",
+    "empty": "No items registered",
+    "product": "Product",
+    "description": "Description",
+    "orderedQuantity": "Ordered Qty",
+    "shippedQuantity": "Shipped Qty",
+    "remainingQuantity": "Remaining Qty",
+    "unit": "Unit"
+  },
+  "actions": {
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "ship": "Ship",
+    "confirm": "Confirm Delivery",
+    "print": "Print",
+    "downloadPdf": "Download PDF"
+  },
+  "table": {
+    "headers": {
+      "deliveryNumber": "Delivery Number",
+      "project": "Project",
+      "company": "Company",
+      "status": "Status",
+      "deliveryDate": "Delivery Date",
+      "trackingNumber": "Tracking Number",
+      "actions": "Actions"
+    }
+  },
+  "confirm": {
+    "ship": {
+      "title": "Ship Delivery",
+      "message": "Are you sure you want to ship this delivery?",
+      "success": "Delivery shipped"
+    },
+    "complete": {
+      "title": "Confirm Delivery",
+      "message": "Has this delivery been completed?",
+      "success": "Delivery confirmed"
+    }
+  }
+}

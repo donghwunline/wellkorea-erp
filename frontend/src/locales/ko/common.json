@@ -1,0 +1,140 @@
+{
+  "buttons": {
+    "save": "저장",
+    "cancel": "취소",
+    "create": "생성",
+    "edit": "수정",
+    "delete": "삭제",
+    "confirm": "확인",
+    "submit": "제출",
+    "search": "검색",
+    "retry": "다시 시도",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "reset": "초기화",
+    "apply": "적용",
+    "add": "추가",
+    "remove": "제거",
+    "view": "보기",
+    "download": "다운로드",
+    "upload": "업로드",
+    "export": "내보내기",
+    "import": "가져오기",
+    "refresh": "새로고침",
+    "print": "인쇄",
+    "copy": "복사",
+    "more": "더보기",
+    "goBack": "돌아가기",
+    "logout": "로그아웃"
+  },
+  "status": {
+    "loading": "로딩 중...",
+    "saving": "저장 중...",
+    "success": "성공",
+    "error": "오류",
+    "pending": "대기 중",
+    "active": "활성",
+    "inactive": "비활성",
+    "completed": "완료",
+    "processing": "처리 중...",
+    "deleting": "삭제 중..."
+  },
+  "table": {
+    "noData": "데이터가 없습니다",
+    "actions": "작업",
+    "loading": "데이터를 불러오는 중...",
+    "error": "데이터를 불러오는 중 오류가 발생했습니다",
+    "empty": "표시할 데이터가 없습니다",
+    "rowsPerPage": "페이지당 행 수",
+    "of": "/",
+    "page": "페이지",
+    "showing": "{{start}} - {{end}} / {{total}}",
+    "total": "총 {{count}}건"
+  },
+  "pagination": {
+    "first": "처음",
+    "last": "마지막",
+    "next": "다음",
+    "previous": "이전",
+    "page": "{{current}} / {{total}} 페이지",
+    "goToPage": "페이지 이동",
+    "itemsPerPage": "페이지당 항목 수"
+  },
+  "search": {
+    "placeholder": "검색...",
+    "clear": "검색어 지우기",
+    "noResults": "검색 결과가 없습니다",
+    "results": "{{count}}건 검색됨"
+  },
+  "filter": {
+    "all": "전체",
+    "apply": "필터 적용",
+    "clear": "필터 초기화",
+    "noOptions": "선택 가능한 옵션이 없습니다"
+  },
+  "confirmation": {
+    "title": "확인",
+    "deleteTitle": "삭제 확인",
+    "deleteMessage": "정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "unsavedChanges": "저장하지 않은 변경사항이 있습니다. 페이지를 떠나시겠습니까?",
+    "confirmAction": "이 작업을 진행하시겠습니까?"
+  },
+  "toast": {
+    "success": "성공",
+    "error": "오류",
+    "warning": "경고",
+    "info": "정보"
+  },
+  "form": {
+    "required": "필수",
+    "optional": "선택",
+    "selectPlaceholder": "선택하세요",
+    "noOptions": "옵션이 없습니다",
+    "uploading": "업로드 중...",
+    "fileSelected": "{{count}}개 파일 선택됨"
+  },
+  "date": {
+    "today": "오늘",
+    "yesterday": "어제",
+    "tomorrow": "내일",
+    "thisWeek": "이번 주",
+    "thisMonth": "이번 달",
+    "selectDate": "날짜 선택",
+    "startDate": "시작일",
+    "endDate": "종료일"
+  },
+  "time": {
+    "now": "지금",
+    "am": "오전",
+    "pm": "오후"
+  },
+  "currency": {
+    "krw": "원"
+  },
+  "error": {
+    "title": "오류가 발생했습니다",
+    "unexpectedError": "예기치 않은 오류가 발생했습니다",
+    "networkError": "네트워크 연결을 확인해 주세요",
+    "tryAgain": "다시 시도해 주세요",
+    "goBack": "뒤로 가기",
+    "goHome": "홈으로 이동"
+  },
+  "empty": {
+    "title": "데이터 없음",
+    "description": "표시할 내용이 없습니다"
+  },
+  "accessDenied": {
+    "title": "접근 권한 없음",
+    "description": "이 페이지에 접근할 권한이 없습니다",
+    "goBack": "뒤로 가기",
+    "goHome": "홈으로 이동"
+  },
+  "notFound": {
+    "title": "페이지를 찾을 수 없습니다",
+    "description": "요청하신 페이지가 존재하지 않습니다",
+    "goBack": "뒤로 가기",
+    "goHome": "홈으로 이동"
+  }
+}

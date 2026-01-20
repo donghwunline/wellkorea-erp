@@ -1,0 +1,127 @@
+{
+  "title": "Items",
+  "tabs": {
+    "products": "Products",
+    "materials": "Materials",
+    "outsourceItems": "Outsource Items"
+  },
+  "products": {
+    "title": "Products",
+    "list": {
+      "title": "Product List",
+      "create": "Add Product",
+      "empty": "No products registered"
+    },
+    "create": {
+      "title": "Add New Product",
+      "success": "Product added successfully",
+      "error": "Failed to add product"
+    },
+    "edit": {
+      "title": "Edit Product",
+      "success": "Product updated successfully",
+      "error": "Failed to update product"
+    },
+    "delete": {
+      "title": "Delete Product",
+      "message": "Are you sure you want to delete this product?",
+      "success": "Product deleted successfully"
+    },
+    "fields": {
+      "productCode": "Product Code",
+      "productName": "Product Name",
+      "category": "Category",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "description": "Description",
+      "status": "Status"
+    }
+  },
+  "materials": {
+    "title": "Materials",
+    "list": {
+      "title": "Material List",
+      "create": "Add Material",
+      "empty": "No materials registered"
+    },
+    "create": {
+      "title": "Add New Material",
+      "success": "Material added successfully",
+      "error": "Failed to add material"
+    },
+    "edit": {
+      "title": "Edit Material",
+      "success": "Material updated successfully",
+      "error": "Failed to update material"
+    },
+    "delete": {
+      "title": "Delete Material",
+      "message": "Are you sure you want to delete this material?",
+      "success": "Material deleted successfully"
+    },
+    "fields": {
+      "materialCode": "Material Code",
+      "materialName": "Material Name",
+      "category": "Category",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "description": "Description",
+      "status": "Status",
+      "vendor": "Vendor"
+    }
+  },
+  "outsourceItems": {
+    "title": "Outsource Items",
+    "list": {
+      "title": "Outsource Item List",
+      "create": "Add Outsource Item",
+      "empty": "No outsource items registered"
+    },
+    "create": {
+      "title": "Add New Outsource Item",
+      "success": "Outsource item added successfully",
+      "error": "Failed to add outsource item"
+    },
+    "edit": {
+      "title": "Edit Outsource Item",
+      "success": "Outsource item updated successfully",
+      "error": "Failed to update outsource item"
+    },
+    "delete": {
+      "title": "Delete Outsource Item",
+      "message": "Are you sure you want to delete this outsource item?",
+      "success": "Outsource item deleted successfully"
+    },
+    "fields": {
+      "itemCode": "Item Code",
+      "itemName": "Item Name",
+      "category": "Category",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "description": "Description",
+      "status": "Status",
+      "vendor": "Vendor"
+    }
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "INACTIVE": "Inactive",
+    "DISCONTINUED": "Discontinued"
+  },
+  "table": {
+    "headers": {
+      "code": "Code",
+      "name": "Name",
+      "category": "Category",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "actions": {
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete"
+  }
+}

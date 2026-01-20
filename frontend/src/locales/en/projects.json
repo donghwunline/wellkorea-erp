@@ -1,0 +1,76 @@
+{
+  "title": "Projects",
+  "list": {
+    "title": "Project List",
+    "create": "Create Project",
+    "empty": "No projects registered",
+    "emptyDescription": "Create a new project to get started"
+  },
+  "create": {
+    "title": "Create New Project",
+    "success": "Project created successfully",
+    "error": "Failed to create project"
+  },
+  "edit": {
+    "title": "Edit Project",
+    "success": "Project updated successfully",
+    "error": "Failed to update project"
+  },
+  "view": {
+    "title": "Project Details",
+    "basicInfo": "Basic Information",
+    "quotations": "Quotations",
+    "deliveries": "Deliveries",
+    "invoices": "Invoices"
+  },
+  "delete": {
+    "title": "Delete Project",
+    "message": "Are you sure you want to delete this project?",
+    "success": "Project deleted successfully",
+    "error": "Failed to delete project"
+  },
+  "fields": {
+    "jobCode": "Job Code",
+    "projectName": "Project Name",
+    "company": "Company",
+    "contact": "Contact",
+    "status": "Status",
+    "requestDate": "Request Date",
+    "dueDate": "Due Date",
+    "description": "Description",
+    "notes": "Notes",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "ACTIVE": "Active",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "ON_HOLD": "On Hold"
+  },
+  "table": {
+    "headers": {
+      "jobCode": "Job Code",
+      "projectName": "Project Name",
+      "company": "Company",
+      "status": "Status",
+      "requestDate": "Request Date",
+      "dueDate": "Due Date",
+      "actions": "Actions"
+    }
+  },
+  "form": {
+    "selectCompany": "Select Company",
+    "selectContact": "Select Contact",
+    "selectStatus": "Select Status"
+  },
+  "actions": {
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "createQuotation": "Create Quotation",
+    "createDelivery": "Create Delivery",
+    "createInvoice": "Create Invoice"
+  }
+}

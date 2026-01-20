@@ -1,0 +1,105 @@
+{
+  "title": "결재",
+  "list": {
+    "title": "결재 대기 문서",
+    "empty": "결재 대기 중인 문서가 없습니다",
+    "emptyDescription": "모든 문서가 처리되었습니다"
+  },
+  "tabs": {
+    "pending": "대기",
+    "approved": "승인",
+    "rejected": "반려",
+    "all": "전체"
+  },
+  "documentTypes": {
+    "QUOTATION": "견적서",
+    "PURCHASE_ORDER": "발주서",
+    "INVOICE": "정산서",
+    "PURCHASE_REQUEST": "구매 요청"
+  },
+  "status": {
+    "PENDING": "대기",
+    "APPROVED": "승인",
+    "REJECTED": "반려",
+    "CANCELLED": "취소"
+  },
+  "actions": {
+    "view": "상세 보기",
+    "approve": "승인",
+    "reject": "반려",
+    "cancel": "취소"
+  },
+  "approve": {
+    "title": "결재 승인",
+    "message": "이 문서를 승인하시겠습니까?",
+    "comment": "승인 의견",
+    "commentPlaceholder": "승인 의견을 입력하세요 (선택)",
+    "success": "승인되었습니다",
+    "error": "승인에 실패했습니다"
+  },
+  "reject": {
+    "title": "결재 반려",
+    "message": "이 문서를 반려하시겠습니까?",
+    "reason": "반려 사유",
+    "reasonPlaceholder": "반려 사유를 입력하세요",
+    "reasonRequired": "반려 사유를 입력해 주세요",
+    "success": "반려되었습니다",
+    "error": "반려에 실패했습니다"
+  },
+  "history": {
+    "title": "결재 이력",
+    "approvedBy": "승인자",
+    "rejectedBy": "반려자",
+    "approvedAt": "승인일시",
+    "rejectedAt": "반려일시",
+    "comment": "의견",
+    "noHistory": "결재 이력이 없습니다"
+  },
+  "chain": {
+    "title": "결재 설정",
+    "list": {
+      "title": "결재 체계 목록",
+      "create": "결재 체계 생성",
+      "empty": "등록된 결재 체계가 없습니다"
+    },
+    "create": {
+      "title": "새 결재 체계 생성",
+      "success": "결재 체계가 생성되었습니다",
+      "error": "결재 체계 생성에 실패했습니다"
+    },
+    "edit": {
+      "title": "결재 체계 수정",
+      "success": "결재 체계가 수정되었습니다",
+      "error": "결재 체계 수정에 실패했습니다"
+    },
+    "delete": {
+      "title": "결재 체계 삭제",
+      "message": "이 결재 체계를 삭제하시겠습니까?",
+      "success": "결재 체계가 삭제되었습니다"
+    },
+    "fields": {
+      "name": "결재 체계명",
+      "documentType": "문서 유형",
+      "steps": "결재 단계",
+      "approvers": "결재자",
+      "status": "상태"
+    },
+    "steps": {
+      "add": "단계 추가",
+      "remove": "단계 삭제",
+      "order": "순서",
+      "approver": "결재자",
+      "role": "역할"
+    }
+  },
+  "table": {
+    "headers": {
+      "documentNumber": "문서 번호",
+      "documentType": "문서 유형",
+      "requester": "요청자",
+      "requestDate": "요청일",
+      "status": "상태",
+      "actions": "작업"
+    }
+  }
+}

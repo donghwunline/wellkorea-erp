@@ -14,6 +14,8 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    /* JSON module support */
+    "resolveJsonModule": true,
     /* Path alias - FSD layers */
     "baseUrl": ".",
     "paths": {
@@ -23,7 +25,8 @@
       "@/widgets/*": ["./src/widgets/*"],
       "@/features/*": ["./src/features/*"],
       "@/entities/*": ["./src/entities/*"],
-      "@/shared/*": ["./src/shared/*"]
+      "@/shared/*": ["./src/shared/*"],
+      "@/locales/*": ["./src/locales/*"]
     },
     /* Linting */
     "strict": true,

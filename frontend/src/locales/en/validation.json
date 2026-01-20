@@ -1,0 +1,36 @@
+{
+  "required": "This field is required",
+  "requiredField": "{{field}} is required",
+  "minLength": "Must be at least {{min}} characters",
+  "maxLength": "Must be at most {{max}} characters",
+  "minValue": "Must be at least {{min}}",
+  "maxValue": "Must be at most {{max}}",
+  "email": "Please enter a valid email address",
+  "phone": "Please enter a valid phone number",
+  "url": "Please enter a valid URL",
+  "number": "Must be a number",
+  "integer": "Must be an integer",
+  "positiveNumber": "Must be greater than 0",
+  "date": "Please enter a valid date",
+  "dateRange": "End date must be after start date",
+  "futureDate": "Please select a future date",
+  "pastDate": "Please select a past date",
+  "pattern": "Please enter a valid format",
+  "match": "Does not match {{field}}",
+  "unique": "This value is already in use",
+  "invalidFormat": "Invalid format",
+  "selectOption": "Please select an option",
+  "fileSize": "File size must be less than {{max}}",
+  "fileType": "Unsupported file type",
+  "businessNumber": "Please enter a valid business registration number",
+  "quantity": {
+    "required": "Please enter a quantity",
+    "positive": "Quantity must be greater than 0",
+    "max": "Quantity must be at most {{max}}"
+  },
+  "price": {
+    "required": "Please enter a price",
+    "positive": "Price must be greater than 0",
+    "format": "Please enter a valid amount"
+  }
+}

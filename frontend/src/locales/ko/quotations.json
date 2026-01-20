@@ -1,0 +1,133 @@
+{
+  "title": "견적",
+  "list": {
+    "title": "견적 목록",
+    "create": "견적 생성",
+    "empty": "등록된 견적이 없습니다",
+    "emptyDescription": "새 견적을 생성하여 시작하세요"
+  },
+  "create": {
+    "title": "새 견적 생성",
+    "selectProject": "프로젝트 선택",
+    "success": "견적이 생성되었습니다",
+    "error": "견적 생성에 실패했습니다"
+  },
+  "edit": {
+    "title": "견적 수정",
+    "success": "견적이 수정되었습니다",
+    "error": "견적 수정에 실패했습니다"
+  },
+  "view": {
+    "title": "견적 상세",
+    "basicInfo": "기본 정보",
+    "lineItems": "품목",
+    "history": "이력",
+    "approvalInfo": "결재 정보"
+  },
+  "delete": {
+    "title": "견적 삭제",
+    "message": "이 견적을 삭제하시겠습니까?",
+    "success": "견적이 삭제되었습니다",
+    "error": "견적 삭제에 실패했습니다"
+  },
+  "fields": {
+    "quotationNumber": "견적 번호",
+    "project": "프로젝트",
+    "company": "회사",
+    "version": "버전",
+    "status": "상태",
+    "issueDate": "발행일",
+    "validUntil": "유효기간",
+    "subtotal": "소계",
+    "tax": "부가세",
+    "total": "합계",
+    "notes": "비고",
+    "terms": "거래 조건",
+    "createdAt": "생성일",
+    "updatedAt": "수정일",
+    "createdBy": "작성자"
+  },
+  "status": {
+    "DRAFT": "초안",
+    "PENDING_APPROVAL": "결재 대기",
+    "APPROVED": "승인",
+    "REJECTED": "반려",
+    "SENT": "전송됨",
+    "ACCEPTED": "수락",
+    "DECLINED": "거절",
+    "EXPIRED": "만료",
+    "CANCELLED": "취소"
+  },
+  "lineItems": {
+    "title": "품목",
+    "add": "품목 추가",
+    "remove": "품목 삭제",
+    "empty": "등록된 품목이 없습니다",
+    "product": "제품",
+    "description": "설명",
+    "quantity": "수량",
+    "unit": "단위",
+    "unitPrice": "단가",
+    "amount": "금액",
+    "discount": "할인",
+    "tax": "세금",
+    "total": "합계"
+  },
+  "actions": {
+    "view": "상세 보기",
+    "edit": "수정",
+    "delete": "삭제",
+    "submit": "결재 요청",
+    "approve": "승인",
+    "reject": "반려",
+    "send": "전송",
+    "duplicate": "복사",
+    "createNewVersion": "새 버전 생성",
+    "downloadPdf": "PDF 다운로드",
+    "print": "인쇄",
+    "sendEmail": "이메일 전송"
+  },
+  "approval": {
+    "submit": "결재 요청",
+    "submitMessage": "이 견적서를 결재 요청하시겠습니까?",
+    "submitSuccess": "결재가 요청되었습니다",
+    "approve": "승인",
+    "approveMessage": "이 견적서를 승인하시겠습니까?",
+    "approveSuccess": "견적서가 승인되었습니다",
+    "reject": "반려",
+    "rejectMessage": "이 견적서를 반려하시겠습니까?",
+    "rejectSuccess": "견적서가 반려되었습니다",
+    "rejectReason": "반려 사유",
+    "rejectReasonPlaceholder": "반려 사유를 입력하세요"
+  },
+  "email": {
+    "send": "이메일 전송",
+    "sendTitle": "견적서 이메일 전송",
+    "recipient": "수신자",
+    "recipientPlaceholder": "이메일 주소 입력",
+    "subject": "제목",
+    "subjectDefault": "견적서 - {{quotationNumber}}",
+    "message": "본문",
+    "attachPdf": "PDF 첨부",
+    "sendSuccess": "이메일이 전송되었습니다",
+    "sendError": "이메일 전송에 실패했습니다"
+  },
+  "table": {
+    "headers": {
+      "quotationNumber": "견적 번호",
+      "project": "프로젝트",
+      "company": "회사",
+      "version": "버전",
+      "status": "상태",
+      "total": "합계",
+      "issueDate": "발행일",
+      "actions": "작업"
+    }
+  },
+  "summary": {
+    "subtotal": "소계",
+    "discount": "할인",
+    "tax": "부가세 (10%)",
+    "total": "합계"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "title": "Administration",
+  "users": {
+    "title": "User Management",
+    "list": {
+      "title": "User List",
+      "create": "Create User",
+      "empty": "No users registered"
+    },
+    "create": {
+      "title": "Create New User",
+      "success": "User created successfully",
+      "error": "Failed to create user"
+    },
+    "edit": {
+      "title": "Edit User",
+      "success": "User updated successfully",
+      "error": "Failed to update user"
+    },
+    "delete": {
+      "title": "Delete User",
+      "message": "Are you sure you want to delete this user?",
+      "success": "User deleted successfully",
+      "error": "Failed to delete user"
+    },
+    "fields": {
+      "username": "Username",
+      "fullName": "Full Name",
+      "email": "Email",
+      "roles": "Roles",
+      "status": "Status",
+      "createdAt": "Created At",
+      "lastLogin": "Last Login"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "LOCKED": "Locked"
+    },
+    "roles": {
+      "ROLE_ADMIN": "Admin",
+      "ROLE_FINANCE": "Finance",
+      "ROLE_SALES": "Sales",
+      "ROLE_PRODUCTION": "Production",
+      "ROLE_USER": "User"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "resetPassword": "Reset Password",
+      "lock": "Lock",
+      "unlock": "Unlock"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "message": "Are you sure you want to reset this user's password?",
+      "success": "Password reset successfully",
+      "newPassword": "New Password"
+    }
+  },
+  "audit": {
+    "title": "Audit Logs",
+    "list": {
+      "title": "Audit Log",
+      "empty": "No audit logs"
+    },
+    "fields": {
+      "timestamp": "Timestamp",
+      "user": "User",
+      "action": "Action",
+      "entity": "Entity",
+      "entityId": "Entity ID",
+      "changes": "Changes",
+      "ipAddress": "IP Address"
+    },
+    "actions": {
+      "CREATE": "Create",
+      "UPDATE": "Update",
+      "DELETE": "Delete",
+      "LOGIN": "Login",
+      "LOGOUT": "Logout",
+      "APPROVE": "Approve",
+      "REJECT": "Reject"
+    },
+    "filters": {
+      "dateRange": "Date Range",
+      "user": "User",
+      "action": "Action",
+      "entity": "Entity"
+    },
+    "details": {
+      "title": "Details",
+      "before": "Before",
+      "after": "After"
+    }
+  },
+  "table": {
+    "headers": {
+      "username": "Username",
+      "fullName": "Full Name",
+      "email": "Email",
+      "roles": "Roles",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  }
+}

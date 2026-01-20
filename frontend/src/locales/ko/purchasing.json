@@ -1,0 +1,211 @@
+{
+  "title": "조달",
+  "tabs": {
+    "purchaseRequests": "구매 요청",
+    "rfq": "견적 요청 (RFQ)",
+    "purchaseOrders": "발주"
+  },
+  "purchaseRequest": {
+    "title": "구매 요청",
+    "list": {
+      "title": "구매 요청 목록",
+      "create": "구매 요청 생성",
+      "empty": "등록된 구매 요청이 없습니다"
+    },
+    "create": {
+      "title": "새 구매 요청 생성",
+      "success": "구매 요청이 생성되었습니다",
+      "error": "구매 요청 생성에 실패했습니다"
+    },
+    "edit": {
+      "title": "구매 요청 수정",
+      "success": "구매 요청이 수정되었습니다",
+      "error": "구매 요청 수정에 실패했습니다"
+    },
+    "view": {
+      "title": "구매 요청 상세"
+    },
+    "delete": {
+      "title": "구매 요청 삭제",
+      "message": "이 구매 요청을 삭제하시겠습니까?",
+      "success": "구매 요청이 삭제되었습니다"
+    },
+    "fields": {
+      "prNumber": "PR 번호",
+      "project": "프로젝트",
+      "requestedBy": "요청자",
+      "requestDate": "요청일",
+      "requiredDate": "필요일",
+      "status": "상태",
+      "priority": "우선순위",
+      "notes": "비고"
+    },
+    "status": {
+      "DRAFT": "초안",
+      "PENDING_APPROVAL": "승인 대기",
+      "APPROVED": "승인",
+      "REJECTED": "반려",
+      "IN_PROGRESS": "진행중",
+      "COMPLETED": "완료",
+      "CANCELLED": "취소"
+    },
+    "priority": {
+      "LOW": "낮음",
+      "NORMAL": "보통",
+      "HIGH": "높음",
+      "URGENT": "긴급"
+    },
+    "actions": {
+      "submit": "승인 요청",
+      "approve": "승인",
+      "reject": "반려",
+      "createRfq": "RFQ 생성",
+      "createPo": "발주 생성"
+    }
+  },
+  "rfq": {
+    "title": "견적 요청 (RFQ)",
+    "list": {
+      "title": "RFQ 목록",
+      "create": "RFQ 생성",
+      "empty": "등록된 RFQ가 없습니다"
+    },
+    "create": {
+      "title": "새 RFQ 생성",
+      "success": "RFQ가 생성되었습니다",
+      "error": "RFQ 생성에 실패했습니다"
+    },
+    "edit": {
+      "title": "RFQ 수정",
+      "success": "RFQ가 수정되었습니다",
+      "error": "RFQ 수정에 실패했습니다"
+    },
+    "view": {
+      "title": "RFQ 상세"
+    },
+    "delete": {
+      "title": "RFQ 삭제",
+      "message": "이 RFQ를 삭제하시겠습니까?",
+      "success": "RFQ가 삭제되었습니다"
+    },
+    "fields": {
+      "rfqNumber": "RFQ 번호",
+      "vendor": "공급사",
+      "vendors": "공급사 목록",
+      "issueDate": "발행일",
+      "dueDate": "마감일",
+      "status": "상태",
+      "notes": "비고"
+    },
+    "status": {
+      "DRAFT": "초안",
+      "SENT": "전송됨",
+      "RECEIVED": "견적 수령",
+      "EVALUATED": "평가 완료",
+      "SELECTED": "선정됨",
+      "CANCELLED": "취소"
+    },
+    "actions": {
+      "send": "전송",
+      "receiveQuote": "견적 수령",
+      "evaluate": "평가",
+      "select": "선정",
+      "createPo": "발주 생성",
+      "sendEmail": "이메일 전송"
+    },
+    "email": {
+      "send": "이메일 전송",
+      "sendTitle": "RFQ 이메일 전송",
+      "sendSuccess": "이메일이 전송되었습니다",
+      "sendError": "이메일 전송에 실패했습니다"
+    }
+  },
+  "purchaseOrder": {
+    "title": "발주",
+    "list": {
+      "title": "발주 목록",
+      "create": "발주 생성",
+      "empty": "등록된 발주가 없습니다"
+    },
+    "create": {
+      "title": "새 발주 생성",
+      "success": "발주가 생성되었습니다",
+      "error": "발주 생성에 실패했습니다"
+    },
+    "edit": {
+      "title": "발주 수정",
+      "success": "발주가 수정되었습니다",
+      "error": "발주 수정에 실패했습니다"
+    },
+    "view": {
+      "title": "발주 상세"
+    },
+    "delete": {
+      "title": "발주 삭제",
+      "message": "이 발주를 삭제하시겠습니까?",
+      "success": "발주가 삭제되었습니다"
+    },
+    "fields": {
+      "poNumber": "PO 번호",
+      "vendor": "공급사",
+      "issueDate": "발행일",
+      "deliveryDate": "납품일",
+      "status": "상태",
+      "subtotal": "소계",
+      "tax": "부가세",
+      "total": "합계",
+      "notes": "비고",
+      "terms": "거래 조건"
+    },
+    "status": {
+      "DRAFT": "초안",
+      "PENDING_APPROVAL": "승인 대기",
+      "APPROVED": "승인",
+      "SENT": "전송됨",
+      "CONFIRMED": "확정",
+      "PARTIALLY_RECEIVED": "부분 입고",
+      "RECEIVED": "입고 완료",
+      "CANCELLED": "취소"
+    },
+    "actions": {
+      "submit": "승인 요청",
+      "approve": "승인",
+      "reject": "반려",
+      "send": "전송",
+      "confirm": "확정",
+      "receive": "입고",
+      "downloadPdf": "PDF 다운로드",
+      "sendEmail": "이메일 전송"
+    },
+    "email": {
+      "send": "이메일 전송",
+      "sendTitle": "발주서 이메일 전송",
+      "sendSuccess": "이메일이 전송되었습니다",
+      "sendError": "이메일 전송에 실패했습니다"
+    }
+  },
+  "lineItems": {
+    "title": "품목",
+    "add": "품목 추가",
+    "remove": "품목 삭제",
+    "empty": "등록된 품목이 없습니다",
+    "item": "품목",
+    "material": "자재",
+    "description": "설명",
+    "quantity": "수량",
+    "unit": "단위",
+    "unitPrice": "단가",
+    "amount": "금액"
+  },
+  "table": {
+    "headers": {
+      "number": "번호",
+      "project": "프로젝트",
+      "vendor": "공급사",
+      "status": "상태",
+      "total": "합계",
+      "date": "날짜",
+      "actions": "작업"
+    }
+  }
+}

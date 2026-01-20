@@ -1,0 +1,97 @@
+{
+  "title": "CRM",
+  "list": {
+    "title": "회사 목록",
+    "create": "회사 등록",
+    "empty": "등록된 회사가 없습니다",
+    "emptyDescription": "새 회사를 등록하여 시작하세요"
+  },
+  "create": {
+    "title": "새 회사 등록",
+    "success": "회사가 등록되었습니다",
+    "error": "회사 등록에 실패했습니다"
+  },
+  "edit": {
+    "title": "회사 정보 수정",
+    "success": "회사 정보가 수정되었습니다",
+    "error": "회사 정보 수정에 실패했습니다"
+  },
+  "view": {
+    "title": "회사 상세",
+    "basicInfo": "기본 정보",
+    "contacts": "담당자",
+    "projects": "프로젝트",
+    "transactions": "거래 내역"
+  },
+  "delete": {
+    "title": "회사 삭제",
+    "message": "이 회사를 삭제하시겠습니까?",
+    "success": "회사가 삭제되었습니다",
+    "error": "회사 삭제에 실패했습니다"
+  },
+  "fields": {
+    "companyName": "회사명",
+    "businessNumber": "사업자등록번호",
+    "representativeName": "대표자명",
+    "companyType": "회사 유형",
+    "industry": "업종",
+    "address": "주소",
+    "addressDetail": "상세 주소",
+    "zipCode": "우편번호",
+    "phone": "전화번호",
+    "fax": "팩스",
+    "email": "이메일",
+    "website": "웹사이트",
+    "notes": "비고",
+    "status": "상태",
+    "createdAt": "등록일",
+    "updatedAt": "수정일"
+  },
+  "companyType": {
+    "CUSTOMER": "고객사",
+    "VENDOR": "협력사",
+    "BOTH": "고객사/협력사"
+  },
+  "status": {
+    "ACTIVE": "활성",
+    "INACTIVE": "비활성"
+  },
+  "contacts": {
+    "title": "담당자 목록",
+    "add": "담당자 추가",
+    "edit": "담당자 수정",
+    "delete": "담당자 삭제",
+    "empty": "등록된 담당자가 없습니다",
+    "name": "이름",
+    "position": "직책",
+    "department": "부서",
+    "phone": "전화번호",
+    "mobile": "휴대폰",
+    "email": "이메일",
+    "isPrimary": "주 담당자",
+    "notes": "비고"
+  },
+  "table": {
+    "headers": {
+      "companyName": "회사명",
+      "businessNumber": "사업자등록번호",
+      "companyType": "유형",
+      "phone": "전화번호",
+      "status": "상태",
+      "actions": "작업"
+    }
+  },
+  "actions": {
+    "view": "상세 보기",
+    "edit": "수정",
+    "delete": "삭제",
+    "addContact": "담당자 추가"
+  },
+  "filters": {
+    "all": "전체",
+    "customer": "고객사",
+    "vendor": "협력사",
+    "active": "활성",
+    "inactive": "비활성"
+  }
+}

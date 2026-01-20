@@ -1,0 +1,33 @@
+{
+  "sections": {
+    "operations": "Operations",
+    "masterData": "Master Data",
+    "reports": "Reports",
+    "approval": "Approval",
+    "administration": "Administration"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "quotations": "Quotations",
+    "deliveries": "Deliveries",
+    "invoices": "Invoices",
+    "items": "Items",
+    "companies": "CRM",
+    "procurement": "Procurement",
+    "arApReports": "AR/AP Reports",
+    "pendingApprovals": "Pending Approvals",
+    "approvalSettings": "Approval Settings",
+    "userManagement": "User Management",
+    "auditLogs": "Audit Logs"
+  },
+  "userMenu": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "brand": {
+    "name": "WellKorea",
+    "tagline": "Integrated Work System"
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "submit": "Submit",
+    "search": "Search",
+    "retry": "Retry",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "reset": "Reset",
+    "apply": "Apply",
+    "add": "Add",
+    "remove": "Remove",
+    "view": "View",
+    "download": "Download",
+    "upload": "Upload",
+    "export": "Export",
+    "import": "Import",
+    "refresh": "Refresh",
+    "print": "Print",
+    "copy": "Copy",
+    "more": "More",
+    "goBack": "Go Back",
+    "logout": "Logout"
+  },
+  "status": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "success": "Success",
+    "error": "Error",
+    "pending": "Pending",
+    "active": "Active",
+    "inactive": "Inactive",
+    "completed": "Completed",
+    "processing": "Processing...",
+    "deleting": "Deleting..."
+  },
+  "table": {
+    "noData": "No data available",
+    "actions": "Actions",
+    "loading": "Loading data...",
+    "error": "Error loading data",
+    "empty": "No data to display",
+    "rowsPerPage": "Rows per page",
+    "of": "of",
+    "page": "Page",
+    "showing": "{{start}} - {{end}} of {{total}}",
+    "total": "Total {{count}} items"
+  },
+  "pagination": {
+    "first": "First",
+    "last": "Last",
+    "next": "Next",
+    "previous": "Previous",
+    "page": "Page {{current}} of {{total}}",
+    "goToPage": "Go to page",
+    "itemsPerPage": "Items per page"
+  },
+  "search": {
+    "placeholder": "Search...",
+    "clear": "Clear search",
+    "noResults": "No results found",
+    "results": "{{count}} results found"
+  },
+  "filter": {
+    "all": "All",
+    "apply": "Apply filter",
+    "clear": "Clear filter",
+    "noOptions": "No options available"
+  },
+  "confirmation": {
+    "title": "Confirmation",
+    "deleteTitle": "Confirm Delete",
+    "deleteMessage": "Are you sure you want to delete? This action cannot be undone.",
+    "unsavedChanges": "You have unsaved changes. Are you sure you want to leave?",
+    "confirmAction": "Are you sure you want to proceed with this action?"
+  },
+  "toast": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "form": {
+    "required": "Required",
+    "optional": "Optional",
+    "selectPlaceholder": "Select an option",
+    "noOptions": "No options available",
+    "uploading": "Uploading...",
+    "fileSelected": "{{count}} file(s) selected"
+  },
+  "date": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "selectDate": "Select date",
+    "startDate": "Start date",
+    "endDate": "End date"
+  },
+  "time": {
+    "now": "Now",
+    "am": "AM",
+    "pm": "PM"
+  },
+  "currency": {
+    "krw": "KRW"
+  },
+  "error": {
+    "title": "An error occurred",
+    "unexpectedError": "An unexpected error occurred",
+    "networkError": "Please check your network connection",
+    "tryAgain": "Please try again",
+    "goBack": "Go back",
+    "goHome": "Go to home"
+  },
+  "empty": {
+    "title": "No data",
+    "description": "Nothing to display"
+  },
+  "accessDenied": {
+    "title": "Access Denied",
+    "description": "You don't have permission to access this page",
+    "goBack": "Go back",
+    "goHome": "Go to home"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you requested does not exist",
+    "goBack": "Go back",
+    "goHome": "Go to home"
+  }
+}

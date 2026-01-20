@@ -1,0 +1,133 @@
+{
+  "title": "Quotations",
+  "list": {
+    "title": "Quotation List",
+    "create": "Create Quotation",
+    "empty": "No quotations registered",
+    "emptyDescription": "Create a new quotation to get started"
+  },
+  "create": {
+    "title": "Create New Quotation",
+    "selectProject": "Select Project",
+    "success": "Quotation created successfully",
+    "error": "Failed to create quotation"
+  },
+  "edit": {
+    "title": "Edit Quotation",
+    "success": "Quotation updated successfully",
+    "error": "Failed to update quotation"
+  },
+  "view": {
+    "title": "Quotation Details",
+    "basicInfo": "Basic Information",
+    "lineItems": "Line Items",
+    "history": "History",
+    "approvalInfo": "Approval Information"
+  },
+  "delete": {
+    "title": "Delete Quotation",
+    "message": "Are you sure you want to delete this quotation?",
+    "success": "Quotation deleted successfully",
+    "error": "Failed to delete quotation"
+  },
+  "fields": {
+    "quotationNumber": "Quotation Number",
+    "project": "Project",
+    "company": "Company",
+    "version": "Version",
+    "status": "Status",
+    "issueDate": "Issue Date",
+    "validUntil": "Valid Until",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "total": "Total",
+    "notes": "Notes",
+    "terms": "Terms & Conditions",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "createdBy": "Created By"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "PENDING_APPROVAL": "Pending Approval",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "SENT": "Sent",
+    "ACCEPTED": "Accepted",
+    "DECLINED": "Declined",
+    "EXPIRED": "Expired",
+    "CANCELLED": "Cancelled"
+  },
+  "lineItems": {
+    "title": "Line Items",
+    "add": "Add Item",
+    "remove": "Remove Item",
+    "empty": "No items registered",
+    "product": "Product",
+    "description": "Description",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "unitPrice": "Unit Price",
+    "amount": "Amount",
+    "discount": "Discount",
+    "tax": "Tax",
+    "total": "Total"
+  },
+  "actions": {
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "submit": "Submit for Approval",
+    "approve": "Approve",
+    "reject": "Reject",
+    "send": "Send",
+    "duplicate": "Duplicate",
+    "createNewVersion": "Create New Version",
+    "downloadPdf": "Download PDF",
+    "print": "Print",
+    "sendEmail": "Send Email"
+  },
+  "approval": {
+    "submit": "Submit for Approval",
+    "submitMessage": "Are you sure you want to submit this quotation for approval?",
+    "submitSuccess": "Submitted for approval",
+    "approve": "Approve",
+    "approveMessage": "Are you sure you want to approve this quotation?",
+    "approveSuccess": "Quotation approved",
+    "reject": "Reject",
+    "rejectMessage": "Are you sure you want to reject this quotation?",
+    "rejectSuccess": "Quotation rejected",
+    "rejectReason": "Rejection Reason",
+    "rejectReasonPlaceholder": "Enter rejection reason"
+  },
+  "email": {
+    "send": "Send Email",
+    "sendTitle": "Send Quotation by Email",
+    "recipient": "Recipient",
+    "recipientPlaceholder": "Enter email address",
+    "subject": "Subject",
+    "subjectDefault": "Quotation - {{quotationNumber}}",
+    "message": "Message",
+    "attachPdf": "Attach PDF",
+    "sendSuccess": "Email sent successfully",
+    "sendError": "Failed to send email"
+  },
+  "table": {
+    "headers": {
+      "quotationNumber": "Quotation Number",
+      "project": "Project",
+      "company": "Company",
+      "version": "Version",
+      "status": "Status",
+      "total": "Total",
+      "issueDate": "Issue Date",
+      "actions": "Actions"
+    }
+  },
+  "summary": {
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "tax": "Tax (10%)",
+    "total": "Total"
+  }
+}

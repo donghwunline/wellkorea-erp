@@ -1,0 +1,75 @@
+{
+  "title": "Reports",
+  "arAp": {
+    "title": "AR/AP Reports",
+    "tabs": {
+      "ar": "Accounts Receivable (AR)",
+      "ap": "Accounts Payable (AP)",
+      "summary": "Summary"
+    },
+    "ar": {
+      "title": "Accounts Receivable Status",
+      "description": "Outstanding balances by customer",
+      "totalReceivables": "Total Receivables",
+      "overdueAmount": "Overdue Amount",
+      "currentDue": "Current Month Due",
+      "empty": "No accounts receivable data"
+    },
+    "ap": {
+      "title": "Accounts Payable Status",
+      "description": "Outstanding balances by vendor",
+      "totalPayables": "Total Payables",
+      "overdueAmount": "Overdue Amount",
+      "currentDue": "Current Month Due",
+      "empty": "No accounts payable data"
+    },
+    "summary": {
+      "title": "AR/AP Summary",
+      "netPosition": "Net Position",
+      "arTotal": "Total AR",
+      "apTotal": "Total AP"
+    },
+    "aging": {
+      "title": "Aging Analysis",
+      "current": "Current",
+      "days30": "1-30 Days",
+      "days60": "31-60 Days",
+      "days90": "61-90 Days",
+      "over90": "Over 90 Days"
+    },
+    "filters": {
+      "dateRange": "Date Range",
+      "company": "Company",
+      "status": "Status"
+    },
+    "fields": {
+      "company": "Company",
+      "invoiceNumber": "Invoice Number",
+      "issueDate": "Issue Date",
+      "dueDate": "Due Date",
+      "amount": "Amount",
+      "paidAmount": "Paid Amount",
+      "balance": "Balance",
+      "daysOverdue": "Days Overdue",
+      "status": "Status"
+    }
+  },
+  "table": {
+    "headers": {
+      "company": "Company",
+      "documentNumber": "Document Number",
+      "issueDate": "Issue Date",
+      "dueDate": "Due Date",
+      "amount": "Amount",
+      "balance": "Balance",
+      "status": "Status"
+    }
+  },
+  "actions": {
+    "export": "Export",
+    "exportExcel": "Export to Excel",
+    "exportPdf": "Export to PDF",
+    "print": "Print",
+    "refresh": "Refresh"
+  }
+}
