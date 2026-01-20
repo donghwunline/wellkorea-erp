@@ -6,6 +6,7 @@
  * FSD Layer: features
  */
 
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ConfirmationModal } from '@/shared/ui';
 import type { MaterialCategoryListItem } from '@/entities/material';
@@ -36,6 +37,7 @@ export function DeleteMaterialCategoryModal({
   category,
   onSuccess,
 }: Readonly<DeleteMaterialCategoryModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
@@ -55,7 +57,7 @@ export function DeleteMaterialCategoryModal({
   if (!category) return null;
 
   const materialCountWarning = category.materialCount > 0
-    ? ` This category contains ${category.materialCount} material(s).`
+    ? ` ${t('items:deleteMaterialCategoryModal.materialCountWarning', { count: category.materialCount })}`
     : '';
 
   return (
@@ -63,10 +65,10 @@ export function DeleteMaterialCategoryModal({
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={handleConfirm}
-      title="Deactivate Category"
-      message={`Are you sure you want to deactivate "${category.name}"?${materialCountWarning} The category will no longer appear in active listings.`}
+      title={t('items:deleteMaterialCategoryModal.title')}
+      message={t('items:deleteMaterialCategoryModal.message', { name: category.name, warning: materialCountWarning })}
       variant="danger"
-      confirmLabel="Deactivate"
+      confirmLabel={t('common:buttons.deactivate')}
     />
   );
 }

@@ -7,6 +7,7 @@
  */
 
 import { useCallback, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { MaterialCategory } from '@/entities/material';
 import { Button, FormField, ModalActions, Alert } from '@/shared/ui';
 
@@ -50,6 +51,7 @@ export function MaterialCategoryForm({
   onCancel,
   onDismissError,
 }: Readonly<MaterialCategoryFormProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const isEditMode = !!category;
 
   // Form state
@@ -65,11 +67,11 @@ export function MaterialCategoryForm({
     const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Category name is required';
+      newErrors.name = t('items:materialCategoryForm.validation.nameRequired');
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = t('items:materialCategoryForm.validation.nameMinLength');
     } else if (formData.name.trim().length > 100) {
-      newErrors.name = 'Name must not exceed 100 characters';
+      newErrors.name = t('items:materialCategoryForm.validation.nameMaxLength');
     }
 
     setErrors(newErrors);
@@ -102,7 +104,7 @@ export function MaterialCategoryForm({
 
       {/* Name */}
       <FormField
-        label="Category Name"
+        label={t('items:materialCategoryForm.categoryName')}
         required
         error={errors.name}
       >
@@ -111,19 +113,19 @@ export function MaterialCategoryForm({
           value={formData.name}
           onChange={e => handleChange('name', e.target.value)}
           disabled={isSubmitting}
-          placeholder="e.g., Fasteners"
+          placeholder={t('items:materialCategoryForm.placeholders.name')}
           autoFocus
           className="h-10 w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white placeholder-steel-500 focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
         />
       </FormField>
 
       {/* Description */}
-      <FormField label="Description">
+      <FormField label={t('items:materialCategoryForm.description')}>
         <textarea
           value={formData.description}
           onChange={e => handleChange('description', e.target.value)}
           disabled={isSubmitting}
-          placeholder="Optional description of this category"
+          placeholder={t('items:materialCategoryForm.placeholders.description')}
           rows={3}
           className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
         />
@@ -136,14 +138,14 @@ export function MaterialCategoryForm({
           onClick={onCancel}
           disabled={isSubmitting}
         >
-          Cancel
+          {t('common:buttons.cancel')}
         </Button>
         <Button
           type="submit"
           variant="primary"
           isLoading={isSubmitting}
         >
-          {isEditMode ? 'Save Changes' : 'Create Category'}
+          {isEditMode ? t('items:materialCategoryForm.saveChanges') : t('items:materialCategoryForm.createCategory')}
         </Button>
       </ModalActions>
     </form>
