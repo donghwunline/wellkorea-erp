@@ -1,0 +1,100 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {{name}}",
+    "modules": "Modules",
+    "quickStats": {
+      "activeProjects": "Active Projects",
+      "pendingQuotes": "Pending Quotes",
+      "inProduction": "In Production",
+      "pendingDelivery": "Pending Delivery"
+    },
+    "moduleNames": {
+      "projects": "Projects",
+      "quotations": "Quotations",
+      "items": "Items",
+      "delivery": "Delivery",
+      "invoices": "Invoices",
+      "reports": "AR/AP Reports"
+    },
+    "moduleDescriptions": {
+      "projects": "Job lifecycle management",
+      "quotations": "Quote creation & approval",
+      "items": "Product catalog & pricing",
+      "delivery": "Shipment management",
+      "invoices": "Billing & AR management",
+      "reports": "Accounts receivable/payable"
+    }
+  },
+  "projectView": {
+    "loading": "Loading project details...",
+    "tabs": {
+      "quotations": "Quotations",
+      "taskFlow": "Task Flow",
+      "purchase": "Purchase",
+      "outsource": "Outsource",
+      "documents": "Documents",
+      "deliveries": "Deliveries",
+      "invoices": "Invoices"
+    }
+  },
+  "projectCreate": {
+    "title": "Create New Project",
+    "description": "Create a new project with auto-generated Job Code",
+    "backToProjects": "Back to Projects",
+    "projectDetails": "Project Details",
+    "createError": "Failed to create project"
+  },
+  "projectEdit": {
+    "title": "Edit Project",
+    "description": "Job Code: {{jobCode}}",
+    "loading": "Loading project...",
+    "loadingTitle": "Loading...",
+    "loadingLabel": "Loading project",
+    "errorTitle": "Error",
+    "notFoundTitle": "Project Not Found",
+    "notFoundMessage": "The requested project could not be found.",
+    "loadError": "Failed to load project",
+    "updateError": "Failed to update project",
+    "backToProjects": "Back to Projects",
+    "backToProject": "Back to Project",
+    "editDetails": "Edit Project Details"
+  },
+  "quotationCreate": {
+    "title": "Create New Quotation",
+    "placeholder": "Select a project to create quotation"
+  },
+  "quotationEdit": {
+    "title": "Edit Quotation",
+    "description": "Update quotation details and line items"
+  },
+  "quotationDetail": {
+    "title": "Quotation Details",
+    "confirmSubmit": "Submit for Approval"
+  },
+  "invoiceSelectProject": {
+    "title": "Create Invoice",
+    "description": "Select a project to create an invoice",
+    "searchPlaceholder": "Search projects...",
+    "noProjects": "No projects available for invoicing"
+  },
+  "invoiceCreate": {
+    "title": "Create Invoice",
+    "forProject": "Creating invoice for project: {{project}}"
+  },
+  "companyCreate": {
+    "title": "Register New Company",
+    "description": "Add a new customer or vendor to the system"
+  },
+  "companyDetail": {
+    "title": "Company Details",
+    "description": "View company information and history"
+  },
+  "companyEdit": {
+    "loading": "Loading company details..."
+  },
+  "arReport": {
+    "title": "Accounts Receivable Report",
+    "description": "Track outstanding invoices and aging"
+  }
+}

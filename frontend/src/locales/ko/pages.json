@@ -1,0 +1,100 @@
+{
+  "dashboard": {
+    "title": "대시보드",
+    "welcome": "안녕하세요, {{name}}님",
+    "modules": "모듈",
+    "quickStats": {
+      "activeProjects": "진행 중 프로젝트",
+      "pendingQuotes": "대기 중 견적",
+      "inProduction": "생산 중",
+      "pendingDelivery": "출고 대기"
+    },
+    "moduleNames": {
+      "projects": "프로젝트",
+      "quotations": "견적",
+      "items": "아이템",
+      "delivery": "출고",
+      "invoices": "정산",
+      "reports": "매출/매입 보고서"
+    },
+    "moduleDescriptions": {
+      "projects": "프로젝트 관리",
+      "quotations": "견적서 작성 및 승인",
+      "items": "제품 카탈로그 및 가격",
+      "delivery": "출고 관리",
+      "invoices": "청구 및 수금 관리",
+      "reports": "매출채권/매입채무 현황"
+    }
+  },
+  "projectView": {
+    "loading": "프로젝트 상세 정보를 불러오는 중...",
+    "tabs": {
+      "quotations": "견적",
+      "taskFlow": "공정",
+      "purchase": "구매",
+      "outsource": "외주",
+      "documents": "문서",
+      "deliveries": "출고",
+      "invoices": "정산"
+    }
+  },
+  "projectCreate": {
+    "title": "새 프로젝트 등록",
+    "description": "Job Code가 자동 생성되는 새 프로젝트를 등록합니다",
+    "backToProjects": "프로젝트 목록",
+    "projectDetails": "프로젝트 정보",
+    "createError": "프로젝트 생성에 실패했습니다"
+  },
+  "projectEdit": {
+    "title": "프로젝트 수정",
+    "description": "Job Code: {{jobCode}}",
+    "loading": "프로젝트를 불러오는 중...",
+    "loadingTitle": "로딩 중...",
+    "loadingLabel": "프로젝트 불러오는 중",
+    "errorTitle": "오류",
+    "notFoundTitle": "프로젝트를 찾을 수 없습니다",
+    "notFoundMessage": "요청하신 프로젝트를 찾을 수 없습니다.",
+    "loadError": "프로젝트를 불러오지 못했습니다",
+    "updateError": "프로젝트 수정에 실패했습니다",
+    "backToProjects": "프로젝트 목록",
+    "backToProject": "프로젝트로 돌아가기",
+    "editDetails": "프로젝트 정보 수정"
+  },
+  "quotationCreate": {
+    "title": "새 견적서 작성",
+    "placeholder": "견적서를 작성할 프로젝트를 선택하세요"
+  },
+  "quotationEdit": {
+    "title": "견적서 수정",
+    "description": "견적 정보 및 항목을 수정합니다"
+  },
+  "quotationDetail": {
+    "title": "견적서 상세",
+    "confirmSubmit": "결재 요청"
+  },
+  "invoiceSelectProject": {
+    "title": "세금계산서 생성",
+    "description": "세금계산서를 발행할 프로젝트를 선택하세요",
+    "searchPlaceholder": "프로젝트 검색...",
+    "noProjects": "세금계산서 발행 가능한 프로젝트가 없습니다"
+  },
+  "invoiceCreate": {
+    "title": "세금계산서 생성",
+    "forProject": "프로젝트: {{project}}"
+  },
+  "companyCreate": {
+    "title": "새 업체 등록",
+    "description": "고객 또는 협력업체를 등록합니다"
+  },
+  "companyDetail": {
+    "title": "업체 상세",
+    "description": "업체 정보 및 거래 내역을 확인합니다"
+  },
+  "companyEdit": {
+    "loading": "업체 정보를 불러오는 중..."
+  },
+  "arReport": {
+    "title": "매출채권 보고서",
+    "description": "미수금 현황 및 경과일 관리"
+  }
+}

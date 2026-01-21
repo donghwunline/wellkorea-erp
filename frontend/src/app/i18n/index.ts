@@ -28,6 +28,9 @@ import koItems from '@/locales/ko/items.json';
 import koApproval from '@/locales/ko/approval.json';
 import koAdmin from '@/locales/ko/admin.json';
 import koReports from '@/locales/ko/reports.json';
+import koWidgets from '@/locales/ko/widgets.json';
+import koEntities from '@/locales/ko/entities.json';
+import koPages from '@/locales/ko/pages.json';
 
 // Import English translation files
 import enCommon from '@/locales/en/common.json';
@@ -45,6 +48,9 @@ import enItems from '@/locales/en/items.json';
 import enApproval from '@/locales/en/approval.json';
 import enAdmin from '@/locales/en/admin.json';
 import enReports from '@/locales/en/reports.json';
+import enWidgets from '@/locales/en/widgets.json';
+import enEntities from '@/locales/en/entities.json';
+import enPages from '@/locales/en/pages.json';
 
 /** Available namespaces for translation files */
 export const namespaces = [
@@ -63,6 +69,9 @@ export const namespaces = [
   'approval',
   'admin',
   'reports',
+  'widgets',
+  'entities',
+  'pages',
 ] as const;
 
 export type Namespace = (typeof namespaces)[number];
@@ -92,6 +101,9 @@ const resources = {
     approval: koApproval,
     admin: koAdmin,
     reports: koReports,
+    widgets: koWidgets,
+    entities: koEntities,
+    pages: koPages,
   },
   en: {
     common: enCommon,
@@ -109,6 +121,9 @@ const resources = {
     approval: enApproval,
     admin: enAdmin,
     reports: enReports,
+    widgets: enWidgets,
+    entities: enEntities,
+    pages: enPages,
   },
 };
 

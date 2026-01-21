@@ -1,0 +1,416 @@
+{
+  "purchasePanel": {
+    "title": "자재 구매",
+    "loading": "자재 구매 요청을 불러오는 중...",
+    "loadError": "자재 구매 요청을 불러오지 못했습니다: {{message}}",
+    "emptyTitle": "자재 구매 요청 없음",
+    "emptyDescription": "이 프로젝트에 대한 자재 구매 요청이 아직 없습니다.",
+    "emptyHint": "(나사, 볼트, 공구 등 소모품 구매)",
+    "stats": {
+      "total": "전체",
+      "draft": "초안",
+      "rfqSent": "RFQ 발송",
+      "vendorSelected": "업체 선정",
+      "ordered": "발주 완료",
+      "closed": "완료"
+    },
+    "table": {
+      "requestNumber": "요청번호",
+      "materialName": "자재명",
+      "sku": "SKU",
+      "description": "내용",
+      "quantity": "수량",
+      "requiredDate": "납기일",
+      "status": "상태",
+      "requester": "요청자"
+    },
+    "overdueWarning": "납기일 초과"
+  },
+  "outsourcePanel": {
+    "title": "외주",
+    "loading": "외주 요청을 불러오는 중...",
+    "loadError": "외주 요청을 불러오지 못했습니다: {{message}}",
+    "emptyTitle": "외주 요청 없음",
+    "emptyDescription": "이 프로젝트에 대한 외주 요청이 아직 없습니다.",
+    "emptyHint": "작업 노드에서 외주 요청을 생성할 수 있습니다.",
+    "stats": {
+      "total": "전체",
+      "draft": "초안",
+      "rfqSent": "RFQ 발송",
+      "vendorSelected": "업체 선정",
+      "ordered": "발주 완료",
+      "closed": "완료"
+    },
+    "table": {
+      "requestNumber": "요청번호",
+      "category": "카테고리",
+      "description": "내용",
+      "quantity": "수량",
+      "requiredDate": "납기일",
+      "status": "상태",
+      "requester": "요청자"
+    },
+    "overdueWarning": "납기일 초과"
+  },
+  "purchaseRequestPanel": {
+    "title": "구매 요청 상세",
+    "loading": "상세 정보를 불러오는 중...",
+    "loadingMessage": "구매 요청 상세 정보를 불러오는 중...",
+    "loadError": "구매 요청을 불러오지 못했습니다: {{message}}",
+    "basicInfo": "기본 정보",
+    "vendorInfo": "업체 정보",
+    "attachments": "첨부 파일",
+    "rfqRecipients": "RFQ 수신자",
+    "modalTitle": "구매 요청: {{requestNumber}}",
+    "modalTitleDefault": "구매 요청 상세",
+    "types": {
+      "service": "외주",
+      "material": "자재"
+    },
+    "fields": {
+      "requestNumber": "요청 번호",
+      "type": "유형",
+      "project": "프로젝트",
+      "status": "상태",
+      "requiredDate": "납기일",
+      "material": "자재",
+      "serviceCategory": "서비스 카테고리",
+      "description": "내용",
+      "quantity": "수량",
+      "quotedPrice": "견적가",
+      "leadTime": "리드타임",
+      "expectedDelivery": "예상 납품일",
+      "notes": "비고",
+      "vendor": "업체",
+      "createdBy": "요청자",
+      "createdAt": "요청일",
+      "sku": "SKU",
+      "standardPrice": "기준가"
+    },
+    "sections": {
+      "itemInfo": "요청 품목",
+      "itemName": "품목명",
+      "requestDescription": "요청 내용",
+      "rfqStatus": "견적 요청 현황",
+      "vendorCount": "{{count}}개 업체"
+    },
+    "table": {
+      "vendor": "업체",
+      "status": "상태",
+      "quotedPrice": "견적가",
+      "leadTime": "납기",
+      "notes": "비고",
+      "actions": "작업",
+      "leadTimeDays": "{{days}}일"
+    },
+    "metadata": "요청자: {{requester}} | 생성일: {{createdAt}} | 수정일: {{updatedAt}}",
+    "actions": {
+      "sendRfq": "RFQ 발송",
+      "recordQuote": "견적 등록",
+      "recordReply": "견적 입력",
+      "noResponse": "무응답",
+      "selectVendor": "업체 선정",
+      "select": "선정",
+      "reject": "미선정",
+      "createPo": "발주서 생성",
+      "close": "닫기",
+      "poCreated": "발주완료",
+      "selectionComplete": "선정완료"
+    },
+    "confirmSelectVendor": {
+      "title": "업체 선정",
+      "message": "{{vendorName}}을(를) 선정하시겠습니까? 다른 응답 업체는 자동으로 미선정 처리됩니다.",
+      "confirm": "선정",
+      "cancel": "취소"
+    },
+    "confirmCreatePo": {
+      "title": "발주서 생성",
+      "message": "{{vendorName}}가 선정되었습니다. 지금 발주서를 생성하시겠습니까?",
+      "confirm": "발주서 생성",
+      "later": "나중에"
+    },
+    "noVendorSelected": "선정된 업체 없음"
+  },
+  "sendRfqModal": {
+    "title": "RFQ 발송",
+    "titleVendorSelect": "RFQ 발송 - 업체 선택",
+    "titleEmailEdit": "RFQ 발송 - 이메일 확인",
+    "selectVendors": "업체 선택",
+    "selectedCount": "{{count}}개 업체 선택됨",
+    "vendorCountInfo": "견적을 요청할 업체를 선택하세요 ({{total}}개 업체 중 {{selected}}개 선택)",
+    "noVendorsSelected": "최소 1개 업체를 선택해주세요",
+    "searchPlaceholder": "업체 검색...",
+    "send": "RFQ 발송",
+    "sendWithCount": "RFQ 발송 ({{count}})",
+    "sending": "발송 중...",
+    "success": "RFQ가 발송되었습니다",
+    "error": "RFQ 발송에 실패했습니다",
+    "loadingVendors": "업체 목록을 불러오는 중...",
+    "loadError": "업체 목록을 불러오는데 실패했습니다: {{message}}",
+    "emptyStateService": "이 서비스 카테고리에 등록된 업체가 없습니다.",
+    "emptyStateServiceHint": "설정 > 서비스 카탈로그에서 업체를 등록해주세요.",
+    "emptyStateMaterial": "이 자재에 등록된 공급업체가 없습니다.",
+    "emptyStateMaterialHint": "설정 > 자재 관리에서 공급업체를 등록해주세요.",
+    "preferredVendor": "선호업체",
+    "unitPrice": "단가",
+    "leadTime": "납기",
+    "leadTimeDays": "{{days}}일",
+    "minQuantity": "최소수량",
+    "selectAll": "전체 선택",
+    "deselectAll": "선택 해제",
+    "cancel": "취소",
+    "next": "다음: 이메일 작성",
+    "back": "이전",
+    "emailVerifyDescription": "각 업체의 담당자 이메일을 확인해주세요. PDF 견적요청서가 첨부되어 발송됩니다.",
+    "allEmailsRequired": "모든 업체의 수신 이메일을 입력해주세요."
+  },
+  "invoicePanel": {
+    "title": "세금계산서",
+    "createInvoice": "세금계산서 생성",
+    "confirmIssue": "발행",
+    "confirmCancel": "취소",
+    "loading": "세금계산서 데이터를 불러오는 중...",
+    "loadError": "세금계산서를 불러오지 못했습니다: {{message}}",
+    "noQuotation": "승인된 견적이 없습니다",
+    "noQuotationDesc": "세금계산서를 발행하려면 먼저 고객이 견적을 승인해야 합니다.",
+    "noInvoices": "세금계산서 없음",
+    "noInvoicesDesc": "이 프로젝트에 발행된 세금계산서가 없습니다.",
+    "successMessages": {
+      "issued": "세금계산서가 발행되었습니다",
+      "cancelled": "세금계산서가 취소되었습니다",
+      "created": "세금계산서가 생성되었습니다",
+      "paymentRecorded": "결제가 등록되었습니다"
+    },
+    "actions": {
+      "issueInvoice": "발행",
+      "recordPayment": "결제 등록",
+      "viewDetails": "상세 보기",
+      "cancelInvoice": "취소"
+    },
+    "confirmIssueMessage": "세금계산서 #{{invoiceNumber}}를 발행하시겠습니까? 발행 후에는 수정할 수 없습니다.",
+    "confirmCancelMessage": "세금계산서 #{{invoiceNumber}}를 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "issueButton": "발행",
+    "cancelButton": "취소"
+  },
+  "invoiceCreateModal": {
+    "title": "세금계산서 생성",
+    "loading": "데이터를 불러오는 중...",
+    "selectItems": "청구할 항목 선택",
+    "selectedItems": "선택된 항목",
+    "noItemsAvailable": "청구 가능한 항목이 없습니다",
+    "allItemsInvoiced": "모든 항목이 이미 청구되었습니다",
+    "fields": {
+      "invoiceDate": "발행일",
+      "dueDate": "납부기한",
+      "notes": "비고"
+    },
+    "placeholders": {
+      "notes": "비고 (선택사항)"
+    },
+    "validation": {
+      "selectAtLeastOne": "최소 1개 항목을 선택해주세요",
+      "dueDateRequired": "납부기한을 입력해주세요"
+    }
+  },
+  "invoiceDetailModal": {
+    "title": "세금계산서 상세",
+    "loading": "세금계산서 상세 정보를 불러오는 중...",
+    "sections": {
+      "basicInfo": "기본 정보",
+      "lineItems": "항목",
+      "amounts": "금액 정보",
+      "paymentHistory": "결제 내역"
+    },
+    "noPayments": "결제 내역이 없습니다",
+    "paymentProgress": "결제 진행률",
+    "paid": "결제됨",
+    "remaining": "미결제"
+  },
+  "recordPaymentModal": {
+    "title": "결제 등록",
+    "titleWithInvoice": "결제 등록 - Invoice #{{invoiceNumber}}",
+    "fields": {
+      "amount": "결제 금액",
+      "method": "결제 수단",
+      "date": "결제일",
+      "reference": "참조 번호",
+      "notes": "비고"
+    },
+    "placeholders": {
+      "amount": "금액을 입력하세요",
+      "reference": "예: 수표 번호, 거래 ID",
+      "notes": "비고 (선택사항)"
+    },
+    "remainingBalance": "미결제 잔액: {{amount}}",
+    "maxAmount": "최대: {{amount}}",
+    "validation": {
+      "dateRequired": "결제일을 입력해주세요",
+      "amountRequired": "금액을 입력해주세요",
+      "amountPositive": "금액은 0보다 커야 합니다",
+      "amountExceedsBalance": "금액이 미결제 잔액({{balance}})을 초과합니다"
+    },
+    "actions": {
+      "cancel": "취소",
+      "record": "결제 등록",
+      "recording": "등록 중..."
+    }
+  },
+  "deliveryPanel": {
+    "title": "출고",
+    "createDelivery": "출고 생성",
+    "recordDelivery": "출고 등록",
+    "loading": "출고 데이터를 불러오는 중...",
+    "loadError": "출고 내역을 불러오지 못했습니다: {{message}}",
+    "noQuotation": "승인된 견적이 없습니다",
+    "noQuotationDesc": "출고를 등록하려면 먼저 고객이 견적을 승인해야 합니다.",
+    "noDeliveries": "출고 내역 없음",
+    "noDeliveriesDesc": "이 프로젝트에 등록된 출고 내역이 없습니다.",
+    "table": {
+      "id": "ID",
+      "deliveryDate": "출고일",
+      "deliveredBy": "출고 담당자",
+      "items": "품목",
+      "status": "상태",
+      "actions": "작업",
+      "itemCount": "{{count}}개 품목 ({{units}}개)"
+    },
+    "actions": {
+      "downloadStatement": "거래명세표 다운로드",
+      "viewDetails": "상세 보기"
+    }
+  },
+  "deliveryCreateModal": {
+    "title": "출고 생성",
+    "loading": "견적 데이터를 불러오는 중...",
+    "noQuotation": "승인된 견적이 없습니다",
+    "noQuotationDesc": "이 프로젝트에 고객이 승인한 견적이 없습니다.",
+    "allDelivered": "모든 항목 출고 완료",
+    "allDeliveredDesc": "모든 견적 항목이 출고되었습니다.",
+    "fields": {
+      "deliveryDate": "출고일",
+      "recipientName": "수령인",
+      "recipientPhone": "연락처",
+      "notes": "비고"
+    }
+  },
+  "deliveryDetailModal": {
+    "title": "출고 상세",
+    "titleWithId": "출고 #{{id}}",
+    "loading": "출고 상세 정보를 불러오는 중...",
+    "loadError": "출고 정보를 불러오지 못했습니다: {{message}}",
+    "outdatedWarning": {
+      "title": "이전 견적서 참조",
+      "description": "이 출고는 이전 버전의 견적서를 참조합니다. 기록의 일관성을 위해 최신 승인 견적서로 재할당하는 것을 권장합니다."
+    },
+    "fields": {
+      "status": "상태",
+      "deliveryDate": "출고일",
+      "deliveredBy": "출고 담당자",
+      "project": "프로젝트",
+      "notes": "비고"
+    },
+    "metadata": "생성일: {{createdAt}} | 수정일: {{updatedAt}}",
+    "sections": {
+      "deliveredItems": "출고 항목",
+      "itemCount": "{{items}}개 품목, 총 {{units}}개"
+    },
+    "table": {
+      "product": "제품",
+      "sku": "SKU",
+      "quantity": "수량",
+      "total": "합계"
+    },
+    "actions": {
+      "close": "닫기",
+      "download": "다운로드",
+      "markDelivered": "출고 완료",
+      "markReturned": "반품 처리",
+      "reassignToLatest": "최신 견적으로 재할당"
+    },
+    "successMessages": {
+      "delivered": "출고 완료 처리되었습니다",
+      "returned": "반품 처리되었습니다",
+      "reassigned": "최신 견적으로 재할당되었습니다"
+    }
+  },
+  "quotationPanel": {
+    "title": "견적",
+    "confirmSubmit": "결재 요청",
+    "confirmAccept": "고객 승인"
+  },
+  "quotationDetailModal": {
+    "title": "견적 상세",
+    "loading": "견적 상세 정보를 불러오는 중...",
+    "confirmSubmit": "결재 요청"
+  },
+  "quotationEditModal": {
+    "title": "견적 수정",
+    "titleWithVersion": "견적 수정 - {{jobCode}} v{{version}}",
+    "loading": "견적을 불러오는 중...",
+    "loadError": "견적을 불러오지 못했습니다",
+    "close": "닫기",
+    "cannotEditStatus": "{{status}} 상태의 견적은 수정할 수 없습니다. 초안 상태의 견적만 수정 가능합니다."
+  },
+  "purchaseOrderPanel": {
+    "title": "발주서"
+  },
+  "purchaseOrderDetailModal": {
+    "title": "발주서 상세",
+    "loading": "상세 정보를 불러오는 중...",
+    "confirmComplete": "완료 처리",
+    "sections": {
+      "orderInfo": "발주 정보",
+      "vendorInfo": "업체 정보",
+      "items": "발주 항목"
+    }
+  },
+  "companyManagement": {
+    "title": "회사 관리",
+    "loading": "회사 목록을 불러오는 중...",
+    "loadError": "회사 목록을 불러오지 못했습니다",
+    "retry": "다시 시도",
+    "totalCount": "총 {{count}}개의 회사",
+    "searchPlaceholder": "회사명, 사업자번호, 담당자로 검색...",
+    "emptySearch": "\"{{search}}\"에 대한 검색 결과가 없습니다",
+    "empty": "등록된 회사가 없습니다",
+    "createCompany": "회사 등록",
+    "paginationItemLabel": "회사"
+  },
+  "userMenu": {
+    "signOut": "로그아웃"
+  },
+  "taskFlowPanel": {
+    "title": "공정 관리",
+    "titleWithSuffix": "공정 관리 (Task Flow)",
+    "processManagement": "공정 관리",
+    "addTask": "작업 추가",
+    "noTasks": "등록된 작업이 없습니다",
+    "loading": "공정 흐름을 불러오는 중...",
+    "loadingLabel": "공정 흐름 불러오는 중",
+    "loadError": "공정 흐름을 불러오지 못했습니다: {{message}}",
+    "emptyTitle": "공정 관리",
+    "emptyDescription": "이 프로젝트에 정의된 작업이 없습니다.",
+    "openEditor": "공정 편집기 열기",
+    "expandFullscreen": "전체 화면으로 확대"
+  },
+  "documentPanel": {
+    "title": "문서",
+    "titleWithCount": "문서 ({{count}})",
+    "uploadDocument": "문서 업로드",
+    "noDocuments": "업로드된 문서가 없습니다",
+    "loading": "문서를 불러오는 중...",
+    "loadingLabel": "문서 불러오는 중",
+    "loadError": "문서를 불러오지 못했습니다",
+    "emptyTitle": "문서",
+    "emptyDescription": "이 프로젝트에 첨부된 문서가 없습니다.",
+    "emptyHint": "공정 노드에 첨부된 문서가 여기에 표시됩니다.",
+    "description": "공정 노드에 첨부된 도면 및 문서"
+  },
+  "arReport": {
+    "title": "매출채권 목록",
+    "table": {
+      "status": "상태",
+      "aging": "경과일"
+    }
+  }
+}

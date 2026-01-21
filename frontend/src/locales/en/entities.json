@@ -1,0 +1,220 @@
+{
+  "quotation": {
+    "card": {
+      "title": "Quotation Details",
+      "fields": {
+        "jobCode": "Job Code",
+        "version": "Version",
+        "project": "Project",
+        "createdBy": "Created By",
+        "createdAt": "Created At",
+        "quotationDate": "Quotation Date",
+        "validity": "Validity",
+        "validityDays": "{{days}} days",
+        "expiryDate": "Expiry Date",
+        "notes": "Notes"
+      },
+      "rejectionReason": "Rejection Reason",
+      "lineItems": {
+        "title": "Line Items",
+        "columns": {
+          "index": "#",
+          "product": "Product",
+          "quantity": "Quantity",
+          "unitPrice": "Unit Price",
+          "total": "Total"
+        },
+        "empty": "No line items"
+      },
+      "totalAmount": "Total Amount"
+    }
+  },
+  "project": {
+    "kpi": {
+      "progress": "Progress",
+      "pendingApprovals": "Pending Approvals",
+      "missingDocuments": "Missing Documents",
+      "accountsReceivable": "Accounts Receivable",
+      "trends": {
+        "onTrack": "On Track",
+        "inProgress": "In Progress",
+        "behind": "Behind",
+        "pending": "{{count}} pending",
+        "needsAttention": "Needs attention",
+        "complete": "Complete",
+        "outstanding": "Outstanding"
+      }
+    },
+    "combobox": {
+      "placeholder": "Search or select project...",
+      "noResults": "No projects found",
+      "loading": "Loading projects..."
+    },
+    "summaryCard": {
+      "total": "Total",
+      "progress": "Progress",
+      "pending": "Pending",
+      "value": "Value",
+      "updated": "Updated",
+      "relativeTime": {
+        "never": "Never",
+        "justNow": "Just now",
+        "minutesAgo": "{{minutes}}m ago",
+        "hoursAgo": "{{hours}}h ago",
+        "daysAgo": "{{days}}d ago"
+      }
+    },
+    "detailsCard": {
+      "editProject": "Edit project",
+      "customer": "Customer",
+      "requester": "Requester",
+      "dueDate": "Due Date",
+      "internalOwner": "Internal Owner",
+      "createdBy": "Created By",
+      "createdAt": "Created At",
+      "lastUpdated": "Last Updated"
+    }
+  },
+  "company": {
+    "combobox": {
+      "placeholder": "Search or select company...",
+      "noResults": "No companies found",
+      "loading": "Loading companies..."
+    },
+    "card": {
+      "roles": "Roles",
+      "contactInfo": "Contact Information",
+      "contactPerson": "Contact Person",
+      "phone": "Phone",
+      "fax": "Fax",
+      "email": "Email",
+      "address": "Address",
+      "businessInfo": "Business Information",
+      "representative": "Representative",
+      "businessType": "Business Type",
+      "businessCategory": "Business Category",
+      "bankAccount": "Bank Account",
+      "paymentTerms": "Payment Terms",
+      "createdAt": "Created",
+      "updatedAt": "Updated"
+    },
+    "table": {
+      "headers": {
+        "name": "Company Name",
+        "registrationNo": "Registration No.",
+        "contact": "Contact",
+        "roles": "Roles",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "empty": "No companies found."
+    },
+    "statusBadge": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+  "invoice": {
+    "card": {
+      "job": "Job",
+      "beforeTax": "Before Tax",
+      "tax": "Tax ({{rate}}%)",
+      "total": "Total",
+      "paymentProgress": "Payment Progress",
+      "paid": "Paid",
+      "balance": "Balance",
+      "issueDate": "Issue Date",
+      "dueDate": "Due Date",
+      "daysOverdue": "{{days}} days overdue",
+      "aging": "Aging",
+      "itemsPayments": "{{items}} items · {{payments}} payments",
+      "viewDetails": "View Details →"
+    },
+    "table": {
+      "headers": {
+        "invoiceNumber": "Invoice #",
+        "jobCode": "Job Code",
+        "issueDate": "Issue Date",
+        "dueDate": "Due Date",
+        "status": "Status",
+        "total": "Total",
+        "paid": "Paid",
+        "balance": "Balance",
+        "actions": "Actions"
+      },
+      "empty": "No invoices found."
+    }
+  },
+  "product": {
+    "card": {
+      "sku": "SKU",
+      "type": "Type",
+      "basePrice": "Base Price",
+      "notSet": "Not set",
+      "unit": "Unit",
+      "description": "Description"
+    },
+    "combobox": {
+      "placeholder": "Search products...",
+      "noResults": "No products found",
+      "loading": "Loading..."
+    }
+  },
+  "user": {
+    "combobox": {
+      "placeholder": "Search or select user...",
+      "noResults": "No users found",
+      "loading": "Loading users..."
+    }
+  },
+  "approval": {
+    "levelList": {
+      "empty": "No approval information",
+      "level": "Level {{level}}",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "pending": "Pending"
+    },
+    "progressBar": {
+      "step": "Step"
+    }
+  },
+  "audit": {
+    "logTable": {
+      "empty": "No audit logs",
+      "headers": {
+        "timestamp": "Timestamp",
+        "action": "Action",
+        "entity": "Entity",
+        "user": "User",
+        "ipAddress": "IP Address",
+        "details": "Details"
+      },
+      "viewDetails": "View details"
+    }
+  },
+  "delivery": {
+    "table": {
+      "headers": {
+        "deliveryDate": "Delivery Date",
+        "status": "Status",
+        "items": "Items",
+        "deliveredBy": "Delivered By",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "itemsCount": "{{count}} items",
+      "empty": "No deliveries found."
+    }
+  },
+  "purchaseRequest": {
+    "status": {
+      "DRAFT": "Draft",
+      "RFQ_SENT": "RFQ Sent",
+      "VENDOR_SELECTED": "Vendor Selected",
+      "ORDERED": "Ordered",
+      "CLOSED": "Closed",
+      "CANCELED": "Canceled"
+    }
+  }
+}
