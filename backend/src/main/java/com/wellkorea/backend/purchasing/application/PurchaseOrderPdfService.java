@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -201,12 +202,15 @@ public class PurchaseOrderPdfService {
     }
 
     private byte[] convertHtmlToPdf(String html) throws IOException {
+        // Load font bytes once, then create fresh InputStreams from it
+        byte[] fontBytes = new ClassPathResource("fonts/NotoSansKR.ttf").getInputStream().readAllBytes();
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
 
-            try (InputStream fontStream = new ClassPathResource("fonts/NotoSansKR.ttf").getInputStream()) {
-                builder.useFont(() -> fontStream, "NotoSansKR");
-            }
+            // Font supplier must return a NEW InputStream each time it's called
+            // (the font may be read multiple times for metrics, subsetting, etc.)
+            builder.useFont(() -> new ByteArrayInputStream(fontBytes), "NotoSansKR");
 
             builder.useFastMode();
             builder.withHtmlContent(html, null);
