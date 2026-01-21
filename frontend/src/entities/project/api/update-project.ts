@@ -38,6 +38,7 @@ interface UpdateProjectRequest {
   requesterName?: string;
   dueDate?: string;
   status?: ProjectStatus;
+  note?: string;
 }
 
 // =============================================================================
@@ -53,6 +54,7 @@ export interface UpdateProjectInput {
   requesterName?: string;
   dueDate?: string;
   status?: ProjectStatus;
+  note?: string;
 }
 
 // =============================================================================
@@ -79,6 +81,7 @@ function toUpdateRequest(input: UpdateProjectInput): UpdateProjectRequest {
     requesterName: input.requesterName?.trim() || undefined,
     dueDate: input.dueDate,
     status: input.status,
+    note: input.note,
   };
 }
 

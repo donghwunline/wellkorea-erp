@@ -63,6 +63,7 @@ export interface Project {
   readonly createdByName: string | null;
   readonly createdAt: string; // ISO datetime string
   readonly updatedAt: string; // ISO datetime string
+  readonly note: string | null;
 }
 
 /**

@@ -21,6 +21,7 @@
             <arg column="created_by_name" javaType="String"/>
             <arg column="created_at" javaType="java.time.Instant"/>
             <arg column="updated_at" javaType="java.time.Instant"/>
+            <arg column="note" javaType="String"/>
         </constructor>
     </resultMap>
 
@@ -54,7 +55,8 @@
         p.created_by_id,
         cb.full_name AS created_by_name,
         p.created_at,
-        p.updated_at
+        p.updated_at,
+        p.note
     </sql>
 
     <!-- Common SELECT columns for summary view -->

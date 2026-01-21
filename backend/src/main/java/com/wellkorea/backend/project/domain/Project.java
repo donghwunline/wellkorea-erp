@@ -63,6 +63,9 @@ public class Project {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
+    @Column(name = "note", columnDefinition = "TEXT")
+    private String note;
+
     protected Project() {
         // JPA requires default constructor
     }
@@ -80,6 +83,7 @@ public class Project {
         this.createdAt = builder.createdAt != null ? builder.createdAt : Instant.now();
         this.updatedAt = builder.updatedAt != null ? builder.updatedAt : Instant.now();
         this.isDeleted = builder.isDeleted;
+        this.note = builder.note;
     }
 
     public static Builder builder() {
@@ -136,6 +140,10 @@ public class Project {
         return isDeleted;
     }
 
+    public String getNote() {
+        return note;
+    }
+
     // ========== Domain Methods ==========
 
     /**
@@ -169,6 +177,7 @@ public class Project {
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt)
                 .isDeleted(this.isDeleted)
+                .note(this.note)
                 .build();
     }
 
@@ -180,10 +189,11 @@ public class Project {
      * @param newRequesterName New requester name
      * @param newDueDate       New due date
      * @param newStatus        New status
+     * @param newNote          New note
      * @return New Project instance with updated fields
      */
     public Project withUpdatedFields(String newProjectName, String newRequesterName,
-                                     LocalDate newDueDate, ProjectStatus newStatus) {
+                                     LocalDate newDueDate, ProjectStatus newStatus, String newNote) {
         return builder()
                 .id(this.id)
                 .jobCode(this.jobCode) // JobCode cannot be changed
@@ -197,6 +207,7 @@ public class Project {
                 .createdAt(this.createdAt)
                 .updatedAt(Instant.now())
                 .isDeleted(this.isDeleted)
+                .note(newNote != null ? newNote : this.note)
                 .build();
     }
 
@@ -229,6 +240,7 @@ public class Project {
                 .createdAt(this.createdAt)
                 .updatedAt(Instant.now())
                 .isDeleted(this.isDeleted)
+                .note(this.note)
                 .build();
     }
 
@@ -251,6 +263,7 @@ public class Project {
                 .createdAt(this.createdAt)
                 .updatedAt(Instant.now())
                 .isDeleted(true)
+                .note(this.note)
                 .build();
     }
 
@@ -295,6 +308,7 @@ public class Project {
         private Instant createdAt;
         private Instant updatedAt;
         private boolean isDeleted = false;
+        private String note;
 
         public Builder id(Long id) {
             this.id = id;
@@ -353,6 +367,11 @@ public class Project {
 
         public Builder isDeleted(boolean isDeleted) {
             this.isDeleted = isDeleted;
+            return this;
+        }
+
+        public Builder note(String note) {
+            this.note = note;
             return this;
         }
 
