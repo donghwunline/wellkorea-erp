@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type {
   CreateProjectInput,
@@ -17,6 +18,7 @@ import { useCreateProject, JobCodeSuccessModal } from '@/features/project/create
 import { ProjectForm } from '@/features/project/form';
 
 export function ProjectCreatePage() {
+  const { t } = useTranslation('pages');
   const navigate = useNavigate();
   const createProjectMutation = useCreateProject();
 
@@ -33,7 +35,7 @@ export function ProjectCreatePage() {
       setCreatedResult(result);
       setShowSuccessModal(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create project');
+      setError(err instanceof Error ? err.message : t('projectCreate.createError'));
     }
   };
 
@@ -59,8 +61,8 @@ export function ProjectCreatePage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="Create New Project"
-          description="Create a new project with auto-generated Job Code"
+          title={t('projectCreate.title')}
+          description={t('projectCreate.description')}
         />
         <PageHeader.Actions>
           <button
@@ -68,7 +70,7 @@ export function ProjectCreatePage() {
             className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
           >
             <Icon name="arrow-left" className="h-5 w-5" />
-            Back to Projects
+            {t('projectCreate.backToProjects')}
           </button>
         </PageHeader.Actions>
       </PageHeader>
@@ -76,7 +78,7 @@ export function ProjectCreatePage() {
       {/* Form Card */}
       <Card className="mx-auto max-w-2xl">
         <div className="p-6">
-          <h2 className="mb-6 text-lg font-semibold text-white">Project Details</h2>
+          <h2 className="mb-6 text-lg font-semibold text-white">{t('projectCreate.projectDetails')}</h2>
           <ProjectForm
             mode="create"
             onSubmit={handleSubmit}

@@ -4,14 +4,15 @@
  * Shows overview of modules with role-based visibility
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, Icon, type IconName, StatCard } from '@/shared/ui';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 
 interface ModuleCard {
-  title: string;
+  titleKey: string;
+  descriptionKey: string;
   phase: string;
-  description: string;
   icon: IconName;
   path: string;
   /** Roles that can see this module (if undefined, all can see) */
@@ -20,64 +21,56 @@ interface ModuleCard {
   hideFromRoles?: RoleName[];
 }
 
-const QUICK_STATS = [
-  {
-    label: 'Active Projects',
-    value: '-',
-    icon: 'clipboard' as IconName,
-  },
-  {
-    label: 'Pending Quotes',
-    value: '-',
-    icon: 'document' as IconName,
-  },
-  { label: 'In Production', value: '-', icon: 'cog' as IconName },
-  { label: 'Pending Delivery', value: '-', icon: 'truck' as IconName },
+const QUICK_STATS_KEYS = [
+  { labelKey: 'activeProjects', icon: 'clipboard' as IconName },
+  { labelKey: 'pendingQuotes', icon: 'document' as IconName },
+  { labelKey: 'inProduction', icon: 'cog' as IconName },
+  { labelKey: 'pendingDelivery', icon: 'truck' as IconName },
 ];
 
 const MODULES: ModuleCard[] = [
   {
-    title: '프로젝트',
+    titleKey: 'projects',
+    descriptionKey: 'projects',
     phase: 'Phase 4',
-    description: 'Job lifecycle management',
     icon: 'clipboard',
     path: '/projects',
   },
   {
-    title: '견적',
+    titleKey: 'quotations',
+    descriptionKey: 'quotations',
     phase: 'Phase 5',
-    description: 'Quote creation & approval',
     icon: 'document',
     path: '/quotations',
     hideFromRoles: ['ROLE_PRODUCTION'], // Production cannot see quotations
   },
   {
-    title: '아이템',
+    titleKey: 'items',
+    descriptionKey: 'items',
     phase: 'Phase 6',
-    description: 'Product catalog & pricing',
     icon: 'box',
     path: '/products',
     hideFromRoles: ['ROLE_PRODUCTION'], // Production cannot see pricing
   },
   {
-    title: 'Delivery',
+    titleKey: 'delivery',
+    descriptionKey: 'delivery',
     phase: 'Phase 8',
-    description: 'Shipment management',
     icon: 'truck',
     path: '/delivery',
   },
   {
-    title: '정산',
+    titleKey: 'invoices',
+    descriptionKey: 'invoices',
     phase: 'Phase 9',
-    description: 'Billing & AR management',
     icon: 'cash',
     path: '/invoices',
     roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance
   },
   {
-    title: 'AR/AP Reports',
+    titleKey: 'reports',
+    descriptionKey: 'reports',
     phase: 'Phase 10',
-    description: 'Accounts receivable/payable',
     icon: 'chart-bar',
     path: '/reports',
     roles: ['ROLE_ADMIN', 'ROLE_FINANCE'], // Only Admin and Finance
@@ -85,6 +78,7 @@ const MODULES: ModuleCard[] = [
 ];
 
 export function DashboardPage() {
+  const { t } = useTranslation('pages');
   const { user, hasAnyRole } = useAuth();
 
   // Filter modules based on user roles
@@ -102,17 +96,17 @@ export function DashboardPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">대시보드</h1>
-        <p className="mt-1 text-steel-400">Welcome back, {user?.fullName || user?.username}</p>
+        <h1 className="text-3xl font-bold text-white">{t('dashboard.title')}</h1>
+        <p className="mt-1 text-steel-400">{t('dashboard.welcome', { name: user?.fullName || user?.username })}</p>
       </div>
 
       {/* Quick Stats Row (placeholder for future stats) */}
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-        {QUICK_STATS.map(stat => (
+        {QUICK_STATS_KEYS.map(stat => (
           <StatCard
-            key={stat.label}
-            label={stat.label}
-            value={stat.value}
+            key={stat.labelKey}
+            label={t(`dashboard.quickStats.${stat.labelKey}`)}
+            value="-"
             icon={<Icon name={stat.icon} className="h-5 w-5" />}
           />
         ))}
@@ -120,11 +114,11 @@ export function DashboardPage() {
 
       {/* Module Cards */}
       <div className="mb-6">
-        <h2 className="mb-4 text-lg font-semibold text-white">Modules</h2>
+        <h2 className="mb-4 text-lg font-semibold text-white">{t('dashboard.modules')}</h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visibleModules.map(module => (
             <Card
-              key={module.title}
+              key={module.titleKey}
               variant="interactive"
               className="group transition-all duration-300 hover:border-copper-500/30"
               onClick={() => (globalThis.location.href = module.path)}
@@ -132,8 +126,8 @@ export function DashboardPage() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-steel-800/50 text-copper-500 transition-colors group-hover:bg-copper-500/10">
                 <Icon name={module.icon} className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold text-white">{module.title}</h3>
-              <p className="mt-1 text-sm text-steel-400">{module.description}</p>
+              <h3 className="text-lg font-semibold text-white">{t(`dashboard.moduleNames.${module.titleKey}`)}</h3>
+              <p className="mt-1 text-sm text-steel-400">{t(`dashboard.moduleDescriptions.${module.descriptionKey}`)}</p>
               <span className="mt-4 inline-block rounded-full bg-steel-800/50 px-3 py-1 font-mono text-xs text-steel-500">
                 {module.phase}
               </span>

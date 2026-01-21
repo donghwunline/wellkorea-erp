@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { UpdateProjectInput } from '@/entities/project';
@@ -15,6 +16,7 @@ import { useUpdateProject } from '@/features/project/update';
 import { ProjectForm } from '@/features/project/form';
 
 export function ProjectEditPage() {
+  const { t } = useTranslation('pages');
   const { id } = useParams<{ id: string }>();
   const projectId = id ? parseInt(id, 10) : 0;
   const navigate = useNavigate();
@@ -44,7 +46,7 @@ export function ProjectEditPage() {
       await updateProjectMutation.mutateAsync({ id: projectId, input: data });
       navigate(`/projects/${id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update project');
+      setError(err instanceof Error ? err.message : t('projectEdit.updateError'));
     }
   };
 
@@ -61,12 +63,12 @@ export function ProjectEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Loading..." />
+          <PageHeader.Title title={t('projectEdit.loadingTitle')} />
         </PageHeader>
         <Card className="mx-auto max-w-2xl">
           <div className="flex items-center justify-center p-12">
-            <Spinner size="lg" label="Loading project" />
-            <span className="ml-3 text-steel-400">Loading project...</span>
+            <Spinner size="lg" label={t('projectEdit.loadingLabel')} />
+            <span className="ml-3 text-steel-400">{t('projectEdit.loading')}</span>
           </div>
         </Card>
       </div>
@@ -78,19 +80,19 @@ export function ProjectEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Error" />
+          <PageHeader.Title title={t('projectEdit.errorTitle')} />
           <PageHeader.Actions>
             <button
               onClick={handleBack}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back to Projects
+              {t('projectEdit.backToProjects')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="error" className="mx-auto max-w-2xl">
-          {fetchError instanceof Error ? fetchError.message : 'Failed to load project'}
+          {fetchError instanceof Error ? fetchError.message : t('projectEdit.loadError')}
         </Alert>
       </div>
     );
@@ -101,19 +103,19 @@ export function ProjectEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Project Not Found" />
+          <PageHeader.Title title={t('projectEdit.notFoundTitle')} />
           <PageHeader.Actions>
             <button
               onClick={handleBack}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back to Projects
+              {t('projectEdit.backToProjects')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="warning" className="mx-auto max-w-2xl">
-          The requested project could not be found.
+          {t('projectEdit.notFoundMessage')}
         </Alert>
       </div>
     );
@@ -123,14 +125,14 @@ export function ProjectEditPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="Edit Project" description={`Job Code: ${project.jobCode}`} />
+        <PageHeader.Title title={t('projectEdit.title')} description={t('projectEdit.description', { jobCode: project.jobCode })} />
         <PageHeader.Actions>
           <button
             onClick={handleCancel}
             className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
           >
             <Icon name="arrow-left" className="h-5 w-5" />
-            Back to Project
+            {t('projectEdit.backToProject')}
           </button>
         </PageHeader.Actions>
       </PageHeader>
@@ -138,7 +140,7 @@ export function ProjectEditPage() {
       {/* Form Card */}
       <Card className="mx-auto max-w-2xl">
         <div className="p-6">
-          <h2 className="mb-6 text-lg font-semibold text-white">Edit Project Details</h2>
+          <h2 className="mb-6 text-lg font-semibold text-white">{t('projectEdit.editDetails')}</h2>
           <ProjectForm
             mode="edit"
             initialData={project}
