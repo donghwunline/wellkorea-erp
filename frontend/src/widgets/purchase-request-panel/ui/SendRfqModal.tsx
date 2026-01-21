@@ -14,6 +14,7 @@
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -156,10 +157,12 @@ function VendorOfferingCard({
   offering,
   isSelected,
   onToggle,
+  t,
 }: {
   readonly offering: NormalizedOffering;
   readonly isSelected: boolean;
   readonly onToggle: (vendorId: number, checked: boolean) => void;
+  readonly t: (key: string, options?: Record<string, unknown>) => string;
 }) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onToggle(offering.vendorId, e.target.checked);
@@ -193,14 +196,14 @@ function VendorOfferingCard({
           <span className="font-medium text-white">{offering.vendorName}</span>
           {offering.isPreferred && (
             <Badge variant="success" size="sm">
-              선호업체
+              {t('sendRfqModal.preferredVendor')}
             </Badge>
           )}
         </div>
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-steel-400">
           {offering.unitPrice !== null && offering.unitPrice > 0 && (
             <span>
-              단가:{' '}
+              {t('sendRfqModal.unitPrice')}:{' '}
               <span className="text-copper-400">
                 {formatPrice(offering.unitPrice, offering.currency)}
               </span>
@@ -208,11 +211,11 @@ function VendorOfferingCard({
           )}
           {offering.leadTimeDays !== null && offering.leadTimeDays > 0 && (
             <span>
-              납기: <span className="text-white">{offering.leadTimeDays}일</span>
+              {t('sendRfqModal.leadTime')}: <span className="text-white">{t('sendRfqModal.leadTimeDays', { days: offering.leadTimeDays })}</span>
             </span>
           )}
           {offering.minOrderQuantity !== null && offering.minOrderQuantity > 1 && (
-            <span>최소수량: {offering.minOrderQuantity}</span>
+            <span>{t('sendRfqModal.minQuantity')}: {offering.minOrderQuantity}</span>
           )}
         </div>
         {offering.notes && <p className="mt-1 text-xs text-steel-500">{offering.notes}</p>}
@@ -271,6 +274,7 @@ function VendorEmailForm({
 }
 
 export function SendRfqModal(props: SendRfqModalProps) {
+  const { t } = useTranslation('widgets');
   const { purchaseRequestId, isOpen, onClose, onSuccess, type } = props;
 
   // State
@@ -365,7 +369,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
       onClose();
     },
     onError: (err) => {
-      setError(err.message || 'RFQ 발송에 실패했습니다');
+      setError(err.message || t('sendRfqModal.error'));
     },
   });
 
@@ -396,7 +400,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
   // Handle "Next" - Prepare email states
   const handleNext = useCallback(() => {
      if (selectedVendorIds.length === 0) {
-       setError('최소 1개 업체를 선택해주세요');
+       setError(t('sendRfqModal.noVendorsSelected'));
        return;
      }
 
@@ -435,7 +439,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
     // Validate emails
     const invalidEmails = Object.entries(emailStates).some(([_, state]) => !state.to.trim());
     if (invalidEmails) {
-        setError('모든 업체의 수신 이메일을 입력해주세요.');
+        setError(t('sendRfqModal.allEmailsRequired'));
         return;
     }
 
@@ -453,13 +457,13 @@ export function SendRfqModal(props: SendRfqModalProps) {
   const emptyStateMessage =
     type === 'SERVICE' ? (
       <>
-        이 서비스 카테고리에 등록된 업체가 없습니다.
-        <p className="mt-1 text-sm">설정 &gt; 서비스 카탈로그에서 업체를 등록해주세요.</p>
+        {t('sendRfqModal.emptyStateService')}
+        <p className="mt-1 text-sm">{t('sendRfqModal.emptyStateServiceHint')}</p>
       </>
     ) : (
       <>
-        이 자재에 등록된 공급업체가 없습니다.
-        <p className="mt-1 text-sm">설정 &gt; 자재 관리에서 공급업체를 등록해주세요.</p>
+        {t('sendRfqModal.emptyStateMaterial')}
+        <p className="mt-1 text-sm">{t('sendRfqModal.emptyStateMaterialHint')}</p>
       </>
     );
 
@@ -476,14 +480,14 @@ export function SendRfqModal(props: SendRfqModalProps) {
       {/* Fetch Error */}
       {fetchError && !isLoading && (
         <Alert variant="error">
-          업체 목록을 불러오는데 실패했습니다: {fetchError.message}
+          {t('sendRfqModal.loadError', { message: fetchError.message })}
         </Alert>
       )}
 
       {/* Loading State */}
       {isLoading && (
         <div className="py-8">
-          <LoadingState message="업체 목록을 불러오는 중..." />
+          <LoadingState message={t('sendRfqModal.loadingVendors')} />
         </div>
       )}
 
@@ -498,8 +502,10 @@ export function SendRfqModal(props: SendRfqModalProps) {
           {/* Selection Controls */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-steel-400">
-              견적을 요청할 업체를 선택하세요 ({uniqueVendorIds.length}개 업체 중{' '}
-              {selectedVendorIds.length}개 선택)
+              {t('sendRfqModal.vendorCountInfo', {
+                total: uniqueVendorIds.length,
+                selected: selectedVendorIds.length,
+              })}
             </p>
             <div className="flex gap-2">
               <button
@@ -507,7 +513,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
                 onClick={handleSelectAll}
                 className="text-xs text-copper-400 hover:underline"
               >
-                전체 선택
+                {t('sendRfqModal.selectAll')}
               </button>
               <span className="text-steel-600">|</span>
               <button
@@ -515,7 +521,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
                 onClick={handleDeselectAll}
                 className="text-xs text-steel-400 hover:underline"
               >
-                선택 해제
+                {t('sendRfqModal.deselectAll')}
               </button>
             </div>
           </div>
@@ -528,6 +534,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
                 offering={offering}
                 isSelected={selectedVendorIds.includes(offering.vendorId)}
                 onToggle={handleToggleVendor}
+                t={t}
               />
             ))}
           </div>
@@ -536,14 +543,14 @@ export function SendRfqModal(props: SendRfqModalProps) {
 
       <ModalActions>
         <Button variant="ghost" onClick={onClose}>
-          취소
+          {t('sendRfqModal.cancel')}
         </Button>
         <Button
           variant="primary"
           onClick={handleNext}
           disabled={selectedVendorIds.length === 0}
         >
-          다음: 이메일 작성
+          {t('sendRfqModal.next')}
         </Button>
       </ModalActions>
     </>
@@ -553,7 +560,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
   const renderEmailStep = () => (
       <>
         <div className="mb-4 text-sm text-steel-400">
-             각 업체의 담당자 이메일을 확인해주세요. PDF 견적요청서가 첨부되어 발송됩니다.
+             {t('sendRfqModal.emailVerifyDescription')}
         </div>
 
         {error && (
@@ -581,7 +588,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
 
         <ModalActions>
             <Button variant="secondary" onClick={handleBack} disabled={sendRfqMutation.isPending}>
-                이전
+                {t('sendRfqModal.back')}
             </Button>
             <Button
                 variant="primary"
@@ -591,17 +598,17 @@ export function SendRfqModal(props: SendRfqModalProps) {
                 {sendRfqMutation.isPending && (
                     <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                RFQ 발송 ({selectedVendorIds.length})
+                {t('sendRfqModal.sendWithCount', { count: selectedVendorIds.length })}
             </Button>
         </ModalActions>
       </>
   );
 
   return (
-    <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        title={step === 'vendor-selection' ? "RFQ 발송 - 업체 선택" : "RFQ 발송 - 이메일 확인"} 
+    <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={step === 'vendor-selection' ? t('sendRfqModal.titleVendorSelect') : t('sendRfqModal.titleEmailEdit')}
         size="md"
     >
       {step === 'vendor-selection' ? renderSelectionStep() : renderEmailStep()}

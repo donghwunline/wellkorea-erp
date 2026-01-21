@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Card, Icon, LoadingState, Table } from '@/shared/ui';
 import {
@@ -33,6 +34,7 @@ export interface DeliveryPanelProps {
 }
 
 export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
+  const { t } = useTranslation('widgets');
   const { hasAnyRole } = useAuth();
 
   // Check if user can create deliveries (Finance/Admin)
@@ -93,13 +95,13 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
   if (isLoading) {
     return (
       <Card>
-        <LoadingState message="Loading delivery data..." />
+        <LoadingState message={t('deliveryPanel.loading')} />
       </Card>
     );
   }
 
   if (deliveriesError) {
-    return <Alert variant="error">Failed to load deliveries: {deliveriesError.message}</Alert>;
+    return <Alert variant="error">{t('deliveryPanel.loadError', { message: deliveriesError.message })}</Alert>;
   }
 
   // Empty state - no accepted quotation
@@ -107,9 +109,9 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
     return (
       <Card className="p-12 text-center">
         <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
+        <h3 className="text-lg font-semibold text-white">{t('deliveryPanel.noQuotation')}</h3>
         <p className="mt-2 text-steel-500">
-          A quotation must be accepted by the customer before recording deliveries.
+          {t('deliveryPanel.noQuotationDesc')}
         </p>
       </Card>
     );
@@ -121,8 +123,8 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
       <>
         <Card className="p-12 text-center">
           <Icon name="truck" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">No Deliveries Yet</h3>
-          <p className="mt-2 text-steel-500">No deliveries have been recorded for this project.</p>
+          <h3 className="text-lg font-semibold text-white">{t('deliveryPanel.noDeliveries')}</h3>
+          <p className="mt-2 text-steel-500">{t('deliveryPanel.noDeliveriesDesc')}</p>
           {canCreateDelivery && (
             <Button
               variant="primary"
@@ -130,7 +132,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
               onClick={() => setShowCreateModal(true)}
             >
               <Icon name="plus" className="h-4 w-4" />
-              Record Delivery
+              {t('deliveryPanel.recordDelivery')}
             </Button>
           )}
         </Card>
@@ -158,7 +160,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
         <div className="flex justify-end">
           <Button variant="primary" onClick={() => setShowCreateModal(true)}>
             <Icon name="plus" className="h-4 w-4" />
-            Record Delivery
+            {t('deliveryPanel.recordDelivery')}
           </Button>
         </div>
       )}
@@ -168,12 +170,12 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>ID</Table.HeaderCell>
-              <Table.HeaderCell>Delivery Date</Table.HeaderCell>
-              <Table.HeaderCell>Delivered By</Table.HeaderCell>
-              <Table.HeaderCell>Items</Table.HeaderCell>
-              <Table.HeaderCell>Status</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
+              <Table.HeaderCell>{t('deliveryPanel.table.id')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('deliveryPanel.table.deliveryDate')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('deliveryPanel.table.deliveredBy')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('deliveryPanel.table.items')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('deliveryPanel.table.status')}</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">{t('deliveryPanel.table.actions')}</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -191,8 +193,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
                 </Table.Cell>
                 <Table.Cell className="text-steel-300">{delivery.deliveredByName}</Table.Cell>
                 <Table.Cell className="text-steel-300">
-                  {delivery.lineItems.length} items ({deliveryRules.getTotalQuantity(delivery)}{' '}
-                  units)
+                  {t('deliveryPanel.table.itemCount', { count: delivery.lineItems.length, units: deliveryRules.getTotalQuantity(delivery) })}
                 </Table.Cell>
                 <Table.Cell>
                   <DeliveryStatusBadge
@@ -210,7 +211,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
                         handleDownloadStatement(delivery.id);
                       }}
                       disabled={downloadingId === delivery.id}
-                      title="Download Statement PDF"
+                      title={t('deliveryPanel.actions.downloadStatement')}
                     >
                       {downloadingId === delivery.id ? (
                         <Icon name="arrow-path" className="h-4 w-4 animate-spin" />
@@ -225,7 +226,7 @@ export function DeliveryPanel({ projectId }: DeliveryPanelProps) {
                         e.stopPropagation();
                         setSelectedDeliveryId(delivery.id);
                       }}
-                      title="View Details"
+                      title={t('deliveryPanel.actions.viewDetails')}
                     >
                       <Icon name="eye" className="h-4 w-4" />
                     </Button>

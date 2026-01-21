@@ -25,6 +25,7 @@
 
 import type { HTMLAttributes } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Icon, type IconName } from '@/shared/ui';
 import { cn } from '@/shared/lib/cn';
@@ -73,6 +74,7 @@ export function UserMenu({
   className,
   ...props
 }: Readonly<UserMenuProps>) {
+  const { t } = useTranslation('widgets');
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -201,7 +203,7 @@ export function UserMenu({
                   className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-400 transition-colors hover:bg-steel-700"
                 >
                   <Icon name="logout" className="h-4 w-4" strokeWidth={2} />
-                  Sign out
+                  {t('userMenu.signOut')}
                 </button>
               </div>
             </div>

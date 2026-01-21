@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useMemo, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -42,6 +43,7 @@ export interface InvoicePanelProps {
 }
 
 export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
+  const { t } = useTranslation('widgets');
   const { hasAnyRole } = useAuth();
 
   // Check if user can manage invoices (Finance/Admin)
@@ -103,7 +105,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
   // Mutations
   const { mutate: issueInvoice } = useIssueInvoice({
     onSuccess: () => {
-      showSuccess('Invoice issued successfully');
+      showSuccess(t('invoicePanel.successMessages.issued'));
       setIssueConfirm(null);
       void refetchInvoices();
       onDataChange?.();
@@ -112,7 +114,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
 
   const { mutate: cancelInvoice } = useCancelInvoice({
     onSuccess: () => {
-      showSuccess('Invoice cancelled');
+      showSuccess(t('invoicePanel.successMessages.cancelled'));
       setCancelConfirm(null);
       void refetchInvoices();
       onDataChange?.();
@@ -125,10 +127,10 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
   }, []);
 
   const handleCreateModalSuccess = useCallback(() => {
-    showSuccess('Invoice created successfully');
+    showSuccess(t('invoicePanel.successMessages.created'));
     void refetchInvoices();
     onDataChange?.();
-  }, [refetchInvoices, onDataChange, showSuccess]);
+  }, [refetchInvoices, onDataChange, showSuccess, t]);
 
   const handleViewInvoice = useCallback((invoice: InvoiceSummary) => {
     setDetailInvoiceId(invoice.id);
@@ -147,10 +149,10 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
   }, [cancelConfirm, cancelInvoice]);
 
   const handlePaymentSuccess = useCallback(() => {
-    showSuccess('Payment recorded successfully');
+    showSuccess(t('invoicePanel.successMessages.paymentRecorded'));
     void refetchInvoices();
     onDataChange?.();
-  }, [refetchInvoices, onDataChange, showSuccess]);
+  }, [refetchInvoices, onDataChange, showSuccess, t]);
 
   // Render actions for each invoice row
   const renderActions = useCallback(
@@ -169,7 +171,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
                 e.stopPropagation();
                 setIssueConfirm(invoice);
               }}
-              title="Issue Invoice"
+              title={t('invoicePanel.actions.issueInvoice')}
             >
               <Icon name="paper-airplane" className="h-4 w-4" />
             </Button>
@@ -182,7 +184,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
                 e.stopPropagation();
                 setPaymentInvoice(invoice);
               }}
-              title="Record Payment"
+              title={t('invoicePanel.actions.recordPayment')}
             >
               <Icon name="banknotes" className="h-4 w-4" />
             </Button>
@@ -194,7 +196,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
               e.stopPropagation();
               handleViewInvoice(invoice);
             }}
-            title="View Details"
+            title={t('invoicePanel.actions.viewDetails')}
           >
             <Icon name="eye" className="h-4 w-4" />
           </Button>
@@ -206,7 +208,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
                 e.stopPropagation();
                 setCancelConfirm(invoice);
               }}
-              title="Cancel Invoice"
+              title={t('invoicePanel.actions.cancelInvoice')}
               className="text-red-400 hover:text-red-300"
             >
               <Icon name="x-circle" className="h-4 w-4" />
@@ -215,7 +217,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
         </div>
       );
     },
-    [canManageInvoices, handleViewInvoice]
+    [canManageInvoices, handleViewInvoice, t]
   );
 
   const isLoading = loadingInvoices || loadingQuotations;
@@ -223,7 +225,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
   if (isLoading) {
     return (
       <Card>
-        <LoadingState message="Loading invoice data..." />
+        <LoadingState message={t('invoicePanel.loading')} />
       </Card>
     );
   }
@@ -231,7 +233,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
   if (invoicesError) {
     return (
       <Alert variant="error">
-        Failed to load invoices: {invoicesError.message}
+        {t('invoicePanel.loadError', { message: invoicesError.message })}
       </Alert>
     );
   }
@@ -241,9 +243,9 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
     return (
       <Card className="p-12 text-center">
         <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
+        <h3 className="text-lg font-semibold text-white">{t('invoicePanel.noQuotation')}</h3>
         <p className="mt-2 text-steel-500">
-          A quotation must be accepted by the customer before creating invoices.
+          {t('invoicePanel.noQuotationDesc')}
         </p>
       </Card>
     );
@@ -255,14 +257,14 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
       <>
         <Card className="p-12 text-center">
           <Icon name="banknotes" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">No Invoices Yet</h3>
+          <h3 className="text-lg font-semibold text-white">{t('invoicePanel.noInvoices')}</h3>
           <p className="mt-2 text-steel-500">
-            No invoices have been created for this project.
+            {t('invoicePanel.noInvoicesDesc')}
           </p>
           {canManageInvoices && (
             <Button variant="primary" className="mt-6" onClick={handleCreateInvoice}>
               <Icon name="plus" className="h-4 w-4" />
-              Create Invoice
+              {t('invoicePanel.createInvoice')}
             </Button>
           )}
         </Card>
@@ -295,7 +297,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
         <div className="flex justify-end">
           <Button variant="primary" onClick={handleCreateInvoice}>
             <Icon name="plus" className="h-4 w-4" />
-            Create Invoice
+            {t('invoicePanel.createInvoice')}
           </Button>
         </div>
       )}
@@ -313,13 +315,13 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
         isOpen={!!issueConfirm}
         onClose={() => setIssueConfirm(null)}
         onConfirm={handleIssueConfirm}
-        title="Issue Invoice"
+        title={t('invoicePanel.confirmIssue')}
         message={
           issueConfirm
-            ? `Are you sure you want to issue invoice #${issueConfirm.invoiceNumber}? Once issued, it cannot be edited.`
+            ? t('invoicePanel.confirmIssueMessage', { invoiceNumber: issueConfirm.invoiceNumber })
             : ''
         }
-        confirmLabel="Issue"
+        confirmLabel={t('invoicePanel.issueButton')}
         variant="warning"
       />
 
@@ -328,13 +330,13 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
         isOpen={!!cancelConfirm}
         onClose={() => setCancelConfirm(null)}
         onConfirm={handleCancelConfirm}
-        title="Cancel Invoice"
+        title={t('invoicePanel.confirmCancel')}
         message={
           cancelConfirm
-            ? `Are you sure you want to cancel invoice #${cancelConfirm.invoiceNumber}? This action cannot be undone.`
+            ? t('invoicePanel.confirmCancelMessage', { invoiceNumber: cancelConfirm.invoiceNumber })
             : ''
         }
-        confirmLabel="Cancel Invoice"
+        confirmLabel={t('invoicePanel.cancelButton')}
         variant="danger"
       />
 

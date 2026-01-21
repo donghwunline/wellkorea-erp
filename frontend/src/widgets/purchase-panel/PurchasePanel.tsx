@@ -11,6 +11,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Badge, Card, Icon, LoadingState, Table } from '@/shared/ui';
 import {
@@ -31,8 +32,10 @@ export interface PurchasePanelProps {
  */
 function MaterialPurchaseRequestSummaryStats({
   requests,
+  t,
 }: {
   readonly requests: readonly PurchaseRequestListItem[];
+  readonly t: (key: string) => string;
 }) {
   const stats = useMemo(() => {
     const total = requests.length;
@@ -50,27 +53,27 @@ function MaterialPurchaseRequestSummaryStats({
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
       <Card className="p-4">
-        <div className="text-sm text-steel-400">전체</div>
+        <div className="text-sm text-steel-400">{t('widgets:purchasePanel.stats.total')}</div>
         <div className="mt-1 text-2xl font-bold text-white">{stats.total}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">초안</div>
+        <div className="text-sm text-steel-400">{t('widgets:purchasePanel.stats.draft')}</div>
         <div className="mt-1 text-2xl font-bold text-steel-300">{stats.draft}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">RFQ 발송</div>
+        <div className="text-sm text-steel-400">{t('widgets:purchasePanel.stats.rfqSent')}</div>
         <div className="mt-1 text-2xl font-bold text-blue-400">{stats.rfqSent}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">업체 선정</div>
+        <div className="text-sm text-steel-400">{t('widgets:purchasePanel.stats.vendorSelected')}</div>
         <div className="mt-1 text-2xl font-bold text-orange-400">{stats.vendorSelected}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">발주 완료</div>
+        <div className="text-sm text-steel-400">{t('widgets:purchasePanel.stats.ordered')}</div>
         <div className="mt-1 text-2xl font-bold text-cyan-400">{stats.ordered}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">완료</div>
+        <div className="text-sm text-steel-400">{t('widgets:purchasePanel.stats.closed')}</div>
         <div className="mt-1 text-2xl font-bold text-green-400">{stats.closed}</div>
       </Card>
     </div>
@@ -83,21 +86,25 @@ function MaterialPurchaseRequestSummaryStats({
 function PurchaseRequestStatusBadge({
   status,
   isOverdue,
+  t,
 }: {
   readonly status: PurchaseRequestStatus;
   readonly isOverdue: boolean;
+  readonly t: (key: string) => string;
 }) {
+  const statusLabel = t(`entities:purchaseRequest.status.${status}`);
+
   const config = PurchaseRequestStatusConfig[status];
 
   return (
     <span className="inline-flex items-center gap-1.5">
       <Badge variant={config.color} dot>
-        {config.labelKo}
+        {statusLabel}
       </Badge>
       {isOverdue && (
         <span
           className="inline-flex items-center rounded-full bg-red-500/20 px-1.5 py-0.5 text-xs text-red-400"
-          title="납기일 초과"
+          title={t('widgets:purchasePanel.overdueWarning')}
         >
           <Icon name="warning" className="h-3 w-3" />
         </span>
@@ -107,6 +114,8 @@ function PurchaseRequestStatusBadge({
 }
 
 export function PurchasePanel({ projectId }: PurchasePanelProps) {
+  const { t } = useTranslation(['widgets', 'entities']);
+
   // Fetch material purchase requests for this project (dtype = MATERIAL)
   const {
     data: purchaseRequestsData,
@@ -127,7 +136,7 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
   if (isLoading) {
     return (
       <Card>
-        <LoadingState message="Loading material purchase requests..." />
+        <LoadingState message={t('widgets:purchasePanel.loading')} />
       </Card>
     );
   }
@@ -135,7 +144,7 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
   if (error) {
     return (
       <Alert variant="error">
-        Failed to load material purchase requests: {error.message}
+        {t('widgets:purchasePanel.loadError', { message: error.message })}
       </Alert>
     );
   }
@@ -145,12 +154,12 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
     return (
       <Card className="p-12 text-center">
         <Icon name="shopping-cart" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">자재 구매 요청 없음</h3>
+        <h3 className="text-lg font-semibold text-white">{t('widgets:purchasePanel.emptyTitle')}</h3>
         <p className="mt-2 text-steel-500">
-          이 프로젝트에 대한 자재 구매 요청이 아직 없습니다.
+          {t('widgets:purchasePanel.emptyDescription')}
         </p>
         <p className="mt-1 text-sm text-steel-600">
-          (나사, 볼트, 공구 등 소모품 구매)
+          {t('widgets:purchasePanel.emptyHint')}
         </p>
       </Card>
     );
@@ -159,21 +168,21 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <MaterialPurchaseRequestSummaryStats requests={purchaseRequests} />
+      <MaterialPurchaseRequestSummaryStats requests={purchaseRequests} t={t} />
 
       {/* Purchase Requests Table */}
       <Card className="overflow-hidden">
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>요청번호</Table.HeaderCell>
-              <Table.HeaderCell>자재명</Table.HeaderCell>
-              <Table.HeaderCell>SKU</Table.HeaderCell>
-              <Table.HeaderCell>내용</Table.HeaderCell>
-              <Table.HeaderCell>수량</Table.HeaderCell>
-              <Table.HeaderCell>납기일</Table.HeaderCell>
-              <Table.HeaderCell>상태</Table.HeaderCell>
-              <Table.HeaderCell>요청자</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:purchasePanel.table.requestNumber')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:purchasePanel.table.materialName')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:purchasePanel.table.sku')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:purchasePanel.table.description')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:purchasePanel.table.quantity')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:purchasePanel.table.requiredDate')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:purchasePanel.table.status')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:purchasePanel.table.requester')}</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -206,7 +215,7 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
                     {formatDate(request.requiredDate)}
                   </Table.Cell>
                   <Table.Cell>
-                    <PurchaseRequestStatusBadge status={request.status} isOverdue={isOverdue} />
+                    <PurchaseRequestStatusBadge status={request.status} isOverdue={isOverdue} t={t} />
                   </Table.Cell>
                   <Table.Cell className="text-steel-300">
                     {request.createdByName}

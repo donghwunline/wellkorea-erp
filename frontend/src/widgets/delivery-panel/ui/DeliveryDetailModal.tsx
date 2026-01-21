@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
@@ -52,6 +53,7 @@ export function DeliveryDetailModal({
   onSuccess,
   latestAcceptedQuotationId,
 }: DeliveryDetailModalProps) {
+  const { t } = useTranslation('widgets');
   const { hasAnyRole } = useAuth();
   const canManageDeliveries = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
 
@@ -98,7 +100,7 @@ export function DeliveryDetailModal({
   // Mutation hooks
   const { mutate: markDelivered, isPending: isMarkingDelivered } = useMarkDelivered({
     onSuccess: () => {
-      showSuccess('Delivery marked as delivered');
+      showSuccess(t('deliveryDetailModal.successMessages.delivered'));
       onSuccess?.();
     },
     onError: (err) => {
@@ -108,7 +110,7 @@ export function DeliveryDetailModal({
 
   const { mutate: markReturned, isPending: isMarkingReturned } = useMarkReturned({
     onSuccess: () => {
-      showSuccess('Delivery marked as returned');
+      showSuccess(t('deliveryDetailModal.successMessages.returned'));
       onSuccess?.();
     },
     onError: (err) => {
@@ -118,7 +120,7 @@ export function DeliveryDetailModal({
 
   const { mutate: reassignDelivery, isPending: isReassigning } = useReassignDelivery({
     onSuccess: () => {
-      showSuccess('Delivery reassigned to latest quotation');
+      showSuccess(t('deliveryDetailModal.successMessages.reassigned'));
       onSuccess?.();
     },
     onError: (err) => {
@@ -139,7 +141,7 @@ export function DeliveryDetailModal({
     try {
       await downloadDeliveryStatement(deliveryId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to download statement');
+      setError(err instanceof Error ? err.message : t('deliveryDetailModal.loadError', { message: 'Unknown error' }));
     } finally {
       setIsDownloading(false);
     }
@@ -178,20 +180,20 @@ export function DeliveryDetailModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={delivery ? `출고 #${delivery.id}` : 'Loading...'}
+      title={delivery ? t('deliveryDetailModal.titleWithId', { id: delivery.id }) : t('deliveryDetailModal.loading')}
       size="lg"
     >
       {/* Loading State */}
       {isLoading && (
         <div className="py-12">
-          <LoadingState message="Loading delivery details..." />
+          <LoadingState message={t('deliveryDetailModal.loading')} />
         </div>
       )}
 
       {/* Fetch Error */}
       {fetchError && !isLoading && (
         <Alert variant="error">
-          Failed to load delivery: {fetchError.message}
+          {t('deliveryDetailModal.loadError', { message: fetchError.message })}
         </Alert>
       )}
 
@@ -203,10 +205,9 @@ export function DeliveryDetailModal({
             <Alert variant="warning">
               <div className="flex items-center justify-between">
                 <div>
-                  <strong>Outdated Quotation Reference</strong>
+                  <strong>{t('deliveryDetailModal.outdatedWarning.title')}</strong>
                   <p className="mt-1 text-sm">
-                    This delivery references an older version of the quotation. Consider
-                    reassigning it to the latest accepted quotation to keep records consistent.
+                    {t('deliveryDetailModal.outdatedWarning.description')}
                   </p>
                 </div>
               </div>
@@ -228,21 +229,21 @@ export function DeliveryDetailModal({
           {/* Delivery Info Grid */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div>
-              <div className="text-sm text-steel-400">Status</div>
+              <div className="text-sm text-steel-400">{t('deliveryDetailModal.fields.status')}</div>
               <div className="mt-1">
                 <DeliveryStatusBadge status={delivery.status} isOutdated={isOutdated} />
               </div>
             </div>
             <div>
-              <div className="text-sm text-steel-400">Delivery Date</div>
+              <div className="text-sm text-steel-400">{t('deliveryDetailModal.fields.deliveryDate')}</div>
               <div className="mt-1 text-white">{formatDate(delivery.deliveryDate)}</div>
             </div>
             <div>
-              <div className="text-sm text-steel-400">Delivered By</div>
+              <div className="text-sm text-steel-400">{t('deliveryDetailModal.fields.deliveredBy')}</div>
               <div className="mt-1 text-white">{delivery.deliveredByName}</div>
             </div>
             <div>
-              <div className="text-sm text-steel-400">Project</div>
+              <div className="text-sm text-steel-400">{t('deliveryDetailModal.fields.project')}</div>
               <div className="mt-1">
                 <Link
                   to={`/projects/${delivery.projectId}`}
@@ -258,32 +259,37 @@ export function DeliveryDetailModal({
           {/* Notes */}
           {delivery.notes && (
             <div className="border-t border-steel-700 pt-4">
-              <div className="text-sm text-steel-400">Notes</div>
+              <div className="text-sm text-steel-400">{t('deliveryDetailModal.fields.notes')}</div>
               <div className="mt-1 text-steel-300">{delivery.notes}</div>
             </div>
           )}
 
           {/* Metadata */}
           <div className="border-t border-steel-700 pt-4 text-xs text-steel-500">
-            Created: {formatDateTime(delivery.createdAt)} | Updated:{' '}
-            {formatDateTime(delivery.updatedAt)}
+            {t('deliveryDetailModal.metadata', {
+              createdAt: formatDateTime(delivery.createdAt),
+              updatedAt: formatDateTime(delivery.updatedAt),
+            })}
           </div>
 
           {/* Line Items Table */}
           <div className="border-t border-steel-700 pt-4">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-white">Delivered Items</h3>
+              <h3 className="text-base font-semibold text-white">{t('deliveryDetailModal.sections.deliveredItems')}</h3>
               <span className="text-sm text-steel-400">
-                {delivery.lineItems.length} items, {totalQuantity} total units
+                {t('deliveryDetailModal.sections.itemCount', {
+                  items: delivery.lineItems.length,
+                  units: totalQuantity,
+                })}
               </span>
             </div>
 
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>Product</Table.HeaderCell>
-                  <Table.HeaderCell>SKU</Table.HeaderCell>
-                  <Table.HeaderCell className="text-right">Quantity</Table.HeaderCell>
+                  <Table.HeaderCell>{t('deliveryDetailModal.table.product')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('deliveryDetailModal.table.sku')}</Table.HeaderCell>
+                  <Table.HeaderCell className="text-right">{t('deliveryDetailModal.table.quantity')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -304,7 +310,7 @@ export function DeliveryDetailModal({
               <tfoot>
                 <tr className="border-t border-steel-700">
                   <td colSpan={2} className="px-4 py-3 text-right font-medium text-white">
-                    Total:
+                    {t('deliveryDetailModal.table.total')}:
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-copper-400">
                     {totalQuantity}
@@ -320,7 +326,7 @@ export function DeliveryDetailModal({
       {delivery && !isLoading && (
         <ModalActions align="between">
           <Button variant="ghost" onClick={handleClose}>
-            Close
+            {t('deliveryDetailModal.actions.close')}
           </Button>
           <div className="flex items-center gap-2">
             <Button
@@ -333,7 +339,7 @@ export function DeliveryDetailModal({
               ) : (
                 <Icon name="document-arrow-down" className="mr-2 h-4 w-4" />
               )}
-              Download
+              {t('deliveryDetailModal.actions.download')}
             </Button>
             {canMarkDelivered && (
               <Button
@@ -344,7 +350,7 @@ export function DeliveryDetailModal({
                 {isMarkingDelivered && (
                   <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Mark Delivered
+                {t('deliveryDetailModal.actions.markDelivered')}
               </Button>
             )}
             {canMarkReturned && (
@@ -356,7 +362,7 @@ export function DeliveryDetailModal({
                 {isMarkingReturned && (
                   <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Mark Returned
+                {t('deliveryDetailModal.actions.markReturned')}
               </Button>
             )}
             {canReassign && (
@@ -370,7 +376,7 @@ export function DeliveryDetailModal({
                 ) : (
                   <Icon name="forward" className="mr-2 h-4 w-4" />
                 )}
-                Reassign to Latest
+                {t('deliveryDetailModal.actions.reassignToLatest')}
               </Button>
             )}
           </div>

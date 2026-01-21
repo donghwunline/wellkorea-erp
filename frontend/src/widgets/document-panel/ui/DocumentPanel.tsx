@@ -8,6 +8,7 @@
  * Can import from: features, entities, shared
  */
 
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import type { BlueprintAttachment } from '@/entities/blueprint-attachment';
 import { blueprintQueries } from '@/entities/blueprint-attachment';
@@ -20,6 +21,7 @@ export interface DocumentPanelProps {
 }
 
 export function DocumentPanel({ projectId }: DocumentPanelProps) {
+  const { t } = useTranslation('widgets');
   const {
     data: attachments = [],
     isLoading,
@@ -30,8 +32,8 @@ export function DocumentPanel({ projectId }: DocumentPanelProps) {
   if (isLoading) {
     return (
       <Card className="p-12 text-center">
-        <Spinner size="lg" label="Loading documents" />
-        <p className="mt-4 text-steel-400">Loading documents...</p>
+        <Spinner size="lg" label={t('documentPanel.loadingLabel')} />
+        <p className="mt-4 text-steel-400">{t('documentPanel.loading')}</p>
       </Card>
     );
   }
@@ -41,7 +43,7 @@ export function DocumentPanel({ projectId }: DocumentPanelProps) {
     return (
       <Card className="p-12 text-center">
         <Icon name="warning" className="mx-auto mb-4 h-12 w-12 text-red-500" />
-        <h3 className="text-lg font-semibold text-white">Failed to load documents</h3>
+        <h3 className="text-lg font-semibold text-white">{t('documentPanel.loadError')}</h3>
         <p className="mt-2 text-steel-500">{error.message}</p>
       </Card>
     );
@@ -52,10 +54,10 @@ export function DocumentPanel({ projectId }: DocumentPanelProps) {
     return (
       <Card className="p-12 text-center">
         <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">문서</h3>
-        <p className="mt-2 text-steel-500">이 프로젝트에 첨부된 문서가 없습니다.</p>
+        <h3 className="text-lg font-semibold text-white">{t('documentPanel.emptyTitle')}</h3>
+        <p className="mt-2 text-steel-500">{t('documentPanel.emptyDescription')}</p>
         <p className="mt-1 text-sm text-steel-600">
-          공정 노드에 첨부된 문서가 여기에 표시됩니다.
+          {t('documentPanel.emptyHint')}
         </p>
       </Card>
     );
@@ -66,9 +68,9 @@ export function DocumentPanel({ projectId }: DocumentPanelProps) {
     <Card className="overflow-hidden">
       {/* Header */}
       <div className="border-b border-steel-700/50 bg-steel-800/50 px-4 py-3">
-        <h3 className="font-medium text-white">문서 ({attachments.length})</h3>
+        <h3 className="font-medium text-white">{t('documentPanel.titleWithCount', { count: attachments.length })}</h3>
         <p className="mt-1 text-sm text-steel-400">
-          공정 노드에 첨부된 도면 및 문서
+          {t('documentPanel.description')}
         </p>
       </div>
 

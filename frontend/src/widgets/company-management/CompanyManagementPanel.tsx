@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Card, Icon, Input, Spinner, Pagination } from '@/shared/ui';
@@ -83,6 +84,7 @@ export function CompanyManagementPanel({
   basePath = '/companies',
   onCompanySelect,
 }: CompanyManagementPanelProps) {
+  const { t } = useTranslation('widgets');
   const navigate = useNavigate();
 
   // Search and pagination state
@@ -127,14 +129,14 @@ export function CompanyManagementPanel({
   }, []);
 
   // Determine title
-  const displayTitle = title ?? (roleTypeFilter ? ROLE_TYPE_LABELS[roleTypeFilter] : '회사 관리');
+  const displayTitle = title ?? (roleTypeFilter ? ROLE_TYPE_LABELS[roleTypeFilter] : t('companyManagement.title'));
 
   // Loading state
   if (isLoading) {
     return (
       <Card className="p-12 text-center">
         <Spinner className="mx-auto h-8 w-8" />
-        <p className="mt-4 text-steel-400">회사 목록을 불러오는 중...</p>
+        <p className="mt-4 text-steel-400">{t('companyManagement.loading')}</p>
       </Card>
     );
   }
@@ -146,7 +148,7 @@ export function CompanyManagementPanel({
         <Icon name="x-circle" className="mx-auto mb-4 h-12 w-12 text-red-500" />
         <p className="mb-4 text-red-400">{error.message}</p>
         <Button variant="secondary" onClick={() => void refetch()}>
-          다시 시도
+          {t('companyManagement.retry')}
         </Button>
       </Card>
     );
@@ -164,14 +166,14 @@ export function CompanyManagementPanel({
         <div>
           <h2 className="text-2xl font-bold text-white">{displayTitle}</h2>
           <p className="text-sm text-steel-400">
-            총 {totalElements}개의 회사
+            {t('companyManagement.totalCount', { count: totalElements })}
           </p>
         </div>
 
         {showCreateButton && (
           <Button onClick={handleCreate}>
             <Icon name="plus" className="mr-2 h-4 w-4" />
-            회사 등록
+            {t('companyManagement.createCompany')}
           </Button>
         )}
       </div>
@@ -181,7 +183,7 @@ export function CompanyManagementPanel({
         <div className="flex-1">
           <Input
             type="search"
-            placeholder="회사명, 사업자번호, 담당자로 검색..."
+            placeholder={t('companyManagement.searchPlaceholder')}
             value={search}
             onChange={handleSearchChange}
           />
@@ -194,8 +196,8 @@ export function CompanyManagementPanel({
         onRowClick={handleRowClick}
         emptyMessage={
           search
-            ? `"${search}"에 대한 검색 결과가 없습니다.`
-            : '등록된 회사가 없습니다.'
+            ? t('companyManagement.emptySearch', { search })
+            : t('companyManagement.empty')
         }
         renderActions={(company) => (
           <Button
@@ -217,7 +219,7 @@ export function CompanyManagementPanel({
           onPageChange={setPage}
           isFirst={pagination.first}
           isLast={pagination.last}
-          itemLabel="회사"
+          itemLabel={t('companyManagement.paginationItemLabel')}
         />
       )}
     </div>
