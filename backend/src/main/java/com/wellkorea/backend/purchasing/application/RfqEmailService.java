@@ -36,6 +36,7 @@ public class RfqEmailService {
     private static final Logger log = LoggerFactory.getLogger(RfqEmailService.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,###");
+    private static final int DEFAULT_RESPONSE_DAYS = 7;
 
     private final PurchaseRequestMapper purchaseRequestMapper;
     private final CompanyMapper companyMapper;
@@ -222,7 +223,7 @@ public class RfqEmailService {
         context.setVariable("requiredDate", purchaseRequest.requiredDate() != null
                 ? purchaseRequest.requiredDate().format(DATE_FORMATTER)
                 : "협의");
-        context.setVariable("responseDeadline", LocalDate.now().plusDays(7).format(DATE_FORMATTER));
+        context.setVariable("responseDeadline", LocalDate.now().plusDays(DEFAULT_RESPONSE_DAYS).format(DATE_FORMATTER));
         context.setVariable("description", purchaseRequest.description());
 
         return templateEngine.process("rfq-email-ko", context);
