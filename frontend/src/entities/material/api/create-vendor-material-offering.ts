@@ -103,8 +103,32 @@ function validateCreateInput(input: CreateVendorMaterialOfferingInput): void {
     throw new VendorMaterialOfferingValidationError('Valid material ID is required', 'materialId');
   }
 
+  // vendorMaterialCode max 50 chars
+  if (input.vendorMaterialCode && input.vendorMaterialCode.length > 50) {
+    throw new VendorMaterialOfferingValidationError(
+      'Vendor material code must not exceed 50 characters',
+      'vendorMaterialCode'
+    );
+  }
+
+  // vendorMaterialName max 200 chars
+  if (input.vendorMaterialName && input.vendorMaterialName.length > 200) {
+    throw new VendorMaterialOfferingValidationError(
+      'Vendor material name must not exceed 200 characters',
+      'vendorMaterialName'
+    );
+  }
+
   if (input.unitPrice !== undefined && input.unitPrice !== null && input.unitPrice < 0) {
     throw new VendorMaterialOfferingValidationError('Unit price cannot be negative', 'unitPrice');
+  }
+
+  // currency max 3 chars (ISO 4217)
+  if (input.currency && input.currency.length > 3) {
+    throw new VendorMaterialOfferingValidationError(
+      'Currency code must not exceed 3 characters',
+      'currency'
+    );
   }
 
   if (input.leadTimeDays !== undefined && input.leadTimeDays !== null && input.leadTimeDays < 0) {
