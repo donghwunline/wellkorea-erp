@@ -178,7 +178,7 @@ export function ProjectDetailsCard({
         {project.note && (
           <div className="mt-6 border-t border-steel-700/50 pt-6">
             <div className="mb-2 flex items-center gap-2 text-sm text-steel-500">
-              <Icon name="document-text" className="h-4 w-4" />
+              <Icon name="document" className="h-4 w-4" />
               Note
             </div>
             <p className="whitespace-pre-wrap text-white">{project.note}</p>
