@@ -54,6 +54,7 @@ export {
   confirmPurchaseOrder,
   receivePurchaseOrder,
   cancelPurchaseOrder,
+  type SendPurchaseOrderInput,
 } from './api/purchase-order-actions';
 
 // =============================================================================

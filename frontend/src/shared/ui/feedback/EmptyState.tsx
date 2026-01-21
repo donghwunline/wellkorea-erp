@@ -7,6 +7,7 @@
  */
 
 import type { HTMLAttributes, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/lib/cn';
 
 export type EmptyStateVariant = 'default' | 'table';
@@ -22,7 +23,7 @@ export interface EmptyStateProps extends Omit<HTMLAttributes<HTMLDivElement>, 'c
 
 export function EmptyState({
   variant = 'default',
-  message = 'No data found',
+  message,
   description,
   icon,
   action,
@@ -30,10 +31,12 @@ export function EmptyState({
   className,
   ...props
 }: Readonly<EmptyStateProps>) {
+  const { t } = useTranslation('common');
+  const resolvedMessage = message ?? t('table.noData');
   const content = (
     <>
       {icon && <div className="mb-4 text-steel-600">{icon}</div>}
-      <p className="text-steel-400">{message}</p>
+      <p className="text-steel-400">{resolvedMessage}</p>
       {description && <p className="mt-1 text-sm text-steel-500">{description}</p>}
       {action && <div className="mt-4">{action}</div>}
     </>

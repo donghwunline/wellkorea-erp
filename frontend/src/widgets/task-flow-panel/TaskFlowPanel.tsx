@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { type TaskEdge, taskFlowQueries, type TaskNode } from '@/entities/task-flow';
 import { useSaveFlow } from '@/features/task-flow/save-flow';
@@ -25,6 +26,7 @@ export interface TaskFlowPanelProps {
 }
 
 export function TaskFlowPanel({ projectId, projectName }: TaskFlowPanelProps) {
+  const { t } = useTranslation('widgets');
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -55,8 +57,8 @@ export function TaskFlowPanel({ projectId, projectName }: TaskFlowPanelProps) {
   if (isLoading) {
     return (
       <Card className="p-12 text-center">
-        <Spinner size="lg" label="Loading task flow" />
-        <p className="mt-4 text-steel-400">Loading task flow...</p>
+        <Spinner size="lg" label={t('taskFlowPanel.loadingLabel')} />
+        <p className="mt-4 text-steel-400">{t('taskFlowPanel.loading')}</p>
       </Card>
     );
   }
@@ -65,7 +67,7 @@ export function TaskFlowPanel({ projectId, projectName }: TaskFlowPanelProps) {
   if (error) {
     return (
       <Alert variant="error">
-        Failed to load task flow: {error.message}
+        {t('taskFlowPanel.loadError', { message: error.message })}
       </Alert>
     );
   }
@@ -76,9 +78,9 @@ export function TaskFlowPanel({ projectId, projectName }: TaskFlowPanelProps) {
       <>
         <Card className="p-12 text-center">
           <Icon name="workflow" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">공정 관리</h3>
+          <h3 className="text-lg font-semibold text-white">{t('taskFlowPanel.emptyTitle')}</h3>
           <p className="mt-2 text-steel-500">
-            No tasks have been defined for this project yet.
+            {t('taskFlowPanel.emptyDescription')}
           </p>
           <Button
             variant="primary"
@@ -86,7 +88,7 @@ export function TaskFlowPanel({ projectId, projectName }: TaskFlowPanelProps) {
             onClick={() => setIsModalOpen(true)}
           >
             <Icon name="plus" className="h-4 w-4" />
-            Open Task Flow Editor
+            {t('taskFlowPanel.openEditor')}
           </Button>
         </Card>
 
@@ -107,14 +109,14 @@ export function TaskFlowPanel({ projectId, projectName }: TaskFlowPanelProps) {
       <Card className="overflow-hidden">
         {/* Header with Expand Button */}
         <div className="flex items-center justify-between border-b border-steel-700/50 bg-steel-800/50 px-4 py-3">
-          <h3 className="font-medium text-white">공정 관리 (Task Flow)</h3>
+          <h3 className="font-medium text-white">{t('taskFlowPanel.titleWithSuffix')}</h3>
           <Button
             variant="secondary"
             size="sm"
             onClick={() => setIsModalOpen(true)}
           >
             <Icon name="arrows-pointing-out" className="h-4 w-4" />
-            Expand to Fullscreen
+            {t('taskFlowPanel.expandFullscreen')}
           </Button>
         </div>
 

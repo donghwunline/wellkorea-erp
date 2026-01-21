@@ -8,6 +8,22 @@ import { httpClient, PURCHASE_ORDER_ENDPOINTS, DomainValidationError } from '@/s
 import type { CommandResult } from './purchase-order.mapper';
 
 // =============================================================================
+// INPUT TYPES
+// =============================================================================
+
+/**
+ * Input for sending a purchase order with optional email notification.
+ */
+export interface SendPurchaseOrderInput {
+  /** Purchase order ID */
+  readonly purchaseOrderId: number;
+  /** Optional email override (defaults to vendor email) */
+  readonly to?: string;
+  /** Optional CC recipients */
+  readonly ccEmails?: readonly string[];
+}
+
+// =============================================================================
 // VALIDATION
 // =============================================================================
 
@@ -18,20 +34,35 @@ function validateId(id: number, field: string): void {
 }
 
 // =============================================================================
+// REQUEST TYPES (internal)
+// =============================================================================
+
+interface SendPurchaseOrderRequest {
+  readonly to?: string;
+  readonly ccEmails?: readonly string[];
+}
+
+// =============================================================================
 // COMMAND FUNCTIONS
 // =============================================================================
 
 /**
- * Send a purchase order to the vendor.
+ * Send a purchase order to the vendor with email notification.
  *
- * @param id - Purchase order ID
+ * @param input - Send purchase order input with optional email params
  * @returns Command result
  * @throws DomainValidationError for validation failures
  * @throws ApiError for server errors
  */
-export async function sendPurchaseOrder(id: number): Promise<CommandResult> {
-  validateId(id, 'id');
-  return httpClient.post<CommandResult>(PURCHASE_ORDER_ENDPOINTS.send(id), {});
+export async function sendPurchaseOrder(input: SendPurchaseOrderInput): Promise<CommandResult> {
+  validateId(input.purchaseOrderId, 'purchaseOrderId');
+
+  const request: SendPurchaseOrderRequest = {
+    to: input.to,
+    ccEmails: input.ccEmails,
+  };
+
+  return httpClient.post<CommandResult>(PURCHASE_ORDER_ENDPOINTS.send(input.purchaseOrderId), request);
 }
 
 /**

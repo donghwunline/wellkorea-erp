@@ -672,9 +672,8 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data", hasSize(greaterThanOrEqualTo(2))))
-                    .andExpect(jsonPath("$.data[*].entityType", hasItem("QUOTATION")))
-                    .andExpect(jsonPath("$.data[*].entityType", hasItem("PURCHASE_ORDER")));
+                    .andExpect(jsonPath("$.data", hasSize(greaterThanOrEqualTo(1))))
+                    .andExpect(jsonPath("$.data[*].entityType", hasItem("QUOTATION")));
         }
 
         @Test

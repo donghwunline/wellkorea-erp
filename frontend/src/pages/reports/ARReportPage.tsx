@@ -12,6 +12,7 @@
  * - Uses widgets/ar-report for visual components
  */
 
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, Icon, LoadingState, PageHeader, Button } from '@/shared/ui';
 import { arReportQueries } from '@/entities/invoice';
@@ -19,6 +20,7 @@ import { ARAgingSummary, ARCustomerTable, ARInvoiceList } from '@/widgets/ar-rep
 import { useAuth } from '@/entities/auth';
 
 export function ARReportPage() {
+  const { t } = useTranslation('pages');
   const { hasAnyRole } = useAuth();
 
   // Check permissions
@@ -36,7 +38,7 @@ export function ARReportPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Alert variant="error">
-          You do not have permission to view this report. Contact your administrator.
+          {t('arReport.noPermission')}
         </Alert>
       </div>
     );
@@ -46,7 +48,7 @@ export function ARReportPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Card>
-          <LoadingState message="Loading AR report..." />
+          <LoadingState message={t('arReport.loading')} />
         </Card>
       </div>
     );
@@ -55,7 +57,7 @@ export function ARReportPage() {
   if (fetchError) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">Failed to load AR report: {fetchError.message}</Alert>
+        <Alert variant="error">{t('arReport.loadError')}: {fetchError.message}</Alert>
       </div>
     );
   }
@@ -63,7 +65,7 @@ export function ARReportPage() {
   if (!report) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">Report data not available</Alert>
+        <Alert variant="error">{t('arReport.noData')}</Alert>
       </div>
     );
   }
@@ -73,13 +75,13 @@ export function ARReportPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="AR Aging Report"
-          description="Accounts receivable analysis by aging bucket"
+          title={t('arReport.title')}
+          description={t('arReport.description')}
         />
         <PageHeader.Actions>
           <Button variant="secondary" onClick={() => refetch()}>
             <Icon name="arrow-path" className="mr-2 h-4 w-4" />
-            Refresh
+            {t('arReport.refresh')}
           </Button>
         </PageHeader.Actions>
       </PageHeader>

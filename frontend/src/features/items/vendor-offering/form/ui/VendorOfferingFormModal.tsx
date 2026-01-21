@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/ui';
 import type { VendorOffering } from '@/entities/catalog';
@@ -54,6 +55,7 @@ export function VendorOfferingFormModal({
   offering,
   onSuccess,
 }: Readonly<VendorOfferingFormModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const mode = offering ? 'edit' : 'create';
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +69,7 @@ export function VendorOfferingFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to create offering');
+      setError(err.message || t('items:vendorOfferingFormModal.createError'));
     },
   });
 
@@ -80,7 +82,7 @@ export function VendorOfferingFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to update offering');
+      setError(err.message || t('items:vendorOfferingFormModal.updateError'));
     },
   });
 
@@ -96,7 +98,7 @@ export function VendorOfferingFormModal({
 
     if (mode === 'create') {
       if (!data.vendorId || !data.serviceCategoryId) {
-        setError('Vendor and service category are required');
+        setError(t('items:vendorOfferingFormModal.validationError'));
         return;
       }
 
@@ -139,7 +141,7 @@ export function VendorOfferingFormModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'create' ? 'Add Vendor Offering' : 'Edit Vendor Offering'}
+      title={mode === 'create' ? t('items:vendorOfferingFormModal.addTitle') : t('items:vendorOfferingFormModal.editTitle')}
       size="lg"
     >
       <VendorOfferingForm

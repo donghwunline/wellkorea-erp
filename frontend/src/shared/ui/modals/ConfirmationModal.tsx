@@ -22,6 +22,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert } from '../feedback/Alert';
 import { Button } from '../primitives/Button';
 import { Modal } from './Modal';
@@ -99,11 +100,15 @@ export function ConfirmationModal({
   title,
   message,
   variant = 'danger',
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
 }: Readonly<ConfirmationModalProps>) {
+  const { t } = useTranslation('common');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const resolvedConfirmLabel = confirmLabel ?? t('buttons.confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('buttons.cancel');
 
   const config = variantConfig[variant];
 
@@ -142,7 +147,7 @@ export function ConfirmationModal({
 
       <ModalActions>
         <Button type="button" variant="secondary" onClick={handleClose} disabled={isLoading}>
-          {cancelLabel}
+          {resolvedCancelLabel}
         </Button>
         <Button
           type="button"
@@ -155,7 +160,7 @@ export function ConfirmationModal({
             config.buttonClass
           )}
         >
-          {confirmLabel}
+          {resolvedConfirmLabel}
         </Button>
       </ModalActions>
     </Modal>

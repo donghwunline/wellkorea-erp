@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
@@ -24,6 +25,7 @@ import { useCreateQuotation } from '@/features/quotation/create';
 import type { CreateQuotationInput } from '@/entities/quotation';
 
 export function QuotationCreatePage() {
+  const { t } = useTranslation('pages');
   const navigate = useNavigate();
   const { projectId: routeProjectId } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
@@ -95,11 +97,11 @@ export function QuotationCreatePage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="Create Quotation"
+          title={t('quotationCreate.title')}
           description={
             selectedProject
-              ? `For project: ${selectedProject.projectName}`
-              : 'Create a new quotation'
+              ? t('quotationCreate.forProject', { projectName: selectedProject.projectName })
+              : t('quotationCreate.description')
           }
         />
         <PageHeader.Actions>
@@ -108,7 +110,7 @@ export function QuotationCreatePage() {
             className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
           >
             <Icon name="arrow-left" className="h-5 w-5" />
-            Back to Quotations
+            {t('quotationCreate.backToQuotations')}
           </button>
         </PageHeader.Actions>
       </PageHeader>
@@ -116,13 +118,13 @@ export function QuotationCreatePage() {
       {/* Project Selection (if not from project route) */}
       {!routeProjectId && (
         <Card className="mb-6 p-6">
-          <h3 className="mb-4 text-lg font-medium text-white">Select Project</h3>
+          <h3 className="mb-4 text-lg font-medium text-white">{t('quotationCreate.selectProject')}</h3>
           <div className="max-w-md">
             <ProjectCombobox
               value={selectedProjectId}
               onChange={handleProjectSelect}
-              label="Project"
-              placeholder="Search for a project..."
+              label={t('quotationCreate.selectProject')}
+              placeholder={t('quotationCreate.searchProject')}
               required
             />
           </div>
@@ -138,7 +140,7 @@ export function QuotationCreatePage() {
       {isLoadingProject && (
         <Card className="p-12 text-center">
           <Spinner className="mx-auto h-8 w-8" />
-          <p className="mt-4 text-steel-400">Loading project details...</p>
+          <p className="mt-4 text-steel-400">{t('quotationCreate.loadingProject')}</p>
         </Card>
       )}
 
@@ -158,7 +160,7 @@ export function QuotationCreatePage() {
       {!isLoadingProject && !selectedProjectId && !routeProjectId && (
         <Card className="p-12 text-center">
           <Icon name="document" className="mx-auto h-12 w-12 text-steel-600" />
-          <p className="mt-4 text-steel-400">Please select a project to create a quotation.</p>
+          <p className="mt-4 text-steel-400">{t('quotationCreate.noProjectSelected')}</p>
         </Card>
       )}
     </div>

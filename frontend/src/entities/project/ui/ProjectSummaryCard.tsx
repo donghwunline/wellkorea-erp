@@ -11,6 +11,8 @@
  * - Delegates click actions via callback
  */
 
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Card, Icon } from '@/shared/ui';
 import type { IconName } from '@/shared/ui/primitives/Icon';
 import type { ProjectSection, ProjectSectionSummary } from '../model/project';
@@ -55,8 +57,8 @@ function getProgressBarColor(percent: number): string {
 /**
  * Format relative time (e.g., "2h ago", "3d ago").
  */
-function formatRelativeTime(dateStr: string | null): string {
-  if (!dateStr) return 'Never';
+function formatRelativeTime(dateStr: string | null, t: TFunction): string {
+  if (!dateStr) return t('project.summaryCard.relativeTime.never');
 
   const date = new Date(dateStr);
   const now = new Date();
@@ -65,10 +67,10 @@ function formatRelativeTime(dateStr: string | null): string {
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return t('project.summaryCard.relativeTime.justNow');
+  if (diffMins < 60) return t('project.summaryCard.relativeTime.minutesAgo', { minutes: diffMins });
+  if (diffHours < 24) return t('project.summaryCard.relativeTime.hoursAgo', { hours: diffHours });
+  if (diffDays < 7) return t('project.summaryCard.relativeTime.daysAgo', { days: diffDays });
 
   return date.toLocaleDateString('ko-KR');
 }
@@ -101,6 +103,8 @@ function formatRelativeTime(dateStr: string | null): string {
  * ```
  */
 export function ProjectSummaryCard({ summary, onClick }: Readonly<ProjectSummaryCardProps>) {
+  const { t } = useTranslation('entities');
+
   const handleClick = () => {
     onClick?.(summary.section);
   };
@@ -131,7 +135,7 @@ export function ProjectSummaryCard({ summary, onClick }: Readonly<ProjectSummary
       <div className="space-y-3">
         {/* Total Count */}
         <div className="flex items-baseline justify-between">
-          <span className="text-sm text-steel-500">Total</span>
+          <span className="text-sm text-steel-500">{t('project.summaryCard.total')}</span>
           <span className="text-2xl font-bold text-white">{summary.totalCount}</span>
         </div>
 
@@ -139,7 +143,7 @@ export function ProjectSummaryCard({ summary, onClick }: Readonly<ProjectSummary
         {summary.progressPercent !== undefined && (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-steel-500">Progress</span>
+              <span className="text-steel-500">{t('project.summaryCard.progress')}</span>
               <span className={cn('font-medium', getProgressTextColor(summary.progressPercent))}>
                 {summary.progressPercent}%
               </span>
@@ -159,7 +163,7 @@ export function ProjectSummaryCard({ summary, onClick }: Readonly<ProjectSummary
         {/* Pending Count */}
         {summary.pendingCount > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-sm text-steel-500">Pending</span>
+            <span className="text-sm text-steel-500">{t('project.summaryCard.pending')}</span>
             <span className="text-lg font-semibold text-yellow-400">{summary.pendingCount}</span>
           </div>
         )}
@@ -168,7 +172,7 @@ export function ProjectSummaryCard({ summary, onClick }: Readonly<ProjectSummary
         {summary.value !== undefined && (
           <div className="border-t border-steel-700/50 pt-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-steel-500">Value</span>
+              <span className="text-sm text-steel-500">{t('project.summaryCard.value')}</span>
               <span className="text-base font-semibold text-green-400">
                 {formatCurrency(summary.value)}
               </span>
@@ -180,7 +184,7 @@ export function ProjectSummaryCard({ summary, onClick }: Readonly<ProjectSummary
       {/* Footer - Last Updated */}
       <div className="mt-4 flex items-center gap-1.5 text-xs text-steel-600">
         <Icon name="clock" className="h-3 w-3" />
-        <span>Updated {formatRelativeTime(summary.lastUpdated)}</span>
+        <span>{t('project.summaryCard.updated')} {formatRelativeTime(summary.lastUpdated, t)}</span>
       </div>
     </Card>
   );

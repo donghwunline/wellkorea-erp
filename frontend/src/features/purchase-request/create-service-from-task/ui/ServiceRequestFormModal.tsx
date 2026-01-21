@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Button, DatePicker, FormField, Modal, Spinner } from '@/shared/ui';
 import { catalogQueries, type ServiceCategoryListItem } from '@/entities/catalog';
@@ -42,7 +43,7 @@ const initialFormState: FormState = {
   serviceCategoryId: null,
   description: '',
   quantity: '1',
-  uom: '건',
+  uom: '',
   requiredDate: '',
 };
 
@@ -57,6 +58,7 @@ export function ServiceRequestFormModal({
   nodeId,
   onSuccess,
 }: Readonly<ServiceRequestFormModalProps>) {
+  const { t } = useTranslation(['common', 'items']);
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,7 +80,7 @@ export function ServiceRequestFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || '외주 요청 생성에 실패했습니다');
+      setError(err.message || t('purchaseRequest.errors.outsourceFailed'));
     },
   });
 
@@ -93,23 +95,23 @@ export function ServiceRequestFormModal({
     setError(null);
 
     if (!formState.serviceCategoryId) {
-      setError('서비스 카테고리를 선택해주세요');
+      setError(t('purchaseRequest.errors.selectCategory'));
       return;
     }
 
     if (!formState.description.trim()) {
-      setError('내용을 입력해주세요');
+      setError(t('purchaseRequest.errors.enterContent'));
       return;
     }
 
     const quantity = parseFloat(formState.quantity);
     if (isNaN(quantity) || quantity <= 0) {
-      setError('수량은 0보다 커야 합니다');
+      setError(t('purchaseRequest.errors.quantityPositive'));
       return;
     }
 
     if (!formState.requiredDate) {
-      setError('납기일을 선택해주세요');
+      setError(t('purchaseRequest.errors.selectRequiredDate'));
       return;
     }
 
@@ -128,12 +130,12 @@ export function ServiceRequestFormModal({
   const activeCategories = categories?.filter((c: ServiceCategoryListItem) => c.isActive) ?? [];
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="외주 요청" size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('purchaseRequest.outsourceTitle')} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Service Category Dropdown */}
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-steel-300">
-            서비스 카테고리 <span className="text-red-400">*</span>
+            {t('purchaseRequest.serviceCategory')} <span className="text-red-400">*</span>
           </label>
           {categoriesLoading ? (
             <div className="flex h-10 items-center justify-center rounded-lg border border-steel-700/50 bg-steel-900/60">
@@ -146,7 +148,7 @@ export function ServiceRequestFormModal({
               className="h-10 rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white focus:border-copper-500 focus:outline-none"
               required
             >
-              <option value="">카테고리 선택</option>
+              <option value="">{t('purchaseRequest.selectCategory')}</option>
               {activeCategories.map((category: ServiceCategoryListItem) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -159,12 +161,12 @@ export function ServiceRequestFormModal({
         {/* Description */}
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-steel-300">
-            내용 <span className="text-red-400">*</span>
+            {t('purchaseRequest.content')} <span className="text-red-400">*</span>
           </label>
           <textarea
             value={formState.description}
             onChange={e => setFormState(s => ({ ...s, description: e.target.value }))}
-            placeholder="외주 작업 내용을 입력하세요"
+            placeholder={t('purchaseRequest.outsourceContent')}
             rows={3}
             className="rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder:text-steel-500 focus:border-copper-500 focus:outline-none"
             required
@@ -174,7 +176,7 @@ export function ServiceRequestFormModal({
         {/* Quantity and UOM */}
         <div className="grid grid-cols-2 gap-4">
           <FormField
-            label="수량"
+            label={t('purchaseRequest.quantity')}
             value={formState.quantity}
             onChange={value => setFormState(s => ({ ...s, quantity: value }))}
             type="number"
@@ -182,20 +184,20 @@ export function ServiceRequestFormModal({
             required
           />
           <FormField
-            label="단위"
+            label={t('common:purchaseRequest.unit')}
             value={formState.uom}
             onChange={value => setFormState(s => ({ ...s, uom: value }))}
-            placeholder="건"
+            placeholder={t('items:units.defaultServiceUnit')}
           />
         </div>
 
         {/* Required Date */}
         <DatePicker
-          label="납기일"
+          label={t('purchaseRequest.requiredDate')}
           mode="single"
           value={formState.requiredDate}
           onChange={value => setFormState(s => ({ ...s, requiredDate: value as string }))}
-          placeholder="납기일 선택"
+          placeholder={t('purchaseRequest.selectRequiredDate')}
           required
         />
 
@@ -206,14 +208,14 @@ export function ServiceRequestFormModal({
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>이 작업에 {attachments.length}개의 도면이 첨부되어 있습니다.</span>
+              <span>{t('purchaseRequest.attachmentsInfo', { count: attachments.length })}</span>
             </div>
             <ul className="mt-2 space-y-1 pl-6 text-xs text-steel-400">
               {attachments.slice(0, 3).map((att: BlueprintAttachment) => (
                 <li key={att.id}>{att.fileName}</li>
               ))}
               {attachments.length > 3 && (
-                <li>외 {attachments.length - 3}개</li>
+                <li>{t('purchaseRequest.andMore', { count: attachments.length - 3 })}</li>
               )}
             </ul>
           </div>
@@ -229,10 +231,10 @@ export function ServiceRequestFormModal({
         {/* Actions */}
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={handleClose}>
-            취소
+            {t('buttons.cancel')}
           </Button>
           <Button type="submit" variant="primary" isLoading={createMutation.isPending}>
-            외주 요청
+            {t('purchaseRequest.outsourceTitle')}
           </Button>
         </div>
       </form>

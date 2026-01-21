@@ -9,6 +9,7 @@
  * - All data via props
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, SectionHeader } from '@/shared/ui';
 import type { Product } from '../model/product';
 import { productRules } from '../model/product';
@@ -44,6 +45,8 @@ export function ProductCard({
   product,
   className,
 }: Readonly<ProductCardProps>) {
+  const { t } = useTranslation('entities');
+
   return (
     <Card className={className}>
       <SectionHeader title={productRules.getDisplayName(product)}>
@@ -52,28 +55,28 @@ export function ProductCard({
 
       <div className="mt-4 grid grid-cols-2 gap-4">
         <div>
-          <dt className="text-sm text-steel-500">SKU</dt>
+          <dt className="text-sm text-steel-500">{t('product.card.sku')}</dt>
           <dd className="mt-1 font-mono text-steel-300">{product.sku}</dd>
         </div>
         <div>
-          <dt className="text-sm text-steel-500">Type</dt>
+          <dt className="text-sm text-steel-500">{t('product.card.type')}</dt>
           <dd className="mt-1 text-steel-300">{product.productTypeName}</dd>
         </div>
         <div>
-          <dt className="text-sm text-steel-500">Base Price</dt>
+          <dt className="text-sm text-steel-500">{t('product.card.basePrice')}</dt>
           <dd className="mt-1 text-steel-300">
-            {productRules.formatPrice(product) || 'Not set'}
+            {productRules.formatPrice(product) || t('product.card.notSet')}
           </dd>
         </div>
         <div>
-          <dt className="text-sm text-steel-500">Unit</dt>
+          <dt className="text-sm text-steel-500">{t('product.card.unit')}</dt>
           <dd className="mt-1 text-steel-300">{product.unit}</dd>
         </div>
       </div>
 
       {productRules.hasDescription(product) && (
         <div className="mt-4">
-          <dt className="text-sm text-steel-500">Description</dt>
+          <dt className="text-sm text-steel-500">{t('product.card.description')}</dt>
           <dd className="mt-1 text-steel-300">{product.description}</dd>
         </div>
       )}

@@ -11,6 +11,7 @@
  * - Actions delegated via callbacks
  */
 
+import { useTranslation } from 'react-i18next';
 import { Badge, Button, Card, Icon, Spinner } from '@/shared/ui';
 import { formatDateTime } from '@/shared/lib/formatting';
 import type { Approval } from '../model/approval';
@@ -88,6 +89,8 @@ export function ApprovalRequestCard({
   onViewEntity,
   className = '',
 }: Readonly<ApprovalRequestCardProps>) {
+  const { t } = useTranslation('approval');
+
   // Get levels array (with null safety)
   const levels: readonly ApprovalLevel[] = approval.levels ?? [];
 
@@ -119,21 +122,21 @@ export function ApprovalRequestCard({
         {/* Entity Summary */}
         <div className="mb-4 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
           <div>
-            <span className="text-steel-500">Submitted By</span>
+            <span className="text-steel-500">{t('card.submittedBy')}</span>
             <p className="font-medium text-white">{approval.submittedByName}</p>
           </div>
           <div>
-            <span className="text-steel-500">Submitted At</span>
+            <span className="text-steel-500">{t('card.submittedAt')}</span>
             <p className="text-steel-300">{formatDateTime(approval.submittedAt)}</p>
           </div>
           <div>
-            <span className="text-steel-500">Current Level</span>
+            <span className="text-steel-500">{t('card.currentLevel')}</span>
             <p className="text-steel-300">
-              Level {approval.currentLevel} of {approval.totalLevels}
+              {t('card.levelOf', { current: approval.currentLevel, total: approval.totalLevels })}
             </p>
           </div>
           <div>
-            <span className="text-steel-500">Status</span>
+            <span className="text-steel-500">{t('card.status')}</span>
             <p className="text-steel-300">{statusConfig?.labelKo ?? approval.status}</p>
           </div>
         </div>
@@ -141,7 +144,7 @@ export function ApprovalRequestCard({
         {/* Approval Timeline */}
         {levels.length > 0 && (
           <div className="mb-4">
-            <h4 className="mb-2 text-sm font-medium text-steel-400">Approval Progress</h4>
+            <h4 className="mb-2 text-sm font-medium text-steel-400">{t('card.approvalProgress')}</h4>
             <div className="flex items-center gap-2">
               {levels.map((level, index) => (
                 <div key={level.levelOrder} className="flex items-center gap-2">
@@ -223,7 +226,7 @@ export function ApprovalRequestCard({
             {onViewEntity && (
               <Button variant="secondary" size="sm" onClick={onViewEntity} disabled={isActing}>
                 <Icon name="eye" className="mr-2 h-4 w-4" />
-                View Details
+                {t('card.viewDetails')}
               </Button>
             )}
           </div>
@@ -236,11 +239,11 @@ export function ApprovalRequestCard({
                 ) : (
                   <Icon name="check" className="mr-2 h-4 w-4" />
                 )}
-                Approve
+                {t('buttons.approve')}
               </Button>
               <Button variant="warning" size="sm" onClick={onReject} disabled={isActing}>
                 <Icon name="x-mark" className="mr-2 h-4 w-4" />
-                Reject
+                {t('buttons.reject')}
               </Button>
             </div>
           )}

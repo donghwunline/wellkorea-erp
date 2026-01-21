@@ -14,6 +14,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -65,10 +66,10 @@ export interface PurchaseRequestDetailModalProps {
 /**
  * Type badge component.
  */
-function TypeBadge({ dtype }: { readonly dtype: 'SERVICE' | 'MATERIAL' }) {
+function TypeBadge({ dtype, t }: { readonly dtype: 'SERVICE' | 'MATERIAL'; readonly t: (key: string) => string }) {
   return (
     <Badge variant={dtype === 'SERVICE' ? 'info' : 'copper'} size="sm">
-      {dtype === 'SERVICE' ? '외주' : '자재'}
+      {dtype === 'SERVICE' ? t('purchaseRequestPanel.types.service') : t('purchaseRequestPanel.types.material')}
     </Badge>
   );
 }
@@ -122,6 +123,7 @@ export function PurchaseRequestDetailModal({
   onSuccess,
   onOpenSendRfq,
 }: PurchaseRequestDetailModalProps) {
+  const { t } = useTranslation('widgets');
   const { hasAnyRole } = useAuth();
 
   // Modal states for RFQ actions
@@ -282,8 +284,8 @@ export function PurchaseRequestDetailModal({
   }, [onSuccess]);
 
   const modalTitle = request
-    ? `구매 요청: ${request.requestNumber}`
-    : '구매 요청 상세';
+    ? t('purchaseRequestPanel.modalTitle', { requestNumber: request.requestNumber })
+    : t('purchaseRequestPanel.modalTitleDefault');
 
   /**
    * Render action buttons for RFQ item based on status.
@@ -304,7 +306,7 @@ export function PurchaseRequestDetailModal({
             disabled={isActing}
           >
             <Icon name="pencil" className="mr-1 h-3 w-3" />
-            견적 입력
+            {t('purchaseRequestPanel.actions.recordReply')}
           </Button>
           <Button
             variant="ghost"
@@ -312,7 +314,7 @@ export function PurchaseRequestDetailModal({
             onClick={() => handleMarkNoResponse(item)}
             disabled={isActing}
           >
-            무응답
+            {t('purchaseRequestPanel.actions.noResponse')}
           </Button>
         </div>
       );
@@ -329,7 +331,7 @@ export function PurchaseRequestDetailModal({
             disabled={isActing}
           >
             <Icon name="check" className="mr-1 h-3 w-3" />
-            선정
+            {t('purchaseRequestPanel.actions.select')}
           </Button>
           <Button
             variant="ghost"
@@ -337,7 +339,7 @@ export function PurchaseRequestDetailModal({
             onClick={() => handleRejectRfq(item)}
             disabled={isActing}
           >
-            미선정
+            {t('purchaseRequestPanel.actions.reject')}
           </Button>
         </div>
       );
@@ -354,15 +356,15 @@ export function PurchaseRequestDetailModal({
             disabled={isActing}
           >
             <Icon name="document" className="mr-1 h-3 w-3" />
-            발주서 생성
+            {t('purchaseRequestPanel.actions.createPo')}
           </Button>
         );
       }
       // PO already exists
       if (rfqItemRules.hasPurchaseOrder(item)) {
-        return <Badge variant="success" size="sm">발주완료</Badge>;
+        return <Badge variant="success" size="sm">{t('purchaseRequestPanel.actions.poCreated')}</Badge>;
       }
-      return <Badge variant="success" size="sm">선정완료</Badge>;
+      return <Badge variant="success" size="sm">{t('purchaseRequestPanel.actions.selectionComplete')}</Badge>;
     }
 
     return <span className="text-steel-500">-</span>;
@@ -374,14 +376,14 @@ export function PurchaseRequestDetailModal({
         {/* Loading State */}
         {isLoading && (
           <div className="py-12">
-            <LoadingState message="Loading purchase request details..." />
+            <LoadingState message={t('purchaseRequestPanel.loadingMessage')} />
           </div>
         )}
 
         {/* Fetch Error */}
         {fetchError && !isLoading && (
           <Alert variant="error">
-            Failed to load purchase request: {fetchError.message}
+            {t('purchaseRequestPanel.loadError', { message: fetchError.message })}
           </Alert>
         )}
 
@@ -397,29 +399,29 @@ export function PurchaseRequestDetailModal({
 
             {/* Info Grid */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <InfoField label="요청번호">
+              <InfoField label={t('purchaseRequestPanel.fields.requestNumber')}>
                 <span className="font-medium text-copper-400">{request.requestNumber}</span>
               </InfoField>
-              <InfoField label="유형">
-                <TypeBadge dtype={request.dtype} />
+              <InfoField label={t('purchaseRequestPanel.fields.type')}>
+                <TypeBadge dtype={request.dtype} t={t} />
               </InfoField>
-              <InfoField label="상태">
+              <InfoField label={t('purchaseRequestPanel.fields.status')}>
                 <StatusBadge status={request.status} />
               </InfoField>
-              <InfoField label="프로젝트">
+              <InfoField label={t('purchaseRequestPanel.fields.project')}>
                 {request.jobCode || request.projectName || '-'}
               </InfoField>
             </div>
 
             {/* Item Info */}
             <div className="border-t border-steel-700 pt-4">
-              <h3 className="mb-3 text-base font-semibold text-white">요청 품목</h3>
+              <h3 className="mb-3 text-base font-semibold text-white">{t('purchaseRequestPanel.sections.itemInfo')}</h3>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                <InfoField label="품목명">{request.itemName}</InfoField>
-                <InfoField label="수량">
+                <InfoField label={t('purchaseRequestPanel.sections.itemName')}>{request.itemName}</InfoField>
+                <InfoField label={t('purchaseRequestPanel.fields.quantity')}>
                   {request.quantity} {request.uom}
                 </InfoField>
-                <InfoField label="납기일">
+                <InfoField label={t('purchaseRequestPanel.fields.requiredDate')}>
                   <span
                     className={
                       purchaseRequestRules.isOverdue(request) ? 'text-red-400' : ''
@@ -429,12 +431,12 @@ export function PurchaseRequestDetailModal({
                   </span>
                 </InfoField>
                 {request.dtype === 'MATERIAL' && request.materialSku && (
-                  <InfoField label="SKU">
+                  <InfoField label={t('purchaseRequestPanel.fields.sku')}>
                     <span className="font-mono text-sm">{request.materialSku}</span>
                   </InfoField>
                 )}
                 {request.dtype === 'MATERIAL' && request.materialStandardPrice && (
-                  <InfoField label="기준가">
+                  <InfoField label={t('purchaseRequestPanel.fields.standardPrice')}>
                     {formatCurrency(request.materialStandardPrice)}
                   </InfoField>
                 )}
@@ -444,7 +446,7 @@ export function PurchaseRequestDetailModal({
             {/* Description */}
             {request.description && (
               <div className="border-t border-steel-700 pt-4">
-                <h3 className="mb-2 text-base font-semibold text-white">요청 내용</h3>
+                <h3 className="mb-2 text-base font-semibold text-white">{t('purchaseRequestPanel.sections.requestDescription')}</h3>
                 <p className="text-steel-300">{request.description}</p>
               </div>
             )}
@@ -453,21 +455,21 @@ export function PurchaseRequestDetailModal({
             {request.rfqItems.length > 0 && (
               <div className="border-t border-steel-700 pt-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-base font-semibold text-white">견적 요청 현황</h3>
+                  <h3 className="text-base font-semibold text-white">{t('purchaseRequestPanel.sections.rfqStatus')}</h3>
                   <span className="text-sm text-steel-400">
-                    {request.rfqItems.length}개 업체
+                    {t('purchaseRequestPanel.sections.vendorCount', { count: request.rfqItems.length })}
                   </span>
                 </div>
                 <Table>
                   <Table.Header>
                     <Table.Row>
-                      <Table.HeaderCell>업체</Table.HeaderCell>
-                      <Table.HeaderCell>상태</Table.HeaderCell>
-                      <Table.HeaderCell className="text-right">견적가</Table.HeaderCell>
-                      <Table.HeaderCell className="text-right">납기</Table.HeaderCell>
-                      <Table.HeaderCell>비고</Table.HeaderCell>
+                      <Table.HeaderCell>{t('purchaseRequestPanel.table.vendor')}</Table.HeaderCell>
+                      <Table.HeaderCell>{t('purchaseRequestPanel.table.status')}</Table.HeaderCell>
+                      <Table.HeaderCell className="text-right">{t('purchaseRequestPanel.table.quotedPrice')}</Table.HeaderCell>
+                      <Table.HeaderCell className="text-right">{t('purchaseRequestPanel.table.leadTime')}</Table.HeaderCell>
+                      <Table.HeaderCell>{t('purchaseRequestPanel.table.notes')}</Table.HeaderCell>
                       {canManageRfq && canManageRfqItems && (
-                        <Table.HeaderCell>작업</Table.HeaderCell>
+                        <Table.HeaderCell>{t('purchaseRequestPanel.table.actions')}</Table.HeaderCell>
                       )}
                     </Table.Row>
                   </Table.Header>
@@ -484,7 +486,7 @@ export function PurchaseRequestDetailModal({
                           {item.quotedPrice ? formatCurrency(item.quotedPrice) : '-'}
                         </Table.Cell>
                         <Table.Cell className="text-right text-steel-300">
-                          {item.quotedLeadTime ? `${item.quotedLeadTime}일` : '-'}
+                          {item.quotedLeadTime ? t('purchaseRequestPanel.table.leadTimeDays', { days: item.quotedLeadTime }) : '-'}
                         </Table.Cell>
                         <Table.Cell className="max-w-xs truncate text-steel-400">
                           {item.notes ?? '-'}
@@ -503,8 +505,11 @@ export function PurchaseRequestDetailModal({
 
             {/* Metadata */}
             <div className="border-t border-steel-700 pt-4 text-xs text-steel-500">
-              요청자: {request.createdByName} | 생성일: {formatDateTime(request.createdAt)} |
-              수정일: {formatDateTime(request.updatedAt)}
+              {t('purchaseRequestPanel.metadata', {
+                requester: request.createdByName,
+                createdAt: formatDateTime(request.createdAt),
+                updatedAt: formatDateTime(request.updatedAt),
+              })}
             </div>
           </div>
         )}
@@ -513,13 +518,13 @@ export function PurchaseRequestDetailModal({
         {request && !isLoading && (
           <ModalActions align="between">
             <Button variant="ghost" onClick={onClose}>
-              닫기
+              {t('purchaseRequestPanel.actions.close')}
             </Button>
             <div className="flex items-center gap-2">
               {canManageRfq && canSendRfqForRequest && onOpenSendRfq && (
                 <Button variant="primary" onClick={handleOpenSendRfq}>
                   <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
-                  RFQ 발송
+                  {t('purchaseRequestPanel.actions.sendRfq')}
                 </Button>
               )}
             </div>
@@ -545,11 +550,11 @@ export function PurchaseRequestDetailModal({
           isOpen={Boolean(selectVendorItem)}
           onClose={() => setSelectVendorItem(null)}
           onConfirm={handleConfirmSelectVendor}
-          title="업체 선정"
-          message={`${selectVendorItem.vendorName}을(를) 선정하시겠습니까? 다른 응답 업체는 자동으로 미선정 처리됩니다.`}
+          title={t('purchaseRequestPanel.confirmSelectVendor.title')}
+          message={t('purchaseRequestPanel.confirmSelectVendor.message', { vendorName: selectVendorItem.vendorName })}
           variant="warning"
-          confirmLabel="선정"
-          cancelLabel="취소"
+          confirmLabel={t('purchaseRequestPanel.confirmSelectVendor.confirm')}
+          cancelLabel={t('purchaseRequestPanel.confirmSelectVendor.cancel')}
         />
       )}
 
@@ -559,11 +564,11 @@ export function PurchaseRequestDetailModal({
           isOpen={showPoPrompt}
           onClose={handleSkipCreatePo}
           onConfirm={handleCreatePo}
-          title="발주서 생성"
-          message={`${selectedVendorForPo.vendorName}가 선정되었습니다. 지금 발주서를 생성하시겠습니까?`}
+          title={t('purchaseRequestPanel.confirmCreatePo.title')}
+          message={t('purchaseRequestPanel.confirmCreatePo.message', { vendorName: selectedVendorForPo.vendorName })}
           variant="warning"
-          confirmLabel="발주서 생성"
-          cancelLabel="나중에"
+          confirmLabel={t('purchaseRequestPanel.confirmCreatePo.confirm')}
+          cancelLabel={t('purchaseRequestPanel.confirmCreatePo.later')}
         />
       )}
 

@@ -8,6 +8,7 @@
  */
 
 import { type FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ALL_ROLES,
   ROLE_DESCRIPTIONS,
@@ -29,6 +30,7 @@ export function UserCreateForm({
   onClose,
   onSuccess,
 }: Readonly<UserCreateFormProps>) {
+  const { t } = useTranslation(['admin', 'common']);
   // Local UI State - form inputs
   const [formData, setFormData] = useState<CreateUserInput>({
     username: '',
@@ -75,54 +77,54 @@ export function UserCreateForm({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Create New User">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('userForm.createTitle')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
         <FormField
-          label="Username"
+          label={t('userForm.username')}
           type="text"
           value={formData.username}
           onChange={value => setFormData(prev => ({ ...prev, username: value }))}
           required
           disabled={isPending}
-          placeholder="Enter username"
+          placeholder={t('userForm.placeholders.username')}
         />
 
         <FormField
-          label="Email"
+          label={t('userForm.email')}
           type="email"
           value={formData.email}
           onChange={value => setFormData(prev => ({ ...prev, email: value }))}
           required
           disabled={isPending}
-          placeholder="user@example.com"
+          placeholder={t('userForm.placeholders.email')}
         />
 
         <FormField
-          label="Full Name"
+          label={t('userForm.fullName')}
           type="text"
           value={formData.fullName}
           onChange={value => setFormData(prev => ({ ...prev, fullName: value }))}
           required
           disabled={isPending}
-          placeholder="Enter full name"
+          placeholder={t('userForm.placeholders.fullName')}
         />
 
         <FormField
-          label="Password"
+          label={t('userForm.password')}
           type="password"
           value={formData.password}
           onChange={value => setFormData(prev => ({ ...prev, password: value }))}
           required
           disabled={isPending}
-          placeholder="Enter password"
+          placeholder={t('userForm.placeholders.password')}
         />
 
         {/* Role Selection */}
         <div>
           <span className="mb-3 block text-sm font-medium text-steel-300">
-            Roles <span className="text-red-400">*</span>
+            {t('userForm.roles')} <span className="text-red-400">*</span>
           </span>
           <div className="grid grid-cols-2 gap-3">
             {ALL_ROLES.map(role => (
@@ -147,7 +149,7 @@ export function UserCreateForm({
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={handleClose} disabled={isPending}>
-            Cancel
+            {t('common:buttons.cancel')}
           </Button>
           <Button
             type="submit"
@@ -160,7 +162,7 @@ export function UserCreateForm({
               formData.roles.length === 0
             }
           >
-            Create User
+            {t('userForm.createUser')}
           </Button>
         </div>
       </form>

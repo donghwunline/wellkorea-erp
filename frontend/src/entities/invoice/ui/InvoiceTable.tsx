@@ -3,6 +3,7 @@
  * Read-only display - actions delegated via callbacks.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Table, Icon } from '@/shared/ui';
 import type { InvoiceSummary } from '../model/invoice';
 import { invoiceRules } from '../model/invoice';
@@ -26,8 +27,11 @@ export function InvoiceTable({
   renderActions,
   latestAcceptedQuotationId,
   loading = false,
-  emptyMessage = 'No invoices found.',
+  emptyMessage,
 }: InvoiceTableProps) {
+  const { t } = useTranslation('entities');
+  const displayEmptyMessage = emptyMessage ?? t('invoice.table.empty');
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -40,7 +44,7 @@ export function InvoiceTable({
     return (
       <div className="py-12 text-center">
         <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <p className="text-steel-400">{emptyMessage}</p>
+        <p className="text-steel-400">{displayEmptyMessage}</p>
       </div>
     );
   }
@@ -49,15 +53,15 @@ export function InvoiceTable({
     <Table>
       <Table.Header>
         <Table.Row>
-          <Table.HeaderCell>Invoice #</Table.HeaderCell>
-          <Table.HeaderCell>Job Code</Table.HeaderCell>
-          <Table.HeaderCell>Issue Date</Table.HeaderCell>
-          <Table.HeaderCell>Due Date</Table.HeaderCell>
-          <Table.HeaderCell>Status</Table.HeaderCell>
-          <Table.HeaderCell className="text-right">Total</Table.HeaderCell>
-          <Table.HeaderCell className="text-right">Paid</Table.HeaderCell>
-          <Table.HeaderCell className="text-right">Balance</Table.HeaderCell>
-          {renderActions && <Table.HeaderCell className="w-20">Actions</Table.HeaderCell>}
+          <Table.HeaderCell>{t('invoice.table.headers.invoiceNumber')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.table.headers.jobCode')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.table.headers.issueDate')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.table.headers.dueDate')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.table.headers.status')}</Table.HeaderCell>
+          <Table.HeaderCell className="text-right">{t('invoice.table.headers.total')}</Table.HeaderCell>
+          <Table.HeaderCell className="text-right">{t('invoice.table.headers.paid')}</Table.HeaderCell>
+          <Table.HeaderCell className="text-right">{t('invoice.table.headers.balance')}</Table.HeaderCell>
+          {renderActions && <Table.HeaderCell className="w-20">{t('invoice.table.headers.actions')}</Table.HeaderCell>}
         </Table.Row>
       </Table.Header>
       <Table.Body>

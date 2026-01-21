@@ -12,7 +12,8 @@
  * - Uses features/approval for mutations
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, FilterBar, LoadingState, PageHeader, Pagination } from '@/shared/ui';
@@ -25,16 +26,17 @@ import {
 import { useApproveApproval } from '@/features/approval/approve';
 import { RejectModal, useRejectApproval } from '@/features/approval/reject';
 
-// Status filter options
-const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'APPROVED', label: 'Approved' },
-  { value: 'REJECTED', label: 'Rejected' },
-];
-
 export function ApprovalListPage() {
+  const { t } = useTranslation('approval');
   const navigate = useNavigate();
+
+  // Status filter options
+  const statusOptions = useMemo(() => [
+    { value: '', label: t('list.allStatuses') },
+    { value: 'PENDING', label: t('status.PENDING') },
+    { value: 'APPROVED', label: t('status.APPROVED') },
+    { value: 'REJECTED', label: t('status.REJECTED') },
+  ], [t]);
 
   // Page state
   const [page, setPage] = useState(0);
@@ -68,7 +70,7 @@ export function ApprovalListPage() {
     error: approveError,
     reset: resetApproveError,
   } = useApproveApproval({
-    onSuccess: () => showSuccess('Approval submitted successfully'),
+    onSuccess: () => showSuccess(t('approve.success')),
   });
 
   const {
@@ -78,7 +80,7 @@ export function ApprovalListPage() {
     reset: resetRejectError,
   } = useRejectApproval({
     onSuccess: () => {
-      showSuccess('Rejection submitted successfully');
+      showSuccess(t('reject.success'));
       setRejectModal(null);
     },
   });
@@ -158,20 +160,20 @@ export function ApprovalListPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="결재 대기 문서"
-          description="Review and process pending approval requests"
+          title={t('list.title')}
+          description={t('description')}
         />
       </PageHeader>
 
       {/* Filters */}
       <div className="mb-6 flex gap-3">
         <FilterBar>
-          <FilterBar.Field label="Status">
+          <FilterBar.Field label={t('table.headers.status')}>
             <FilterBar.Select
-              options={STATUS_OPTIONS}
+              options={statusOptions}
               value={statusFilter || ''}
               onValueChange={handleStatusFilterChange}
-              placeholder="All Statuses"
+              placeholder={t('list.allStatuses')}
             />
           </FilterBar.Field>
         </FilterBar>
@@ -194,7 +196,7 @@ export function ApprovalListPage() {
       {/* Loading State */}
       {isLoading && (
         <Card>
-          <LoadingState message="Loading approval requests..." />
+          <LoadingState message={t('list.loading')} />
         </Card>
       )}
 
@@ -211,9 +213,7 @@ export function ApprovalListPage() {
           {approvals.length === 0 ? (
             <Card className="p-12 text-center">
               <p className="text-steel-400">
-                {statusFilter
-                  ? 'No approval requests found with selected status.'
-                  : 'No pending approval requests.'}
+                {statusFilter ? t('list.emptyFiltered') : t('list.empty')}
               </p>
             </Card>
           ) : (
@@ -242,7 +242,7 @@ export function ApprovalListPage() {
             onPageChange={setPage}
             isFirst={pagination.first}
             isLast={pagination.last}
-            itemLabel="approvals"
+            itemLabel={t('title').toLowerCase()}
           />
         </div>
       )}

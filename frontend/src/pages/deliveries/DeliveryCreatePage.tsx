@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -45,6 +46,8 @@ function getTodayISO(): string {
 }
 
 export function DeliveryCreatePage() {
+  const { t } = useTranslation('deliveries');
+  const { t: tCommon } = useTranslation('common');
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const projectIdNum = Number(projectId);
@@ -145,7 +148,7 @@ export function DeliveryCreatePage() {
 
       // Guard: acceptedQuotation should exist when form is shown
       if (!acceptedQuotation) {
-        setError('No accepted quotation found');
+        setError(t('validation.noQuotationFound'));
         return;
       }
 
@@ -158,7 +161,7 @@ export function DeliveryCreatePage() {
         }));
 
       if (lineItems.length === 0) {
-        setError('Please enter quantity for at least one item');
+        setError(t('validation.enterAtLeastOne'));
         return;
       }
 
@@ -167,7 +170,7 @@ export function DeliveryCreatePage() {
         const qtyToDeliver = quantitiesToDeliver[item.productId] || 0;
         if (qtyToDeliver > item.remainingQuantity) {
           setError(
-            `Quantity for ${item.productName} exceeds remaining deliverable quantity (${item.remainingQuantity})`
+            t('validation.exceedsRemaining', { product: item.productName, remaining: item.remainingQuantity })
           );
           return;
         }
@@ -181,7 +184,7 @@ export function DeliveryCreatePage() {
         notes: notes || undefined,
       });
     },
-    [projectIdNum, acceptedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
+    [projectIdNum, acceptedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery, t]
   );
 
   // Loading state
@@ -200,7 +203,7 @@ export function DeliveryCreatePage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Card>
-          <LoadingState message="Loading quotation data..." />
+          <LoadingState message={t('create.loading')} />
         </Card>
       </div>
     );
@@ -210,7 +213,7 @@ export function DeliveryCreatePage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Alert variant="error">
-          Failed to load quotation: {quotationsError.message}
+          {t('create.error')}: {quotationsError.message}
         </Alert>
       </div>
     );
@@ -221,17 +224,16 @@ export function DeliveryCreatePage() {
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
+          <h3 className="text-lg font-semibold text-white">{t('create.noQuotation')}</h3>
           <p className="mt-2 text-steel-400">
-            This project does not have an accepted quotation. A quotation must be accepted by the
-            customer before recording deliveries.
+            {t('create.noQuotationDesc')}
           </p>
           <Button
             variant="secondary"
             className="mt-6"
             onClick={() => navigate(`/projects/${projectId}`)}
           >
-            Back to Project
+            {t('actions.backToProject')}
           </Button>
         </Card>
       </div>
@@ -243,16 +245,16 @@ export function DeliveryCreatePage() {
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Icon name="check-circle" className="mx-auto mb-4 h-12 w-12 text-green-500" />
-          <h3 className="text-lg font-semibold text-white">All Items Delivered</h3>
+          <h3 className="text-lg font-semibold text-white">{t('create.allDelivered')}</h3>
           <p className="mt-2 text-steel-400">
-            All quotation items have been fully delivered. No remaining items to deliver.
+            {t('create.allDeliveredDesc')}
           </p>
           <Button
             variant="secondary"
             className="mt-6"
             onClick={() => navigate(`/projects/${projectId}`)}
           >
-            Back to Project
+            {t('actions.backToProject')}
           </Button>
         </Card>
       </div>
@@ -264,15 +266,15 @@ export function DeliveryCreatePage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="새 출고 등록"
-          description="Record a new delivery for this project"
+          title={t('create.title')}
+          description={t('create.description')}
         />
         <PageHeader.Actions>
           <Button
             variant="ghost"
             onClick={() => navigate(`/projects/${projectId}`)}
           >
-            Cancel
+            {tCommon('buttons.cancel')}
           </Button>
         </PageHeader.Actions>
       </PageHeader>
@@ -287,9 +289,9 @@ export function DeliveryCreatePage() {
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <Card className="mb-6 p-6">
-          <h3 className="mb-4 text-lg font-semibold text-white">Delivery Information</h3>
+          <h3 className="mb-4 text-lg font-semibold text-white">{t('create.deliveryInfo')}</h3>
           <div className="grid grid-cols-2 gap-6">
-            <FormField label="Delivery Date" required>
+            <FormField label={t('fields.deliveryDate')} required>
               <Input
                 type="date"
                 value={deliveryDate}
@@ -298,11 +300,11 @@ export function DeliveryCreatePage() {
                 required
               />
             </FormField>
-            <FormField label="Notes">
+            <FormField label={t('fields.notes')}>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                placeholder="Optional notes about this delivery"
+                placeholder={t('fields.notes')}
                 rows={2}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               />
@@ -311,9 +313,9 @@ export function DeliveryCreatePage() {
         </Card>
 
         <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-white">Line Items</h3>
+          <h3 className="mb-4 text-lg font-semibold text-white">{t('lineItems.title')}</h3>
           <p className="mb-6 text-sm text-steel-400">
-            Enter the quantity delivered for each item. Only items with remaining quantity are shown.
+            {t('lineItems.enterQuantityHint')}
           </p>
 
           {/* Line items table */}
@@ -322,19 +324,19 @@ export function DeliveryCreatePage() {
               <thead>
                 <tr className="border-b border-steel-700">
                   <th className="px-4 py-3 text-left text-sm font-medium text-steel-400">
-                    Product
+                    {t('lineItems.product')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Quoted
+                    {t('lineItems.quoted')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Delivered
+                    {t('lineItems.delivered')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Remaining
+                    {t('lineItems.remaining')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Qty to Deliver
+                    {t('lineItems.toDeliver')}
                   </th>
                 </tr>
               </thead>
@@ -379,7 +381,7 @@ export function DeliveryCreatePage() {
               <tfoot>
                 <tr className="border-t border-steel-700">
                   <td colSpan={4} className="px-4 py-3 text-right font-medium text-white">
-                    Total Quantity to Deliver:
+                    {t('lineItems.totalToDeliver')}
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-copper-400">
                     {totalToDeliver}
@@ -396,13 +398,13 @@ export function DeliveryCreatePage() {
               variant="ghost"
               onClick={() => navigate(`/projects/${projectId}`)}
             >
-              Cancel
+              {tCommon('buttons.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || totalToDeliver === 0}
             >
-              {isSubmitting ? 'Saving...' : 'Create Delivery'}
+              {isSubmitting ? t('create.saving') : t('create.createButton')}
             </Button>
           </div>
         </Card>

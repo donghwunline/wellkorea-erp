@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/ui';
 import type { Material } from '@/entities/material';
@@ -45,6 +46,7 @@ export function MaterialFormModal({
   material,
   onSuccess,
 }: Readonly<MaterialFormModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const mode = material ? 'edit' : 'create';
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export function MaterialFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to create material');
+      setError(err.message || t('items:materialFormModal.createError'));
     },
   });
 
@@ -73,7 +75,7 @@ export function MaterialFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to update material');
+      setError(err.message || t('items:materialFormModal.updateError'));
     },
   });
 
@@ -122,7 +124,7 @@ export function MaterialFormModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'create' ? 'Add Material' : 'Edit Material'}
+      title={mode === 'create' ? t('items:materialFormModal.addTitle') : t('items:materialFormModal.editTitle')}
       size="lg"
     >
       <MaterialForm

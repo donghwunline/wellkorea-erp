@@ -11,6 +11,7 @@
  * - Delegates actions via callbacks
  */
 
+import { useTranslation } from 'react-i18next';
 import type { UserDetails } from '../model/user';
 import type { RoleName } from '../model/role';
 import { ROLE_LABELS } from '../model/role';
@@ -91,24 +92,26 @@ export function UserTable({
   onRoles,
   onPassword,
   onCustomers,
-  emptyMessage = 'No users found.',
+  emptyMessage,
   className,
 }: Readonly<UserTableProps>) {
+  const { t } = useTranslation('admin');
+
   return (
     <Card variant="table" className={className}>
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>User</Table.HeaderCell>
-            <Table.HeaderCell>Roles</Table.HeaderCell>
-            <Table.HeaderCell>Status</Table.HeaderCell>
-            <Table.HeaderCell>Last Login</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
+            <Table.HeaderCell>{t('userTable.user')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('userTable.roles')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('userTable.status')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('userTable.lastLogin')}</Table.HeaderCell>
+            <Table.HeaderCell className="text-right">{t('userTable.actions')}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {users.length === 0 ? (
-            <EmptyState variant="table" colspan={5} message={emptyMessage} />
+            <EmptyState variant="table" colspan={5} message={emptyMessage || t('userTable.empty')} />
           ) : (
             users.map(user => (
               <Table.Row key={user.id}>
@@ -130,7 +133,7 @@ export function UserTable({
                 </Table.Cell>
                 <Table.Cell>
                   <Badge variant={user.isActive ? 'success' : 'danger'} dot>
-                    {user.isActive ? 'Active' : 'Inactive'}
+                    {user.isActive ? t('userTable.active') : t('userTable.inactive')}
                   </Badge>
                 </Table.Cell>
                 <Table.Cell className="text-steel-400">
@@ -141,8 +144,8 @@ export function UserTable({
                     {onEdit && (
                       <IconButton
                         onClick={() => onEdit(user)}
-                        aria-label="Edit user"
-                        title="Edit user"
+                        aria-label={t('userTable.editUser')}
+                        title={t('userTable.editUser')}
                       >
                         <Icon name="pencil" className="h-4 w-4" />
                       </IconButton>
@@ -150,8 +153,8 @@ export function UserTable({
                     {onRoles && (
                       <IconButton
                         onClick={() => onRoles(user)}
-                        aria-label="Manage roles"
-                        title="Manage roles"
+                        aria-label={t('userTable.manageRoles')}
+                        title={t('userTable.manageRoles')}
                       >
                         <Icon name="shield" className="h-4 w-4" />
                       </IconButton>
@@ -159,8 +162,8 @@ export function UserTable({
                     {onPassword && (
                       <IconButton
                         onClick={() => onPassword(user)}
-                        aria-label="Change password"
-                        title="Change password"
+                        aria-label={t('userTable.changePassword')}
+                        title={t('userTable.changePassword')}
                       >
                         <Icon name="key" className="h-4 w-4" />
                       </IconButton>
@@ -168,8 +171,8 @@ export function UserTable({
                     {onCustomers && user.roles.includes('ROLE_SALES') && (
                       <IconButton
                         onClick={() => onCustomers(user)}
-                        aria-label="Assign customers"
-                        title="Assign customers"
+                        aria-label={t('userTable.assignCustomers')}
+                        title={t('userTable.assignCustomers')}
                       >
                         <Icon name="users" className="h-4 w-4" />
                       </IconButton>
@@ -179,8 +182,8 @@ export function UserTable({
                         <IconButton
                           onClick={() => onDeactivate(user)}
                           variant="danger"
-                          aria-label="Deactivate user"
-                          title="Deactivate user"
+                          aria-label={t('userTable.deactivateUser')}
+                          title={t('userTable.deactivateUser')}
                         >
                           <Icon name="ban" className="h-4 w-4" />
                         </IconButton>
@@ -190,8 +193,8 @@ export function UserTable({
                         <IconButton
                           onClick={() => onActivate(user)}
                           variant="primary"
-                          aria-label="Activate user"
-                          title="Activate user"
+                          aria-label={t('userTable.activateUser')}
+                          title={t('userTable.activateUser')}
                         >
                           <Icon name="check-circle" className="h-4 w-4" />
                         </IconButton>
@@ -212,16 +215,18 @@ export function UserTable({
  * Loading skeleton for UserTable.
  */
 export function UserTableSkeleton({ className }: { className?: string }) {
+  const { t } = useTranslation('admin');
+
   return (
     <Card variant="table" className={className}>
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>User</Table.HeaderCell>
-            <Table.HeaderCell>Roles</Table.HeaderCell>
-            <Table.HeaderCell>Status</Table.HeaderCell>
-            <Table.HeaderCell>Last Login</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>
+            <Table.HeaderCell>{t('userTable.user')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('userTable.roles')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('userTable.status')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('userTable.lastLogin')}</Table.HeaderCell>
+            <Table.HeaderCell className="text-right">{t('userTable.actions')}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>

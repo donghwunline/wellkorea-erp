@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Card, ConfirmationModal, Icon, Spinner } from '@/shared/ui';
 
@@ -51,6 +52,8 @@ export interface QuotationPanelProps {
  * Inline quotation details panel with version navigation.
  */
 export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPanelProps) {
+  const { t } = useTranslation(['quotations', 'common']);
+
   // Version navigation state
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -122,7 +125,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
   // Feature mutation hooks
   const submitMutation = useSubmitQuotation({
     onSuccess: () => {
-      showSuccess('Quotation submitted for approval');
+      showSuccess(t('panel.submitSuccess'));
       setSubmitConfirm(false);
       void refetchList();
       void refetchDetails();
@@ -133,7 +136,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
 
   const acceptMutation = useAcceptQuotation({
     onSuccess: () => {
-      showSuccess('Quotation accepted by customer');
+      showSuccess(t('panel.acceptSuccess'));
       setAcceptConfirm(false);
       void refetchList();
       void refetchDetails();
@@ -144,7 +147,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
 
   const versionMutation = useCreateVersion({
     onSuccess: result => {
-      showSuccess('New version created');
+      showSuccess(t('panel.versionSuccess'));
       setVersionConfirm(false);
       // Open edit modal for the new version
       setEditModalId(result.id);
@@ -162,7 +165,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
       void refetchList();
       void refetchDetails();
       onDataChange?.();
-      showSuccess('Email notification sent successfully');
+      showSuccess(t('panel.emailSuccess'));
     },
     onError: err => onError?.(err.message),
   });
@@ -263,7 +266,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
     return (
       <Card className="p-12 text-center">
         <Spinner className="mx-auto h-8 w-8" />
-        <p className="mt-4 text-steel-400">Loading quotations...</p>
+        <p className="mt-4 text-steel-400">{t('panel.loadingQuotations')}</p>
       </Card>
     );
   }
@@ -274,7 +277,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
       <Alert variant="error">
         {listError.message}
         <Button variant="secondary" size="sm" className="ml-4" onClick={() => void refetchList()}>
-          Retry
+          {t('common:buttons.retry')}
         </Button>
       </Alert>
     );
@@ -286,11 +289,11 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
       <>
         <Card className="p-12 text-center">
           <Icon name="document" className="mx-auto mb-4 h-16 w-16 text-steel-600" />
-          <h3 className="mb-2 text-lg font-semibold text-white">No Quotations Yet</h3>
-          <p className="mb-6 text-steel-400">Create your first quotation for this project.</p>
+          <h3 className="mb-2 text-lg font-semibold text-white">{t('panel.noQuotationsTitle')}</h3>
+          <p className="mb-6 text-steel-400">{t('panel.noQuotationsDescription')}</p>
           <Button onClick={handleCreate}>
             <Icon name="plus" className="mr-2 h-4 w-4" />
-            New Quotation
+            {t('panel.newQuotation')}
           </Button>
         </Card>
 
@@ -392,21 +395,21 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
           {canEdit && (
             <Button variant="secondary" onClick={handleEdit} disabled={isActing} size="sm">
               <Icon name="pencil" className="mr-2 h-4 w-4" />
-              Edit
+              {t('common:buttons.edit')}
             </Button>
           )}
 
           {canSubmit && (
             <Button onClick={() => setSubmitConfirm(true)} disabled={isActing} size="sm">
               <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
-              Submit
+              {t('panel.submit')}
             </Button>
           )}
 
           {canDownloadPdf && (
             <Button variant="secondary" onClick={handleDownloadPdf} disabled={isActing} size="sm">
               <Icon name="document-arrow-down" className="mr-2 h-4 w-4" />
-              PDF
+              {t('panel.pdf')}
             </Button>
           )}
 
@@ -418,7 +421,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
               size="sm"
             >
               <Icon name="envelope" className="mr-2 h-4 w-4" />
-              Send Email
+              {t('panel.sendEmail')}
             </Button>
           )}
 
@@ -430,7 +433,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
               className="bg-green-600 hover:bg-green-700"
             >
               <Icon name="check-circle" className="mr-2 h-4 w-4" />
-              Accept
+              {t('panel.accept')}
             </Button>
           )}
 
@@ -442,13 +445,13 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
               size="sm"
             >
               <Icon name="document-duplicate" className="mr-2 h-4 w-4" />
-              New Version
+              {t('panel.newVersion')}
             </Button>
           )}
 
           <Button onClick={handleCreate} size="sm">
             <Icon name="plus" className="mr-2 h-4 w-4" />
-            New
+            {t('panel.new')}
           </Button>
         </div>
       </div>
@@ -456,7 +459,7 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
       {isLoadingDetails ? (
         <Card className="p-12 text-center">
           <Spinner className="mx-auto h-8 w-8" />
-          <p className="mt-4 text-steel-400">Loading quotation details...</p>
+          <p className="mt-4 text-steel-400">{t('panel.loadingDetails')}</p>
         </Card>
       ) : quotation ? (
         <QuotationCard quotation={quotation} showStatusBadge={false} />
@@ -465,9 +468,9 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
       {/* Modals */}
       <ConfirmationModal
         isOpen={submitConfirm}
-        title="Submit for Approval"
-        message={`Are you sure you want to submit "${quotation?.jobCode}" for approval? This will start the approval workflow.`}
-        confirmLabel="Submit"
+        title={t('panel.confirmSubmit.title')}
+        message={t('panel.confirmSubmit.message', { jobCode: quotation?.jobCode })}
+        confirmLabel={t('panel.confirmSubmit.confirm')}
         onConfirm={handleSubmitConfirm}
         onClose={() => setSubmitConfirm(false)}
         variant="warning"
@@ -475,18 +478,18 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
 
       <ConfirmationModal
         isOpen={acceptConfirm}
-        title="Accept Quotation"
-        message={`Mark "${quotation?.jobCode} v${quotation?.version}" as accepted by customer? This will activate the project for delivery and invoicing.`}
-        confirmLabel="Accept"
+        title={t('panel.confirmAccept.title')}
+        message={t('panel.confirmAccept.message', { jobCode: quotation?.jobCode, version: quotation?.version })}
+        confirmLabel={t('panel.confirmAccept.confirm')}
         onConfirm={handleAcceptConfirm}
         onClose={() => setAcceptConfirm(false)}
       />
 
       <ConfirmationModal
         isOpen={versionConfirm}
-        title="Create New Version"
-        message={`Create a new version based on "${quotation?.jobCode} v${quotation?.version}"? The new version will be in DRAFT status.`}
-        confirmLabel="Create Version"
+        title={t('panel.confirmVersion.title')}
+        message={t('panel.confirmVersion.message', { jobCode: quotation?.jobCode, version: quotation?.version })}
+        confirmLabel={t('panel.confirmVersion.confirm')}
         onConfirm={handleVersionConfirm}
         onClose={() => setVersionConfirm(false)}
       />

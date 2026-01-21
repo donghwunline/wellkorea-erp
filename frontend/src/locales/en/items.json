@@ -1,0 +1,417 @@
+{
+  "title": "Items",
+  "description": "Manage your product catalog, outsourced services, and purchased materials",
+  "tabs": {
+    "products": "Products",
+    "materials": "Materials",
+    "outsourceItems": "Outsource Items"
+  },
+  "products": {
+    "title": "Products",
+    "list": {
+      "title": "Product List",
+      "create": "Add Product",
+      "empty": "No products found.",
+      "emptyWithAction": "No products found. Click \"Add Product\" to create your first product.",
+      "allTypes": "All Types",
+      "searchPlaceholder": "Search by name or SKU...",
+      "loadError": "Failed to load products"
+    },
+    "create": {
+      "title": "Add New Product",
+      "success": "Product added successfully",
+      "error": "Failed to add product"
+    },
+    "edit": {
+      "title": "Edit Product",
+      "success": "Product updated successfully",
+      "error": "Failed to update product"
+    },
+    "delete": {
+      "title": "Delete Product",
+      "message": "Are you sure you want to delete this product?",
+      "success": "Product deleted successfully"
+    },
+    "fields": {
+      "productCode": "Product Code",
+      "productName": "Product Name",
+      "category": "Category",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "description": "Description",
+      "status": "Status"
+    }
+  },
+  "materials": {
+    "title": "Materials",
+    "list": {
+      "title": "Material List",
+      "create": "Add Material",
+      "empty": "No materials found.",
+      "emptyWithAction": "No materials found. Click \"Add Material\" to create your first material.",
+      "allCategories": "All Categories",
+      "searchPlaceholder": "Search materials by name or SKU...",
+      "loadError": "Failed to load materials"
+    },
+    "view": {
+      "modalTitle": "Material: {{name}}",
+      "noDescription": "No description",
+      "preferredVendorNone": "None"
+    },
+    "offerings": {
+      "modalTitle": "Vendors for \"{{name}}\"",
+      "empty": "No vendors currently supply this material.",
+      "addOffering": "Add Vendor Offering",
+      "setAsPreferred": "Set as Preferred"
+    },
+    "create": {
+      "title": "Add New Material",
+      "success": "Material added successfully",
+      "error": "Failed to add material"
+    },
+    "edit": {
+      "title": "Edit Material",
+      "success": "Material updated successfully",
+      "error": "Failed to update material"
+    },
+    "delete": {
+      "title": "Delete Material",
+      "message": "Are you sure you want to delete this material?",
+      "success": "Material deleted successfully"
+    },
+    "fields": {
+      "materialCode": "Material Code",
+      "materialName": "Material Name",
+      "category": "Category",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "description": "Description",
+      "status": "Status",
+      "vendor": "Vendor"
+    }
+  },
+  "outsourceItems": {
+    "title": "Outsource Items",
+    "list": {
+      "title": "Outsource Item List",
+      "create": "Add Category",
+      "empty": "No service categories found.",
+      "emptyWithAction": "No service categories found. Click \"Add Category\" to create your first service category.",
+      "searchPlaceholder": "Search service categories...",
+      "includeInactive": "Include Inactive",
+      "loadError": "Failed to load service categories"
+    },
+    "vendorCount": "{{count}} vendor(s)",
+    "offerings": {
+      "modalTitle": "Vendors for \"{{name}}\"",
+      "empty": "No vendors currently offer this service.",
+      "addOffering": "Add Vendor Offering"
+    },
+    "create": {
+      "title": "Add New Outsource Item",
+      "success": "Outsource item added successfully",
+      "error": "Failed to add outsource item"
+    },
+    "edit": {
+      "title": "Edit Outsource Item",
+      "success": "Outsource item updated successfully",
+      "error": "Failed to update outsource item"
+    },
+    "delete": {
+      "title": "Delete Outsource Item",
+      "message": "Are you sure you want to delete this outsource item?",
+      "success": "Outsource item deleted successfully"
+    },
+    "fields": {
+      "itemCode": "Item Code",
+      "itemName": "Item Name",
+      "category": "Category",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "description": "Description",
+      "status": "Status",
+      "vendor": "Vendor"
+    }
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "INACTIVE": "Inactive",
+    "DISCONTINUED": "Discontinued"
+  },
+  "table": {
+    "headers": {
+      "sku": "SKU",
+      "code": "Code",
+      "name": "Name",
+      "category": "Category",
+      "unit": "Unit",
+      "unitPrice": "Unit Price",
+      "standardPrice": "Standard Price",
+      "preferredVendor": "Preferred Vendor",
+      "status": "Status",
+      "vendor": "Vendor",
+      "leadTime": "Lead Time",
+      "effectivePeriod": "Effective Period",
+      "preferred": "Preferred",
+      "actions": "Actions"
+    }
+  },
+  "actions": {
+    "view": "View Details",
+    "viewDetails": "Details",
+    "vendors": "Vendors",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "activating": "Activating..."
+  },
+  "common": {
+    "retry": "Retry",
+    "addProduct": "Add Product",
+    "addMaterial": "Add Material",
+    "addCategory": "Add Category",
+    "days": "{{count}} days",
+    "noVendors": "None"
+  },
+  "productForm": {
+    "sku": "SKU",
+    "name": "Name",
+    "productType": "Product Type",
+    "selectProductType": "Select product type",
+    "unit": "Unit",
+    "baseUnitPrice": "Base Unit Price",
+    "description": "Description",
+    "descriptionPlaceholder": "Product description (optional)",
+    "createProduct": "Create Product",
+    "saveChanges": "Save Changes",
+    "units": {
+      "EA": "EA (Each)",
+      "SET": "SET",
+      "BOX": "BOX",
+      "KG": "KG",
+      "M": "M (Meter)"
+    },
+    "placeholders": {
+      "sku": "e.g., PRD-001",
+      "name": "Enter product name",
+      "baseUnitPrice": "e.g., 10000"
+    },
+    "validation": {
+      "skuWhitespace": "SKU cannot be whitespace only",
+      "nameWhitespace": "Name cannot be whitespace only",
+      "pricePositive": "Price must be a positive number"
+    }
+  },
+  "productFormModal": {
+    "addTitle": "Add Product",
+    "editTitle": "Edit Product",
+    "createError": "Failed to create product",
+    "updateError": "Failed to update product"
+  },
+  "vendorOfferingForm": {
+    "vendor": "Vendor",
+    "serviceCategory": "Service Category",
+    "vendorServiceCode": "Vendor Service Code",
+    "vendorServiceName": "Vendor Service Name",
+    "unitPrice": "Unit Price",
+    "currency": "Currency",
+    "leadTimeDays": "Lead Time (days)",
+    "minOrderQuantity": "Min Order Quantity",
+    "effectivePeriod": "Effective Period",
+    "isPreferred": "Mark as preferred vendor for this service",
+    "notes": "Notes",
+    "placeholders": {
+      "searchVendors": "Search vendors...",
+      "selectCategory": "Select category...",
+      "vendorServiceCode": "e.g., LC-001",
+      "vendorServiceName": "e.g., Precision Laser Cutting",
+      "selectDateRange": "Select date range...",
+      "notes": "Optional notes about this offering"
+    },
+    "validation": {
+      "vendorRequired": "Vendor is required",
+      "categoryRequired": "Service category is required",
+      "priceNegative": "Unit price cannot be negative",
+      "leadTimeNegative": "Lead time cannot be negative",
+      "minQuantityNegative": "Minimum quantity cannot be negative",
+      "dateRangeInvalid": "Start date must be before end date"
+    },
+    "createOffering": "Create Offering",
+    "saveChanges": "Save Changes"
+  },
+  "vendorOfferingFormModal": {
+    "addTitle": "Add Vendor Offering",
+    "editTitle": "Edit Vendor Offering",
+    "requiredError": "Vendor and service category are required",
+    "createError": "Failed to create offering",
+    "updateError": "Failed to update offering"
+  },
+  "deleteVendorOfferingModal": {
+    "title": "Delete Vendor Offering",
+    "message": "Are you sure you want to delete the offering \"{{name}}\" from {{vendor}}{{price}}? This action cannot be undone.",
+    "confirm": "Delete"
+  },
+  "materialForm": {
+    "sku": "SKU",
+    "name": "Name",
+    "category": "Category",
+    "description": "Description",
+    "unit": "Unit",
+    "standardPrice": "Standard Price",
+    "placeholders": {
+      "sku": "e.g., BOLT-M8X20",
+      "name": "Material name",
+      "selectCategory": "Select a category",
+      "description": "Optional description"
+    },
+    "validation": {
+      "skuRequired": "SKU is required",
+      "skuMaxLength": "SKU must not exceed 50 characters",
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "categoryRequired": "Category is required"
+    },
+    "createMaterial": "Create Material",
+    "saveChanges": "Save Changes"
+  },
+  "materialFormModal": {
+    "addTitle": "Add Material",
+    "editTitle": "Edit Material",
+    "createError": "Failed to create material",
+    "updateError": "Failed to update material"
+  },
+  "deleteMaterialModal": {
+    "title": "Deactivate Material",
+    "message": "Are you sure you want to deactivate \"{{name}}\" ({{sku}})? This material will no longer appear in active listings.",
+    "confirm": "Deactivate"
+  },
+  "vendorMaterialOfferingForm": {
+    "vendor": "Vendor",
+    "material": "Material",
+    "vendorMaterialCode": "Vendor Material Code",
+    "vendorMaterialName": "Vendor Material Name",
+    "unitPrice": "Unit Price",
+    "currency": "Currency",
+    "leadTimeDays": "Lead Time (days)",
+    "minOrderQuantity": "Min Order Quantity",
+    "effectivePeriod": "Effective Period",
+    "isPreferred": "Mark as preferred vendor for this material",
+    "notes": "Notes",
+    "placeholders": {
+      "searchVendors": "Search vendors...",
+      "selectMaterial": "Select material...",
+      "vendorMaterialCode": "e.g., VM-001",
+      "vendorMaterialName": "e.g., Premium Steel Plate",
+      "selectDateRange": "Select date range...",
+      "notes": "Optional notes about this offering"
+    },
+    "validation": {
+      "vendorRequired": "Vendor is required",
+      "materialRequired": "Material is required",
+      "priceNegative": "Unit price cannot be negative",
+      "leadTimeNegative": "Lead time cannot be negative",
+      "minQuantityNegative": "Minimum quantity cannot be negative",
+      "dateRangeInvalid": "Start date must be before end date"
+    },
+    "createOffering": "Create Offering",
+    "saveChanges": "Save Changes"
+  },
+  "vendorMaterialOfferingFormModal": {
+    "addTitle": "Add Vendor Material Offering",
+    "editTitle": "Edit Vendor Material Offering",
+    "requiredError": "Vendor and material are required",
+    "createError": "Failed to create offering",
+    "updateError": "Failed to update offering"
+  },
+  "deleteVendorMaterialOfferingModal": {
+    "title": "Delete Vendor Material Offering",
+    "message": "Are you sure you want to delete the offering \"{{name}}\" from {{vendor}}{{price}}? This action cannot be undone.",
+    "confirm": "Delete"
+  },
+  "materialCategoryForm": {
+    "categoryName": "Category Name",
+    "description": "Description",
+    "placeholders": {
+      "name": "e.g., Fasteners",
+      "description": "Optional description of this category"
+    },
+    "validation": {
+      "nameRequired": "Category name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name must not exceed 100 characters"
+    },
+    "createCategory": "Create Category",
+    "saveChanges": "Save Changes"
+  },
+  "materialCategoryFormModal": {
+    "addTitle": "Add Material Category",
+    "editTitle": "Edit Material Category",
+    "createError": "Failed to create category",
+    "updateError": "Failed to update category"
+  },
+  "deleteMaterialCategoryModal": {
+    "title": "Deactivate Category",
+    "message": "Are you sure you want to deactivate \"{{name}}\"?{{warning}} The category will no longer appear in active listings.",
+    "materialCountWarning": " This category contains {{count}} material(s).",
+    "confirm": "Deactivate"
+  },
+  "serviceCategoryForm": {
+    "categoryName": "Category Name",
+    "description": "Description",
+    "placeholders": {
+      "name": "e.g., Laser Cutting",
+      "description": "Optional description of this service category"
+    },
+    "validation": {
+      "nameRequired": "Category name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name must not exceed 100 characters"
+    },
+    "createCategory": "Create Category",
+    "saveChanges": "Save Changes"
+  },
+  "serviceCategoryFormModal": {
+    "addTitle": "Add Service Category",
+    "editTitle": "Edit Service Category",
+    "createError": "Failed to create category",
+    "updateError": "Failed to update category"
+  },
+  "deleteServiceCategoryModal": {
+    "title": "Deactivate Category",
+    "message": "Are you sure you want to deactivate \"{{name}}\"?{{warning}} The category will no longer appear in active listings.",
+    "vendorCountWarning": " This category has {{count}} vendor offering(s) associated with it.",
+    "confirm": "Deactivate"
+  },
+  "currencies": {
+    "KRW": "KRW (₩)",
+    "USD": "USD ($)",
+    "EUR": "EUR (€)",
+    "JPY": "JPY (¥)",
+    "CNY": "CNY (¥)"
+  },
+  "units": {
+    "defaultUnit": "EA",
+    "defaultServiceUnit": "Case"
+  },
+  "attachmentUploader": {
+    "clickToUpload": "Click to upload",
+    "orDragDrop": "or drag and drop",
+    "maxSize": "Max {{size}}",
+    "uploading": "Uploading...",
+    "validation": {
+      "fileTypeNotAllowed": "File type not allowed. Allowed: {{types}}",
+      "fileSizeExceeds": "File size exceeds maximum ({{maxSize}})"
+    }
+  },
+  "jobCodeSuccessModal": {
+    "title": "Project Created Successfully",
+    "message": "Your project has been created successfully.",
+    "copied": "Copied!",
+    "copyToClipboard": "Copy to clipboard",
+    "copiedMessage": "JobCode copied to clipboard",
+    "hint": "Use this JobCode to track your project throughout its lifecycle.",
+    "backToList": "Back to List",
+    "viewProject": "View Project"
+  }
+}

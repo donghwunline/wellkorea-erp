@@ -10,6 +10,7 @@
  */
 
 import { type FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Button, ErrorAlert, FormField } from '@/shared/ui';
 import type { Product, ProductType } from '@/entities/product';
@@ -53,6 +54,7 @@ export function ProductForm({
   error,
   onDismissError,
 }: Readonly<ProductFormProps>) {
+  const { t } = useTranslation(['items', 'common']);
   // Fetch product types for dropdown
   const { data: productTypes = [], isLoading: typesLoading } = useQuery(
     productQueries.allTypes()
@@ -104,9 +106,9 @@ export function ProductForm({
 
   // Validation error messages
   const validationErrors = {
-    sku: hasWhitespaceOnlySku ? 'SKU cannot be whitespace only' : undefined,
-    name: hasWhitespaceOnlyName ? 'Name cannot be whitespace only' : undefined,
-    baseUnitPrice: hasInvalidPrice ? 'Price must be a positive number' : undefined,
+    sku: hasWhitespaceOnlySku ? t('productForm.validation.skuWhitespace') : undefined,
+    name: hasWhitespaceOnlyName ? t('productForm.validation.nameWhitespace') : undefined,
+    baseUnitPrice: hasInvalidPrice ? t('productForm.validation.pricePositive') : undefined,
   };
 
   // Select styling class
@@ -120,26 +122,26 @@ export function ProductForm({
       {/* Basic Information */}
       <div>
         <h3 className="mb-4 border-b border-steel-800 pb-2 text-sm font-medium text-steel-400">
-          Basic Information
+          {t('common:sections.basicInfo')}
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField
-            label="SKU (품목코드)"
+            label={t('productForm.sku')}
             value={formData.sku}
             onChange={value => setFormData(prev => ({ ...prev, sku: value }))}
             required
             disabled={isSubmitting || mode === 'edit'} // SKU cannot be changed in edit mode
             error={validationErrors.sku}
-            placeholder="e.g., PRD-001"
+            placeholder={t('productForm.placeholders.sku')}
           />
           <FormField
-            label="Name (품목명)"
+            label={t('productForm.name')}
             value={formData.name}
             onChange={value => setFormData(prev => ({ ...prev, name: value }))}
             required
             disabled={isSubmitting}
             error={validationErrors.name}
-            placeholder="Enter product name"
+            placeholder={t('productForm.placeholders.name')}
           />
         </div>
       </div>
@@ -147,12 +149,12 @@ export function ProductForm({
       {/* Type and Pricing */}
       <div>
         <h3 className="mb-4 border-b border-steel-800 pb-2 text-sm font-medium text-steel-400">
-          Type and Pricing
+          {t('common:sections.typeAndPricing')}
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-steel-300">
-              Product Type <span className="text-red-400">*</span>
+              {t('productForm.productType')} <span className="text-red-400">*</span>
             </label>
             <select
               value={formData.productTypeId || ''}
@@ -165,7 +167,7 @@ export function ProductForm({
               disabled={isSubmitting || typesLoading}
               className={selectClass}
             >
-              <option value="">Select product type</option>
+              <option value="">{t('productForm.selectProductType')}</option>
               {productTypes.map((type: ProductType) => (
                 <option key={type.id} value={type.id}>
                   {type.name}
@@ -174,28 +176,28 @@ export function ProductForm({
             </select>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-steel-300">Unit</label>
+            <label className="mb-1.5 block text-sm font-medium text-steel-300">{t('productForm.unit')}</label>
             <select
               value={formData.unit}
               onChange={e => setFormData(prev => ({ ...prev, unit: e.target.value }))}
               disabled={isSubmitting}
               className={selectClass}
             >
-              <option value="EA">EA (Each)</option>
-              <option value="SET">SET</option>
-              <option value="BOX">BOX</option>
-              <option value="KG">KG</option>
-              <option value="M">M (Meter)</option>
+              <option value="EA">{t('productForm.units.EA')}</option>
+              <option value="SET">{t('productForm.units.SET')}</option>
+              <option value="BOX">{t('productForm.units.BOX')}</option>
+              <option value="KG">{t('productForm.units.KG')}</option>
+              <option value="M">{t('productForm.units.M')}</option>
             </select>
           </div>
           <FormField
-            label="Base Unit Price (단가)"
+            label={t('productForm.baseUnitPrice')}
             type="number"
             value={formData.baseUnitPrice}
             onChange={value => setFormData(prev => ({ ...prev, baseUnitPrice: value }))}
             disabled={isSubmitting}
             error={validationErrors.baseUnitPrice}
-            placeholder="e.g., 10000"
+            placeholder={t('productForm.placeholders.baseUnitPrice')}
           />
         </div>
       </div>
@@ -203,14 +205,14 @@ export function ProductForm({
       {/* Description */}
       <div>
         <h3 className="mb-4 border-b border-steel-800 pb-2 text-sm font-medium text-steel-400">
-          Description
+          {t('common:sections.description')}
         </h3>
-        <FormField label="Description">
+        <FormField label={t('productForm.description')}>
           <textarea
             value={formData.description}
             onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
             disabled={isSubmitting}
-            placeholder="Product description (optional)"
+            placeholder={t('productForm.descriptionPlaceholder')}
             rows={3}
             className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 transition-colors focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
@@ -220,10 +222,10 @@ export function ProductForm({
       {/* Form Actions */}
       <div className="flex justify-end gap-3 border-t border-steel-800 pt-4">
         <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {t('common:buttons.cancel')}
         </Button>
         <Button type="submit" disabled={!isValid || isSubmitting} isLoading={isSubmitting}>
-          {mode === 'create' ? 'Create Product' : 'Save Changes'}
+          {mode === 'create' ? t('productForm.createProduct') : t('productForm.saveChanges')}
         </Button>
       </div>
     </form>

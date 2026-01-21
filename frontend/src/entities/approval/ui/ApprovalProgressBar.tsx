@@ -5,6 +5,7 @@
  * Shows current level vs total levels.
  */
 
+import { useTranslation } from 'react-i18next';
 import type { Approval } from '../model/approval';
 import { approvalRules } from '../model/approval';
 
@@ -55,6 +56,7 @@ export function ApprovalProgressBar({
   size = 'md',
   className = '',
 }: Readonly<ApprovalProgressBarProps>) {
+  const { t } = useTranslation('entities');
   const percentage = approvalRules.getProgressPercentage(approval);
   const isPending = approvalRules.isPending(approval);
   const isApproved = approvalRules.isApproved(approval);
@@ -85,7 +87,7 @@ export function ApprovalProgressBar({
       {showText && (
         <span className="text-sm text-gray-600 whitespace-nowrap">
           {approval.currentLevel} / {approval.totalLevels}
-          {isPending && ' 단계'}
+          {isPending && ` ${t('approval.progressBar.step')}`}
         </span>
       )}
     </div>

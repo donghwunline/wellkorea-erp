@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -57,6 +58,8 @@ export function DeliveryCreateModal({
   onClose,
   onSuccess,
 }: DeliveryCreateModalProps) {
+  const { t } = useTranslation('widgets');
+
   // Form state
   const [deliveryDate, setDeliveryDate] = useState(getTodayISO());
   const [notes, setNotes] = useState('');
@@ -168,7 +171,7 @@ export function DeliveryCreateModal({
         }));
 
       if (lineItems.length === 0) {
-        setError('Please enter quantity for at least one item');
+        setError(t('deliveryCreateModal.validation.enterQuantity'));
         return;
       }
 
@@ -177,7 +180,7 @@ export function DeliveryCreateModal({
         const qtyToDeliver = quantitiesToDeliver[item.productId] || 0;
         if (qtyToDeliver > item.remainingQuantity) {
           setError(
-            `Quantity for ${item.productName} exceeds remaining deliverable quantity (${item.remainingQuantity})`
+            t('deliveryCreateModal.validation.exceedsRemaining', { productName: item.productName, remaining: item.remainingQuantity })
           );
           return;
         }
@@ -191,7 +194,7 @@ export function DeliveryCreateModal({
         notes: notes || undefined,
       });
     },
-    [projectId, acceptedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery]
+    [projectId, acceptedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery, t]
   );
 
   // Handle cancel
@@ -208,19 +211,19 @@ export function DeliveryCreateModal({
 
   if (isLoading) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Record Delivery" size="lg">
-        <LoadingState message="Loading quotation data..." />
+      <Modal isOpen={isOpen} onClose={onClose} title={t('deliveryCreateModal.title')} size="lg">
+        <LoadingState message={t('deliveryCreateModal.loading')} />
       </Modal>
     );
   }
 
   if (quotationsError) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Record Delivery" size="lg">
-        <Alert variant="error">Failed to load quotation: {quotationsError.message}</Alert>
+      <Modal isOpen={isOpen} onClose={onClose} title={t('deliveryCreateModal.title')} size="lg">
+        <Alert variant="error">{t('deliveryCreateModal.loadError', { error: quotationsError.message })}</Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('deliveryCreateModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -229,18 +232,17 @@ export function DeliveryCreateModal({
 
   if (!acceptedQuotation) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Record Delivery" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('deliveryCreateModal.title')} size="lg">
         <div className="py-8 text-center">
           <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
+          <h3 className="text-lg font-semibold text-white">{t('deliveryCreateModal.noQuotation.title')}</h3>
           <p className="mt-2 text-steel-400">
-            This project does not have an accepted quotation. A quotation must be accepted by the
-            customer before recording deliveries.
+            {t('deliveryCreateModal.noQuotation.description')}
           </p>
         </div>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('deliveryCreateModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -249,17 +251,17 @@ export function DeliveryCreateModal({
 
   if (!hasRemainingItems) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Record Delivery" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('deliveryCreateModal.title')} size="lg">
         <div className="py-8 text-center">
           <Icon name="check-circle" className="mx-auto mb-4 h-12 w-12 text-green-500" />
-          <h3 className="text-lg font-semibold text-white">All Items Delivered</h3>
+          <h3 className="text-lg font-semibold text-white">{t('deliveryCreateModal.allDelivered.title')}</h3>
           <p className="mt-2 text-steel-400">
-            All quotation items have been fully delivered. No remaining items to deliver.
+            {t('deliveryCreateModal.allDelivered.description')}
           </p>
         </div>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('deliveryCreateModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -267,7 +269,7 @@ export function DeliveryCreateModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Record Delivery" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('deliveryCreateModal.title')} size="lg">
       {/* Error Alert */}
       {error && (
         <Alert variant="error" className="mb-4" onClose={() => setError(null)}>
@@ -278,9 +280,9 @@ export function DeliveryCreateModal({
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <Card className="mb-6 border-steel-700 bg-steel-800/50 p-4">
-          <h3 className="mb-4 text-base font-semibold text-white">Delivery Information</h3>
+          <h3 className="mb-4 text-base font-semibold text-white">{t('deliveryCreateModal.sections.info')}</h3>
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Delivery Date" required>
+            <FormField label={t('deliveryCreateModal.fields.deliveryDate')} required>
               <Input
                 type="date"
                 value={deliveryDate}
@@ -289,11 +291,11 @@ export function DeliveryCreateModal({
                 required
               />
             </FormField>
-            <FormField label="Notes">
+            <FormField label={t('deliveryCreateModal.fields.notes')}>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                placeholder="Optional notes about this delivery"
+                placeholder={t('deliveryCreateModal.notesPlaceholder')}
                 rows={2}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               />
@@ -302,10 +304,9 @@ export function DeliveryCreateModal({
         </Card>
 
         <Card className="border-steel-700 bg-steel-800/50 p-4">
-          <h3 className="mb-4 text-base font-semibold text-white">Line Items</h3>
+          <h3 className="mb-4 text-base font-semibold text-white">{t('deliveryCreateModal.sections.lineItems')}</h3>
           <p className="mb-4 text-sm text-steel-400">
-            Enter the quantity delivered for each item. Only items with remaining quantity are
-            shown.
+            {t('deliveryCreateModal.lineItemsDescription')}
           </p>
 
           {/* Line items table */}
@@ -314,19 +315,19 @@ export function DeliveryCreateModal({
               <thead>
                 <tr className="border-b border-steel-700">
                   <th className="px-3 py-2 text-left text-xs font-medium text-steel-400">
-                    Product
+                    {t('deliveryCreateModal.table.product')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Quoted
+                    {t('deliveryCreateModal.table.quoted')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Delivered
+                    {t('deliveryCreateModal.table.delivered')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Remaining
+                    {t('deliveryCreateModal.table.remaining')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Qty to Deliver
+                    {t('deliveryCreateModal.table.qtyToDeliver')}
                   </th>
                 </tr>
               </thead>
@@ -368,7 +369,7 @@ export function DeliveryCreateModal({
               <tfoot>
                 <tr className="border-t border-steel-700">
                   <td colSpan={4} className="px-3 py-2 text-right text-sm font-medium text-white">
-                    Total Quantity to Deliver:
+                    {t('deliveryCreateModal.totalToDeliver')}
                   </td>
                   <td className="px-3 py-2 text-right font-mono text-sm font-bold text-copper-400">
                     {totalToDeliver}
@@ -381,10 +382,10 @@ export function DeliveryCreateModal({
 
         <ModalActions>
           <Button type="button" variant="secondary" onClick={handleCancel}>
-            Cancel
+            {t('deliveryCreateModal.cancel')}
           </Button>
           <Button type="submit" variant="primary" disabled={isSubmitting || totalToDeliver === 0}>
-            {isSubmitting ? 'Creating...' : 'Create Delivery'}
+            {isSubmitting ? t('deliveryCreateModal.creating') : t('deliveryCreateModal.createDelivery')}
           </Button>
         </ModalActions>
       </form>

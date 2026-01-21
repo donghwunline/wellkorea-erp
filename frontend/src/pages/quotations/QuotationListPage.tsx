@@ -14,12 +14,12 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   Alert,
   Button,
   ConfirmationModal,
-  Icon,
   Icon as ActionIcon,
   IconButton,
   PageHeader,
@@ -43,24 +43,23 @@ import {
 import { useSubmitQuotation } from '@/features/quotation/submit';
 import { useCreateVersion } from '@/features/quotation/version';
 import { useDownloadPdf } from '@/features/quotation/download-pdf';
-import {
-  useSendNotification,
-  EmailNotificationModal,
-} from '@/features/quotation/notify';
-
-// Status filter options
-const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
-  { value: 'DRAFT', label: 'Draft' },
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'APPROVED', label: 'Approved' },
-  { value: 'SENT', label: 'Sent' },
-  { value: 'ACCEPTED', label: 'Accepted' },
-  { value: 'REJECTED', label: 'Rejected' },
-];
+import { EmailNotificationModal, useSendNotification } from '@/features/quotation/notify';
 
 export function QuotationListPage() {
+  const { t } = useTranslation('quotations');
+  const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
+
+  // Status filter options (using i18n)
+  const STATUS_OPTIONS = [
+    { value: '', label: t('list.allStatuses') },
+    { value: 'DRAFT', label: t('status.DRAFT') },
+    { value: 'PENDING_APPROVAL', label: t('status.PENDING_APPROVAL') },
+    { value: 'APPROVED', label: t('status.APPROVED') },
+    { value: 'SENT', label: t('status.SENT') },
+    { value: 'ACCEPTED', label: t('status.ACCEPTED') },
+    { value: 'REJECTED', label: t('status.REJECTED') },
+  ];
 
   // Page UI State - pagination and search
   const {
@@ -96,29 +95,29 @@ export function QuotationListPage() {
   // Mutation hooks - feature actions
   const submitMutation = useSubmitQuotation({
     onSuccess: () => {
-      showSuccess(`Quotation submitted for approval`);
+      showSuccess(t('approval.submitSuccess'));
       setSubmitConfirm(null);
     },
   });
 
   const versionMutation = useCreateVersion({
     onSuccess: result => {
-      showSuccess('New version created');
+      showSuccess(t('version.createSuccess'));
       setVersionConfirm(null);
       navigate(`/quotations/${result.id}/edit`);
     },
   });
 
   const pdfMutation = useDownloadPdf({
-    onError: () => showSuccess('Failed to download PDF'), // TODO: Show error toast instead
+    onError: () => showSuccess(t('actions.downloadPdf') + ' failed'), // TODO: Show error toast instead
   });
 
   const notifyMutation = useSendNotification({
     onSuccess: () => {
-      showSuccess('Email notification sent');
+      showSuccess(t('email.sendSuccess'));
       setEmailConfirm(null);
     },
-    onError: () => showSuccess('Failed to send email notification'), // TODO: Show error toast instead
+    onError: () => showSuccess(t('email.sendError')), // TODO: Show error toast instead
   });
 
   // Helper to show success message
@@ -143,8 +142,8 @@ export function QuotationListPage() {
         {/* View - always available */}
         <IconButton
           onClick={() => navigate(`/quotations/${quotation.id}`)}
-          aria-label="View quotation"
-          title="View quotation"
+          aria-label={t('actions.view')}
+          title={t('actions.view')}
         >
           <ActionIcon name="eye" className="h-4 w-4" />
         </IconButton>
@@ -153,8 +152,8 @@ export function QuotationListPage() {
         {quotationRules.canEdit(quotation) && (
           <IconButton
             onClick={() => navigate(`/quotations/${quotation.id}/edit`)}
-            aria-label="Edit quotation"
-            title="Edit quotation"
+            aria-label={t('actions.edit')}
+            title={t('actions.edit')}
           >
             <ActionIcon name="pencil" className="h-4 w-4" />
           </IconButton>
@@ -165,8 +164,8 @@ export function QuotationListPage() {
           <IconButton
             onClick={() => setSubmitConfirm(quotation)}
             variant="primary"
-            aria-label="Submit for approval"
-            title="Submit for approval"
+            aria-label={t('actions.submit')}
+            title={t('actions.submit')}
           >
             <ActionIcon name="paper-airplane" className="h-4 w-4" />
           </IconButton>
@@ -181,8 +180,8 @@ export function QuotationListPage() {
                 filename: `${quotation.jobCode}_v${quotation.version}.pdf`,
               })
             }
-            aria-label="Download PDF"
-            title="Download PDF"
+            aria-label={t('actions.downloadPdf')}
+            title={t('actions.downloadPdf')}
           >
             <ActionIcon name="document-arrow-down" className="h-4 w-4" />
           </IconButton>
@@ -192,8 +191,8 @@ export function QuotationListPage() {
         {quotationRules.canSend(quotation) && (
           <IconButton
             onClick={() => setEmailConfirm(quotation)}
-            aria-label="Send email"
-            title="Send email"
+            aria-label={t('actions.sendEmail')}
+            title={t('actions.sendEmail')}
           >
             <ActionIcon name="envelope" className="h-4 w-4" />
           </IconButton>
@@ -203,28 +202,28 @@ export function QuotationListPage() {
         {quotationRules.canCreateNewVersion(quotation) && (
           <IconButton
             onClick={() => setVersionConfirm(quotation)}
-            aria-label="Create new version"
-            title="Create new version"
+            aria-label={t('actions.createNewVersion')}
+            title={t('actions.createNewVersion')}
           >
             <ActionIcon name="document-duplicate" className="h-4 w-4" />
           </IconButton>
         )}
       </>
     ),
-    [navigate, pdfMutation]
+    [navigate, pdfMutation, t]
   );
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="견적" description="View and manage all quotations" />
-        <PageHeader.Actions>
-          <Button onClick={() => navigate('/quotations/create')}>
-            <Icon name="plus" className="h-5 w-5" />
-            New Quotation
-          </Button>
-        </PageHeader.Actions>
+        <PageHeader.Title title={t('title')} description={t('description')} />
+        {/*<PageHeader.Actions>*/}
+        {/*  <Button onClick={() => navigate('/quotations/create')}>*/}
+        {/*    <Icon name="plus" className="h-5 w-5" />*/}
+        {/*    {t('list.new')}*/}
+        {/*  </Button>*/}
+        {/*</PageHeader.Actions>*/}
       </PageHeader>
 
       {/* Search and Filters */}
@@ -233,7 +232,7 @@ export function QuotationListPage() {
           value={searchInput}
           onValueChange={handleSearchChange}
           onClear={handleClearSearch}
-          placeholder="Search by job code, project name..."
+          placeholder={t('list.searchPlaceholder')}
           className="flex-1"
           onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
         />
@@ -242,11 +241,11 @@ export function QuotationListPage() {
             options={STATUS_OPTIONS}
             value={statusFilter || ''}
             onValueChange={handleStatusFilterChange}
-            placeholder="All Statuses"
+            placeholder={t('list.allStatuses')}
           />
         </FilterBar>
         <Button variant="secondary" onClick={handleSearchSubmit}>
-          Search
+          {tCommon('buttons.search')}
         </Button>
       </div>
 
@@ -266,7 +265,7 @@ export function QuotationListPage() {
 
       {/* Loading State */}
       {isLoading ? (
-        <div className="text-center py-8 text-steel-400">Loading quotations...</div>
+        <div className="text-center py-8 text-steel-400">{t('list.loading')}</div>
       ) : (
         <>
           {/* Quotations Table */}
@@ -274,9 +273,7 @@ export function QuotationListPage() {
             quotations={data?.data ?? []}
             onRowClick={quotation => navigate(`/quotations/${quotation.id}`)}
             renderActions={renderActions}
-            emptyMessage={
-              statusFilter ? 'No quotations found with selected status.' : 'No quotations found.'
-            }
+            emptyMessage={statusFilter ? t('list.emptyFiltered') : t('list.empty')}
           />
 
           {/* Pagination */}
@@ -299,9 +296,9 @@ export function QuotationListPage() {
       {/* Submit Confirmation Modal */}
       <ConfirmationModal
         isOpen={!!submitConfirm}
-        title="Submit for Approval"
-        message={`Are you sure you want to submit "${submitConfirm?.jobCode}" for approval? This will start the approval workflow.`}
-        confirmLabel="Submit"
+        title={t('approval.submitTitle')}
+        message={t('approval.submitMessage', { jobCode: submitConfirm?.jobCode })}
+        confirmLabel={tCommon('buttons.submit')}
         onConfirm={() => {
           if (submitConfirm) submitMutation.mutate(submitConfirm.id);
         }}
@@ -312,9 +309,12 @@ export function QuotationListPage() {
       {/* Create Version Confirmation Modal */}
       <ConfirmationModal
         isOpen={!!versionConfirm}
-        title="Create New Version"
-        message={`Create a new version based on "${versionConfirm?.jobCode} v${versionConfirm?.version}"? The new version will be in DRAFT status.`}
-        confirmLabel="Create Version"
+        title={t('version.createTitle')}
+        message={t('version.createMessage', {
+          jobCode: versionConfirm?.jobCode,
+          version: versionConfirm?.version,
+        })}
+        confirmLabel={t('version.create')}
         onConfirm={() => {
           if (versionConfirm) versionMutation.mutate(versionConfirm.id);
         }}

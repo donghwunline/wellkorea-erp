@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Card, Icon, PageHeader } from '@/shared/ui';
 
@@ -21,6 +22,7 @@ import { CompanyForm, type CompanyFormData } from '@/features/company/form';
 import type { CreateCompanyInput } from '@/entities/company';
 
 export function CreateCompanyPage() {
+  const { t } = useTranslation('pages');
   const navigate = useNavigate();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function CreateCompanyPage() {
   // Mutation hook from features layer
   const { mutateAsync: createCompany, isPending } = useCreateCompany({
     onSuccess: result => {
-      setSuccessMessage('Company created successfully!');
+      setSuccessMessage(t('companyCreate.successMessage'));
       // Navigate to the new company detail page after short delay
       setTimeout(() => {
         navigate(`/companies/${result.id}`);
@@ -74,8 +76,8 @@ export function CreateCompanyPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="Create New Company"
-          description="Add a new company with customer, vendor, or outsource roles"
+          title={t('companyCreate.title')}
+          description={t('companyCreate.description')}
         />
         <PageHeader.Actions>
           <button
@@ -83,7 +85,7 @@ export function CreateCompanyPage() {
             className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
           >
             <Icon name="arrow-left" className="h-5 w-5" />
-            Back to Companies
+            {t('companyCreate.backToCompanies')}
           </button>
         </PageHeader.Actions>
       </PageHeader>
@@ -98,7 +100,7 @@ export function CreateCompanyPage() {
       {/* Form Card */}
       <Card className="mx-auto max-w-3xl">
         <div className="p-6">
-          <h2 className="mb-6 text-lg font-semibold text-white">Company Details</h2>
+          <h2 className="mb-6 text-lg font-semibold text-white">{t('companyCreate.companyDetails')}</h2>
           <CompanyForm
             mode="create"
             onSubmit={handleSubmit}

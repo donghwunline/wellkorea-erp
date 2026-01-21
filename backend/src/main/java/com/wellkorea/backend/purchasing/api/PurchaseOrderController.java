@@ -3,13 +3,16 @@ package com.wellkorea.backend.purchasing.api;
 import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.purchasing.api.dto.command.CreatePurchaseOrderRequest;
 import com.wellkorea.backend.purchasing.api.dto.command.PurchaseOrderCommandResult;
+import com.wellkorea.backend.purchasing.api.dto.command.SendPurchaseOrderRequest;
 import com.wellkorea.backend.purchasing.api.dto.command.UpdatePurchaseOrderRequest;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderDetailView;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderSummaryView;
 import com.wellkorea.backend.purchasing.application.PurchaseOrderCommandService;
+import com.wellkorea.backend.purchasing.application.PurchaseOrderEmailService;
 import com.wellkorea.backend.purchasing.application.PurchaseOrderQueryService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,17 +29,21 @@ import org.springframework.web.bind.annotation.*;
  * - Admin, Finance, Production: Full CRUD access
  * - Sales: Read-only access
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/purchase-orders")
 public class PurchaseOrderController {
 
     private final PurchaseOrderCommandService commandService;
     private final PurchaseOrderQueryService queryService;
+    private final PurchaseOrderEmailService emailService;
 
     public PurchaseOrderController(PurchaseOrderCommandService commandService,
-                                   PurchaseOrderQueryService queryService) {
+                                   PurchaseOrderQueryService queryService,
+                                   PurchaseOrderEmailService emailService) {
         this.commandService = commandService;
         this.queryService = queryService;
+        this.emailService = emailService;
     }
 
     // ========== QUERY ENDPOINTS ==========
@@ -113,16 +120,30 @@ public class PurchaseOrderController {
     }
 
     /**
-     * Send a purchase order to vendor.
+     * Send a purchase order to vendor with optional email notification.
      * <p>
      * POST /api/purchase-orders/{id}/send
+     * <p>
+     * Transitions PO status from DRAFT to SENT and sends email with PDF attachment.
+     * If email sending fails, status is still transitioned but error is logged.
+     * <p>
+     * Request body is optional. If not provided, uses vendor's default email.
      * <p>
      * Access: ADMIN, FINANCE, PRODUCTION
      */
     @PostMapping("/{id}/send")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
-    public ResponseEntity<ApiResponse<PurchaseOrderCommandResult>> sendPurchaseOrder(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PurchaseOrderCommandResult>> sendPurchaseOrder(
+            @PathVariable Long id,
+            @Valid @RequestBody(required = false) SendPurchaseOrderRequest request) {
+
+        // Transition status to SENT
         Long sentId = commandService.sendPurchaseOrder(id);
+
+        // Send email notification with PDF attachment
+        SendPurchaseOrderRequest emailRequest = request != null ? request : SendPurchaseOrderRequest.empty();
+        emailService.sendPurchaseOrderEmail(sentId, emailRequest.to(), emailRequest.ccEmails());
+
         PurchaseOrderCommandResult result = PurchaseOrderCommandResult.sent(sentId);
         return ResponseEntity.ok(ApiResponse.success(result));
     }

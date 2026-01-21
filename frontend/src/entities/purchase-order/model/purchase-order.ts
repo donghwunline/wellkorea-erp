@@ -24,6 +24,7 @@ export interface PurchaseOrder {
   readonly projectName: string;
   readonly vendorId: number;
   readonly vendorName: string;
+  readonly vendorEmail: string | null;
   readonly orderDate: string; // ISO date: "2025-01-20"
   readonly expectedDeliveryDate: string; // ISO date: "2025-02-15"
   readonly totalAmount: number;

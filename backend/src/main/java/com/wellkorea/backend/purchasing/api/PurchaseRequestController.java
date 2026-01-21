@@ -10,8 +10,12 @@ import com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestDetailView;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestSummaryView;
 import com.wellkorea.backend.purchasing.application.PurchaseRequestCommandService;
 import com.wellkorea.backend.purchasing.application.PurchaseRequestQueryService;
+import com.wellkorea.backend.purchasing.application.RfqEmailService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -34,11 +38,14 @@ public class PurchaseRequestController {
 
     private final PurchaseRequestCommandService commandService;
     private final PurchaseRequestQueryService queryService;
+    private final RfqEmailService rfqEmailService;
 
     public PurchaseRequestController(PurchaseRequestCommandService commandService,
-                                     PurchaseRequestQueryService queryService) {
+                                     PurchaseRequestQueryService queryService,
+                                     RfqEmailService rfqEmailService) {
         this.commandService = commandService;
         this.queryService = queryService;
+        this.rfqEmailService = rfqEmailService;
     }
 
     // ========== QUERY ENDPOINTS ==========
@@ -139,9 +146,13 @@ public class PurchaseRequestController {
     }
 
     /**
-     * Send RFQ to vendors.
+     * Send RFQ to vendors with email notifications.
      * <p>
      * POST /api/purchase-requests/{id}/send-rfq
+     * <p>
+     * Creates RFQ items for each vendor, transitions status to RFQ_SENT,
+     * and sends email notifications with PDF attachment.
+     * If some email sends fail, the RFQ items are still created.
      * <p>
      * Access: ADMIN, FINANCE, PRODUCTION
      */
@@ -150,8 +161,33 @@ public class PurchaseRequestController {
     public ResponseEntity<ApiResponse<PurchaseRequestCommandResult>> sendRfq(@PathVariable Long id,
                                                                              @Valid @RequestBody SendRfqRequest request) {
 
+        // Create RFQ items and transition status
         int vendorCount = commandService.sendRfq(id, request.vendorIds());
-        PurchaseRequestCommandResult result = PurchaseRequestCommandResult.rfqSent(id, vendorCount);
+
+        // Build vendor email map for email service
+        Map<Long, RfqEmailService.VendorEmailInfo> vendorEmailMap = new HashMap<>();
+        for (Long vendorId : request.vendorIds()) {
+            if (request.vendorEmails() != null && request.vendorEmails().containsKey(vendorId)) {
+                SendRfqRequest.VendorEmailInfo emailInfo = request.vendorEmails().get(vendorId);
+                vendorEmailMap.put(vendorId, new RfqEmailService.VendorEmailInfo(
+                        emailInfo.to(),
+                        emailInfo.ccEmails()
+                ));
+            } else {
+                vendorEmailMap.put(vendorId, RfqEmailService.VendorEmailInfo.empty());
+            }
+        }
+
+        // Send email notifications (partial failures are handled internally)
+        RfqEmailService.RfqEmailResult emailResult = rfqEmailService.sendRfqEmails(id, vendorEmailMap);
+
+        // Return success even if some emails failed (RFQ items are created)
+        PurchaseRequestCommandResult result = PurchaseRequestCommandResult.rfqSent(
+                id,
+                vendorCount,
+                emailResult.successCount(),
+                emailResult.failureCount()
+        );
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }

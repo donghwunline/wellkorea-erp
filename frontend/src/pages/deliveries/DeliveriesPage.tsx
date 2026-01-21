@@ -12,6 +12,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, FilterBar, PageHeader, Button, Icon, Alert } from '@/shared/ui';
@@ -21,22 +22,22 @@ import {
   DeliveryTable,
   deliveryQueries,
   DELIVERY_STATUSES,
-  DELIVERY_STATUS_CONFIG,
   downloadDeliveryStatement,
 } from '@/entities/delivery';
 
-// Status filter options
-const STATUS_OPTIONS = [
-  { value: '', label: 'All Statuses' },
-  ...DELIVERY_STATUSES.map(status => ({
-    value: status,
-    label: DELIVERY_STATUS_CONFIG[status].labelKo,
-  })),
-];
-
 export function DeliveriesPage() {
+  const { t } = useTranslation('deliveries');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Status filter options using i18n
+  const STATUS_OPTIONS = [
+    { value: '', label: t('list.allStatuses') },
+    ...DELIVERY_STATUSES.map(status => ({
+      value: status,
+      label: t(`status.${status}`),
+    })),
+  ];
 
   // Get filter from URL params
   const statusFromUrl = searchParams.get('status') as DeliveryStatus | null;
@@ -102,7 +103,7 @@ export function DeliveriesPage() {
         size="sm"
         onClick={() => handleDownloadStatement(delivery.id)}
         disabled={downloadingId === delivery.id}
-        title="Download Statement"
+        title={t('actions.downloadStatement')}
       >
         {downloadingId === delivery.id ? (
           <Icon name="arrow-path" className="h-4 w-4 animate-spin" />
@@ -111,25 +112,25 @@ export function DeliveriesPage() {
         )}
       </Button>
     ),
-    [downloadingId, handleDownloadStatement]
+    [downloadingId, handleDownloadStatement, t]
   );
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="출고 관리" description="View and manage delivery records" />
+        <PageHeader.Title title={t('title')} description={t('description')} />
       </PageHeader>
 
       {/* Filters */}
       <div className="mb-6 flex gap-3">
         <FilterBar>
-          <FilterBar.Field label="Status">
+          <FilterBar.Field label={t('fields.status')}>
             <FilterBar.Select
               options={STATUS_OPTIONS}
               value={statusFilter || ''}
               onValueChange={handleStatusFilterChange}
-              placeholder="All Statuses"
+              placeholder={t('list.allStatuses')}
             />
           </FilterBar.Field>
         </FilterBar>
@@ -138,7 +139,7 @@ export function DeliveriesPage() {
       {/* Error State */}
       {fetchError && (
         <Alert variant="error" className="mb-6">
-          Failed to load deliveries: {fetchError.message}
+          {t('list.loadError')}: {fetchError.message}
         </Alert>
       )}
 
@@ -151,8 +152,8 @@ export function DeliveriesPage() {
           renderActions={renderActions}
           emptyMessage={
             statusFilter
-              ? `No deliveries found with status "${DELIVERY_STATUS_CONFIG[statusFilter].labelKo}".`
-              : 'No deliveries found.'
+              ? t('list.emptyFiltered', { status: t(`status.${statusFilter}`) })
+              : t('list.empty')
           }
         />
       </Card>

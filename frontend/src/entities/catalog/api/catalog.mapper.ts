@@ -42,6 +42,7 @@ export interface VendorOfferingResponse {
   id: number;
   vendorId: number;
   vendorName: string;
+  vendorEmail?: string | null;
   serviceCategoryId: number;
   serviceCategoryName: string;
   vendorServiceCode?: string | null;
@@ -106,6 +107,7 @@ export function toVendorOffering(response: VendorOfferingResponse): VendorOfferi
     id: response.id,
     vendorId: response.vendorId,
     vendorName: response.vendorName,
+    vendorEmail: response.vendorEmail ?? null,
     serviceCategoryId: response.serviceCategoryId,
     serviceCategoryName: response.serviceCategoryName,
     vendorServiceCode: response.vendorServiceCode ?? null,

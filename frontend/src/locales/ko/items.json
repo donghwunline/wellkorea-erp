@@ -1,0 +1,417 @@
+{
+  "title": "아이템",
+  "description": "판매 품목, 외주 서비스, 구매 자재를 관리합니다",
+  "tabs": {
+    "products": "판매 품목",
+    "materials": "구매 자재",
+    "outsourceItems": "외주 품목"
+  },
+  "products": {
+    "title": "제품",
+    "list": {
+      "title": "제품 목록",
+      "create": "제품 등록",
+      "empty": "등록된 제품이 없습니다.",
+      "emptyWithAction": "등록된 제품이 없습니다. \"제품 추가\"를 클릭하여 첫 번째 제품을 등록하세요.",
+      "allTypes": "전체 유형",
+      "searchPlaceholder": "제품명 또는 SKU로 검색...",
+      "loadError": "제품을 불러오지 못했습니다"
+    },
+    "create": {
+      "title": "새 제품 등록",
+      "success": "제품이 등록되었습니다",
+      "error": "제품 등록에 실패했습니다"
+    },
+    "edit": {
+      "title": "제품 수정",
+      "success": "제품이 수정되었습니다",
+      "error": "제품 수정에 실패했습니다"
+    },
+    "delete": {
+      "title": "제품 삭제",
+      "message": "이 제품을 삭제하시겠습니까?",
+      "success": "제품이 삭제되었습니다"
+    },
+    "fields": {
+      "productCode": "제품 코드",
+      "productName": "제품명",
+      "category": "카테고리",
+      "unit": "단위",
+      "unitPrice": "단가",
+      "description": "설명",
+      "status": "상태"
+    }
+  },
+  "materials": {
+    "title": "자재",
+    "list": {
+      "title": "자재 목록",
+      "create": "자재 등록",
+      "empty": "등록된 자재가 없습니다.",
+      "emptyWithAction": "등록된 자재가 없습니다. \"자재 추가\"를 클릭하여 첫 번째 자재를 등록하세요.",
+      "allCategories": "전체 카테고리",
+      "searchPlaceholder": "자재명 또는 SKU로 검색...",
+      "loadError": "자재를 불러오지 못했습니다"
+    },
+    "view": {
+      "modalTitle": "자재: {{name}}",
+      "noDescription": "설명 없음",
+      "preferredVendorNone": "없음"
+    },
+    "offerings": {
+      "modalTitle": "\"{{name}}\" 공급업체",
+      "empty": "현재 이 자재를 공급하는 업체가 없습니다.",
+      "addOffering": "공급업체 추가",
+      "setAsPreferred": "선호 업체로 설정"
+    },
+    "create": {
+      "title": "새 자재 등록",
+      "success": "자재가 등록되었습니다",
+      "error": "자재 등록에 실패했습니다"
+    },
+    "edit": {
+      "title": "자재 수정",
+      "success": "자재가 수정되었습니다",
+      "error": "자재 수정에 실패했습니다"
+    },
+    "delete": {
+      "title": "자재 삭제",
+      "message": "이 자재를 삭제하시겠습니까?",
+      "success": "자재가 삭제되었습니다"
+    },
+    "fields": {
+      "materialCode": "자재 코드",
+      "materialName": "자재명",
+      "category": "카테고리",
+      "unit": "단위",
+      "unitPrice": "단가",
+      "description": "설명",
+      "status": "상태",
+      "vendor": "공급사"
+    }
+  },
+  "outsourceItems": {
+    "title": "외주 품목",
+    "list": {
+      "title": "외주 품목 목록",
+      "create": "서비스 카테고리 등록",
+      "empty": "등록된 서비스 카테고리가 없습니다.",
+      "emptyWithAction": "등록된 서비스 카테고리가 없습니다. \"카테고리 추가\"를 클릭하여 첫 번째 서비스 카테고리를 등록하세요.",
+      "searchPlaceholder": "서비스 카테고리 검색...",
+      "includeInactive": "비활성 포함",
+      "loadError": "서비스 카테고리를 불러오지 못했습니다"
+    },
+    "vendorCount": "{{count}}개 업체",
+    "offerings": {
+      "modalTitle": "\"{{name}}\" 공급업체",
+      "empty": "현재 이 서비스를 제공하는 업체가 없습니다.",
+      "addOffering": "공급업체 추가"
+    },
+    "create": {
+      "title": "새 외주 품목 등록",
+      "success": "외주 품목이 등록되었습니다",
+      "error": "외주 품목 등록에 실패했습니다"
+    },
+    "edit": {
+      "title": "외주 품목 수정",
+      "success": "외주 품목이 수정되었습니다",
+      "error": "외주 품목 수정에 실패했습니다"
+    },
+    "delete": {
+      "title": "외주 품목 삭제",
+      "message": "이 외주 품목을 삭제하시겠습니까?",
+      "success": "외주 품목이 삭제되었습니다"
+    },
+    "fields": {
+      "itemCode": "품목 코드",
+      "itemName": "품목명",
+      "category": "카테고리",
+      "unit": "단위",
+      "unitPrice": "단가",
+      "description": "설명",
+      "status": "상태",
+      "vendor": "협력사"
+    }
+  },
+  "status": {
+    "ACTIVE": "활성",
+    "INACTIVE": "비활성",
+    "DISCONTINUED": "단종"
+  },
+  "table": {
+    "headers": {
+      "sku": "SKU",
+      "code": "코드",
+      "name": "이름",
+      "category": "카테고리",
+      "unit": "단위",
+      "unitPrice": "단가",
+      "standardPrice": "기준 가격",
+      "preferredVendor": "선호 업체",
+      "status": "상태",
+      "vendor": "공급업체",
+      "leadTime": "리드타임",
+      "effectivePeriod": "유효 기간",
+      "preferred": "선호",
+      "actions": "작업"
+    }
+  },
+  "actions": {
+    "view": "상세 보기",
+    "viewDetails": "상세",
+    "vendors": "공급업체",
+    "edit": "수정",
+    "delete": "삭제",
+    "deactivate": "비활성화",
+    "activate": "활성화",
+    "activating": "활성화 중..."
+  },
+  "common": {
+    "retry": "다시 시도",
+    "addProduct": "제품 추가",
+    "addMaterial": "자재 추가",
+    "addCategory": "카테고리 추가",
+    "days": "{{count}}일",
+    "noVendors": "없음"
+  },
+  "productForm": {
+    "sku": "SKU (품목코드)",
+    "name": "품목명",
+    "productType": "제품 유형",
+    "selectProductType": "제품 유형 선택",
+    "unit": "단위",
+    "baseUnitPrice": "기준 단가",
+    "description": "설명",
+    "descriptionPlaceholder": "제품 설명 (선택사항)",
+    "createProduct": "제품 등록",
+    "saveChanges": "변경사항 저장",
+    "units": {
+      "EA": "EA (개)",
+      "SET": "SET",
+      "BOX": "BOX",
+      "KG": "KG",
+      "M": "M (미터)"
+    },
+    "placeholders": {
+      "sku": "예: PRD-001",
+      "name": "제품명을 입력하세요",
+      "baseUnitPrice": "예: 10000"
+    },
+    "validation": {
+      "skuWhitespace": "SKU는 공백만으로 구성될 수 없습니다",
+      "nameWhitespace": "품목명은 공백만으로 구성될 수 없습니다",
+      "pricePositive": "단가는 양수여야 합니다"
+    }
+  },
+  "productFormModal": {
+    "addTitle": "제품 추가",
+    "editTitle": "제품 수정",
+    "createError": "제품 생성에 실패했습니다",
+    "updateError": "제품 수정에 실패했습니다"
+  },
+  "vendorOfferingForm": {
+    "vendor": "업체",
+    "serviceCategory": "서비스 카테고리",
+    "vendorServiceCode": "업체 서비스 코드",
+    "vendorServiceName": "업체 서비스명",
+    "unitPrice": "단가",
+    "currency": "통화",
+    "leadTimeDays": "리드타임 (일)",
+    "minOrderQuantity": "최소 주문 수량",
+    "effectivePeriod": "유효 기간",
+    "isPreferred": "이 서비스의 선호 업체로 설정",
+    "notes": "비고",
+    "placeholders": {
+      "searchVendors": "업체 검색...",
+      "selectCategory": "카테고리 선택...",
+      "vendorServiceCode": "예: LC-001",
+      "vendorServiceName": "예: 정밀 레이저 커팅",
+      "selectDateRange": "기간 선택...",
+      "notes": "추가 메모 (선택사항)"
+    },
+    "validation": {
+      "vendorRequired": "업체를 선택해주세요",
+      "categoryRequired": "서비스 카테고리를 선택해주세요",
+      "priceNegative": "단가는 음수가 될 수 없습니다",
+      "leadTimeNegative": "리드타임은 음수가 될 수 없습니다",
+      "minQuantityNegative": "최소 수량은 음수가 될 수 없습니다",
+      "dateRangeInvalid": "시작일은 종료일 이전이어야 합니다"
+    },
+    "createOffering": "등록",
+    "saveChanges": "변경사항 저장"
+  },
+  "vendorOfferingFormModal": {
+    "addTitle": "업체 서비스 등록",
+    "editTitle": "업체 서비스 수정",
+    "requiredError": "업체와 서비스 카테고리는 필수입니다",
+    "createError": "등록에 실패했습니다",
+    "updateError": "수정에 실패했습니다"
+  },
+  "deleteVendorOfferingModal": {
+    "title": "업체 서비스 삭제",
+    "message": "{{vendor}}의 \"{{name}}\"{{price}} 서비스를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "confirm": "삭제"
+  },
+  "materialForm": {
+    "sku": "SKU",
+    "name": "이름",
+    "category": "카테고리",
+    "description": "설명",
+    "unit": "단위",
+    "standardPrice": "기준 가격",
+    "placeholders": {
+      "sku": "예: BOLT-M8X20",
+      "name": "자재명",
+      "selectCategory": "카테고리 선택",
+      "description": "설명 (선택사항)"
+    },
+    "validation": {
+      "skuRequired": "SKU는 필수입니다",
+      "skuMaxLength": "SKU는 50자를 초과할 수 없습니다",
+      "nameRequired": "이름은 필수입니다",
+      "nameMinLength": "이름은 최소 2자 이상이어야 합니다",
+      "categoryRequired": "카테고리를 선택해주세요"
+    },
+    "createMaterial": "자재 등록",
+    "saveChanges": "변경사항 저장"
+  },
+  "materialFormModal": {
+    "addTitle": "자재 추가",
+    "editTitle": "자재 수정",
+    "createError": "자재 생성에 실패했습니다",
+    "updateError": "자재 수정에 실패했습니다"
+  },
+  "deleteMaterialModal": {
+    "title": "자재 비활성화",
+    "message": "\"{{name}}\" ({{sku}})을(를) 비활성화하시겠습니까? 더 이상 활성 목록에 표시되지 않습니다.",
+    "confirm": "비활성화"
+  },
+  "vendorMaterialOfferingForm": {
+    "vendor": "업체",
+    "material": "자재",
+    "vendorMaterialCode": "업체 자재 코드",
+    "vendorMaterialName": "업체 자재명",
+    "unitPrice": "단가",
+    "currency": "통화",
+    "leadTimeDays": "리드타임 (일)",
+    "minOrderQuantity": "최소 주문 수량",
+    "effectivePeriod": "유효 기간",
+    "isPreferred": "이 자재의 선호 업체로 설정",
+    "notes": "비고",
+    "placeholders": {
+      "searchVendors": "업체 검색...",
+      "selectMaterial": "자재 선택...",
+      "vendorMaterialCode": "예: VM-001",
+      "vendorMaterialName": "예: 프리미엄 강판",
+      "selectDateRange": "기간 선택...",
+      "notes": "추가 메모 (선택사항)"
+    },
+    "validation": {
+      "vendorRequired": "업체를 선택해주세요",
+      "materialRequired": "자재를 선택해주세요",
+      "priceNegative": "단가는 음수가 될 수 없습니다",
+      "leadTimeNegative": "리드타임은 음수가 될 수 없습니다",
+      "minQuantityNegative": "최소 수량은 음수가 될 수 없습니다",
+      "dateRangeInvalid": "시작일은 종료일 이전이어야 합니다"
+    },
+    "createOffering": "등록",
+    "saveChanges": "변경사항 저장"
+  },
+  "vendorMaterialOfferingFormModal": {
+    "addTitle": "업체 자재 등록",
+    "editTitle": "업체 자재 수정",
+    "requiredError": "업체와 자재는 필수입니다",
+    "createError": "등록에 실패했습니다",
+    "updateError": "수정에 실패했습니다"
+  },
+  "deleteVendorMaterialOfferingModal": {
+    "title": "업체 자재 삭제",
+    "message": "{{vendor}}의 \"{{name}}\"{{price}} 자재를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "confirm": "삭제"
+  },
+  "materialCategoryForm": {
+    "categoryName": "카테고리명",
+    "description": "설명",
+    "placeholders": {
+      "name": "예: 체결류",
+      "description": "카테고리 설명 (선택사항)"
+    },
+    "validation": {
+      "nameRequired": "카테고리명은 필수입니다",
+      "nameMinLength": "이름은 최소 2자 이상이어야 합니다",
+      "nameMaxLength": "이름은 100자를 초과할 수 없습니다"
+    },
+    "createCategory": "카테고리 생성",
+    "saveChanges": "변경사항 저장"
+  },
+  "materialCategoryFormModal": {
+    "addTitle": "자재 카테고리 추가",
+    "editTitle": "자재 카테고리 수정",
+    "createError": "카테고리 생성에 실패했습니다",
+    "updateError": "카테고리 수정에 실패했습니다"
+  },
+  "deleteMaterialCategoryModal": {
+    "title": "카테고리 비활성화",
+    "message": "\"{{name}}\"을(를) 비활성화하시겠습니까?{{warning}} 더 이상 활성 목록에 표시되지 않습니다.",
+    "materialCountWarning": " 이 카테고리에는 {{count}}개의 자재가 포함되어 있습니다.",
+    "confirm": "비활성화"
+  },
+  "serviceCategoryForm": {
+    "categoryName": "카테고리명",
+    "description": "설명",
+    "placeholders": {
+      "name": "예: 레이저 커팅",
+      "description": "서비스 카테고리 설명 (선택사항)"
+    },
+    "validation": {
+      "nameRequired": "카테고리명은 필수입니다",
+      "nameMinLength": "이름은 최소 2자 이상이어야 합니다",
+      "nameMaxLength": "이름은 100자를 초과할 수 없습니다"
+    },
+    "createCategory": "카테고리 생성",
+    "saveChanges": "변경사항 저장"
+  },
+  "serviceCategoryFormModal": {
+    "addTitle": "서비스 카테고리 추가",
+    "editTitle": "서비스 카테고리 수정",
+    "createError": "카테고리 생성에 실패했습니다",
+    "updateError": "카테고리 수정에 실패했습니다"
+  },
+  "deleteServiceCategoryModal": {
+    "title": "카테고리 비활성화",
+    "message": "\"{{name}}\"을(를) 비활성화하시겠습니까?{{warning}} 더 이상 활성 목록에 표시되지 않습니다.",
+    "vendorCountWarning": " 이 카테고리에는 {{count}}개의 업체 서비스가 연결되어 있습니다.",
+    "confirm": "비활성화"
+  },
+  "currencies": {
+    "KRW": "KRW (₩)",
+    "USD": "USD ($)",
+    "EUR": "EUR (€)",
+    "JPY": "JPY (¥)",
+    "CNY": "CNY (¥)"
+  },
+  "units": {
+    "defaultUnit": "EA",
+    "defaultServiceUnit": "건"
+  },
+  "attachmentUploader": {
+    "clickToUpload": "클릭하여 업로드",
+    "orDragDrop": "또는 드래그 앤 드롭",
+    "maxSize": "최대 {{size}}",
+    "uploading": "업로드 중...",
+    "validation": {
+      "fileTypeNotAllowed": "허용되지 않는 파일 형식입니다. 허용: {{types}}",
+      "fileSizeExceeds": "파일 크기가 최대 용량({{maxSize}})을 초과합니다"
+    }
+  },
+  "jobCodeSuccessModal": {
+    "title": "프로젝트 생성 완료",
+    "message": "프로젝트가 성공적으로 생성되었습니다.",
+    "copied": "복사됨!",
+    "copyToClipboard": "클립보드에 복사",
+    "copiedMessage": "JobCode가 클립보드에 복사되었습니다",
+    "hint": "이 JobCode를 사용하여 프로젝트 전체 수명주기를 추적할 수 있습니다.",
+    "backToList": "목록으로",
+    "viewProject": "프로젝트 보기"
+  }
+}

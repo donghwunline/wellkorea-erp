@@ -1,0 +1,289 @@
+{
+  "title": "조달",
+  "description": "구매 요청, RFQ, 발주서를 관리합니다",
+  "tabs": {
+    "purchaseRequests": "구매 요청",
+    "rfq": "RFQ",
+    "purchaseOrders": "발주서"
+  },
+  "purchaseRequest": {
+    "title": "구매 요청",
+    "list": {
+      "title": "구매 요청 목록",
+      "create": "구매 요청 생성",
+      "empty": "조달 요청이 없습니다.",
+      "allStatuses": "전체 상태",
+      "allTypes": "전체 유형",
+      "loading": "구매 요청 로딩 중...",
+      "loadError": "구매 요청을 불러오지 못했습니다"
+    },
+    "create": {
+      "title": "새 구매 요청 생성",
+      "success": "구매 요청이 생성되었습니다",
+      "error": "구매 요청 생성에 실패했습니다"
+    },
+    "edit": {
+      "title": "구매 요청 수정",
+      "success": "구매 요청이 수정되었습니다",
+      "error": "구매 요청 수정에 실패했습니다"
+    },
+    "view": {
+      "title": "구매 요청 상세"
+    },
+    "delete": {
+      "title": "구매 요청 삭제",
+      "message": "이 구매 요청을 삭제하시겠습니까?",
+      "success": "구매 요청이 삭제되었습니다"
+    },
+    "fields": {
+      "prNumber": "PR 번호",
+      "project": "프로젝트",
+      "requestedBy": "요청자",
+      "requestDate": "요청일",
+      "requiredDate": "필요일",
+      "status": "상태",
+      "priority": "우선순위",
+      "notes": "비고"
+    },
+    "status": {
+      "DRAFT": "초안",
+      "RFQ_SENT": "RFQ 발송",
+      "VENDOR_SELECTED": "업체 선정",
+      "ORDERED": "발주 완료",
+      "CLOSED": "완료",
+      "CANCELED": "취소"
+    },
+    "priority": {
+      "LOW": "낮음",
+      "NORMAL": "보통",
+      "HIGH": "높음",
+      "URGENT": "긴급"
+    },
+    "actions": {
+      "submit": "승인 요청",
+      "approve": "승인",
+      "reject": "반려",
+      "createRfq": "RFQ 생성",
+      "createPo": "발주 생성"
+    }
+  },
+  "rfq": {
+    "title": "견적 요청 (RFQ)",
+    "list": {
+      "title": "RFQ 목록",
+      "create": "RFQ 생성",
+      "empty": "RFQ 발송된 요청이 없습니다.",
+      "loading": "RFQ 목록 로딩 중...",
+      "loadError": "RFQ 목록을 불러오지 못했습니다"
+    },
+    "summary": {
+      "rfqSent": "RFQ 발송 완료",
+      "vendorSelected": "업체 선정 완료",
+      "ordered": "발주 완료",
+      "count": "{{count}}건"
+    },
+    "sections": {
+      "rfqSent": "RFQ 발송 완료",
+      "vendorSelectedPending": "업체 선정 완료 - PO 생성 대기",
+      "orderedPending": "발주 완료 - 입고 대기"
+    },
+    "create": {
+      "title": "새 RFQ 생성",
+      "success": "RFQ가 생성되었습니다",
+      "error": "RFQ 생성에 실패했습니다"
+    },
+    "edit": {
+      "title": "RFQ 수정",
+      "success": "RFQ가 수정되었습니다",
+      "error": "RFQ 수정에 실패했습니다"
+    },
+    "view": {
+      "title": "RFQ 상세"
+    },
+    "delete": {
+      "title": "RFQ 삭제",
+      "message": "이 RFQ를 삭제하시겠습니까?",
+      "success": "RFQ가 삭제되었습니다"
+    },
+    "fields": {
+      "rfqNumber": "RFQ 번호",
+      "vendor": "공급사",
+      "vendors": "공급사 목록",
+      "issueDate": "발행일",
+      "dueDate": "마감일",
+      "status": "상태",
+      "notes": "비고"
+    },
+    "status": {
+      "DRAFT": "초안",
+      "SENT": "전송됨",
+      "RECEIVED": "견적 수령",
+      "EVALUATED": "평가 완료",
+      "SELECTED": "선정됨",
+      "CANCELLED": "취소"
+    },
+    "actions": {
+      "send": "전송",
+      "receiveQuote": "견적 수령",
+      "evaluate": "평가",
+      "select": "선정",
+      "createPo": "발주 생성",
+      "sendEmail": "이메일 전송"
+    },
+    "email": {
+      "send": "이메일 전송",
+      "sendTitle": "RFQ 이메일 전송",
+      "sendSuccess": "이메일이 전송되었습니다",
+      "sendError": "이메일 전송에 실패했습니다"
+    }
+  },
+  "purchaseOrder": {
+    "title": "발주",
+    "list": {
+      "title": "발주 목록",
+      "create": "발주 생성",
+      "empty": "발주서가 없습니다.",
+      "allStatuses": "전체 상태",
+      "loading": "발주서 로딩 중...",
+      "loadError": "발주서를 불러오지 못했습니다"
+    },
+    "create": {
+      "title": "새 발주 생성",
+      "success": "발주가 생성되었습니다",
+      "error": "발주 생성에 실패했습니다"
+    },
+    "edit": {
+      "title": "발주 수정",
+      "success": "발주가 수정되었습니다",
+      "error": "발주 수정에 실패했습니다"
+    },
+    "view": {
+      "title": "발주 상세"
+    },
+    "delete": {
+      "title": "발주 삭제",
+      "message": "이 발주를 삭제하시겠습니까?",
+      "success": "발주가 삭제되었습니다"
+    },
+    "fields": {
+      "poNumber": "PO 번호",
+      "vendor": "공급사",
+      "issueDate": "발행일",
+      "deliveryDate": "납품일",
+      "status": "상태",
+      "subtotal": "소계",
+      "tax": "부가세",
+      "total": "합계",
+      "notes": "비고",
+      "terms": "거래 조건"
+    },
+    "status": {
+      "DRAFT": "초안",
+      "SENT": "발송",
+      "CONFIRMED": "확정",
+      "RECEIVED": "수령",
+      "CANCELED": "취소"
+    },
+    "actions": {
+      "submit": "승인 요청",
+      "approve": "승인",
+      "reject": "반려",
+      "send": "전송",
+      "confirm": "확정",
+      "receive": "입고",
+      "downloadPdf": "PDF 다운로드",
+      "sendEmail": "이메일 전송"
+    },
+    "email": {
+      "send": "이메일 전송",
+      "sendTitle": "발주서 이메일 전송",
+      "sendSuccess": "이메일이 전송되었습니다",
+      "sendError": "이메일 전송에 실패했습니다"
+    }
+  },
+  "lineItems": {
+    "title": "품목",
+    "add": "품목 추가",
+    "remove": "품목 삭제",
+    "empty": "등록된 품목이 없습니다",
+    "item": "품목",
+    "material": "자재",
+    "description": "설명",
+    "quantity": "수량",
+    "unit": "단위",
+    "unitPrice": "단가",
+    "amount": "금액"
+  },
+  "table": {
+    "headers": {
+      "number": "번호",
+      "requestNumber": "요청번호",
+      "poNumber": "PO 번호",
+      "type": "유형",
+      "project": "프로젝트",
+      "vendor": "공급사",
+      "item": "품목",
+      "description": "내용",
+      "quantity": "수량",
+      "requiredDate": "납기일",
+      "orderDate": "주문일",
+      "expectedDeliveryDate": "예상 납품일",
+      "amount": "금액",
+      "status": "상태",
+      "total": "합계",
+      "date": "날짜",
+      "requester": "요청자",
+      "manager": "담당자",
+      "actions": "작업"
+    }
+  },
+  "type": {
+    "SERVICE": "외주",
+    "MATERIAL": "자재"
+  },
+  "common": {
+    "retry": "다시 시도"
+  },
+  "recordReplyModal": {
+    "title": "견적 입력",
+    "vendor": "업체:",
+    "quotedPrice": "견적가",
+    "quotedPriceHint": "원 단위로 입력해주세요",
+    "quotedPricePlaceholder": "예: 1500000",
+    "quotedLeadTime": "납기일",
+    "quotedLeadTimeHint": "일 단위 (예: 14일)",
+    "quotedLeadTimePlaceholder": "예: 14",
+    "notes": "비고",
+    "notesHint": "추가 정보나 특이사항을 입력해주세요",
+    "notesPlaceholder": "예: 수량에 따라 단가 협의 가능",
+    "cancel": "취소",
+    "save": "저장",
+    "saving": "저장 중...",
+    "validation": {
+      "quotedPriceRequired": "견적가를 입력해주세요",
+      "quotedPriceInvalid": "올바른 금액을 입력해주세요",
+      "quotedLeadTimeInvalid": "올바른 납기일을 입력해주세요"
+    }
+  },
+  "createPurchaseOrderModal": {
+    "title": "발주서 생성",
+    "vendor": "업체",
+    "quotedPrice": "견적 단가",
+    "quantity": "수량",
+    "leadTime": "납기",
+    "leadTimeDays": "{{days}}일",
+    "totalAmount": "총 금액",
+    "orderDate": "주문일",
+    "orderDateRequired": "주문일을 입력해주세요",
+    "expectedDeliveryDate": "납기예정일",
+    "expectedDeliveryDateRequired": "납기예정일을 입력해주세요",
+    "expectedDeliveryDateInvalid": "납기예정일은 주문일 이후여야 합니다",
+    "expectedDeliveryDateHint": "업체 납기 기준: {{days}}일",
+    "notes": "비고",
+    "notesHint": "추가 정보나 특이사항을 입력해주세요",
+    "notesPlaceholder": "예: 긴급 발주",
+    "cancel": "취소",
+    "create": "발주서 생성",
+    "creating": "생성 중..."
+  }
+}

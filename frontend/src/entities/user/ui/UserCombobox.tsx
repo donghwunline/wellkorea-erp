@@ -11,6 +11,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
 import { userQueries } from '../api/user.queries';
@@ -85,7 +86,7 @@ export function UserCombobox({
   value,
   onChange,
   label,
-  placeholder = '사용자 검색...',
+  placeholder,
   initialLabel,
   required,
   disabled,
@@ -93,7 +94,9 @@ export function UserCombobox({
   helpText,
   className,
 }: Readonly<UserComboboxProps>) {
+  const { t } = useTranslation('entities');
   const queryClient = useQueryClient();
+  const defaultPlaceholder = placeholder ?? t('user.combobox.placeholder');
 
   /**
    * Load users using Query Factory pattern.
@@ -135,15 +138,15 @@ export function UserCombobox({
       onChange={handleChange}
       loadOptions={loadOptions}
       label={label}
-      placeholder={placeholder}
+      placeholder={defaultPlaceholder}
       initialLabel={initialLabel ?? undefined}
       required={required}
       disabled={disabled}
       error={error}
       helpText={helpText}
       className={className}
-      noResultsText="검색 결과가 없습니다"
-      loadingText="로딩 중..."
+      noResultsText={t('user.combobox.noResults')}
+      loadingText={t('user.combobox.loading')}
     />
   );
 }

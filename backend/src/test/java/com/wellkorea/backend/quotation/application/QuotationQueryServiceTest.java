@@ -48,13 +48,15 @@ class QuotationQueryServiceTest {
         pageable = PageRequest.of(0, 10);
 
         // LineItemView: (Long id, Long productId, String productSku, String productName,
-        //                Integer sequence, BigDecimal quantity, BigDecimal unitPrice,
-        //                BigDecimal lineTotal, String notes)
+        //                String specification, String unit, Integer sequence, BigDecimal quantity,
+        //                BigDecimal unitPrice, BigDecimal lineTotal, String notes)
         LineItemView testLineItem = new LineItemView(
                 1L,
                 1L,
                 "SM-PANEL-001",
                 "Control Panel",
+                "Standard Panel",
+                "EA",
                 1,
                 BigDecimal.TEN,
                 BigDecimal.valueOf(50000.00),

@@ -7,6 +7,7 @@
  */
 
 import { type FormEvent, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import type { VendorOffering } from '@/entities/catalog';
 import { catalogQueries } from '@/entities/catalog';
@@ -81,6 +82,7 @@ export function VendorOfferingForm({
   onCancel,
   onDismissError,
 }: Readonly<VendorOfferingFormProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const isEditMode = !!offering;
 
   // Fetch service categories for dropdown
@@ -109,28 +111,28 @@ export function VendorOfferingForm({
     const newErrors: FormErrors = {};
 
     if (!formData.vendorId) {
-      newErrors.vendorId = 'Vendor is required';
+      newErrors.vendorId = t('items:vendorOfferingForm.validation.vendorRequired');
     }
 
     if (!formData.serviceCategoryId) {
-      newErrors.serviceCategoryId = 'Service category is required';
+      newErrors.serviceCategoryId = t('items:vendorOfferingForm.validation.categoryRequired');
     }
 
     if (formData.unitPrice && Number(formData.unitPrice) < 0) {
-      newErrors.unitPrice = 'Unit price cannot be negative';
+      newErrors.unitPrice = t('items:vendorOfferingForm.validation.priceNegative');
     }
 
     if (formData.leadTimeDays && Number(formData.leadTimeDays) < 0) {
-      newErrors.leadTimeDays = 'Lead time cannot be negative';
+      newErrors.leadTimeDays = t('items:vendorOfferingForm.validation.leadTimeNegative');
     }
 
     if (formData.minOrderQuantity && Number(formData.minOrderQuantity) < 0) {
-      newErrors.minOrderQuantity = 'Minimum quantity cannot be negative';
+      newErrors.minOrderQuantity = t('items:vendorOfferingForm.validation.minQuantityNegative');
     }
 
     if (formData.effectiveFrom && formData.effectiveTo) {
       if (formData.effectiveFrom > formData.effectiveTo) {
-        newErrors.effectiveFrom = 'Start date must be before end date';
+        newErrors.effectiveFrom = t('items:vendorOfferingForm.validation.dateRangeInvalid');
       }
     }
 
@@ -181,19 +183,19 @@ export function VendorOfferingForm({
       {/* Row 1: Vendor & Service Category */}
       <div className="grid grid-cols-2 gap-4">
         {/* Vendor */}
-        <FormField label="Vendor" required error={errors.vendorId}>
+        <FormField label={t('items:vendorOfferingForm.vendor')} required error={errors.vendorId}>
           <CompanyCombobox
             value={formData.vendorId}
             onChange={id => handleChange('vendorId', id)}
             roleType={RoleTypeEnum.OUTSOURCE}
-            placeholder="Search vendors..."
+            placeholder={t('items:vendorOfferingForm.placeholders.searchVendors')}
             initialLabel={offering?.vendorName}
             disabled={isSubmitting || isEditMode}
           />
         </FormField>
 
         {/* Service Category */}
-        <FormField label="Service Category" required error={errors.serviceCategoryId}>
+        <FormField label={t('items:vendorOfferingForm.serviceCategory')} required error={errors.serviceCategoryId}>
           <select
             value={formData.serviceCategoryId ?? ''}
             onChange={e =>
@@ -202,7 +204,7 @@ export function VendorOfferingForm({
             disabled={isSubmitting || isEditMode}
             className={selectClassName}
           >
-            <option value="">Select category...</option>
+            <option value="">{t('items:vendorOfferingForm.placeholders.selectCategory')}</option>
             {serviceCategories.map(cat => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
@@ -214,24 +216,24 @@ export function VendorOfferingForm({
 
       {/* Row 2: Vendor Service Code & Name */}
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Vendor Service Code">
+        <FormField label={t('items:vendorOfferingForm.vendorServiceCode')}>
           <input
             type="text"
             value={formData.vendorServiceCode}
             onChange={e => handleChange('vendorServiceCode', e.target.value)}
             disabled={isSubmitting}
-            placeholder="e.g., LC-001"
+            placeholder={t('items:vendorOfferingForm.placeholders.vendorServiceCode')}
             className={inputClassName}
           />
         </FormField>
 
-        <FormField label="Vendor Service Name">
+        <FormField label={t('items:vendorOfferingForm.vendorServiceName')}>
           <input
             type="text"
             value={formData.vendorServiceName}
             onChange={e => handleChange('vendorServiceName', e.target.value)}
             disabled={isSubmitting}
-            placeholder="e.g., Precision Laser Cutting"
+            placeholder={t('items:vendorOfferingForm.placeholders.vendorServiceName')}
             className={inputClassName}
           />
         </FormField>
@@ -239,7 +241,7 @@ export function VendorOfferingForm({
 
       {/* Row 3: Price & Currency */}
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Unit Price" error={errors.unitPrice}>
+        <FormField label={t('items:vendorOfferingForm.unitPrice')} error={errors.unitPrice}>
           <input
             type="number"
             value={formData.unitPrice}
@@ -252,25 +254,25 @@ export function VendorOfferingForm({
           />
         </FormField>
 
-        <FormField label="Currency">
+        <FormField label={t('items:vendorOfferingForm.currency')}>
           <select
             value={formData.currency}
             onChange={e => handleChange('currency', e.target.value)}
             disabled={isSubmitting}
             className={selectClassName}
           >
-            <option value="KRW">KRW (₩)</option>
-            <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="JPY">JPY (¥)</option>
-            <option value="CNY">CNY (¥)</option>
+            <option value="KRW">{t('items:currencies.KRW')}</option>
+            <option value="USD">{t('items:currencies.USD')}</option>
+            <option value="EUR">{t('items:currencies.EUR')}</option>
+            <option value="JPY">{t('items:currencies.JPY')}</option>
+            <option value="CNY">{t('items:currencies.CNY')}</option>
           </select>
         </FormField>
       </div>
 
       {/* Row 4: Lead Time & Min Order */}
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Lead Time (days)" error={errors.leadTimeDays}>
+        <FormField label={t('items:vendorOfferingForm.leadTimeDays')} error={errors.leadTimeDays}>
           <input
             type="number"
             value={formData.leadTimeDays}
@@ -282,7 +284,7 @@ export function VendorOfferingForm({
           />
         </FormField>
 
-        <FormField label="Min Order Quantity" error={errors.minOrderQuantity}>
+        <FormField label={t('items:vendorOfferingForm.minOrderQuantity')} error={errors.minOrderQuantity}>
           <input
             type="number"
             value={formData.minOrderQuantity}
@@ -296,13 +298,13 @@ export function VendorOfferingForm({
       </div>
 
       {/* Row 5: Effective Date Range */}
-      <FormField label="Effective Period" error={errors.effectiveFrom}>
+      <FormField label={t('items:vendorOfferingForm.effectivePeriod')} error={errors.effectiveFrom}>
         <DatePicker
           mode="range"
           value={{ start: formData.effectiveFrom, end: formData.effectiveTo }}
           onChange={handleDateRangeChange}
           disabled={isSubmitting}
-          placeholder="Select date range..."
+          placeholder={t('items:vendorOfferingForm.placeholders.selectDateRange')}
         />
       </FormField>
 
@@ -317,17 +319,17 @@ export function VendorOfferingForm({
           className="h-4 w-4 rounded border-steel-700 bg-steel-900 text-copper-500 focus:ring-copper-500/20 focus:ring-offset-0"
         />
         <label htmlFor="isPreferred" className="text-sm text-steel-300">
-          Mark as preferred vendor for this service
+          {t('items:vendorOfferingForm.isPreferred')}
         </label>
       </div>
 
       {/* Notes */}
-      <FormField label="Notes">
+      <FormField label={t('items:vendorOfferingForm.notes')}>
         <textarea
           value={formData.notes}
           onChange={e => handleChange('notes', e.target.value)}
           disabled={isSubmitting}
-          placeholder="Optional notes about this offering"
+          placeholder={t('items:vendorOfferingForm.placeholders.notes')}
           rows={3}
           className={textareaClassName}
         />
@@ -335,10 +337,10 @@ export function VendorOfferingForm({
 
       <ModalActions>
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {t('common:buttons.cancel')}
         </Button>
         <Button type="submit" variant="primary" isLoading={isSubmitting}>
-          {isEditMode ? 'Save Changes' : 'Create Offering'}
+          {isEditMode ? t('items:vendorOfferingForm.saveChanges') : t('items:vendorOfferingForm.createOffering')}
         </Button>
       </ModalActions>
     </form>

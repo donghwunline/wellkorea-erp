@@ -9,6 +9,7 @@
  * - Receives all data via props
  */
 
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/shared/ui';
 
 export interface CompanyStatusBadgeProps {
@@ -41,6 +42,8 @@ export function CompanyStatusBadge({
   size = 'md',
   className,
 }: Readonly<CompanyStatusBadgeProps>) {
+  const { t } = useTranslation('entities');
+
   return (
     <Badge
       variant={isActive ? 'success' : 'danger'}
@@ -48,7 +51,7 @@ export function CompanyStatusBadge({
       dot
       className={className}
     >
-      {isActive ? '활성' : '비활성'}
+      {isActive ? t('company.statusBadge.active') : t('company.statusBadge.inactive')}
     </Badge>
   );
 }

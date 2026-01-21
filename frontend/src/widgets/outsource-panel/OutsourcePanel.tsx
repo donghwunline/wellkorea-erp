@@ -11,6 +11,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Badge, Card, Icon, LoadingState, Table } from '@/shared/ui';
 import {
@@ -32,8 +33,10 @@ export interface OutsourcePanelProps {
  */
 function PurchaseRequestSummaryStats({
   requests,
+  t,
 }: {
   readonly requests: readonly PurchaseRequestListItem[];
+  readonly t: (key: string) => string;
 }) {
   const stats = useMemo(() => {
     const total = requests.length;
@@ -51,27 +54,27 @@ function PurchaseRequestSummaryStats({
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
       <Card className="p-4">
-        <div className="text-sm text-steel-400">전체</div>
+        <div className="text-sm text-steel-400">{t('widgets:outsourcePanel.stats.total')}</div>
         <div className="mt-1 text-2xl font-bold text-white">{stats.total}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">초안</div>
+        <div className="text-sm text-steel-400">{t('widgets:outsourcePanel.stats.draft')}</div>
         <div className="mt-1 text-2xl font-bold text-steel-300">{stats.draft}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">RFQ 발송</div>
+        <div className="text-sm text-steel-400">{t('widgets:outsourcePanel.stats.rfqSent')}</div>
         <div className="mt-1 text-2xl font-bold text-blue-400">{stats.rfqSent}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">업체 선정</div>
+        <div className="text-sm text-steel-400">{t('widgets:outsourcePanel.stats.vendorSelected')}</div>
         <div className="mt-1 text-2xl font-bold text-orange-400">{stats.vendorSelected}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">발주 완료</div>
+        <div className="text-sm text-steel-400">{t('widgets:outsourcePanel.stats.ordered')}</div>
         <div className="mt-1 text-2xl font-bold text-cyan-400">{stats.ordered}</div>
       </Card>
       <Card className="p-4">
-        <div className="text-sm text-steel-400">완료</div>
+        <div className="text-sm text-steel-400">{t('widgets:outsourcePanel.stats.closed')}</div>
         <div className="mt-1 text-2xl font-bold text-green-400">{stats.closed}</div>
       </Card>
     </div>
@@ -84,21 +87,24 @@ function PurchaseRequestSummaryStats({
 function PurchaseRequestStatusBadge({
   status,
   isOverdue,
+  t,
 }: {
   readonly status: PurchaseRequestStatus;
   readonly isOverdue: boolean;
+  readonly t: (key: string) => string;
 }) {
+  const statusLabel = t(`entities:purchaseRequest.status.${status}`);
   const config = PurchaseRequestStatusConfig[status];
 
   return (
     <span className="inline-flex items-center gap-1.5">
       <Badge variant={config.color} dot>
-        {config.labelKo}
+        {statusLabel}
       </Badge>
       {isOverdue && (
         <span
           className="inline-flex items-center rounded-full bg-red-500/20 px-1.5 py-0.5 text-xs text-red-400"
-          title="납기일 초과"
+          title={t('widgets:outsourcePanel.overdueWarning')}
         >
           <Icon name="warning" className="h-3 w-3" />
         </span>
@@ -108,6 +114,7 @@ function PurchaseRequestStatusBadge({
 }
 
 export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
+  const { t } = useTranslation(['widgets', 'entities']);
 
   // Fetch purchase requests for this project
   const {
@@ -129,7 +136,7 @@ export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
   if (isLoading) {
     return (
       <Card>
-        <LoadingState message="Loading outsource requests..." />
+        <LoadingState message={t('widgets:outsourcePanel.loading')} />
       </Card>
     );
   }
@@ -137,7 +144,7 @@ export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
   if (error) {
     return (
       <Alert variant="error">
-        Failed to load outsource requests: {error.message}
+        {t('widgets:outsourcePanel.loadError', { message: error.message })}
       </Alert>
     );
   }
@@ -147,12 +154,12 @@ export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
     return (
       <Card className="p-12 text-center">
         <Icon name="handshake" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="text-lg font-semibold text-white">외주 요청 없음</h3>
+        <h3 className="text-lg font-semibold text-white">{t('widgets:outsourcePanel.emptyTitle')}</h3>
         <p className="mt-2 text-steel-500">
-          이 프로젝트에 대한 외주 요청이 아직 없습니다.
+          {t('widgets:outsourcePanel.emptyDescription')}
         </p>
         <p className="mt-1 text-sm text-steel-600">
-          작업 노드에서 외주 요청을 생성할 수 있습니다.
+          {t('widgets:outsourcePanel.emptyHint')}
         </p>
       </Card>
     );
@@ -161,20 +168,20 @@ export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <PurchaseRequestSummaryStats requests={purchaseRequests} />
+      <PurchaseRequestSummaryStats requests={purchaseRequests} t={t} />
 
       {/* Purchase Requests Table */}
       <Card className="overflow-hidden">
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>요청번호</Table.HeaderCell>
-              <Table.HeaderCell>카테고리</Table.HeaderCell>
-              <Table.HeaderCell>내용</Table.HeaderCell>
-              <Table.HeaderCell>수량</Table.HeaderCell>
-              <Table.HeaderCell>납기일</Table.HeaderCell>
-              <Table.HeaderCell>상태</Table.HeaderCell>
-              <Table.HeaderCell>요청자</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:outsourcePanel.table.requestNumber')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:outsourcePanel.table.category')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:outsourcePanel.table.description')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:outsourcePanel.table.quantity')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:outsourcePanel.table.requiredDate')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:outsourcePanel.table.status')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('widgets:outsourcePanel.table.requester')}</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -204,7 +211,7 @@ export function OutsourcePanel({ projectId }: OutsourcePanelProps) {
                     {formatDate(request.requiredDate)}
                   </Table.Cell>
                   <Table.Cell>
-                    <PurchaseRequestStatusBadge status={request.status} isOverdue={isOverdue} />
+                    <PurchaseRequestStatusBadge status={request.status} isOverdue={isOverdue} t={t} />
                   </Table.Cell>
                   <Table.Cell className="text-steel-300">
                     {request.createdByName}

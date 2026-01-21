@@ -1,0 +1,154 @@
+{
+  "title": "Approval",
+  "description": "Review and process pending approval requests",
+  "list": {
+    "title": "Pending Approvals",
+    "empty": "No pending approval requests.",
+    "emptyFiltered": "No approval requests found with selected status.",
+    "emptyDescription": "All documents have been processed",
+    "loading": "Loading approval requests...",
+    "loadError": "Failed to load approval requests",
+    "allStatuses": "All Statuses"
+  },
+  "tabs": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "all": "All"
+  },
+  "documentTypes": {
+    "QUOTATION": "Quotation",
+    "PURCHASE_ORDER": "Purchase Order",
+    "INVOICE": "Invoice",
+    "PURCHASE_REQUEST": "Purchase Request"
+  },
+  "status": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "CANCELLED": "Cancelled"
+  },
+  "actions": {
+    "view": "View Details",
+    "approve": "Approve",
+    "reject": "Reject",
+    "cancel": "Cancel"
+  },
+  "approve": {
+    "title": "Approve Document",
+    "message": "Are you sure you want to approve this document?",
+    "comment": "Comment",
+    "commentPlaceholder": "Enter comment (optional)",
+    "success": "Approval submitted successfully",
+    "error": "Failed to approve"
+  },
+  "reject": {
+    "title": "Reject Document",
+    "message": "Are you sure you want to reject this document?",
+    "reason": "Rejection Reason",
+    "reasonPlaceholder": "Enter rejection reason",
+    "reasonRequired": "Please enter a rejection reason",
+    "success": "Rejection submitted successfully",
+    "error": "Failed to reject",
+    "modal": {
+      "title": "Reject Approval Request",
+      "rejecting": "Rejecting",
+      "warning": "Rejection will return the quotation to DRAFT status. The requester will need to make changes and resubmit for approval.",
+      "reasonLabel": "Rejection Reason",
+      "reasonPlaceholder": "Please explain why this request is being rejected...",
+      "reasonHelp": "This reason will be visible to the requester and recorded in the approval history.",
+      "rejectButton": "Reject Request",
+      "rejectingButton": "Rejecting...",
+      "validation": {
+        "reasonRequired": "Rejection reason is required",
+        "reasonMinLength": "Please provide a more detailed reason (at least 10 characters)"
+      }
+    }
+  },
+  "history": {
+    "title": "Approval History",
+    "approvedBy": "Approved By",
+    "rejectedBy": "Rejected By",
+    "approvedAt": "Approved At",
+    "rejectedAt": "Rejected At",
+    "comment": "Comment",
+    "noHistory": "No approval history"
+  },
+  "chain": {
+    "title": "Approval Settings",
+    "description": "Configure approval workflows for different entity types",
+    "list": {
+      "title": "Approval Chain List",
+      "create": "Create Approval Chain",
+      "empty": "No approval chain templates configured.",
+      "loading": "Loading approval chain templates..."
+    },
+    "edit": {
+      "modalTitle": "Edit Approval Chain: {{name}}",
+    "create": {
+      "title": "Create New Approval Chain",
+      "success": "Approval chain created successfully",
+      "error": "Failed to create approval chain"
+    },
+      "title": "Edit Approval Chain",
+      "success": "Approval chain updated successfully",
+      "error": "Failed to update approval chain"
+    },
+    "delete": {
+      "title": "Delete Approval Chain",
+      "message": "Are you sure you want to delete this approval chain?",
+      "success": "Approval chain deleted successfully"
+    },
+    "fields": {
+      "name": "Chain Name",
+      "documentType": "Document Type",
+      "steps": "Steps",
+      "approvers": "Approvers",
+      "status": "Status"
+    },
+    "steps": {
+      "add": "Add Level",
+      "remove": "Remove Level",
+      "order": "Order",
+      "approver": "Approver",
+      "role": "Role",
+      "selectApprover": "Select approver...",
+      "noLevels": "No levels configured. Add at least one approval level.",
+      "processOrder": "Approvals will be processed in order from Level 1 to the highest level. Each level must approve before moving to the next."
+    },
+    "table": {
+      "entityType": "Entity Type",
+      "name": "Name",
+      "approvalLevels": "Approval Levels",
+      "approvers": "Approvers"
+    }
+  },
+  "table": {
+    "headers": {
+      "documentNumber": "Document Number",
+      "documentType": "Document Type",
+      "requester": "Requester",
+      "requestDate": "Request Date",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "saving": "Saving..."
+  },
+  "buttons": {
+    "approve": "Approve",
+    "reject": "Reject"
+  },
+  "card": {
+    "submittedBy": "Submitted By",
+    "submittedAt": "Submitted At",
+    "currentLevel": "Current Level",
+    "levelOf": "Level {{current}} of {{total}}",
+    "status": "Status",
+    "approvalProgress": "Approval Progress",
+    "viewDetails": "View Details"
+  }
+}

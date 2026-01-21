@@ -11,6 +11,7 @@
  * - Receives value and delegates actions via props
  */
 
+import { useTranslation } from 'react-i18next';
 import type { AuditLog } from '../model/audit-log';
 import { Badge, type BadgeVariant, Card, IconButton, Table } from '@/shared/ui';
 
@@ -79,27 +80,30 @@ function formatTimestamp(dateStr: string): string {
 export function AuditLogTable({
   logs,
   onViewDetails,
-  emptyMessage = '감사 로그가 없습니다.',
+  emptyMessage,
   className,
 }: Readonly<AuditLogTableProps>) {
+  const { t } = useTranslation('entities');
+  const displayEmptyMessage = emptyMessage ?? t('audit.logTable.empty');
+
   return (
     <Card variant="table" className={className}>
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Timestamp</Table.HeaderCell>
-            <Table.HeaderCell>Action</Table.HeaderCell>
-            <Table.HeaderCell>Entity</Table.HeaderCell>
-            <Table.HeaderCell>User</Table.HeaderCell>
-            <Table.HeaderCell>IP Address</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">Details</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.timestamp')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.action')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.entity')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.user')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.ipAddress')}</Table.HeaderCell>
+            <Table.HeaderCell className="text-right">{t('audit.logTable.headers.details')}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {logs.length === 0 ? (
             <Table.Row>
               <Table.Cell colSpan={6} className="text-center text-steel-400">
-                {emptyMessage}
+                {displayEmptyMessage}
               </Table.Cell>
             </Table.Row>
           ) : (
@@ -137,8 +141,8 @@ export function AuditLogTable({
                   {onViewDetails && (
                     <IconButton
                       onClick={() => onViewDetails(log)}
-                      title="View details"
-                      aria-label="View details"
+                      title={t('audit.logTable.viewDetails')}
+                      aria-label={t('audit.logTable.viewDetails')}
                     >
                       <svg
                         className="h-4 w-4"
@@ -175,17 +179,19 @@ export function AuditLogTable({
  * Skeleton loader for audit log table.
  */
 export function AuditLogTableSkeleton() {
+  const { t } = useTranslation('entities');
+
   return (
     <Card variant="table">
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Timestamp</Table.HeaderCell>
-            <Table.HeaderCell>Action</Table.HeaderCell>
-            <Table.HeaderCell>Entity</Table.HeaderCell>
-            <Table.HeaderCell>User</Table.HeaderCell>
-            <Table.HeaderCell>IP Address</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">Details</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.timestamp')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.action')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.entity')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.user')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('audit.logTable.headers.ipAddress')}</Table.HeaderCell>
+            <Table.HeaderCell className="text-right">{t('audit.logTable.headers.details')}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>

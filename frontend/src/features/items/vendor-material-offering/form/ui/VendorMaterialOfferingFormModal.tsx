@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/ui';
 import type { VendorMaterialOffering } from '@/entities/material';
@@ -60,6 +61,7 @@ export function VendorMaterialOfferingFormModal({
   materialName,
   onSuccess,
 }: Readonly<VendorMaterialOfferingFormModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const mode = offering ? 'edit' : 'create';
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,7 @@ export function VendorMaterialOfferingFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to create offering');
+      setError(err.message || t('items:vendorMaterialOfferingFormModal.createError'));
     },
   });
 
@@ -86,7 +88,7 @@ export function VendorMaterialOfferingFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to update offering');
+      setError(err.message || t('items:vendorMaterialOfferingFormModal.updateError'));
     },
   });
 
@@ -102,7 +104,7 @@ export function VendorMaterialOfferingFormModal({
 
     if (mode === 'create') {
       if (!data.vendorId || !data.materialId) {
-        setError('Vendor and material are required');
+        setError(t('items:vendorMaterialOfferingFormModal.validationError'));
         return;
       }
 
@@ -145,7 +147,7 @@ export function VendorMaterialOfferingFormModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'create' ? 'Add Vendor Material Offering' : 'Edit Vendor Material Offering'}
+      title={mode === 'create' ? t('items:vendorMaterialOfferingFormModal.addTitle') : t('items:vendorMaterialOfferingFormModal.editTitle')}
       size="lg"
     >
       <VendorMaterialOfferingForm

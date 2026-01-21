@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -24,6 +25,7 @@ import {
 import { projectQueries, type ProjectListItem } from '@/entities/project';
 
 export function InvoiceSelectProjectPage() {
+  const { t } = useTranslation('pages');
   const navigate = useNavigate();
 
   // Fetch all projects
@@ -65,7 +67,7 @@ export function InvoiceSelectProjectPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Card>
-          <LoadingState message="Loading projects..." />
+          <LoadingState message={t('invoiceSelectProject.loading')} />
         </Card>
       </div>
     );
@@ -74,7 +76,7 @@ export function InvoiceSelectProjectPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">Failed to load projects: {error.message}</Alert>
+        <Alert variant="error">{t('invoiceSelectProject.loadError')}: {error.message}</Alert>
       </div>
     );
   }
@@ -84,12 +86,12 @@ export function InvoiceSelectProjectPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="새 세금계산서 발행"
-          description="Select a project to create an invoice for"
+          title={t('invoiceSelectProject.title')}
+          description={t('invoiceSelectProject.description')}
         />
         <PageHeader.Actions>
           <Button variant="ghost" onClick={handleCancel}>
-            Cancel
+            {t('invoiceSelectProject.cancel')}
           </Button>
         </PageHeader.Actions>
       </PageHeader>
@@ -97,16 +99,16 @@ export function InvoiceSelectProjectPage() {
       {/* Project Selection */}
       <Card className="p-6">
         <h3 className="mb-4 text-lg font-semibold text-white">
-          Select Project
+          {t('invoiceSelectProject.selectProject')}
         </h3>
         <p className="mb-6 text-sm text-steel-400">
-          Choose a project with an accepted quotation to create an invoice.
+          {t('invoiceSelectProject.selectProjectDescription')}
         </p>
 
         {projects.length === 0 ? (
           <EmptyState
-            title="No Projects Available"
-            description="There are no projects available for invoicing. Projects must be in progress or completed."
+            title={t('invoiceSelectProject.noProjectsTitle')}
+            description={t('invoiceSelectProject.noProjectsDescription')}
           />
         ) : (
           <div className="space-y-2">
@@ -126,7 +128,9 @@ export function InvoiceSelectProjectPage() {
                     </div>
                   </div>
                   <div className="text-sm text-steel-500">
-                    {project.status === 'ACTIVE' ? '진행중' : '완료'}
+                    {project.status === 'ACTIVE'
+                      ? t('invoiceSelectProject.status.active')
+                      : t('invoiceSelectProject.status.completed')}
                   </div>
                 </div>
               </button>

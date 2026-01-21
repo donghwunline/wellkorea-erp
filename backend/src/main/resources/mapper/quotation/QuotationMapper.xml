@@ -11,6 +11,8 @@
             <arg column="product_id" javaType="Long"/>
             <arg column="product_sku" javaType="String"/>
             <arg column="product_name" javaType="String"/>
+            <arg column="specification" javaType="String"/>
+            <arg column="unit" javaType="String"/>
             <arg column="sequence" javaType="Integer"/>
             <arg column="quantity" javaType="java.math.BigDecimal"/>
             <arg column="unit_price" javaType="java.math.BigDecimal"/>
@@ -85,6 +87,8 @@
             li.product_id,
             prod.sku AS product_sku,
             prod.name AS product_name,
+            prod.description AS specification,
+            prod.unit AS unit,
             li.sequence,
             li.quantity,
             li.unit_price,

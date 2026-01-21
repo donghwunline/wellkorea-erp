@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Button, FormField, Modal, ModalActions, Spinner } from '@/shared/ui';
 import type { RfqItem } from '@/entities/purchase-request';
 import { useRecordReply } from '../model/use-record-reply';
@@ -56,6 +57,7 @@ export function RecordReplyModal({
   onClose,
   onSuccess,
 }: RecordReplyModalProps) {
+  const { t } = useTranslation(['purchasing', 'common']);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -78,13 +80,13 @@ export function RecordReplyModal({
     const leadTime = formData.quotedLeadTime ? parseInt(formData.quotedLeadTime, 10) : null;
 
     if (!formData.quotedPrice.trim()) {
-      errors.quotedPrice = '견적가를 입력해주세요';
+      errors.quotedPrice = t('purchasing:recordReplyModal.validation.quotedPriceRequired');
     } else if (isNaN(price) || price < 0) {
-      errors.quotedPrice = '올바른 금액을 입력해주세요';
+      errors.quotedPrice = t('purchasing:recordReplyModal.validation.quotedPriceInvalid');
     }
 
     if (formData.quotedLeadTime && (leadTime === null || isNaN(leadTime) || leadTime < 0)) {
-      errors.quotedLeadTime = '올바른 납기일을 입력해주세요';
+      errors.quotedLeadTime = t('purchasing:recordReplyModal.validation.leadTimeInvalid');
     }
 
     setValidationErrors(errors);
@@ -133,13 +135,13 @@ export function RecordReplyModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="견적 입력"
+      title={t('purchasing:recordReplyModal.title')}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Vendor Context */}
         <div className="rounded-lg bg-steel-800/50 p-3">
-          <span className="text-sm text-steel-400">업체: </span>
+          <span className="text-sm text-steel-400">{t('purchasing:recordReplyModal.vendor')}: </span>
           <span className="font-medium text-white">{rfqItem.vendorName}</span>
         </div>
 
@@ -152,10 +154,10 @@ export function RecordReplyModal({
 
         {/* Quoted Price */}
         <FormField
-          label="견적가"
+          label={t('purchasing:recordReplyModal.quotedPrice')}
           required
           error={validationErrors.quotedPrice}
-          hint="원 단위로 입력해주세요"
+          hint={t('purchasing:recordReplyModal.quotedPriceHint')}
         >
           <input
             type="number"
@@ -163,7 +165,7 @@ export function RecordReplyModal({
             step="1"
             value={formData.quotedPrice}
             onChange={(e) => handleFieldChange('quotedPrice', e.target.value)}
-            placeholder="예: 1500000"
+            placeholder={t('purchasing:recordReplyModal.quotedPricePlaceholder')}
             disabled={isPending}
             className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 transition-all focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
@@ -171,9 +173,9 @@ export function RecordReplyModal({
 
         {/* Quoted Lead Time */}
         <FormField
-          label="납기일"
+          label={t('purchasing:recordReplyModal.quotedLeadTime')}
           error={validationErrors.quotedLeadTime}
-          hint="일 단위 (예: 14일)"
+          hint={t('purchasing:recordReplyModal.quotedLeadTimeHint')}
         >
           <input
             type="number"
@@ -181,7 +183,7 @@ export function RecordReplyModal({
             step="1"
             value={formData.quotedLeadTime}
             onChange={(e) => handleFieldChange('quotedLeadTime', e.target.value)}
-            placeholder="예: 14"
+            placeholder={t('purchasing:recordReplyModal.quotedLeadTimePlaceholder')}
             disabled={isPending}
             className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 transition-all focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
@@ -189,13 +191,13 @@ export function RecordReplyModal({
 
         {/* Notes */}
         <FormField
-          label="비고"
-          hint="추가 정보나 특이사항을 입력해주세요"
+          label={t('purchasing:recordReplyModal.notes')}
+          hint={t('purchasing:recordReplyModal.notesHint')}
         >
           <textarea
             value={formData.notes}
             onChange={(e) => handleFieldChange('notes', e.target.value)}
-            placeholder="예: 수량에 따라 단가 협의 가능"
+            placeholder={t('purchasing:recordReplyModal.notesPlaceholder')}
             rows={3}
             disabled={isPending}
             className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 transition-all focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
@@ -210,7 +212,7 @@ export function RecordReplyModal({
             onClick={handleClose}
             disabled={isPending}
           >
-            취소
+            {t('common:buttons.cancel')}
           </Button>
           <Button
             type="submit"
@@ -220,10 +222,10 @@ export function RecordReplyModal({
             {isPending ? (
               <>
                 <Spinner className="mr-2 h-4 w-4" />
-                저장 중...
+                {t('purchasing:recordReplyModal.saving')}
               </>
             ) : (
-              '저장'
+              t('common:buttons.save')
             )}
           </Button>
         </ModalActions>

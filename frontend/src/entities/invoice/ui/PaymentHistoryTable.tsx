@@ -3,6 +3,7 @@
  * Displays list of payments for an invoice.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Table, Icon } from '@/shared/ui';
 import type { Payment } from '../model/invoice';
 import { invoiceRules } from '../model/invoice';
@@ -17,8 +18,11 @@ interface PaymentHistoryTableProps {
 export function PaymentHistoryTable({
   payments,
   loading = false,
-  emptyMessage = 'No payments recorded.',
+  emptyMessage,
 }: PaymentHistoryTableProps) {
+  const { t } = useTranslation('entities');
+  const defaultEmptyMessage = t('invoice.paymentHistoryTable.empty');
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -31,7 +35,7 @@ export function PaymentHistoryTable({
     return (
       <div className="py-8 text-center">
         <Icon name="cash" className="mx-auto mb-3 h-10 w-10 text-steel-600" />
-        <p className="text-steel-400 text-sm">{emptyMessage}</p>
+        <p className="text-steel-400 text-sm">{emptyMessage ?? defaultEmptyMessage}</p>
       </div>
     );
   }
@@ -40,12 +44,12 @@ export function PaymentHistoryTable({
     <Table>
       <Table.Header>
         <Table.Row>
-          <Table.HeaderCell>Date</Table.HeaderCell>
-          <Table.HeaderCell>Method</Table.HeaderCell>
-          <Table.HeaderCell className="text-right">Amount</Table.HeaderCell>
-          <Table.HeaderCell>Reference</Table.HeaderCell>
-          <Table.HeaderCell>Recorded By</Table.HeaderCell>
-          <Table.HeaderCell>Notes</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.date')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.method')}</Table.HeaderCell>
+          <Table.HeaderCell className="text-right">{t('invoice.paymentHistoryTable.headers.amount')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.reference')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.recordedBy')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.notes')}</Table.HeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>

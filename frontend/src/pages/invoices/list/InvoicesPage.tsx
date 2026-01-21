@@ -11,34 +11,36 @@
  * - Uses entities/invoice for query hooks and UI
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Card, FilterBar, PageHeader, Button, Icon, Alert, Pagination } from '@/shared/ui';
+import { Alert, Card, FilterBar, PageHeader, Pagination } from '@/shared/ui';
 import {
-  type InvoiceSummary,
-  type InvoiceStatus,
-  InvoiceTable,
   invoiceQueries,
+  type InvoiceStatus,
   invoiceStatusConfig,
+  type InvoiceSummary,
+  InvoiceTable,
 } from '@/entities/invoice';
-import { useAuth } from '@/entities/auth';
-
-// Status filter options
-const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: '', label: 'All Statuses' },
-  ...Object.entries(invoiceStatusConfig).map(([status, config]) => ({
-    value: status,
-    label: config.labelKo,
-  })),
-];
+// import { useAuth } from '@/entities/auth';
 
 const PAGE_SIZE = 20;
 
 export function InvoicesPage() {
+  const { t } = useTranslation('invoices');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { hasAnyRole } = useAuth();
+  // const { hasAnyRole } = useAuth();
+
+  // Status filter options using i18n
+  const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
+    { value: '', label: t('list.allStatuses') },
+    ...Object.keys(invoiceStatusConfig).map(status => ({
+      value: status,
+      label: t(`status.${status}`),
+    })),
+  ];
 
   // Get filter from URL params
   const statusFromUrl = searchParams.get('status') as InvoiceStatus | null;
@@ -49,7 +51,7 @@ export function InvoicesPage() {
   const [page, setPage] = useState(pageFromUrl);
 
   // Check permissions
-  const canCreate = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
+  // const canCreate = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
 
   // Server state via TanStack Query
   const {
@@ -102,34 +104,34 @@ export function InvoicesPage() {
   );
 
   // Handle create button
-  const handleCreate = useCallback(() => {
-    navigate('/invoices/create');
-  }, [navigate]);
+  // const handleCreate = useCallback(() => {
+  //   navigate('/invoices/create');
+  // }, [navigate]);
 
   return (
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="세금계산서 관리" description="View and manage tax invoices" />
-        <PageHeader.Actions>
-          {canCreate && (
-            <Button onClick={handleCreate}>
-              <Icon name="plus" className="h-4 w-4 mr-2" />
-              New Invoice
-            </Button>
-          )}
-        </PageHeader.Actions>
+        <PageHeader.Title title={t('title')} description={t('description')} />
+        {/*<PageHeader.Actions>*/}
+        {/*  {canCreate && (*/}
+        {/*    <Button onClick={handleCreate}>*/}
+        {/*      <Icon name="plus" className="h-4 w-4 mr-2" />*/}
+        {/*      {t('list.new')}*/}
+        {/*    </Button>*/}
+        {/*  )}*/}
+        {/*</PageHeader.Actions>*/}
       </PageHeader>
 
       {/* Filters */}
       <div className="mb-6 flex gap-3">
         <FilterBar>
-          <FilterBar.Field label="Status">
+          <FilterBar.Field label={t('fields.status')}>
             <FilterBar.Select
               options={STATUS_OPTIONS}
               value={statusFilter || ''}
               onValueChange={handleStatusFilterChange}
-              placeholder="All Statuses"
+              placeholder={t('list.allStatuses')}
             />
           </FilterBar.Field>
         </FilterBar>
@@ -138,7 +140,7 @@ export function InvoicesPage() {
       {/* Error State */}
       {fetchError && (
         <Alert variant="error" className="mb-6">
-          Failed to load invoices: {fetchError.message}
+          {t('list.loadError')}: {fetchError.message}
         </Alert>
       )}
 
@@ -150,8 +152,8 @@ export function InvoicesPage() {
           onRowClick={handleRowClick}
           emptyMessage={
             statusFilter
-              ? `No invoices found with status "${invoiceStatusConfig[statusFilter].labelKo}".`
-              : 'No invoices found.'
+              ? t('list.emptyFiltered', { status: t(`status.${statusFilter}`) })
+              : t('list.empty')
           }
         />
 
@@ -165,7 +167,7 @@ export function InvoicesPage() {
               onPageChange={handlePageChange}
               isFirst={pagination.first}
               isLast={pagination.last}
-              itemLabel="invoices"
+              itemLabel={t('title').toLowerCase()}
             />
           </div>
         )}

@@ -8,6 +8,7 @@
  * - Uses entities/invoice for AR report data
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, Table, Icon } from '@/shared/ui';
 import type { CustomerAR } from '@/entities/invoice';
 import { arReportRules } from '@/entities/invoice';
@@ -18,6 +19,8 @@ interface ARCustomerTableProps {
 }
 
 export function ARCustomerTable({ customers, loading = false }: ARCustomerTableProps) {
+  const { t } = useTranslation('widgets');
+
   if (loading) {
     return (
       <Card className="p-6">
@@ -39,10 +42,10 @@ export function ARCustomerTable({ customers, loading = false }: ARCustomerTableP
   if (sortedCustomers.length === 0) {
     return (
       <Card className="p-6">
-        <h3 className="mb-4 text-lg font-semibold text-white">Outstanding by Customer</h3>
+        <h3 className="mb-4 text-lg font-semibold text-white">{t('arCustomerTable.title')}</h3>
         <div className="py-8 text-center">
           <Icon name="users" className="mx-auto mb-3 h-10 w-10 text-steel-600" />
-          <p className="text-sm text-steel-400">No outstanding amounts by customer</p>
+          <p className="text-sm text-steel-400">{t('arCustomerTable.empty')}</p>
         </div>
       </Card>
     );
@@ -51,17 +54,17 @@ export function ARCustomerTable({ customers, loading = false }: ARCustomerTableP
   return (
     <Card className="p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">Outstanding by Customer</h3>
-        <span className="text-sm text-steel-400">{sortedCustomers.length} customers</span>
+        <h3 className="text-lg font-semibold text-white">{t('arCustomerTable.title')}</h3>
+        <span className="text-sm text-steel-400">{t('arCustomerTable.customerCount', { count: sortedCustomers.length })}</span>
       </div>
 
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Customer</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">Invoices</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">Outstanding</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">% of Total</Table.HeaderCell>
+            <Table.HeaderCell>{t('arCustomerTable.table.customer')}</Table.HeaderCell>
+            <Table.HeaderCell className="text-right">{t('arCustomerTable.table.invoices')}</Table.HeaderCell>
+            <Table.HeaderCell className="text-right">{t('arCustomerTable.table.outstanding')}</Table.HeaderCell>
+            <Table.HeaderCell className="text-right">{t('arCustomerTable.table.percentOfTotal')}</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>

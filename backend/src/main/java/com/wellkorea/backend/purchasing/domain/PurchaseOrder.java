@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 /**
  * PurchaseOrder entity representing an official order to a vendor
  * based on a selected RFQ response.
- *
+ * <p>
  * References the RfqItem via purchaseRequest + rfqItemId (composite reference)
  * since RfqItem is now an @Embeddable within PurchaseRequest.
  */
@@ -185,10 +185,6 @@ public class PurchaseOrder {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public PurchaseRequest getPurchaseRequest() {
         return purchaseRequest;
     }
@@ -205,16 +201,8 @@ public class PurchaseOrder {
         this.rfqItemId = rfqItemId;
     }
 
-    public Project getProject() {
-        return project;
-    }
-
     public void setProject(Project project) {
         this.project = project;
-    }
-
-    public Company getVendor() {
-        return vendor;
     }
 
     public void setVendor(Company vendor) {
@@ -237,24 +225,12 @@ public class PurchaseOrder {
         this.orderDate = orderDate;
     }
 
-    public LocalDate getExpectedDeliveryDate() {
-        return expectedDeliveryDate;
-    }
-
     public void setExpectedDeliveryDate(LocalDate expectedDeliveryDate) {
         this.expectedDeliveryDate = expectedDeliveryDate;
     }
 
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
-
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
-    }
-
-    public String getCurrency() {
-        return currency;
     }
 
     public void setCurrency(String currency) {
@@ -269,27 +245,11 @@ public class PurchaseOrder {
         this.status = status;
     }
 
-    public String getNotes() {
-        return notes;
-    }
-
     public void setNotes(String notes) {
         this.notes = notes;
     }
 
-    public User getCreatedBy() {
-        return createdBy;
-    }
-
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
     }
 }

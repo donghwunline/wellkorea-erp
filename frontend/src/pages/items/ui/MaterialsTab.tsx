@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   materialQueries,
@@ -36,6 +37,7 @@ const PAGE_SIZE = 20;
  * Materials tab content.
  */
 export function MaterialsTab() {
+  const { t } = useTranslation('items');
   const { hasAnyRole } = useAuth();
   const canManage = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
   const queryClient = useQueryClient();
@@ -233,7 +235,7 @@ export function MaterialsTab() {
           <SearchBar
             value={search}
             onValueChange={handleSearchChange}
-            placeholder="Search materials by name or SKU..."
+            placeholder={t('materials.list.searchPlaceholder')}
             className="w-72"
           />
 
@@ -244,14 +246,14 @@ export function MaterialsTab() {
               value: category.id.toString(),
               label: category.name,
             }))}
-            placeholder="All Categories"
+            placeholder={t('materials.list.allCategories')}
             className="w-48"
           />
         </div>
 
         {canManage && (
           <Button variant="primary" onClick={handleOpenCreate}>
-            Add Material
+            {t('common.addMaterial')}
           </Button>
         )}
       </div>
@@ -259,12 +261,12 @@ export function MaterialsTab() {
       {/* Error */}
       {materialsError && (
         <Card variant="table" className="p-8 text-center">
-          <p className="text-red-400">Failed to load materials</p>
+          <p className="text-red-400">{t('materials.list.loadError')}</p>
           <button
             onClick={() => refetchMaterials()}
             className="mt-4 text-sm text-copper-500 hover:underline"
           >
-            Retry
+            {t('common.retry')}
           </button>
         </Card>
       )}
@@ -279,12 +281,7 @@ export function MaterialsTab() {
       {/* Material List */}
       {!materialsLoading && !materialsError && materials.length === 0 && (
         <Card className="p-8 text-center text-steel-400">
-          <p>No materials found.</p>
-          {canManage && (
-            <p className="mt-2">
-              Click &quot;Add Material&quot; to create your first material.
-            </p>
-          )}
+          <p>{canManage ? t('materials.list.emptyWithAction') : t('materials.list.empty')}</p>
         </Card>
       )}
 
@@ -296,28 +293,28 @@ export function MaterialsTab() {
               <thead className="bg-steel-800/60">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                    SKU
+                    {t('table.headers.sku')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                    Name
+                    {t('table.headers.name')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                    Category
+                    {t('table.headers.category')}
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                    Unit
+                    {t('table.headers.unit')}
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                    Standard Price
+                    {t('table.headers.standardPrice')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                    Preferred Vendor
+                    {t('table.headers.preferredVendor')}
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                    Status
+                    {t('table.headers.status')}
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                    Actions
+                    {t('table.headers.actions')}
                   </th>
                 </tr>
               </thead>
@@ -353,7 +350,7 @@ export function MaterialsTab() {
                             : 'bg-red-500/10 text-red-400'
                         }`}
                       >
-                        {material.isActive ? 'Active' : 'Inactive'}
+                        {material.isActive ? t('status.ACTIVE') : t('status.INACTIVE')}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-center">
@@ -362,14 +359,14 @@ export function MaterialsTab() {
                           onClick={() => setSelectedMaterial(material)}
                           className="text-sm text-steel-400 hover:text-white"
                         >
-                          Details
+                          {t('actions.viewDetails')}
                         </button>
                         <button
                           onClick={() => handleOpenOfferingsModal(material)}
                           className="flex items-center gap-1 text-sm text-copper-400 hover:text-copper-300"
                         >
                           <Icon name="building-office" className="h-4 w-4" />
-                          Vendors
+                          {t('actions.vendors')}
                         </button>
                       </div>
                     </td>
@@ -388,7 +385,7 @@ export function MaterialsTab() {
               onPageChange={setPage}
               isFirst={pagination.first}
               isLast={pagination.last}
-              itemLabel="materials"
+              itemLabel={t('materials.title').toLowerCase()}
               className="border-0 bg-transparent px-0"
             />
           )}
@@ -400,39 +397,39 @@ export function MaterialsTab() {
         <Modal
           isOpen={true}
           onClose={handleCloseDetail}
-          title={`Material: ${selectedMaterial.name}`}
+          title={t('materials.view.modalTitle', { name: selectedMaterial.name })}
           size="md"
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs uppercase text-steel-500">SKU</label>
+                <label className="text-xs uppercase text-steel-500">{t('table.headers.sku')}</label>
                 <p className="font-mono text-copper-400">{selectedMaterial.sku}</p>
               </div>
               <div>
-                <label className="text-xs uppercase text-steel-500">Category</label>
+                <label className="text-xs uppercase text-steel-500">{t('table.headers.category')}</label>
                 <p className="text-white">{selectedMaterial.categoryName}</p>
               </div>
               <div>
-                <label className="text-xs uppercase text-steel-500">Unit</label>
+                <label className="text-xs uppercase text-steel-500">{t('table.headers.unit')}</label>
                 <p className="text-white">{selectedMaterial.unit}</p>
               </div>
               <div>
-                <label className="text-xs uppercase text-steel-500">Standard Price</label>
+                <label className="text-xs uppercase text-steel-500">{t('table.headers.standardPrice')}</label>
                 <p className="text-white">
                   {selectedMaterial.standardPrice ? formatCurrency(selectedMaterial.standardPrice) : '-'}
                 </p>
               </div>
               <div className="col-span-2">
-                <label className="text-xs uppercase text-steel-500">Description</label>
+                <label className="text-xs uppercase text-steel-500">{t('materials.fields.description')}</label>
                 <p className="text-steel-300">
-                  {selectedMaterial.description || 'No description'}
+                  {selectedMaterial.description || t('materials.view.noDescription')}
                 </p>
               </div>
               <div className="col-span-2">
-                <label className="text-xs uppercase text-steel-500">Preferred Vendor</label>
+                <label className="text-xs uppercase text-steel-500">{t('table.headers.preferredVendor')}</label>
                 <p className="text-white">
-                  {selectedMaterial.preferredVendorName ?? 'None'}
+                  {selectedMaterial.preferredVendorName ?? t('materials.view.preferredVendorNone')}
                 </p>
               </div>
             </div>
@@ -440,10 +437,10 @@ export function MaterialsTab() {
             {canManage && (
               <div className="flex justify-end gap-2 border-t border-steel-700/50 pt-4">
                 <Button variant="secondary" onClick={handleOpenEdit}>
-                  Edit
+                  {t('actions.edit')}
                 </Button>
                 <Button variant="danger" onClick={handleOpenDelete}>
-                  Deactivate
+                  {t('actions.deactivate')}
                 </Button>
               </div>
             )}
@@ -456,7 +453,7 @@ export function MaterialsTab() {
         <Modal
           isOpen={true}
           onClose={handleCloseOfferingsModal}
-          title={`Vendors for "${materialForOfferings.name}"`}
+          title={t('materials.offerings.modalTitle', { name: materialForOfferings.name })}
           size="lg"
         >
           {offeringsLoading ? (
@@ -465,14 +462,14 @@ export function MaterialsTab() {
             </div>
           ) : offerings.length === 0 ? (
             <div className="py-8 text-center text-steel-400">
-              <p>No vendors currently supply this material.</p>
+              <p>{t('materials.offerings.empty')}</p>
               {canManage && (
                 <Button
                   variant="primary"
                   className="mt-4"
                   onClick={handleOpenOfferingCreate}
                 >
-                  Add Vendor Offering
+                  {t('materials.offerings.addOffering')}
                 </Button>
               )}
             </div>
@@ -483,23 +480,23 @@ export function MaterialsTab() {
                   <thead className="bg-steel-800/60">
                     <tr>
                       <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Vendor
+                        {t('table.headers.vendor')}
                       </th>
                       <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Unit Price
+                        {t('table.headers.unitPrice')}
                       </th>
                       <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Lead Time
+                        {t('table.headers.leadTime')}
                       </th>
                       <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Effective Period
+                        {t('table.headers.effectivePeriod')}
                       </th>
                       <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                        Preferred
+                        {t('table.headers.preferred')}
                       </th>
                       {canManage && (
                         <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                          Actions
+                          {t('table.headers.actions')}
                         </th>
                       )}
                     </tr>
@@ -519,7 +516,7 @@ export function MaterialsTab() {
                           {formatPrice(offering.unitPrice)}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
-                          {offering.leadTimeDays ? `${offering.leadTimeDays} days` : '-'}
+                          {offering.leadTimeDays ? t('common.days', { count: offering.leadTimeDays }) : '-'}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
                           {offering.effectiveFrom && offering.effectiveTo
@@ -529,7 +526,7 @@ export function MaterialsTab() {
                         <td className="whitespace-nowrap px-4 py-3 text-center">
                           {offering.isPreferred ? (
                             <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
-                              Preferred
+                              {t('table.headers.preferred')}
                             </span>
                           ) : canManage ? (
                             <button
@@ -537,7 +534,7 @@ export function MaterialsTab() {
                               className="text-xs text-steel-400 hover:text-amber-400"
                               disabled={setPreferredMutation.isPending}
                             >
-                              Set as Preferred
+                              {t('materials.offerings.setAsPreferred')}
                             </button>
                           ) : null}
                         </td>
@@ -547,13 +544,13 @@ export function MaterialsTab() {
                               onClick={() => handleOpenOfferingEdit(offering)}
                               className="text-sm text-steel-400 hover:text-white"
                             >
-                              Edit
+                              {t('actions.edit')}
                             </button>
                             <button
                               onClick={() => handleOpenOfferingDelete(offering)}
                               className="ml-3 text-sm text-red-400 hover:text-red-300"
                             >
-                              Delete
+                              {t('actions.delete')}
                             </button>
                           </td>
                         )}
@@ -566,7 +563,7 @@ export function MaterialsTab() {
               {canManage && (
                 <div className="flex justify-end">
                   <Button variant="secondary" onClick={handleOpenOfferingCreate}>
-                    Add Vendor Offering
+                    {t('materials.offerings.addOffering')}
                   </Button>
                 </div>
               )}

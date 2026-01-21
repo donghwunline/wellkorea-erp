@@ -14,6 +14,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -60,6 +61,8 @@ const defaultPaymentForm: PaymentFormState = {
 };
 
 export function InvoiceDetailPage() {
+  const { t } = useTranslation('invoices');
+  const { t: tCommon } = useTranslation('common');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const invoiceId = Number(id);
@@ -141,19 +144,19 @@ export function InvoiceDetailPage() {
 
       const amount = parseFloat(paymentForm.amount);
       if (isNaN(amount) || amount <= 0) {
-        setFormError('Please enter a valid payment amount');
+        setFormError(t('validation.invalidAmount'));
         return;
       }
 
       if (!paymentForm.paymentDate) {
-        setFormError('Please enter a payment date');
+        setFormError(t('validation.paymentDateRequired'));
         return;
       }
 
       // Check if payment exceeds remaining balance
       if (invoice && amount > invoice.remainingBalance) {
         setFormError(
-          `Payment amount (${formatCurrency(amount)}) exceeds remaining balance (${formatCurrency(invoice.remainingBalance)})`
+          t('validation.exceedsBalance', { amount: formatCurrency(amount), balance: formatCurrency(invoice.remainingBalance) })
         );
         return;
       }
@@ -167,7 +170,7 @@ export function InvoiceDetailPage() {
         notes: paymentForm.notes || null,
       });
     },
-    [invoiceId, paymentForm, invoice, recordPayment]
+    [invoiceId, paymentForm, invoice, recordPayment, t]
   );
 
   // Open payment modal with pre-filled remaining balance
@@ -192,7 +195,7 @@ export function InvoiceDetailPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Card>
-          <LoadingState message="Loading invoice details..." />
+          <LoadingState message={t('view.loading')} />
         </Card>
       </div>
     );
@@ -201,9 +204,9 @@ export function InvoiceDetailPage() {
   if (fetchError) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">Failed to load invoice: {fetchError.message}</Alert>
+        <Alert variant="error">{t('view.loadError')}: {fetchError.message}</Alert>
         <Button variant="secondary" className="mt-4" onClick={() => navigate('/invoices')}>
-          Back to Invoices
+          {t('actions.backToList')}
         </Button>
       </div>
     );
@@ -212,9 +215,9 @@ export function InvoiceDetailPage() {
   if (!invoice) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">Invoice not found</Alert>
+        <Alert variant="error">{t('view.notFound')}</Alert>
         <Button variant="secondary" className="mt-4" onClick={() => navigate('/invoices')}>
-          Back to Invoices
+          {t('actions.backToList')}
         </Button>
       </div>
     );
@@ -228,26 +231,26 @@ export function InvoiceDetailPage() {
       <PageHeader>
         <PageHeader.Title
           title={invoice.invoiceNumber}
-          description={`Tax Invoice for Job Code: ${invoice.jobCode}`}
+          description={`${t('fields.project')}: ${invoice.jobCode}`}
         />
         <PageHeader.Actions>
           <Button variant="ghost" onClick={() => navigate('/invoices')}>
-            Back to List
+            {t('actions.backToList')}
           </Button>
           {canManageInvoices && invoiceRules.canIssue(invoice) && (
             <Button onClick={handleIssue} disabled={isIssuing}>
-              {isIssuing ? 'Issuing...' : 'Issue Invoice'}
+              {isIssuing ? t('actions.issuing') : t('actions.issue')}
             </Button>
           )}
           {canManageInvoices && invoiceRules.canReceivePayment(invoice) && (
             <Button onClick={openPaymentModal}>
               <Icon name="plus" className="mr-2 h-4 w-4" />
-              Record Payment
+              {t('actions.recordPayment')}
             </Button>
           )}
           {canManageInvoices && invoiceRules.canCancel(invoice) && (
             <Button variant="danger" onClick={() => setShowCancelConfirm(true)}>
-              Cancel Invoice
+              {t('actions.cancel')}
             </Button>
           )}
         </PageHeader.Actions>
@@ -264,26 +267,26 @@ export function InvoiceDetailPage() {
       <Card className="mb-6 p-6">
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           <div>
-            <div className="text-sm text-steel-400">Status</div>
+            <div className="text-sm text-steel-400">{t('fields.status')}</div>
             <div className="mt-1">
               <InvoiceStatusBadge status={invoice.status} />
             </div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Issue Date</div>
+            <div className="text-sm text-steel-400">{t('fields.issueDate')}</div>
             <div className="mt-1 text-white">{formatDate(invoice.issueDate)}</div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Due Date</div>
+            <div className="text-sm text-steel-400">{t('fields.dueDate')}</div>
             <div className={`mt-1 ${invoice.isOverdue ? 'text-red-400' : 'text-white'}`}>
               {formatDate(invoice.dueDate)}
               {invoice.isOverdue && (
-                <span className="ml-2 text-xs">({invoice.daysOverdue} days overdue)</span>
+                <span className="ml-2 text-xs">({t('view.daysOverdue', { days: invoice.daysOverdue })})</span>
               )}
             </div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Project</div>
+            <div className="text-sm text-steel-400">{t('fields.project')}</div>
             <div className="mt-1">
               <Link
                 to={`/projects/${invoice.projectId}`}
@@ -298,7 +301,7 @@ export function InvoiceDetailPage() {
         {/* Payment Progress */}
         <div className="mt-6 border-t border-steel-700 pt-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-steel-400">Payment Progress</span>
+            <span className="text-steel-400">{t('view.paymentProgress')}</span>
             <span className="text-steel-300">{paymentProgress}%</span>
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-steel-700">
@@ -311,10 +314,10 @@ export function InvoiceDetailPage() {
           </div>
           <div className="mt-2 flex justify-between text-sm">
             <span className="text-green-400">
-              Paid: {invoiceRules.formatAmount(invoice.totalPaid)}
+              {t('view.paid')}: {invoiceRules.formatAmount(invoice.totalPaid)}
             </span>
             <span className="text-yellow-400">
-              Remaining: {invoiceRules.formatAmount(invoice.remainingBalance)}
+              {t('view.remaining')}: {invoiceRules.formatAmount(invoice.remainingBalance)}
             </span>
           </div>
         </div>
@@ -323,7 +326,7 @@ export function InvoiceDetailPage() {
         {invoice.remainingBalance > 0 && (
           <div className="mt-4 flex items-center gap-2 text-sm">
             <Icon name="clock" className="h-4 w-4 text-steel-500" />
-            <span className="text-steel-400">Aging:</span>
+            <span className="text-steel-400">{t('view.aging')}:</span>
             <span
               className={`font-medium text-${invoiceRules.getAgingBucketColor(invoice.agingBucket)}-400`}
             >
@@ -335,42 +338,42 @@ export function InvoiceDetailPage() {
         {/* Notes */}
         {invoice.notes && (
           <div className="mt-4 border-t border-steel-700 pt-4">
-            <div className="text-sm text-steel-400">Notes</div>
+            <div className="text-sm text-steel-400">{t('fields.notes')}</div>
             <div className="mt-1 text-steel-300">{invoice.notes}</div>
           </div>
         )}
 
         {/* Timestamps */}
         <div className="mt-4 border-t border-steel-700 pt-4 text-xs text-steel-500">
-          Created by {invoice.createdByName} on {formatDateTime(invoice.createdAt)} | Updated:{' '}
+          {tCommon('fields.createdBy')} {invoice.createdByName}, {formatDateTime(invoice.createdAt)} | {tCommon('fields.updatedAt')}:{' '}
           {formatDateTime(invoice.updatedAt)}
         </div>
       </Card>
 
       {/* Amounts Card */}
       <Card className="mb-6 p-6">
-        <h3 className="mb-4 text-lg font-semibold text-white">Invoice Amounts</h3>
+        <h3 className="mb-4 text-lg font-semibold text-white">{t('view.amounts')}</h3>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           <div>
-            <div className="text-sm text-steel-400">Subtotal</div>
+            <div className="text-sm text-steel-400">{t('fields.subtotal')}</div>
             <div className="mt-1 font-mono text-lg text-white">
               {invoiceRules.formatAmount(invoice.totalBeforeTax)}
             </div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Tax ({invoice.taxRate}%)</div>
+            <div className="text-sm text-steel-400">{t('fields.tax')} ({invoice.taxRate}%)</div>
             <div className="mt-1 font-mono text-lg text-white">
               {invoiceRules.formatAmount(invoice.totalTax)}
             </div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Total</div>
+            <div className="text-sm text-steel-400">{t('fields.total')}</div>
             <div className="mt-1 font-mono text-lg font-bold text-copper-400">
               {invoiceRules.formatAmount(invoice.totalAmount)}
             </div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">Balance Due</div>
+            <div className="text-sm text-steel-400">{t('fields.balanceDue')}</div>
             <div
               className={`mt-1 font-mono text-lg font-bold ${
                 invoice.remainingBalance > 0 ? 'text-yellow-400' : 'text-green-400'
@@ -385,18 +388,18 @@ export function InvoiceDetailPage() {
       {/* Line Items Card */}
       <Card className="mb-6 p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Line Items</h3>
-          <span className="text-steel-400">{invoice.lineItems.length} items</span>
+          <h3 className="text-lg font-semibold text-white">{t('view.lineItems')}</h3>
+          <span className="text-steel-400">{t('view.items', { count: invoice.lineItems.length })}</span>
         </div>
 
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>Product</Table.HeaderCell>
+              <Table.HeaderCell>{t('lineItems.product')}</Table.HeaderCell>
               <Table.HeaderCell>SKU</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Quantity</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Unit Price</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Line Total</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">{t('lineItems.quantity')}</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">{t('lineItems.unitPrice')}</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">{t('lineItems.amount')}</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -417,7 +420,7 @@ export function InvoiceDetailPage() {
           <tfoot>
             <tr className="border-t border-steel-700">
               <td colSpan={4} className="px-4 py-3 text-right font-medium text-white">
-                Total:
+                {t('fields.total')}:
               </td>
               <td className="px-4 py-3 text-right font-mono font-bold text-copper-400">
                 {invoiceRules.formatAmount(invoice.totalBeforeTax)}
@@ -430,13 +433,13 @@ export function InvoiceDetailPage() {
       {/* Payment History Card */}
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Payment History</h3>
-          <span className="text-steel-400">{invoice.payments.length} payments</span>
+          <h3 className="text-lg font-semibold text-white">{t('view.paymentHistory')}</h3>
+          <span className="text-steel-400">{t('view.payments', { count: invoice.payments.length })}</span>
         </div>
 
         <PaymentHistoryTable
           payments={invoice.payments}
-          emptyMessage="No payments have been recorded for this invoice."
+          emptyMessage={t('view.noPayments')}
         />
       </Card>
 
@@ -444,11 +447,11 @@ export function InvoiceDetailPage() {
       <Modal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        title="Record Payment"
+        title={t('payment.record.title')}
       >
         <form onSubmit={handlePaymentSubmit}>
           <div className="space-y-4">
-            <FormField label="Payment Date" required>
+            <FormField label={t('payment.record.date')} required>
               <Input
                 type="date"
                 value={paymentForm.paymentDate}
@@ -458,7 +461,7 @@ export function InvoiceDetailPage() {
               />
             </FormField>
 
-            <FormField label="Amount" required>
+            <FormField label={t('payment.record.amount')} required>
               <Input
                 type="number"
                 value={paymentForm.amount}
@@ -466,15 +469,15 @@ export function InvoiceDetailPage() {
                 min={0}
                 max={invoice.remainingBalance}
                 step="1"
-                placeholder="Enter payment amount"
+                placeholder={t('payment.record.amount')}
                 required
               />
               <p className="mt-1 text-xs text-steel-500">
-                Remaining balance: {invoiceRules.formatAmount(invoice.remainingBalance)}
+                {t('payment.record.remainingBalance', { amount: invoiceRules.formatAmount(invoice.remainingBalance) })}
               </p>
             </FormField>
 
-            <FormField label="Payment Method" required>
+            <FormField label={t('payment.record.method')} required>
               <select
                 value={paymentForm.paymentMethod}
                 onChange={(e) => handlePaymentFormChange('paymentMethod', e.target.value)}
@@ -488,20 +491,20 @@ export function InvoiceDetailPage() {
               </select>
             </FormField>
 
-            <FormField label="Reference Number">
+            <FormField label={t('payment.record.reference')}>
               <Input
                 type="text"
                 value={paymentForm.referenceNumber}
                 onChange={(e) => handlePaymentFormChange('referenceNumber', e.target.value)}
-                placeholder="e.g., Check number, transaction ID"
+                placeholder={t('payment.record.referenceHint')}
               />
             </FormField>
 
-            <FormField label="Notes">
+            <FormField label={t('payment.record.notes')}>
               <textarea
                 value={paymentForm.notes}
                 onChange={(e) => handlePaymentFormChange('notes', e.target.value)}
-                placeholder="Optional notes about this payment"
+                placeholder={t('payment.record.notesHint')}
                 rows={2}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               />
@@ -510,10 +513,10 @@ export function InvoiceDetailPage() {
 
           <div className="mt-6 flex justify-end gap-3">
             <Button type="button" variant="ghost" onClick={() => setShowPaymentModal(false)}>
-              Cancel
+              {tCommon('buttons.cancel')}
             </Button>
             <Button type="submit" disabled={isRecordingPayment}>
-              {isRecordingPayment ? 'Recording...' : 'Record Payment'}
+              {isRecordingPayment ? t('payment.record.recording') : t('payment.record.submit')}
             </Button>
           </div>
         </form>
@@ -523,21 +526,21 @@ export function InvoiceDetailPage() {
       <Modal
         isOpen={showCancelConfirm}
         onClose={() => setShowCancelConfirm(false)}
-        title="Cancel Invoice"
+        title={t('cancel.title')}
       >
         <div className="mb-6">
           <p className="text-steel-300">
-            Are you sure you want to cancel invoice <strong>{invoice.invoiceNumber}</strong>?
+            {t('cancel.confirm', { number: invoice.invoiceNumber })}
           </p>
-          <p className="mt-2 text-sm text-steel-500">This action cannot be undone.</p>
+          <p className="mt-2 text-sm text-steel-500">{t('cancel.warning')}</p>
         </div>
 
         <div className="flex justify-end gap-3">
           <Button variant="ghost" onClick={() => setShowCancelConfirm(false)}>
-            Keep Invoice
+            {t('actions.keepInvoice')}
           </Button>
           <Button variant="danger" onClick={handleCancel} disabled={isCancelling}>
-            {isCancelling ? 'Cancelling...' : 'Yes, Cancel Invoice'}
+            {isCancelling ? t('actions.cancelling') : t('actions.cancel')}
           </Button>
         </div>
       </Modal>

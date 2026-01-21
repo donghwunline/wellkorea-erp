@@ -8,6 +8,7 @@
  */
 
 import { type FormEvent, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ALL_ROLES,
   ROLE_DESCRIPTIONS,
@@ -37,6 +38,7 @@ function UserRolesFormInner({
   onClose: () => void;
   onSuccess?: () => void;
 }>) {
+  const { t } = useTranslation(['admin', 'common']);
   // Initial roles from user
   const initialRoles = useMemo(() => [...user.roles], [user.roles]);
 
@@ -79,24 +81,24 @@ function UserRolesFormInner({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <p className="mb-1 text-sm font-medium text-steel-300">User</p>
+          <p className="mb-1 text-sm font-medium text-steel-300">{t('admin:users.fields.username')}</p>
           <p className="text-white">{user.fullName}</p>
           <p className="text-sm text-steel-400">{user.email}</p>
         </div>
 
         <div>
-          <p className="mb-1 text-sm font-medium text-steel-300">Current Roles</p>
+          <p className="mb-1 text-sm font-medium text-steel-300">{t('admin:users.fields.roles')}</p>
           <div className="flex flex-wrap gap-2">
             {user.roles.length > 0 ? (
               user.roles.map(role => <Badge key={role}>{ROLE_LABELS[role]}</Badge>)
             ) : (
-              <span className="text-sm text-steel-500">No roles assigned</span>
+              <span className="text-sm text-steel-500">{t('admin:userRolesForm.noRoles')}</span>
             )}
           </div>
         </div>
 
         <div>
-          <span className="mb-3 block text-sm font-medium text-steel-300">Select Roles</span>
+          <span className="mb-3 block text-sm font-medium text-steel-300">{t('admin:userRolesForm.description')}</span>
           <div className="grid grid-cols-2 gap-3">
             {ALL_ROLES.map(role => (
               <button
@@ -119,10 +121,10 @@ function UserRolesFormInner({
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={handleClose} disabled={isPending}>
-            Cancel
+            {t('common:buttons.cancel')}
           </Button>
           <Button type="submit" isLoading={isPending} disabled={selectedRoles.length === 0}>
-            Save Roles
+            {t('admin:userRolesForm.save')}
           </Button>
         </div>
       </form>
@@ -139,10 +141,11 @@ export function UserRolesForm({
   onClose,
   onSuccess,
 }: Readonly<UserRolesFormProps>) {
+  const { t } = useTranslation(['admin']);
   if (!user) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Assign Roles">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('admin:userRolesForm.title')}>
       <UserRolesFormInner key={user.id} user={user} onClose={onClose} onSuccess={onSuccess} />
     </Modal>
   );

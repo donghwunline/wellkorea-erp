@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Icon, Modal, ModalActions } from '@/shared/ui';
 
 export interface JobCodeSuccessModalProps {
@@ -53,6 +54,7 @@ export function JobCodeSuccessModal({
   onClose,
   onViewProject,
 }: Readonly<JobCodeSuccessModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -67,7 +69,7 @@ export function JobCodeSuccessModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Project Created Successfully">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('items:jobCodeSuccessModal.title')}>
       <div className="text-center">
         {/* Success Icon */}
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
@@ -76,7 +78,7 @@ export function JobCodeSuccessModal({
 
         {/* Success Message */}
         <p className="mb-6 text-steel-300">
-          Your project has been created with the following Job Code:
+          {t('items:jobCodeSuccessModal.message')}
         </p>
 
         {/* JobCode Display */}
@@ -86,7 +88,7 @@ export function JobCodeSuccessModal({
             <button
               onClick={handleCopy}
               className="rounded-lg p-2 text-steel-400 transition-colors hover:bg-steel-800 hover:text-white"
-              title={copied ? 'Copied!' : 'Copy to clipboard'}
+              title={copied ? t('items:jobCodeSuccessModal.copied') : t('items:jobCodeSuccessModal.copyToClipboard')}
             >
               {copied ? (
                 <Icon name="check" className="h-5 w-5 text-green-500" />
@@ -96,22 +98,22 @@ export function JobCodeSuccessModal({
             </button>
           </div>
           {copied && (
-            <p className="mt-2 text-sm text-green-400">Copied to clipboard!</p>
+            <p className="mt-2 text-sm text-green-400">{t('items:jobCodeSuccessModal.copiedMessage')}</p>
           )}
         </div>
 
         <p className="mb-6 text-sm text-steel-400">
-          Use this Job Code to reference this project in quotations, production, and invoicing.
+          {t('items:jobCodeSuccessModal.hint')}
         </p>
 
         {/* Actions */}
         <ModalActions align="center">
           <Button variant="secondary" onClick={onClose}>
-            Back to List
+            {t('items:jobCodeSuccessModal.backToList')}
           </Button>
           <Button onClick={onViewProject}>
             <Icon name="eye" className="mr-2 h-4 w-4" />
-            View Project
+            {t('items:jobCodeSuccessModal.viewProject')}
           </Button>
         </ModalActions>
       </div>

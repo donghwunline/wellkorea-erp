@@ -1,0 +1,228 @@
+{
+  "title": "Quotations",
+  "description": "View and manage all quotations",
+  "list": {
+    "title": "Quotation List",
+    "create": "Create Quotation",
+    "new": "New Quotation",
+    "empty": "No quotations registered",
+    "emptyDescription": "Create a new quotation to get started",
+    "emptyFiltered": "No quotations found with selected status",
+    "loading": "Loading quotations...",
+    "loadError": "Failed to load quotations",
+    "searchPlaceholder": "Search by job code, project name...",
+    "allStatuses": "All Statuses"
+  },
+  "create": {
+    "title": "Create New Quotation",
+    "selectProject": "Select Project",
+    "success": "Quotation created successfully",
+    "error": "Failed to create quotation"
+  },
+  "edit": {
+    "title": "Edit Quotation",
+    "success": "Quotation updated successfully",
+    "error": "Failed to update quotation"
+  },
+  "view": {
+    "title": "Quotation Details",
+    "basicInfo": "Basic Information",
+    "lineItems": "Line Items",
+    "history": "History",
+    "approvalInfo": "Approval Information"
+  },
+  "delete": {
+    "title": "Delete Quotation",
+    "message": "Are you sure you want to delete this quotation?",
+    "success": "Quotation deleted successfully",
+    "error": "Failed to delete quotation"
+  },
+  "fields": {
+    "quotationNumber": "Quotation Number",
+    "project": "Project",
+    "company": "Company",
+    "version": "Version",
+    "status": "Status",
+    "issueDate": "Issue Date",
+    "validUntil": "Valid Until",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "total": "Total",
+    "notes": "Notes",
+    "terms": "Terms & Conditions",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "createdBy": "Created By"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "PENDING_APPROVAL": "Pending Approval",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "SENT": "Sent",
+    "ACCEPTED": "Accepted",
+    "DECLINED": "Declined",
+    "EXPIRED": "Expired",
+    "CANCELLED": "Cancelled"
+  },
+  "lineItems": {
+    "title": "Line Items",
+    "add": "Add Item",
+    "remove": "Remove Item",
+    "empty": "No items registered",
+    "product": "Product",
+    "description": "Description",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "unitPrice": "Unit Price",
+    "amount": "Amount",
+    "discount": "Discount",
+    "tax": "Tax",
+    "total": "Total"
+  },
+  "actions": {
+    "view": "View Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "submit": "Submit for Approval",
+    "approve": "Approve",
+    "reject": "Reject",
+    "send": "Send",
+    "duplicate": "Duplicate",
+    "createNewVersion": "Create New Version",
+    "downloadPdf": "Download PDF",
+    "print": "Print",
+    "sendEmail": "Send Email"
+  },
+  "approval": {
+    "title": "Submit for Approval",
+    "submit": "Submit for Approval",
+    "submitTitle": "Submit for Approval",
+    "submitMessage": "Are you sure you want to submit \"{{jobCode}}\" for approval? This will start the approval workflow.",
+    "submitSuccess": "Submitted for approval",
+    "approve": "Approve",
+    "approveMessage": "Are you sure you want to approve this quotation?",
+    "approveSuccess": "Quotation approved",
+    "reject": "Reject",
+    "rejectMessage": "Are you sure you want to reject this quotation?",
+    "rejectSuccess": "Quotation rejected",
+    "rejectReason": "Rejection Reason",
+    "rejectReasonPlaceholder": "Enter rejection reason"
+  },
+  "version": {
+    "title": "Create New Version",
+    "createTitle": "Create New Version",
+    "createMessage": "Create a new version based on \"{{jobCode}} v{{version}}\"? The new version will be in DRAFT status.",
+    "createSuccess": "New version created",
+    "create": "Create Version"
+  },
+  "email": {
+    "send": "Send Email",
+    "sendTitle": "Send Quotation by Email",
+    "recipient": "Recipient",
+    "recipientPlaceholder": "Enter email address",
+    "subject": "Subject",
+    "subjectDefault": "Quotation - {{quotationNumber}}",
+    "message": "Message",
+    "attachPdf": "Attach PDF",
+    "sendSuccess": "Email sent successfully",
+    "sendError": "Failed to send email"
+  },
+  "notify": {
+    "title": "Send Email Notification",
+    "contextWithInfo": "Send quotation \"{{jobCode}} v{{version}}\" to the recipient.",
+    "contextDefault": "Send quotation to the recipient.",
+    "to": "To",
+    "toPlaceholder": "recipient@example.com",
+    "addCc": "Add CC recipients",
+    "ccLabel": "CC Recipients (optional)",
+    "ccPlaceholder": "Enter email and press Enter",
+    "pdfAttachNote": "The quotation PDF will be attached to the email.",
+    "sending": "Sending...",
+    "sendEmail": "Send Email",
+    "validation": {
+      "emailRequired": "Email address is required",
+      "emailInvalid": "Invalid email format"
+    }
+  },
+  "table": {
+    "headers": {
+      "quotationNumber": "Quotation Number",
+      "project": "Project",
+      "company": "Company",
+      "version": "Version",
+      "status": "Status",
+      "total": "Total",
+      "issueDate": "Issue Date",
+      "actions": "Actions"
+    }
+  },
+  "summary": {
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "tax": "Tax (10%)",
+    "total": "Total"
+  },
+  "form": {
+    "quotationDetails": "Quotation Details",
+    "project": "Project",
+    "jobCode": "Job Code",
+    "validityPeriod": "Validity Period (Days)",
+    "version": "Version",
+    "notes": "Notes",
+    "notesPlaceholder": "Additional notes or remarks...",
+    "products": "Products",
+    "total": "Total:",
+    "itemCount": "{{count}} items",
+    "itemCountSingle": "{{count}} item",
+    "saving": "Saving...",
+    "createQuotation": "Create Quotation",
+    "saveChanges": "Save Changes",
+    "validation": {
+      "projectRequired": "Project is required",
+      "validityPositive": "Validity period must be positive",
+      "productRequired": "At least one product is required"
+    }
+  },
+  "panel": {
+    "loadingQuotations": "Loading quotations...",
+    "loadingDetails": "Loading quotation details...",
+    "noQuotationsTitle": "No Quotations Yet",
+    "noQuotationsDescription": "Create your first quotation for this project.",
+    "newQuotation": "New Quotation",
+    "new": "New",
+    "edit": "Edit",
+    "submit": "Submit",
+    "pdf": "PDF",
+    "sendEmail": "Send Email",
+    "accept": "Accept",
+    "newVersion": "New Version",
+    "prevVersion": "Previous version (older)",
+    "nextVersion": "Next version (newer)",
+    "versionOf": "{{current}} of {{total}}",
+    "submitSuccess": "Quotation submitted for approval",
+    "acceptSuccess": "Quotation accepted by customer",
+    "versionSuccess": "New version created",
+    "emailSuccess": "Email notification sent successfully",
+    "confirmSubmit": {
+      "title": "Submit for Approval",
+      "message": "Are you sure you want to submit \"{{jobCode}}\" for approval? This will start the approval workflow.",
+      "confirm": "Submit"
+    },
+    "confirmAccept": {
+      "title": "Accept Quotation",
+      "message": "Mark \"{{jobCode}} v{{version}}\" as accepted by customer? This will activate the project for delivery and invoicing.",
+      "confirm": "Accept"
+    },
+    "confirmVersion": {
+      "title": "Create New Version",
+      "message": "Create a new version based on \"{{jobCode}} v{{version}}\"? The new version will be in DRAFT status.",
+      "confirm": "Create Version"
+    }
+  },
+  "createModal": {
+    "title": "Create Quotation",
+    "loadingProject": "Loading project details...",
+    "errorLoadingProject": "Failed to load project details"
+  }
+}

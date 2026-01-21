@@ -17,6 +17,7 @@
  */
 
 import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/entities/auth';
 import { getErrorMessage } from '@/shared/api';
@@ -28,6 +29,7 @@ interface LocationState {
 }
 
 export function LoginPage() {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isAuthenticated } = useAuth();
@@ -74,11 +76,11 @@ export function LoginPage() {
     setError(null);
 
     if (!username.trim()) {
-      setError('Username is required');
+      setError(t('validation:requiredField', { field: t('login.username') }));
       return;
     }
     if (!password) {
-      setError('Password is required');
+      setError(t('validation:requiredField', { field: t('login.password') }));
       return;
     }
 
@@ -153,7 +155,7 @@ export function LoginPage() {
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-white">WellKorea</h1>
             <p className="mt-1 font-mono text-xs uppercase tracking-[0.2em] text-steel-400">
-              Integrated Work System
+              {t('login.subtitle')}
             </p>
           </div>
 
@@ -165,27 +167,27 @@ export function LoginPage() {
 
               {/* Username - Using FormField component */}
               <FormField
-                label="Username"
+                label={t('login.username')}
                 type="text"
                 id="username"
                 autoComplete="username"
                 value={username}
                 onChange={setUsername}
                 disabled={isLoading}
-                placeholder="Enter your username"
+                placeholder={t('login.usernamePlaceholder')}
               />
 
               {/* Password - Using FormField component */}
               <FormField
                 ref={passwordInputRef}
-                label="Password"
+                label={t('login.password')}
                 type="password"
                 id="password"
                 autoComplete="current-password"
                 value={password}
                 onChange={setPassword}
                 disabled={isLoading}
-                placeholder="Enter your password"
+                placeholder={t('login.passwordPlaceholder')}
               />
 
               {/* Remember Me */}
@@ -199,7 +201,7 @@ export function LoginPage() {
                   className="h-4 w-4 rounded border-steel-600 bg-steel-800 text-copper-500 focus:ring-2 focus:ring-copper-500/20 focus:ring-offset-0"
                 />
                 <label htmlFor="remember-me" className="ml-2.5 text-sm text-steel-400">
-                  Remember me
+                  {t('login.rememberMe')}
                 </label>
               </div>
 
@@ -212,12 +214,12 @@ export function LoginPage() {
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                 {isLoading ? (
                   <>
-                    <Spinner size="sm" variant="white" label="Signing in" />
-                    <span>Signing in...</span>
+                    <Spinner size="sm" variant="white" label={t('login.submitting')} />
+                    <span>{t('login.submitting')}</span>
                   </>
                 ) : (
                   <>
-                    <span>Sign in</span>
+                    <span>{t('login.submit')}</span>
                     <svg
                       className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
                       fill="none"
@@ -239,7 +241,7 @@ export function LoginPage() {
 
           {/* Footer */}
           <div className="mt-8 text-center">
-            <p className="text-xs text-steel-500">WellKorea Integrated Work System</p>
+            <p className="text-xs text-steel-500">{t('login.subtitle')}</p>
             <p className="mt-1 font-mono text-[10px] tracking-wider text-steel-600">v1.0.0</p>
           </div>
         </div>

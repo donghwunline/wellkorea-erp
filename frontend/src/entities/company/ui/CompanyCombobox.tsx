@@ -11,6 +11,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
 import { httpClient, COMPANY_ENDPOINTS, type PagedResponse } from '@/shared/api';
 import { transformPagedResponse } from '@/shared/lib/pagination';
@@ -112,9 +113,10 @@ export function CompanyCombobox({
   helpText,
   className,
 }: Readonly<CompanyComboboxProps>) {
+  const { t } = useTranslation('entities');
   const defaultPlaceholder = roleType
     ? `${ROLE_TYPE_LABELS[roleType]} 검색...`
-    : '회사 검색...';
+    : t('company.combobox.placeholder');
 
   /**
    * Load companies from API based on search query.
@@ -167,8 +169,8 @@ export function CompanyCombobox({
       error={error}
       helpText={helpText}
       className={className}
-      noResultsText="검색 결과가 없습니다"
-      loadingText="로딩 중..."
+      noResultsText={t('company.combobox.noResults')}
+      loadingText={t('company.combobox.loading')}
     />
   );
 }

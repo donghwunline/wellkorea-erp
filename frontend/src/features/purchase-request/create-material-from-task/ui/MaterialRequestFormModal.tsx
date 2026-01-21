@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Button, DatePicker, FormField, Modal, Spinner } from '@/shared/ui';
 import { materialQueries, type MaterialListItem } from '@/entities/material';
@@ -52,6 +53,7 @@ export function MaterialRequestFormModal({
   projectId,
   onSuccess,
 }: Readonly<MaterialRequestFormModalProps>) {
+  const { t } = useTranslation(['common', 'items']);
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,7 +75,7 @@ export function MaterialRequestFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || '구매 요청 생성에 실패했습니다');
+      setError(err.message || t('purchaseRequest.errors.createFailed'));
     },
   });
 
@@ -111,23 +113,23 @@ export function MaterialRequestFormModal({
     setError(null);
 
     if (!formState.materialId) {
-      setError('자재를 선택해주세요');
+      setError(t('purchaseRequest.errors.selectMaterial'));
       return;
     }
 
     if (!formState.description.trim()) {
-      setError('내용을 입력해주세요');
+      setError(t('purchaseRequest.errors.enterContent'));
       return;
     }
 
     const quantity = parseFloat(formState.quantity);
     if (isNaN(quantity) || quantity <= 0) {
-      setError('수량은 0보다 커야 합니다');
+      setError(t('purchaseRequest.errors.quantityPositive'));
       return;
     }
 
     if (!formState.requiredDate) {
-      setError('납기일을 선택해주세요');
+      setError(t('purchaseRequest.errors.selectRequiredDate'));
       return;
     }
 
@@ -153,11 +155,11 @@ export function MaterialRequestFormModal({
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="구매 요청" size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('purchaseRequest.title')} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Category Dropdown */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-steel-300">자재 카테고리</label>
+          <label className="text-sm font-medium text-steel-300">{t('purchaseRequest.materialCategory')}</label>
           {categoriesLoading ? (
             <div className="flex h-10 items-center justify-center rounded-lg border border-steel-700/50 bg-steel-900/60">
               <Spinner size="sm" />
@@ -168,7 +170,7 @@ export function MaterialRequestFormModal({
               onChange={e => handleCategoryChange(e.target.value)}
               className="h-10 rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white focus:border-copper-500 focus:outline-none"
             >
-              <option value="">전체 카테고리</option>
+              <option value="">{t('purchaseRequest.allCategories')}</option>
               {activeCategories.map(category => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -181,7 +183,7 @@ export function MaterialRequestFormModal({
         {/* Material Dropdown */}
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-steel-300">
-            자재 <span className="text-red-400">*</span>
+            {t('purchaseRequest.material')} <span className="text-red-400">*</span>
           </label>
           {materialsLoading ? (
             <div className="flex h-10 items-center justify-center rounded-lg border border-steel-700/50 bg-steel-900/60">
@@ -194,7 +196,7 @@ export function MaterialRequestFormModal({
               className="h-10 rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white focus:border-copper-500 focus:outline-none"
               required
             >
-              <option value="">자재 선택</option>
+              <option value="">{t('purchaseRequest.selectMaterial')}</option>
               {filteredMaterials.map(material => (
                 <option key={material.id} value={material.id}>
                   [{material.sku}] {material.name}
@@ -208,12 +210,12 @@ export function MaterialRequestFormModal({
         {/* Description */}
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-steel-300">
-            내용 <span className="text-red-400">*</span>
+            {t('purchaseRequest.content')} <span className="text-red-400">*</span>
           </label>
           <textarea
             value={formState.description}
             onChange={e => setFormState(s => ({ ...s, description: e.target.value }))}
-            placeholder="구매 요청 내용을 입력하세요"
+            placeholder={t('purchaseRequest.enterContent')}
             rows={3}
             className="rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder:text-steel-500 focus:border-copper-500 focus:outline-none"
             required
@@ -223,7 +225,7 @@ export function MaterialRequestFormModal({
         {/* Quantity and UOM */}
         <div className="grid grid-cols-2 gap-4">
           <FormField
-            label="수량"
+            label={t('purchaseRequest.quantity')}
             value={formState.quantity}
             onChange={value => setFormState(s => ({ ...s, quantity: value }))}
             type="number"
@@ -231,20 +233,20 @@ export function MaterialRequestFormModal({
             required
           />
           <FormField
-            label="단위"
+            label={t('common:purchaseRequest.unit')}
             value={formState.uom}
             onChange={value => setFormState(s => ({ ...s, uom: value }))}
-            placeholder="EA"
+            placeholder={t('items:units.defaultUnit')}
           />
         </div>
 
         {/* Required Date */}
         <DatePicker
-          label="납기일"
+          label={t('purchaseRequest.requiredDate')}
           mode="single"
           value={formState.requiredDate}
           onChange={value => setFormState(s => ({ ...s, requiredDate: value as string }))}
-          placeholder="납기일 선택"
+          placeholder={t('purchaseRequest.selectRequiredDate')}
           required
         />
 
@@ -258,10 +260,10 @@ export function MaterialRequestFormModal({
         {/* Actions */}
         <div className="mt-2 flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={handleClose}>
-            취소
+            {t('buttons.cancel')}
           </Button>
           <Button type="submit" variant="primary" isLoading={createMutation.isPending}>
-            구매 요청
+            {t('purchaseRequest.title')}
           </Button>
         </div>
       </form>

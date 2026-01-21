@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useState, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import type { Material } from '@/entities/material';
 import { materialQueries } from '@/entities/material';
@@ -60,6 +61,7 @@ export function MaterialForm({
   onCancel,
   onDismissError,
 }: Readonly<MaterialFormProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const isEditMode = !!material;
 
   // Form state
@@ -83,19 +85,19 @@ export function MaterialForm({
     const newErrors: FormErrors = {};
 
     if (!formData.sku.trim()) {
-      newErrors.sku = 'SKU is required';
+      newErrors.sku = t('items:materialForm.validation.skuRequired');
     } else if (formData.sku.trim().length > 50) {
-      newErrors.sku = 'SKU must not exceed 50 characters';
+      newErrors.sku = t('items:materialForm.validation.skuMaxLength');
     }
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('items:materialForm.validation.nameRequired');
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = t('items:materialForm.validation.nameMinLength');
     }
 
     if (!formData.categoryId) {
-      newErrors.categoryId = 'Category is required';
+      newErrors.categoryId = t('items:materialForm.validation.categoryRequired');
     }
 
     setErrors(newErrors);
@@ -130,7 +132,7 @@ export function MaterialForm({
       <div className="grid gap-4 md:grid-cols-2">
         {/* SKU - only editable in create mode */}
         <FormField
-          label="SKU"
+          label={t('items:materialForm.sku')}
           required
           error={errors.sku}
         >
@@ -139,14 +141,14 @@ export function MaterialForm({
             value={formData.sku}
             onChange={e => handleChange('sku', e.target.value)}
             disabled={isEditMode || isSubmitting}
-            placeholder="e.g., BOLT-M8X20"
+            placeholder={t('items:materialForm.placeholders.sku')}
             className="h-10 w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white placeholder-steel-500 focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </FormField>
 
         {/* Name */}
         <FormField
-          label="Name"
+          label={t('items:materialForm.name')}
           required
           error={errors.name}
         >
@@ -155,7 +157,7 @@ export function MaterialForm({
             value={formData.name}
             onChange={e => handleChange('name', e.target.value)}
             disabled={isSubmitting}
-            placeholder="Material name"
+            placeholder={t('items:materialForm.placeholders.name')}
             className="h-10 w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white placeholder-steel-500 focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </FormField>
@@ -163,7 +165,7 @@ export function MaterialForm({
 
       {/* Category */}
       <FormField
-        label="Category"
+        label={t('items:materialForm.category')}
         required
         error={errors.categoryId}
       >
@@ -173,7 +175,7 @@ export function MaterialForm({
           disabled={isSubmitting}
           className="h-10 w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <option value="" className="bg-steel-800">Select a category</option>
+          <option value="" className="bg-steel-800">{t('items:materialForm.placeholders.selectCategory')}</option>
           {categories.map(category => (
             <option key={category.id} value={category.id} className="bg-steel-800">
               {category.name}
@@ -183,12 +185,12 @@ export function MaterialForm({
       </FormField>
 
       {/* Description */}
-      <FormField label="Description">
+      <FormField label={t('items:materialForm.description')}>
         <textarea
           value={formData.description}
           onChange={e => handleChange('description', e.target.value)}
           disabled={isSubmitting}
-          placeholder="Optional description"
+          placeholder={t('items:materialForm.placeholders.description')}
           rows={3}
           className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
         />
@@ -196,19 +198,19 @@ export function MaterialForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Unit */}
-        <FormField label="Unit">
+        <FormField label={t('items:materialForm.unit')}>
           <input
             type="text"
             value={formData.unit}
             onChange={e => handleChange('unit', e.target.value)}
             disabled={isSubmitting}
-            placeholder="EA"
+            placeholder={t('items:units.defaultUnit')}
             className="h-10 w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white placeholder-steel-500 focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </FormField>
 
         {/* Standard Price */}
-        <FormField label="Standard Price">
+        <FormField label={t('items:materialForm.standardPrice')}>
           <input
             type="number"
             value={formData.standardPrice}
@@ -229,14 +231,14 @@ export function MaterialForm({
           onClick={onCancel}
           disabled={isSubmitting}
         >
-          Cancel
+          {t('common:buttons.cancel')}
         </Button>
         <Button
           type="submit"
           variant="primary"
           isLoading={isSubmitting}
         >
-          {isEditMode ? 'Save Changes' : 'Create Material'}
+          {isEditMode ? t('items:materialForm.saveChanges') : t('items:materialForm.createMaterial')}
         </Button>
       </ModalActions>
     </form>

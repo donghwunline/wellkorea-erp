@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Button,
   FormField,
@@ -39,6 +40,7 @@ export function RecordPaymentModal({
   onClose,
   onSuccess,
 }: RecordPaymentModalProps) {
+  const { t } = useTranslation('widgets');
   // Form state
   const [paymentDate, setPaymentDate] = useState(getTodayISO());
   const [amount, setAmount] = useState(invoice.remainingBalance.toString());
@@ -79,17 +81,17 @@ export function RecordPaymentModal({
 
       // Validate
       if (!paymentDate) {
-        setError('Payment date is required');
+        setError(t('recordPaymentModal.validation.dateRequired'));
         return;
       }
 
       if (isNaN(amountNum) || amountNum <= 0) {
-        setError('Amount must be greater than 0');
+        setError(t('recordPaymentModal.validation.amountPositive'));
         return;
       }
 
       if (amountNum > invoice.remainingBalance) {
-        setError(`Amount cannot exceed remaining balance (${invoiceRules.formatAmount(invoice.remainingBalance)})`);
+        setError(t('recordPaymentModal.validation.amountExceedsBalance', { balance: invoiceRules.formatAmount(invoice.remainingBalance) }));
         return;
       }
 
@@ -109,7 +111,7 @@ export function RecordPaymentModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={`결제 등록 - Invoice #${invoice.invoiceNumber}`}
+      title={t('recordPaymentModal.titleWithInvoice', { invoiceNumber: invoice.invoiceNumber })}
     >
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
@@ -119,7 +121,7 @@ export function RecordPaymentModal({
             </div>
           )}
 
-          <FormField label="Payment Date" required>
+          <FormField label={t('recordPaymentModal.fields.date')} required>
             <Input
               type="date"
               value={paymentDate}
@@ -129,7 +131,7 @@ export function RecordPaymentModal({
             />
           </FormField>
 
-          <FormField label="Amount" required>
+          <FormField label={t('recordPaymentModal.fields.amount')} required>
             <Input
               type="number"
               value={amount}
@@ -141,11 +143,11 @@ export function RecordPaymentModal({
               disabled={isPending}
             />
             <p className="mt-1 text-xs text-steel-500">
-              Max: {invoiceRules.formatAmount(invoice.remainingBalance)}
+              {t('recordPaymentModal.maxAmount', { amount: invoiceRules.formatAmount(invoice.remainingBalance) })}
             </p>
           </FormField>
 
-          <FormField label="Payment Method" required>
+          <FormField label={t('recordPaymentModal.fields.method')} required>
             <select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
@@ -160,21 +162,21 @@ export function RecordPaymentModal({
             </select>
           </FormField>
 
-          <FormField label="Reference Number">
+          <FormField label={t('recordPaymentModal.fields.reference')}>
             <Input
               type="text"
               value={referenceNumber}
               onChange={(e) => setReferenceNumber(e.target.value)}
-              placeholder="Transaction ID, check number, etc."
+              placeholder={t('recordPaymentModal.placeholders.reference')}
               disabled={isPending}
             />
           </FormField>
 
-          <FormField label="Notes">
+          <FormField label={t('recordPaymentModal.fields.notes')}>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional notes"
+              placeholder={t('recordPaymentModal.placeholders.notes')}
               rows={2}
               className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               disabled={isPending}
@@ -184,10 +186,10 @@ export function RecordPaymentModal({
 
         <ModalActions>
           <Button type="button" variant="ghost" onClick={handleClose} disabled={isPending}>
-            Cancel
+            {t('recordPaymentModal.actions.cancel')}
           </Button>
           <Button type="submit" disabled={isPending}>
-            {isPending ? 'Recording...' : 'Record Payment'}
+            {isPending ? t('recordPaymentModal.actions.recording') : t('recordPaymentModal.actions.record')}
           </Button>
         </ModalActions>
       </form>

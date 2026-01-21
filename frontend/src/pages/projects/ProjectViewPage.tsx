@@ -27,10 +27,16 @@
  */
 
 import { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ProjectSection } from '@/entities/project';
-import { ProjectDetailsCard, ProjectKPIStrip, ProjectKPIStripSkeleton, projectQueries, } from '@/entities/project';
+import {
+  ProjectDetailsCard,
+  ProjectKPIStrip,
+  ProjectKPIStripSkeleton,
+  projectQueries,
+} from '@/entities/project';
 import { useAuth } from '@/entities/auth';
 import type { RoleName } from '@/entities/user';
 import { Alert, Card, Icon, PageHeader, Spinner, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
@@ -39,7 +45,6 @@ import {
   DocumentPanel,
   InvoicePanel,
   OutsourcePanel,
-  ProjectRelatedNavigationGrid,
   PurchasePanel,
   QuotationPanel,
   TaskFlowPanel,
@@ -51,23 +56,25 @@ type TabId = 'overview' | ProjectSection;
 // Tab configuration with role requirements
 interface TabConfig {
   id: TabId;
-  label: string;
+  /** Translation key for tab label (under pages:projectView.tabs.*) */
+  labelKey: string;
   /** Required roles (if undefined, visible to all) */
   requiredRoles?: RoleName[];
 }
 
 const ALL_TABS: readonly TabConfig[] = [
-  { id: 'overview', label: '개요' },
-  { id: 'quotation', label: '견적', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
-  { id: 'process', label: '공정' },
-  { id: 'purchase', label: '구매' },
-  { id: 'outsource', label: '외주' },
-  { id: 'documents', label: '문서' },
-  { id: 'delivery', label: '출고' },
-  { id: 'finance', label: '정산', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE'] },
+  // { id: 'overview', labelKey: 'overview' },
+  { id: 'quotation', labelKey: 'quotation', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
+  { id: 'process', labelKey: 'process' },
+  { id: 'purchase', labelKey: 'purchase' },
+  { id: 'outsource', labelKey: 'outsource' },
+  { id: 'documents', labelKey: 'documents' },
+  { id: 'delivery', labelKey: 'delivery' },
+  { id: 'finance', labelKey: 'finance', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE'] },
 ];
 
 export function ProjectViewPage() {
+  const { t } = useTranslation('pages');
   const { id } = useParams<{ id: string }>();
   const projectId = id ? Number.parseInt(id, 10) : 0;
   const navigate = useNavigate();
@@ -127,21 +134,21 @@ export function ProjectViewPage() {
   const handleEdit = () => navigate(`/projects/${id}/edit`);
 
   // Handle section card click (switch to that tab via URL hash)
-  const handleSectionClick = useCallback((section: ProjectSection) => {
-    globalThis.location.hash = section;
-  }, []);
+  // const handleSectionClick = useCallback((section: ProjectSection) => {
+  //   globalThis.location.hash = section;
+  // }, []);
 
   // Loading state
   if (isProjectLoading) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Loading..." />
+          <PageHeader.Title title={t('projectView.loading')} />
         </PageHeader>
         <Card className="mx-auto max-w-6xl">
           <div className="flex items-center justify-center p-12">
-            <Spinner size="lg" label="Loading project" />
-            <span className="ml-3 text-steel-400">Loading project...</span>
+            <Spinner size="lg" label={t('projectView.loadingProject')} />
+            <span className="ml-3 text-steel-400">{t('projectView.loading')}</span>
           </div>
         </Card>
       </div>
@@ -153,14 +160,14 @@ export function ProjectViewPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Error" />
+          <PageHeader.Title title={t('projectView.error')} />
           <PageHeader.Actions>
             <button
               onClick={handleBack}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back to Projects
+              {t('projectView.backToProjects')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
@@ -176,19 +183,19 @@ export function ProjectViewPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Project Not Found" />
+          <PageHeader.Title title={t('projectView.notFound')} />
           <PageHeader.Actions>
             <button
               onClick={handleBack}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back to Projects
+              {t('projectView.backToProjects')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="warning" className="mx-auto max-w-6xl">
-          The requested project could not be found.
+          {t('projectView.notFoundMessage')}
         </Alert>
       </div>
     );
@@ -208,7 +215,7 @@ export function ProjectViewPage() {
             className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
           >
             <Icon name="arrow-left" className="h-5 w-5" />
-            Back to Projects
+            {t('projectView.backToProjects')}
           </button>
         </PageHeader.Actions>
       </PageHeader>
@@ -229,22 +236,22 @@ export function ProjectViewPage() {
         {kpis && <ProjectKPIStrip kpis={kpis} className="mt-6" />}
 
         {/* Tabbed Navigation */}
-        <Tabs defaultTab="overview" hash={true}>
+        <Tabs defaultTab="quotation" hash={true}>
           <TabList className="mt-6">
             {visibleTabs.map(tab => (
               <Tab key={tab.id} id={tab.id} badge={getBadgeCount(tab.id)} badgeVariant="warning">
-                {tab.label}
+                {t(`projectView.tabs.${tab.labelKey}`)}
               </Tab>
             ))}
           </TabList>
 
           {/* Overview Tab */}
-          <TabPanel id="overview">
-            <ProjectRelatedNavigationGrid
-              projectId={project.id}
-              onSectionClick={handleSectionClick}
-            />
-          </TabPanel>
+          {/*<TabPanel id="overview">*/}
+          {/*  <ProjectRelatedNavigationGrid*/}
+          {/*    projectId={project.id}*/}
+          {/*    onSectionClick={handleSectionClick}*/}
+          {/*  />*/}
+          {/*</TabPanel>*/}
 
           {/* Quotation Tab */}
           <TabPanel id="quotation">

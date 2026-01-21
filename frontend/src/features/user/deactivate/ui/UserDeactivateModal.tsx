@@ -7,6 +7,7 @@
  * FSD Layer: features/user/deactivate/ui
  */
 
+import { useTranslation } from 'react-i18next';
 import type { UserDetails } from '@/entities/user';
 import { ConfirmationModal } from '@/shared/ui';
 import { useDeactivateUser } from '../model/use-deactivate-user';
@@ -24,6 +25,7 @@ export function UserDeactivateModal({
   onClose,
   onSuccess,
 }: Readonly<UserDeactivateModalProps>) {
+  const { t } = useTranslation(['admin', 'common']);
   const { mutate: deactivateUser, isPending } = useDeactivateUser({
     onSuccess: () => {
       onSuccess?.();
@@ -46,13 +48,13 @@ export function UserDeactivateModal({
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={handleConfirm}
-      title="Deactivate User"
+      title={t('admin:userDeactivate.title')}
       message={
         user
-          ? `Are you sure you want to deactivate ${user.fullName}? This user will no longer be able to log in.`
+          ? t('admin:userDeactivate.message', { username: user.fullName })
           : ''
       }
-      confirmLabel={isPending ? 'Deactivating...' : 'Deactivate'}
+      confirmLabel={isPending ? t('common:status.processing') : t('admin:userDeactivate.confirm')}
       variant="danger"
     />
   );

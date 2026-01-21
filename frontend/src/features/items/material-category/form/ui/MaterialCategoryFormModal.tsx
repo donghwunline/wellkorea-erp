@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/ui';
 import type { MaterialCategory } from '@/entities/material';
@@ -44,6 +45,7 @@ export function MaterialCategoryFormModal({
   category,
   onSuccess,
 }: Readonly<MaterialCategoryFormModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const mode = category ? 'edit' : 'create';
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function MaterialCategoryFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to create category');
+      setError(err.message || t('items:materialCategoryFormModal.createError'));
     },
   });
 
@@ -71,7 +73,7 @@ export function MaterialCategoryFormModal({
       handleClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to update category');
+      setError(err.message || t('items:materialCategoryFormModal.updateError'));
     },
   });
 
@@ -109,7 +111,7 @@ export function MaterialCategoryFormModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'create' ? 'Add Material Category' : 'Edit Material Category'}
+      title={mode === 'create' ? t('items:materialCategoryFormModal.addTitle') : t('items:materialCategoryFormModal.editTitle')}
       size="md"
     >
       <MaterialCategoryForm

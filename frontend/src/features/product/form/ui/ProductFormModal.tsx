@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal } from '@/shared/ui';
 import type { Product } from '@/entities/product';
 import { useCreateProduct } from '../../create';
@@ -34,6 +35,7 @@ export function ProductFormModal({
   product,
   onSuccess,
 }: Readonly<ProductFormModalProps>) {
+  const { t } = useTranslation(['items', 'common']);
   const mode = product ? 'edit' : 'create';
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +46,7 @@ export function ProductFormModal({
       onClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to create product');
+      setError(err.message || t('items:productFormModal.createError'));
     },
   });
 
@@ -54,7 +56,7 @@ export function ProductFormModal({
       onClose();
     },
     onError: (err: Error) => {
-      setError(err.message || 'Failed to update product');
+      setError(err.message || t('items:productFormModal.updateError'));
     },
   });
 
@@ -99,7 +101,7 @@ export function ProductFormModal({
     <Modal
       isOpen={isOpen}
       onClose={handleCancel}
-      title={mode === 'create' ? 'Add Product' : 'Edit Product'}
+      title={mode === 'create' ? t('items:productFormModal.addTitle') : t('items:productFormModal.editTitle')}
       size="lg"
     >
       <ProductForm

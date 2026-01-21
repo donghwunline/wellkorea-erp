@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   type PurchaseOrderListItem,
@@ -24,10 +25,11 @@ const PAGE_SIZE = 20;
  * Status badge for purchase order.
  */
 function StatusBadge({ status }: { readonly status: PurchaseOrderStatus }) {
+  const { t } = useTranslation('purchasing');
   const config = PurchaseOrderStatusConfig[status];
   return (
     <Badge variant={config.color} dot>
-      {config.labelKo}
+      {t(`purchaseOrder.status.${status}`)}
     </Badge>
   );
 }
@@ -36,6 +38,8 @@ function StatusBadge({ status }: { readonly status: PurchaseOrderStatus }) {
  * Purchase orders tab content.
  */
 export function PurchaseOrdersTab() {
+  const { t } = useTranslation('purchasing');
+
   // Local state for filters and pagination
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<PurchaseOrderStatus | null>(null);
@@ -90,10 +94,10 @@ export function PurchaseOrdersTab() {
           }
           className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none"
         >
-          <option value="">전체 상태</option>
-          {Object.entries(PurchaseOrderStatusConfig).map(([status, config]) => (
+          <option value="">{t('purchaseOrder.list.allStatuses')}</option>
+          {Object.entries(PurchaseOrderStatusConfig).map(([status]) => (
             <option key={status} value={status}>
-              {config.labelKo}
+              {t(`purchaseOrder.status.${status}`)}
             </option>
           ))}
         </select>
@@ -102,9 +106,9 @@ export function PurchaseOrdersTab() {
       {/* Error */}
       {error && (
         <Card variant="table" className="p-8 text-center">
-          <p className="text-red-400">Failed to load purchase orders</p>
+          <p className="text-red-400">{t('purchaseOrder.list.loadError')}</p>
           <button onClick={() => refetch()} className="mt-4 text-sm text-copper-500 hover:underline">
-            Retry
+            {t('common.retry')}
           </button>
         </Card>
       )}
@@ -123,21 +127,21 @@ export function PurchaseOrdersTab() {
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>PO 번호</Table.HeaderCell>
-                  <Table.HeaderCell>프로젝트</Table.HeaderCell>
-                  <Table.HeaderCell>업체</Table.HeaderCell>
-                  <Table.HeaderCell>주문일</Table.HeaderCell>
-                  <Table.HeaderCell>예상 납품일</Table.HeaderCell>
-                  <Table.HeaderCell>금액</Table.HeaderCell>
-                  <Table.HeaderCell>상태</Table.HeaderCell>
-                  <Table.HeaderCell>담당자</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.poNumber')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.project')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.vendor')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.orderDate')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.expectedDeliveryDate')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.amount')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.manager')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
                 {orders.length === 0 ? (
                   <Table.Row>
                     <Table.Cell colSpan={8} className="py-12 text-center text-steel-400">
-                      발주서가 없습니다.
+                      {t('purchaseOrder.list.empty')}
                     </Table.Cell>
                   </Table.Row>
                 ) : (
@@ -183,7 +187,7 @@ export function PurchaseOrdersTab() {
               onPageChange={setPage}
               isFirst={pagination.first}
               isLast={pagination.last}
-              itemLabel="orders"
+              itemLabel={t('purchaseOrder.title').toLowerCase()}
             />
           )}
         </>

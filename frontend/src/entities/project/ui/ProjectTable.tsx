@@ -11,10 +11,10 @@
  * - Receives all data via props
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, EmptyState, Table, Badge, type BadgeVariant } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting';
 import type { ProjectListItem, ProjectStatus } from '../model/project';
-import { PROJECT_STATUS_LABELS } from '../model/project';
 
 // Status badge variant mapping
 const STATUS_BADGE_VARIANTS: Record<ProjectStatus, BadgeVariant> = {
@@ -84,25 +84,28 @@ export function ProjectTable({
   projects,
   onRowClick,
   renderActions,
-  emptyMessage = 'No projects found.',
+  emptyMessage,
   className,
 }: Readonly<ProjectTableProps>) {
+  const { t } = useTranslation('projects');
+  const resolvedEmptyMessage = emptyMessage ?? t('list.empty');
+
   return (
     <Card variant="table" className={className}>
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Job Code</Table.HeaderCell>
-            <Table.HeaderCell>Project Name</Table.HeaderCell>
-            <Table.HeaderCell>Requester</Table.HeaderCell>
-            <Table.HeaderCell>Due Date</Table.HeaderCell>
-            <Table.HeaderCell>Status</Table.HeaderCell>
-            {renderActions && <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>}
+            <Table.HeaderCell>{t('table.headers.jobCode')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('table.headers.projectName')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('fields.contact')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('table.headers.dueDate')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
+            {renderActions && <Table.HeaderCell className="text-right">{t('table.headers.actions')}</Table.HeaderCell>}
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {projects.length === 0 ? (
-            <EmptyState variant="table" colspan={renderActions ? 6 : 5} message={emptyMessage} />
+            <EmptyState variant="table" colspan={renderActions ? 6 : 5} message={resolvedEmptyMessage} />
           ) : (
             projects.map(project => (
               <Table.Row
@@ -124,7 +127,7 @@ export function ProjectTable({
                 <Table.Cell className="text-steel-400">{formatDate(project.dueDate)}</Table.Cell>
                 <Table.Cell>
                   <Badge variant={STATUS_BADGE_VARIANTS[project.status]}>
-                    {PROJECT_STATUS_LABELS[project.status]}
+                    {t(`status.${project.status}`)}
                   </Badge>
                 </Table.Cell>
                 {renderActions && (

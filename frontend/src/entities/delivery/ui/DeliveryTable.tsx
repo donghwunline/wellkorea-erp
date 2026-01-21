@@ -3,6 +3,7 @@
  * Read-only display - actions delegated via callbacks.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Table, Icon } from '@/shared/ui';
 import type { Delivery } from '../model/delivery';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
@@ -22,8 +23,11 @@ export function DeliveryTable({
   onRowClick,
   renderActions,
   loading = false,
-  emptyMessage = 'No deliveries found.',
+  emptyMessage,
 }: DeliveryTableProps) {
+  const { t } = useTranslation('entities');
+  const displayEmptyMessage = emptyMessage ?? t('delivery.table.empty');
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -36,7 +40,7 @@ export function DeliveryTable({
     return (
       <div className="py-12 text-center">
         <Icon name="truck" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <p className="text-steel-400">{emptyMessage}</p>
+        <p className="text-steel-400">{displayEmptyMessage}</p>
       </div>
     );
   }
@@ -45,12 +49,12 @@ export function DeliveryTable({
     <Table>
       <Table.Header>
         <Table.Row>
-          <Table.HeaderCell>Delivery Date</Table.HeaderCell>
-          <Table.HeaderCell>Status</Table.HeaderCell>
-          <Table.HeaderCell>Items</Table.HeaderCell>
-          <Table.HeaderCell>Delivered By</Table.HeaderCell>
-          <Table.HeaderCell>Created</Table.HeaderCell>
-          {renderActions && <Table.HeaderCell className="w-20">Actions</Table.HeaderCell>}
+          <Table.HeaderCell>{t('delivery.table.headers.deliveryDate')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('delivery.table.headers.status')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('delivery.table.headers.items')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('delivery.table.headers.deliveredBy')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('delivery.table.headers.created')}</Table.HeaderCell>
+          {renderActions && <Table.HeaderCell className="w-20">{t('delivery.table.headers.actions')}</Table.HeaderCell>}
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -65,7 +69,7 @@ export function DeliveryTable({
               <DeliveryStatusBadge status={delivery.status} />
             </Table.Cell>
             <Table.Cell>
-              <span className="text-steel-300">{delivery.lineItems.length} items</span>
+              <span className="text-steel-300">{t('delivery.table.itemsCount', { count: delivery.lineItems.length })}</span>
             </Table.Cell>
             <Table.Cell>{delivery.deliveredByName}</Table.Cell>
             <Table.Cell className="text-steel-400">

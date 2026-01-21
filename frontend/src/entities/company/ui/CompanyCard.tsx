@@ -12,6 +12,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/shared/ui';
 import type { Company } from '../model/company';
 import { formatDate } from '@/shared/lib/formatting/date';
@@ -70,6 +71,8 @@ export function CompanyCard({
   renderActions,
   className,
 }: Readonly<CompanyCardProps>) {
+  const { t } = useTranslation('entities');
+
   return (
     <Card className={className}>
       <div className="p-6">
@@ -91,7 +94,7 @@ export function CompanyCard({
 
         {/* Roles Section */}
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-steel-400 mb-2">역할</h3>
+          <h3 className="text-sm font-medium text-steel-400 mb-2">{t('company.card.roles')}</h3>
           <div className="flex flex-wrap gap-2">
             {company.roles.map(role => (
               <CompanyRoleBadge key={role.roleType} roleType={role.roleType} />
@@ -104,25 +107,25 @@ export function CompanyCard({
           {/* Contact Information */}
           <div>
             <h3 className="text-sm font-medium text-steel-400 mb-3 border-b border-steel-800 pb-2">
-              연락처 정보
+              {t('company.card.contactInfo')}
             </h3>
             <dl className="space-y-2">
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">담당자</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.contactPerson')}</dt>
                 <dd className="text-sm text-steel-200">
                   {company.contactPerson || '-'}
                 </dd>
               </div>
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">전화번호</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.phone')}</dt>
                 <dd className="text-sm text-steel-200">{company.phone || '-'}</dd>
               </div>
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">이메일</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.email')}</dt>
                 <dd className="text-sm text-steel-200">{company.email || '-'}</dd>
               </div>
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">주소</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.address')}</dt>
                 <dd className="text-sm text-steel-200">{company.address || '-'}</dd>
               </div>
             </dl>
@@ -131,35 +134,35 @@ export function CompanyCard({
           {/* Business Information */}
           <div>
             <h3 className="text-sm font-medium text-steel-400 mb-3 border-b border-steel-800 pb-2">
-              사업자 정보
+              {t('company.card.businessInfo')}
             </h3>
             <dl className="space-y-2">
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">대표자</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.representative')}</dt>
                 <dd className="text-sm text-steel-200">
                   {company.representative || '-'}
                 </dd>
               </div>
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">업태</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.businessType')}</dt>
                 <dd className="text-sm text-steel-200">
                   {company.businessType || '-'}
                 </dd>
               </div>
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">업종</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.businessCategory')}</dt>
                 <dd className="text-sm text-steel-200">
                   {company.businessCategory || '-'}
                 </dd>
               </div>
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">계좌번호</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.bankAccount')}</dt>
                 <dd className="text-sm text-steel-200">
                   {company.bankAccount || '-'}
                 </dd>
               </div>
               <div className="flex">
-                <dt className="w-24 text-sm text-steel-500">결제조건</dt>
+                <dt className="w-24 text-sm text-steel-500">{t('company.card.paymentTerms')}</dt>
                 <dd className="text-sm text-steel-200">
                   {company.paymentTerms || '-'}
                 </dd>
@@ -170,8 +173,8 @@ export function CompanyCard({
 
         {/* Timestamps */}
         <div className="mt-6 pt-4 border-t border-steel-800 text-xs text-steel-500 flex gap-4">
-          <span>생성일: {formatDate(company.createdAt)}</span>
-          <span>수정일: {formatDate(company.updatedAt)}</span>
+          <span>{t('company.card.createdAt')}: {formatDate(company.createdAt)}</span>
+          <span>{t('company.card.updatedAt')}: {formatDate(company.updatedAt)}</span>
         </div>
       </div>
     </Card>

@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -32,21 +33,23 @@ import {
   type CompanyListItem,
   companyQueries,
   CompanyTable,
-  ROLE_TYPE_LABELS,
   type RoleType,
 } from '@/entities/company';
 
 type RoleFilter = RoleType | 'ALL';
 
-const ROLE_TABS: { id: RoleFilter; label: string }[] = [
-  { id: 'ALL', label: '전체' },
-  { id: 'CUSTOMER', label: ROLE_TYPE_LABELS.CUSTOMER },
-  { id: 'VENDOR', label: ROLE_TYPE_LABELS.VENDOR },
-  { id: 'OUTSOURCE', label: ROLE_TYPE_LABELS.OUTSOURCE },
-];
-
 export function CompanyListPage() {
+  const { t } = useTranslation('companies');
+  const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
+
+  // Role tabs using i18n
+  const ROLE_TABS: { id: RoleFilter; label: string }[] = [
+    { id: 'ALL', label: t('filters.all') },
+    { id: 'CUSTOMER', label: t('roleType.CUSTOMER') },
+    { id: 'VENDOR', label: t('roleType.VENDOR') },
+    { id: 'OUTSOURCE', label: t('roleType.OUTSOURCE') },
+  ];
 
   // Page UI State - pagination and search
   const {
@@ -106,7 +109,7 @@ export function CompanyListPage() {
           variant="ghost"
           size="sm"
           onClick={() => navigate(`/companies/${company.id}`)}
-          aria-label="View company"
+          aria-label={t('actions.view')}
         >
           <Icon name="eye" className="h-4 w-4" />
         </Button>
@@ -114,13 +117,13 @@ export function CompanyListPage() {
           variant="ghost"
           size="sm"
           onClick={() => navigate(`/companies/${company.id}/edit`)}
-          aria-label="Edit company"
+          aria-label={t('actions.edit')}
         >
           <Icon name="pencil" className="h-4 w-4" />
         </Button>
       </>
     ),
-    [navigate]
+    [navigate, t]
   );
 
   const companies = companiesData?.data ?? [];
@@ -131,13 +134,13 @@ export function CompanyListPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="CRM"
-          description="Manage customers, vendors, and outsource partners"
+          title={t('title')}
+          description={t('description')}
         />
         <PageHeader.Actions>
           <Button onClick={handleCreate}>
             <Icon name="plus" className="h-5 w-5" />
-            New Company
+            {t('list.new')}
           </Button>
         </PageHeader.Actions>
       </PageHeader>
@@ -159,19 +162,19 @@ export function CompanyListPage() {
           value={searchInput}
           onValueChange={handleSearchChange}
           onClear={handleClearSearch}
-          placeholder="Search by company name, email, or registration number..."
+          placeholder={t('list.searchPlaceholder')}
           className="flex-1"
           onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
         />
         <Button variant="secondary" onClick={handleSearchSubmit}>
-          Search
+          {tCommon('buttons.search')}
         </Button>
       </div>
 
       {/* Error Message */}
       {(error || queryError) && (
         <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
-          {error || queryError?.message || 'Failed to load companies'}
+          {error || queryError?.message || t('list.loadError')}
         </Alert>
       )}
 
@@ -179,7 +182,7 @@ export function CompanyListPage() {
       {isLoading ? (
         <Card className="p-12 text-center">
           <Spinner className="mx-auto h-8 w-8" />
-          <p className="mt-4 text-steel-400">Loading companies...</p>
+          <p className="mt-4 text-steel-400">{t('list.loading')}</p>
         </Card>
       ) : (
         <>
@@ -190,10 +193,10 @@ export function CompanyListPage() {
             renderActions={renderActions}
             emptyMessage={
               search
-                ? `No companies found matching "${search}".`
+                ? t('list.emptySearch', { search })
                 : roleFilter !== 'ALL'
-                  ? `No ${ROLE_TYPE_LABELS[roleFilter].toLowerCase()} found.`
-                  : 'No companies found.'
+                  ? t('list.emptyFiltered', { type: t(`roleType.${roleFilter}`) })
+                  : t('list.empty')
             }
           />
 

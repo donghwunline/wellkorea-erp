@@ -1,0 +1,38 @@
+{
+  "codes": {
+    "VAL_001": "Please check your input and try again.",
+    "VAL_002": "Some fields have invalid values.",
+    "VAL_003": "Invalid parameters provided.",
+    "BUS_001": "Unable to complete this operation.",
+    "BUS_002": "This operation cannot be performed at this time.",
+    "BUS_003": "This item already exists.",
+    "AUTH_001": "Invalid username or password.",
+    "AUTH_002": "Invalid authentication token. Please login again.",
+    "AUTH_003": "Authentication has expired.",
+    "AUTHZ_001": "You don't have permission to perform this action.",
+    "AUTHZ_002": "This operation is not allowed.",
+    "RES_001": "The requested item was not found.",
+    "RES_002": "Page not found.",
+    "SRV_001": "Something went wrong. Please try again later.",
+    "SRV_002": "Database connection failed. Please try again.",
+    "SRV_003": "External service unavailable.",
+    "SRV_004": "Service temporarily unavailable."
+  },
+  "generic": {
+    "unknown": "An unknown error occurred",
+    "network": "Network error. Please check your internet connection.",
+    "timeout": "Request timed out. Please try again.",
+    "serverError": "Server error. Please try again later.",
+    "forbidden": "You don't have permission to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "conflict": "Data conflict occurred. Please refresh the page and try again."
+  },
+  "actions": {
+    "createFailed": "Failed to create",
+    "updateFailed": "Failed to update",
+    "deleteFailed": "Failed to delete",
+    "loadFailed": "Failed to load data",
+    "saveFailed": "Failed to save",
+    "submitFailed": "Failed to submit"
+  }
+}

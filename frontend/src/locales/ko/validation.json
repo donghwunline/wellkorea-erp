@@ -1,0 +1,36 @@
+{
+  "required": "필수 입력 항목입니다",
+  "requiredField": "{{field}}은(는) 필수 입력 항목입니다",
+  "minLength": "최소 {{min}}자 이상 입력해 주세요",
+  "maxLength": "최대 {{max}}자까지 입력 가능합니다",
+  "minValue": "{{min}} 이상의 값을 입력해 주세요",
+  "maxValue": "{{max}} 이하의 값을 입력해 주세요",
+  "email": "올바른 이메일 형식을 입력해 주세요",
+  "phone": "올바른 전화번호 형식을 입력해 주세요",
+  "url": "올바른 URL 형식을 입력해 주세요",
+  "number": "숫자만 입력 가능합니다",
+  "integer": "정수만 입력 가능합니다",
+  "positiveNumber": "0보다 큰 값을 입력해 주세요",
+  "date": "올바른 날짜 형식을 입력해 주세요",
+  "dateRange": "종료일은 시작일 이후여야 합니다",
+  "futureDate": "미래 날짜를 선택해 주세요",
+  "pastDate": "과거 날짜를 선택해 주세요",
+  "pattern": "올바른 형식을 입력해 주세요",
+  "match": "{{field}}와(과) 일치하지 않습니다",
+  "unique": "이미 사용 중인 값입니다",
+  "invalidFormat": "올바른 형식이 아닙니다",
+  "selectOption": "옵션을 선택해 주세요",
+  "fileSize": "파일 크기는 {{max}} 이하여야 합니다",
+  "fileType": "지원하지 않는 파일 형식입니다",
+  "businessNumber": "올바른 사업자등록번호 형식을 입력해 주세요",
+  "quantity": {
+    "required": "수량을 입력해 주세요",
+    "positive": "수량은 0보다 커야 합니다",
+    "max": "수량은 {{max}} 이하여야 합니다"
+  },
+  "price": {
+    "required": "가격을 입력해 주세요",
+    "positive": "가격은 0보다 커야 합니다",
+    "format": "올바른 금액 형식을 입력해 주세요"
+  }
+}

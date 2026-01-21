@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Button, FormField, Modal, ModalActions, Spinner } from '@/shared/ui';
 import { formatCurrency } from '@/shared/lib/formatting';
 import type { RfqItem } from '@/entities/purchase-request';
@@ -67,6 +68,7 @@ export function CreatePurchaseOrderModal({
   onClose,
   onSuccess,
 }: CreatePurchaseOrderModalProps) {
+  const { t } = useTranslation(['purchasing', 'common']);
   // Calculate initial expected delivery date
   const initialOrderDate = getTodayDate();
   const initialExpectedDelivery = rfqItem.quotedLeadTime
@@ -103,13 +105,13 @@ export function CreatePurchaseOrderModal({
     const errors: Partial<Record<keyof FormData, string>> = {};
 
     if (!formData.orderDate) {
-      errors.orderDate = '주문일을 입력해주세요';
+      errors.orderDate = t('purchasing:createPurchaseOrderModal.orderDateRequired');
     }
 
     if (!formData.expectedDeliveryDate) {
-      errors.expectedDeliveryDate = '납기예정일을 입력해주세요';
+      errors.expectedDeliveryDate = t('purchasing:createPurchaseOrderModal.expectedDeliveryDateRequired');
     } else if (formData.expectedDeliveryDate < formData.orderDate) {
-      errors.expectedDeliveryDate = '납기예정일은 주문일 이후여야 합니다';
+      errors.expectedDeliveryDate = t('purchasing:createPurchaseOrderModal.expectedDeliveryDateInvalid');
     }
 
     setValidationErrors(errors);
@@ -175,35 +177,35 @@ export function CreatePurchaseOrderModal({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="발주서 생성"
+      title={t('purchasing:createPurchaseOrderModal.title')}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Vendor Context */}
         <div className="rounded-lg bg-steel-800/50 p-4 space-y-2">
           <div className="flex justify-between">
-            <span className="text-sm text-steel-400">업체</span>
+            <span className="text-sm text-steel-400">{t('purchasing:createPurchaseOrderModal.vendor')}</span>
             <span className="font-medium text-white">{rfqItem.vendorName}</span>
           </div>
           {rfqItem.quotedPrice !== null && (
             <div className="flex justify-between">
-              <span className="text-sm text-steel-400">견적 단가</span>
+              <span className="text-sm text-steel-400">{t('purchasing:createPurchaseOrderModal.quotedPrice')}</span>
               <span className="text-white">{formatCurrency(rfqItem.quotedPrice)}</span>
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-sm text-steel-400">수량</span>
+            <span className="text-sm text-steel-400">{t('purchasing:createPurchaseOrderModal.quantity')}</span>
             <span className="text-white">{quantity}</span>
           </div>
           {rfqItem.quotedLeadTime !== null && (
             <div className="flex justify-between">
-              <span className="text-sm text-steel-400">납기</span>
-              <span className="text-white">{rfqItem.quotedLeadTime}일</span>
+              <span className="text-sm text-steel-400">{t('purchasing:createPurchaseOrderModal.leadTime')}</span>
+              <span className="text-white">{t('purchasing:createPurchaseOrderModal.leadTimeDays', { days: rfqItem.quotedLeadTime })}</span>
             </div>
           )}
           {totalAmount !== null && (
             <div className="flex justify-between border-t border-steel-700 pt-2 mt-2">
-              <span className="text-sm font-medium text-steel-300">총 금액</span>
+              <span className="text-sm font-medium text-steel-300">{t('purchasing:createPurchaseOrderModal.totalAmount')}</span>
               <span className="font-semibold text-copper-400">{formatCurrency(totalAmount)}</span>
             </div>
           )}
@@ -218,7 +220,7 @@ export function CreatePurchaseOrderModal({
 
         {/* Order Date */}
         <FormField
-          label="주문일"
+          label={t('purchasing:createPurchaseOrderModal.orderDate')}
           required
           error={validationErrors.orderDate}
         >
@@ -233,10 +235,10 @@ export function CreatePurchaseOrderModal({
 
         {/* Expected Delivery Date */}
         <FormField
-          label="납기예정일"
+          label={t('purchasing:createPurchaseOrderModal.expectedDeliveryDate')}
           required
           error={validationErrors.expectedDeliveryDate}
-          hint={rfqItem.quotedLeadTime ? `업체 납기 기준: ${rfqItem.quotedLeadTime}일` : undefined}
+          hint={rfqItem.quotedLeadTime ? t('purchasing:createPurchaseOrderModal.expectedDeliveryDateHint', { days: rfqItem.quotedLeadTime }) : undefined}
         >
           <input
             type="date"
@@ -250,13 +252,13 @@ export function CreatePurchaseOrderModal({
 
         {/* Notes */}
         <FormField
-          label="비고"
-          hint="추가 정보나 특이사항을 입력해주세요"
+          label={t('purchasing:createPurchaseOrderModal.notes')}
+          hint={t('purchasing:createPurchaseOrderModal.notesHint')}
         >
           <textarea
             value={formData.notes}
             onChange={(e) => handleFieldChange('notes', e.target.value)}
-            placeholder="예: 긴급 발주"
+            placeholder={t('purchasing:createPurchaseOrderModal.notesPlaceholder')}
             rows={3}
             disabled={isPending}
             className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 transition-all focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
@@ -271,7 +273,7 @@ export function CreatePurchaseOrderModal({
             onClick={handleClose}
             disabled={isPending}
           >
-            취소
+            {t('common:buttons.cancel')}
           </Button>
           <Button
             type="submit"
@@ -281,10 +283,10 @@ export function CreatePurchaseOrderModal({
             {isPending ? (
               <>
                 <Spinner className="mr-2 h-4 w-4" />
-                생성 중...
+                {t('purchasing:createPurchaseOrderModal.creating')}
               </>
             ) : (
-              '발주서 생성'
+              t('purchasing:createPurchaseOrderModal.create')
             )}
           </Button>
         </ModalActions>

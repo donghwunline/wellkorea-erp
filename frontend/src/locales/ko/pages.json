@@ -1,0 +1,253 @@
+{
+  "dashboard": {
+    "title": "대시보드",
+    "welcome": "안녕하세요, {{name}}님",
+    "modules": "모듈",
+    "quickStats": {
+      "activeProjects": "진행 중 프로젝트",
+      "pendingQuotes": "대기 중 견적",
+      "inProduction": "생산 중",
+      "pendingDelivery": "출고 대기"
+    },
+    "moduleNames": {
+      "projects": "프로젝트",
+      "quotations": "견적",
+      "items": "아이템",
+      "delivery": "출고",
+      "invoices": "정산",
+      "reports": "매출/매입 보고서"
+    },
+    "moduleDescriptions": {
+      "projects": "프로젝트 관리",
+      "quotations": "견적서 작성 및 승인",
+      "items": "제품 카탈로그 및 가격",
+      "delivery": "출고 관리",
+      "invoices": "청구 및 수금 관리",
+      "reports": "매출채권/매입채무 현황"
+    }
+  },
+  "projectView": {
+    "loading": "프로젝트 상세 정보를 불러오는 중...",
+    "loadingProject": "프로젝트 불러오는 중",
+    "error": "오류",
+    "notFound": "프로젝트를 찾을 수 없습니다",
+    "notFoundMessage": "요청하신 프로젝트를 찾을 수 없습니다.",
+    "backToProjects": "프로젝트 목록",
+    "tabs": {
+      "quotation": "견적",
+      "process": "공정",
+      "purchase": "구매",
+      "outsource": "외주",
+      "documents": "문서",
+      "delivery": "출고",
+      "finance": "정산"
+    }
+  },
+  "projectCreate": {
+    "title": "새 프로젝트 등록",
+    "description": "Job Code가 자동 생성되는 새 프로젝트를 등록합니다",
+    "backToProjects": "프로젝트 목록",
+    "projectDetails": "프로젝트 정보",
+    "createError": "프로젝트 생성에 실패했습니다"
+  },
+  "projectEdit": {
+    "title": "프로젝트 수정",
+    "description": "Job Code: {{jobCode}}",
+    "loading": "프로젝트를 불러오는 중...",
+    "loadingTitle": "로딩 중...",
+    "loadingLabel": "프로젝트 불러오는 중",
+    "errorTitle": "오류",
+    "notFoundTitle": "프로젝트를 찾을 수 없습니다",
+    "notFoundMessage": "요청하신 프로젝트를 찾을 수 없습니다.",
+    "loadError": "프로젝트를 불러오지 못했습니다",
+    "updateError": "프로젝트 수정에 실패했습니다",
+    "backToProjects": "프로젝트 목록",
+    "backToProject": "프로젝트로 돌아가기",
+    "editDetails": "프로젝트 정보 수정"
+  },
+  "quotationCreate": {
+    "title": "견적서 작성",
+    "description": "새 견적서 작성",
+    "forProject": "프로젝트: {{projectName}}",
+    "backToQuotations": "견적 목록",
+    "selectProject": "프로젝트 선택",
+    "searchProject": "프로젝트 검색...",
+    "loadingProject": "프로젝트 정보 불러오는 중...",
+    "noProjectSelected": "견적서를 작성할 프로젝트를 선택하세요."
+  },
+  "quotationEdit": {
+    "title": "견적서 수정",
+    "description": "{{jobCode}} v{{version}}",
+    "loadingQuotation": "견적서 불러오는 중...",
+    "unableToEdit": "견적서 수정 불가",
+    "cannotEdit": "{{status}} 상태의 견적서는 수정할 수 없습니다. 초안 상태의 견적서만 수정할 수 있습니다.",
+    "failedToLoad": "견적서를 불러오지 못했습니다",
+    "back": "뒤로",
+    "goBack": "돌아가기"
+  },
+  "quotationDetail": {
+    "title": "견적서 상세",
+    "description": "버전 {{version}} - {{projectName}}",
+    "loadingQuotation": "견적서 불러오는 중...",
+    "unableToLoad": "견적서를 불러올 수 없습니다",
+    "notFound": "견적서를 찾을 수 없습니다",
+    "backToQuotations": "견적 목록",
+    "back": "뒤로",
+    "goBack": "돌아가기",
+    "approvalStatus": "결재 상태",
+    "loadingApproval": "결재 정보 불러오는 중...",
+    "pendingApproval": "결재 대기",
+    "pendingApprovalDescription": "결재 프로세스가 시작되었습니다. 결재 처리를 기다려 주세요.",
+    "approvedBy": "승인자",
+    "approvedAt": "승인일시",
+    "reason": "사유",
+    "quickActions": "빠른 작업",
+    "editQuotation": "견적서 수정",
+    "submitForApproval": "결재 요청",
+    "acceptQuotation": "견적 수락",
+    "downloadPdf": "PDF 다운로드",
+    "createNewVersion": "새 버전 생성",
+    "messages": {
+      "submittedForApproval": "결재가 요청되었습니다",
+      "newVersionCreated": "새 버전이 생성되었습니다",
+      "approved": "견적서가 승인되었습니다",
+      "rejected": "견적서가 반려되었습니다",
+      "acceptedByCustomer": "고객이 견적을 수락했습니다"
+    },
+    "confirmSubmit": {
+      "title": "결재 요청",
+      "message": "\"{{jobCode}}\" 견적서를 결재 요청하시겠습니까? 결재 프로세스가 시작됩니다.",
+      "confirm": "제출"
+    },
+    "confirmVersion": {
+      "title": "새 버전 생성",
+      "message": "\"{{jobCode}} v{{version}}\"을 기반으로 새 버전을 생성하시겠습니까? 새 버전은 초안 상태가 됩니다.",
+      "confirm": "버전 생성"
+    },
+    "confirmAccept": {
+      "title": "견적 수락",
+      "message": "\"{{jobCode}} v{{version}}\" 견적이 고객에게 수락되었음을 확인하시겠습니까? 프로젝트가 활성화됩니다.",
+      "confirm": "수락"
+    }
+  },
+  "invoiceSelectProject": {
+    "title": "세금계산서 생성",
+    "description": "세금계산서를 발행할 프로젝트를 선택하세요",
+    "searchPlaceholder": "프로젝트 검색...",
+    "noProjects": "세금계산서 발행 가능한 프로젝트가 없습니다",
+    "cancel": "취소",
+    "selectProject": "프로젝트 선택",
+    "selectProjectDescription": "승인된 견적서가 있는 프로젝트를 선택하여 세금계산서를 생성하세요.",
+    "noProjectsTitle": "사용 가능한 프로젝트 없음",
+    "noProjectsDescription": "세금계산서 발행 가능한 프로젝트가 없습니다. 프로젝트가 진행 중이거나 완료 상태여야 합니다.",
+    "loading": "프로젝트 불러오는 중...",
+    "loadError": "프로젝트 불러오기 실패",
+    "status": {
+      "active": "진행중",
+      "completed": "완료"
+    }
+  },
+  "invoiceCreate": {
+    "title": "세금계산서 생성",
+    "description": "새 세금계산서를 발행합니다",
+    "forProject": "프로젝트: {{project}}",
+    "cancel": "취소",
+    "loading": "프로젝트 데이터 불러오는 중...",
+    "loadError": "견적서 불러오기 실패",
+    "noAcceptedQuotation": {
+      "title": "승인된 견적서 없음",
+      "description": "이 프로젝트에 승인된 견적서가 없습니다. 세금계산서를 생성하기 전에 고객이 견적을 수락해야 합니다."
+    },
+    "allItemsInvoiced": {
+      "title": "모든 항목 청구 완료",
+      "description": "배송된 모든 항목이 이미 청구되었습니다. 추가로 청구할 항목이 없습니다."
+    },
+    "backToProject": "프로젝트로 돌아가기",
+    "invoiceInfo": "세금계산서 정보",
+    "issueDate": "발행일",
+    "dueDate": "결제일",
+    "taxRate": "세율 (%)",
+    "relatedDelivery": "관련 출고",
+    "noDelivery": "특정 출고 없음 (일반 청구서)",
+    "deliveryOption": "출고 #{{id}} - {{date}}",
+    "notes": "비고",
+    "notesPlaceholder": "세금계산서 관련 메모 (선택사항)",
+    "lineItems": {
+      "title": "품목 상세",
+      "description": "각 품목의 청구 수량을 입력하세요. 배송된 수량이 있는 품목만 표시됩니다.",
+      "product": "품목",
+      "unitPrice": "단가",
+      "delivered": "출고 수량",
+      "invoiced": "청구 수량",
+      "invoiceable": "청구 가능",
+      "qtyToInvoice": "청구할 수량",
+      "lineTotal": "금액"
+    },
+    "totals": {
+      "totalItems": "청구할 총 수량:",
+      "subtotal": "공급가액:",
+      "tax": "세액 ({{rate}}%):",
+      "total": "합계:"
+    },
+    "submit": "세금계산서 생성",
+    "submitting": "저장 중...",
+    "errors": {
+      "noItems": "최소 1개 이상의 품목에 수량을 입력해주세요",
+      "exceedsQuantity": "{{product}}의 수량이 청구 가능 수량({{max}})을 초과했습니다",
+      "invalidDueDate": "결제일은 발행일 이후여야 합니다"
+    }
+  },
+  "companyCreate": {
+    "title": "새 업체 등록",
+    "description": "고객, 공급업체 또는 외주업체 역할을 가진 새 업체를 등록합니다",
+    "backToCompanies": "업체 목록으로",
+    "companyDetails": "업체 정보",
+    "successMessage": "업체가 성공적으로 등록되었습니다!"
+  },
+  "companyDetail": {
+    "title": "업체 상세",
+    "description": "업체 정보 및 거래 내역을 확인합니다",
+    "loading": "로딩 중...",
+    "loadingDetails": "업체 정보를 불러오는 중...",
+    "backToList": "목록으로",
+    "error": "오류",
+    "notFound": "업체를 찾을 수 없습니다",
+    "retry": "재시도",
+    "noRegistrationNumber": "사업자등록번호 없음",
+    "edit": "수정"
+  },
+  "companyEdit": {
+    "title": "업체 수정",
+    "loading": "로딩 중...",
+    "loadingCompany": "업체 불러오는 중",
+    "loadingDetails": "업체 정보를 불러오는 중...",
+    "error": "오류",
+    "backToCompanies": "업체 목록으로",
+    "loadError": "업체 정보를 불러오지 못했습니다",
+    "notFound": "업체를 찾을 수 없습니다",
+    "notFoundMessage": "요청하신 업체를 찾을 수 없습니다.",
+    "cannotEdit": "수정 불가",
+    "backToCompany": "업체로 돌아가기",
+    "cannotEditInactive": "비활성화된 업체는 수정할 수 없습니다.",
+    "companyDetails": "업체 정보",
+    "roleManagement": "역할 관리",
+    "companyRoles": "업체 역할",
+    "currentRoles": "이 업체에 할당된 현재 역할:",
+    "removeRole": "역할 제거",
+    "cannotRemoveLastRole": "마지막 역할은 제거할 수 없습니다. 업체는 최소 하나의 역할을 가져야 합니다.",
+    "addNewRole": "새 역할 추가:",
+    "allRolesAssigned": "이 업체에 모든 역할이 할당되어 있습니다."
+  },
+  "placeholder": {
+    "message": "이 기능은 향후 단계에서 구현될 예정입니다."
+  },
+  "arReport": {
+    "title": "매출채권 보고서",
+    "description": "미수금 현황 및 경과일 관리",
+    "refresh": "새로고침",
+    "loading": "매출채권 보고서 불러오는 중...",
+    "loadError": "매출채권 보고서 불러오기 실패",
+    "noData": "보고서 데이터를 사용할 수 없습니다",
+    "noPermission": "이 보고서를 볼 권한이 없습니다. 관리자에게 문의하세요."
+  }
+}

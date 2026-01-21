@@ -11,6 +11,7 @@
  * - Receives all data via props
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, EmptyState, Table } from '@/shared/ui';
 import type { QuotationListItem } from '../model/quotation';
 import { formatDate } from '@/shared/lib/formatting/date';
@@ -78,25 +79,28 @@ export function QuotationTable({
   quotations,
   onRowClick,
   renderActions,
-  emptyMessage = 'No quotations found.',
+  emptyMessage,
   className,
 }: Readonly<QuotationTableProps>) {
+  const { t } = useTranslation('entities');
+  const defaultEmptyMessage = t('quotation.table.empty');
+
   return (
     <Card variant="table" className={className}>
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Project / JobCode</Table.HeaderCell>
-            <Table.HeaderCell>Version</Table.HeaderCell>
-            <Table.HeaderCell>Status</Table.HeaderCell>
-            <Table.HeaderCell>Total Amount</Table.HeaderCell>
-            <Table.HeaderCell>Created</Table.HeaderCell>
-            {renderActions && <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>}
+            <Table.HeaderCell>{t('quotation.table.headers.projectJobCode')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('quotation.table.headers.version')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('quotation.table.headers.status')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('quotation.table.headers.totalAmount')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('quotation.table.headers.created')}</Table.HeaderCell>
+            {renderActions && <Table.HeaderCell className="text-right">{t('quotation.table.headers.actions')}</Table.HeaderCell>}
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {quotations.length === 0 ? (
-            <EmptyState variant="table" colspan={renderActions ? 6 : 5} message={emptyMessage} />
+            <EmptyState variant="table" colspan={renderActions ? 6 : 5} message={emptyMessage ?? defaultEmptyMessage} />
           ) : (
             quotations.map(quotation => (
               <Table.Row

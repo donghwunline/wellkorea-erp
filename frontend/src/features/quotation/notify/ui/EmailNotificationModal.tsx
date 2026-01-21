@@ -8,7 +8,8 @@
  * Can import from: entities, shared
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, Modal, ModalActions, Spinner, FormField, EmailTagInput, Icon } from '@/shared/ui';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -46,6 +47,7 @@ export function EmailNotificationModal({
   quotationInfo,
   isLoading = false,
 }: EmailNotificationModalProps) {
+  const { t } = useTranslation('quotations');
   // Only render content when modal is open - this ensures fresh state on each open
   if (!isOpen) {
     return null;
@@ -55,7 +57,7 @@ export function EmailNotificationModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Send Email Notification"
+      title={t('notify.title')}
       size="md"
     >
       <EmailNotificationModalContent
@@ -82,7 +84,8 @@ interface EmailNotificationModalContentProps {
 
 /**
  * Inner content component for the email notification modal.
- * State is initialized from props on mount - no useEffect needed for reset.
+ * State is initialized from props on mount, with useEffect to handle
+ * async prop updates (e.g., when customerEmail loads after mount).
  */
 function EmailNotificationModalContent({
   onClose,
@@ -91,8 +94,17 @@ function EmailNotificationModalContent({
   quotationInfo,
   isLoading,
 }: EmailNotificationModalContentProps) {
+  const { t } = useTranslation(['quotations', 'common']);
   // Form state - initialized from props on mount
   const [toEmail, setToEmail] = useState(customerEmail ?? '');
+
+  // Sync customerEmail prop to state when it becomes available (handles async loading)
+  useEffect(() => {
+    if (customerEmail && !toEmail) {
+      setToEmail(customerEmail);
+    }
+  }, [customerEmail, toEmail]);
+
   const [ccEmails, setCcEmails] = useState<string[]>([]);
   const [showCcField, setShowCcField] = useState(false);
   const [toError, setToError] = useState<string | undefined>();
@@ -100,16 +112,16 @@ function EmailNotificationModalContent({
   // Validate TO email
   const validateToEmail = useCallback((email: string): boolean => {
     if (!email.trim()) {
-      setToError('Email address is required');
+      setToError(t('notify.validation.emailRequired'));
       return false;
     }
     if (!EMAIL_REGEX.test(email.trim())) {
-      setToError('Invalid email format');
+      setToError(t('notify.validation.emailInvalid'));
       return false;
     }
     setToError(undefined);
     return true;
-  }, []);
+  }, [t]);
 
   // Check if all CC emails are valid
   const hasInvalidCcEmails = ccEmails.some(email => !EMAIL_REGEX.test(email.trim()));
@@ -138,18 +150,18 @@ function EmailNotificationModalContent({
       {/* Context info */}
       <p className="text-sm text-steel-400">
         {quotationInfo
-          ? `Send quotation "${quotationInfo.jobCode} v${quotationInfo.version}" to the recipient.`
-          : 'Send quotation to the recipient.'}
+          ? t('notify.contextWithInfo', { jobCode: quotationInfo.jobCode, version: quotationInfo.version })
+          : t('notify.contextDefault')}
       </p>
 
       {/* TO Email Field */}
       <FormField
-        label="To"
+        label={t('notify.to')}
         type="email"
         value={toEmail}
         onChange={handleToEmailChange}
         error={toError}
-        placeholder="recipient@example.com"
+        placeholder={t('notify.toPlaceholder')}
         disabled={isLoading}
         required
       />
@@ -163,26 +175,26 @@ function EmailNotificationModalContent({
           disabled={isLoading}
         >
           <Icon name="plus" className="h-4 w-4" />
-          Add CC recipients
+          {t('notify.addCc')}
         </button>
       ) : (
         <EmailTagInput
-          label="CC Recipients (optional)"
+          label={t('notify.ccLabel')}
           emails={ccEmails}
           onChange={setCcEmails}
-          placeholder="Enter email and press Enter"
+          placeholder={t('notify.ccPlaceholder')}
           disabled={isLoading}
         />
       )}
 
       {/* Info text */}
       <p className="text-xs text-steel-500">
-        The quotation PDF will be attached to the email.
+        {t('notify.pdfAttachNote')}
       </p>
 
       <ModalActions>
         <Button variant="secondary" onClick={onClose} disabled={isLoading}>
-          Cancel
+          {t('common:buttons.cancel')}
         </Button>
         <Button
           onClick={handleSend}
@@ -191,10 +203,10 @@ function EmailNotificationModalContent({
           {isLoading ? (
             <>
               <Spinner className="mr-2 h-4 w-4" />
-              Sending...
+              {t('notify.sending')}
             </>
           ) : (
-            'Send Email'
+            t('notify.sendEmail')
           )}
         </Button>
       </ModalActions>

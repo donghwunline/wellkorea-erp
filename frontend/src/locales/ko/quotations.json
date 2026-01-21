@@ -1,0 +1,228 @@
+{
+  "title": "견적",
+  "description": "모든 견적 조회 및 관리",
+  "list": {
+    "title": "견적 목록",
+    "create": "견적 생성",
+    "new": "새 견적",
+    "empty": "등록된 견적이 없습니다",
+    "emptyDescription": "새 견적을 생성하여 시작하세요",
+    "emptyFiltered": "선택한 상태의 견적이 없습니다",
+    "loading": "견적 로딩 중...",
+    "loadError": "견적을 불러오지 못했습니다",
+    "searchPlaceholder": "작업 코드, 프로젝트명으로 검색...",
+    "allStatuses": "전체 상태"
+  },
+  "create": {
+    "title": "새 견적 생성",
+    "selectProject": "프로젝트 선택",
+    "success": "견적이 생성되었습니다",
+    "error": "견적 생성에 실패했습니다"
+  },
+  "edit": {
+    "title": "견적 수정",
+    "success": "견적이 수정되었습니다",
+    "error": "견적 수정에 실패했습니다"
+  },
+  "view": {
+    "title": "견적 상세",
+    "basicInfo": "기본 정보",
+    "lineItems": "품목",
+    "history": "이력",
+    "approvalInfo": "결재 정보"
+  },
+  "delete": {
+    "title": "견적 삭제",
+    "message": "이 견적을 삭제하시겠습니까?",
+    "success": "견적이 삭제되었습니다",
+    "error": "견적 삭제에 실패했습니다"
+  },
+  "fields": {
+    "quotationNumber": "견적 번호",
+    "project": "프로젝트",
+    "company": "회사",
+    "version": "버전",
+    "status": "상태",
+    "issueDate": "발행일",
+    "validUntil": "유효기간",
+    "subtotal": "소계",
+    "tax": "부가세",
+    "total": "합계",
+    "notes": "비고",
+    "terms": "거래 조건",
+    "createdAt": "생성일",
+    "updatedAt": "수정일",
+    "createdBy": "작성자"
+  },
+  "status": {
+    "DRAFT": "초안",
+    "PENDING_APPROVAL": "결재 대기",
+    "APPROVED": "승인",
+    "REJECTED": "반려",
+    "SENT": "전송됨",
+    "ACCEPTED": "수락",
+    "DECLINED": "거절",
+    "EXPIRED": "만료",
+    "CANCELLED": "취소"
+  },
+  "lineItems": {
+    "title": "품목",
+    "add": "품목 추가",
+    "remove": "품목 삭제",
+    "empty": "등록된 품목이 없습니다",
+    "product": "제품",
+    "description": "설명",
+    "quantity": "수량",
+    "unit": "단위",
+    "unitPrice": "단가",
+    "amount": "금액",
+    "discount": "할인",
+    "tax": "세금",
+    "total": "합계"
+  },
+  "actions": {
+    "view": "상세 보기",
+    "edit": "수정",
+    "delete": "삭제",
+    "submit": "결재 요청",
+    "approve": "승인",
+    "reject": "반려",
+    "send": "전송",
+    "duplicate": "복사",
+    "createNewVersion": "새 버전 생성",
+    "downloadPdf": "PDF 다운로드",
+    "print": "인쇄",
+    "sendEmail": "이메일 전송"
+  },
+  "approval": {
+    "title": "결재 요청",
+    "submit": "결재 요청",
+    "submitTitle": "결재 요청",
+    "submitMessage": "\"{{jobCode}}\" 견적서를 결재 요청하시겠습니까? 결재 프로세스가 시작됩니다.",
+    "submitSuccess": "결재가 요청되었습니다",
+    "approve": "승인",
+    "approveMessage": "이 견적서를 승인하시겠습니까?",
+    "approveSuccess": "견적서가 승인되었습니다",
+    "reject": "반려",
+    "rejectMessage": "이 견적서를 반려하시겠습니까?",
+    "rejectSuccess": "견적서가 반려되었습니다",
+    "rejectReason": "반려 사유",
+    "rejectReasonPlaceholder": "반려 사유를 입력하세요"
+  },
+  "version": {
+    "title": "새 버전 생성",
+    "createTitle": "새 버전 생성",
+    "createMessage": "\"{{jobCode}} v{{version}}\"을 기반으로 새 버전을 생성하시겠습니까? 새 버전은 초안 상태가 됩니다.",
+    "createSuccess": "새 버전이 생성되었습니다",
+    "create": "버전 생성"
+  },
+  "email": {
+    "send": "이메일 전송",
+    "sendTitle": "견적서 이메일 전송",
+    "recipient": "수신자",
+    "recipientPlaceholder": "이메일 주소 입력",
+    "subject": "제목",
+    "subjectDefault": "견적서 - {{quotationNumber}}",
+    "message": "본문",
+    "attachPdf": "PDF 첨부",
+    "sendSuccess": "이메일이 전송되었습니다",
+    "sendError": "이메일 전송에 실패했습니다"
+  },
+  "notify": {
+    "title": "이메일 알림 발송",
+    "contextWithInfo": "\"{{jobCode}} v{{version}}\" 견적서를 수신자에게 전송합니다.",
+    "contextDefault": "견적서를 수신자에게 전송합니다.",
+    "to": "받는 사람",
+    "toPlaceholder": "recipient@example.com",
+    "addCc": "참조 추가",
+    "ccLabel": "참조 (선택사항)",
+    "ccPlaceholder": "이메일 입력 후 Enter",
+    "pdfAttachNote": "견적서 PDF가 이메일에 첨부됩니다.",
+    "sending": "전송 중...",
+    "sendEmail": "이메일 전송",
+    "validation": {
+      "emailRequired": "이메일 주소가 필요합니다",
+      "emailInvalid": "이메일 형식이 올바르지 않습니다"
+    }
+  },
+  "table": {
+    "headers": {
+      "quotationNumber": "견적 번호",
+      "project": "프로젝트",
+      "company": "회사",
+      "version": "버전",
+      "status": "상태",
+      "total": "합계",
+      "issueDate": "발행일",
+      "actions": "작업"
+    }
+  },
+  "summary": {
+    "subtotal": "소계",
+    "discount": "할인",
+    "tax": "부가세 (10%)",
+    "total": "합계"
+  },
+  "form": {
+    "quotationDetails": "견적 상세",
+    "project": "프로젝트",
+    "jobCode": "작업 코드",
+    "validityPeriod": "유효 기간 (일)",
+    "version": "버전",
+    "notes": "비고",
+    "notesPlaceholder": "추가 비고 또는 참고사항...",
+    "products": "제품",
+    "total": "합계:",
+    "itemCount": "{{count}}개 품목",
+    "itemCountSingle": "{{count}}개 품목",
+    "saving": "저장 중...",
+    "createQuotation": "견적 생성",
+    "saveChanges": "변경사항 저장",
+    "validation": {
+      "projectRequired": "프로젝트가 필요합니다",
+      "validityPositive": "유효 기간은 양수여야 합니다",
+      "productRequired": "최소 하나의 제품이 필요합니다"
+    }
+  },
+  "panel": {
+    "loadingQuotations": "견적을 불러오는 중...",
+    "loadingDetails": "견적 상세를 불러오는 중...",
+    "noQuotationsTitle": "견적이 없습니다",
+    "noQuotationsDescription": "이 프로젝트의 첫 견적을 생성하세요.",
+    "newQuotation": "새 견적",
+    "new": "새로 만들기",
+    "edit": "수정",
+    "submit": "제출",
+    "pdf": "PDF",
+    "sendEmail": "이메일 발송",
+    "accept": "수락",
+    "newVersion": "새 버전",
+    "prevVersion": "이전 버전 (구)",
+    "nextVersion": "다음 버전 (신)",
+    "versionOf": "{{current}} / {{total}}",
+    "submitSuccess": "결재가 요청되었습니다",
+    "acceptSuccess": "고객이 견적을 수락했습니다",
+    "versionSuccess": "새 버전이 생성되었습니다",
+    "emailSuccess": "이메일 알림이 발송되었습니다",
+    "confirmSubmit": {
+      "title": "결재 요청",
+      "message": "\"{{jobCode}}\" 견적서를 결재 요청하시겠습니까? 결재 프로세스가 시작됩니다.",
+      "confirm": "제출"
+    },
+    "confirmAccept": {
+      "title": "견적 수락",
+      "message": "\"{{jobCode}} v{{version}}\" 견적이 고객에게 수락되었음을 확인하시겠습니까? 이후 납품 및 정산이 진행됩니다.",
+      "confirm": "수락"
+    },
+    "confirmVersion": {
+      "title": "새 버전 생성",
+      "message": "\"{{jobCode}} v{{version}}\"을 기반으로 새 버전을 생성하시겠습니까? 새 버전은 초안 상태가 됩니다.",
+      "confirm": "버전 생성"
+    }
+  },
+  "createModal": {
+    "title": "견적 생성",
+    "loadingProject": "프로젝트 정보를 불러오는 중...",
+    "errorLoadingProject": "프로젝트 정보를 불러오지 못했습니다"
+  }
+}

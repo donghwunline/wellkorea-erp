@@ -8,6 +8,7 @@
  */
 
 import { type FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { UserDetails } from '@/entities/user';
 import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 import { useChangePassword } from '../model/use-change-password';
@@ -25,6 +26,7 @@ export function UserPasswordForm({
   onClose,
   onSuccess,
 }: Readonly<UserPasswordFormProps>) {
+  const { t } = useTranslation(['admin', 'common']);
   // Local UI State
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -49,12 +51,12 @@ export function UserPasswordForm({
     if (!user) return;
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('passwordForm.validation.passwordMismatch'));
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t('passwordForm.validation.passwordMinLength'));
       return;
     }
 
@@ -72,42 +74,42 @@ export function UserPasswordForm({
   if (!user) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Change Password">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('passwordForm.title')}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
         <div>
-          <p className="mb-1 text-sm font-medium text-steel-300">User</p>
+          <p className="mb-1 text-sm font-medium text-steel-300">{t('passwordForm.user')}</p>
           <p className="text-white">{user.fullName}</p>
           <p className="text-sm text-steel-400">{user.email}</p>
         </div>
 
         <FormField
-          label="New Password"
+          label={t('passwordForm.newPassword')}
           type="password"
           value={password}
           onChange={setPassword}
           required
           disabled={isPending}
-          placeholder="Enter new password (min 8 characters)"
+          placeholder={t('passwordForm.placeholders.newPassword')}
         />
 
         <FormField
-          label="Confirm Password"
+          label={t('passwordForm.confirmPassword')}
           type="password"
           value={confirmPassword}
           onChange={setConfirmPassword}
           required
           disabled={isPending}
-          placeholder="Re-enter new password"
+          placeholder={t('passwordForm.placeholders.confirmPassword')}
         />
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={handleClose} disabled={isPending}>
-            Cancel
+            {t('common:buttons.cancel')}
           </Button>
           <Button type="submit" isLoading={isPending} disabled={!password || !confirmPassword}>
-            Change Password
+            {t('passwordForm.changePassword')}
           </Button>
         </div>
       </form>

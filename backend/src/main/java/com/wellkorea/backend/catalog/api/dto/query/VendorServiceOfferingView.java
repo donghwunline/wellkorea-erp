@@ -11,6 +11,7 @@ public record VendorServiceOfferingView(
         Long id,
         Long vendorId,
         String vendorName,
+        String vendorEmail,
         Long serviceCategoryId,
         String serviceCategoryName,
         String vendorServiceCode,

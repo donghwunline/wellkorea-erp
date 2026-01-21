@@ -14,6 +14,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Icon, PageHeader, Pagination, SearchBar } from '@/shared/ui';
 import { usePaginatedSearch } from '@/shared/lib/pagination';
@@ -34,6 +35,8 @@ import { useActivateUser } from '@/features/user/activate';
 type ModalType = 'create' | 'edit' | 'roles' | 'password' | 'delete' | 'customers' | null;
 
 export function UserManagementPage() {
+  const { t } = useTranslation('admin');
+
   // Page UI State (Tier 2) - pagination and search
   const {
     page,
@@ -97,11 +100,11 @@ export function UserManagementPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="사용자 관리" description="Manage system users and their roles" />
+        <PageHeader.Title title={t('users.title')} description={t('users.description')} />
         <PageHeader.Actions>
           <Button onClick={() => openModal('create')}>
             <Icon name="plus" className="h-5 w-5" />
-            Add User
+            {t('users.list.create')}
           </Button>
         </PageHeader.Actions>
       </PageHeader>
@@ -112,19 +115,19 @@ export function UserManagementPage() {
           value={searchInput}
           onValueChange={handleSearchChange}
           onClear={handleClearSearch}
-          placeholder="Search by username, email, or name..."
+          placeholder={t('users.list.searchPlaceholder')}
           className="flex-1"
           onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
         />
         <Button variant="secondary" onClick={handleSearchSubmit}>
-          Search
+          {t('users.search')}
         </Button>
       </div>
 
       {/* Error Message */}
       {(error || queryError) && (
         <Alert variant="error" className="mb-6" onClose={() => setError(null)}>
-          {error || 'Failed to load users'}
+          {error || t('users.list.loadError')}
         </Alert>
       )}
 
@@ -142,7 +145,7 @@ export function UserManagementPage() {
             onRoles={user => openModal('roles', user)}
             onPassword={user => openModal('password', user)}
             onCustomers={user => openModal('customers', user)}
-            emptyMessage={search ? 'No users found matching your search.' : 'No users found.'}
+            emptyMessage={search ? t('users.list.emptySearch') : t('users.list.empty')}
           />
 
           {/* Pagination */}
@@ -155,7 +158,7 @@ export function UserManagementPage() {
                 onPageChange={setPage}
                 isFirst={pagination.first}
                 isLast={pagination.last}
-                itemLabel="users"
+                itemLabel={t('users.title').toLowerCase()}
               />
             </div>
           )}

@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, LoadingState, Modal, ModalActions } from '@/shared/ui';
 import { projectQueries } from '@/entities/project';
@@ -33,6 +34,8 @@ export function QuotationCreateModal({
   onClose,
   onSuccess,
 }: QuotationCreateModalProps) {
+  const { t } = useTranslation(['quotations', 'common']);
+
   // Error state
   const [error, setError] = useState<string | null>(null);
 
@@ -75,8 +78,8 @@ export function QuotationCreateModal({
   // Loading state
   if (isLoadingProject) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Create Quotation" size="lg">
-        <LoadingState message="Loading project details..." />
+      <Modal isOpen={isOpen} onClose={onClose} title={t('createModal.title')} size="lg">
+        <LoadingState message={t('createModal.loadingProject')} />
       </Modal>
     );
   }
@@ -84,13 +87,13 @@ export function QuotationCreateModal({
   // Error loading project
   if (projectError || !project) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Create Quotation" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('createModal.title')} size="lg">
         <Alert variant="error">
-          {projectError?.message || 'Failed to load project details'}
+          {projectError?.message || t('createModal.errorLoadingProject')}
         </Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('common:buttons.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -98,7 +101,7 @@ export function QuotationCreateModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create Quotation" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('createModal.title')} size="lg">
       {/* Error alert */}
       {error && (
         <Alert variant="error" className="mb-4" onClose={() => setError(null)}>

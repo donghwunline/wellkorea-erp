@@ -10,6 +10,7 @@
  */
 
 import { type FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, ErrorAlert, FormField } from '@/shared/ui';
 import type { Company, RoleType } from '@/entities/company';
 import { ROLE_TYPE_LABELS } from '@/entities/company';
@@ -60,6 +61,8 @@ export function CompanyForm({
   error,
   onDismissError,
 }: Readonly<CompanyFormProps>) {
+  const { t } = useTranslation(['companies', 'common']);
+
   // Form state - initialize from initialData if editing
   const [formData, setFormData] = useState<CompanyFormData>(() => {
     if (mode === 'edit' && initialData) {
@@ -118,7 +121,7 @@ export function CompanyForm({
 
   // Validation error messages
   const validationErrors = {
-    name: hasWhitespaceOnlyName ? 'Company name cannot be whitespace only' : undefined,
+    name: hasWhitespaceOnlyName ? t('form.validation.nameWhitespace') : undefined,
   };
 
   return (
@@ -128,45 +131,45 @@ export function CompanyForm({
       {/* Basic Information */}
       <div>
         <h3 className="text-sm font-medium text-steel-400 mb-4 pb-2 border-b border-steel-800">
-          Basic Information
+          {t('common:sections.basicInfo')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
-            label="Company Name"
+            label={t('form.companyName')}
             value={formData.name}
             onChange={value => setFormData(prev => ({ ...prev, name: value }))}
             required
             disabled={isSubmitting}
             error={validationErrors.name}
-            placeholder="Enter company name"
+            placeholder={t('form.placeholders.companyName')}
           />
           <FormField
-            label="Registration Number"
+            label={t('form.registrationNumber')}
             value={formData.registrationNumber}
             onChange={value => setFormData(prev => ({ ...prev, registrationNumber: value }))}
             disabled={isSubmitting}
-            placeholder="000-00-00000"
+            placeholder={t('form.placeholders.registrationNumber')}
           />
           <FormField
-            label="Representative"
+            label={t('form.representative')}
             value={formData.representative}
             onChange={value => setFormData(prev => ({ ...prev, representative: value }))}
             disabled={isSubmitting}
-            placeholder="Company representative name"
+            placeholder={t('form.placeholders.representative')}
           />
           <FormField
-            label="Business Type"
+            label={t('form.businessType')}
             value={formData.businessType}
             onChange={value => setFormData(prev => ({ ...prev, businessType: value }))}
             disabled={isSubmitting}
-            placeholder="e.g., Manufacturing"
+            placeholder={t('form.placeholders.businessType')}
           />
           <FormField
-            label="Business Category"
+            label={t('form.businessCategory')}
             value={formData.businessCategory}
             onChange={value => setFormData(prev => ({ ...prev, businessCategory: value }))}
             disabled={isSubmitting}
-            placeholder="e.g., Electronics"
+            placeholder={t('form.placeholders.businessCategory')}
           />
         </div>
       </div>
@@ -174,37 +177,37 @@ export function CompanyForm({
       {/* Contact Information */}
       <div>
         <h3 className="text-sm font-medium text-steel-400 mb-4 pb-2 border-b border-steel-800">
-          Contact Information
+          {t('common:sections.contactInfo')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
-            label="Contact Person"
+            label={t('form.contactPerson')}
             value={formData.contactPerson}
             onChange={value => setFormData(prev => ({ ...prev, contactPerson: value }))}
             disabled={isSubmitting}
-            placeholder="Primary contact name"
+            placeholder={t('form.placeholders.contactPerson')}
           />
           <FormField
-            label="Phone"
+            label={t('form.phone')}
             value={formData.phone}
             onChange={value => setFormData(prev => ({ ...prev, phone: value }))}
             disabled={isSubmitting}
-            placeholder="02-000-0000"
+            placeholder={t('form.placeholders.phone')}
           />
           <FormField
-            label="Email"
+            label={t('form.email')}
             type="email"
             value={formData.email}
             onChange={value => setFormData(prev => ({ ...prev, email: value }))}
             disabled={isSubmitting}
-            placeholder="contact@company.com"
+            placeholder={t('form.placeholders.email')}
           />
           <FormField
-            label="Address"
+            label={t('form.address')}
             value={formData.address}
             onChange={value => setFormData(prev => ({ ...prev, address: value }))}
             disabled={isSubmitting}
-            placeholder="Company address"
+            placeholder={t('form.placeholders.address')}
           />
         </div>
       </div>
@@ -212,22 +215,22 @@ export function CompanyForm({
       {/* Financial Information */}
       <div>
         <h3 className="text-sm font-medium text-steel-400 mb-4 pb-2 border-b border-steel-800">
-          Financial Information
+          {t('common:sections.financialInfo')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
-            label="Bank Account"
+            label={t('form.bankAccount')}
             value={formData.bankAccount}
             onChange={value => setFormData(prev => ({ ...prev, bankAccount: value }))}
             disabled={isSubmitting}
-            placeholder="Bank name, account number"
+            placeholder={t('form.placeholders.bankAccount')}
           />
           <FormField
-            label="Payment Terms"
+            label={t('form.paymentTerms')}
             value={formData.paymentTerms}
             onChange={value => setFormData(prev => ({ ...prev, paymentTerms: value }))}
             disabled={isSubmitting}
-            placeholder="e.g., Net 30"
+            placeholder={t('form.placeholders.paymentTerms')}
           />
         </div>
       </div>
@@ -236,10 +239,10 @@ export function CompanyForm({
       {mode === 'create' && (
         <div>
           <h3 className="text-sm font-medium text-steel-400 mb-4 pb-2 border-b border-steel-800">
-            Company Roles <span className="text-red-400">*</span>
+            {t('form.companyRoles')} <span className="text-red-400">*</span>
           </h3>
           <p className="text-xs text-steel-500 mb-3">
-            Select at least one role for this company. A company can have multiple roles.
+            {t('form.rolesDescription')}
           </p>
           <div className="flex flex-wrap gap-4">
             {ALL_ROLE_TYPES.map(role => (
@@ -262,7 +265,7 @@ export function CompanyForm({
             ))}
           </div>
           {formData.roles.length === 0 && (
-            <p className="text-xs text-red-400 mt-2">Please select at least one role</p>
+            <p className="text-xs text-red-400 mt-2">{t('form.selectRole')}</p>
           )}
         </div>
       )}
@@ -270,10 +273,10 @@ export function CompanyForm({
       {/* Form Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t border-steel-800">
         <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {t('common:buttons.cancel')}
         </Button>
         <Button type="submit" disabled={!isValid || isSubmitting} isLoading={isSubmitting}>
-          {mode === 'create' ? 'Create Company' : 'Save Changes'}
+          {mode === 'create' ? t('form.createCompany') : t('form.saveChanges')}
         </Button>
       </div>
     </form>

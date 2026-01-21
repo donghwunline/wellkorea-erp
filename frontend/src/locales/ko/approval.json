@@ -1,0 +1,154 @@
+{
+  "title": "결재",
+  "description": "결재 대기 중인 문서를 검토하고 처리합니다",
+  "list": {
+    "title": "결재 대기 문서",
+    "empty": "결재 대기 중인 문서가 없습니다.",
+    "emptyFiltered": "선택한 상태와 일치하는 결재 요청이 없습니다.",
+    "emptyDescription": "모든 문서가 처리되었습니다",
+    "loading": "결재 요청을 불러오는 중...",
+    "loadError": "결재 요청을 불러오지 못했습니다",
+    "allStatuses": "전체 상태"
+  },
+  "tabs": {
+    "pending": "대기",
+    "approved": "승인",
+    "rejected": "반려",
+    "all": "전체"
+  },
+  "documentTypes": {
+    "QUOTATION": "견적서",
+    "PURCHASE_ORDER": "발주서",
+    "INVOICE": "정산서",
+    "PURCHASE_REQUEST": "구매 요청"
+  },
+  "status": {
+    "PENDING": "대기",
+    "APPROVED": "승인",
+    "REJECTED": "반려",
+    "CANCELLED": "취소"
+  },
+  "actions": {
+    "view": "상세 보기",
+    "approve": "승인",
+    "reject": "반려",
+    "cancel": "취소"
+  },
+  "approve": {
+    "title": "결재 승인",
+    "message": "이 문서를 승인하시겠습니까?",
+    "comment": "승인 의견",
+    "commentPlaceholder": "승인 의견을 입력하세요 (선택)",
+    "success": "결재가 승인되었습니다",
+    "error": "승인에 실패했습니다"
+  },
+  "reject": {
+    "title": "결재 반려",
+    "message": "이 문서를 반려하시겠습니까?",
+    "reason": "반려 사유",
+    "reasonPlaceholder": "반려 사유를 입력하세요",
+    "reasonRequired": "반려 사유를 입력해 주세요",
+    "success": "결재가 반려되었습니다",
+    "error": "반려에 실패했습니다",
+    "modal": {
+      "title": "결재 요청 반려",
+      "rejecting": "반려",
+      "warning": "반려하면 견적서가 초안 상태로 돌아갑니다. 요청자는 수정 후 다시 결재 요청해야 합니다.",
+      "reasonLabel": "반려 사유",
+      "reasonPlaceholder": "이 요청이 반려되는 이유를 설명해 주세요...",
+      "reasonHelp": "이 사유는 요청자에게 표시되며 결재 이력에 기록됩니다.",
+      "rejectButton": "반려 요청",
+      "rejectingButton": "반려 중...",
+      "validation": {
+        "reasonRequired": "반려 사유를 입력해 주세요",
+        "reasonMinLength": "더 자세한 사유를 입력해 주세요 (최소 10자)"
+      }
+    }
+  },
+  "history": {
+    "title": "결재 이력",
+    "approvedBy": "승인자",
+    "rejectedBy": "반려자",
+    "approvedAt": "승인일시",
+    "rejectedAt": "반려일시",
+    "comment": "의견",
+    "noHistory": "결재 이력이 없습니다"
+  },
+  "chain": {
+    "title": "결재 설정",
+    "description": "문서 유형별 결재 워크플로우를 설정합니다",
+    "list": {
+      "title": "결재 체계 목록",
+      "create": "결재 체계 생성",
+      "empty": "등록된 결재 체계가 없습니다.",
+      "loading": "결재 체계를 불러오는 중..."
+    },
+    "edit": {
+      "modalTitle": "결재 체계 수정: {{name}}",
+    "create": {
+      "title": "새 결재 체계 생성",
+      "success": "결재 체계가 생성되었습니다",
+      "error": "결재 체계 생성에 실패했습니다"
+    },
+      "title": "결재 체계 수정",
+      "success": "결재 체계가 수정되었습니다",
+      "error": "결재 체계 수정에 실패했습니다"
+    },
+    "delete": {
+      "title": "결재 체계 삭제",
+      "message": "이 결재 체계를 삭제하시겠습니까?",
+      "success": "결재 체계가 삭제되었습니다"
+    },
+    "fields": {
+      "name": "결재 체계명",
+      "documentType": "문서 유형",
+      "steps": "결재 단계",
+      "approvers": "결재자",
+      "status": "상태"
+    },
+    "steps": {
+      "add": "단계 추가",
+      "remove": "단계 삭제",
+      "order": "순서",
+      "approver": "결재자",
+      "role": "역할",
+      "selectApprover": "결재자 선택...",
+      "noLevels": "설정된 결재 단계가 없습니다. 최소 하나의 결재 단계를 추가하세요.",
+      "processOrder": "결재는 1단계부터 마지막 단계까지 순서대로 진행됩니다. 각 단계에서 승인되어야 다음 단계로 진행됩니다."
+    },
+    "table": {
+      "entityType": "문서 유형",
+      "name": "이름",
+      "approvalLevels": "결재 단계",
+      "approvers": "결재자"
+    }
+  },
+  "table": {
+    "headers": {
+      "documentNumber": "문서 번호",
+      "documentType": "문서 유형",
+      "requester": "요청자",
+      "requestDate": "요청일",
+      "status": "상태",
+      "actions": "작업"
+    }
+  },
+  "common": {
+    "cancel": "취소",
+    "save": "저장",
+    "saving": "저장 중..."
+  },
+  "buttons": {
+    "approve": "승인",
+    "reject": "반려"
+  },
+  "card": {
+    "submittedBy": "요청자",
+    "submittedAt": "요청일시",
+    "currentLevel": "현재 단계",
+    "levelOf": "{{total}}단계 중 {{current}}단계",
+    "status": "상태",
+    "approvalProgress": "결재 진행 현황",
+    "viewDetails": "상세 보기"
+  }
+}

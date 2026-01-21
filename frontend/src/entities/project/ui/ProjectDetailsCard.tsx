@@ -11,6 +11,7 @@
  * - Receives all data via props
  */
 
+import { useTranslation } from 'react-i18next';
 import type { Project, ProjectStatus } from '../model/project';
 import { PROJECT_STATUS_LABELS } from '../model/project';
 import { Badge, type BadgeVariant, Card, Icon, IconButton } from '@/shared/ui';
@@ -67,6 +68,8 @@ export function ProjectDetailsCard({
   createdByName,
   onEdit,
 }: Readonly<ProjectDetailsCardProps>) {
+  const { t } = useTranslation('entities');
+
   return (
     <Card>
       <div className="relative p-6">
@@ -76,8 +79,8 @@ export function ProjectDetailsCard({
             <IconButton
               variant="primary"
               onClick={onEdit}
-              aria-label="Edit project"
-              title="Edit project"
+              aria-label={t('project.detailsCard.editProject')}
+              title={t('project.detailsCard.editProject')}
             >
               <Icon name="pencil" className="h-4 w-4" />
             </IconButton>
@@ -105,7 +108,7 @@ export function ProjectDetailsCard({
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm text-steel-500">
               <Icon name="users" className="h-4 w-4" />
-              Customer
+              {t('project.detailsCard.customer')}
             </div>
             <p className="text-white">
               {customerName || `Customer #${project.customerId}`}
@@ -116,7 +119,7 @@ export function ProjectDetailsCard({
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm text-steel-500">
               <Icon name="user" className="h-4 w-4" />
-              Requester
+              {t('project.detailsCard.requester')}
             </div>
             <p className="text-white">{project.requesterName || '-'}</p>
           </div>
@@ -125,7 +128,7 @@ export function ProjectDetailsCard({
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm text-steel-500">
               <Icon name="calendar" className="h-4 w-4" />
-              Due Date
+              {t('project.detailsCard.dueDate')}
             </div>
             <p className="text-white">{formatDate(project.dueDate)}</p>
           </div>
@@ -134,7 +137,7 @@ export function ProjectDetailsCard({
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm text-steel-500">
               <Icon name="user" className="h-4 w-4" />
-              Internal Owner
+              {t('project.detailsCard.internalOwner')}
             </div>
             <p className="text-white">
               {internalOwnerName || `User #${project.internalOwnerId}`}
@@ -145,7 +148,7 @@ export function ProjectDetailsCard({
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm text-steel-500">
               <Icon name="user" className="h-4 w-4" />
-              Created By
+              {t('project.detailsCard.createdBy')}
             </div>
             <p className="text-white">
               {createdByName || `User #${project.createdById}`}
@@ -156,7 +159,7 @@ export function ProjectDetailsCard({
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm text-steel-500">
               <Icon name="clock" className="h-4 w-4" />
-              Created At
+              {t('project.detailsCard.createdAt')}
             </div>
             <p className="text-white">{formatDateTime(project.createdAt)}</p>
           </div>
@@ -165,7 +168,7 @@ export function ProjectDetailsCard({
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm text-steel-500">
               <Icon name="clock" className="h-4 w-4" />
-              Last Updated
+              {t('project.detailsCard.lastUpdated')}
             </div>
             <p className="text-white">{formatDateTime(project.updatedAt)}</p>
           </div>

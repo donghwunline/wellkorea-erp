@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>견적요청서</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'NotoSansKR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            font-size: 10pt;
+        }
+
+        .page {
+            width: 190mm;
+            margin: 0 auto;
+            padding: 5mm 0 0 0;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 2px 4px;
+            vertical-align: middle;
+        }
+
+        .no-border td,
+        .no-border th {
+            border: none;
+        }
+
+        .title-row td {
+            border-top-width: 2px;
+            border-bottom-width: 2px;
+        }
+
+        .outer-top td {
+            border-bottom-width: 0;
+        }
+
+        .outer-bottom td {
+            border-top-width: 0;
+        }
+
+        .doc-number {
+            font-size: 8pt;
+            text-align: left;
+            height: 14mm;
+        }
+
+        .title {
+            font-size: 24pt;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 8px;
+            height: 18mm;
+        }
+
+        .label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .request-info td {
+            font-size: 9pt;
+            height: 6mm;
+        }
+
+        .company-info td {
+            font-size: 9pt;
+            height: 6mm;
+        }
+
+        .company-name {
+            font-size: 14pt;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 2mm;
+            white-space: nowrap;
+        }
+
+        .logo-cell {
+            width: 20mm;
+            text-align: center;
+            vertical-align: middle;
+            padding: 2mm;
+            position: relative;
+        }
+
+        .logo-cell img.logo {
+            max-width: 18mm;
+            max-height: 18mm;
+        }
+
+        .seal-overlay {
+            position: absolute;
+            bottom: -5mm;
+            right: 0;
+            width: 15mm;
+            height: 15mm;
+            opacity: 0.5;
+            display: inline-block;
+        }
+
+        .seal-overlay img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .section-header {
+            font-weight: bold;
+            text-align: center;
+            background: #f0f0f0;
+            height: 8mm;
+        }
+
+        .bg-gray {
+            background: #f0f0f0;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .item-table th,
+        .item-table td {
+            font-size: 9pt;
+            height: 6mm;
+        }
+
+        .description-cell {
+            height: 30mm;
+            vertical-align: top;
+            padding: 4px;
+            text-align: left;
+        }
+
+        .note {
+            margin-top: 3mm;
+            font-size: 9pt;
+        }
+
+        .notice-box {
+            margin-top: 5mm;
+            padding: 3mm;
+            border: 1px solid #000;
+            font-size: 9pt;
+        }
+
+        .notice-title {
+            font-weight: bold;
+            margin-bottom: 2mm;
+        }
+
+        .notice-list {
+            margin: 0;
+            padding-left: 5mm;
+        }
+
+        .notice-list li {
+            margin-bottom: 1mm;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <table>
+            <!-- Document number row -->
+            <tr class="outer-top">
+                <td class="doc-number">요청번호 : <span th:text="${rfq.requestNumber}">PR-2025-0001</span></td>
+            </tr>
+
+            <!-- Title row -->
+            <tr class="title-row">
+                <td class="title">見積依頼書</td>
+            </tr>
+
+            <!-- Request info and Company info section -->
+            <tr>
+                <td>
+                    <table>
+                        <tr>
+                            <!-- Left: Request information -->
+                            <td style="width: 50%; padding: 0;">
+                                <table class="request-info">
+                                    <tr th:if="${rfq.jobCode != null}">
+                                        <td class="label" style="width: 24mm;">프로젝트코드 :</td>
+                                        <td th:text="${rfq.jobCode}">WK2K25-0001</td>
+                                    </tr>
+                                    <tr th:if="${rfq.projectName != null}">
+                                        <td class="label">프로젝트명 :</td>
+                                        <td th:text="${rfq.projectName}">샘플 프로젝트</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">요청일자 :</td>
+                                        <td th:text="${rfq.requestDate}">2025년 01월 20일</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">납품희망일 :</td>
+                                        <td th:text="${rfq.requiredDate}">협의</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">회신기한 :</td>
+                                        <td th:text="${rfq.responseDeadline}">2025년 01월 27일</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">담당이메일 :</td>
+                                        <td th:text="${company.email}">purchase@wellkorea.co.kr</td>
+                                    </tr>
+                                </table>
+                            </td>
+
+                            <!-- Right: Company info with logo and seal -->
+                            <td style="width: 50%; padding: 0;">
+                                <table class="company-info">
+                                    <tr>
+                                        <td class="logo-cell">
+                                            <img th:src="${logoDataUri}" alt="Logo" class="logo" />
+                                            <span class="seal-overlay">
+                                            <img th:src="${sealDataUri}" alt="Seal" />
+                                        </span>
+                                        </td>
+                                        <td class="company-name" th:text="${company.name}">웰코리아(주)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">주 소 :</td>
+                                        <td th:text="${company.address}">대전광역시 유성구 테크노11로 44</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">대표번호 :</td>
+                                        <td th:text="${company.phone}">(042) 933-8115</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">설계부서 :</td>
+                                        <td th:text="${company.designDeptPhone}">(042) 934-8115</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">팩스번호 :</td>
+                                        <td th:text="${company.fax}">(042) 935-8115</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Section header: Item Information -->
+            <tr>
+                <td class="section-header">요청 품목 정보</td>
+            </tr>
+
+            <!-- Item details table -->
+            <tr>
+                <td>
+                    <table class="item-table">
+                        <tr>
+                            <td class="label bg-gray center" style="width: 18%;">품목구분</td>
+                            <td style="width: 32%;" th:text="${item.dtype != null and item.dtype == 'SERVICE' ? '용역' : '자재'}">자재</td>
+                            <td class="label bg-gray center" style="width: 18%;">카테고리</td>
+                            <td style="width: 32%;" th:text="${item.categoryName != null ? item.categoryName : '-'}">기계부품</td>
+                        </tr>
+                        <tr>
+                            <td class="label bg-gray center">품목명</td>
+                            <td colspan="3" th:text="${item.itemName}">스테인레스 볼트 M10</td>
+                        </tr>
+                        <tr th:if="${item['sku'] != null}">
+                            <td class="label bg-gray center">자재코드</td>
+                            <td colspan="3" th:text="${item['sku']}">MAT-2025-0001</td>
+                        </tr>
+                        <tr>
+                            <td class="label bg-gray center">수량</td>
+                            <td th:text="${item.quantity}">100</td>
+                            <td class="label bg-gray center">단위</td>
+                            <td th:text="${item.uom}">EA</td>
+                        </tr>
+                        <tr th:if="${item['referencePrice'] != null}">
+                            <td class="label bg-gray center">참고단가</td>
+                            <td colspan="3" th:text="${item['referencePrice']}">￦ 1,000</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Description section -->
+            <tr th:if="${item.description != null and !item.description.isEmpty()}">
+                <td>
+                    <table class="item-table">
+                        <tr>
+                            <td class="label bg-gray center" style="width: 18%;">상세설명</td>
+                            <td class="description-cell" th:text="${item.description}">상세 설명 내용</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Notes section -->
+            <tr class="outer-bottom">
+                <td style="border-bottom-width: 0;">
+                    <div class="notice-box">
+                        <div class="notice-title">※ 안내사항</div>
+                        <ul class="notice-list">
+                            <li>상기 품목에 대한 견적서를 회신기한 내에 송부해 주시기 바랍니다.</li>
+                            <li>견적서에는 단가, 납기, 결제조건을 명시해 주십시오.</li>
+                            <li>문의사항은 상기 담당이메일로 연락 부탁드립니다.</li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>

@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { CreateQuotationInput, LineItemInput, Quotation, UpdateQuotationInput } from '@/entities/quotation';
 import { type ProductLineItem, ProductSelector } from '../../line-items';
 import { Alert, Button, Card, FormField, Input, Spinner } from '@/shared/ui';
@@ -101,6 +102,7 @@ export function QuotationForm({
   onUpdateSubmit,
   onCancel,
 }: Readonly<QuotationFormProps>) {
+  const { t } = useTranslation(['quotations', 'common']);
   const isEditMode = !!quotation;
 
   // Initialize form state
@@ -151,20 +153,20 @@ export function QuotationForm({
     const errors: Record<string, string> = {};
 
     if (!isEditMode && !projectId) {
-      errors.projectId = 'Project is required';
+      errors.projectId = t('form.validation.projectRequired');
     }
 
     if (formState.validityDays <= 0) {
-      errors.validityDays = 'Validity period must be positive';
+      errors.validityDays = t('form.validation.validityPositive');
     }
 
     if (formState.lineItems.length === 0) {
-      errors.lineItems = 'At least one product is required';
+      errors.lineItems = t('form.validation.productRequired');
     }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [isEditMode, projectId, formState]);
+  }, [isEditMode, projectId, formState, t]);
 
   // Convert ProductLineItem to LineItemInput
   const toLineItemInput = (item: ProductLineItem): LineItemInput => ({
@@ -211,19 +213,19 @@ export function QuotationForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Error Alert */}
       {error && (
-        <Alert variant="error" title="Error">
+        <Alert variant="error" title={t('common:toast.error')}>
           {error}
         </Alert>
       )}
 
       {/* Quotation Info */}
       <Card className="p-6">
-        <h3 className="mb-4 text-lg font-medium text-white">Quotation Details</h3>
+        <h3 className="mb-4 text-lg font-medium text-white">{t('form.quotationDetails')}</h3>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Project Info (read-only) */}
           <div>
-            <FormField label="Project">
+            <FormField label={t('form.project')}>
               <Input
                 value={
                   isEditMode ? quotation?.projectName || '' : projectName || `Project #${projectId}`
@@ -236,7 +238,7 @@ export function QuotationForm({
           {/* JobCode (read-only for edit) */}
           {isEditMode && (
             <div>
-              <FormField label="Job Code">
+              <FormField label={t('form.jobCode')}>
                 <Input value={quotation?.jobCode || ''} disabled />
               </FormField>
             </div>
@@ -245,7 +247,7 @@ export function QuotationForm({
           {/* Validity */}
           <div>
             <FormField
-              label="Validity Period (Days)"
+              label={t('form.validityPeriod')}
               required
               error={validationErrors.validityDays}
             >
@@ -263,7 +265,7 @@ export function QuotationForm({
           {/* Version (read-only for edit) */}
           {isEditMode && (
             <div>
-              <FormField label="Version">
+              <FormField label={t('form.version')}>
                 <Input value={`v${quotation?.version}`} disabled />
               </FormField>
             </div>
@@ -272,11 +274,11 @@ export function QuotationForm({
 
         {/* Notes */}
         <div className="mt-4">
-          <FormField label="Notes">
+          <FormField label={t('form.notes')}>
             <textarea
               value={formState.notes}
               onChange={e => updateField('notes', e.target.value)}
-              placeholder="Additional notes or remarks..."
+              placeholder={t('form.notesPlaceholder')}
               rows={3}
               disabled={isSubmitting}
               className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white placeholder-steel-500 transition-all focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
@@ -287,7 +289,7 @@ export function QuotationForm({
 
       {/* Line Items */}
       <div>
-        <h3 className="mb-4 text-lg font-medium text-white">Products</h3>
+        <h3 className="mb-4 text-lg font-medium text-white">{t('form.products')}</h3>
         {validationErrors.lineItems && (
           <Alert variant="error" className="mb-4">
             {validationErrors.lineItems}
@@ -304,7 +306,7 @@ export function QuotationForm({
       <Card className="p-4">
         <div className="flex items-center justify-between">
           <div className="text-steel-400">
-            <span>Total: </span>
+            <span>{t('form.total')} </span>
             <span className="text-lg font-semibold text-copper-400">
               {new Intl.NumberFormat('ko-KR', {
                 style: 'currency',
@@ -313,24 +315,24 @@ export function QuotationForm({
               }).format(totalAmount)}
             </span>
             <span className="ml-2 text-sm">
-              ({formState.lineItems.length} item{formState.lineItems.length !== 1 ? 's' : ''})
+              ({t('form.itemCount', { count: formState.lineItems.length })})
             </span>
           </div>
 
           <div className="flex gap-3">
             <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
-              Cancel
+              {t('common:buttons.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
-                  Saving...
+                  {t('form.saving')}
                 </>
               ) : isEditMode ? (
-                'Save Changes'
+                t('form.saveChanges')
               ) : (
-                'Create Quotation'
+                t('form.createQuotation')
               )}
             </Button>
           </div>

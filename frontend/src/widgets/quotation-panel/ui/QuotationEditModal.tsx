@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, LoadingState, Modal, ModalActions } from '@/shared/ui';
 import { quotationQueries, quotationRules, type UpdateQuotationInput } from '@/entities/quotation';
@@ -33,6 +34,8 @@ export function QuotationEditModal({
   onClose,
   onSuccess,
 }: QuotationEditModalProps) {
+  const { t } = useTranslation('widgets');
+
   // Error state
   const [error, setError] = useState<string | null>(null);
 
@@ -78,8 +81,8 @@ export function QuotationEditModal({
   // Loading state
   if (isLoading) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Edit Quotation" size="lg">
-        <LoadingState message="Loading quotation..." />
+      <Modal isOpen={isOpen} onClose={onClose} title={t('quotationEditModal.title')} size="lg">
+        <LoadingState message={t('quotationEditModal.loading')} />
       </Modal>
     );
   }
@@ -87,13 +90,13 @@ export function QuotationEditModal({
   // Error loading quotation
   if (fetchError || !quotation) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Edit Quotation" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('quotationEditModal.title')} size="lg">
         <Alert variant="error">
-          {fetchError?.message || 'Failed to load quotation'}
+          {fetchError?.message || t('quotationEditModal.loadError')}
         </Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('quotationEditModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -103,13 +106,13 @@ export function QuotationEditModal({
   // Not editable state
   if (!canEdit) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Edit Quotation" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('quotationEditModal.title')} size="lg">
         <Alert variant="warning">
-          Cannot edit quotation in {quotation.status} status. Only DRAFT quotations can be edited.
+          {t('quotationEditModal.cannotEditStatus', { status: quotation.status })}
         </Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('quotationEditModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -120,7 +123,7 @@ export function QuotationEditModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Edit Quotation - ${quotation.jobCode} v${quotation.version}`}
+      title={t('quotationEditModal.titleWithVersion', { jobCode: quotation.jobCode, version: quotation.version })}
       size="lg"
     >
       {/* Error alert */}

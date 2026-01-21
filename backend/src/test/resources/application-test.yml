@@ -44,9 +44,9 @@ spring:
           timeout: 3000
           writetimeout: 5000
 
-# Mail Provider - SMTP for tests (MockMailSender injected in unit tests)
+# Mail Provider - Mock for integration tests (injected via TestMailConfig)
 mail:
-  provider: smtp
+  provider: mock
 
 # Server Configuration
 server:

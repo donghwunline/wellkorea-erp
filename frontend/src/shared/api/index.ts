@@ -49,8 +49,8 @@ export { tokenStore } from './tokenStore';
 
 // Error message utilities
 export {
-  errorMessages,
   getErrorMessage,
+  getGenericErrorMessage,
   getErrorDisplayStrategy,
   isValidationError,
   isAuthenticationError,

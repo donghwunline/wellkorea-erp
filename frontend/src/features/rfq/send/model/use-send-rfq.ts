@@ -3,6 +3,7 @@
  *
  * Wraps the sendRfq command function with TanStack Query mutation.
  * Invalidates purchase request queries on success.
+ * Supports email notifications to selected vendors.
  *
  * FSD Layer: features
  */
@@ -18,7 +19,7 @@ export interface UseSendRfqOptions {
 }
 
 /**
- * Mutation hook for sending RFQ to vendors.
+ * Mutation hook for sending RFQ to vendors with email notifications.
  *
  * @example
  * const { mutate, isPending } = useSendRfq({
@@ -26,7 +27,15 @@ export interface UseSendRfqOptions {
  *   onError: (err) => toast.error(err.message),
  * });
  *
- * mutate({ purchaseRequestId: 123, vendorIds: [1, 2, 3] });
+ * mutate({
+ *   purchaseRequestId: 123,
+ *   vendorIds: [1, 2, 3],
+ *   vendorEmails: {
+ *     1: { to: 'vendor1@example.com', ccEmails: ['cc@company.com'] },
+ *     2: { to: 'vendor2@example.com' },
+ *     // vendor 3 uses default email
+ *   },
+ * });
  */
 export function useSendRfq(options?: UseSendRfqOptions) {
   const queryClient = useQueryClient();

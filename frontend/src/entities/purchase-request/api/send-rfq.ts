@@ -12,11 +12,27 @@ import type { CommandResult } from './purchase-request.mapper';
 // =============================================================================
 
 /**
+ * Email info for a vendor (TO and CC recipients).
+ */
+export interface VendorEmailInfo {
+  /** Optional email override (defaults to vendor's registered email) */
+  readonly to?: string;
+  /** Optional CC recipients */
+  readonly ccEmails?: readonly string[];
+}
+
+/**
  * Input for sending RFQ.
  */
 export interface SendRfqInput {
   readonly purchaseRequestId: number;
   readonly vendorIds: readonly number[];
+  /**
+   * Optional email overrides per vendor.
+   * Key: vendorId, Value: VendorEmailInfo with TO/CC email addresses.
+   * If not provided for a vendor, the vendor's default email will be used.
+   */
+  readonly vendorEmails?: Readonly<Record<number, VendorEmailInfo>>;
 }
 
 // =============================================================================
@@ -24,11 +40,21 @@ export interface SendRfqInput {
 // =============================================================================
 
 /**
+ * Vendor email info in API request format.
+ * @internal
+ */
+interface VendorEmailInfoRequest {
+  to?: string;
+  ccEmails?: string[];
+}
+
+/**
  * API request payload.
  * @internal
  */
 interface SendRfqRequest {
   vendorIds: number[];
+  vendorEmails?: Record<number, VendorEmailInfoRequest>;
 }
 
 // =============================================================================
@@ -53,9 +79,29 @@ function validateSendRfqInput(input: SendRfqInput): void {
 // =============================================================================
 
 /**
- * Send RFQ to vendors.
+ * Build vendor emails request object from input.
+ */
+function buildVendorEmailsRequest(
+  vendorEmails: Readonly<Record<number, VendorEmailInfo>> | undefined
+): Record<number, VendorEmailInfoRequest> | undefined {
+  if (!vendorEmails) {
+    return undefined;
+  }
+
+  const result: Record<number, VendorEmailInfoRequest> = {};
+  for (const [vendorId, emailInfo] of Object.entries(vendorEmails)) {
+    result[Number(vendorId)] = {
+      to: emailInfo.to,
+      ccEmails: emailInfo.ccEmails ? [...emailInfo.ccEmails] : undefined,
+    };
+  }
+  return result;
+}
+
+/**
+ * Send RFQ to vendors with optional email notifications.
  *
- * @param input - RFQ data with vendor IDs
+ * @param input - RFQ data with vendor IDs and optional email overrides
  * @returns Command result
  * @throws DomainValidationError for validation failures
  * @throws ApiError for server errors
@@ -65,6 +111,7 @@ export async function sendRfq(input: SendRfqInput): Promise<CommandResult> {
 
   const request: SendRfqRequest = {
     vendorIds: [...input.vendorIds],
+    vendorEmails: buildVendorEmailsRequest(input.vendorEmails),
   };
 
   return httpClient.post<CommandResult>(

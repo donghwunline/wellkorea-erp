@@ -1,0 +1,145 @@
+{
+  "title": "CRM",
+  "description": "고객사, 협력사, 외주업체 관리",
+  "list": {
+    "title": "회사 목록",
+    "create": "회사 등록",
+    "new": "새 회사",
+    "empty": "등록된 회사가 없습니다",
+    "emptyDescription": "새 회사를 등록하여 시작하세요",
+    "emptySearch": "\"{{search}}\" 검색 결과가 없습니다",
+    "emptyFiltered": "등록된 {{type}}이(가) 없습니다",
+    "loading": "회사 목록 로딩 중...",
+    "loadError": "회사 목록을 불러오지 못했습니다",
+    "searchPlaceholder": "회사명, 이메일, 사업자등록번호로 검색..."
+  },
+  "create": {
+    "title": "새 회사 등록",
+    "success": "회사가 등록되었습니다",
+    "error": "회사 등록에 실패했습니다"
+  },
+  "edit": {
+    "title": "회사 정보 수정",
+    "success": "회사 정보가 수정되었습니다",
+    "error": "회사 정보 수정에 실패했습니다"
+  },
+  "view": {
+    "title": "회사 상세",
+    "basicInfo": "기본 정보",
+    "contacts": "담당자",
+    "projects": "프로젝트",
+    "transactions": "거래 내역"
+  },
+  "delete": {
+    "title": "회사 삭제",
+    "message": "이 회사를 삭제하시겠습니까?",
+    "success": "회사가 삭제되었습니다",
+    "error": "회사 삭제에 실패했습니다"
+  },
+  "fields": {
+    "companyName": "회사명",
+    "businessNumber": "사업자등록번호",
+    "representativeName": "대표자명",
+    "companyType": "회사 유형",
+    "industry": "업종",
+    "address": "주소",
+    "addressDetail": "상세 주소",
+    "zipCode": "우편번호",
+    "phone": "전화번호",
+    "fax": "팩스",
+    "email": "이메일",
+    "website": "웹사이트",
+    "notes": "비고",
+    "status": "상태",
+    "createdAt": "등록일",
+    "updatedAt": "수정일"
+  },
+  "companyType": {
+    "CUSTOMER": "고객사",
+    "VENDOR": "협력사",
+    "BOTH": "고객사/협력사"
+  },
+  "status": {
+    "ACTIVE": "활성",
+    "INACTIVE": "비활성"
+  },
+  "contacts": {
+    "title": "담당자 목록",
+    "add": "담당자 추가",
+    "edit": "담당자 수정",
+    "delete": "담당자 삭제",
+    "empty": "등록된 담당자가 없습니다",
+    "name": "이름",
+    "position": "직책",
+    "department": "부서",
+    "phone": "전화번호",
+    "mobile": "휴대폰",
+    "email": "이메일",
+    "isPrimary": "주 담당자",
+    "notes": "비고"
+  },
+  "table": {
+    "headers": {
+      "companyName": "회사명",
+      "businessNumber": "사업자등록번호",
+      "companyType": "유형",
+      "phone": "전화번호",
+      "status": "상태",
+      "actions": "작업"
+    }
+  },
+  "actions": {
+    "view": "상세 보기",
+    "edit": "수정",
+    "delete": "삭제",
+    "addContact": "담당자 추가"
+  },
+  "filters": {
+    "all": "전체",
+    "customer": "고객사",
+    "vendor": "협력사",
+    "outsource": "외주업체",
+    "active": "활성",
+    "inactive": "비활성"
+  },
+  "roleType": {
+    "CUSTOMER": "고객사",
+    "VENDOR": "협력사",
+    "OUTSOURCE": "외주업체"
+  },
+  "form": {
+    "companyName": "회사명",
+    "registrationNumber": "사업자등록번호",
+    "representative": "대표자",
+    "businessType": "업태",
+    "businessCategory": "업종",
+    "contactPerson": "담당자",
+    "phone": "전화번호",
+    "email": "이메일",
+    "address": "주소",
+    "bankAccount": "계좌번호",
+    "paymentTerms": "결제 조건",
+    "companyRoles": "회사 유형",
+    "rolesDescription": "이 회사의 역할을 최소 하나 이상 선택하세요. 여러 역할을 가질 수 있습니다.",
+    "selectRole": "역할을 하나 이상 선택하세요",
+    "createCompany": "회사 등록",
+    "saveChanges": "변경사항 저장",
+    "placeholders": {
+      "companyName": "회사명을 입력하세요",
+      "registrationNumber": "000-00-00000",
+      "representative": "대표자 이름",
+      "businessType": "예: 제조업",
+      "businessCategory": "예: 전자부품",
+      "contactPerson": "주 담당자 이름",
+      "phone": "02-000-0000",
+      "email": "contact@company.com",
+      "address": "회사 주소",
+      "bankAccount": "은행명, 계좌번호",
+      "paymentTerms": "예: 월말 마감"
+    },
+    "validation": {
+      "nameRequired": "회사명을 입력해주세요",
+      "nameWhitespace": "회사명은 공백만으로 구성될 수 없습니다"
+    }
+  }
+}

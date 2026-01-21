@@ -8,6 +8,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import type { BlueprintAttachment } from '@/entities/blueprint-attachment';
 import { blueprintQueries } from '@/entities/blueprint-attachment';
 import { AttachmentUploader } from '@/features/blueprint/upload';
@@ -60,6 +61,7 @@ export function AttachmentPanel({
   onDeleteSuccess,
   onError,
 }: Readonly<AttachmentPanelProps>) {
+  const { t } = useTranslation('widgets');
   const styles = variantStyles[variant];
   const {
     data: attachments = [],
@@ -85,7 +87,7 @@ export function AttachmentPanel({
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           />
         </svg>
-        <p className="mt-2 text-sm">Loading attachments...</p>
+        <p className="mt-2 text-sm">{t('attachmentPanel.loading')}</p>
       </div>
     );
   }
@@ -93,7 +95,7 @@ export function AttachmentPanel({
   if (error) {
     return (
       <div className="p-4 text-center text-red-500">
-        <p className="text-sm">Failed to load attachments</p>
+        <p className="text-sm">{t('attachmentPanel.loadError')}</p>
       </div>
     );
   }
@@ -102,7 +104,7 @@ export function AttachmentPanel({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className={`text-sm font-medium ${styles.header}`}>Blueprints ({attachments.length})</h3>
+        <h3 className={`text-sm font-medium ${styles.header}`}>{t('attachmentPanel.title', { count: attachments.length })}</h3>
       </div>
 
       {/* Upload area */}
@@ -144,7 +146,7 @@ export function AttachmentPanel({
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <p className="mt-2 text-sm">No blueprints attached</p>
+          <p className="mt-2 text-sm">{t('attachmentPanel.empty')}</p>
         </div>
       )}
     </div>

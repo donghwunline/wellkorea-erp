@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>발주서 안내</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+
+        <!-- Header -->
+        <div style="background-color: #294172; color: white; padding: 30px 20px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: bold;" th:text="${company.name}">웰코리아(주)</h1>
+            <p style="margin: 10px 0 0 0; font-size: 12px; opacity: 0.9;" th:text="${company.nameEn}">WellKorea Co., Ltd.</p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 30px 20px; background-color: #f9f9f9;">
+
+            <!-- Greeting -->
+            <p style="margin: 0 0 20px 0;">
+                <strong th:text="${vendorName}">협력업체명</strong>
+                <span th:text="${contactPerson != null ? contactPerson + ' 님' : '담당자 님'}">담당자 님</span> 귀하
+            </p>
+
+            <p style="margin: 0 0 20px 0;">
+                안녕하세요, <span th:text="${company.name}">웰코리아(주)</span>입니다.
+            </p>
+
+            <!-- Main message -->
+            <p style="margin: 0 0 20px 0;">
+                아래와 같이 발주서를 송부 드리오니 확인하여 주시기 바랍니다.
+            </p>
+
+            <!-- Purchase Order details table -->
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background-color: #ffffff;">
+                <tr style="background-color: #dce6f1;">
+                    <th colspan="2" style="padding: 12px; text-align: left; border: 1px solid #ccc; font-size: 16px;">발주 정보</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; width: 30%; background-color: #f5f5f5;">발주번호</td>
+                    <td style="padding: 10px; border: 1px solid #ccc;" th:text="${poNumber}">PO-2025-000001</td>
+                </tr>
+                <tr th:if="${jobCode != null}">
+                    <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background-color: #f5f5f5;">프로젝트</td>
+                    <td style="padding: 10px; border: 1px solid #ccc;">
+                        <span th:text="${jobCode}">WK2K25-0001</span>
+                        <span th:if="${projectName != null}" th:text="' - ' + ${projectName}"> - 프로젝트명</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background-color: #f5f5f5;">품목/서비스</td>
+                    <td style="padding: 10px; border: 1px solid #ccc;" th:text="${itemName}">레이저 커팅 외주</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background-color: #f5f5f5;">발주일자</td>
+                    <td style="padding: 10px; border: 1px solid #ccc;" th:text="${orderDate}">2025년 01월 01일</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background-color: #f5f5f5;">납기일자</td>
+                    <td style="padding: 10px; border: 1px solid #ccc;" th:text="${expectedDeliveryDate}">2025년 01월 15일</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background-color: #f5f5f5;">발주금액</td>
+                    <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; color: #294172;">
+                        <span th:text="${totalAmount}">3,000,000</span> 원 (부가세 별도)
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Notes if exists -->
+            <div th:if="${notes != null and !notes.isEmpty()}" style="background-color: #fff; padding: 15px; border-left: 4px solid #294172; margin: 20px 0;">
+                <strong style="display: block; margin-bottom: 8px;">비고</strong>
+                <span th:text="${notes}">비고 내용</span>
+            </div>
+
+            <!-- Call to action -->
+            <p style="margin: 20px 0;">
+                첨부된 발주서(PDF)를 확인하여 주시기 바랍니다.<br/>
+                발주서에 대해 문의사항이 있으시면 언제든지 연락 주시기 바랍니다.
+            </p>
+
+            <!-- Company contact info -->
+            <div style="background-color: #ffffff; padding: 15px; border: 1px solid #ddd; margin: 20px 0;">
+                <p style="margin: 0 0 8px 0;"><strong>문의처</strong></p>
+                <p style="margin: 0; font-size: 13px;">
+                    전화: <span th:text="${company.phone}">(042) 933-8115</span><br/>
+                    팩스: <span th:text="${company.fax}">(042) 935-8115</span><br/>
+                    이메일: <span th:text="${company.email}">info@wellkorea.com</span>
+                </p>
+            </div>
+
+            <!-- Closing -->
+            <p style="margin: 20px 0 0 0;">
+                감사합니다.<br/><br/>
+                <strong th:text="${company.name}">웰코리아(주)</strong> 드림
+            </p>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #333; color: #ccc; padding: 20px; text-align: center; font-size: 12px;">
+            <p style="margin: 0 0 5px 0;" th:text="${company.name}">웰코리아(주)</p>
+            <p style="margin: 0 0 5px 0;" th:text="${company.address}">대전광역시 유성구 테크노11로 44 (관평동)</p>
+            <p style="margin: 10px 0 0 0; font-size: 11px; opacity: 0.7;">본 메일은 발신 전용입니다.</p>
+        </div>
+
+    </div>
+</body>
+</html>
