@@ -5,6 +5,7 @@ import com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper;
 import com.wellkorea.backend.production.infrastructure.persistence.BlueprintAttachmentRepository;
 import com.wellkorea.backend.production.infrastructure.persistence.TaskFlowRepository;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
+import com.wellkorea.backend.project.api.dto.query.ProjectKPIView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSectionSummaryView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSectionsSummaryView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSummaryView;
@@ -208,5 +209,27 @@ public class ProjectQueryService {
         sections.add(ProjectSectionSummaryView.of("finance", "정산", (int) invoiceTotal, 0));
 
         return ProjectSectionsSummaryView.of(projectId, sections);
+    }
+
+
+    /**
+     * Get project KPIs for the dashboard strip.
+     * Returns key performance indicators: progress, pending approvals, accounts receivable, invoiced amount.
+     *
+     * @param projectId Project ID
+     * @return Project KPI view with calculated metrics
+     * @throws ResourceNotFoundException if project not found
+     */
+    public ProjectKPIView getProjectKPI(Long projectId) {
+        // Verify project exists
+        projectMapper.findDetailById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+
+        int progress = projectMapper.calculateProjectProgress(projectId);
+        int pending = projectMapper.countPendingApprovals(projectId);
+        long ar = projectMapper.calculateAccountsReceivable(projectId);
+        long invoiced = projectMapper.calculateInvoicedAmount(projectId);
+
+        return ProjectKPIView.of(progress, pending, ar, invoiced);
     }
 }

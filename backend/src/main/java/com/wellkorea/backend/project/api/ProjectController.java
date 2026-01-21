@@ -7,6 +7,7 @@ import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
 import com.wellkorea.backend.project.api.dto.command.ProjectCommandResult;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
+import com.wellkorea.backend.project.api.dto.query.ProjectKPIView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSectionsSummaryView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSummaryView;
 import com.wellkorea.backend.project.application.ProjectCommandService;
@@ -142,6 +143,22 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ProjectSectionsSummaryView>> getProjectSummary(@PathVariable Long id) {
         ProjectSectionsSummaryView summary = queryService.getProjectSummary(id);
         return ResponseEntity.ok(ApiResponse.success(summary));
+    }
+
+    /**
+     * Get project KPIs for the dashboard strip.
+     * <p>
+     * GET /api/projects/{id}/kpi
+     * <p>
+     * Access: All authenticated users
+     *
+     * @param id Project ID
+     * @return Project KPIs (progress, pending approvals, accounts receivable, invoiced amount)
+     */
+    @GetMapping("/{id}/kpi")
+    public ResponseEntity<ApiResponse<ProjectKPIView>> getProjectKPI(@PathVariable Long id) {
+        ProjectKPIView kpi = queryService.getProjectKPI(id);
+        return ResponseEntity.ok(ApiResponse.success(kpi));
     }
 
     // ========== COMMAND ENDPOINTS ==========
