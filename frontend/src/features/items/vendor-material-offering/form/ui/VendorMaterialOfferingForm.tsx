@@ -55,10 +55,14 @@ interface VendorMaterialOfferingFormProps {
 interface FormErrors {
   vendorId?: string;
   materialId?: string;
+  vendorMaterialCode?: string;
+  vendorMaterialName?: string;
   unitPrice?: string;
+  currency?: string;
   leadTimeDays?: string;
   minOrderQuantity?: string;
   effectiveFrom?: string;
+  notes?: string;
 }
 
 // =============================================================================
@@ -128,8 +132,23 @@ export function VendorMaterialOfferingForm({
       newErrors.materialId = t('items:vendorMaterialOfferingForm.validation.materialRequired');
     }
 
+    // vendorMaterialCode max 50 chars
+    if (formData.vendorMaterialCode && formData.vendorMaterialCode.length > 50) {
+      newErrors.vendorMaterialCode = t('items:vendorMaterialOfferingForm.validation.vendorMaterialCodeTooLong');
+    }
+
+    // vendorMaterialName max 200 chars
+    if (formData.vendorMaterialName && formData.vendorMaterialName.length > 200) {
+      newErrors.vendorMaterialName = t('items:vendorMaterialOfferingForm.validation.vendorMaterialNameTooLong');
+    }
+
     if (formData.unitPrice && Number(formData.unitPrice) < 0) {
       newErrors.unitPrice = t('items:vendorMaterialOfferingForm.validation.priceNegative');
+    }
+
+    // currency max 3 chars
+    if (formData.currency && formData.currency.length > 3) {
+      newErrors.currency = t('items:vendorMaterialOfferingForm.validation.currencyTooLong');
     }
 
     if (formData.leadTimeDays && Number(formData.leadTimeDays) < 0) {
@@ -146,9 +165,14 @@ export function VendorMaterialOfferingForm({
       }
     }
 
+    // notes max 1000 chars
+    if (formData.notes && formData.notes.length > 1000) {
+      newErrors.notes = t('items:vendorMaterialOfferingForm.validation.notesTooLong');
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  }, [formData, t]);
 
   // Handle submit
   const handleSubmit = (e: FormEvent) => {
@@ -220,6 +244,7 @@ export function VendorMaterialOfferingForm({
                 handleChange('materialId', e.target.value ? Number(e.target.value) : null)
               }
               disabled={isSubmitting}
+              required
               className={selectClassName}
             >
               <option value="">{t('items:vendorMaterialOfferingForm.placeholders.selectMaterial')}</option>
@@ -235,24 +260,26 @@ export function VendorMaterialOfferingForm({
 
       {/* Row 2: Vendor Material Code & Name */}
       <div className="grid grid-cols-2 gap-4">
-        <FormField label={t('items:vendorMaterialOfferingForm.vendorMaterialCode')}>
+        <FormField label={t('items:vendorMaterialOfferingForm.vendorMaterialCode')} error={errors.vendorMaterialCode}>
           <input
             type="text"
             value={formData.vendorMaterialCode}
             onChange={e => handleChange('vendorMaterialCode', e.target.value)}
             disabled={isSubmitting}
             placeholder={t('items:vendorMaterialOfferingForm.placeholders.vendorMaterialCode')}
+            maxLength={50}
             className={inputClassName}
           />
         </FormField>
 
-        <FormField label={t('items:vendorMaterialOfferingForm.vendorMaterialName')}>
+        <FormField label={t('items:vendorMaterialOfferingForm.vendorMaterialName')} error={errors.vendorMaterialName}>
           <input
             type="text"
             value={formData.vendorMaterialName}
             onChange={e => handleChange('vendorMaterialName', e.target.value)}
             disabled={isSubmitting}
             placeholder={t('items:vendorMaterialOfferingForm.placeholders.vendorMaterialName')}
+            maxLength={200}
             className={inputClassName}
           />
         </FormField>
@@ -273,7 +300,7 @@ export function VendorMaterialOfferingForm({
           />
         </FormField>
 
-        <FormField label={t('items:vendorMaterialOfferingForm.currency')}>
+        <FormField label={t('items:vendorMaterialOfferingForm.currency')} error={errors.currency}>
           <select
             value={formData.currency}
             onChange={e => handleChange('currency', e.target.value)}
@@ -343,13 +370,14 @@ export function VendorMaterialOfferingForm({
       </div>
 
       {/* Notes */}
-      <FormField label={t('items:vendorMaterialOfferingForm.notes')}>
+      <FormField label={t('items:vendorMaterialOfferingForm.notes')} error={errors.notes}>
         <textarea
           value={formData.notes}
           onChange={e => handleChange('notes', e.target.value)}
           disabled={isSubmitting}
           placeholder={t('items:vendorMaterialOfferingForm.placeholders.notes')}
           rows={3}
+          maxLength={1000}
           className={textareaClassName}
         />
       </FormField>
