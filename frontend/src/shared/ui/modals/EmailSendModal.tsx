@@ -7,7 +7,7 @@
  * FSD Layer: shared/ui
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Modal, ModalActions, Spinner, FormField, EmailTagInput, Icon } from '@/shared/ui';
 
@@ -82,7 +82,8 @@ interface EmailSendModalContentProps {
 
 /**
  * Inner content component for the email send modal.
- * State is initialized from props on mount - no useEffect needed for reset.
+ * State is initialized from props on mount, with useEffect to handle
+ * async prop updates (e.g., when defaultEmail loads after mount).
  */
 function EmailSendModalContent({
   onClose,
@@ -95,6 +96,14 @@ function EmailSendModalContent({
   const { t } = useTranslation('common');
   // Form state - initialized from props on mount
   const [toEmail, setToEmail] = useState(defaultEmail ?? '');
+
+  // Sync defaultEmail prop to state when it becomes available (handles async loading)
+  useEffect(() => {
+    if (defaultEmail && !toEmail) {
+      setToEmail(defaultEmail);
+    }
+  }, [defaultEmail, toEmail]);
+
   const [ccEmails, setCcEmails] = useState<string[]>([]);
   const [showCcField, setShowCcField] = useState(false);
   const [toError, setToError] = useState<string | undefined>();

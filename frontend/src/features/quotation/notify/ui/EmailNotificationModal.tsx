@@ -8,7 +8,7 @@
  * Can import from: entities, shared
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Modal, ModalActions, Spinner, FormField, EmailTagInput, Icon } from '@/shared/ui';
 
@@ -84,7 +84,8 @@ interface EmailNotificationModalContentProps {
 
 /**
  * Inner content component for the email notification modal.
- * State is initialized from props on mount - no useEffect needed for reset.
+ * State is initialized from props on mount, with useEffect to handle
+ * async prop updates (e.g., when customerEmail loads after mount).
  */
 function EmailNotificationModalContent({
   onClose,
@@ -96,6 +97,14 @@ function EmailNotificationModalContent({
   const { t } = useTranslation(['quotations', 'common']);
   // Form state - initialized from props on mount
   const [toEmail, setToEmail] = useState(customerEmail ?? '');
+
+  // Sync customerEmail prop to state when it becomes available (handles async loading)
+  useEffect(() => {
+    if (customerEmail && !toEmail) {
+      setToEmail(customerEmail);
+    }
+  }, [customerEmail, toEmail]);
+
   const [ccEmails, setCcEmails] = useState<string[]>([]);
   const [showCcField, setShowCcField] = useState(false);
   const [toError, setToError] = useState<string | undefined>();
