@@ -11,6 +11,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
 import { searchProductsApi, type SearchProductsResult } from '../api/search-products';
 
@@ -84,7 +85,7 @@ export function ProductCombobox({
   value,
   onChange,
   label,
-  placeholder = 'Search products...',
+  placeholder,
   initialLabel,
   required,
   disabled,
@@ -92,6 +93,8 @@ export function ProductCombobox({
   helpText,
   className,
 }: Readonly<ProductComboboxProps>) {
+  const { t } = useTranslation('entities');
+
   /**
    * Load products from API based on search query.
    */
@@ -125,15 +128,15 @@ export function ProductCombobox({
       onChange={handleChange}
       loadOptions={loadOptions}
       label={label}
-      placeholder={placeholder}
+      placeholder={placeholder ?? t('product.combobox.placeholder')}
       initialLabel={initialLabel ?? undefined}
       required={required}
       disabled={disabled}
       error={error}
       helpText={helpText}
       className={className}
-      noResultsText="No products found"
-      loadingText="Loading..."
+      noResultsText={t('product.combobox.noResults')}
+      loadingText={t('product.combobox.loading')}
     />
   );
 }

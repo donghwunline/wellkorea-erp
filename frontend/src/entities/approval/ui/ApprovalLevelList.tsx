@@ -5,6 +5,7 @@
  * Read-only component, no action buttons.
  */
 
+import { useTranslation } from 'react-i18next';
 import type { ApprovalLevel } from '../model/approval-level';
 import { approvalLevelRules } from '../model/approval-level';
 import { ApprovalStatusConfig } from '../model/approval-status';
@@ -57,8 +58,10 @@ export function ApprovalLevelList({
   detailed = true,
   className = '',
 }: Readonly<ApprovalLevelListProps>) {
+  const { t } = useTranslation('entities');
+
   if (!levels?.length) {
-    return <div className={`text-gray-500 text-sm ${className}`}>결재 정보가 없습니다.</div>;
+    return <div className={`text-gray-500 text-sm ${className}`}>{t('approval.levelList.empty')}</div>;
   }
 
   return (
@@ -95,7 +98,7 @@ export function ApprovalLevelList({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-gray-900">
-                  {level.levelName || level.expectedApproverName || `Level ${level.levelOrder}`}
+                  {level.levelName || level.expectedApproverName || t('approval.levelList.level', { level: level.levelOrder })}
                 </span>
                 {statusConfig && (
                   <span

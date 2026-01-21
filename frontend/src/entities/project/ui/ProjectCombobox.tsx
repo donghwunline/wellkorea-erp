@@ -11,6 +11,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
 import { projectQueries } from '../api/project.queries';
@@ -85,7 +86,7 @@ export function ProjectCombobox({
   value,
   onChange,
   label,
-  placeholder = '프로젝트 검색...',
+  placeholder,
   initialLabel,
   required,
   disabled,
@@ -93,7 +94,9 @@ export function ProjectCombobox({
   helpText,
   className,
 }: Readonly<ProjectComboboxProps>) {
+  const { t } = useTranslation('entities');
   const queryClient = useQueryClient();
+  const defaultPlaceholder = placeholder ?? t('project.combobox.placeholder');
 
   /**
    * Load projects using Query Factory pattern.
@@ -136,15 +139,15 @@ export function ProjectCombobox({
       onChange={handleChange}
       loadOptions={loadOptions}
       label={label}
-      placeholder={placeholder}
+      placeholder={defaultPlaceholder}
       initialLabel={initialLabel ?? undefined}
       required={required}
       disabled={disabled}
       error={error}
       helpText={helpText}
       className={className}
-      noResultsText="검색 결과가 없습니다"
-      loadingText="로딩 중..."
+      noResultsText={t('project.combobox.noResults')}
+      loadingText={t('project.combobox.loading')}
     />
   );
 }

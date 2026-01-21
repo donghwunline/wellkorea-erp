@@ -12,6 +12,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, EmptyState, Table } from '@/shared/ui';
 import type { CompanyListItem } from '../model/company';
 import { formatDate } from '@/shared/lib/formatting/date';
@@ -78,20 +79,23 @@ export function CompanyTable({
   companies,
   onRowClick,
   renderActions,
-  emptyMessage = 'No companies found.',
+  emptyMessage,
   className,
 }: Readonly<CompanyTableProps>) {
+  const { t } = useTranslation('entities');
+  const displayEmptyMessage = emptyMessage ?? t('company.table.empty');
+
   return (
     <Card variant="table" className={className}>
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>Company Name</Table.HeaderCell>
-            <Table.HeaderCell>Registration No.</Table.HeaderCell>
-            <Table.HeaderCell>Contact</Table.HeaderCell>
-            <Table.HeaderCell>Roles</Table.HeaderCell>
-            <Table.HeaderCell>Created</Table.HeaderCell>
-            {renderActions && <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>}
+            <Table.HeaderCell>{t('company.table.headers.name')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('company.table.headers.registrationNo')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('company.table.headers.contact')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('company.table.headers.roles')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('company.table.headers.created')}</Table.HeaderCell>
+            {renderActions && <Table.HeaderCell className="text-right">{t('company.table.headers.actions')}</Table.HeaderCell>}
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -99,7 +103,7 @@ export function CompanyTable({
             <EmptyState
               variant="table"
               colspan={renderActions ? 6 : 5}
-              message={emptyMessage}
+              message={displayEmptyMessage}
             />
           ) : (
             companies.map(company => (

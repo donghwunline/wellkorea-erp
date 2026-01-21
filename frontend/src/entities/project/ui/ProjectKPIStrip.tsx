@@ -16,6 +16,7 @@
  * - Receives all data via props
  */
 
+import { useTranslation } from 'react-i18next';
 import type { ProjectKPI } from '../model/project';
 import { Icon, StatCard } from '@/shared/ui';
 import { formatCurrency } from '@/shared/lib/formatting';
@@ -51,50 +52,52 @@ export function ProjectKPIStrip({
   kpis,
   className,
 }: Readonly<ProjectKPIStripProps>) {
+  const { t } = useTranslation('entities');
+
   return (
     <div className={cn('mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4', className)}>
       <StatCard
-        label="진행률"
+        label={t('project.kpi.progress')}
         value={`${kpis.progressPercent}%`}
         icon={<Icon name="chart-bar" className="h-5 w-5" />}
         trend={
           kpis.progressPercent >= 80
-            ? { value: 'On Track', direction: 'up' }
+            ? { value: t('project.kpi.trends.onTrack'), direction: 'up' }
             : kpis.progressPercent >= 50
-              ? { value: 'In Progress', direction: 'neutral' }
-              : { value: 'Behind', direction: 'down' }
+              ? { value: t('project.kpi.trends.inProgress'), direction: 'neutral' }
+              : { value: t('project.kpi.trends.behind'), direction: 'down' }
         }
       />
 
       <StatCard
-        label="결재대기"
+        label={t('project.kpi.pendingApprovals')}
         value={kpis.pendingApprovals}
         icon={<Icon name="clock" className="h-5 w-5" />}
         trend={
           kpis.pendingApprovals > 0
-            ? { value: `${kpis.pendingApprovals} pending`, direction: 'neutral' }
+            ? { value: t('project.kpi.trends.pending', { count: kpis.pendingApprovals }), direction: 'neutral' }
             : undefined
         }
       />
 
       <StatCard
-        label="문서누락"
+        label={t('project.kpi.missingDocuments')}
         value={kpis.missingDocuments}
         icon={<Icon name="document" className="h-5 w-5" />}
         trend={
           kpis.missingDocuments > 0
-            ? { value: 'Needs attention', direction: 'down' }
-            : { value: 'Complete', direction: 'up' }
+            ? { value: t('project.kpi.trends.needsAttention'), direction: 'down' }
+            : { value: t('project.kpi.trends.complete'), direction: 'up' }
         }
       />
 
       <StatCard
-        label="미수금"
+        label={t('project.kpi.accountsReceivable')}
         value={formatCurrency(kpis.accountsReceivable)}
         icon={<Icon name="banknotes" className="h-5 w-5" />}
         trend={
           kpis.accountsReceivable > 0
-            ? { value: 'Outstanding', direction: 'neutral' }
+            ? { value: t('project.kpi.trends.outstanding'), direction: 'neutral' }
             : undefined
         }
       />

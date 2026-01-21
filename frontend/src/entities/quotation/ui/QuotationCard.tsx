@@ -10,6 +10,7 @@
  * - Receives all data via props
  */
 
+import { useTranslation } from 'react-i18next';
 import { Alert, Card, Table } from '@/shared/ui';
 import type { Quotation } from '../model/quotation';
 import { lineItemRules } from '../model/line-item';
@@ -69,6 +70,7 @@ export function QuotationCard({
   includeTimeInDates = false,
   className,
 }: Readonly<QuotationCardProps>) {
+  const { t } = useTranslation('entities');
   const dateFormat = includeTimeInDates ? ('YYYY-MM-DD HH:mm' as const) : ('YYYY-MM-DD' as const);
 
   return (
@@ -76,54 +78,54 @@ export function QuotationCard({
       {/* Quotation Details Card */}
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-medium text-white">Quotation Details</h3>
+          <h3 className="text-lg font-medium text-white">{t('quotation.card.title')}</h3>
           {showStatusBadge && <QuotationStatusBadge status={quotation.status} />}
         </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
           <div>
-            <span className="text-steel-500">Job Code</span>
+            <span className="text-steel-500">{t('quotation.card.fields.jobCode')}</span>
             <p className="font-medium text-white">{quotation.jobCode}</p>
           </div>
           <div>
-            <span className="text-steel-500">Version</span>
+            <span className="text-steel-500">{t('quotation.card.fields.version')}</span>
             <p className="text-steel-300">v{quotation.version}</p>
           </div>
           <div>
-            <span className="text-steel-500">Project</span>
+            <span className="text-steel-500">{t('quotation.card.fields.project')}</span>
             <p className="text-steel-300">{quotation.projectName}</p>
           </div>
           <div>
-            <span className="text-steel-500">Created By</span>
+            <span className="text-steel-500">{t('quotation.card.fields.createdBy')}</span>
             <p className="text-steel-300">{quotation.createdByName}</p>
           </div>
           <div>
-            <span className="text-steel-500">Created At</span>
+            <span className="text-steel-500">{t('quotation.card.fields.createdAt')}</span>
             <p className="text-steel-300">{formatDate(quotation.createdAt, dateFormat)}</p>
           </div>
           <div>
-            <span className="text-steel-500">Quotation Date</span>
+            <span className="text-steel-500">{t('quotation.card.fields.quotationDate')}</span>
             <p className="text-steel-300">{formatDate(quotation.quotationDate, dateFormat)}</p>
           </div>
           <div>
-            <span className="text-steel-500">Validity</span>
-            <p className="text-steel-300">{quotation.validityDays} days</p>
+            <span className="text-steel-500">{t('quotation.card.fields.validity')}</span>
+            <p className="text-steel-300">{t('quotation.card.fields.validityDays', { days: quotation.validityDays })}</p>
           </div>
           <div>
-            <span className="text-steel-500">Expiry Date</span>
+            <span className="text-steel-500">{t('quotation.card.fields.expiryDate')}</span>
             <p className="text-steel-300">{formatDate(quotation.expiryDate, dateFormat)}</p>
           </div>
         </div>
 
         {quotation.notes && (
           <div className="mt-4 border-t border-steel-700/50 pt-4">
-            <span className="text-sm text-steel-500">Notes</span>
+            <span className="text-sm text-steel-500">{t('quotation.card.fields.notes')}</span>
             <p className="mt-1 text-steel-300">{quotation.notes}</p>
           </div>
         )}
 
         {quotation.rejectionReason && (
-          <Alert variant="error" className="mt-4" title="Rejection Reason">
+          <Alert variant="error" className="mt-4" title={t('quotation.card.rejectionReason')}>
             {quotation.rejectionReason}
           </Alert>
         )}
@@ -132,16 +134,16 @@ export function QuotationCard({
       {/* Line Items Table */}
       <Card variant="table" className="mt-6">
         <div className="border-b border-steel-700/50 bg-steel-800/50 px-4 py-3">
-          <h3 className="font-medium text-white">Line Items</h3>
+          <h3 className="font-medium text-white">{t('quotation.card.lineItems.title')}</h3>
         </div>
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>#</Table.HeaderCell>
-              <Table.HeaderCell>Product</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Quantity</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Unit Price</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">Total</Table.HeaderCell>
+              <Table.HeaderCell>{t('quotation.card.lineItems.columns.index')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('quotation.card.lineItems.columns.product')}</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">{t('quotation.card.lineItems.columns.quantity')}</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">{t('quotation.card.lineItems.columns.unitPrice')}</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">{t('quotation.card.lineItems.columns.total')}</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -169,7 +171,7 @@ export function QuotationCard({
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={5} className="text-center text-steel-400">
-                  No line items
+                  {t('quotation.card.lineItems.empty')}
                 </Table.Cell>
               </Table.Row>
             )}
@@ -179,7 +181,7 @@ export function QuotationCard({
         {/* Total */}
         <div className="border-t border-steel-700/50 bg-steel-800/30 px-4 py-3">
           <div className="flex items-center justify-between">
-            <span className="font-medium text-white">Total Amount</span>
+            <span className="font-medium text-white">{t('quotation.card.totalAmount')}</span>
             <span className="text-xl font-bold text-copper-400">
               {Money.format(quotation.totalAmount)}
             </span>

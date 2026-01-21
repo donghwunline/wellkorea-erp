@@ -2,6 +2,7 @@
  * Invoice card component for displaying invoice summary.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Card, Icon } from '@/shared/ui';
 import type { Invoice } from '../model/invoice';
 import { invoiceRules } from '../model/invoice';
@@ -14,6 +15,7 @@ interface InvoiceCardProps {
 }
 
 export function InvoiceCard({ invoice, onViewDetails }: InvoiceCardProps) {
+  const { t } = useTranslation('entities');
   const paymentProgress = invoiceRules.getPaymentProgress(invoice);
 
   return (
@@ -24,7 +26,7 @@ export function InvoiceCard({ invoice, onViewDetails }: InvoiceCardProps) {
           <h3 className="font-mono text-lg text-copper-400">
             {invoice.invoiceNumber}
           </h3>
-          <p className="text-sm text-steel-400">Job: {invoice.jobCode}</p>
+          <p className="text-sm text-steel-400">{t('invoice.card.job')}: {invoice.jobCode}</p>
         </div>
         <InvoiceStatusBadge status={invoice.status} />
       </div>
@@ -32,19 +34,19 @@ export function InvoiceCard({ invoice, onViewDetails }: InvoiceCardProps) {
       {/* Amounts */}
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
-          <span className="text-steel-400">Before Tax</span>
+          <span className="text-steel-400">{t('invoice.card.beforeTax')}</span>
           <span className="font-mono">
             {invoiceRules.formatAmount(invoice.totalBeforeTax)}
           </span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-steel-400">Tax ({invoice.taxRate}%)</span>
+          <span className="text-steel-400">{t('invoice.card.tax', { rate: invoice.taxRate })}</span>
           <span className="font-mono">
             {invoiceRules.formatAmount(invoice.totalTax)}
           </span>
         </div>
         <div className="flex justify-between font-semibold border-t border-steel-700 pt-2">
-          <span>Total</span>
+          <span>{t('invoice.card.total')}</span>
           <span className="font-mono">
             {invoiceRules.formatAmount(invoice.totalAmount)}
           </span>
@@ -54,7 +56,7 @@ export function InvoiceCard({ invoice, onViewDetails }: InvoiceCardProps) {
       {/* Payment Progress */}
       <div className="mb-4">
         <div className="flex justify-between text-sm mb-1">
-          <span className="text-steel-400">Payment Progress</span>
+          <span className="text-steel-400">{t('invoice.card.paymentProgress')}</span>
           <span className="text-steel-300">{paymentProgress}%</span>
         </div>
         <div className="h-2 bg-steel-700 rounded-full overflow-hidden">
@@ -67,10 +69,10 @@ export function InvoiceCard({ invoice, onViewDetails }: InvoiceCardProps) {
         </div>
         <div className="flex justify-between text-xs mt-1">
           <span className="text-green-400">
-            Paid: {invoiceRules.formatAmount(invoice.totalPaid)}
+            {t('invoice.card.paid')}: {invoiceRules.formatAmount(invoice.totalPaid)}
           </span>
           <span className="text-yellow-400">
-            Balance: {invoiceRules.formatAmount(invoice.remainingBalance)}
+            {t('invoice.card.balance')}: {invoiceRules.formatAmount(invoice.remainingBalance)}
           </span>
         </div>
       </div>
@@ -78,16 +80,16 @@ export function InvoiceCard({ invoice, onViewDetails }: InvoiceCardProps) {
       {/* Dates */}
       <div className="grid grid-cols-2 gap-4 text-sm mb-4">
         <div>
-          <span className="text-steel-500">Issue Date</span>
+          <span className="text-steel-500">{t('invoice.card.issueDate')}</span>
           <p>{formatDate(invoice.issueDate)}</p>
         </div>
         <div>
-          <span className="text-steel-500">Due Date</span>
+          <span className="text-steel-500">{t('invoice.card.dueDate')}</span>
           <p className={invoice.isOverdue ? 'text-red-400' : ''}>
             {formatDate(invoice.dueDate)}
             {invoice.isOverdue && (
               <span className="ml-2 text-xs">
-                ({invoice.daysOverdue} days overdue)
+                ({t('invoice.card.daysOverdue', { days: invoice.daysOverdue })})
               </span>
             )}
           </p>
@@ -98,7 +100,7 @@ export function InvoiceCard({ invoice, onViewDetails }: InvoiceCardProps) {
       {invoice.remainingBalance > 0 && (
         <div className="flex items-center gap-2 text-sm mb-4">
           <Icon name="clock" className="h-4 w-4 text-steel-500" />
-          <span className="text-steel-400">Aging:</span>
+          <span className="text-steel-400">{t('invoice.card.aging')}:</span>
           <span
             className={`font-medium text-${invoiceRules.getAgingBucketColor(invoice.agingBucket)}-400`}
           >
@@ -110,14 +112,14 @@ export function InvoiceCard({ invoice, onViewDetails }: InvoiceCardProps) {
       {/* Footer */}
       <div className="flex items-center justify-between text-xs text-steel-500 border-t border-steel-700 pt-3">
         <span>
-          {invoice.lineItems.length} items · {invoice.payments.length} payments
+          {t('invoice.card.itemsPayments', { items: invoice.lineItems.length, payments: invoice.payments.length })}
         </span>
         {onViewDetails && (
           <button
             onClick={onViewDetails}
             className="text-copper-400 hover:text-copper-300"
           >
-            View Details →
+            {t('invoice.card.viewDetails')}
           </button>
         )}
       </div>
