@@ -104,6 +104,7 @@ public class DeliveryPdfService {
         company.put("address", companyProperties.getAddress());
         company.put("phone", companyProperties.getPhone());
         company.put("fax", companyProperties.getFax());
+        company.put("designDeptPhone", companyProperties.getDesignDeptPhone());
         company.put("email", companyProperties.getEmail());
         return company;
     }

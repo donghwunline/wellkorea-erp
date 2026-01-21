@@ -50,6 +50,14 @@
             border-bottom-width: 2px;
         }
 
+        .outer-top td {
+            border-bottom-width: 0;
+        }
+
+        .outer-bottom td {
+            border-top-width: 0;
+        }
+
         .doc-number {
             font-size: 8pt;
             text-align: left;
@@ -57,10 +65,10 @@
         }
 
         .title {
-            font-size: 22pt;
+            font-size: 24pt;
             font-weight: bold;
             text-align: center;
-            letter-spacing: 6px;
+            letter-spacing: 8px;
             height: 18mm;
         }
 
@@ -84,25 +92,33 @@
 
         .client-info td {
             font-size: 9pt;
-            border: none;
-            padding: 1px 3px;
+            height: 6mm;
         }
 
         .company-info td {
-            font-size: 8pt;
-            border: none;
-            padding: 1px 3px;
+            font-size: 9pt;
+            height: 6mm;
+        }
+
+        .company-name {
+            font-size: 14pt;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 2mm;
+            white-space: nowrap;
         }
 
         .logo-cell {
-            width: 25mm;
-            vertical-align: top;
+            width: 20mm;
+            text-align: center;
+            vertical-align: middle;
+            padding: 2mm;
             position: relative;
         }
 
-        .logo {
-            width: 20mm;
-            height: auto;
+        .logo-cell img.logo {
+            max-width: 18mm;
+            max-height: 18mm;
         }
 
         .seal-overlay {
@@ -120,34 +136,22 @@
             height: 100%;
         }
 
-        .item-header th {
-            background-color: #f0f0f0;
-            font-size: 9pt;
-            padding: 4px 2px;
+        .bg-gray {
+            background: #f0f0f0;
+        }
+
+        .center {
             text-align: center;
         }
 
-        .item-row td {
-            font-size: 9pt;
-            padding: 3px 4px;
-        }
-
-        .item-row td.center {
-            text-align: center;
-        }
-
-        .item-row td.right {
+        .right {
             text-align: right;
         }
 
-        .footer-section {
-            margin-top: 10mm;
-        }
-
-        .footer-section td {
-            border: none;
-            font-size: 8pt;
-            padding: 1px 3px;
+        .items th,
+        .items td {
+            font-size: 9pt;
+            height: 6mm;
         }
 
         .notes-section {
@@ -165,132 +169,182 @@
             font-size: 9pt;
             white-space: pre-wrap;
         }
+
+        .footer-section {
+            margin-top: 10mm;
+        }
+
+        .footer-section td {
+            border: none;
+            font-size: 10pt;
+            padding: 2px 3px;
+        }
     </style>
 </head>
 
 <body>
     <div class="page">
-        <!-- Header with logo and seal -->
-        <table class="no-border" style="margin-bottom: 3mm;">
+        <table>
+            <!-- Document number row -->
+            <tr class="outer-top">
+                <td class="doc-number">문서번호 : <span th:text="${deliveryNumber}">WK2K25-0001-0101-D001</span></td>
+            </tr>
+
+            <!-- Title row -->
+            <tr class="title-row">
+                <td class="title">거 래 명 세 서</td>
+            </tr>
+
+            <!-- Customer name and date row -->
             <tr>
-                <td class="logo-cell">
-                    <img th:src="${logoDataUri}" alt="Logo" class="logo" />
-                    <span class="seal-overlay">
-                    <img th:src="${sealDataUri}" alt="Seal" />
-                </span>
-                </td>
-                <td style="vertical-align: top;">
-                    <table class="company-info">
+                <td>
+                    <table class="no-border">
                         <tr>
-                            <td th:text="${company.name}">웰코리아</td>
-                        </tr>
-                        <tr>
-                            <td th:text="${company.nameEn}">WELLKOREA</td>
-                        </tr>
-                        <tr>
-                            <td>사업자번호: <span th:text="${company.registrationNumber}">000-00-00000</span></td>
-                        </tr>
-                        <tr>
-                            <td th:text="${company.address}">주소</td>
-                        </tr>
-                        <tr>
-                            <td>TEL: <span th:text="${company.phone}">000-0000-0000</span> / FAX: <span
-                                    th:text="${company.fax}">000-0000-0000</span></td>
+                            <td class="customer-name"><span th:text="${customer.name}">고객사명</span> 귀하</td>
+                            <td style="width: 36mm; text-align: center; font-weight: bold;">납품일</td>
+                            <td style="width: 40mm; text-align: center;" th:text="${deliveryDate}">2025년 01월 01일</td>
                         </tr>
                     </table>
                 </td>
             </tr>
-        </table>
 
-        <!-- Document Title -->
-        <table class="title-row">
+            <!-- Client info and Company info section -->
             <tr>
-                <td class="title">거 래 명 세 서</td>
-            </tr>
-        </table>
+                <td>
+                    <table>
+                        <tr>
+                            <!-- Left: Client information -->
+                            <td style="width: 50%; padding: 0;">
+                                <table class="client-info">
+                                    <tr>
+                                        <td class="label" style="width: 22mm;">프로젝트명 :</td>
+                                        <td th:text="${project.projectName}">프로젝트명</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">담 당 자 :</td>
+                                        <td th:text="${(customer.contactPerson != null) ? customer.contactPerson + ' 님' : '-'}">담당자 님</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">납품장소 :</td>
+                                        <td th:text="${deliveryLocation != null ? deliveryLocation : '귀사지정장소'}">귀사지정장소</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">연 락 처 :</td>
+                                        <td th:text="${customer.phone != null ? customer.phone : '-'}">000-0000-0000</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">주 소 :</td>
+                                        <td th:text="${customer.address != null ? customer.address : '-'}">고객사 주소</td>
+                                    </tr>
+                                </table>
+                            </td>
 
-        <!-- Document Info -->
-        <table class="no-border" style="margin-top: 3mm;">
-            <tr>
-                <td class="doc-number">
-                    문서번호: <span th:text="${deliveryNumber}">WK2K25-0001-0101-D001</span>
-                </td>
-                <td class="delivery-date" style="text-align: right;">
-                    납품일자: <span th:text="${deliveryDate}">2025년 01월 01일</span>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Customer Info -->
-        <table style="margin-top: 3mm;">
-            <tr>
-                <td class="customer-name" colspan="2">
-                    <span th:text="${customer.name}">고객사명</span> 귀하
-                </td>
-            </tr>
-        </table>
-
-        <table class="client-info" style="margin-top: 2mm;">
-            <tr>
-                <td class="label" style="width: 15mm;">담당자:</td>
-                <td th:text="${customer.contactPerson}">담당자명</td>
-                <td class="label" style="width: 15mm;">연락처:</td>
-                <td th:text="${customer.phone}">000-0000-0000</td>
-            </tr>
-            <tr>
-                <td class="label">주소:</td>
-                <td colspan="3" th:text="${customer.address}">고객사 주소</td>
-            </tr>
-        </table>
-
-        <!-- Project Info -->
-        <table style="margin-top: 3mm;">
-            <tr>
-                <td class="label" style="width: 20mm; background-color: #f0f0f0; text-align: center;">프로젝트</td>
-                <td style="width: 35mm;" th:text="${project.jobCode}">WK2K25-0001-0101</td>
-                <td th:text="${project.projectName}">프로젝트명</td>
-            </tr>
-        </table>
-
-        <!-- Line Items -->
-        <table style="margin-top: 5mm;">
-            <tr class="item-header">
-                <th style="width: 8mm;">순번</th>
-                <th>품명</th>
-                <th style="width: 25mm;">납품수량</th>
-                <th style="width: 20mm;">비고</th>
-            </tr>
-            <tr class="item-row" th:each="item : ${lineItems}">
-                <td class="center" th:text="${item.sequence}">1</td>
-                <td th:text="${item.productName}">제품명</td>
-                <td class="right" th:text="${item.quantityDelivered}">10</td>
-                <td></td>
-            </tr>
-            <!-- Empty rows for minimum display -->
-            <tr class="item-row" th:if="${#lists.size(lineItems) &lt; 10}">
-                <td>&#160;</td>
-                <td>&#160;</td>
-                <td>&#160;</td>
-                <td>&#160;</td>
-            </tr>
-        </table>
-
-        <!-- Notes Section -->
-        <div class="notes-section" th:if="${notes != null and notes != ''}">
-            <div class="notes-label">비고</div>
-            <div class="notes-content" th:text="${notes}"></div>
-        </div>
-
-        <!-- Footer -->
-        <table class="footer-section">
-            <tr>
-                <td style="text-align: center;">
-                    위와 같이 납품합니다.
+                            <!-- Right: Company info with logo and seal -->
+                            <td style="width: 50%; padding: 0;">
+                                <table class="company-info">
+                                    <tr>
+                                        <td class="logo-cell">
+                                            <img th:src="${logoDataUri}" alt="Logo" class="logo" />
+                                            <span class="seal-overlay">
+                                            <img th:src="${sealDataUri}" alt="Seal" />
+                                        </span>
+                                        </td>
+                                        <td class="company-name" th:text="${company.name}">웰코리아(주)</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">주 소 :</td>
+                                        <td th:text="${company.address}">대전광역시 유성구 테크노11로 44</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">대표번호 :</td>
+                                        <td th:text="${company.phone}">(042) 933-8115</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">설계부서 :</td>
+                                        <td th:text="${company.designDeptPhone}">(042) 934-8115</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">팩스번호 :</td>
+                                        <td th:text="${company.fax}">(042) 935-8115</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
+
+            <!-- Project info row -->
             <tr>
-                <td style="text-align: center; padding-top: 5mm;">
-                    <span th:text="${company.name}">웰코리아</span>
+                <td>
+                    <table class="no-border">
+                        <tr>
+                            <td class="label bg-gray center" style="width: 22mm;">Job Code</td>
+                            <td style="width: 40mm;" th:text="${project.jobCode}">WK2K25-0001-0101</td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Line items table -->
+            <tr>
+                <td>
+                    <table class="items">
+                        <thead>
+                            <tr class="bg-gray">
+                                <th style="width: 8%;">순번</th>
+                                <th style="width: 52%;">품 명</th>
+                                <th style="width: 20%;">납품수량</th>
+                                <th style="width: 20%;">비 고</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item, stat : ${lineItems}">
+                                <td class="center" th:text="${stat.count}">1</td>
+                                <td th:text="${item.productName}">제품명</td>
+                                <td class="right" th:text="${item.quantityDelivered}">10</td>
+                                <td></td>
+                            </tr>
+                            <!-- Empty rows for minimum display -->
+                            <tr th:if="${#lists.size(lineItems) < 5}" th:each="i : ${#numbers.sequence(#lists.size(lineItems) + 1, 5)}">
+                                <td>&#160;</td>
+                                <td>&#160;</td>
+                                <td>&#160;</td>
+                                <td>&#160;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Notes row if exists -->
+            <tr th:if="${notes != null and !notes.isEmpty()}">
+                <td>
+                    <table class="no-border">
+                        <tr>
+                            <td class="label" style="width: 22mm;">비 고 :</td>
+                            <td th:text="${notes}">비고 내용</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Footer statement -->
+            <tr class="outer-bottom">
+                <td style="border-bottom-width: 0;">
+                    <table class="footer-section">
+                        <tr>
+                            <td style="text-align: center; padding-top: 8mm;">
+                                위와 같이 납품합니다.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; padding-top: 5mm; font-weight: bold;">
+                                <span th:text="${company.name}">웰코리아</span>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
         </table>
