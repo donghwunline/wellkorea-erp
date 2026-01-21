@@ -93,18 +93,18 @@ describe('CompanyManagementPanel', () => {
 
       renderWithProviders(<CompanyManagementPanel />);
 
-      expect(screen.getByText(/불러오는 중/)).toBeInTheDocument();
+      expect(screen.getByText(/Loading companies/i)).toBeInTheDocument();
     });
   });
 
   describe('error state', () => {
     it('should show error message on fetch failure', async () => {
-      mockGetCompanyList.mockRejectedValue(new Error('네트워크 오류'));
+      mockGetCompanyList.mockRejectedValue(new Error('Network error'));
 
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByText(/네트워크 오류/)).toBeInTheDocument();
+        expect(screen.getByText(/Network error/)).toBeInTheDocument();
       });
     });
 
@@ -114,7 +114,7 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /다시 시도/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Retry/i })).toBeInTheDocument();
       });
     });
   });
@@ -137,7 +137,7 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByText(/2개의 회사/)).toBeInTheDocument();
+        expect(screen.getByText(/Total 2 companies/i)).toBeInTheDocument();
       });
     });
 
@@ -147,17 +147,17 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByText('회사 관리')).toBeInTheDocument();
+        expect(screen.getByText('Company Management')).toBeInTheDocument();
       });
     });
 
     it('should render custom title when provided', async () => {
       mockGetCompanyList.mockResolvedValue(mockCompaniesData);
 
-      renderWithProviders(<CompanyManagementPanel title="고객 관리" />);
+      renderWithProviders(<CompanyManagementPanel title="Customer Management" />);
 
       await waitFor(() => {
-        expect(screen.getByText('고객 관리')).toBeInTheDocument();
+        expect(screen.getByText('Customer Management')).toBeInTheDocument();
       });
     });
   });
@@ -169,7 +169,7 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /회사 등록/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Register Company/i })).toBeInTheDocument();
       });
     });
 
@@ -182,7 +182,7 @@ describe('CompanyManagementPanel', () => {
         expect(screen.getByText('Company A')).toBeInTheDocument();
       });
 
-      expect(screen.queryByRole('button', { name: /회사 등록/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Register Company/i })).not.toBeInTheDocument();
     });
 
     it('should navigate to create page when create button clicked', async () => {
@@ -192,10 +192,10 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /회사 등록/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Register Company/i })).toBeInTheDocument();
       });
 
-      await user.click(screen.getByRole('button', { name: /회사 등록/i }));
+      await user.click(screen.getByRole('button', { name: /Register Company/i }));
 
       expect(mockNavigate).toHaveBeenCalledWith('/companies/create');
     });
@@ -207,10 +207,10 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel basePath="/customers" />);
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /회사 등록/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Register Company/i })).toBeInTheDocument();
       });
 
-      await user.click(screen.getByRole('button', { name: /회사 등록/i }));
+      await user.click(screen.getByRole('button', { name: /Register Company/i }));
 
       expect(mockNavigate).toHaveBeenCalledWith('/customers/create');
     });
@@ -223,7 +223,7 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/검색/)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Search by company name/i)).toBeInTheDocument();
       });
     });
 
@@ -234,10 +234,10 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/검색/)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Search by company name/i)).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText(/검색/);
+      const searchInput = screen.getByPlaceholderText(/Search by company name/i);
       // Use clear then type to handle React state updates properly
       await user.clear(searchInput);
       await user.type(searchInput, 'A');
@@ -290,7 +290,7 @@ describe('CompanyManagementPanel', () => {
       renderWithProviders(<CompanyManagementPanel />);
 
       await waitFor(() => {
-        expect(screen.getByText(/등록된 회사가 없습니다/)).toBeInTheDocument();
+        expect(screen.getByText(/No companies registered/i)).toBeInTheDocument();
       });
     });
   });
