@@ -1,5 +1,16 @@
 {
   "quotation": {
+    "table": {
+      "headers": {
+        "projectJobCode": "프로젝트 / Job Code",
+        "version": "버전",
+        "status": "상태",
+        "totalAmount": "총액",
+        "created": "작성일",
+        "actions": "관리"
+      },
+      "empty": "견적이 없습니다."
+    },
     "card": {
       "title": "견적 상세",
       "fields": {
@@ -115,6 +126,17 @@
     }
   },
   "invoice": {
+    "paymentHistoryTable": {
+      "headers": {
+        "date": "결제일",
+        "method": "결제방법",
+        "amount": "금액",
+        "reference": "참조번호",
+        "recordedBy": "등록자",
+        "notes": "비고"
+      },
+      "empty": "결제 내역이 없습니다."
+    },
     "card": {
       "job": "Job",
       "beforeTax": "공급가액",
@@ -146,6 +168,17 @@
     }
   },
   "product": {
+    "table": {
+      "headers": {
+        "sku": "SKU",
+        "name": "품목명",
+        "type": "유형",
+        "basePrice": "기준가",
+        "status": "상태",
+        "actions": "관리"
+      },
+      "empty": "제품이 없습니다."
+    },
     "card": {
       "sku": "SKU",
       "type": "유형",

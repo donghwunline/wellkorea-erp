@@ -12,6 +12,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, EmptyState, Table } from '@/shared/ui';
 import type { ProductListItem } from '../model/product';
 import { productRules } from '../model/product';
@@ -78,20 +79,23 @@ export function ProductTable({
   products,
   onRowClick,
   renderActions,
-  emptyMessage = 'No products found.',
+  emptyMessage,
   className,
 }: Readonly<ProductTableProps>) {
+  const { t } = useTranslation('entities');
+  const defaultEmptyMessage = t('product.table.empty');
+
   return (
     <Card variant="table" className={className}>
       <Table>
         <Table.Header>
           <Table.Row>
-            <Table.HeaderCell>SKU</Table.HeaderCell>
-            <Table.HeaderCell>Name</Table.HeaderCell>
-            <Table.HeaderCell>Type</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">Base Price</Table.HeaderCell>
-            <Table.HeaderCell>Status</Table.HeaderCell>
-            {renderActions && <Table.HeaderCell className="text-right">Actions</Table.HeaderCell>}
+            <Table.HeaderCell>{t('product.table.headers.sku')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('product.table.headers.name')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('product.table.headers.type')}</Table.HeaderCell>
+            <Table.HeaderCell className="text-right">{t('product.table.headers.basePrice')}</Table.HeaderCell>
+            <Table.HeaderCell>{t('product.table.headers.status')}</Table.HeaderCell>
+            {renderActions && <Table.HeaderCell className="text-right">{t('product.table.headers.actions')}</Table.HeaderCell>}
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -99,7 +103,7 @@ export function ProductTable({
             <EmptyState
               variant="table"
               colspan={renderActions ? 6 : 5}
-              message={emptyMessage}
+              message={emptyMessage ?? defaultEmptyMessage}
             />
           ) : (
             products.map(product => (

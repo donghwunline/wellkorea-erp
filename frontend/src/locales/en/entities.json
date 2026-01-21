@@ -1,5 +1,16 @@
 {
   "quotation": {
+    "table": {
+      "headers": {
+        "projectJobCode": "Project / JobCode",
+        "version": "Version",
+        "status": "Status",
+        "totalAmount": "Total Amount",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "empty": "No quotations found."
+    },
     "card": {
       "title": "Quotation Details",
       "fields": {
@@ -115,6 +126,17 @@
     }
   },
   "invoice": {
+    "paymentHistoryTable": {
+      "headers": {
+        "date": "Date",
+        "method": "Method",
+        "amount": "Amount",
+        "reference": "Reference",
+        "recordedBy": "Recorded By",
+        "notes": "Notes"
+      },
+      "empty": "No payments recorded."
+    },
     "card": {
       "job": "Job",
       "beforeTax": "Before Tax",
@@ -146,6 +168,17 @@
     }
   },
   "product": {
+    "table": {
+      "headers": {
+        "sku": "SKU",
+        "name": "Name",
+        "type": "Type",
+        "basePrice": "Base Price",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "empty": "No products found."
+    },
     "card": {
       "sku": "SKU",
       "type": "Type",
