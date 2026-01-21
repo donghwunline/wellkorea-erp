@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import {
@@ -60,6 +61,7 @@ function getDueDateDefault(): string {
 const DEFAULT_TAX_RATE = 10;
 
 export function InvoiceCreatePage() {
+  const { t } = useTranslation('pages');
   const { projectId } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -281,7 +283,7 @@ export function InvoiceCreatePage() {
         }));
 
       if (lineItems.length === 0) {
-        setError('Please enter quantity for at least one item');
+        setError(t('invoiceCreate.errors.noItems'));
         return;
       }
 
@@ -290,7 +292,7 @@ export function InvoiceCreatePage() {
         const qtyToInvoice = quantitiesToInvoice[item.productId] || 0;
         if (qtyToInvoice > item.remainingQuantity) {
           setError(
-            `Quantity for ${item.productName} exceeds invoiceable quantity (${item.remainingQuantity})`
+            t('invoiceCreate.errors.exceedsQuantity', { product: item.productName, max: item.remainingQuantity })
           );
           return;
         }
@@ -298,7 +300,7 @@ export function InvoiceCreatePage() {
 
       // Validate dates
       if (new Date(dueDate) < new Date(issueDate)) {
-        setError('Due date must be on or after issue date');
+        setError(t('invoiceCreate.errors.invalidDueDate'));
         return;
       }
 
@@ -322,6 +324,7 @@ export function InvoiceCreatePage() {
       quantitiesToInvoice,
       notes,
       createInvoice,
+      t,
     ]
   );
 
@@ -341,19 +344,19 @@ export function InvoiceCreatePage() {
   // Delivery options for select
   const deliveryOptions = useMemo(() => {
     return [
-      { value: '', label: 'No specific delivery (general invoice)' },
+      { value: '', label: t('invoiceCreate.noDelivery') },
       ...deliveries.map((d: Delivery) => ({
         value: d.id.toString(),
-        label: `Delivery #${d.id} - ${d.deliveryDate}`,
+        label: t('invoiceCreate.deliveryOption', { id: d.id, date: d.deliveryDate }),
       })),
     ];
-  }, [deliveries]);
+  }, [deliveries, t]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Card>
-          <LoadingState message="Loading project data..." />
+          <LoadingState message={t('invoiceCreate.loading')} />
         </Card>
       </div>
     );
@@ -362,7 +365,7 @@ export function InvoiceCreatePage() {
   if (quotationsError) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">Failed to load quotation: {quotationsError.message}</Alert>
+        <Alert variant="error">{t('invoiceCreate.loadError')}: {quotationsError.message}</Alert>
       </div>
     );
   }
@@ -372,17 +375,16 @@ export function InvoiceCreatePage() {
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
+          <h3 className="text-lg font-semibold text-white">{t('invoiceCreate.noAcceptedQuotation.title')}</h3>
           <p className="mt-2 text-steel-400">
-            This project does not have an accepted quotation. A quotation must be accepted by the
-            customer before creating invoices.
+            {t('invoiceCreate.noAcceptedQuotation.description')}
           </p>
           <Button
             variant="secondary"
             className="mt-6"
             onClick={() => navigate(`/projects/${projectId}`)}
           >
-            Back to Project
+            {t('invoiceCreate.backToProject')}
           </Button>
         </Card>
       </div>
@@ -394,16 +396,16 @@ export function InvoiceCreatePage() {
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Icon name="check-circle" className="mx-auto mb-4 h-12 w-12 text-green-500" />
-          <h3 className="text-lg font-semibold text-white">All Items Invoiced</h3>
+          <h3 className="text-lg font-semibold text-white">{t('invoiceCreate.allItemsInvoiced.title')}</h3>
           <p className="mt-2 text-steel-400">
-            All delivered items have been invoiced. No remaining items to invoice.
+            {t('invoiceCreate.allItemsInvoiced.description')}
           </p>
           <Button
             variant="secondary"
             className="mt-6"
             onClick={() => navigate(`/projects/${projectId}`)}
           >
-            Back to Project
+            {t('invoiceCreate.backToProject')}
           </Button>
         </Card>
       </div>
@@ -415,12 +417,12 @@ export function InvoiceCreatePage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="새 세금계산서 발행"
-          description="Create a new tax invoice for this project"
+          title={t('invoiceCreate.title')}
+          description={t('invoiceCreate.description')}
         />
         <PageHeader.Actions>
           <Button variant="ghost" onClick={() => navigate(`/projects/${projectId}`)}>
-            Cancel
+            {t('invoiceCreate.cancel')}
           </Button>
         </PageHeader.Actions>
       </PageHeader>
@@ -435,9 +437,9 @@ export function InvoiceCreatePage() {
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <Card className="mb-6 p-6">
-          <h3 className="mb-4 text-lg font-semibold text-white">Invoice Information</h3>
+          <h3 className="mb-4 text-lg font-semibold text-white">{t('invoiceCreate.invoiceInfo')}</h3>
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            <FormField label="Issue Date" required>
+            <FormField label={t('invoiceCreate.issueDate')} required>
               <Input
                 type="date"
                 value={issueDate}
@@ -445,7 +447,7 @@ export function InvoiceCreatePage() {
                 required
               />
             </FormField>
-            <FormField label="Due Date" required>
+            <FormField label={t('invoiceCreate.dueDate')} required>
               <Input
                 type="date"
                 value={dueDate}
@@ -454,7 +456,7 @@ export function InvoiceCreatePage() {
                 required
               />
             </FormField>
-            <FormField label="Tax Rate (%)" required>
+            <FormField label={t('invoiceCreate.taxRate')} required>
               <Input
                 type="number"
                 value={taxRate}
@@ -465,7 +467,7 @@ export function InvoiceCreatePage() {
                 required
               />
             </FormField>
-            <FormField label="Related Delivery">
+            <FormField label={t('invoiceCreate.relatedDelivery')}>
               <select
                 value={selectedDeliveryId?.toString() || ''}
                 onChange={(e) => handleDeliveryChange(e.target.value ? Number(e.target.value) : null)}
@@ -480,11 +482,11 @@ export function InvoiceCreatePage() {
             </FormField>
           </div>
           <div className="mt-4">
-            <FormField label="Notes">
+            <FormField label={t('invoiceCreate.notes')}>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Optional notes for this invoice"
+                placeholder={t('invoiceCreate.notesPlaceholder')}
                 rows={2}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               />
@@ -493,10 +495,9 @@ export function InvoiceCreatePage() {
         </Card>
 
         <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-white">Line Items</h3>
+          <h3 className="mb-4 text-lg font-semibold text-white">{t('invoiceCreate.lineItems.title')}</h3>
           <p className="mb-6 text-sm text-steel-400">
-            Enter the quantity to invoice for each item. Only items with delivered quantity are
-            shown.
+            {t('invoiceCreate.lineItems.description')}
           </p>
 
           {/* Line items table */}
@@ -505,25 +506,25 @@ export function InvoiceCreatePage() {
               <thead>
                 <tr className="border-b border-steel-700">
                   <th className="px-4 py-3 text-left text-sm font-medium text-steel-400">
-                    Product
+                    {t('invoiceCreate.lineItems.product')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Unit Price
+                    {t('invoiceCreate.lineItems.unitPrice')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Delivered
+                    {t('invoiceCreate.lineItems.delivered')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Invoiced
+                    {t('invoiceCreate.lineItems.invoiced')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Invoiceable
+                    {t('invoiceCreate.lineItems.invoiceable')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Qty to Invoice
+                    {t('invoiceCreate.lineItems.qtyToInvoice')}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-steel-400">
-                    Line Total
+                    {t('invoiceCreate.lineItems.lineTotal')}
                   </th>
                 </tr>
               </thead>
@@ -578,7 +579,7 @@ export function InvoiceCreatePage() {
               <tfoot>
                 <tr className="border-t border-steel-700">
                   <td colSpan={5} className="px-4 py-3 text-right text-steel-400">
-                    Total Items to Invoice:
+                    {t('invoiceCreate.totals.totalItems')}
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-copper-400">
                     {totalToInvoice}
@@ -587,7 +588,7 @@ export function InvoiceCreatePage() {
                 </tr>
                 <tr>
                   <td colSpan={6} className="px-4 py-2 text-right text-steel-400">
-                    Subtotal:
+                    {t('invoiceCreate.totals.subtotal')}
                   </td>
                   <td className="px-4 py-2 text-right font-mono text-white">
                     {formatCurrency(subtotal)}
@@ -595,7 +596,7 @@ export function InvoiceCreatePage() {
                 </tr>
                 <tr>
                   <td colSpan={6} className="px-4 py-2 text-right text-steel-400">
-                    Tax ({taxRate}%):
+                    {t('invoiceCreate.totals.tax', { rate: taxRate })}
                   </td>
                   <td className="px-4 py-2 text-right font-mono text-white">
                     {formatCurrency(taxAmount)}
@@ -603,7 +604,7 @@ export function InvoiceCreatePage() {
                 </tr>
                 <tr className="border-t border-steel-700">
                   <td colSpan={6} className="px-4 py-3 text-right font-semibold text-white">
-                    Total:
+                    {t('invoiceCreate.totals.total')}
                   </td>
                   <td className="px-4 py-3 text-right font-mono font-bold text-copper-400">
                     {formatCurrency(total)}
@@ -620,10 +621,10 @@ export function InvoiceCreatePage() {
               variant="ghost"
               onClick={() => navigate(`/projects/${projectId}`)}
             >
-              Cancel
+              {t('invoiceCreate.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting || totalToInvoice === 0}>
-              {isSubmitting ? 'Saving...' : 'Create Invoice'}
+              {isSubmitting ? t('invoiceCreate.submitting') : t('invoiceCreate.submit')}
             </Button>
           </div>
         </Card>

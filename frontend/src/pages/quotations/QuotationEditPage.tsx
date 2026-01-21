@@ -15,6 +15,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +24,7 @@ import { QuotationForm } from '@/features/quotation/form';
 import { useUpdateQuotation } from '@/features/quotation/update';
 
 export function QuotationEditPage() {
+  const { t } = useTranslation('pages');
   const navigate = useNavigate();
   const { id, projectId } = useParams<{ id: string; projectId?: string }>();
   const quotationId = id ? parseInt(id, 10) : null;
@@ -75,12 +77,12 @@ export function QuotationEditPage() {
   const canEdit = quotation ? quotationRules.canEdit(quotation) : false;
   const editError =
     quotation && !canEdit
-      ? `Cannot edit quotation in ${quotation.status} status. Only DRAFT quotations can be edited.`
+      ? t('quotationEdit.cannotEdit', { status: quotation.status })
       : null;
 
   // Error message
   const error =
-    mutationError?.message || editError || (loadError ? 'Failed to load quotation' : null);
+    mutationError?.message || editError || (loadError ? t('quotationEdit.failedToLoad') : null);
 
   // Render loading state
   if (isLoadingQuotation) {
@@ -88,7 +90,7 @@ export function QuotationEditPage() {
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Spinner className="mx-auto h-8 w-8" />
-          <p className="mt-4 text-steel-400">Loading quotation...</p>
+          <p className="mt-4 text-steel-400">{t('quotationEdit.loadingQuotation')}</p>
         </Card>
       </div>
     );
@@ -99,14 +101,14 @@ export function QuotationEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Edit Quotation" description="Unable to edit quotation" />
+          <PageHeader.Title title={t('quotationEdit.title')} description={t('quotationEdit.unableToEdit')} />
           <PageHeader.Actions>
             <button
               onClick={handleCancel}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back
+              {t('quotationEdit.back')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
@@ -115,7 +117,7 @@ export function QuotationEditPage() {
         </Alert>
         <div className="mt-4">
           <Button variant="secondary" onClick={handleCancel}>
-            Go Back
+            {t('quotationEdit.goBack')}
           </Button>
         </div>
       </div>
@@ -128,8 +130,8 @@ export function QuotationEditPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title="Edit Quotation"
-          description={`${quotation?.jobCode} v${quotation?.version}`}
+          title={t('quotationEdit.title')}
+          description={t('quotationEdit.description', { jobCode: quotation?.jobCode, version: quotation?.version })}
         />
         <PageHeader.Actions>
           <button
@@ -137,7 +139,7 @@ export function QuotationEditPage() {
             className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
           >
             <Icon name="arrow-left" className="h-5 w-5" />
-            Back
+            {t('quotationEdit.back')}
           </button>
         </PageHeader.Actions>
       </PageHeader>

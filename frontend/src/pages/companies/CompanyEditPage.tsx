@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
@@ -45,6 +46,7 @@ function RoleManagementSection({
   roles,
   isDisabled,
 }: Readonly<RoleManagementSectionProps>) {
+  const { t } = useTranslation('pages');
   const [addRoleError, setAddRoleError] = useState<string | null>(null);
   const [removeRoleError, setRemoveRoleError] = useState<string | null>(null);
 
@@ -84,7 +86,7 @@ function RoleManagementSection({
   return (
     <div className="space-y-4">
       <h3 className="border-b border-steel-800 pb-2 text-sm font-medium text-steel-400">
-        Company Roles
+        {t('companyEdit.companyRoles')}
       </h3>
 
       {/* Error messages */}
@@ -101,7 +103,7 @@ function RoleManagementSection({
 
       {/* Current roles */}
       <div className="space-y-2">
-        <p className="text-xs text-steel-500">Current roles assigned to this company:</p>
+        <p className="text-xs text-steel-500">{t('companyEdit.currentRoles')}</p>
         <div className="flex flex-wrap gap-2">
           {roles.map(role => (
             <div
@@ -115,7 +117,7 @@ function RoleManagementSection({
                   onClick={() => handleRemoveRole(role.roleType)}
                   disabled={isBusy}
                   className="rounded p-0.5 text-steel-400 transition-colors hover:bg-steel-700 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-                  title="Remove role"
+                  title={t('companyEdit.removeRole')}
                 >
                   <Icon name="x-mark" className="h-4 w-4" />
                 </button>
@@ -125,7 +127,7 @@ function RoleManagementSection({
         </div>
         {!canRemoveRole && (
           <p className="text-xs text-steel-500">
-            Cannot remove the last role. A company must have at least one role.
+            {t('companyEdit.cannotRemoveLastRole')}
           </p>
         )}
       </div>
@@ -133,7 +135,7 @@ function RoleManagementSection({
       {/* Add new role */}
       {availableRoles.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-steel-500">Add a new role:</p>
+          <p className="text-xs text-steel-500">{t('companyEdit.addNewRole')}</p>
           <div className="flex flex-wrap gap-2">
             {availableRoles.map(roleType => (
               <Button
@@ -155,7 +157,7 @@ function RoleManagementSection({
 
       {availableRoles.length === 0 && (
         <p className="text-xs text-steel-500">
-          This company has all available roles assigned.
+          {t('companyEdit.allRolesAssigned')}
         </p>
       )}
     </div>
@@ -167,6 +169,7 @@ function RoleManagementSection({
 // =============================================================================
 
 export function CompanyEditPage() {
+  const { t } = useTranslation('pages');
   const { id } = useParams<{ id: string }>();
   const companyId = id ? parseInt(id, 10) : 0;
   const navigate = useNavigate();
@@ -236,12 +239,12 @@ export function CompanyEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Loading..." />
+          <PageHeader.Title title={t('companyEdit.loading')} />
         </PageHeader>
         <Card className="mx-auto max-w-3xl">
           <div className="flex items-center justify-center p-12">
-            <Spinner size="lg" label="Loading company" />
-            <span className="ml-3 text-steel-400">Loading company...</span>
+            <Spinner size="lg" label={t('companyEdit.loadingCompany')} />
+            <span className="ml-3 text-steel-400">{t('companyEdit.loadingDetails')}</span>
           </div>
         </Card>
       </div>
@@ -253,19 +256,19 @@ export function CompanyEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Error" />
+          <PageHeader.Title title={t('companyEdit.error')} />
           <PageHeader.Actions>
             <button
               onClick={handleBack}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back to Companies
+              {t('companyEdit.backToCompanies')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="error" className="mx-auto max-w-3xl">
-          {fetchError instanceof Error ? fetchError.message : 'Failed to load company'}
+          {fetchError instanceof Error ? fetchError.message : t('companyEdit.loadError')}
         </Alert>
       </div>
     );
@@ -276,19 +279,19 @@ export function CompanyEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Company Not Found" />
+          <PageHeader.Title title={t('companyEdit.notFound')} />
           <PageHeader.Actions>
             <button
               onClick={handleBack}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back to Companies
+              {t('companyEdit.backToCompanies')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="warning" className="mx-auto max-w-3xl">
-          The requested company could not be found.
+          {t('companyEdit.notFoundMessage')}
         </Alert>
       </div>
     );
@@ -299,19 +302,19 @@ export function CompanyEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Cannot Edit" />
+          <PageHeader.Title title={t('companyEdit.cannotEdit')} />
           <PageHeader.Actions>
             <button
               onClick={handleCancel}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back to Company
+              {t('companyEdit.backToCompany')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="warning" className="mx-auto max-w-3xl">
-          This company cannot be edited because it is inactive.
+          {t('companyEdit.cannotEditInactive')}
         </Alert>
       </div>
     );
@@ -321,14 +324,14 @@ export function CompanyEditPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title="Edit Company" description={company.name} />
+        <PageHeader.Title title={t('companyEdit.title')} description={company.name} />
         <PageHeader.Actions>
           <button
             onClick={handleCancel}
             className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
           >
             <Icon name="arrow-left" className="h-5 w-5" />
-            Back to Company
+            {t('companyEdit.backToCompany')}
           </button>
         </PageHeader.Actions>
       </PageHeader>
@@ -337,7 +340,7 @@ export function CompanyEditPage() {
         {/* Company Info Form */}
         <Card>
           <div className="p-6">
-            <h2 className="mb-6 text-lg font-semibold text-white">Company Details</h2>
+            <h2 className="mb-6 text-lg font-semibold text-white">{t('companyEdit.companyDetails')}</h2>
             <CompanyForm
               mode="edit"
               initialData={company}
@@ -353,7 +356,7 @@ export function CompanyEditPage() {
         {/* Role Management Section */}
         <Card>
           <div className="p-6">
-            <h2 className="mb-6 text-lg font-semibold text-white">Role Management</h2>
+            <h2 className="mb-6 text-lg font-semibold text-white">{t('companyEdit.roleManagement')}</h2>
             <RoleManagementSection
               companyId={companyId}
               roles={company.roles}

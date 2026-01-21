@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button, Card, ConfirmationModal, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { useAuth } from '@/entities/auth';
@@ -33,6 +34,7 @@ import { useApproveApproval } from '@/features/approval/approve';
 import { RejectModal, useRejectApproval } from '@/features/approval/reject';
 
 export function QuotationDetailPage() {
+  const { t } = useTranslation('pages');
   const navigate = useNavigate();
   const { id, projectId } = useParams<{ id: string; projectId?: string }>();
   const quotationId = id ? parseInt(id, 10) : null;
@@ -96,7 +98,7 @@ export function QuotationDetailPage() {
     error: submitError,
   } = useSubmitQuotation({
     onSuccess: () => {
-      showSuccess('Quotation submitted for approval');
+      showSuccess(t('quotationDetail.messages.submittedForApproval'));
       setSubmitConfirm(false);
       refetchQuotation();
     },
@@ -108,7 +110,7 @@ export function QuotationDetailPage() {
     error: versionError,
   } = useCreateVersion({
     onSuccess: result => {
-      showSuccess('New version created');
+      showSuccess(t('quotationDetail.messages.newVersionCreated'));
       setVersionConfirm(false);
       // Navigate to edit the new version
       if (projectId) {
@@ -132,7 +134,7 @@ export function QuotationDetailPage() {
   } = useApproveApproval({
     entityId: quotationId ?? undefined,
     onSuccess: () => {
-      showSuccess('Quotation approved');
+      showSuccess(t('quotationDetail.messages.approved'));
       refetchQuotation();
       refetchApproval();
     },
@@ -145,7 +147,7 @@ export function QuotationDetailPage() {
   } = useRejectApproval({
     entityId: quotationId ?? undefined,
     onSuccess: () => {
-      showSuccess('Quotation rejected');
+      showSuccess(t('quotationDetail.messages.rejected'));
       setShowRejectModal(false);
       refetchQuotation();
       refetchApproval();
@@ -158,7 +160,7 @@ export function QuotationDetailPage() {
     error: acceptError,
   } = useAcceptQuotation({
     onSuccess: () => {
-      showSuccess('Quotation accepted by customer');
+      showSuccess(t('quotationDetail.messages.acceptedByCustomer'));
       setAcceptConfirm(false);
       refetchQuotation();
     },
@@ -253,7 +255,7 @@ export function QuotationDetailPage() {
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Spinner className="mx-auto h-8 w-8" />
-          <p className="mt-4 text-steel-400">Loading quotation...</p>
+          <p className="mt-4 text-steel-400">{t('quotationDetail.loadingQuotation')}</p>
         </Card>
       </div>
     );
@@ -264,23 +266,23 @@ export function QuotationDetailPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title="Quotation Details" description="Unable to load quotation" />
+          <PageHeader.Title title={t('quotationDetail.title')} description={t('quotationDetail.unableToLoad')} />
           <PageHeader.Actions>
             <button
               onClick={navigateBack}
               className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
             >
               <Icon name="arrow-left" className="h-5 w-5" />
-              Back
+              {t('quotationDetail.back')}
             </button>
           </PageHeader.Actions>
         </PageHeader>
         <Alert variant="error" className="mt-6">
-          {quotationError?.message || 'Quotation not found'}
+          {quotationError?.message || t('quotationDetail.notFound')}
         </Alert>
         <div className="mt-4">
           <Button variant="secondary" onClick={navigateBack}>
-            Go Back
+            {t('quotationDetail.goBack')}
           </Button>
         </div>
       </div>
@@ -298,8 +300,8 @@ export function QuotationDetailPage() {
       {/* Header */}
       <PageHeader>
         <PageHeader.Title
-          title={`Quotation: ${quotation.jobCode}`}
-          description={`Version ${quotation.version} - ${quotation.projectName}`}
+          title={`${t('quotationDetail.title')}: ${quotation.jobCode}`}
+          description={t('quotationDetail.description', { version: quotation.version, projectName: quotation.projectName })}
         />
         <PageHeader.Actions>
           <button
@@ -307,7 +309,7 @@ export function QuotationDetailPage() {
             className="flex items-center gap-2 text-steel-400 transition-colors hover:text-white"
           >
             <Icon name="arrow-left" className="h-5 w-5" />
-            Back to Quotations
+            {t('quotationDetail.backToQuotations')}
           </button>
         </PageHeader.Actions>
       </PageHeader>
@@ -348,10 +350,10 @@ export function QuotationDetailPage() {
           {/* Loading state for PENDING approvals - show while fetching */}
           {!approval && quotation.status === 'PENDING' && isLoadingApprovals && (
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-medium text-white">Approval Status</h3>
+              <h3 className="mb-4 text-lg font-medium text-white">{t('quotationDetail.approvalStatus')}</h3>
               <div className="flex items-center gap-3">
                 <Spinner className="h-5 w-5" />
-                <span className="text-steel-400">Loading approval details...</span>
+                <span className="text-steel-400">{t('quotationDetail.loadingApproval')}</span>
               </div>
             </Card>
           )}
@@ -359,13 +361,13 @@ export function QuotationDetailPage() {
           {/* Fallback when approval not found for PENDING status */}
           {!approval && quotation.status === 'PENDING' && !isLoadingApprovals && (
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-medium text-white">Approval Status</h3>
+              <h3 className="mb-4 text-lg font-medium text-white">{t('quotationDetail.approvalStatus')}</h3>
               <div className="flex items-center gap-2 text-yellow-400">
                 <Icon name="clock" className="h-5 w-5" />
-                <span className="font-medium">Pending Approval</span>
+                <span className="font-medium">{t('quotationDetail.pendingApproval')}</span>
               </div>
               <p className="mt-2 text-sm text-steel-400">
-                Approval workflow has been initiated. Please wait for approval processing.
+                {t('quotationDetail.pendingApprovalDescription')}
               </p>
             </Card>
           )}
@@ -373,19 +375,19 @@ export function QuotationDetailPage() {
           {/* Approval Status for non-pending (PENDING is handled by ApprovalRequestCard above) */}
           {!approval && quotation.status !== 'DRAFT' && quotation.status !== 'PENDING' && (
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-medium text-white">Approval Status</h3>
+              <h3 className="mb-4 text-lg font-medium text-white">{t('quotationDetail.approvalStatus')}</h3>
 
               {quotation.status === 'APPROVED' && (
                 <div className="space-y-3">
                   {quotation.approvedByName && (
                     <div className="text-sm text-steel-400">
-                      <span>Approved by: </span>
+                      <span>{t('quotationDetail.approvedBy')}: </span>
                       <span className="text-white">{quotation.approvedByName}</span>
                     </div>
                   )}
                   {quotation.approvedAt && (
                     <div className="text-sm text-steel-400">
-                      <span>Approved at: </span>
+                      <span>{t('quotationDetail.approvedAt')}: </span>
                       <span className="text-white">
                         {formatDate(quotation.approvedAt, 'YYYY-MM-DD HH:mm')}
                       </span>
@@ -397,7 +399,7 @@ export function QuotationDetailPage() {
               {quotation.status === 'REJECTED' && (
                 <div className="space-y-3">
                   {quotation.rejectionReason && (
-                    <Alert variant="error" title="Reason">
+                    <Alert variant="error" title={t('quotationDetail.reason')}>
                       {quotation.rejectionReason}
                     </Alert>
                   )}
@@ -408,7 +410,7 @@ export function QuotationDetailPage() {
 
           {/* Quick Actions */}
           <Card className="p-6">
-            <h3 className="mb-4 text-lg font-medium text-white">Quick Actions</h3>
+            <h3 className="mb-4 text-lg font-medium text-white">{t('quotationDetail.quickActions')}</h3>
             <div className="space-y-2">
               {canEdit && (
                 <Button
@@ -418,7 +420,7 @@ export function QuotationDetailPage() {
                   disabled={isActing}
                 >
                   <Icon name="pencil" className="mr-2 h-4 w-4" />
-                  Edit Quotation
+                  {t('quotationDetail.editQuotation')}
                 </Button>
               )}
 
@@ -429,7 +431,7 @@ export function QuotationDetailPage() {
                   disabled={isActing}
                 >
                   <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
-                  Submit for Approval
+                  {t('quotationDetail.submitForApproval')}
                 </Button>
               )}
 
@@ -440,7 +442,7 @@ export function QuotationDetailPage() {
                   disabled={isActing}
                 >
                   <Icon name="check-circle" className="mr-2 h-4 w-4" />
-                  Accept Quotation
+                  {t('quotationDetail.acceptQuotation')}
                 </Button>
               )}
 
@@ -452,7 +454,7 @@ export function QuotationDetailPage() {
                   disabled={isActing}
                 >
                   <Icon name="document-arrow-down" className="mr-2 h-4 w-4" />
-                  Download PDF
+                  {t('quotationDetail.downloadPdf')}
                 </Button>
               )}
 
@@ -464,7 +466,7 @@ export function QuotationDetailPage() {
                   disabled={isActing}
                 >
                   <Icon name="document-duplicate" className="mr-2 h-4 w-4" />
-                  Create New Version
+                  {t('quotationDetail.createNewVersion')}
                 </Button>
               )}
             </div>
@@ -475,9 +477,9 @@ export function QuotationDetailPage() {
       {/* Submit Confirmation Modal */}
       <ConfirmationModal
         isOpen={submitConfirm}
-        title="Submit for Approval"
-        message={`Are you sure you want to submit "${quotation.jobCode}" for approval? This will start the approval workflow.`}
-        confirmLabel="Submit"
+        title={t('quotationDetail.confirmSubmit.title')}
+        message={t('quotationDetail.confirmSubmit.message', { jobCode: quotation.jobCode })}
+        confirmLabel={t('quotationDetail.confirmSubmit.confirm')}
         onConfirm={handleSubmitConfirm}
         onClose={() => setSubmitConfirm(false)}
       />
@@ -485,9 +487,9 @@ export function QuotationDetailPage() {
       {/* Create Version Confirmation Modal */}
       <ConfirmationModal
         isOpen={versionConfirm}
-        title="Create New Version"
-        message={`Create a new version based on "${quotation.jobCode} v${quotation.version}"? The new version will be in DRAFT status.`}
-        confirmLabel="Create Version"
+        title={t('quotationDetail.confirmVersion.title')}
+        message={t('quotationDetail.confirmVersion.message', { jobCode: quotation.jobCode, version: quotation.version })}
+        confirmLabel={t('quotationDetail.confirmVersion.confirm')}
         onConfirm={handleVersionConfirm}
         onClose={() => setVersionConfirm(false)}
       />
@@ -495,9 +497,9 @@ export function QuotationDetailPage() {
       {/* Accept Quotation Confirmation Modal */}
       <ConfirmationModal
         isOpen={acceptConfirm}
-        title="Accept Quotation"
-        message={`Mark "${quotation.jobCode} v${quotation.version}" as accepted by customer? This will activate the associated project.`}
-        confirmLabel="Accept"
+        title={t('quotationDetail.confirmAccept.title')}
+        message={t('quotationDetail.confirmAccept.message', { jobCode: quotation.jobCode, version: quotation.version })}
+        confirmLabel={t('quotationDetail.confirmAccept.confirm')}
         onConfirm={handleAcceptConfirm}
         onClose={() => setAcceptConfirm(false)}
       />

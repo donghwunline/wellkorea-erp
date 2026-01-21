@@ -28,14 +28,19 @@
   },
   "projectView": {
     "loading": "Loading project details...",
+    "loadingProject": "Loading project",
+    "error": "Error",
+    "notFound": "Project Not Found",
+    "notFoundMessage": "The requested project could not be found.",
+    "backToProjects": "Back to Projects",
     "tabs": {
-      "quotations": "Quotations",
-      "taskFlow": "Task Flow",
+      "quotation": "Quotations",
+      "process": "Task Flow",
       "purchase": "Purchase",
       "outsource": "Outsource",
       "documents": "Documents",
-      "deliveries": "Deliveries",
-      "invoices": "Invoices"
+      "delivery": "Deliveries",
+      "finance": "Invoices"
     }
   },
   "projectCreate": {
@@ -61,40 +66,188 @@
     "editDetails": "Edit Project Details"
   },
   "quotationCreate": {
-    "title": "Create New Quotation",
-    "placeholder": "Select a project to create quotation"
+    "title": "Create Quotation",
+    "description": "Create a new quotation",
+    "forProject": "For project: {{projectName}}",
+    "backToQuotations": "Back to Quotations",
+    "selectProject": "Select Project",
+    "searchProject": "Search for a project...",
+    "loadingProject": "Loading project details...",
+    "noProjectSelected": "Please select a project to create a quotation."
   },
   "quotationEdit": {
     "title": "Edit Quotation",
-    "description": "Update quotation details and line items"
+    "description": "{{jobCode}} v{{version}}",
+    "loadingQuotation": "Loading quotation...",
+    "unableToEdit": "Unable to edit quotation",
+    "cannotEdit": "Cannot edit quotation in {{status}} status. Only DRAFT quotations can be edited.",
+    "failedToLoad": "Failed to load quotation",
+    "back": "Back",
+    "goBack": "Go Back"
   },
   "quotationDetail": {
     "title": "Quotation Details",
-    "confirmSubmit": "Submit for Approval"
+    "description": "Version {{version}} - {{projectName}}",
+    "loadingQuotation": "Loading quotation...",
+    "unableToLoad": "Unable to load quotation",
+    "notFound": "Quotation not found",
+    "backToQuotations": "Back to Quotations",
+    "back": "Back",
+    "goBack": "Go Back",
+    "approvalStatus": "Approval Status",
+    "loadingApproval": "Loading approval details...",
+    "pendingApproval": "Pending Approval",
+    "pendingApprovalDescription": "Approval workflow has been initiated. Please wait for approval processing.",
+    "approvedBy": "Approved by",
+    "approvedAt": "Approved at",
+    "reason": "Reason",
+    "quickActions": "Quick Actions",
+    "editQuotation": "Edit Quotation",
+    "submitForApproval": "Submit for Approval",
+    "acceptQuotation": "Accept Quotation",
+    "downloadPdf": "Download PDF",
+    "createNewVersion": "Create New Version",
+    "messages": {
+      "submittedForApproval": "Quotation submitted for approval",
+      "newVersionCreated": "New version created",
+      "approved": "Quotation approved",
+      "rejected": "Quotation rejected",
+      "acceptedByCustomer": "Quotation accepted by customer"
+    },
+    "confirmSubmit": {
+      "title": "Submit for Approval",
+      "message": "Are you sure you want to submit \"{{jobCode}}\" for approval? This will start the approval workflow.",
+      "confirm": "Submit"
+    },
+    "confirmVersion": {
+      "title": "Create New Version",
+      "message": "Create a new version based on \"{{jobCode}} v{{version}}\"? The new version will be in DRAFT status.",
+      "confirm": "Create Version"
+    },
+    "confirmAccept": {
+      "title": "Accept Quotation",
+      "message": "Mark \"{{jobCode}} v{{version}}\" as accepted by customer? This will activate the associated project.",
+      "confirm": "Accept"
+    }
   },
   "invoiceSelectProject": {
     "title": "Create Invoice",
-    "description": "Select a project to create an invoice",
+    "description": "Select a project to create an invoice for",
     "searchPlaceholder": "Search projects...",
-    "noProjects": "No projects available for invoicing"
+    "noProjects": "No projects available for invoicing",
+    "cancel": "Cancel",
+    "selectProject": "Select Project",
+    "selectProjectDescription": "Choose a project with an accepted quotation to create an invoice.",
+    "noProjectsTitle": "No Projects Available",
+    "noProjectsDescription": "There are no projects available for invoicing. Projects must be in progress or completed.",
+    "loading": "Loading projects...",
+    "loadError": "Failed to load projects",
+    "status": {
+      "active": "In Progress",
+      "completed": "Completed"
+    }
   },
   "invoiceCreate": {
     "title": "Create Invoice",
-    "forProject": "Creating invoice for project: {{project}}"
+    "description": "Create a new tax invoice for this project",
+    "forProject": "Creating invoice for project: {{project}}",
+    "cancel": "Cancel",
+    "loading": "Loading project data...",
+    "loadError": "Failed to load quotation",
+    "noAcceptedQuotation": {
+      "title": "No Accepted Quotation",
+      "description": "This project does not have an accepted quotation. A quotation must be accepted by the customer before creating invoices."
+    },
+    "allItemsInvoiced": {
+      "title": "All Items Invoiced",
+      "description": "All delivered items have been invoiced. No remaining items to invoice."
+    },
+    "backToProject": "Back to Project",
+    "invoiceInfo": "Invoice Information",
+    "issueDate": "Issue Date",
+    "dueDate": "Due Date",
+    "taxRate": "Tax Rate (%)",
+    "relatedDelivery": "Related Delivery",
+    "noDelivery": "No specific delivery (general invoice)",
+    "deliveryOption": "Delivery #{{id}} - {{date}}",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes for this invoice",
+    "lineItems": {
+      "title": "Line Items",
+      "description": "Enter the quantity to invoice for each item. Only items with delivered quantity are shown.",
+      "product": "Product",
+      "unitPrice": "Unit Price",
+      "delivered": "Delivered",
+      "invoiced": "Invoiced",
+      "invoiceable": "Invoiceable",
+      "qtyToInvoice": "Qty to Invoice",
+      "lineTotal": "Line Total"
+    },
+    "totals": {
+      "totalItems": "Total Items to Invoice:",
+      "subtotal": "Subtotal:",
+      "tax": "Tax ({{rate}}%):",
+      "total": "Total:"
+    },
+    "submit": "Create Invoice",
+    "submitting": "Saving...",
+    "errors": {
+      "noItems": "Please enter quantity for at least one item",
+      "exceedsQuantity": "Quantity for {{product}} exceeds invoiceable quantity ({{max}})",
+      "invalidDueDate": "Due date must be on or after issue date"
+    }
   },
   "companyCreate": {
-    "title": "Register New Company",
-    "description": "Add a new customer or vendor to the system"
+    "title": "Create New Company",
+    "description": "Add a new company with customer, vendor, or outsource roles",
+    "backToCompanies": "Back to Companies",
+    "companyDetails": "Company Details",
+    "successMessage": "Company created successfully!"
   },
   "companyDetail": {
     "title": "Company Details",
-    "description": "View company information and history"
+    "description": "View company information and history",
+    "loading": "Loading...",
+    "loadingDetails": "Loading company details...",
+    "backToList": "Back to List",
+    "error": "Error",
+    "notFound": "Company not found",
+    "retry": "Retry",
+    "noRegistrationNumber": "No registration number",
+    "edit": "Edit"
   },
   "companyEdit": {
-    "loading": "Loading company details..."
+    "title": "Edit Company",
+    "loading": "Loading...",
+    "loadingCompany": "Loading company",
+    "loadingDetails": "Loading company...",
+    "error": "Error",
+    "backToCompanies": "Back to Companies",
+    "loadError": "Failed to load company",
+    "notFound": "Company Not Found",
+    "notFoundMessage": "The requested company could not be found.",
+    "cannotEdit": "Cannot Edit",
+    "backToCompany": "Back to Company",
+    "cannotEditInactive": "This company cannot be edited because it is inactive.",
+    "companyDetails": "Company Details",
+    "roleManagement": "Role Management",
+    "companyRoles": "Company Roles",
+    "currentRoles": "Current roles assigned to this company:",
+    "removeRole": "Remove role",
+    "cannotRemoveLastRole": "Cannot remove the last role. A company must have at least one role.",
+    "addNewRole": "Add a new role:",
+    "allRolesAssigned": "This company has all available roles assigned."
+  },
+  "placeholder": {
+    "message": "This feature will be implemented in a future phase."
   },
   "arReport": {
-    "title": "Accounts Receivable Report",
-    "description": "Track outstanding invoices and aging"
+    "title": "AR Aging Report",
+    "description": "Accounts receivable analysis by aging bucket",
+    "refresh": "Refresh",
+    "loading": "Loading AR report...",
+    "loadError": "Failed to load AR report",
+    "noData": "Report data not available",
+    "noPermission": "You do not have permission to view this report. Contact your administrator."
   }
 }

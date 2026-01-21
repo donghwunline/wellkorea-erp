@@ -69,17 +69,7 @@
   "form": {
     "selectCompany": "회사 선택",
     "selectContact": "담당자 선택",
-    "selectStatus": "상태 선택"
-  },
-  "actions": {
-    "view": "상세 보기",
-    "edit": "수정",
-    "delete": "삭제",
-    "createQuotation": "견적 생성",
-    "createDelivery": "출고 생성",
-    "createInvoice": "정산 생성"
-  },
-  "form": {
+    "selectStatus": "상태 선택",
     "customer": "고객사",
     "projectName": "프로젝트명",
     "requesterName": "요청자",
@@ -100,5 +90,13 @@
     "validation": {
       "nameWhitespace": "프로젝트명은 공백만으로 구성될 수 없습니다"
     }
+  },
+  "actions": {
+    "view": "상세 보기",
+    "edit": "수정",
+    "delete": "삭제",
+    "createQuotation": "견적 생성",
+    "createDelivery": "출고 생성",
+    "createInvoice": "정산 생성"
   }
 }
