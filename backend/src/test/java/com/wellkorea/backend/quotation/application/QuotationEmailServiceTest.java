@@ -86,7 +86,7 @@ class QuotationEmailServiceTest {
 
     private QuotationDetailView createTestQuotationView(QuotationStatus status, int version) {
         LineItemView lineItem = new LineItemView(
-                1L, 1L, "PROD-001", "Test Product",
+                1L, 1L, "PROD-001", "Test Product", "Test Spec", "EA",
                 1, BigDecimal.TEN, new BigDecimal("100000"), new BigDecimal("1000000"), null
         );
 

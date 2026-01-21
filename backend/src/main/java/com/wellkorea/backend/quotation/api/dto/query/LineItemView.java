@@ -11,6 +11,8 @@ public record LineItemView(
         Long productId,
         String productSku,
         String productName,
+        String specification,
+        String unit,
         Integer sequence,
         BigDecimal quantity,
         BigDecimal unitPrice,
