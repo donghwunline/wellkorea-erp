@@ -4,7 +4,8 @@
   "tabs": {
     "purchaseRequests": "구매 요청",
     "rfq": "RFQ",
-    "purchaseOrders": "발주서"
+    "purchaseOrders": "발주서",
+    "accountsPayable": "미지급금"
   },
   "purchaseRequest": {
     "title": "구매 요청",
@@ -285,5 +286,74 @@
     "cancel": "취소",
     "create": "발주서 생성",
     "creating": "생성 중..."
+  },
+  "accountsPayable": {
+    "title": "미지급금",
+    "list": {
+      "title": "미지급금 목록",
+      "empty": "미지급금이 없습니다.",
+      "allStatuses": "전체 상태",
+      "overdueOnly": "연체만 보기",
+      "loading": "미지급금 로딩 중...",
+      "loadError": "미지급금을 불러오지 못했습니다"
+    },
+    "status": {
+      "PENDING": "미지급",
+      "PARTIALLY_PAID": "일부지급",
+      "PAID": "완납"
+    },
+    "fields": {
+      "poNumber": "발주번호",
+      "vendor": "업체",
+      "totalAmount": "총액",
+      "totalPaid": "지급액",
+      "remainingBalance": "잔액",
+      "dueDate": "납기일",
+      "status": "상태",
+      "aging": "경과일"
+    },
+    "actions": {
+      "pay": "지급",
+      "view": "상세"
+    },
+    "aging": {
+      "CURRENT": "정상",
+      "1_30_DAYS": "1-30일",
+      "31_60_DAYS": "31-60일",
+      "61_90_DAYS": "61-90일",
+      "OVER_90_DAYS": "90일 초과"
+    },
+    "paymentModal": {
+      "title": "지급 기록",
+      "vendor": "업체",
+      "poNumber": "발주번호",
+      "totalAmount": "총액",
+      "totalPaid": "지급 완료액",
+      "remainingBalance": "잔액",
+      "paymentDate": "지급일",
+      "paymentDateRequired": "지급일을 입력해주세요",
+      "amount": "지급 금액",
+      "amountRequired": "지급 금액을 입력해주세요",
+      "amountInvalid": "금액은 0보다 커야 합니다",
+      "amountExceedsBalance": "잔액을 초과할 수 없습니다",
+      "paymentMethod": "지급 방법",
+      "paymentMethodRequired": "지급 방법을 선택해주세요",
+      "referenceNumber": "참조 번호",
+      "referenceNumberPlaceholder": "예: 이체확인번호",
+      "notes": "비고",
+      "notesPlaceholder": "추가 정보 입력",
+      "cancel": "취소",
+      "submit": "지급 등록",
+      "submitting": "등록 중...",
+      "success": "지급이 등록되었습니다",
+      "error": "지급 등록에 실패했습니다"
+    },
+    "paymentMethod": {
+      "BANK_TRANSFER": "계좌이체",
+      "CHECK": "수표",
+      "CASH": "현금",
+      "PROMISSORY_NOTE": "약속어음",
+      "OTHER": "기타"
+    }
   }
 }

@@ -4,7 +4,8 @@
   "tabs": {
     "purchaseRequests": "Purchase Requests",
     "rfq": "RFQ",
-    "purchaseOrders": "Purchase Orders"
+    "purchaseOrders": "Purchase Orders",
+    "accountsPayable": "Accounts Payable"
   },
   "purchaseRequest": {
     "title": "Purchase Requests",
@@ -285,5 +286,74 @@
     "cancel": "Cancel",
     "create": "Create Purchase Order",
     "creating": "Creating..."
+  },
+  "accountsPayable": {
+    "title": "Accounts Payable",
+    "list": {
+      "title": "Accounts Payable List",
+      "empty": "No accounts payable found.",
+      "allStatuses": "All Statuses",
+      "overdueOnly": "Overdue Only",
+      "loading": "Loading accounts payable...",
+      "loadError": "Failed to load accounts payable"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "PARTIALLY_PAID": "Partially Paid",
+      "PAID": "Paid"
+    },
+    "fields": {
+      "poNumber": "PO Number",
+      "vendor": "Vendor",
+      "totalAmount": "Total Amount",
+      "totalPaid": "Total Paid",
+      "remainingBalance": "Remaining Balance",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "aging": "Aging"
+    },
+    "actions": {
+      "pay": "Pay",
+      "view": "View"
+    },
+    "aging": {
+      "CURRENT": "Current",
+      "1_30_DAYS": "1-30 days",
+      "31_60_DAYS": "31-60 days",
+      "61_90_DAYS": "61-90 days",
+      "OVER_90_DAYS": "90+ days"
+    },
+    "paymentModal": {
+      "title": "Record Payment",
+      "vendor": "Vendor",
+      "poNumber": "PO Number",
+      "totalAmount": "Total Amount",
+      "totalPaid": "Total Paid",
+      "remainingBalance": "Remaining Balance",
+      "paymentDate": "Payment Date",
+      "paymentDateRequired": "Payment date is required",
+      "amount": "Payment Amount",
+      "amountRequired": "Payment amount is required",
+      "amountInvalid": "Amount must be greater than 0",
+      "amountExceedsBalance": "Amount cannot exceed remaining balance",
+      "paymentMethod": "Payment Method",
+      "paymentMethodRequired": "Payment method is required",
+      "referenceNumber": "Reference Number",
+      "referenceNumberPlaceholder": "e.g., Transfer confirmation number",
+      "notes": "Notes",
+      "notesPlaceholder": "Enter additional information",
+      "cancel": "Cancel",
+      "submit": "Record Payment",
+      "submitting": "Recording...",
+      "success": "Payment recorded successfully",
+      "error": "Failed to record payment"
+    },
+    "paymentMethod": {
+      "BANK_TRANSFER": "Bank Transfer",
+      "CHECK": "Check",
+      "CASH": "Cash",
+      "PROMISSORY_NOTE": "Promissory Note",
+      "OTHER": "Other"
+    }
   }
 }
