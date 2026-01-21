@@ -194,27 +194,66 @@
   },
   "invoiceCreateModal": {
     "title": "세금계산서 생성",
-    "loading": "데이터를 불러오는 중...",
-    "selectItems": "청구할 항목 선택",
-    "selectedItems": "선택된 항목",
-    "noItemsAvailable": "청구 가능한 항목이 없습니다",
-    "allItemsInvoiced": "모든 항목이 이미 청구되었습니다",
+    "loading": "프로젝트 데이터를 불러오는 중...",
+    "loadError": "견적을 불러오지 못했습니다: {{message}}",
+    "close": "닫기",
+    "cancel": "취소",
+    "creating": "생성 중...",
+    "createInvoice": "세금계산서 생성",
+    "noQuotation": {
+      "title": "승인된 견적이 없습니다",
+      "description": "이 프로젝트에 고객이 승인한 견적이 없습니다. 세금계산서를 생성하려면 먼저 고객이 견적을 승인해야 합니다."
+    },
+    "allInvoiced": {
+      "title": "모든 항목 청구 완료",
+      "description": "모든 출고 항목이 청구되었습니다. 청구할 항목이 더 이상 없습니다."
+    },
+    "sections": {
+      "info": "세금계산서 정보",
+      "lineItems": "품목"
+    },
+    "lineItemsDescription": "각 품목의 청구 수량을 입력하세요. 출고된 품목만 표시됩니다.",
     "fields": {
-      "invoiceDate": "발행일",
+      "issueDate": "발행일",
       "dueDate": "납부기한",
+      "taxRate": "세율 (%)",
+      "relatedDelivery": "관련 출고",
       "notes": "비고"
     },
     "placeholders": {
-      "notes": "비고 (선택사항)"
+      "notes": "세금계산서 관련 메모 (선택사항)"
+    },
+    "deliveryOptions": {
+      "noDelivery": "특정 출고 없음 (일반 청구)",
+      "delivery": "출고 #{{id}} - {{date}}"
+    },
+    "table": {
+      "product": "품목",
+      "unitPrice": "단가",
+      "delivered": "출고",
+      "invoiced": "청구",
+      "invoiceable": "청구 가능",
+      "qty": "수량",
+      "total": "합계"
+    },
+    "totals": {
+      "totalItems": "총 항목 수:",
+      "subtotal": "공급가액:",
+      "tax": "세액 ({{rate}}%):",
+      "total": "합계:"
     },
     "validation": {
-      "selectAtLeastOne": "최소 1개 항목을 선택해주세요",
-      "dueDateRequired": "납부기한을 입력해주세요"
+      "enterQuantity": "최소 1개 품목의 수량을 입력해주세요",
+      "exceedsInvoiceable": "{{productName}}의 수량이 청구 가능 수량({{remaining}})을 초과합니다",
+      "dueDateBeforeIssue": "납부기한은 발행일 이후여야 합니다"
     }
   },
   "invoiceDetailModal": {
     "title": "세금계산서 상세",
     "loading": "세금계산서 상세 정보를 불러오는 중...",
+    "loadError": "세금계산서를 불러오지 못했습니다: {{error}}",
+    "notFound": "세금계산서를 찾을 수 없습니다",
+    "close": "닫기",
     "sections": {
       "basicInfo": "기본 정보",
       "lineItems": "항목",
@@ -223,8 +262,76 @@
     },
     "noPayments": "결제 내역이 없습니다",
     "paymentProgress": "결제 진행률",
-    "paid": "결제됨",
-    "remaining": "미결제"
+    "paid": "결제: {{amount}}",
+    "remaining": "미결제: {{amount}}",
+    "daysOverdue": "{{days}}일 연체",
+    "itemCount": "{{count}}개 항목",
+    "paymentCount": "{{count}}건 결제",
+    "cancel": "취소",
+    "issuing": "발행 중...",
+    "issueInvoice": "발행",
+    "recording": "등록 중...",
+    "recordPayment": "결제 등록",
+    "cancelling": "취소 중...",
+    "cancelInvoice": "취소",
+    "cancelConfirm": {
+      "title": "세금계산서 취소",
+      "message": "세금계산서 {{invoiceNumber}}을(를) 취소하시겠습니까?",
+      "warning": "이 작업은 되돌릴 수 없습니다.",
+      "keep": "유지",
+      "confirm": "취소 확인"
+    },
+    "paymentForm": {
+      "title": "결제 등록",
+      "paymentDate": "결제일",
+      "amount": "금액",
+      "amountPlaceholder": "금액을 입력하세요",
+      "remainingBalance": "미결제 잔액: {{amount}}",
+      "paymentMethod": "결제 수단",
+      "referenceNumber": "참조 번호",
+      "referencePlaceholder": "예: 수표 번호, 거래 ID",
+      "notes": "비고",
+      "notesPlaceholder": "결제 관련 메모 (선택사항)"
+    },
+    "validation": {
+      "invalidAmount": "유효한 금액을 입력해주세요",
+      "enterPaymentDate": "결제일을 입력해주세요",
+      "exceedsBalance": "결제 금액({{amount}})이 미결제 잔액({{remaining}})을 초과합니다"
+    },
+    "fields": {
+      "status": "상태",
+      "issueDate": "발행일",
+      "dueDate": "납부기한",
+      "jobCode": "Job Code",
+      "overdue": "{{days}}일 연체"
+    },
+    "amounts": {
+      "title": "금액 정보",
+      "subtotal": "공급가액",
+      "tax": "세액 ({{rate}}%)",
+      "total": "합계",
+      "balanceDue": "미결제 금액"
+    },
+    "lineItems": {
+      "title": "항목",
+      "count": "{{count}}개 항목",
+      "product": "품목",
+      "qty": "수량",
+      "unitPrice": "단가",
+      "total": "금액"
+    },
+    "payments": {
+      "title": "결제 내역",
+      "count": "{{count}}건",
+      "empty": "아직 결제 내역이 없습니다."
+    },
+    "metadata": "작성자: {{createdBy}} | 작성일: {{createdAt}} | 최종 수정: {{updatedAt}}",
+    "actions": {
+      "issuing": "발행 중...",
+      "issue": "발행",
+      "record": "결제 등록",
+      "cancel": "취소"
+    }
   },
   "recordPaymentModal": {
     "title": "결제 등록",
@@ -280,17 +387,44 @@
     }
   },
   "deliveryCreateModal": {
-    "title": "출고 생성",
+    "title": "출고 등록",
     "loading": "견적 데이터를 불러오는 중...",
-    "noQuotation": "승인된 견적이 없습니다",
-    "noQuotationDesc": "이 프로젝트에 고객이 승인한 견적이 없습니다.",
-    "allDelivered": "모든 항목 출고 완료",
-    "allDeliveredDesc": "모든 견적 항목이 출고되었습니다.",
+    "loadError": "견적을 불러오지 못했습니다: {{error}}",
+    "close": "닫기",
+    "cancel": "취소",
+    "creating": "생성 중...",
+    "createDelivery": "출고 생성",
+    "noQuotation": {
+      "title": "승인된 견적이 없습니다",
+      "description": "이 프로젝트에 고객이 승인한 견적이 없습니다. 출고를 등록하려면 먼저 고객이 견적을 승인해야 합니다."
+    },
+    "allDelivered": {
+      "title": "모든 항목 출고 완료",
+      "description": "모든 견적 항목이 출고되었습니다. 출고할 항목이 더 이상 없습니다."
+    },
+    "sections": {
+      "info": "출고 정보",
+      "lineItems": "출고 품목"
+    },
     "fields": {
       "deliveryDate": "출고일",
       "recipientName": "수령인",
       "recipientPhone": "연락처",
       "notes": "비고"
+    },
+    "notesPlaceholder": "출고 관련 메모 (선택사항)",
+    "lineItemsDescription": "각 품목의 출고 수량을 입력하세요. 잔여 수량이 있는 품목만 표시됩니다.",
+    "table": {
+      "product": "품목",
+      "quoted": "견적",
+      "delivered": "출고",
+      "remaining": "잔여",
+      "qtyToDeliver": "출고 수량"
+    },
+    "totalToDeliver": "총 출고 수량:",
+    "validation": {
+      "enterQuantity": "최소 1개 품목의 수량을 입력해주세요",
+      "exceedsRemaining": "{{productName}}의 수량이 잔여 출고 가능 수량({{remaining}})을 초과합니다"
     }
   },
   "deliveryDetailModal": {
@@ -340,8 +474,43 @@
   },
   "quotationDetailModal": {
     "title": "견적 상세",
-    "loading": "견적 상세 정보를 불러오는 중...",
-    "confirmSubmit": "결재 요청"
+    "titleWithVersion": "견적: {{jobCode}} v{{version}}",
+    "loading": "견적을 불러오는 중...",
+    "loadError": "견적을 찾을 수 없습니다",
+    "close": "닫기",
+    "confirmSubmit": "결재 요청",
+    "successMessages": {
+      "submitted": "결재가 요청되었습니다",
+      "versionCreated": "새 버전이 생성되었습니다",
+      "approved": "견적이 승인되었습니다",
+      "rejected": "견적이 반려되었습니다"
+    },
+    "approval": {
+      "title": "결재 상태",
+      "loading": "결재 정보를 불러오는 중...",
+      "pending": "결재 대기",
+      "pendingDescription": "결재 프로세스가 시작되었습니다. 결재 처리를 기다려 주세요.",
+      "approvedBy": "승인자: {{name}}",
+      "approvedAt": "승인일시: {{date}}",
+      "reason": "사유"
+    },
+    "actions": {
+      "title": "빠른 작업",
+      "edit": "견적 수정",
+      "submit": "결재 요청",
+      "downloadPdf": "PDF 다운로드",
+      "createVersion": "새 버전 생성"
+    },
+    "confirmSubmitModal": {
+      "title": "결재 요청",
+      "message": "\"{{jobCode}}\" 견적서를 결재 요청하시겠습니까? 결재 프로세스가 시작됩니다.",
+      "confirm": "제출"
+    },
+    "confirmVersion": {
+      "title": "새 버전 생성",
+      "message": "\"{{jobCode}} v{{version}}\"을 기반으로 새 버전을 생성하시겠습니까? 새 버전은 초안 상태가 됩니다.",
+      "confirm": "버전 생성"
+    }
   },
   "quotationEditModal": {
     "title": "견적 수정",
@@ -356,12 +525,63 @@
   },
   "purchaseOrderDetailModal": {
     "title": "발주서 상세",
-    "loading": "상세 정보를 불러오는 중...",
-    "confirmComplete": "완료 처리",
+    "titleWithNumber": "발주서: {{poNumber}}",
+    "loading": "발주서를 불러오는 중...",
+    "loadError": "발주서를 찾을 수 없습니다",
+    "close": "닫기",
+    "successMessages": {
+      "sent": "발주서가 업체로 발송되었습니다",
+      "confirmed": "발주서가 확정되었습니다",
+      "received": "물품이 수령되었습니다",
+      "canceled": "발주서가 취소되었습니다"
+    },
     "sections": {
       "orderInfo": "발주 정보",
       "vendorInfo": "업체 정보",
-      "items": "발주 항목"
+      "items": "발주 항목",
+      "related": "관련 정보",
+      "actions": "작업"
+    },
+    "fields": {
+      "poNumber": "발주번호",
+      "status": "상태",
+      "vendor": "업체",
+      "project": "프로젝트",
+      "orderDate": "발주일",
+      "expectedDelivery": "예상 납품일",
+      "totalAmount": "총액",
+      "currency": "통화",
+      "notes": "비고",
+      "purchaseRequest": "구매 요청",
+      "overdue": "납기 초과"
+    },
+    "metadata": "작성자: {{createdBy}} | 작성일: {{createdAt}} | 수정일: {{updatedAt}}",
+    "actions": {
+      "sendToVendor": "업체로 발송",
+      "confirmOrder": "발주 확정",
+      "markReceived": "수령 완료",
+      "cancelOrder": "발주 취소",
+      "noActions": "이 발주서에 대해 가능한 작업이 없습니다."
+    },
+    "confirmSend": {
+      "title": "발주서 발송",
+      "message": "발주서 \"{{poNumber}}\"을(를) {{vendorName}}에게 발송합니다.",
+      "helpText": "발주서 PDF가 이메일에 첨부됩니다."
+    },
+    "confirmConfirm": {
+      "title": "발주 확정",
+      "message": "발주서 \"{{poNumber}}\"이(가) 업체에 의해 확정되었음을 표시하시겠습니까?",
+      "confirm": "확정"
+    },
+    "confirmReceive": {
+      "title": "수령 완료",
+      "message": "발주서 \"{{poNumber}}\"의 물품이 수령되었음을 표시하시겠습니까? 상위 구매 요청도 종료됩니다.",
+      "confirm": "수령 완료"
+    },
+    "confirmCancel": {
+      "title": "발주 취소",
+      "message": "발주서 \"{{poNumber}}\"을(를) 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "confirm": "발주 취소"
     }
   },
   "companyManagement": {
@@ -412,5 +632,94 @@
       "status": "상태",
       "aging": "경과일"
     }
+  },
+  "arInvoiceList": {
+    "title": "미수금 명세",
+    "filter": {
+      "all": "전체",
+      "current": "정상",
+      "days30": "1-30일",
+      "days60": "31-60일",
+      "days90Plus": "60일 초과"
+    },
+    "filterLabel": "경과일",
+    "invoiceCount": "{{total}}개 중 {{filtered}}개",
+    "table": {
+      "invoice": "청구서",
+      "customer": "고객",
+      "dueDate": "납부기한",
+      "status": "상태",
+      "balance": "잔액",
+      "daysOverdue": "연체일",
+      "aging": "경과일"
+    },
+    "empty": {
+      "title": "미수금 없음",
+      "description": "모든 청구서가 결제되었습니다"
+    },
+    "daysLabel": "{{days}}일",
+    "onTime": "정상"
+  },
+  "arAgingSummary": {
+    "title": "매출채권 경과일 분석",
+    "description": "경과일별 미수금 현황",
+    "totalOutstanding": "총 미수금",
+    "totalInvoices": "총 {{count}}건",
+    "buckets": {
+      "current": "정상",
+      "days30": "1-30일",
+      "days60": "31-60일",
+      "days90Plus": "60일 초과"
+    },
+    "invoicesCount": "{{count}}건",
+    "overdueWarning": "{{amount}}이(가) 30일 이상 연체되었습니다. 해당 청구서에 대한 후속 조치를 고려하세요."
+  },
+  "arCustomerTable": {
+    "title": "고객별 미수금",
+    "empty": "고객별 미수금이 없습니다",
+    "customerCount": "{{count}}개 고객",
+    "table": {
+      "customer": "고객",
+      "invoices": "청구서",
+      "outstanding": "미수금",
+      "percentOfTotal": "비율"
+    }
+  },
+  "taskFlowModal": {
+    "title": "공정 흐름",
+    "titleWithProject": "공정 흐름: {{projectName}}",
+    "loading": "공정 흐름을 불러오는 중...",
+    "loadError": "공정 흐름을 불러오지 못했습니다"
+  },
+  "taskFlowCanvas": {
+    "addTask": "작업 추가",
+    "unsavedChanges": "저장되지 않은 변경사항",
+    "save": "저장"
+  },
+  "invoiceSummaryStats": {
+    "totalInvoices": "총 청구서",
+    "overdue": "{{count}}건 연체",
+    "totalAmount": "총 금액",
+    "totalPaid": "결제 완료",
+    "outstanding": "미결제"
+  },
+  "deliverySummaryStats": {
+    "totalDeliveries": "총 출고",
+    "itemsDelivered": "출고 품목",
+    "pending": "대기중",
+    "delivered": "출고 완료"
+  },
+  "attachmentPanel": {
+    "loading": "첨부파일을 불러오는 중...",
+    "loadError": "첨부파일을 불러오지 못했습니다",
+    "title": "도면 ({{count}})",
+    "empty": "첨부된 도면이 없습니다"
+  },
+  "projectRelatedNavigationGrid": {
+    "loading": "프로젝트 요약을 불러오는 중...",
+    "loadError": "요약을 불러오지 못했습니다",
+    "retry": "다시 시도",
+    "emptyTitle": "표시할 섹션이 없습니다",
+    "emptyDescription": "이 프로젝트에 섹션이 아직 없거나 볼 수 있는 권한이 없습니다."
   }
 }

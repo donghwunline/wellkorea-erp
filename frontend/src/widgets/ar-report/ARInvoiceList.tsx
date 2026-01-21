@@ -9,6 +9,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, Icon, FilterBar, Badge } from '@/shared/ui';
 import type { ARInvoice } from '@/entities/invoice';
@@ -24,16 +25,17 @@ type AgingFilter = 'all' | 'current' | '30' | '60' | '90+';
 type SortField = 'dueDate' | 'amount' | 'daysOverdue' | 'customer';
 type SortOrder = 'asc' | 'desc';
 
-const AGING_OPTIONS = [
-  { value: 'all', label: 'All Invoices' },
-  { value: 'current', label: 'Current' },
-  { value: '30', label: '1-30 Days' },
-  { value: '60', label: '31-60 Days' },
-  { value: '90+', label: '60+ Days' },
-];
-
 export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps) {
+  const { t } = useTranslation('widgets');
   const navigate = useNavigate();
+
+  const AGING_OPTIONS = useMemo(() => [
+    { value: 'all', label: t('arInvoiceList.filter.all') },
+    { value: 'current', label: t('arInvoiceList.filter.current') },
+    { value: '30', label: t('arInvoiceList.filter.days30') },
+    { value: '60', label: t('arInvoiceList.filter.days60') },
+    { value: '90+', label: t('arInvoiceList.filter.days90Plus') },
+  ], [t]);
   const [agingFilter, setAgingFilter] = useState<AgingFilter>('all');
   const [sortField, setSortField] = useState<SortField>('daysOverdue');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -128,11 +130,11 @@ export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps)
   if (invoices.length === 0) {
     return (
       <Card className="p-6">
-        <h3 className="mb-4 text-lg font-semibold text-white">Outstanding Invoices</h3>
+        <h3 className="mb-4 text-lg font-semibold text-white">{t('arInvoiceList.title')}</h3>
         <div className="py-8 text-center">
           <Icon name="check-circle" className="mx-auto mb-3 h-10 w-10 text-green-500" />
-          <p className="text-sm text-steel-400">No outstanding invoices</p>
-          <p className="mt-1 text-xs text-steel-500">All invoices have been paid</p>
+          <p className="text-sm text-steel-400">{t('arInvoiceList.empty.title')}</p>
+          <p className="mt-1 text-xs text-steel-500">{t('arInvoiceList.empty.description')}</p>
         </div>
       </Card>
     );
@@ -142,16 +144,16 @@ export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps)
     <Card className="p-6">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white">Outstanding Invoices</h3>
+        <h3 className="text-lg font-semibold text-white">{t('arInvoiceList.title')}</h3>
         <span className="text-sm text-steel-400">
-          {filteredInvoices.length} of {invoices.length} invoices
+          {t('arInvoiceList.invoiceCount', { filtered: filteredInvoices.length, total: invoices.length })}
         </span>
       </div>
 
       {/* Filters */}
       <div className="mb-4">
         <FilterBar>
-          <FilterBar.Field label="Aging">
+          <FilterBar.Field label={t('arInvoiceList.filterLabel')}>
             <FilterBar.Select
               options={AGING_OPTIONS}
               value={agingFilter}
@@ -167,38 +169,38 @@ export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps)
           <thead>
             <tr className="border-b border-steel-700">
               <th className="px-4 py-3 text-left text-sm font-medium text-steel-400">
-                Invoice
+                {t('arInvoiceList.table.invoice')}
               </th>
               <th
                 className="cursor-pointer px-4 py-3 text-left text-sm font-medium text-steel-400 hover:text-white"
                 onClick={() => handleSort('customer')}
               >
-                Customer
+                {t('arInvoiceList.table.customer')}
                 {renderSortIndicator('customer')}
               </th>
               <th
                 className="cursor-pointer px-4 py-3 text-left text-sm font-medium text-steel-400 hover:text-white"
                 onClick={() => handleSort('dueDate')}
               >
-                Due Date
+                {t('arInvoiceList.table.dueDate')}
                 {renderSortIndicator('dueDate')}
               </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-steel-400">Status</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-steel-400">{t('arInvoiceList.table.status')}</th>
               <th
                 className="cursor-pointer px-4 py-3 text-right text-sm font-medium text-steel-400 hover:text-white"
                 onClick={() => handleSort('amount')}
               >
-                Balance
+                {t('arInvoiceList.table.balance')}
                 {renderSortIndicator('amount')}
               </th>
               <th
                 className="cursor-pointer px-4 py-3 text-right text-sm font-medium text-steel-400 hover:text-white"
                 onClick={() => handleSort('daysOverdue')}
               >
-                Days Overdue
+                {t('arInvoiceList.table.daysOverdue')}
                 {renderSortIndicator('daysOverdue')}
               </th>
-              <th className="px-4 py-3 text-center text-sm font-medium text-steel-400">Aging</th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-steel-400">{t('arInvoiceList.table.aging')}</th>
             </tr>
           </thead>
           <tbody>
@@ -245,10 +247,10 @@ export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps)
                                 : 'text-steel-400'
                         }`}
                       >
-                        {invoice.daysOverdue} days
+                        {t('arInvoiceList.daysLabel', { days: invoice.daysOverdue })}
                       </span>
                     ) : (
-                      <span className="text-green-400">On time</span>
+                      <span className="text-green-400">{t('arInvoiceList.onTime')}</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">

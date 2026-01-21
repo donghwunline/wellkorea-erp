@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -51,6 +52,7 @@ export function QuotationDetailModal({
   onSuccess,
   onEdit,
 }: QuotationDetailModalProps) {
+  const { t } = useTranslation('widgets');
   const { user } = useAuth();
 
   // Success message state with auto-dismiss
@@ -130,7 +132,7 @@ export function QuotationDetailModal({
   // Mutation hooks
   const { mutate: submitForApproval, isPending: isSubmitting } = useSubmitQuotation({
     onSuccess: () => {
-      showSuccess('Quotation submitted for approval');
+      showSuccess(t('quotationDetailModal.successMessages.submitted'));
       setSubmitConfirm(false);
       refetchQuotation();
       onSuccess?.();
@@ -140,7 +142,7 @@ export function QuotationDetailModal({
 
   const { mutate: createVersion, isPending: isCreatingVersion } = useCreateVersion({
     onSuccess: (result) => {
-      showSuccess('New version created');
+      showSuccess(t('quotationDetailModal.successMessages.versionCreated'));
       setVersionConfirm(false);
       onSuccess?.();
       // Open edit modal for the new version
@@ -156,7 +158,7 @@ export function QuotationDetailModal({
   const { mutate: approveApproval, isPending: isApproving } = useApproveApproval({
     entityId: quotationId,
     onSuccess: () => {
-      showSuccess('Quotation approved');
+      showSuccess(t('quotationDetailModal.successMessages.approved'));
       refetchQuotation();
       refetchApproval();
       onSuccess?.();
@@ -167,7 +169,7 @@ export function QuotationDetailModal({
   const { mutate: rejectApproval, isPending: isRejecting } = useRejectApproval({
     entityId: quotationId,
     onSuccess: () => {
-      showSuccess('Quotation rejected');
+      showSuccess(t('quotationDetailModal.successMessages.rejected'));
       setShowRejectModal(false);
       refetchQuotation();
       refetchApproval();
@@ -225,8 +227,8 @@ export function QuotationDetailModal({
   // Loading state
   if (isLoadingQuotation) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Quotation Details" size="lg">
-        <LoadingState message="Loading quotation..." />
+      <Modal isOpen={isOpen} onClose={onClose} title={t('quotationDetailModal.title')} size="lg">
+        <LoadingState message={t('quotationDetailModal.loading')} />
       </Modal>
     );
   }
@@ -234,13 +236,13 @@ export function QuotationDetailModal({
   // Error state
   if (quotationError || !quotation) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Quotation Details" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('quotationDetailModal.title')} size="lg">
         <Alert variant="error">
-          {quotationError?.message || 'Quotation not found'}
+          {quotationError?.message || t('quotationDetailModal.notFound')}
         </Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('quotationDetailModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -257,7 +259,7 @@ export function QuotationDetailModal({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={`Quotation: ${quotation.jobCode} v${quotation.version}`}
+        title={t('quotationDetailModal.titleWithVersion', { jobCode: quotation.jobCode, version: quotation.version })}
         size="lg"
       >
         {/* Success Message */}
@@ -296,10 +298,10 @@ export function QuotationDetailModal({
             {/* Loading state for PENDING approvals */}
             {!approval && quotation.status === 'PENDING' && isLoadingApprovals && (
               <Card className="p-6">
-                <h3 className="mb-4 text-lg font-medium text-white">Approval Status</h3>
+                <h3 className="mb-4 text-lg font-medium text-white">{t('quotationDetailModal.approval.title')}</h3>
                 <div className="flex items-center gap-3">
                   <Spinner className="h-5 w-5" />
-                  <span className="text-steel-400">Loading approval details...</span>
+                  <span className="text-steel-400">{t('quotationDetailModal.approval.loading')}</span>
                 </div>
               </Card>
             )}
@@ -307,13 +309,13 @@ export function QuotationDetailModal({
             {/* Fallback when approval not found for PENDING status */}
             {!approval && quotation.status === 'PENDING' && !isLoadingApprovals && (
               <Card className="p-6">
-                <h3 className="mb-4 text-lg font-medium text-white">Approval Status</h3>
+                <h3 className="mb-4 text-lg font-medium text-white">{t('quotationDetailModal.approval.title')}</h3>
                 <div className="flex items-center gap-2 text-yellow-400">
                   <Icon name="clock" className="h-5 w-5" />
-                  <span className="font-medium">Pending Approval</span>
+                  <span className="font-medium">{t('quotationDetailModal.approval.pending')}</span>
                 </div>
                 <p className="mt-2 text-sm text-steel-400">
-                  Approval workflow has been initiated. Please wait for approval processing.
+                  {t('quotationDetailModal.approval.pendingDescription')}
                 </p>
               </Card>
             )}
@@ -321,22 +323,18 @@ export function QuotationDetailModal({
             {/* Approval Status for non-pending */}
             {!approval && quotation.status !== 'DRAFT' && quotation.status !== 'PENDING' && (
               <Card className="p-6">
-                <h3 className="mb-4 text-lg font-medium text-white">Approval Status</h3>
+                <h3 className="mb-4 text-lg font-medium text-white">{t('quotationDetailModal.approval.title')}</h3>
 
                 {quotation.status === 'APPROVED' && (
                   <div className="space-y-3">
                     {quotation.approvedByName && (
                       <div className="text-sm text-steel-400">
-                        <span>Approved by: </span>
-                        <span className="text-white">{quotation.approvedByName}</span>
+                        {t('quotationDetailModal.approval.approvedBy', { name: quotation.approvedByName })}
                       </div>
                     )}
                     {quotation.approvedAt && (
                       <div className="text-sm text-steel-400">
-                        <span>Approved at: </span>
-                        <span className="text-white">
-                          {formatDate(quotation.approvedAt, 'YYYY-MM-DD HH:mm')}
-                        </span>
+                        {t('quotationDetailModal.approval.approvedAt', { date: formatDate(quotation.approvedAt, 'YYYY-MM-DD HH:mm') })}
                       </div>
                     )}
                   </div>
@@ -345,7 +343,7 @@ export function QuotationDetailModal({
                 {quotation.status === 'REJECTED' && (
                   <div className="space-y-3">
                     {quotation.rejectionReason && (
-                      <Alert variant="error" title="Reason">
+                      <Alert variant="error" title={t('quotationDetailModal.approval.reason')}>
                         {quotation.rejectionReason}
                       </Alert>
                     )}
@@ -356,7 +354,7 @@ export function QuotationDetailModal({
 
             {/* Quick Actions */}
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-medium text-white">Quick Actions</h3>
+              <h3 className="mb-4 text-lg font-medium text-white">{t('quotationDetailModal.actions.title')}</h3>
               <div className="space-y-2">
                 {canEdit && onEdit && (
                   <Button
@@ -366,7 +364,7 @@ export function QuotationDetailModal({
                     disabled={isActing}
                   >
                     <Icon name="pencil" className="mr-2 h-4 w-4" />
-                    Edit Quotation
+                    {t('quotationDetailModal.actions.edit')}
                   </Button>
                 )}
 
@@ -377,7 +375,7 @@ export function QuotationDetailModal({
                     disabled={isActing}
                   >
                     <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
-                    Submit for Approval
+                    {t('quotationDetailModal.actions.submit')}
                   </Button>
                 )}
 
@@ -389,7 +387,7 @@ export function QuotationDetailModal({
                     disabled={isActing}
                   >
                     <Icon name="document-arrow-down" className="mr-2 h-4 w-4" />
-                    Download PDF
+                    {t('quotationDetailModal.actions.downloadPdf')}
                   </Button>
                 )}
 
@@ -401,7 +399,7 @@ export function QuotationDetailModal({
                     disabled={isActing}
                   >
                     <Icon name="document-duplicate" className="mr-2 h-4 w-4" />
-                    Create New Version
+                    {t('quotationDetailModal.actions.createVersion')}
                   </Button>
                 )}
               </div>
@@ -411,7 +409,7 @@ export function QuotationDetailModal({
 
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('quotationDetailModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -419,9 +417,9 @@ export function QuotationDetailModal({
       {/* Submit Confirmation Modal */}
       <ConfirmationModal
         isOpen={submitConfirm}
-        title="Submit for Approval"
-        message={`Are you sure you want to submit "${quotation.jobCode}" for approval? This will start the approval workflow.`}
-        confirmLabel="Submit"
+        title={t('quotationDetailModal.confirmSubmitModal.title')}
+        message={t('quotationDetailModal.confirmSubmitModal.message', { jobCode: quotation.jobCode })}
+        confirmLabel={t('quotationDetailModal.confirmSubmitModal.confirm')}
         onConfirm={handleSubmitConfirm}
         onClose={() => setSubmitConfirm(false)}
       />
@@ -429,9 +427,9 @@ export function QuotationDetailModal({
       {/* Create Version Confirmation Modal */}
       <ConfirmationModal
         isOpen={versionConfirm}
-        title="Create New Version"
-        message={`Create a new version based on "${quotation.jobCode} v${quotation.version}"? The new version will be in DRAFT status.`}
-        confirmLabel="Create Version"
+        title={t('quotationDetailModal.confirmVersion.title')}
+        message={t('quotationDetailModal.confirmVersion.message', { jobCode: quotation.jobCode, version: quotation.version })}
+        confirmLabel={t('quotationDetailModal.confirmVersion.confirm')}
         onConfirm={handleVersionConfirm}
         onClose={() => setVersionConfirm(false)}
       />

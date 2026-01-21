@@ -194,37 +194,130 @@
   },
   "invoiceCreateModal": {
     "title": "Create Invoice",
-    "loading": "Loading data...",
-    "selectItems": "Select Items to Invoice",
-    "selectedItems": "Selected Items",
-    "noItemsAvailable": "No items available for invoicing",
-    "allItemsInvoiced": "All items have been invoiced",
+    "loading": "Loading project data...",
+    "loadError": "Failed to load quotation: {{message}}",
+    "close": "Close",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "createInvoice": "Create Invoice",
+    "noQuotation": {
+      "title": "No Accepted Quotation",
+      "description": "This project does not have an accepted quotation. A quotation must be accepted by the customer before creating invoices."
+    },
+    "allInvoiced": {
+      "title": "All Items Invoiced",
+      "description": "All delivered items have been invoiced. No remaining items to invoice."
+    },
+    "sections": {
+      "info": "Invoice Information",
+      "lineItems": "Line Items"
+    },
+    "lineItemsDescription": "Enter the quantity to invoice for each item. Only items with delivered quantity are shown.",
     "fields": {
-      "invoiceDate": "Invoice Date",
+      "issueDate": "Issue Date",
       "dueDate": "Due Date",
+      "taxRate": "Tax Rate (%)",
+      "relatedDelivery": "Related Delivery",
       "notes": "Notes"
     },
     "placeholders": {
-      "notes": "Optional notes"
+      "notes": "Optional notes for this invoice"
+    },
+    "deliveryOptions": {
+      "noDelivery": "No specific delivery (general invoice)",
+      "delivery": "Delivery #{{id}} - {{date}}"
+    },
+    "table": {
+      "product": "Product",
+      "unitPrice": "Unit Price",
+      "delivered": "Delivered",
+      "invoiced": "Invoiced",
+      "invoiceable": "Invoiceable",
+      "qty": "Qty",
+      "total": "Total"
+    },
+    "totals": {
+      "totalItems": "Total Items:",
+      "subtotal": "Subtotal:",
+      "tax": "Tax ({{rate}}%):",
+      "total": "Total:"
     },
     "validation": {
-      "selectAtLeastOne": "Please select at least one item",
-      "dueDateRequired": "Due date is required"
+      "enterQuantity": "Please enter quantity for at least one item",
+      "exceedsInvoiceable": "Quantity for {{productName}} exceeds invoiceable quantity ({{remaining}})",
+      "dueDateBeforeIssue": "Due date must be on or after issue date"
     }
   },
   "invoiceDetailModal": {
     "title": "Invoice Details",
     "loading": "Loading invoice details...",
+    "loadError": "Failed to load invoice: {{error}}",
+    "notFound": "Invoice not found",
+    "close": "Close",
+    "cancel": "Cancel",
     "sections": {
       "basicInfo": "Basic Information",
       "lineItems": "Line Items",
       "amounts": "Invoice Amounts",
       "paymentHistory": "Payment History"
     },
-    "noPayments": "No payments recorded",
+    "noPayments": "No payments recorded yet.",
     "paymentProgress": "Payment Progress",
-    "paid": "Paid",
-    "remaining": "Remaining"
+    "paid": "Paid: {{amount}}",
+    "remaining": "Remaining: {{amount}}",
+    "daysOverdue": "{{days}}d overdue",
+    "itemCount": "{{count}} items",
+    "paymentCount": "{{count}} payments",
+    "metadata": "Created by {{createdBy}} on {{createdAt}} | Last updated: {{updatedAt}}",
+    "issuing": "Issuing...",
+    "issueInvoice": "Issue Invoice",
+    "recording": "Recording...",
+    "recordPayment": "Record Payment",
+    "cancelling": "Cancelling...",
+    "cancelInvoice": "Cancel Invoice",
+    "cancelConfirm": {
+      "title": "Cancel Invoice",
+      "message": "Are you sure you want to cancel invoice {{invoiceNumber}}?",
+      "warning": "This action cannot be undone.",
+      "keep": "Keep Invoice",
+      "confirm": "Yes, Cancel Invoice"
+    },
+    "paymentForm": {
+      "title": "Record Payment",
+      "paymentDate": "Payment Date",
+      "amount": "Amount",
+      "amountPlaceholder": "Enter payment amount",
+      "remainingBalance": "Remaining balance: {{amount}}",
+      "paymentMethod": "Payment Method",
+      "referenceNumber": "Reference Number",
+      "referencePlaceholder": "e.g., Check number, transaction ID",
+      "notes": "Notes",
+      "notesPlaceholder": "Optional notes about this payment"
+    },
+    "validation": {
+      "invalidAmount": "Please enter a valid payment amount",
+      "enterPaymentDate": "Please enter a payment date",
+      "exceedsBalance": "Payment amount ({{amount}}) exceeds remaining balance ({{remaining}})"
+    },
+    "fields": {
+      "status": "Status",
+      "issueDate": "Issue Date",
+      "dueDate": "Due Date",
+      "jobCode": "Job Code"
+    },
+    "amounts": {
+      "title": "Invoice Amounts",
+      "subtotal": "Subtotal",
+      "tax": "Tax ({{rate}}%)",
+      "total": "Total",
+      "balanceDue": "Balance Due"
+    },
+    "lineItems": {
+      "product": "Product",
+      "qty": "Qty",
+      "unitPrice": "Unit Price",
+      "total": "Total"
+    }
   },
   "recordPaymentModal": {
     "title": "Record Payment",
@@ -280,17 +373,44 @@
     }
   },
   "deliveryCreateModal": {
-    "title": "Create Delivery",
+    "title": "Record Delivery",
     "loading": "Loading quotation data...",
-    "noQuotation": "No Accepted Quotation",
-    "noQuotationDesc": "This project does not have an accepted quotation.",
-    "allDelivered": "All Items Delivered",
-    "allDeliveredDesc": "All quotation items have been fully delivered.",
+    "loadError": "Failed to load quotation: {{error}}",
+    "close": "Close",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "createDelivery": "Create Delivery",
+    "noQuotation": {
+      "title": "No Accepted Quotation",
+      "description": "This project does not have an accepted quotation. A quotation must be accepted by the customer before recording deliveries."
+    },
+    "allDelivered": {
+      "title": "All Items Delivered",
+      "description": "All quotation items have been fully delivered. No remaining items to deliver."
+    },
+    "sections": {
+      "info": "Delivery Information",
+      "lineItems": "Line Items"
+    },
     "fields": {
       "deliveryDate": "Delivery Date",
       "recipientName": "Recipient Name",
       "recipientPhone": "Recipient Phone",
       "notes": "Notes"
+    },
+    "notesPlaceholder": "Optional notes about this delivery",
+    "lineItemsDescription": "Enter the quantity delivered for each item. Only items with remaining quantity are shown.",
+    "table": {
+      "product": "Product",
+      "quoted": "Quoted",
+      "delivered": "Delivered",
+      "remaining": "Remaining",
+      "qtyToDeliver": "Qty to Deliver"
+    },
+    "totalToDeliver": "Total Quantity to Deliver:",
+    "validation": {
+      "enterQuantity": "Please enter quantity for at least one item",
+      "exceedsRemaining": "Quantity for {{productName}} exceeds remaining deliverable quantity ({{remaining}})"
     }
   },
   "deliveryDetailModal": {
@@ -340,8 +460,43 @@
   },
   "quotationDetailModal": {
     "title": "Quotation Details",
-    "loading": "Loading quotation details...",
-    "confirmSubmit": "Submit for Approval"
+    "titleWithVersion": "Quotation: {{jobCode}} v{{version}}",
+    "loading": "Loading quotation...",
+    "loadError": "Quotation not found",
+    "close": "Close",
+    "confirmSubmit": "Submit for Approval",
+    "successMessages": {
+      "submitted": "Quotation submitted for approval",
+      "versionCreated": "New version created",
+      "approved": "Quotation approved",
+      "rejected": "Quotation rejected"
+    },
+    "approval": {
+      "title": "Approval Status",
+      "loading": "Loading approval details...",
+      "pending": "Pending Approval",
+      "pendingDescription": "Approval workflow has been initiated. Please wait for approval processing.",
+      "approvedBy": "Approved by: {{name}}",
+      "approvedAt": "Approved at: {{date}}",
+      "reason": "Reason"
+    },
+    "actions": {
+      "title": "Quick Actions",
+      "edit": "Edit Quotation",
+      "submit": "Submit for Approval",
+      "downloadPdf": "Download PDF",
+      "createVersion": "Create New Version"
+    },
+    "confirmSubmitModal": {
+      "title": "Submit for Approval",
+      "message": "Are you sure you want to submit \"{{jobCode}}\" for approval? This will start the approval workflow.",
+      "confirm": "Submit"
+    },
+    "confirmVersion": {
+      "title": "Create New Version",
+      "message": "Create a new version based on \"{{jobCode}} v{{version}}\"? The new version will be in DRAFT status.",
+      "confirm": "Create Version"
+    }
   },
   "quotationEditModal": {
     "title": "Edit Quotation",
@@ -356,12 +511,63 @@
   },
   "purchaseOrderDetailModal": {
     "title": "Purchase Order Details",
-    "loading": "Loading details...",
-    "confirmComplete": "Mark as Complete",
+    "titleWithNumber": "Purchase Order: {{poNumber}}",
+    "loading": "Loading purchase order...",
+    "loadError": "Purchase order not found",
+    "close": "Close",
+    "successMessages": {
+      "sent": "Purchase order sent to vendor",
+      "confirmed": "Purchase order confirmed",
+      "received": "Items received successfully",
+      "canceled": "Purchase order canceled"
+    },
     "sections": {
-      "orderInfo": "Order Information",
+      "orderInfo": "Order Details",
       "vendorInfo": "Vendor Information",
-      "items": "Order Items"
+      "items": "Order Items",
+      "related": "Related",
+      "actions": "Actions"
+    },
+    "fields": {
+      "poNumber": "PO Number",
+      "status": "Status",
+      "vendor": "Vendor",
+      "project": "Project",
+      "orderDate": "Order Date",
+      "expectedDelivery": "Expected Delivery",
+      "totalAmount": "Total Amount",
+      "currency": "Currency",
+      "notes": "Notes",
+      "purchaseRequest": "Purchase Request",
+      "overdue": "Overdue"
+    },
+    "metadata": "Created by: {{createdBy}} | Created: {{createdAt}} | Updated: {{updatedAt}}",
+    "actions": {
+      "sendToVendor": "Send to Vendor",
+      "confirmOrder": "Confirm Order",
+      "markReceived": "Mark as Received",
+      "cancelOrder": "Cancel Order",
+      "noActions": "No actions available for this order."
+    },
+    "confirmSend": {
+      "title": "Send Purchase Order",
+      "message": "Send PO \"{{poNumber}}\" to {{vendorName}}.",
+      "helpText": "The purchase order PDF will be attached to the email."
+    },
+    "confirmConfirm": {
+      "title": "Confirm Purchase Order",
+      "message": "Mark PO \"{{poNumber}}\" as confirmed by the vendor?",
+      "confirm": "Confirm"
+    },
+    "confirmReceive": {
+      "title": "Mark as Received",
+      "message": "Mark PO \"{{poNumber}}\" as received? This will also close the parent purchase request.",
+      "confirm": "Mark Received"
+    },
+    "confirmCancel": {
+      "title": "Cancel Purchase Order",
+      "message": "Are you sure you want to cancel PO \"{{poNumber}}\"? This action cannot be undone.",
+      "confirm": "Cancel Order"
     }
   },
   "companyManagement": {
@@ -412,5 +618,94 @@
       "status": "Status",
       "aging": "Aging"
     }
+  },
+  "arInvoiceList": {
+    "title": "Outstanding Invoices",
+    "filter": {
+      "all": "All Invoices",
+      "current": "Current",
+      "days30": "1-30 Days",
+      "days60": "31-60 Days",
+      "days90Plus": "60+ Days"
+    },
+    "filterLabel": "Aging",
+    "invoiceCount": "{{filtered}} of {{total}} invoices",
+    "table": {
+      "invoice": "Invoice",
+      "customer": "Customer",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "balance": "Balance",
+      "daysOverdue": "Days Overdue",
+      "aging": "Aging"
+    },
+    "empty": {
+      "title": "No outstanding invoices",
+      "description": "All invoices have been paid"
+    },
+    "daysLabel": "{{days}} days",
+    "onTime": "On time"
+  },
+  "arAgingSummary": {
+    "title": "AR Aging Summary",
+    "description": "Outstanding accounts receivable by age",
+    "totalOutstanding": "Total Outstanding",
+    "totalInvoices": "{{count}} total invoices",
+    "buckets": {
+      "current": "Current",
+      "days30": "1-30 Days",
+      "days60": "31-60 Days",
+      "days90Plus": "60+ Days"
+    },
+    "invoicesCount": "{{count}} invoices",
+    "overdueWarning": "{{amount}} is overdue by more than 30 days. Consider following up on these invoices."
+  },
+  "arCustomerTable": {
+    "title": "Outstanding by Customer",
+    "empty": "No outstanding amounts by customer",
+    "customerCount": "{{count}} customers",
+    "table": {
+      "customer": "Customer",
+      "invoices": "Invoices",
+      "outstanding": "Outstanding",
+      "percentOfTotal": "% of Total"
+    }
+  },
+  "taskFlowModal": {
+    "title": "Task Flow",
+    "titleWithProject": "Task Flow: {{projectName}}",
+    "loading": "Loading task flow...",
+    "loadError": "Failed to load task flow"
+  },
+  "taskFlowCanvas": {
+    "addTask": "Add Task",
+    "unsavedChanges": "Unsaved changes",
+    "save": "Save"
+  },
+  "invoiceSummaryStats": {
+    "totalInvoices": "Total Invoices",
+    "overdue": "{{count}} overdue",
+    "totalAmount": "Total Amount",
+    "totalPaid": "Total Paid",
+    "outstanding": "Outstanding"
+  },
+  "deliverySummaryStats": {
+    "totalDeliveries": "Total Deliveries",
+    "itemsDelivered": "Items Delivered",
+    "pending": "Pending",
+    "delivered": "Delivered"
+  },
+  "attachmentPanel": {
+    "loading": "Loading attachments...",
+    "loadError": "Failed to load attachments",
+    "title": "Blueprints ({{count}})",
+    "empty": "No blueprints attached"
+  },
+  "projectRelatedNavigationGrid": {
+    "loading": "Loading project summary...",
+    "loadError": "Failed to load summary",
+    "retry": "Retry",
+    "emptyTitle": "No sections available",
+    "emptyDescription": "This project doesn't have any sections yet, or you don't have permission to view them."
   }
 }

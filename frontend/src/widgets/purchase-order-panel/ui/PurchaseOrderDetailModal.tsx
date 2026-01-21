@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -68,6 +69,8 @@ export function PurchaseOrderDetailModal({
   onClose,
   onSuccess,
 }: PurchaseOrderDetailModalProps) {
+  const { t } = useTranslation('widgets');
+
   // Success message with auto-dismiss
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,7 +118,7 @@ export function PurchaseOrderDetailModal({
   // Mutation hooks
   const { mutate: sendOrder, isPending: isSending } = useSendPurchaseOrder({
     onSuccess: () => {
-      showSuccess('Purchase order sent to vendor');
+      showSuccess(t('purchaseOrderDetailModal.successMessages.sent'));
       setSendConfirm(false);
       refetch();
       onSuccess?.();
@@ -125,7 +128,7 @@ export function PurchaseOrderDetailModal({
 
   const { mutate: confirmOrder, isPending: isConfirming } = useConfirmPurchaseOrder({
     onSuccess: () => {
-      showSuccess('Purchase order confirmed');
+      showSuccess(t('purchaseOrderDetailModal.successMessages.confirmed'));
       setConfirmConfirm(false);
       refetch();
       onSuccess?.();
@@ -135,7 +138,7 @@ export function PurchaseOrderDetailModal({
 
   const { mutate: receiveOrder, isPending: isReceiving } = useReceivePurchaseOrder({
     onSuccess: () => {
-      showSuccess('Items received successfully');
+      showSuccess(t('purchaseOrderDetailModal.successMessages.received'));
       setReceiveConfirm(false);
       refetch();
       onSuccess?.();
@@ -145,7 +148,7 @@ export function PurchaseOrderDetailModal({
 
   const { mutate: cancelOrder, isPending: isCanceling } = useCancelPurchaseOrder({
     onSuccess: () => {
-      showSuccess('Purchase order canceled');
+      showSuccess(t('purchaseOrderDetailModal.successMessages.canceled'));
       setCancelConfirm(false);
       refetch();
       onSuccess?.();
@@ -182,8 +185,8 @@ export function PurchaseOrderDetailModal({
   // Loading state
   if (isLoading) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Purchase Order Details" size="lg">
-        <LoadingState message="Loading purchase order..." />
+      <Modal isOpen={isOpen} onClose={onClose} title={t('purchaseOrderDetailModal.title')} size="lg">
+        <LoadingState message={t('purchaseOrderDetailModal.loading')} />
       </Modal>
     );
   }
@@ -191,11 +194,11 @@ export function PurchaseOrderDetailModal({
   // Error state
   if (fetchError || !purchaseOrder) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Purchase Order Details" size="lg">
-        <Alert variant="error">{fetchError?.message || 'Purchase order not found'}</Alert>
+      <Modal isOpen={isOpen} onClose={onClose} title={t('purchaseOrderDetailModal.title')} size="lg">
+        <Alert variant="error">{fetchError?.message || t('purchaseOrderDetailModal.loadError')}</Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('purchaseOrderDetailModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -214,7 +217,7 @@ export function PurchaseOrderDetailModal({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={`Purchase Order: ${purchaseOrder.poNumber}`}
+        title={t('purchaseOrderDetailModal.titleWithNumber', { poNumber: purchaseOrder.poNumber })}
         size="lg"
       >
         {/* Success Message */}
@@ -241,53 +244,55 @@ export function PurchaseOrderDetailModal({
 
             {/* PO Details */}
             <Card className="p-4">
-              <h3 className="mb-4 text-lg font-medium text-white">Order Details</h3>
+              <h3 className="mb-4 text-lg font-medium text-white">{t('purchaseOrderDetailModal.sections.orderInfo')}</h3>
               <div className="grid grid-cols-2 gap-4">
-                <InfoField label="PO Number">
+                <InfoField label={t('purchaseOrderDetailModal.fields.poNumber')}>
                   <span className="font-mono font-medium text-copper-400">
                     {purchaseOrder.poNumber}
                   </span>
                 </InfoField>
-                <InfoField label="Status">
+                <InfoField label={t('purchaseOrderDetailModal.fields.status')}>
                   <PurchaseOrderStatusBadge status={purchaseOrder.status} korean />
                 </InfoField>
-                <InfoField label="Vendor">
+                <InfoField label={t('purchaseOrderDetailModal.fields.vendor')}>
                   <span className="font-medium">{purchaseOrder.vendorName}</span>
                 </InfoField>
-                <InfoField label="Project">
+                <InfoField label={t('purchaseOrderDetailModal.fields.project')}>
                   <span className="text-steel-300">{purchaseOrder.jobCode}</span>
                 </InfoField>
-                <InfoField label="Order Date">{formatDate(purchaseOrder.orderDate)}</InfoField>
-                <InfoField label="Expected Delivery">
+                <InfoField label={t('purchaseOrderDetailModal.fields.orderDate')}>{formatDate(purchaseOrder.orderDate)}</InfoField>
+                <InfoField label={t('purchaseOrderDetailModal.fields.expectedDelivery')}>
                   <span className={isOverdue ? 'font-medium text-red-400' : ''}>
                     {formatDate(purchaseOrder.expectedDeliveryDate)}
-                    {isOverdue && <span className="ml-2 text-xs">(Overdue)</span>}
+                    {isOverdue && <span className="ml-2 text-xs">({t('purchaseOrderDetailModal.fields.overdue')})</span>}
                   </span>
                 </InfoField>
-                <InfoField label="Total Amount">
+                <InfoField label={t('purchaseOrderDetailModal.fields.totalAmount')}>
                   <span className="text-lg font-semibold text-copper-400">
                     {formatCurrency(purchaseOrder.totalAmount, {
                       currency: purchaseOrder.currency,
                     })}
                   </span>
                 </InfoField>
-                <InfoField label="Currency">{purchaseOrder.currency}</InfoField>
+                <InfoField label={t('purchaseOrderDetailModal.fields.currency')}>{purchaseOrder.currency}</InfoField>
               </div>
             </Card>
 
             {/* Notes */}
             {purchaseOrder.notes && (
               <Card className="p-4">
-                <h3 className="mb-2 text-lg font-medium text-white">Notes</h3>
+                <h3 className="mb-2 text-lg font-medium text-white">{t('purchaseOrderDetailModal.fields.notes')}</h3>
                 <p className="text-steel-300">{purchaseOrder.notes}</p>
               </Card>
             )}
 
             {/* Metadata */}
             <div className="text-xs text-steel-500">
-              Created by: {purchaseOrder.createdByName} | Created:{' '}
-              {formatDateTime(purchaseOrder.createdAt)} | Updated:{' '}
-              {formatDateTime(purchaseOrder.updatedAt)}
+              {t('purchaseOrderDetailModal.metadata', {
+                createdBy: purchaseOrder.createdByName,
+                createdAt: formatDateTime(purchaseOrder.createdAt),
+                updatedAt: formatDateTime(purchaseOrder.updatedAt),
+              })}
             </div>
           </div>
 
@@ -295,9 +300,9 @@ export function PurchaseOrderDetailModal({
           <div className="space-y-6">
             {/* Related Info */}
             <Card className="p-4">
-              <h3 className="mb-4 text-lg font-medium text-white">Related</h3>
+              <h3 className="mb-4 text-lg font-medium text-white">{t('purchaseOrderDetailModal.sections.related')}</h3>
               <div className="space-y-3">
-                <InfoField label="Purchase Request">
+                <InfoField label={t('purchaseOrderDetailModal.fields.purchaseRequest')}>
                   <div className="font-medium text-copper-400">
                     {purchaseOrder.purchaseRequestNumber}
                   </div>
@@ -307,7 +312,7 @@ export function PurchaseOrderDetailModal({
 
             {/* Quick Actions */}
             <Card className="p-4">
-              <h3 className="mb-4 text-lg font-medium text-white">Actions</h3>
+              <h3 className="mb-4 text-lg font-medium text-white">{t('purchaseOrderDetailModal.sections.actions')}</h3>
               <div className="space-y-2">
                 {canSend && (
                   <Button
@@ -316,7 +321,7 @@ export function PurchaseOrderDetailModal({
                     disabled={isActing}
                   >
                     <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
-                    Send to Vendor
+                    {t('purchaseOrderDetailModal.actions.sendToVendor')}
                   </Button>
                 )}
 
@@ -327,7 +332,7 @@ export function PurchaseOrderDetailModal({
                     disabled={isActing}
                   >
                     <Icon name="check-circle" className="mr-2 h-4 w-4" />
-                    Confirm Order
+                    {t('purchaseOrderDetailModal.actions.confirmOrder')}
                   </Button>
                 )}
 
@@ -339,7 +344,7 @@ export function PurchaseOrderDetailModal({
                     disabled={isActing}
                   >
                     <Icon name="truck" className="mr-2 h-4 w-4" />
-                    Mark as Received
+                    {t('purchaseOrderDetailModal.actions.markReceived')}
                   </Button>
                 )}
 
@@ -351,13 +356,13 @@ export function PurchaseOrderDetailModal({
                     disabled={isActing}
                   >
                     <Icon name="x-mark" className="mr-2 h-4 w-4" />
-                    Cancel Order
+                    {t('purchaseOrderDetailModal.actions.cancelOrder')}
                   </Button>
                 )}
 
                 {/* No actions available message */}
                 {!canSend && !canConfirmOrder && !canReceiveOrder && !canCancelOrder && (
-                  <p className="text-sm text-steel-400">No actions available for this order.</p>
+                  <p className="text-sm text-steel-400">{t('purchaseOrderDetailModal.actions.noActions')}</p>
                 )}
               </div>
             </Card>
@@ -366,7 +371,7 @@ export function PurchaseOrderDetailModal({
 
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('purchaseOrderDetailModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -377,18 +382,18 @@ export function PurchaseOrderDetailModal({
         onClose={() => setSendConfirm(false)}
         onSend={handleSend}
         defaultEmail={purchaseOrder.vendorEmail ?? undefined}
-        title="Send Purchase Order"
-        contextMessage={`Send PO "${purchaseOrder.poNumber}" to ${purchaseOrder.vendorName}.`}
-        helpText="The purchase order PDF will be attached to the email."
+        title={t('purchaseOrderDetailModal.confirmSend.title')}
+        contextMessage={t('purchaseOrderDetailModal.confirmSend.message', { poNumber: purchaseOrder.poNumber, vendorName: purchaseOrder.vendorName })}
+        helpText={t('purchaseOrderDetailModal.confirmSend.helpText')}
         isLoading={isSending}
       />
 
       {/* Confirm Confirmation */}
       <ConfirmationModal
         isOpen={confirmConfirm}
-        title="Confirm Purchase Order"
-        message={`Mark PO "${purchaseOrder.poNumber}" as confirmed by the vendor?`}
-        confirmLabel="Confirm"
+        title={t('purchaseOrderDetailModal.confirmConfirm.title')}
+        message={t('purchaseOrderDetailModal.confirmConfirm.message', { poNumber: purchaseOrder.poNumber })}
+        confirmLabel={t('purchaseOrderDetailModal.confirmConfirm.confirm')}
         onConfirm={handleConfirm}
         onClose={() => setConfirmConfirm(false)}
       />
@@ -396,9 +401,9 @@ export function PurchaseOrderDetailModal({
       {/* Receive Confirmation */}
       <ConfirmationModal
         isOpen={receiveConfirm}
-        title="Mark as Received"
-        message={`Mark PO "${purchaseOrder.poNumber}" as received? This will also close the parent purchase request.`}
-        confirmLabel="Mark Received"
+        title={t('purchaseOrderDetailModal.confirmReceive.title')}
+        message={t('purchaseOrderDetailModal.confirmReceive.message', { poNumber: purchaseOrder.poNumber })}
+        confirmLabel={t('purchaseOrderDetailModal.confirmReceive.confirm')}
         variant="warning"
         onConfirm={handleReceive}
         onClose={() => setReceiveConfirm(false)}
@@ -407,9 +412,9 @@ export function PurchaseOrderDetailModal({
       {/* Cancel Confirmation */}
       <ConfirmationModal
         isOpen={cancelConfirm}
-        title="Cancel Purchase Order"
-        message={`Are you sure you want to cancel PO "${purchaseOrder.poNumber}"? This action cannot be undone.`}
-        confirmLabel="Cancel Order"
+        title={t('purchaseOrderDetailModal.confirmCancel.title')}
+        message={t('purchaseOrderDetailModal.confirmCancel.message', { poNumber: purchaseOrder.poNumber })}
+        confirmLabel={t('purchaseOrderDetailModal.confirmCancel.confirm')}
         variant="danger"
         onConfirm={handleCancel}
         onClose={() => setCancelConfirm(false)}

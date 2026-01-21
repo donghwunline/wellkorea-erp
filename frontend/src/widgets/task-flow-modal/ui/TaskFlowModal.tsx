@@ -3,6 +3,7 @@
  * Contains the TaskFlowCanvas widget with loading and error states.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Modal, LoadingState, ErrorAlert } from '@/shared/ui';
 import { TaskFlowCanvas } from '@/widgets/task-flow-canvas';
 import { useTaskFlowModal } from '../model/use-task-flow-modal';
@@ -27,12 +28,15 @@ export function TaskFlowModal({
   projectName,
   onClose,
 }: TaskFlowModalProps) {
+  const { t } = useTranslation('widgets');
   const { flow, isLoading, error, isSaving, save } = useTaskFlowModal({
     projectId,
     isOpen,
   });
 
-  const title = projectName ? `Task Flow: ${projectName}` : 'Task Flow';
+  const title = projectName
+    ? t('taskFlowModal.titleWithProject', { projectName })
+    : t('taskFlowModal.title');
 
   return (
     <Modal
@@ -44,12 +48,12 @@ export function TaskFlowModal({
     >
       {isLoading ? (
         <div className="flex h-full items-center justify-center">
-          <LoadingState message="Loading task flow..." />
+          <LoadingState message={t('taskFlowModal.loading')} />
         </div>
       ) : error ? (
         <div className="flex h-full items-center justify-center p-8">
           <ErrorAlert
-            title="Failed to load task flow"
+            title={t('taskFlowModal.loadError')}
             message={error.message}
           />
         </div>

@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import {
   Alert,
@@ -74,6 +75,8 @@ export function InvoiceCreateModal({
   onSuccess,
   preselectedDeliveryId,
 }: InvoiceCreateModalProps) {
+  const { t } = useTranslation('widgets');
+
   // Form state
   const [issueDate, setIssueDate] = useState(getTodayISO());
   const [dueDate, setDueDate] = useState(getDueDateDefault());
@@ -265,7 +268,7 @@ export function InvoiceCreateModal({
         }));
 
       if (lineItems.length === 0) {
-        setError('Please enter quantity for at least one item');
+        setError(t('invoiceCreateModal.validation.enterQuantity'));
         return;
       }
 
@@ -274,7 +277,10 @@ export function InvoiceCreateModal({
         const qtyToInvoice = quantitiesToInvoice[item.productId] || 0;
         if (qtyToInvoice > item.remainingQuantity) {
           setError(
-            `Quantity for ${item.productName} exceeds invoiceable quantity (${item.remainingQuantity})`
+            t('invoiceCreateModal.validation.exceedsInvoiceable', {
+              productName: item.productName,
+              remaining: item.remainingQuantity,
+            })
           );
           return;
         }
@@ -282,7 +288,7 @@ export function InvoiceCreateModal({
 
       // Validate dates
       if (new Date(dueDate) < new Date(issueDate)) {
-        setError('Due date must be on or after issue date');
+        setError(t('invoiceCreateModal.validation.dueDateBeforeIssue'));
         return;
       }
 
@@ -306,6 +312,7 @@ export function InvoiceCreateModal({
       quantitiesToInvoice,
       notes,
       createInvoice,
+      t,
     ]
   );
 
@@ -329,13 +336,13 @@ export function InvoiceCreateModal({
   // Delivery options for select
   const deliveryOptions = useMemo(() => {
     return [
-      { value: '', label: 'No specific delivery (general invoice)' },
+      { value: '', label: t('invoiceCreateModal.deliveryOptions.noDelivery') },
       ...deliveries.map((d: Delivery) => ({
         value: d.id.toString(),
-        label: `Delivery #${d.id} - ${d.deliveryDate}`,
+        label: t('invoiceCreateModal.deliveryOptions.delivery', { id: d.id, date: d.deliveryDate }),
       })),
     ];
-  }, [deliveries]);
+  }, [deliveries, t]);
 
   // Handle cancel
   const handleCancel = useCallback(() => {
@@ -345,19 +352,19 @@ export function InvoiceCreateModal({
 
   if (isLoading) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Create Invoice" size="lg">
-        <LoadingState message="Loading project data..." />
+      <Modal isOpen={isOpen} onClose={onClose} title={t('invoiceCreateModal.title')} size="lg">
+        <LoadingState message={t('invoiceCreateModal.loading')} />
       </Modal>
     );
   }
 
   if (quotationsError) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Create Invoice" size="lg">
-        <Alert variant="error">Failed to load quotation: {quotationsError.message}</Alert>
+      <Modal isOpen={isOpen} onClose={onClose} title={t('invoiceCreateModal.title')} size="lg">
+        <Alert variant="error">{t('invoiceCreateModal.loadError', { message: quotationsError.message })}</Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('invoiceCreateModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -366,18 +373,17 @@ export function InvoiceCreateModal({
 
   if (!acceptedQuotation) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Create Invoice" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('invoiceCreateModal.title')} size="lg">
         <div className="py-8 text-center">
           <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">No Accepted Quotation</h3>
+          <h3 className="text-lg font-semibold text-white">{t('invoiceCreateModal.noQuotation.title')}</h3>
           <p className="mt-2 text-steel-400">
-            This project does not have an accepted quotation. A quotation must be accepted by the
-            customer before creating invoices.
+            {t('invoiceCreateModal.noQuotation.description')}
           </p>
         </div>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('invoiceCreateModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -386,17 +392,17 @@ export function InvoiceCreateModal({
 
   if (!hasInvoiceableItems) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Create Invoice" size="lg">
+      <Modal isOpen={isOpen} onClose={onClose} title={t('invoiceCreateModal.title')} size="lg">
         <div className="py-8 text-center">
           <Icon name="check-circle" className="mx-auto mb-4 h-12 w-12 text-green-500" />
-          <h3 className="text-lg font-semibold text-white">All Items Invoiced</h3>
+          <h3 className="text-lg font-semibold text-white">{t('invoiceCreateModal.allInvoiced.title')}</h3>
           <p className="mt-2 text-steel-400">
-            All delivered items have been invoiced. No remaining items to invoice.
+            {t('invoiceCreateModal.allInvoiced.description')}
           </p>
         </div>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('invoiceCreateModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -404,7 +410,7 @@ export function InvoiceCreateModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create Invoice" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('invoiceCreateModal.title')} size="lg">
       {/* Error Alert */}
       {error && (
         <Alert variant="error" className="mb-4" onClose={() => setError(null)}>
@@ -415,9 +421,9 @@ export function InvoiceCreateModal({
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <Card className="mb-6 border-steel-700 bg-steel-800/50 p-4">
-          <h3 className="mb-4 text-base font-semibold text-white">Invoice Information</h3>
+          <h3 className="mb-4 text-base font-semibold text-white">{t('invoiceCreateModal.sections.info')}</h3>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <FormField label="Issue Date" required>
+            <FormField label={t('invoiceCreateModal.fields.issueDate')} required>
               <Input
                 type="date"
                 value={issueDate}
@@ -425,7 +431,7 @@ export function InvoiceCreateModal({
                 required
               />
             </FormField>
-            <FormField label="Due Date" required>
+            <FormField label={t('invoiceCreateModal.fields.dueDate')} required>
               <Input
                 type="date"
                 value={dueDate}
@@ -434,7 +440,7 @@ export function InvoiceCreateModal({
                 required
               />
             </FormField>
-            <FormField label="Tax Rate (%)" required>
+            <FormField label={t('invoiceCreateModal.fields.taxRate')} required>
               <Input
                 type="number"
                 value={taxRate}
@@ -445,7 +451,7 @@ export function InvoiceCreateModal({
                 required
               />
             </FormField>
-            <FormField label="Related Delivery">
+            <FormField label={t('invoiceCreateModal.fields.relatedDelivery')}>
               <select
                 value={selectedDeliveryId?.toString() || ''}
                 onChange={(e) =>
@@ -462,11 +468,11 @@ export function InvoiceCreateModal({
             </FormField>
           </div>
           <div className="mt-4">
-            <FormField label="Notes">
+            <FormField label={t('invoiceCreateModal.fields.notes')}>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Optional notes for this invoice"
+                placeholder={t('invoiceCreateModal.placeholders.notes')}
                 rows={2}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               />
@@ -475,10 +481,9 @@ export function InvoiceCreateModal({
         </Card>
 
         <Card className="border-steel-700 bg-steel-800/50 p-4">
-          <h3 className="mb-4 text-base font-semibold text-white">Line Items</h3>
+          <h3 className="mb-4 text-base font-semibold text-white">{t('invoiceCreateModal.sections.lineItems')}</h3>
           <p className="mb-4 text-sm text-steel-400">
-            Enter the quantity to invoice for each item. Only items with delivered quantity are
-            shown.
+            {t('invoiceCreateModal.lineItemsDescription')}
           </p>
 
           {/* Line items table */}
@@ -487,25 +492,25 @@ export function InvoiceCreateModal({
               <thead className="sticky top-0 bg-steel-900">
                 <tr className="border-b border-steel-700">
                   <th className="px-3 py-2 text-left text-xs font-medium text-steel-400">
-                    Product
+                    {t('invoiceCreateModal.table.product')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Unit Price
+                    {t('invoiceCreateModal.table.unitPrice')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Delivered
+                    {t('invoiceCreateModal.table.delivered')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Invoiced
+                    {t('invoiceCreateModal.table.invoiced')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Invoiceable
+                    {t('invoiceCreateModal.table.invoiceable')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Qty
+                    {t('invoiceCreateModal.table.qty')}
                   </th>
                   <th className="px-3 py-2 text-right text-xs font-medium text-steel-400">
-                    Total
+                    {t('invoiceCreateModal.table.total')}
                   </th>
                 </tr>
               </thead>
@@ -560,7 +565,7 @@ export function InvoiceCreateModal({
               <tfoot className="sticky bottom-0 bg-steel-900">
                 <tr className="border-t border-steel-700">
                   <td colSpan={5} className="px-3 py-2 text-right text-sm text-steel-400">
-                    Total Items:
+                    {t('invoiceCreateModal.totals.totalItems')}
                   </td>
                   <td className="px-3 py-2 text-right text-sm font-bold text-copper-400">
                     {totalToInvoice}
@@ -569,7 +574,7 @@ export function InvoiceCreateModal({
                 </tr>
                 <tr>
                   <td colSpan={6} className="px-3 py-1 text-right text-sm text-steel-400">
-                    Subtotal:
+                    {t('invoiceCreateModal.totals.subtotal')}
                   </td>
                   <td className="px-3 py-1 text-right font-mono text-sm text-white">
                     {formatCurrency(subtotal)}
@@ -577,7 +582,7 @@ export function InvoiceCreateModal({
                 </tr>
                 <tr>
                   <td colSpan={6} className="px-3 py-1 text-right text-sm text-steel-400">
-                    Tax ({taxRate}%):
+                    {t('invoiceCreateModal.totals.tax', { rate: taxRate })}
                   </td>
                   <td className="px-3 py-1 text-right font-mono text-sm text-white">
                     {formatCurrency(taxAmount)}
@@ -585,7 +590,7 @@ export function InvoiceCreateModal({
                 </tr>
                 <tr className="border-t border-steel-700">
                   <td colSpan={6} className="px-3 py-2 text-right text-sm font-semibold text-white">
-                    Total:
+                    {t('invoiceCreateModal.totals.total')}
                   </td>
                   <td className="px-3 py-2 text-right font-mono text-sm font-bold text-copper-400">
                     {formatCurrency(total)}
@@ -598,14 +603,14 @@ export function InvoiceCreateModal({
 
         <ModalActions>
           <Button type="button" variant="secondary" onClick={handleCancel}>
-            Cancel
+            {t('invoiceCreateModal.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
             disabled={isSubmitting || totalToInvoice === 0}
           >
-            {isSubmitting ? 'Creating...' : 'Create Invoice'}
+            {isSubmitting ? t('invoiceCreateModal.creating') : t('invoiceCreateModal.createInvoice')}
           </Button>
         </ModalActions>
       </form>

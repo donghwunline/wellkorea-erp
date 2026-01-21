@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -70,6 +71,7 @@ export function InvoiceDetailModal({
   onClose,
   onSuccess,
 }: InvoiceDetailModalProps) {
+  const { t } = useTranslation('widgets');
   const { hasAnyRole } = useAuth();
 
   // Check permissions
@@ -154,19 +156,19 @@ export function InvoiceDetailModal({
 
       const amount = parseFloat(paymentForm.amount);
       if (isNaN(amount) || amount <= 0) {
-        setFormError('Please enter a valid payment amount');
+        setFormError(t('invoiceDetailModal.validation.invalidAmount'));
         return;
       }
 
       if (!paymentForm.paymentDate) {
-        setFormError('Please enter a payment date');
+        setFormError(t('invoiceDetailModal.validation.enterPaymentDate'));
         return;
       }
 
       // Check if payment exceeds remaining balance
       if (invoice && amount > invoice.remainingBalance) {
         setFormError(
-          `Payment amount (${formatCurrency(amount)}) exceeds remaining balance (${formatCurrency(invoice.remainingBalance)})`
+          t('invoiceDetailModal.validation.exceedsBalance', { amount: formatCurrency(amount), remaining: formatCurrency(invoice.remainingBalance) })
         );
         return;
       }
@@ -203,19 +205,19 @@ export function InvoiceDetailModal({
 
   if (isLoading) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Invoice Details" size="lg">
-        <LoadingState message="Loading invoice details..." />
+      <Modal isOpen={isOpen} onClose={onClose} title={t('invoiceDetailModal.title')} size="lg">
+        <LoadingState message={t('invoiceDetailModal.loading')} />
       </Modal>
     );
   }
 
   if (fetchError) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Invoice Details" size="lg">
-        <Alert variant="error">Failed to load invoice: {fetchError.message}</Alert>
+      <Modal isOpen={isOpen} onClose={onClose} title={t('invoiceDetailModal.title')} size="lg">
+        <Alert variant="error">{t('invoiceDetailModal.loadError', { error: fetchError.message })}</Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('invoiceDetailModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -224,11 +226,11 @@ export function InvoiceDetailModal({
 
   if (!invoice) {
     return (
-      <Modal isOpen={isOpen} onClose={onClose} title="Invoice Details" size="lg">
-        <Alert variant="error">Invoice not found</Alert>
+      <Modal isOpen={isOpen} onClose={onClose} title={t('invoiceDetailModal.title')} size="lg">
+        <Alert variant="error">{t('invoiceDetailModal.notFound')}</Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
-            Close
+            {t('invoiceDetailModal.close')}
           </Button>
         </ModalActions>
       </Modal>
@@ -240,19 +242,19 @@ export function InvoiceDetailModal({
   // Cancel Confirmation View
   if (showCancelConfirm) {
     return (
-      <Modal isOpen={isOpen} onClose={() => setShowCancelConfirm(false)} title="Cancel Invoice">
+      <Modal isOpen={isOpen} onClose={() => setShowCancelConfirm(false)} title={t('invoiceDetailModal.cancelConfirm.title')}>
         <div className="mb-6">
           <p className="text-steel-300">
-            Are you sure you want to cancel invoice <strong>{invoice.invoiceNumber}</strong>?
+            {t('invoiceDetailModal.cancelConfirm.message', { invoiceNumber: invoice.invoiceNumber })}
           </p>
-          <p className="mt-2 text-sm text-steel-500">This action cannot be undone.</p>
+          <p className="mt-2 text-sm text-steel-500">{t('invoiceDetailModal.cancelConfirm.warning')}</p>
         </div>
         <ModalActions>
           <Button variant="secondary" onClick={() => setShowCancelConfirm(false)}>
-            Keep Invoice
+            {t('invoiceDetailModal.cancelConfirm.keep')}
           </Button>
           <Button variant="danger" onClick={handleCancel} disabled={isCancelling}>
-            {isCancelling ? 'Cancelling...' : 'Yes, Cancel Invoice'}
+            {isCancelling ? t('invoiceDetailModal.cancelling') : t('invoiceDetailModal.cancelConfirm.confirm')}
           </Button>
         </ModalActions>
       </Modal>
@@ -265,7 +267,7 @@ export function InvoiceDetailModal({
       <Modal
         isOpen={isOpen}
         onClose={() => setShowPaymentForm(false)}
-        title="Record Payment"
+        title={t('invoiceDetailModal.paymentForm.title')}
         size="sm"
       >
         {formError && (
@@ -276,7 +278,7 @@ export function InvoiceDetailModal({
 
         <form onSubmit={handlePaymentSubmit}>
           <div className="space-y-4">
-            <FormField label="Payment Date" required>
+            <FormField label={t('invoiceDetailModal.paymentForm.paymentDate')} required>
               <Input
                 type="date"
                 value={paymentForm.paymentDate}
@@ -286,7 +288,7 @@ export function InvoiceDetailModal({
               />
             </FormField>
 
-            <FormField label="Amount" required>
+            <FormField label={t('invoiceDetailModal.paymentForm.amount')} required>
               <Input
                 type="number"
                 value={paymentForm.amount}
@@ -294,15 +296,15 @@ export function InvoiceDetailModal({
                 min={0}
                 max={invoice.remainingBalance}
                 step="1"
-                placeholder="Enter payment amount"
+                placeholder={t('invoiceDetailModal.paymentForm.amountPlaceholder')}
                 required
               />
               <p className="mt-1 text-xs text-steel-500">
-                Remaining balance: {invoiceRules.formatAmount(invoice.remainingBalance)}
+                {t('invoiceDetailModal.paymentForm.remainingBalance', { amount: invoiceRules.formatAmount(invoice.remainingBalance) })}
               </p>
             </FormField>
 
-            <FormField label="Payment Method" required>
+            <FormField label={t('invoiceDetailModal.paymentForm.paymentMethod')} required>
               <select
                 value={paymentForm.paymentMethod}
                 onChange={e => handlePaymentFormChange('paymentMethod', e.target.value)}
@@ -316,20 +318,20 @@ export function InvoiceDetailModal({
               </select>
             </FormField>
 
-            <FormField label="Reference Number">
+            <FormField label={t('invoiceDetailModal.paymentForm.referenceNumber')}>
               <Input
                 type="text"
                 value={paymentForm.referenceNumber}
                 onChange={e => handlePaymentFormChange('referenceNumber', e.target.value)}
-                placeholder="e.g., Check number, transaction ID"
+                placeholder={t('invoiceDetailModal.paymentForm.referencePlaceholder')}
               />
             </FormField>
 
-            <FormField label="Notes">
+            <FormField label={t('invoiceDetailModal.paymentForm.notes')}>
               <textarea
                 value={paymentForm.notes}
                 onChange={e => handlePaymentFormChange('notes', e.target.value)}
-                placeholder="Optional notes about this payment"
+                placeholder={t('invoiceDetailModal.paymentForm.notesPlaceholder')}
                 rows={2}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               />
@@ -338,10 +340,10 @@ export function InvoiceDetailModal({
 
           <ModalActions>
             <Button type="button" variant="secondary" onClick={() => setShowPaymentForm(false)}>
-              Cancel
+              {t('invoiceDetailModal.cancel')}
             </Button>
             <Button type="submit" disabled={isRecordingPayment}>
-              {isRecordingPayment ? 'Recording...' : 'Record Payment'}
+              {isRecordingPayment ? t('invoiceDetailModal.recording') : t('invoiceDetailModal.recordPayment')}
             </Button>
           </ModalActions>
         </form>
@@ -368,28 +370,28 @@ export function InvoiceDetailModal({
       <Card className="mb-4 border-steel-700 bg-steel-800/50 p-4">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div>
-            <div className="text-xs text-steel-400">Status</div>
+            <div className="text-xs text-steel-400">{t('invoiceDetailModal.fields.status')}</div>
             <div className="mt-1">
               <InvoiceStatusBadge status={invoice.status} />
             </div>
           </div>
           <div>
-            <div className="text-xs text-steel-400">Issue Date</div>
+            <div className="text-xs text-steel-400">{t('invoiceDetailModal.fields.issueDate')}</div>
             <div className="mt-1 text-sm text-white">{formatDate(invoice.issueDate)}</div>
           </div>
           <div>
-            <div className="text-xs text-steel-400">Due Date</div>
+            <div className="text-xs text-steel-400">{t('invoiceDetailModal.fields.dueDate')}</div>
             <div
               className={`mt-1 text-sm ${invoice.isOverdue ? 'text-red-400' : 'text-white'}`}
             >
               {formatDate(invoice.dueDate)}
               {invoice.isOverdue && (
-                <span className="ml-1 text-xs">({invoice.daysOverdue}d overdue)</span>
+                <span className="ml-1 text-xs">({t('invoiceDetailModal.daysOverdue', { days: invoice.daysOverdue })})</span>
               )}
             </div>
           </div>
           <div>
-            <div className="text-xs text-steel-400">Job Code</div>
+            <div className="text-xs text-steel-400">{t('invoiceDetailModal.fields.jobCode')}</div>
             <div className="mt-1 text-sm text-copper-400">{invoice.jobCode}</div>
           </div>
         </div>
@@ -397,7 +399,7 @@ export function InvoiceDetailModal({
         {/* Payment Progress */}
         <div className="mt-4 border-t border-steel-700 pt-3">
           <div className="mb-1 flex items-center justify-between text-xs">
-            <span className="text-steel-400">Payment Progress</span>
+            <span className="text-steel-400">{t('invoiceDetailModal.paymentProgress')}</span>
             <span className="text-steel-300">{paymentProgress}%</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-steel-700">
@@ -410,10 +412,10 @@ export function InvoiceDetailModal({
           </div>
           <div className="mt-1 flex justify-between text-xs">
             <span className="text-green-400">
-              Paid: {invoiceRules.formatAmount(invoice.totalPaid)}
+              {t('invoiceDetailModal.paid', { amount: invoiceRules.formatAmount(invoice.totalPaid) })}
             </span>
             <span className="text-yellow-400">
-              Remaining: {invoiceRules.formatAmount(invoice.remainingBalance)}
+              {t('invoiceDetailModal.remaining', { amount: invoiceRules.formatAmount(invoice.remainingBalance) })}
             </span>
           </div>
         </div>
@@ -421,28 +423,28 @@ export function InvoiceDetailModal({
 
       {/* Amounts */}
       <Card className="mb-4 border-steel-700 bg-steel-800/50 p-4">
-        <h4 className="mb-3 text-sm font-semibold text-white">Invoice Amounts</h4>
+        <h4 className="mb-3 text-sm font-semibold text-white">{t('invoiceDetailModal.sections.amounts')}</h4>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <div>
-            <div className="text-xs text-steel-400">Subtotal</div>
+            <div className="text-xs text-steel-400">{t('invoiceDetailModal.amounts.subtotal')}</div>
             <div className="mt-1 font-mono text-sm text-white">
               {invoiceRules.formatAmount(invoice.totalBeforeTax)}
             </div>
           </div>
           <div>
-            <div className="text-xs text-steel-400">Tax ({invoice.taxRate}%)</div>
+            <div className="text-xs text-steel-400">{t('invoiceDetailModal.amounts.tax', { rate: invoice.taxRate })}</div>
             <div className="mt-1 font-mono text-sm text-white">
               {invoiceRules.formatAmount(invoice.totalTax)}
             </div>
           </div>
           <div>
-            <div className="text-xs text-steel-400">Total</div>
+            <div className="text-xs text-steel-400">{t('invoiceDetailModal.amounts.total')}</div>
             <div className="mt-1 font-mono text-sm font-bold text-copper-400">
               {invoiceRules.formatAmount(invoice.totalAmount)}
             </div>
           </div>
           <div>
-            <div className="text-xs text-steel-400">Balance Due</div>
+            <div className="text-xs text-steel-400">{t('invoiceDetailModal.amounts.balanceDue')}</div>
             <div
               className={`mt-1 font-mono text-sm font-bold ${
                 invoice.remainingBalance > 0 ? 'text-yellow-400' : 'text-green-400'
@@ -457,18 +459,18 @@ export function InvoiceDetailModal({
       {/* Line Items */}
       <Card className="mb-4 border-steel-700 bg-steel-800/50 p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-white">Line Items</h4>
-          <span className="text-xs text-steel-400">{invoice.lineItems.length} items</span>
+          <h4 className="text-sm font-semibold text-white">{t('invoiceDetailModal.sections.lineItems')}</h4>
+          <span className="text-xs text-steel-400">{t('invoiceDetailModal.itemCount', { count: invoice.lineItems.length })}</span>
         </div>
 
         <div className="max-h-48 overflow-y-auto">
           <Table>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>Product</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">Qty</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">Unit Price</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">Total</Table.HeaderCell>
+                <Table.HeaderCell>{t('invoiceDetailModal.lineItems.product')}</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">{t('invoiceDetailModal.lineItems.qty')}</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">{t('invoiceDetailModal.lineItems.unitPrice')}</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">{t('invoiceDetailModal.lineItems.total')}</Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -492,22 +494,21 @@ export function InvoiceDetailModal({
       {/* Payment History */}
       <Card className="mb-4 border-steel-700 bg-steel-800/50 p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-white">Payment History</h4>
-          <span className="text-xs text-steel-400">{invoice.payments.length} payments</span>
+          <h4 className="text-sm font-semibold text-white">{t('invoiceDetailModal.sections.paymentHistory')}</h4>
+          <span className="text-xs text-steel-400">{t('invoiceDetailModal.paymentCount', { count: invoice.payments.length })}</span>
         </div>
 
         <div className="max-h-32 overflow-y-auto">
           <PaymentHistoryTable
             payments={invoice.payments}
-            emptyMessage="No payments recorded yet."
+            emptyMessage={t('invoiceDetailModal.noPayments')}
           />
         </div>
       </Card>
 
       {/* Timestamps */}
       <div className="mb-4 text-xs text-steel-500">
-        Created by {invoice.createdByName} on {formatDateTime(invoice.createdAt)} | Last updated:{' '}
-        {formatDateTime(invoice.updatedAt)}
+        {t('invoiceDetailModal.metadata', { createdBy: invoice.createdByName, createdAt: formatDateTime(invoice.createdAt), updatedAt: formatDateTime(invoice.updatedAt) })}
       </div>
 
       {/* Actions */}
@@ -515,13 +516,13 @@ export function InvoiceDetailModal({
         <div className="flex gap-2">
           {canManageInvoices && invoiceRules.canIssue(invoice) && (
             <Button onClick={handleIssue} disabled={isIssuing} size="sm">
-              {isIssuing ? 'Issuing...' : 'Issue Invoice'}
+              {isIssuing ? t('invoiceDetailModal.issuing') : t('invoiceDetailModal.issueInvoice')}
             </Button>
           )}
           {canManageInvoices && invoiceRules.canReceivePayment(invoice) && (
             <Button onClick={openPaymentForm} size="sm">
               <Icon name="plus" className="mr-1 h-3 w-3" />
-              Record Payment
+              {t('invoiceDetailModal.recordPayment')}
             </Button>
           )}
           {canManageInvoices && invoiceRules.canCancel(invoice) && (
@@ -530,12 +531,12 @@ export function InvoiceDetailModal({
               onClick={() => setShowCancelConfirm(true)}
               size="sm"
             >
-              Cancel Invoice
+              {t('invoiceDetailModal.cancelInvoice')}
             </Button>
           )}
         </div>
         <Button variant="secondary" onClick={onClose}>
-          Close
+          {t('invoiceDetailModal.close')}
         </Button>
       </ModalActions>
     </Modal>

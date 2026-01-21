@@ -8,6 +8,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/entities/auth';
 import { projectQueries, ProjectSummaryCard, type ProjectSection } from '@/entities/project';
 import type { RoleName } from '@/entities/user';
@@ -37,6 +38,7 @@ export function ProjectRelatedNavigationGrid({
   projectId,
   onSectionClick,
 }: Readonly<ProjectRelatedNavigationGridProps>) {
+  const { t } = useTranslation('widgets');
   const { hasAnyRole } = useAuth();
   const { data: summary, isLoading, error, refetch } = useQuery(projectQueries.summary(projectId));
 
@@ -53,8 +55,8 @@ export function ProjectRelatedNavigationGrid({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Spinner size="lg" label="Loading project summary" />
-        <span className="ml-3 text-steel-400">Loading project summary...</span>
+        <Spinner size="lg" label={t('projectRelatedNavigationGrid.loading')} />
+        <span className="ml-3 text-steel-400">{t('projectRelatedNavigationGrid.loading')}</span>
       </div>
     );
   }
@@ -64,9 +66,9 @@ export function ProjectRelatedNavigationGrid({
     return (
       <Alert variant="error" className="mb-6">
         <div className="flex items-center justify-between">
-          <span>{error instanceof Error ? error.message : 'Failed to load summary'}</span>
+          <span>{error instanceof Error ? error.message : t('projectRelatedNavigationGrid.loadError')}</span>
           <Button variant="secondary" size="sm" onClick={() => void refetch()}>
-            Retry
+            {t('projectRelatedNavigationGrid.retry')}
           </Button>
         </div>
       </Alert>
@@ -78,10 +80,9 @@ export function ProjectRelatedNavigationGrid({
     return (
       <Card className="p-12 text-center">
         <Icon name="clipboard" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-        <h3 className="mb-2 text-lg font-semibold text-white">No sections available</h3>
+        <h3 className="mb-2 text-lg font-semibold text-white">{t('projectRelatedNavigationGrid.emptyTitle')}</h3>
         <p className="text-steel-500">
-          This project doesn&apos;t have any sections yet, or you don&apos;t have permission
-          to view them.
+          {t('projectRelatedNavigationGrid.emptyDescription')}
         </p>
       </Card>
     );
