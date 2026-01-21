@@ -182,8 +182,10 @@
     "qty": "Qty",
     "amount": "Amount",
     "totalAmount": "Total Amount:",
-    "emptyTitle": "No products added yet.",
-    "emptyDescription": "Search and add products to create your quotation.",
+    "emptyState": {
+      "title": "No products added yet.",
+      "description": "Search and add products to create your quotation."
+    },
     "removeItem": "Remove item"
   },
   "taskFlow": {

@@ -182,8 +182,10 @@
     "qty": "수량",
     "amount": "금액",
     "totalAmount": "총 금액:",
-    "emptyTitle": "추가된 제품이 없습니다.",
-    "emptyDescription": "제품을 검색하고 추가하여 견적을 작성하세요.",
+    "emptyState": {
+      "title": "추가된 제품이 없습니다.",
+      "description": "제품을 검색하고 추가하여 견적을 작성하세요."
+    },
     "removeItem": "품목 삭제"
   },
   "taskFlow": {

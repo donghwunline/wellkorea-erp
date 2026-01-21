@@ -382,5 +382,36 @@
     "message": "\"{{name}}\"을(를) 비활성화하시겠습니까?{{warning}} 더 이상 활성 목록에 표시되지 않습니다.",
     "vendorCountWarning": " 이 카테고리에는 {{count}}개의 업체 서비스가 연결되어 있습니다.",
     "confirm": "비활성화"
+  },
+  "currencies": {
+    "KRW": "KRW (₩)",
+    "USD": "USD ($)",
+    "EUR": "EUR (€)",
+    "JPY": "JPY (¥)",
+    "CNY": "CNY (¥)"
+  },
+  "units": {
+    "defaultUnit": "EA",
+    "defaultServiceUnit": "건"
+  },
+  "attachmentUploader": {
+    "clickToUpload": "클릭하여 업로드",
+    "orDragDrop": "또는 드래그 앤 드롭",
+    "maxSize": "최대 {{size}}",
+    "uploading": "업로드 중...",
+    "validation": {
+      "fileTypeNotAllowed": "허용되지 않는 파일 형식입니다. 허용: {{types}}",
+      "fileSizeExceeds": "파일 크기가 최대 용량({{maxSize}})을 초과합니다"
+    }
+  },
+  "jobCodeSuccessModal": {
+    "title": "프로젝트 생성 완료",
+    "message": "프로젝트가 성공적으로 생성되었습니다.",
+    "copied": "복사됨!",
+    "copyToClipboard": "클립보드에 복사",
+    "copiedMessage": "JobCode가 클립보드에 복사되었습니다",
+    "hint": "이 JobCode를 사용하여 프로젝트 전체 수명주기를 추적할 수 있습니다.",
+    "backToList": "목록으로",
+    "viewProject": "프로젝트 보기"
   }
 }

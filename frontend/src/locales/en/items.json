@@ -382,5 +382,36 @@
     "message": "Are you sure you want to deactivate \"{{name}}\"?{{warning}} The category will no longer appear in active listings.",
     "vendorCountWarning": " This category has {{count}} vendor offering(s) associated with it.",
     "confirm": "Deactivate"
+  },
+  "currencies": {
+    "KRW": "KRW (₩)",
+    "USD": "USD ($)",
+    "EUR": "EUR (€)",
+    "JPY": "JPY (¥)",
+    "CNY": "CNY (¥)"
+  },
+  "units": {
+    "defaultUnit": "EA",
+    "defaultServiceUnit": "Case"
+  },
+  "attachmentUploader": {
+    "clickToUpload": "Click to upload",
+    "orDragDrop": "or drag and drop",
+    "maxSize": "Max {{size}}",
+    "uploading": "Uploading...",
+    "validation": {
+      "fileTypeNotAllowed": "File type not allowed. Allowed: {{types}}",
+      "fileSizeExceeds": "File size exceeds maximum ({{maxSize}})"
+    }
+  },
+  "jobCodeSuccessModal": {
+    "title": "Project Created Successfully",
+    "message": "Your project has been created successfully.",
+    "copied": "Copied!",
+    "copyToClipboard": "Copy to clipboard",
+    "copiedMessage": "JobCode copied to clipboard",
+    "hint": "Use this JobCode to track your project throughout its lifecycle.",
+    "backToList": "Back to List",
+    "viewProject": "View Project"
   }
 }
