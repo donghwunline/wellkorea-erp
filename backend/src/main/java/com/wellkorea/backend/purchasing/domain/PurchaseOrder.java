@@ -205,6 +205,10 @@ public class PurchaseOrder {
         this.project = project;
     }
 
+    public Company getVendor() {
+        return vendor;
+    }
+
     public void setVendor(Company vendor) {
         this.vendor = vendor;
     }
@@ -229,8 +233,16 @@ public class PurchaseOrder {
         this.expectedDeliveryDate = expectedDeliveryDate;
     }
 
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public String getCurrency() {
+        return currency;
     }
 
     public void setCurrency(String currency) {
