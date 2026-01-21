@@ -309,10 +309,14 @@
     "validation": {
       "vendorRequired": "업체를 선택해주세요",
       "materialRequired": "자재를 선택해주세요",
+      "vendorMaterialCodeTooLong": "공급업체 자재 코드는 50자 이하여야 합니다",
+      "vendorMaterialNameTooLong": "공급업체 자재명은 200자 이하여야 합니다",
       "priceNegative": "단가는 음수가 될 수 없습니다",
+      "currencyTooLong": "통화 코드는 3자 이하여야 합니다",
       "leadTimeNegative": "리드타임은 음수가 될 수 없습니다",
       "minQuantityNegative": "최소 수량은 음수가 될 수 없습니다",
-      "dateRangeInvalid": "시작일은 종료일 이전이어야 합니다"
+      "dateRangeInvalid": "시작일은 종료일 이전이어야 합니다",
+      "notesTooLong": "메모는 1000자 이하여야 합니다"
     },
     "createOffering": "등록",
     "saveChanges": "변경사항 저장"
