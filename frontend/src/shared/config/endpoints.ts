@@ -68,6 +68,8 @@ export const PROJECT_ENDPOINTS = {
   byJobCode: (jobCode: string) => `/projects/jobcode/${jobCode}`,
   /** GET /projects/:id/summary - Get tab badge counts */
   summary: (id: number) => `/projects/${id}/summary`,
+  /** GET /projects/:id/kpi - Get project KPIs */
+  kpi: (id: number) => `/projects/${id}/kpi`,
 } as const;
 
 // ============================================================================

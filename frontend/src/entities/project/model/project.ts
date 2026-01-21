@@ -140,10 +140,10 @@ export interface ProjectKPI {
   progressPercent: number;
   /** Number of pending approval requests */
   pendingApprovals: number;
-  /** Number of missing required documents */
-  missingDocuments: number;
-  /** Accounts receivable amount (KRW) */
+  /** Accounts receivable amount (KRW) - outstanding unpaid invoices */
   accountsReceivable: number;
+  /** Total invoiced amount (KRW) - all issued invoices */
+  invoicedAmount: number;
 }
 
 // ============================================================================

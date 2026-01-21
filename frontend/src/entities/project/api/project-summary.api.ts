@@ -57,30 +57,6 @@ function mapSummaryResponse(response: ProjectSectionsSummaryResponse): ProjectSe
 }
 
 // ============================================================================
-// Mock KPI (KPI endpoint not yet implemented in backend)
-// ============================================================================
-
-/**
- * Simulate network delay.
- */
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-/**
- * Generate mock KPI data for a project.
- * TODO: Implement backend endpoint for KPIs
- */
-function generateMockKPI(projectId: number): ProjectKPI {
-  const baseMultiplier = (projectId % 5) + 1;
-
-  return {
-    progressPercent: Math.min(100, 20 * baseMultiplier),
-    pendingApprovals: Math.max(0, baseMultiplier - 2),
-    missingDocuments: baseMultiplier > 2 ? 1 : 0,
-    accountsReceivable: 5000000 * baseMultiplier,
-  };
-}
-
-// ============================================================================
 // API Functions
 // ============================================================================
 
@@ -103,17 +79,11 @@ export const projectSummaryApi = {
 
   /**
    * Fetch project KPI statistics.
-   * TODO: Implement backend endpoint - currently using mock data
    *
    * @param projectId - The project ID
    * @returns Promise resolving to project KPIs
    */
   async getKPIs(projectId: number): Promise<ProjectKPI> {
-    // Simulate network delay (200-400ms)
-    await delay(200 + Math.random() * 200);
-
-    // TODO: Replace with real API call when backend is ready:
-    // return httpClient.get<ProjectKPI>(PROJECT_ENDPOINTS.kpis(projectId));
-    return generateMockKPI(projectId);
+    return httpClient.get<ProjectKPI>(PROJECT_ENDPOINTS.kpi(projectId));
   },
 };
