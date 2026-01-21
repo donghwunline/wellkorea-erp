@@ -76,6 +76,7 @@ function createMockProjectDetailsResponse(
     createdByName: null,
     createdAt: '',
     updatedAt: '',
+    note: null,
     ...overrides,
   };
 }

@@ -37,6 +37,7 @@ const DEFAULT_PROJECT: Project = {
   createdByName: 'Test Creator',
   createdAt: '2025-01-15T10:30:00Z',
   updatedAt: '2025-01-16T14:45:00Z',
+  note: null,
 };
 
 // Default mock command result for updateProject
