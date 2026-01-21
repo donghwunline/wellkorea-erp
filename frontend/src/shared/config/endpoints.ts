@@ -66,6 +66,8 @@ export const PROJECT_ENDPOINTS = {
   byId: (id: number) => `/projects/${id}`,
   /** GET /projects/jobcode/:jobCode */
   byJobCode: (jobCode: string) => `/projects/jobcode/${jobCode}`,
+  /** GET /projects/:id/summary - Get tab badge counts */
+  summary: (id: number) => `/projects/${id}/summary`,
 } as const;
 
 // ============================================================================
@@ -106,6 +108,8 @@ export const APPROVAL_ENDPOINTS = {
   reject: (id: number) => `/approvals/${id}/reject`,
   /** GET /approvals/:id/history */
   history: (id: number) => `/approvals/${id}/history`,
+  /** GET /approvals/pending-count - Get pending approval count for current user */
+  PENDING_COUNT: '/approvals/pending-count',
 } as const;
 
 // ============================================================================

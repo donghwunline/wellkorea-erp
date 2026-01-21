@@ -26,6 +26,7 @@ import type { EntityType } from '../model/entity-type';
 import { approvalMapper, approvalHistoryMapper } from './approval.mapper';
 import { getApproval, getApprovals } from './get-approval';
 import { getApprovalHistory } from './get-approval-history';
+import { getPendingApprovalCount } from './get-pending-count';
 
 // =============================================================================
 // Query Parameters
@@ -59,6 +60,9 @@ export const approvalQueries = {
 
   /** Key for approval history queries */
   histories: () => [...approvalQueries.all(), 'history'] as const,
+
+  /** Key for pending count query */
+  pendingCountKey: () => [...approvalQueries.all(), 'pending-count'] as const,
 
   // -------------------------------------------------------------------------
   // Approval List Query
@@ -126,5 +130,21 @@ export const approvalQueries = {
         return responses.map(approvalHistoryMapper.toDomain);
       },
       enabled: id > 0,
+    }),
+
+  // -------------------------------------------------------------------------
+  // Pending Count Query (for navigation badge)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Query options for pending approval count.
+   * Used for badge display in navigation.
+   */
+  pendingCount: () =>
+    queryOptions({
+      queryKey: approvalQueries.pendingCountKey(),
+      queryFn: getPendingApprovalCount,
+      staleTime: 1000 * 15, // 15 seconds
+      refetchInterval: 1000 * 30, // Refetch every 30 seconds
     }),
 };

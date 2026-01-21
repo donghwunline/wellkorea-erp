@@ -9,9 +9,11 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { Icon, type IconName, Navigation } from '@/shared/ui';
 import { useUIStore } from '@/shared/lib/stores/ui-store';
 import { useAuth } from '@/entities/auth';
+import { approvalQueries } from '@/entities/approval';
 import type { RoleName } from '@/entities/user';
 import { UserMenu } from '@/widgets';
 
@@ -23,6 +25,8 @@ interface NavItem {
   roles?: RoleName[];
   /** Roles that should NOT see this item */
   hideFromRoles?: RoleName[];
+  /** Optional badge key for dynamic badge count (fetched via query) */
+  badgeKey?: 'pendingApprovals';
 }
 
 // Operations - Main workflow menus
@@ -93,6 +97,7 @@ const APPROVAL_NAV_ITEMS: NavItem[] = [
     labelKey: 'navigation:items.pendingApprovals',
     path: '/approvals',
     icon: 'check-circle',
+    badgeKey: 'pendingApprovals',
   },
   {
     labelKey: 'navigation:items.approvalSettings',
@@ -123,8 +128,23 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: Readonly<AppLayoutProps>) {
   const { t } = useTranslation('navigation');
-  const { user, hasAnyRole } = useAuth();
+  const { user, hasAnyRole, isAuthenticated } = useAuth();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
+
+  // Fetch pending approval count for badge
+  const { data: pendingApprovalCount } = useQuery({
+    ...approvalQueries.pendingCount(),
+    enabled: isAuthenticated,
+  });
+
+  // Get badge count by key
+  const getBadgeCount = (badgeKey?: NavItem['badgeKey']): number | undefined => {
+    if (!badgeKey) return undefined;
+    if (badgeKey === 'pendingApprovals') {
+      return pendingApprovalCount && pendingApprovalCount > 0 ? pendingApprovalCount : undefined;
+    }
+    return undefined;
+  };
 
   // Filter nav items based on user roles
   const filterNavItems = (items: NavItem[]): NavItem[] => {
@@ -217,7 +237,7 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
           {visibleApprovalItems.length > 0 && (
             <Navigation.Section title={t('sections.approval')} showDivider>
               {visibleApprovalItems.map(item => (
-                <Navigation.Link key={item.path} to={item.path} icon={item.icon}>
+                <Navigation.Link key={item.path} to={item.path} icon={item.icon} badge={getBadgeCount(item.badgeKey)}>
                   {t(item.labelKey)}
                 </Navigation.Link>
               ))}
