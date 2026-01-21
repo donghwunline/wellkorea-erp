@@ -8,7 +8,9 @@ import com.wellkorea.backend.quotation.domain.QuotationLineItem;
 import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.BusinessException;
+import com.wellkorea.backend.shared.exception.PdfGenerationException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import com.wellkorea.backend.shared.pdf.PdfFontLoader;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -90,8 +92,8 @@ public class QuotationPdfService {
             Context context = buildTemplateContext(quotation, customer);
             String html = templateEngine.process("quotation-pdf", context);
             return convertHtmlToPdf(html);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate PDF for quotation: " + quotation.getId(), e);
+        } catch (IOException e) {
+            throw new PdfGenerationException("Failed to generate PDF for quotation: " + quotation.getId(), e);
         }
     }
 
@@ -180,8 +182,7 @@ public class QuotationPdfService {
     }
 
     private byte[] convertHtmlToPdf(String html) throws IOException {
-        // Load font bytes once, then create fresh InputStreams from it
-        byte[] fontBytes = new ClassPathResource("fonts/NotoSansKR.ttf").getInputStream().readAllBytes();
+        byte[] fontBytes = PdfFontLoader.getNotoSansKrBytes();
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -233,20 +234,22 @@ public class QuotationPdfService {
 
         for (int i = 0; i < groupCount; i++) {
             String group = numStr.substring(i * 4, (i + 1) * 4);
-            int groupValue = Integer.parseInt(group);
+            StringBuilder groupStr = new StringBuilder();
+            boolean hasNonZeroDigit = false;
 
-            if (groupValue > 0) {
-                StringBuilder groupStr = new StringBuilder();
-                for (int j = 0; j < 4; j++) {
-                    int digit = Character.getNumericValue(group.charAt(j));
-                    if (digit > 0) {
-                        if (digit == 1 && j < 3) {
-                            groupStr.append(subUnits[3 - j]);
-                        } else {
-                            groupStr.append(koreanDigits[digit]).append(subUnits[3 - j]);
-                        }
+            for (int j = 0; j < 4; j++) {
+                int digit = Character.getNumericValue(group.charAt(j));
+                if (digit > 0) {
+                    hasNonZeroDigit = true;
+                    if (digit == 1 && j < 3) {
+                        groupStr.append(subUnits[3 - j]);
+                    } else {
+                        groupStr.append(koreanDigits[digit]).append(subUnits[3 - j]);
                     }
                 }
+            }
+
+            if (hasNonZeroDigit) {
                 result.append(groupStr).append(units[groupCount - 1 - i]);
             }
         }

@@ -12,7 +12,9 @@ import com.wellkorea.backend.quotation.api.dto.query.LineItemView;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationDetailView;
 import com.wellkorea.backend.quotation.infrastructure.mapper.QuotationMapper;
 import com.wellkorea.backend.shared.config.CompanyProperties;
+import com.wellkorea.backend.shared.exception.PdfGenerationException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import com.wellkorea.backend.shared.pdf.PdfFontLoader;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -97,8 +99,8 @@ public class DeliveryPdfService {
             Context context = buildTemplateContext(delivery, project, quotation, customer);
             String html = templateEngine.process("delivery-statement-pdf", context);
             return convertHtmlToPdf(html);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate PDF for delivery: " + delivery.id(), e);
+        } catch (IOException e) {
+            throw new PdfGenerationException("Failed to generate PDF for delivery: " + delivery.id(), e);
         }
     }
 
@@ -222,8 +224,7 @@ public class DeliveryPdfService {
     }
 
     private byte[] convertHtmlToPdf(String html) throws IOException {
-        // Load font bytes once, then create fresh InputStreams from it
-        byte[] fontBytes = new ClassPathResource("fonts/NotoSansKR.ttf").getInputStream().readAllBytes();
+        byte[] fontBytes = PdfFontLoader.getNotoSansKrBytes();
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PdfRendererBuilder builder = new PdfRendererBuilder();

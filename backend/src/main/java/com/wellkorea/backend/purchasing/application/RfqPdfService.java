@@ -6,7 +6,9 @@ import com.wellkorea.backend.purchasing.domain.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseRequestMapper;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.BusinessException;
+import com.wellkorea.backend.shared.exception.PdfGenerationException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import com.wellkorea.backend.shared.pdf.PdfFontLoader;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -16,7 +18,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +36,7 @@ public class RfqPdfService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,###");
+    private static final int DEFAULT_RESPONSE_DAYS = 7;
     private static final Set<String> GENERABLE_STATUSES = Set.of(
             PurchaseRequestStatus.DRAFT.name(),
             PurchaseRequestStatus.RFQ_SENT.name(),
@@ -83,8 +85,8 @@ public class RfqPdfService {
             Context context = buildTemplateContext(purchaseRequest);
             String html = templateEngine.process("rfq-pdf", context);
             return convertHtmlToPdf(html);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to generate PDF for RFQ: " + purchaseRequest.id(), e);
+        } catch (IOException e) {
+            throw new PdfGenerationException("Failed to generate PDF for RFQ: " + purchaseRequest.id(), e);
         }
     }
 
@@ -119,7 +121,7 @@ public class RfqPdfService {
         rfqMap.put("requiredDate", purchaseRequest.requiredDate() != null
                 ? purchaseRequest.requiredDate().format(DATE_FORMATTER)
                 : "협의");
-        rfqMap.put("responseDeadline", LocalDate.now().plusDays(7).format(DATE_FORMATTER)); // Default 7 days
+        rfqMap.put("responseDeadline", LocalDate.now().plusDays(DEFAULT_RESPONSE_DAYS).format(DATE_FORMATTER));
 
         // Project info if available
         if (purchaseRequest.jobCode() != null) {
@@ -158,8 +160,7 @@ public class RfqPdfService {
     }
 
     private byte[] convertHtmlToPdf(String html) throws IOException {
-        // Load font bytes once, then create fresh InputStreams from it
-        byte[] fontBytes = new ClassPathResource("fonts/NotoSansKR.ttf").getInputStream().readAllBytes();
+        byte[] fontBytes = PdfFontLoader.getNotoSansKrBytes();
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
