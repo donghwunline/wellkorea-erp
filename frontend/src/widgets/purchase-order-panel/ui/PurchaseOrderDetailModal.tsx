@@ -8,9 +8,8 @@
  * Can import from: features, entities, shared
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import {
   Alert,
   Button,
@@ -25,10 +24,10 @@ import {
 import {
   purchaseOrderQueries,
   purchaseOrderRules,
-  PurchaseOrderTimeline,
   PurchaseOrderStatusBadge,
+  PurchaseOrderTimeline,
 } from '@/entities/purchase-order';
-import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatting';
+import { formatCurrency, formatDate, formatDateTime } from '@/shared/lib/formatting';
 import { useSendPurchaseOrder } from '@/features/purchase-order/send';
 import { useConfirmPurchaseOrder } from '@/features/purchase-order/confirm';
 import { useReceivePurchaseOrder } from '@/features/purchase-order/receive';
@@ -121,7 +120,7 @@ export function PurchaseOrderDetailModal({
       refetch();
       onSuccess?.();
     },
-    onError: (err) => setError(err.message),
+    onError: err => setError(err.message),
   });
 
   const { mutate: confirmOrder, isPending: isConfirming } = useConfirmPurchaseOrder({
@@ -131,7 +130,7 @@ export function PurchaseOrderDetailModal({
       refetch();
       onSuccess?.();
     },
-    onError: (err) => setError(err.message),
+    onError: err => setError(err.message),
   });
 
   const { mutate: receiveOrder, isPending: isReceiving } = useReceivePurchaseOrder({
@@ -141,7 +140,7 @@ export function PurchaseOrderDetailModal({
       refetch();
       onSuccess?.();
     },
-    onError: (err) => setError(err.message),
+    onError: err => setError(err.message),
   });
 
   const { mutate: cancelOrder, isPending: isCanceling } = useCancelPurchaseOrder({
@@ -151,7 +150,7 @@ export function PurchaseOrderDetailModal({
       refetch();
       onSuccess?.();
     },
-    onError: (err) => setError(err.message),
+    onError: err => setError(err.message),
   });
 
   const isActing = isSending || isConfirming || isReceiving || isCanceling;
@@ -193,9 +192,7 @@ export function PurchaseOrderDetailModal({
   if (fetchError || !purchaseOrder) {
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Purchase Order Details" size="lg">
-        <Alert variant="error">
-          {fetchError?.message || 'Purchase order not found'}
-        </Alert>
+        <Alert variant="error">{fetchError?.message || 'Purchase order not found'}</Alert>
         <ModalActions>
           <Button variant="secondary" onClick={onClose}>
             Close
@@ -260,25 +257,21 @@ export function PurchaseOrderDetailModal({
                 <InfoField label="Project">
                   <span className="text-steel-300">{purchaseOrder.jobCode}</span>
                 </InfoField>
-                <InfoField label="Order Date">
-                  {formatDate(purchaseOrder.orderDate)}
-                </InfoField>
+                <InfoField label="Order Date">{formatDate(purchaseOrder.orderDate)}</InfoField>
                 <InfoField label="Expected Delivery">
                   <span className={isOverdue ? 'font-medium text-red-400' : ''}>
                     {formatDate(purchaseOrder.expectedDeliveryDate)}
-                    {isOverdue && (
-                      <span className="ml-2 text-xs">(Overdue)</span>
-                    )}
+                    {isOverdue && <span className="ml-2 text-xs">(Overdue)</span>}
                   </span>
                 </InfoField>
                 <InfoField label="Total Amount">
                   <span className="text-lg font-semibold text-copper-400">
-                    {formatCurrency(purchaseOrder.totalAmount, { currency: purchaseOrder.currency })}
+                    {formatCurrency(purchaseOrder.totalAmount, {
+                      currency: purchaseOrder.currency,
+                    })}
                   </span>
                 </InfoField>
-                <InfoField label="Currency">
-                  {purchaseOrder.currency}
-                </InfoField>
+                <InfoField label="Currency">{purchaseOrder.currency}</InfoField>
               </div>
             </Card>
 
@@ -292,8 +285,9 @@ export function PurchaseOrderDetailModal({
 
             {/* Metadata */}
             <div className="text-xs text-steel-500">
-              Created by: {purchaseOrder.createdByName} | Created: {formatDateTime(purchaseOrder.createdAt)} |
-              Updated: {formatDateTime(purchaseOrder.updatedAt)}
+              Created by: {purchaseOrder.createdByName} | Created:{' '}
+              {formatDateTime(purchaseOrder.createdAt)} | Updated:{' '}
+              {formatDateTime(purchaseOrder.updatedAt)}
             </div>
           </div>
 
@@ -304,12 +298,9 @@ export function PurchaseOrderDetailModal({
               <h3 className="mb-4 text-lg font-medium text-white">Related</h3>
               <div className="space-y-3">
                 <InfoField label="Purchase Request">
-                  <Link
-                    to={`/purchase-requests/${purchaseOrder.purchaseRequestId}`}
-                    className="font-medium text-copper-400 hover:text-copper-300 hover:underline"
-                  >
+                  <div className="font-medium text-copper-400">
                     {purchaseOrder.purchaseRequestNumber}
-                  </Link>
+                  </div>
                 </InfoField>
               </div>
             </Card>
@@ -366,9 +357,7 @@ export function PurchaseOrderDetailModal({
 
                 {/* No actions available message */}
                 {!canSend && !canConfirmOrder && !canReceiveOrder && !canCancelOrder && (
-                  <p className="text-sm text-steel-400">
-                    No actions available for this order.
-                  </p>
+                  <p className="text-sm text-steel-400">No actions available for this order.</p>
                 )}
               </div>
             </Card>
