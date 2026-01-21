@@ -286,7 +286,7 @@ export function CreatePurchaseOrderModal({
                 {t('purchasing:createPurchaseOrderModal.creating')}
               </>
             ) : (
-              t('purchasing:createPurchaseOrderModal.createButton')
+              t('purchasing:createPurchaseOrderModal.create')
             )}
           </Button>
         </ModalActions>

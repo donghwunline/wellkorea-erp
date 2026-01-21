@@ -204,7 +204,7 @@ export function MaterialForm({
             value={formData.unit}
             onChange={e => handleChange('unit', e.target.value)}
             disabled={isSubmitting}
-            placeholder="EA"
+            placeholder={t('items:units.defaultUnit')}
             className="h-10 w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white placeholder-steel-500 focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </FormField>

@@ -261,11 +261,11 @@ export function VendorOfferingForm({
             disabled={isSubmitting}
             className={selectClassName}
           >
-            <option value="KRW">KRW (₩)</option>
-            <option value="USD">USD ($)</option>
-            <option value="EUR">EUR (€)</option>
-            <option value="JPY">JPY (¥)</option>
-            <option value="CNY">CNY (¥)</option>
+            <option value="KRW">{t('items:currencies.KRW')}</option>
+            <option value="USD">{t('items:currencies.USD')}</option>
+            <option value="EUR">{t('items:currencies.EUR')}</option>
+            <option value="JPY">{t('items:currencies.JPY')}</option>
+            <option value="CNY">{t('items:currencies.CNY')}</option>
           </select>
         </FormField>
       </div>

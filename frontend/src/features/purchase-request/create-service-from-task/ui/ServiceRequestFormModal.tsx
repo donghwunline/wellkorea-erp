@@ -43,7 +43,7 @@ const initialFormState: FormState = {
   serviceCategoryId: null,
   description: '',
   quantity: '1',
-  uom: '건',
+  uom: '',
   requiredDate: '',
 };
 
@@ -58,7 +58,7 @@ export function ServiceRequestFormModal({
   nodeId,
   onSuccess,
 }: Readonly<ServiceRequestFormModalProps>) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'items']);
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [error, setError] = useState<string | null>(null);
 
@@ -184,10 +184,10 @@ export function ServiceRequestFormModal({
             required
           />
           <FormField
-            label={t('purchaseRequest.unit')}
+            label={t('common:purchaseRequest.unit')}
             value={formState.uom}
             onChange={value => setFormState(s => ({ ...s, uom: value }))}
-            placeholder="건"
+            placeholder={t('items:units.defaultServiceUnit')}
           />
         </div>
 

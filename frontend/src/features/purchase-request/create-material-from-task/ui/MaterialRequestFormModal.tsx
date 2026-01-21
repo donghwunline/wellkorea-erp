@@ -53,7 +53,7 @@ export function MaterialRequestFormModal({
   projectId,
   onSuccess,
 }: Readonly<MaterialRequestFormModalProps>) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'items']);
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [error, setError] = useState<string | null>(null);
 
@@ -233,10 +233,10 @@ export function MaterialRequestFormModal({
             required
           />
           <FormField
-            label={t('purchaseRequest.unit')}
+            label={t('common:purchaseRequest.unit')}
             value={formState.uom}
             onChange={value => setFormState(s => ({ ...s, uom: value }))}
-            placeholder="EA"
+            placeholder={t('items:units.defaultUnit')}
           />
         </div>
 
