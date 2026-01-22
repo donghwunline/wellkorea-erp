@@ -221,12 +221,14 @@ export const quotationRules = {
    * Works with both Quotation and QuotationListItem.
    */
   canGeneratePdf(quotation: QuotationWithOptionalLineItems): boolean {
-    // If lineItems not available (list view), check status instead
-    if (!quotation.lineItems) {
-      // PDF can be generated for any non-DRAFT quotation
-      return quotation.status !== QuotationStatus.DRAFT;
+    // PDF can only be generated for non-DRAFT quotations
+    if (quotation.status === QuotationStatus.DRAFT || quotation.status === QuotationStatus.PENDING)
+      return false;
+    // If lineItems available, also require at least one item
+    if (quotation.lineItems) {
+      return quotation.lineItems.length > 0;
     }
-    return quotation.lineItems.length > 0;
+    return true;
   },
 
   /**
@@ -275,6 +277,8 @@ export const quotationRules = {
    * Works with both Quotation and QuotationListItem.
    */
   canAccept(quotation: QuotationBase): boolean {
-    return quotation.status === QuotationStatus.SENT || quotation.status === QuotationStatus.APPROVED;
+    return (
+      quotation.status === QuotationStatus.SENT || quotation.status === QuotationStatus.APPROVED
+    );
   },
 };
