@@ -1,8 +1,12 @@
 package com.wellkorea.backend.approval.application;
 
-import com.wellkorea.backend.approval.domain.*;
+import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
+import com.wellkorea.backend.approval.domain.ApprovalComment;
+import com.wellkorea.backend.approval.domain.ApprovalHistory;
+import com.wellkorea.backend.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
 import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
+import com.wellkorea.backend.approval.domain.vo.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalCommentRepository;

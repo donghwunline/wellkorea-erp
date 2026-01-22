@@ -8,7 +8,7 @@ import com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView;
 import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
 import com.wellkorea.backend.approval.application.ApprovalCommandService;
 import com.wellkorea.backend.approval.application.ApprovalQueryService;
-import com.wellkorea.backend.approval.domain.ApprovalStatus;
+import com.wellkorea.backend.approval.domain.vo.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.shared.dto.ApiResponse;

@@ -1,6 +1,6 @@
 package com.wellkorea.backend.approval.api.dto.query;
 
-import com.wellkorea.backend.approval.domain.DecisionStatus;
+import com.wellkorea.backend.approval.domain.vo.DecisionStatus;
 
 import java.time.LocalDateTime;
 

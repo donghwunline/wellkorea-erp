@@ -1,9 +1,9 @@
 package com.wellkorea.backend.approval.application;
 
 import com.wellkorea.backend.approval.api.dto.query.*;
-import com.wellkorea.backend.approval.domain.ApprovalAction;
-import com.wellkorea.backend.approval.domain.ApprovalStatus;
-import com.wellkorea.backend.approval.domain.DecisionStatus;
+import com.wellkorea.backend.approval.domain.vo.ApprovalAction;
+import com.wellkorea.backend.approval.domain.vo.ApprovalStatus;
+import com.wellkorea.backend.approval.domain.vo.DecisionStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.mapper.ApprovalMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
@@ -20,7 +20,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.*;
 
 /**

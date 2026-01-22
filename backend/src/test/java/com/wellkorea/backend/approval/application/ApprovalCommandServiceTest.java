@@ -1,11 +1,15 @@
 package com.wellkorea.backend.approval.application;
 
-import com.wellkorea.backend.approval.domain.*;
+import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
+import com.wellkorea.backend.approval.domain.ApprovalComment;
+import com.wellkorea.backend.approval.domain.ApprovalHistory;
+import com.wellkorea.backend.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent;
-import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
-import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
-import com.wellkorea.backend.approval.domain.vo.EntityType;
-import com.wellkorea.backend.approval.infrastructure.repository.*;
+import com.wellkorea.backend.approval.domain.vo.*;
+import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
+import com.wellkorea.backend.approval.infrastructure.repository.ApprovalCommentRepository;
+import com.wellkorea.backend.approval.infrastructure.repository.ApprovalHistoryRepository;
+import com.wellkorea.backend.approval.infrastructure.repository.ApprovalRequestRepository;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
@@ -109,19 +113,12 @@ class ApprovalCommandServiceTest {
                 .roles(Set.of(Role.ADMIN))
                 .build();
 
-        // Set up chain template
-        chainTemplate = new ApprovalChainTemplate();
-        chainTemplate.setId(1L);
-        chainTemplate.setEntityType(EntityType.QUOTATION);
-        chainTemplate.setName("견적서 결재");
-        chainTemplate.setActive(true);
-
         // Set up chain levels using @Embeddable constructor
         level1 = new ApprovalChainLevel(1, "팀장", 2L, true);
         level2 = new ApprovalChainLevel(2, "부서장", 1L, true);
 
-        // Use aggregate method to set levels
-        chainTemplate.replaceAllLevels(List.of(level1, level2));
+        // Set up chain template
+        chainTemplate = new ApprovalChainTemplate(1L, EntityType.QUOTATION, "견적서 결재", List.of(level1, level2));
 
         // Set up approval request with embedded level decisions
         approvalRequest = new ApprovalRequest();

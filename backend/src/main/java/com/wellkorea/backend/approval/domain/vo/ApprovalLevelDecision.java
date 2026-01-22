@@ -1,6 +1,5 @@
 package com.wellkorea.backend.approval.domain.vo;
 
-import com.wellkorea.backend.approval.domain.DecisionStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

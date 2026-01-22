@@ -1,5 +1,6 @@
 package com.wellkorea.backend.approval.domain;
 
+import com.wellkorea.backend.approval.domain.vo.ApprovalAction;
 import com.wellkorea.backend.auth.domain.User;
 import jakarta.persistence.*;
 
@@ -69,58 +70,5 @@ public class ApprovalHistory {
         history.actor = approver;
         history.comments = comments;
         return history;
-    }
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public ApprovalRequest getApprovalRequest() {
-        return approvalRequest;
-    }
-
-    public void setApprovalRequest(ApprovalRequest approvalRequest) {
-        this.approvalRequest = approvalRequest;
-    }
-
-    public Integer getLevelOrder() {
-        return levelOrder;
-    }
-
-    public void setLevelOrder(Integer levelOrder) {
-        this.levelOrder = levelOrder;
-    }
-
-    public ApprovalAction getAction() {
-        return action;
-    }
-
-    public void setAction(ApprovalAction action) {
-        this.action = action;
-    }
-
-    public User getActor() {
-        return actor;
-    }
-
-    public void setActor(User actor) {
-        this.actor = actor;
-    }
-
-    public String getComments() {
-        return comments;
-    }
-
-    public void setComments(String comments) {
-        this.comments = comments;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 }
