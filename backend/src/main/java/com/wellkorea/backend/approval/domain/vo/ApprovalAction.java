@@ -1,4 +1,4 @@
-package com.wellkorea.backend.approval.domain;
+package com.wellkorea.backend.approval.domain.vo;
 
 /**
  * Actions in approval history.
