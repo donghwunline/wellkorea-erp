@@ -13,6 +13,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * Argument resolver for {@link CurrentToken} annotation.
  * Extracts JWT token from the Authorization header and injects it into controller method parameters.
  */
+@Deprecated(since = "1.0", forRemoval = false)
 @Component
 public class CurrentTokenArgumentResolver implements HandlerMethodArgumentResolver {
 
