@@ -7,15 +7,25 @@
     <resultMap id="summaryViewMap" type="com.wellkorea.backend.finance.api.dto.query.AccountsPayableSummaryView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
+            <!-- Disbursement cause fields (new) -->
+            <arg column="cause_type" javaType="java.lang.String"/>
+            <arg column="cause_id" javaType="java.lang.Long"/>
+            <arg column="cause_reference_number" javaType="java.lang.String"/>
+            <!-- Legacy PO fields -->
             <arg column="purchase_order_id" javaType="java.lang.Long"/>
             <arg column="po_number" javaType="java.lang.String"/>
+            <!-- Vendor info -->
             <arg column="vendor_id" javaType="java.lang.Long"/>
             <arg column="vendor_name" javaType="java.lang.String"/>
+            <!-- Amount info -->
             <arg column="total_amount" javaType="java.math.BigDecimal"/>
             <arg column="currency" javaType="java.lang.String"/>
+            <!-- Dates -->
             <arg column="due_date" javaType="java.time.LocalDate"/>
-            <arg column="notes" javaType="java.lang.String"/>
             <arg column="created_at" javaType="java.time.Instant"/>
+            <!-- Notes -->
+            <arg column="notes" javaType="java.lang.String"/>
+            <!-- Calculated fields -->
             <arg column="total_paid" javaType="java.math.BigDecimal"/>
             <arg column="remaining_balance" javaType="java.math.BigDecimal"/>
             <arg column="is_overdue" javaType="java.lang.Boolean"/>
@@ -40,15 +50,25 @@
     <!-- Common SQL fragment for calculating status from payments -->
     <sql id="apWithCalculatedStatus">
         SELECT ap.id,
+               -- Disbursement cause fields (new)
+               ap.cause_type,
+               ap.cause_id,
+               ap.cause_reference_number,
+               -- Legacy PO fields
                ap.purchase_order_id,
                ap.po_number,
+               -- Vendor info
                v.id                                           AS vendor_id,
                v.name                                         AS vendor_name,
+               -- Amount info
                ap.total_amount,
                ap.currency,
+               -- Dates
                ap.due_date,
-               ap.notes,
                ap.created_at,
+               -- Notes
+               ap.notes,
+               -- Calculated fields
                COALESCE(paid.total_paid, 0)                   AS total_paid,
                ap.total_amount - COALESCE(paid.total_paid, 0) AS remaining_balance,
                CASE
@@ -105,6 +125,9 @@
         <if test="vendorId != null">
             AND vendor_id = #{vendorId}
         </if>
+        <if test="causeType != null">
+            AND cause_type = #{causeType}
+        </if>
         <if test="calculatedStatus != null">
             AND calculated_status = #{calculatedStatus}
         </if>
@@ -128,6 +151,9 @@
         <if test="vendorId != null">
             AND vendor_id = #{vendorId}
         </if>
+        <if test="causeType != null">
+            AND cause_type = #{causeType}
+        </if>
         <if test="calculatedStatus != null">
             AND calculated_status = #{calculatedStatus}
         </if>
@@ -140,6 +166,13 @@
     <select id="findByVendorId" resultMap="summaryViewMap">
         <include refid="apWithCalculatedStatus"/>
         WHERE v.id = #{vendorId}
+        ORDER BY ap.created_at DESC
+    </select>
+
+    <!-- Find APs by cause type -->
+    <select id="findByCauseType" resultMap="summaryViewMap">
+        <include refid="apWithCalculatedStatus"/>
+        WHERE ap.cause_type = #{causeType}
         ORDER BY ap.created_at DESC
     </select>
 

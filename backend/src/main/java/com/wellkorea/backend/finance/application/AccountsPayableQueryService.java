@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * Query service for AccountsPayable read operations.
- * Status is calculated from company_payments, not stored.
+ * Status is calculated from vendor_payments, not stored.
  */
 @Service
 @Transactional(readOnly = true)
@@ -38,25 +38,28 @@ public class AccountsPayableQueryService {
      * List APs with filters and calculated status.
      *
      * @param vendorId         filter by vendor (optional)
+     * @param causeType        filter by disbursement cause type (optional): PURCHASE_ORDER, EXPENSE_REPORT, etc.
      * @param calculatedStatus filter by status: PENDING, PARTIALLY_PAID, PAID (optional)
      * @param overdueOnly      filter for overdue only (optional)
      * @param pageable         pagination info
      */
     public Page<AccountsPayableSummaryView> list(
             Long vendorId,
+            String causeType,
             String calculatedStatus,
             Boolean overdueOnly,
             Pageable pageable
     ) {
         List<AccountsPayableSummaryView> aps = accountsPayableMapper.findWithFilters(
                 vendorId,
+                causeType,
                 calculatedStatus,
                 overdueOnly,
                 pageable.getPageSize(),
                 pageable.getOffset()
         );
 
-        long total = accountsPayableMapper.countWithFilters(vendorId, calculatedStatus, overdueOnly);
+        long total = accountsPayableMapper.countWithFilters(vendorId, causeType, calculatedStatus, overdueOnly);
 
         return new PageImpl<>(aps, pageable, total);
     }
@@ -66,6 +69,16 @@ public class AccountsPayableQueryService {
      */
     public List<AccountsPayableSummaryView> getByVendor(Long vendorId) {
         return accountsPayableMapper.findByVendorId(vendorId);
+    }
+
+    /**
+     * Get APs by disbursement cause type.
+     *
+     * @param causeType the cause type (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
+     * @return list of AP summary views
+     */
+    public List<AccountsPayableSummaryView> getByCauseType(String causeType) {
+        return accountsPayableMapper.findByCauseType(causeType);
     }
 
     /**

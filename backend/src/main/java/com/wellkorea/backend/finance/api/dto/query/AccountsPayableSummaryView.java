@@ -6,20 +6,29 @@ import java.time.LocalDate;
 
 /**
  * Summary view for AccountsPayable with calculated status from payments.
- * Status is computed from company_payments table, not stored in AP.
+ * Status is computed from vendor_payments table, not stored in AP.
  */
 public record AccountsPayableSummaryView(
         Long id,
+        // Disbursement cause fields (new - abstracts the source of payment obligation)
+        String causeType,
+        Long causeId,
+        String causeReferenceNumber,
+        // Legacy PO fields (deprecated but retained for backward compatibility)
         Long purchaseOrderId,
         String poNumber,
+        // Vendor info
         Long vendorId,
         String vendorName,
+        // Amount info
         BigDecimal totalAmount,
         String currency,
+        // Dates
         LocalDate dueDate,
-        String notes,
         Instant createdAt,
-        // CALCULATED fields from company_payments
+        // Notes
+        String notes,
+        // CALCULATED fields from vendor_payments
         BigDecimal totalPaid,
         BigDecimal remainingBalance,
         Boolean isOverdue,

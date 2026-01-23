@@ -2,6 +2,8 @@ package com.wellkorea.backend.finance.domain;
 
 import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.finance.domain.vo.AccountsPayableStatus;
+import com.wellkorea.backend.finance.domain.vo.DisbursementCause;
+import com.wellkorea.backend.finance.domain.vo.DisbursementCauseType;
 import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
 import jakarta.persistence.*;
 
@@ -17,8 +19,11 @@ import java.util.Objects;
 /**
  * AccountsPayable entity - tracks payment obligations to vendors.
  * <p>
- * Created when a PurchaseOrder is confirmed. Supports partial payments
- * via VendorPayment child entities.
+ * Created when a disbursement cause (e.g., PurchaseOrder) is confirmed.
+ * Supports partial payments via VendorPayment child entities.
+ * <p>
+ * The {@link #disbursementCause} field abstracts the source of the payment obligation,
+ * enabling support for multiple expenditure types (PO, expense reports, contracts, etc.).
  */
 @Entity
 @Table(name = "accounts_payable")
@@ -28,9 +33,17 @@ public class AccountsPayable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * @deprecated Use {@link #disbursementCause} instead. This field is retained for
+     * backward compatibility during the transition period. Will be removed in a future version.
+     */
+    @Deprecated(since = "2024.1", forRemoval = true)
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "purchase_order_id", nullable = false, unique = true)
+    @JoinColumn(name = "purchase_order_id", unique = true)
     private PurchaseOrder purchaseOrder;
+
+    @Embedded
+    private DisbursementCause disbursementCause;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendor_company_id", nullable = false)
@@ -88,6 +101,16 @@ public class AccountsPayable {
         this.status = builder.status != null ? builder.status : AccountsPayableStatus.PENDING;
         this.dueDate = builder.dueDate;
         this.notes = builder.notes;
+
+        // Set disbursementCause: use provided value, or auto-create from PurchaseOrder for backward compatibility
+        if (builder.disbursementCause != null) {
+            this.disbursementCause = builder.disbursementCause;
+        } else if (builder.purchaseOrder != null) {
+            this.disbursementCause = DisbursementCause.fromPurchaseOrder(
+                    builder.purchaseOrder.getId(),
+                    builder.poNumber
+            );
+        }
     }
 
     public static Builder builder() {
@@ -100,12 +123,56 @@ public class AccountsPayable {
         return id;
     }
 
+    /**
+     * @deprecated Use {@link #getDisbursementCause()} instead.
+     */
+    @Deprecated(since = "2024.1", forRemoval = true)
     public PurchaseOrder getPurchaseOrder() {
         return purchaseOrder;
     }
 
+    /**
+     * @deprecated Use {@link #getCauseId()} instead when cause type is PURCHASE_ORDER.
+     */
+    @Deprecated(since = "2024.1", forRemoval = true)
     public Long getPurchaseOrderId() {
         return purchaseOrder != null ? purchaseOrder.getId() : null;
+    }
+
+    /**
+     * Get the disbursement cause that created this payment obligation.
+     *
+     * @return the disbursement cause value object
+     */
+    public DisbursementCause getDisbursementCause() {
+        return disbursementCause;
+    }
+
+    /**
+     * Get the type of disbursement cause.
+     *
+     * @return the cause type (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
+     */
+    public DisbursementCauseType getCauseType() {
+        return disbursementCause != null ? disbursementCause.getCauseType() : null;
+    }
+
+    /**
+     * Get the ID of the source entity that caused this payment obligation.
+     *
+     * @return the cause entity ID
+     */
+    public Long getCauseId() {
+        return disbursementCause != null ? disbursementCause.getCauseId() : null;
+    }
+
+    /**
+     * Get the reference number from the source document.
+     *
+     * @return the cause reference number (e.g., PO number)
+     */
+    public String getCauseReferenceNumber() {
+        return disbursementCause != null ? disbursementCause.getCauseReferenceNumber() : null;
     }
 
     public Company getVendor() {
@@ -298,6 +365,8 @@ public class AccountsPayable {
     public String toString() {
         return "AccountsPayable{" +
                 "id=" + id +
+                ", causeType=" + (disbursementCause != null ? disbursementCause.getCauseType() : null) +
+                ", causeId=" + (disbursementCause != null ? disbursementCause.getCauseId() : null) +
                 ", poNumber='" + poNumber + '\'' +
                 ", totalAmount=" + totalAmount +
                 ", status=" + status +
@@ -309,6 +378,7 @@ public class AccountsPayable {
 
     public static class Builder {
         private PurchaseOrder purchaseOrder;
+        private DisbursementCause disbursementCause;
         private Company vendor;
         private BigDecimal totalAmount;
         private String currency;
@@ -317,8 +387,23 @@ public class AccountsPayable {
         private LocalDate dueDate;
         private String notes;
 
+        /**
+         * @deprecated Use {@link #disbursementCause(DisbursementCause)} instead.
+         */
+        @Deprecated(since = "2024.1", forRemoval = true)
         public Builder purchaseOrder(PurchaseOrder purchaseOrder) {
             this.purchaseOrder = purchaseOrder;
+            return this;
+        }
+
+        /**
+         * Set the disbursement cause for this AP.
+         *
+         * @param disbursementCause the cause of the payment obligation
+         * @return this builder
+         */
+        public Builder disbursementCause(DisbursementCause disbursementCause) {
+            this.disbursementCause = disbursementCause;
             return this;
         }
 

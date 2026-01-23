@@ -23,7 +23,7 @@ import java.util.List;
  * REST API controller for accounts payable queries.
  * <p>
  * This is a query-only controller - AP records are created automatically
- * when Purchase Orders are received (handled by domain events).
+ * when disbursement causes (e.g., Purchase Orders) are confirmed (handled by domain events).
  * <p>
  * RBAC Rules:
  * - Admin, Finance, Sales: Read access to AP data
@@ -52,11 +52,13 @@ public class AccountsPayableController {
      * GET /api/accounts-payable
      * GET /api/accounts-payable?calculatedStatus=PENDING
      * GET /api/accounts-payable?vendorId=123
+     * GET /api/accounts-payable?causeType=PURCHASE_ORDER
      * GET /api/accounts-payable?overdueOnly=true
      * GET /api/accounts-payable?calculatedStatus=PENDING&overdueOnly=true&vendorId=123
      * <p>
      * Query Parameters:
      * - vendorId (Long, optional): Filter by vendor ID
+     * - causeType (String, optional): Filter by disbursement cause type (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
      * - calculatedStatus (String, optional): PENDING, PARTIALLY_PAID, PAID
      * - overdueOnly (Boolean, optional): Filter for overdue items only
      * - page (int, default 0): Page number
@@ -65,12 +67,13 @@ public class AccountsPayableController {
     @GetMapping
     public ResponseEntity<ApiResponse<Page<AccountsPayableSummaryView>>> listAccountsPayable(
             @RequestParam(required = false) Long vendorId,
+            @RequestParam(required = false) String causeType,
             @RequestParam(required = false) String calculatedStatus,
             @RequestParam(required = false) Boolean overdueOnly,
             Pageable pageable) {
 
         Page<AccountsPayableSummaryView> result = queryService.list(
-                vendorId, calculatedStatus, overdueOnly, pageable);
+                vendorId, causeType, calculatedStatus, overdueOnly, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -97,6 +100,21 @@ public class AccountsPayableController {
             @PathVariable Long vendorId) {
 
         List<AccountsPayableSummaryView> result = queryService.getByVendor(vendorId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * Get accounts payable by disbursement cause type.
+     * <p>
+     * GET /api/accounts-payable/cause-type/{causeType}
+     *
+     * @param causeType the cause type (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
+     */
+    @GetMapping("/cause-type/{causeType}")
+    public ResponseEntity<ApiResponse<List<AccountsPayableSummaryView>>> getByCauseType(
+            @PathVariable String causeType) {
+
+        List<AccountsPayableSummaryView> result = queryService.getByCauseType(causeType);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 

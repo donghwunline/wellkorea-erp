@@ -9,7 +9,7 @@ import java.util.Optional;
 
 /**
  * MyBatis mapper for AccountsPayable queries with calculated status.
- * Status is computed from company_payments table, not stored in AP.
+ * Status is computed from vendor_payments table, not stored in AP.
  */
 @Mapper
 public interface AccountsPayableMapper {
@@ -21,10 +21,19 @@ public interface AccountsPayableMapper {
 
     /**
      * Find APs with filters and calculated status.
-     * Status is calculated from company_payments.
+     * Status is calculated from vendor_payments.
+     *
+     * @param vendorId         optional vendor ID filter
+     * @param causeType        optional disbursement cause type filter (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
+     * @param calculatedStatus optional calculated status filter (PENDING, PARTIALLY_PAID, PAID)
+     * @param overdueOnly      if true, only return overdue APs
+     * @param limit            pagination limit
+     * @param offset           pagination offset
+     * @return list of AP summary views
      */
     List<AccountsPayableSummaryView> findWithFilters(
             @Param("vendorId") Long vendorId,
+            @Param("causeType") String causeType,
             @Param("calculatedStatus") String calculatedStatus,
             @Param("overdueOnly") Boolean overdueOnly,
             @Param("limit") int limit,
@@ -33,9 +42,16 @@ public interface AccountsPayableMapper {
 
     /**
      * Count APs with filters.
+     *
+     * @param vendorId         optional vendor ID filter
+     * @param causeType        optional disbursement cause type filter
+     * @param calculatedStatus optional calculated status filter
+     * @param overdueOnly      if true, only count overdue APs
+     * @return count of matching APs
      */
     long countWithFilters(
             @Param("vendorId") Long vendorId,
+            @Param("causeType") String causeType,
             @Param("calculatedStatus") String calculatedStatus,
             @Param("overdueOnly") Boolean overdueOnly
     );
@@ -44,6 +60,14 @@ public interface AccountsPayableMapper {
      * Find APs for a specific vendor with calculated status.
      */
     List<AccountsPayableSummaryView> findByVendorId(@Param("vendorId") Long vendorId);
+
+    /**
+     * Find APs by disbursement cause type.
+     *
+     * @param causeType the cause type (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
+     * @return list of AP summary views
+     */
+    List<AccountsPayableSummaryView> findByCauseType(@Param("causeType") String causeType);
 
     /**
      * Find overdue APs (past due date with remaining balance).

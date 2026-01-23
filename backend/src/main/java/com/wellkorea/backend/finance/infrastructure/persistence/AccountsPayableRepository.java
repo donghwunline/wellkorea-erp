@@ -2,6 +2,7 @@ package com.wellkorea.backend.finance.infrastructure.persistence;
 
 import com.wellkorea.backend.finance.domain.AccountsPayable;
 import com.wellkorea.backend.finance.domain.vo.AccountsPayableStatus;
+import com.wellkorea.backend.finance.domain.vo.DisbursementCauseType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,15 +16,57 @@ import java.util.Optional;
  */
 public interface AccountsPayableRepository extends JpaRepository<AccountsPayable, Long> {
 
+    // ========== Disbursement Cause-based Methods (New) ==========
+
+    /**
+     * Check if AP exists for a specific disbursement cause.
+     *
+     * @param causeType the type of disbursement cause
+     * @param causeId   the ID of the source entity
+     * @return true if an AP exists for this cause
+     */
+    boolean existsByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(
+            DisbursementCauseType causeType, Long causeId);
+
+    /**
+     * Find AP by disbursement cause type and ID.
+     *
+     * @param causeType the type of disbursement cause
+     * @param causeId   the ID of the source entity
+     * @return the AP if found
+     */
+    Optional<AccountsPayable> findByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(
+            DisbursementCauseType causeType, Long causeId);
+
+    /**
+     * Find all APs for a specific disbursement cause type.
+     *
+     * @param causeType the type of disbursement cause
+     * @return list of APs
+     */
+    List<AccountsPayable> findByDisbursementCause_CauseType(DisbursementCauseType causeType);
+
+    // ========== Legacy PurchaseOrder-based Methods (Deprecated) ==========
+
     /**
      * Find AP by purchase order ID.
+     *
+     * @deprecated Use {@link #findByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(DisbursementCauseType, Long)}
+     * with {@code DisbursementCauseType.PURCHASE_ORDER} instead.
      */
+    @Deprecated(since = "2024.1", forRemoval = true)
     Optional<AccountsPayable> findByPurchaseOrder_Id(Long purchaseOrderId);
 
     /**
      * Check if AP exists for a purchase order.
+     *
+     * @deprecated Use {@link #existsByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(DisbursementCauseType, Long)}
+     * with {@code DisbursementCauseType.PURCHASE_ORDER} instead.
      */
+    @Deprecated(since = "2024.1", forRemoval = true)
     boolean existsByPurchaseOrder_Id(Long purchaseOrderId);
+
+    // ========== Vendor-based Methods ==========
 
     /**
      * Find all APs for a vendor.
@@ -39,6 +82,8 @@ public interface AccountsPayableRepository extends JpaRepository<AccountsPayable
      * Find all APs for a vendor with a specific status.
      */
     List<AccountsPayable> findByVendor_IdAndStatus(Long vendorId, AccountsPayableStatus status);
+
+    // ========== Date-based Queries ==========
 
     /**
      * Find overdue APs (past due date and not fully paid).
