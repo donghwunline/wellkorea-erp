@@ -396,36 +396,8 @@ public abstract class PurchaseRequest {
         return project;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public String getUom() {
-        return uom;
-    }
-
-    public LocalDate getRequiredDate() {
-        return requiredDate;
-    }
-
     public PurchaseRequestStatus getStatus() {
         return status;
-    }
-
-    public User getCreatedBy() {
-        return createdBy;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
     }
 
     /**

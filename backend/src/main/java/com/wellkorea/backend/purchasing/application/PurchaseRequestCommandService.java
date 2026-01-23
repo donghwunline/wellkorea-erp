@@ -145,7 +145,6 @@ public class PurchaseRequestCommandService {
 
     /**
      * Update an existing purchase request.
-     * Supports partial updates - only non-null command fields will be updated.
      *
      * @return the updated purchase request ID
      */
@@ -153,14 +152,13 @@ public class PurchaseRequestCommandService {
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + id));
 
-        // Merge command with existing values (partial update support)
-        String description = command.description() != null ? command.description() : purchaseRequest.getDescription();
-        var quantity = command.quantity() != null ? command.quantity() : purchaseRequest.getQuantity();
-        String uom = command.uom() != null ? command.uom() : purchaseRequest.getUom();
-        var requiredDate = command.requiredDate() != null ? command.requiredDate() : purchaseRequest.getRequiredDate();
-
         // Use the domain's update method which enforces status check
-        purchaseRequest.update(description, quantity, uom, requiredDate);
+        purchaseRequest.update(
+                command.description(),
+                command.quantity(),
+                command.uom(),
+                command.requiredDate()
+        );
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
         return purchaseRequest.getId();

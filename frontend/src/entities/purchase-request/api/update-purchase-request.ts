@@ -13,14 +13,14 @@ import type { CommandResult } from './purchase-request.mapper';
 
 /**
  * Input for updating a purchase request.
- * All fields are optional - only provided fields are updated.
+ * All required fields must be provided (PUT semantics).
  */
 export interface UpdatePurchaseRequestInput {
   readonly id: number;
-  readonly description?: string;
-  readonly quantity?: number;
-  readonly uom?: string;
-  readonly requiredDate?: string | null;
+  readonly description: string;      // required
+  readonly quantity: number;         // required
+  readonly uom?: string;             // optional (nullable on backend)
+  readonly requiredDate: string;     // required
 }
 
 // =============================================================================
@@ -32,10 +32,10 @@ export interface UpdatePurchaseRequestInput {
  * @internal
  */
 interface UpdatePurchaseRequestRequest {
-  description?: string;
-  quantity?: number;
+  description: string;
+  quantity: number;
   uom?: string;
-  requiredDate?: string | null;
+  requiredDate: string;
 }
 
 // =============================================================================
@@ -50,14 +50,14 @@ function validateUpdateInput(input: UpdatePurchaseRequestInput): void {
   if (!input.id) {
     throw new DomainValidationError('REQUIRED', 'id', 'Purchase request ID is required');
   }
-  if (input.description !== undefined && !input.description.trim()) {
-    throw new DomainValidationError('INVALID_FORMAT', 'description', 'Description cannot be empty');
+  if (!input.description?.trim()) {
+    throw new DomainValidationError('REQUIRED', 'description', 'Description is required');
   }
-  if (input.quantity !== undefined && input.quantity <= 0) {
+  if (input.quantity === undefined || input.quantity <= 0) {
     throw new DomainValidationError('OUT_OF_RANGE', 'quantity', 'Quantity must be greater than 0');
   }
-  if (input.uom !== undefined && !input.uom.trim()) {
-    throw new DomainValidationError('INVALID_FORMAT', 'uom', 'Unit of measure cannot be empty');
+  if (!input.requiredDate) {
+    throw new DomainValidationError('REQUIRED', 'requiredDate', 'Required date is required');
   }
 }
 
@@ -78,20 +78,12 @@ export async function updatePurchaseRequest(
 ): Promise<CommandResult> {
   validateUpdateInput(input);
 
-  const request: UpdatePurchaseRequestRequest = {};
-
-  if (input.description !== undefined) {
-    request.description = input.description.trim();
-  }
-  if (input.quantity !== undefined) {
-    request.quantity = input.quantity;
-  }
-  if (input.uom !== undefined) {
-    request.uom = input.uom.trim();
-  }
-  if (input.requiredDate !== undefined) {
-    request.requiredDate = input.requiredDate;
-  }
+  const request: UpdatePurchaseRequestRequest = {
+    description: input.description.trim(),
+    quantity: input.quantity,
+    uom: input.uom?.trim(),
+    requiredDate: input.requiredDate,
+  };
 
   return httpClient.put<CommandResult>(PURCHASE_REQUEST_ENDPOINTS.byId(input.id), request);
 }
