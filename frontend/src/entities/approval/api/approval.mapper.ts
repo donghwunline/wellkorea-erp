@@ -65,7 +65,6 @@ export interface ApprovalDetailsResponse {
  * Approval history entry from API response.
  */
 export interface ApprovalHistoryResponse {
-  id: number;
   levelOrder: number | null;
   levelName: string | null;
   action: string; // Will be cast to ApprovalHistoryAction
@@ -183,7 +182,6 @@ export const approvalHistoryMapper = {
    */
   toDomain(response: ApprovalHistoryResponse): ApprovalHistory {
     return {
-      id: response.id,
       levelOrder: response.levelOrder,
       levelName: response.levelName?.trim() ?? null,
       action: response.action as ApprovalHistoryAction,
