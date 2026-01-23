@@ -5,7 +5,7 @@ import com.wellkorea.backend.auth.application.CustomerAssignmentService;
 import com.wellkorea.backend.auth.application.UserCommand;
 import com.wellkorea.backend.auth.application.UserQuery;
 import com.wellkorea.backend.auth.domain.AuthenticatedUser;
-import com.wellkorea.backend.auth.domain.Role;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;

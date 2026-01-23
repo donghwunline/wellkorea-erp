@@ -1,4 +1,4 @@
-package com.wellkorea.backend.auth.domain;
+package com.wellkorea.backend.auth.domain.vo;
 
 /**
  * Types of actions that are audited.

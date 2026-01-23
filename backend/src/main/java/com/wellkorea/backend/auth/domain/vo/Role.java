@@ -1,4 +1,4 @@
-package com.wellkorea.backend.auth.domain;
+package com.wellkorea.backend.auth.domain.vo;
 
 /**
  * User roles for role-based access control (RBAC).

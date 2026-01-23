@@ -1,8 +1,8 @@
 package com.wellkorea.backend.auth.application;
 
 import com.wellkorea.backend.auth.api.dto.LoginResponse;
-import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import org.slf4j.Logger;

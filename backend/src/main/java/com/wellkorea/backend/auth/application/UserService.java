@@ -1,8 +1,8 @@
 package com.wellkorea.backend.auth.application;
 
 import com.wellkorea.backend.auth.api.dto.UserResponse;
-import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
