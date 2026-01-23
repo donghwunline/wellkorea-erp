@@ -1,6 +1,6 @@
 package com.wellkorea.backend.purchasing.api.dto.command;
 
-import com.wellkorea.backend.purchasing.domain.VendorPaymentMethod;
+import com.wellkorea.backend.purchasing.domain.vo.VendorPaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
@@ -24,4 +24,5 @@ public record RecordVendorPaymentRequest(
         String referenceNumber,
 
         String notes
-) {}
+) {
+}

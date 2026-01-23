@@ -2,6 +2,9 @@ package com.wellkorea.backend.purchasing.domain;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import jakarta.persistence.*;
 
@@ -16,13 +19,13 @@ import java.util.Optional;
 /**
  * Abstract base class for purchase requests.
  * Uses JPA SINGLE_TABLE inheritance with dtype discriminator column.
- *
+ * <p>
  * Concrete subclasses:
  * - ServicePurchaseRequest: For outsourcing services (linked to ServiceCategory)
  * - MaterialPurchaseRequest: For physical materials (linked to Material)
- *
+ * <p>
  * Both types share the same workflow: DRAFT → RFQ_SENT → VENDOR_SELECTED → CLOSED
- *
+ * <p>
  * RfqItems are embedded as @ElementCollection (aggregate pattern).
  */
 @Entity
@@ -197,7 +200,7 @@ public abstract class PurchaseRequest {
     /**
      * Add an RFQ item for a vendor.
      *
-     * @param vendorCompanyId the vendor company ID
+     * @param vendorCompanyId  the vendor company ID
      * @param vendorOfferingId optional vendor offering ID (can be null)
      * @return the created RfqItem
      */
@@ -210,10 +213,10 @@ public abstract class PurchaseRequest {
     /**
      * Record a vendor's reply to an RFQ.
      *
-     * @param itemId the RFQ item ID
-     * @param quotedPrice the quoted price
+     * @param itemId         the RFQ item ID
+     * @param quotedPrice    the quoted price
      * @param quotedLeadTime lead time in days
-     * @param notes optional notes
+     * @param notes          optional notes
      */
     public void recordRfqReply(String itemId, BigDecimal quotedPrice, Integer quotedLeadTime, String notes) {
         if (status != PurchaseRequestStatus.RFQ_SENT) {
@@ -321,10 +324,6 @@ public abstract class PurchaseRequest {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Project getProject() {

@@ -1,10 +1,10 @@
 package com.wellkorea.backend.purchasing.application;
 
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
-import com.wellkorea.backend.purchasing.domain.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCanceledEvent;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCreatedEvent;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderReceivedEvent;
+import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;

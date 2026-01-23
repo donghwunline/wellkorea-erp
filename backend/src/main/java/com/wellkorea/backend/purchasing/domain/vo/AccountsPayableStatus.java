@@ -1,4 +1,4 @@
-package com.wellkorea.backend.purchasing.domain;
+package com.wellkorea.backend.purchasing.domain.vo;
 
 /**
  * Status of an accounts payable entry.

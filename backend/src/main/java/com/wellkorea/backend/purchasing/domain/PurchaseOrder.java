@@ -3,6 +3,8 @@ package com.wellkorea.backend.purchasing.domain;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.purchasing.domain.vo.PurchaseOrderStatus;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;

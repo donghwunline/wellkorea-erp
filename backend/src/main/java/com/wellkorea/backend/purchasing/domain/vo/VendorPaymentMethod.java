@@ -1,4 +1,4 @@
-package com.wellkorea.backend.purchasing.domain;
+package com.wellkorea.backend.purchasing.domain.vo;
 
 /**
  * Payment methods for vendor payments.

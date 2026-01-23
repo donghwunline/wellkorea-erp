@@ -1,4 +1,4 @@
-package com.wellkorea.backend.purchasing.domain;
+package com.wellkorea.backend.purchasing.domain.vo;
 
 /**
  * Status enum for PurchaseOrder lifecycle.

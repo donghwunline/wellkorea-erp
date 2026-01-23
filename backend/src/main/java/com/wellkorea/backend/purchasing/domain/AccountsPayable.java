@@ -1,22 +1,8 @@
 package com.wellkorea.backend.purchasing.domain;
 
 import com.wellkorea.backend.company.domain.Company;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import com.wellkorea.backend.purchasing.domain.vo.AccountsPayableStatus;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -182,7 +168,7 @@ public class AccountsPayable {
      * Updates status based on remaining balance.
      *
      * @param payment the payment to add
-     * @throws IllegalStateException if AP cannot receive payments
+     * @throws IllegalStateException    if AP cannot receive payments
      * @throws IllegalArgumentException if payment exceeds remaining balance
      */
     public void addPayment(VendorPayment payment) {
