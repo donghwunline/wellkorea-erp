@@ -144,72 +144,36 @@ public class RfqItem {
         return itemId;
     }
 
-    public void setItemId(String itemId) {
-        this.itemId = itemId;
-    }
-
     public Long getVendorCompanyId() {
         return vendorCompanyId;
-    }
-
-    public void setVendorCompanyId(Long vendorCompanyId) {
-        this.vendorCompanyId = vendorCompanyId;
     }
 
     public Long getVendorOfferingId() {
         return vendorOfferingId;
     }
 
-    public void setVendorOfferingId(Long vendorOfferingId) {
-        this.vendorOfferingId = vendorOfferingId;
-    }
-
     public RfqItemStatus getStatus() {
         return status;
-    }
-
-    public void setStatus(RfqItemStatus status) {
-        this.status = status;
     }
 
     public BigDecimal getQuotedPrice() {
         return quotedPrice;
     }
 
-    public void setQuotedPrice(BigDecimal quotedPrice) {
-        this.quotedPrice = quotedPrice;
-    }
-
     public Integer getQuotedLeadTime() {
         return quotedLeadTime;
-    }
-
-    public void setQuotedLeadTime(Integer quotedLeadTime) {
-        this.quotedLeadTime = quotedLeadTime;
     }
 
     public String getNotes() {
         return notes;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
     public LocalDateTime getSentAt() {
         return sentAt;
     }
 
-    public void setSentAt(LocalDateTime sentAt) {
-        this.sentAt = sentAt;
-    }
-
     public LocalDateTime getRepliedAt() {
         return repliedAt;
-    }
-
-    public void setRepliedAt(LocalDateTime repliedAt) {
-        this.repliedAt = repliedAt;
     }
 
     // ========== Equals and HashCode (value-based on itemId) ==========
