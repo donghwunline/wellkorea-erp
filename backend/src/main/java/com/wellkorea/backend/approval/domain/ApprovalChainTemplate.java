@@ -68,7 +68,7 @@ public class ApprovalChainTemplate {
         this.id = id;
         this.entityType = entityType;
         this.name = name;
-        this.levels = levels;
+        this.levels = new ArrayList<>(levels);  // Create mutable copy
     }
 
     @PrePersist
