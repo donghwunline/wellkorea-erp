@@ -46,26 +46,6 @@ public interface AccountsPayableRepository extends JpaRepository<AccountsPayable
      */
     List<AccountsPayable> findByDisbursementCause_CauseType(DisbursementCauseType causeType);
 
-    // ========== Legacy PurchaseOrder-based Methods (Deprecated) ==========
-
-    /**
-     * Find AP by purchase order ID.
-     *
-     * @deprecated Use {@link #findByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(DisbursementCauseType, Long)}
-     * with {@code DisbursementCauseType.PURCHASE_ORDER} instead.
-     */
-    @Deprecated(since = "2024.1", forRemoval = true)
-    Optional<AccountsPayable> findByPurchaseOrder_Id(Long purchaseOrderId);
-
-    /**
-     * Check if AP exists for a purchase order.
-     *
-     * @deprecated Use {@link #existsByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(DisbursementCauseType, Long)}
-     * with {@code DisbursementCauseType.PURCHASE_ORDER} instead.
-     */
-    @Deprecated(since = "2024.1", forRemoval = true)
-    boolean existsByPurchaseOrder_Id(Long purchaseOrderId);
-
     // ========== Vendor-based Methods ==========
 
     /**

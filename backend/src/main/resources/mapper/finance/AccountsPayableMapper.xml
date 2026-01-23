@@ -7,13 +7,10 @@
     <resultMap id="summaryViewMap" type="com.wellkorea.backend.finance.api.dto.query.AccountsPayableSummaryView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
-            <!-- Disbursement cause fields (new) -->
+            <!-- Disbursement cause fields -->
             <arg column="cause_type" javaType="java.lang.String"/>
             <arg column="cause_id" javaType="java.lang.Long"/>
             <arg column="cause_reference_number" javaType="java.lang.String"/>
-            <!-- Legacy PO fields -->
-            <arg column="purchase_order_id" javaType="java.lang.Long"/>
-            <arg column="po_number" javaType="java.lang.String"/>
             <!-- Vendor info -->
             <arg column="vendor_id" javaType="java.lang.Long"/>
             <arg column="vendor_name" javaType="java.lang.String"/>
@@ -50,13 +47,10 @@
     <!-- Common SQL fragment for calculating status from payments -->
     <sql id="apWithCalculatedStatus">
         SELECT ap.id,
-               -- Disbursement cause fields (new)
+               -- Disbursement cause fields
                ap.cause_type,
                ap.cause_id,
                ap.cause_reference_number,
-               -- Legacy PO fields
-               ap.purchase_order_id,
-               ap.po_number,
                -- Vendor info
                v.id                                           AS vendor_id,
                v.name                                         AS vendor_name,

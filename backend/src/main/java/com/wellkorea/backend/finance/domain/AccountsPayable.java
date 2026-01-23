@@ -4,7 +4,6 @@ import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.finance.domain.vo.AccountsPayableStatus;
 import com.wellkorea.backend.finance.domain.vo.DisbursementCause;
 import com.wellkorea.backend.finance.domain.vo.DisbursementCauseType;
-import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -33,15 +32,6 @@ public class AccountsPayable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * @deprecated Use {@link #disbursementCause} instead. This field is retained for
-     * backward compatibility during the transition period. Will be removed in a future version.
-     */
-    @Deprecated(since = "2024.1", forRemoval = true)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "purchase_order_id", unique = true)
-    private PurchaseOrder purchaseOrder;
-
     @Embedded
     private DisbursementCause disbursementCause;
 
@@ -54,9 +44,6 @@ public class AccountsPayable {
 
     @Column(name = "currency", nullable = false, length = 3)
     private String currency = "KRW";
-
-    @Column(name = "po_number", nullable = false, length = 50)
-    private String poNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
@@ -93,24 +80,13 @@ public class AccountsPayable {
     }
 
     private AccountsPayable(Builder builder) {
-        this.purchaseOrder = builder.purchaseOrder;
+        this.disbursementCause = builder.disbursementCause;
         this.vendor = builder.vendor;
         this.totalAmount = builder.totalAmount;
         this.currency = builder.currency != null ? builder.currency : "KRW";
-        this.poNumber = builder.poNumber;
         this.status = builder.status != null ? builder.status : AccountsPayableStatus.PENDING;
         this.dueDate = builder.dueDate;
         this.notes = builder.notes;
-
-        // Set disbursementCause: use provided value, or auto-create from PurchaseOrder for backward compatibility
-        if (builder.disbursementCause != null) {
-            this.disbursementCause = builder.disbursementCause;
-        } else if (builder.purchaseOrder != null) {
-            this.disbursementCause = DisbursementCause.fromPurchaseOrder(
-                    builder.purchaseOrder.getId(),
-                    builder.poNumber
-            );
-        }
     }
 
     public static Builder builder() {
@@ -121,22 +97,6 @@ public class AccountsPayable {
 
     public Long getId() {
         return id;
-    }
-
-    /**
-     * @deprecated Use {@link #getDisbursementCause()} instead.
-     */
-    @Deprecated(since = "2024.1", forRemoval = true)
-    public PurchaseOrder getPurchaseOrder() {
-        return purchaseOrder;
-    }
-
-    /**
-     * @deprecated Use {@link #getCauseId()} instead when cause type is PURCHASE_ORDER.
-     */
-    @Deprecated(since = "2024.1", forRemoval = true)
-    public Long getPurchaseOrderId() {
-        return purchaseOrder != null ? purchaseOrder.getId() : null;
     }
 
     /**
@@ -189,10 +149,6 @@ public class AccountsPayable {
 
     public String getCurrency() {
         return currency;
-    }
-
-    public String getPoNumber() {
-        return poNumber;
     }
 
     public AccountsPayableStatus getStatus() {
@@ -367,7 +323,7 @@ public class AccountsPayable {
                 "id=" + id +
                 ", causeType=" + (disbursementCause != null ? disbursementCause.getCauseType() : null) +
                 ", causeId=" + (disbursementCause != null ? disbursementCause.getCauseId() : null) +
-                ", poNumber='" + poNumber + '\'' +
+                ", causeReferenceNumber='" + (disbursementCause != null ? disbursementCause.getCauseReferenceNumber() : null) + '\'' +
                 ", totalAmount=" + totalAmount +
                 ", status=" + status +
                 ", dueDate=" + dueDate +
@@ -377,24 +333,13 @@ public class AccountsPayable {
     // ========== Builder ==========
 
     public static class Builder {
-        private PurchaseOrder purchaseOrder;
         private DisbursementCause disbursementCause;
         private Company vendor;
         private BigDecimal totalAmount;
         private String currency;
-        private String poNumber;
         private AccountsPayableStatus status;
         private LocalDate dueDate;
         private String notes;
-
-        /**
-         * @deprecated Use {@link #disbursementCause(DisbursementCause)} instead.
-         */
-        @Deprecated(since = "2024.1", forRemoval = true)
-        public Builder purchaseOrder(PurchaseOrder purchaseOrder) {
-            this.purchaseOrder = purchaseOrder;
-            return this;
-        }
 
         /**
          * Set the disbursement cause for this AP.
@@ -419,11 +364,6 @@ public class AccountsPayable {
 
         public Builder currency(String currency) {
             this.currency = currency;
-            return this;
-        }
-
-        public Builder poNumber(String poNumber) {
-            this.poNumber = poNumber;
             return this;
         }
 

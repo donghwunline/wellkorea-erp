@@ -28,7 +28,7 @@ export function AccountsPayableTable({
     <Table>
       <Table.Header>
         <Table.Row>
-          <Table.HeaderCell>PO Number</Table.HeaderCell>
+          <Table.HeaderCell>Reference #</Table.HeaderCell>
           {showVendor && <Table.HeaderCell>Vendor</Table.HeaderCell>}
           <Table.HeaderCell className="text-right">Total Amount</Table.HeaderCell>
           <Table.HeaderCell className="text-right">Paid</Table.HeaderCell>
@@ -46,7 +46,7 @@ export function AccountsPayableTable({
             onClick={onRowClick ? () => onRowClick(item) : undefined}
             className={onRowClick ? 'cursor-pointer hover:bg-gray-50' : undefined}
           >
-            <Table.Cell className="font-medium">{item.poNumber}</Table.Cell>
+            <Table.Cell className="font-medium">{item.causeReferenceNumber}</Table.Cell>
             {showVendor && <Table.Cell>{item.vendorName}</Table.Cell>}
             <Table.Cell className="text-right font-mono">
               {accountsPayableRules.formatTotalAmount(item)}

@@ -6,9 +6,7 @@ import com.wellkorea.backend.finance.domain.AccountsPayable;
 import com.wellkorea.backend.finance.domain.vo.DisbursementCause;
 import com.wellkorea.backend.finance.domain.vo.DisbursementCauseType;
 import com.wellkorea.backend.finance.infrastructure.persistence.AccountsPayableRepository;
-import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderConfirmedEvent;
-import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseOrderRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +26,11 @@ public class AccountsPayableEventHandler {
     private static final Logger log = LoggerFactory.getLogger(AccountsPayableEventHandler.class);
 
     private final AccountsPayableRepository accountsPayableRepository;
-    private final PurchaseOrderRepository purchaseOrderRepository;
     private final CompanyRepository companyRepository;
 
     public AccountsPayableEventHandler(AccountsPayableRepository accountsPayableRepository,
-                                       PurchaseOrderRepository purchaseOrderRepository,
                                        CompanyRepository companyRepository) {
         this.accountsPayableRepository = accountsPayableRepository;
-        this.purchaseOrderRepository = purchaseOrderRepository;
         this.companyRepository = companyRepository;
     }
 
@@ -46,7 +41,6 @@ public class AccountsPayableEventHandler {
      * @param event the PO confirmed event
      */
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-    @SuppressWarnings("deprecation") // Using deprecated purchaseOrder() for backward compatibility
     public void onPurchaseOrderConfirmed(PurchaseOrderConfirmedEvent event) {
         log.debug("Handling PO confirmed event: poId={}, vendorId={}, amount={}",
                 event.purchaseOrderId(), event.vendorId(), event.totalAmount());
@@ -59,11 +53,6 @@ public class AccountsPayableEventHandler {
             return;
         }
 
-        // Fetch entities needed for AP creation
-        PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(event.purchaseOrderId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Purchase order not found with ID: " + event.purchaseOrderId()));
-
         Company vendor = companyRepository.findById(event.vendorId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Vendor company not found with ID: " + event.vendorId()));
@@ -74,14 +63,12 @@ public class AccountsPayableEventHandler {
                 event.poNumber()
         );
 
-        // Build AP with new disbursementCause + legacy purchaseOrder for backward compatibility
+        // Build AP with disbursementCause
         AccountsPayable accountsPayable = AccountsPayable.builder()
                 .disbursementCause(disbursementCause)
-                .purchaseOrder(purchaseOrder)  // Deprecated: retained for transition period
                 .vendor(vendor)
                 .totalAmount(event.totalAmount())
                 .currency(event.currency())
-                .poNumber(event.poNumber())
                 .build();
 
         accountsPayableRepository.save(accountsPayable);

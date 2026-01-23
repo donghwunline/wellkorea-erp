@@ -11,8 +11,11 @@ import type { AccountsPayable, APAgingSummary } from '../model/accounts-payable'
  */
 export interface AccountsPayableResponse {
   id: number;
-  purchaseOrderId: number;
-  poNumber: string;
+  // Disbursement cause fields
+  causeType: string;
+  causeId: number;
+  causeReferenceNumber: string;
+  // Vendor info
   vendorId: number;
   vendorName: string;
   totalAmount: number;
@@ -46,8 +49,9 @@ export interface APAgingSummaryResponse {
 export function mapToAccountsPayable(response: AccountsPayableResponse): AccountsPayable {
   return {
     id: response.id,
-    purchaseOrderId: response.purchaseOrderId,
-    poNumber: response.poNumber,
+    causeType: response.causeType,
+    causeId: response.causeId,
+    causeReferenceNumber: response.causeReferenceNumber,
     vendorId: response.vendorId,
     vendorName: response.vendorName,
     totalAmount: response.totalAmount,

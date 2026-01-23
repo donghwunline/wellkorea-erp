@@ -327,6 +327,7 @@
       "title": "Record Payment",
       "vendor": "Vendor",
       "poNumber": "PO Number",
+      "referenceNo": "Reference #",
       "totalAmount": "Total Amount",
       "totalPaid": "Total Paid",
       "remainingBalance": "Remaining Balance",

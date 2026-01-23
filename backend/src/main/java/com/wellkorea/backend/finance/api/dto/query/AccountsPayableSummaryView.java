@@ -10,13 +10,10 @@ import java.time.LocalDate;
  */
 public record AccountsPayableSummaryView(
         Long id,
-        // Disbursement cause fields (new - abstracts the source of payment obligation)
+        // Disbursement cause fields (abstracts the source of payment obligation)
         String causeType,
         Long causeId,
         String causeReferenceNumber,
-        // Legacy PO fields (deprecated but retained for backward compatibility)
-        Long purchaseOrderId,
-        String poNumber,
         // Vendor info
         Long vendorId,
         String vendorName,

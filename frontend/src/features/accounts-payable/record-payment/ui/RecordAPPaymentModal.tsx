@@ -127,8 +127,8 @@ export function RecordAPPaymentModal({
             <div className="grid grid-cols-2 gap-2">
               <span className="text-steel-400">{t('accountsPayable.paymentModal.vendor')}:</span>
               <span className="text-white">{ap.vendorName}</span>
-              <span className="text-steel-400">{t('accountsPayable.paymentModal.poNumber')}:</span>
-              <span className="text-white">{ap.poNumber}</span>
+              <span className="text-steel-400">{t('accountsPayable.paymentModal.referenceNo')}:</span>
+              <span className="text-white">{ap.causeReferenceNumber}</span>
               <span className="text-steel-400">{t('accountsPayable.paymentModal.totalAmount')}:</span>
               <span className="text-white">{accountsPayableRules.formatTotalAmount(ap)}</span>
               <span className="text-steel-400">{t('accountsPayable.paymentModal.totalPaid')}:</span>

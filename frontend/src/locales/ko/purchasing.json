@@ -327,6 +327,7 @@
       "title": "지급 기록",
       "vendor": "업체",
       "poNumber": "발주번호",
+      "referenceNo": "참조번호",
       "totalAmount": "총액",
       "totalPaid": "지급 완료액",
       "remainingBalance": "잔액",

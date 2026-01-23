@@ -16,8 +16,11 @@ import { getAPStatusConfig } from './accounts-payable-status';
  */
 export interface AccountsPayable {
   readonly id: number;
-  readonly purchaseOrderId: number;
-  readonly poNumber: string;
+  // Disbursement cause fields (abstracts the source of payment obligation)
+  readonly causeType: string;
+  readonly causeId: number;
+  readonly causeReferenceNumber: string;
+  // Vendor info
   readonly vendorId: number;
   readonly vendorName: string;
   readonly totalAmount: number;
