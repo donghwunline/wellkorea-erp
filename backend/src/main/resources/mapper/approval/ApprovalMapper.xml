@@ -170,7 +170,6 @@
     <!-- ApprovalHistoryView result map -->
     <resultMap id="ApprovalHistoryViewResult" type="com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView">
         <constructor>
-            <arg column="id" javaType="Long"/>
             <arg column="level_order" javaType="Integer"/>
             <arg column="action" javaType="com.wellkorea.backend.approval.domain.vo.ApprovalAction"/>
             <arg column="actor_id" javaType="Long"/>
@@ -182,8 +181,7 @@
 
     <!-- Find approval history by request ID -->
     <select id="findHistoryByRequestId" resultMap="ApprovalHistoryViewResult">
-        SELECT ah.id,
-               ah.level_order,
+        SELECT ah.level_order,
                ah.action,
                ah.actor_id,
                u.full_name AS actor_name,
@@ -192,7 +190,7 @@
         FROM approval_history ah
                  INNER JOIN users u ON ah.actor_id = u.id
         WHERE ah.approval_request_id = #{approvalRequestId}
-        ORDER BY ah.created_at ASC
+        ORDER BY ah.entry_index ASC
     </select>
 
     <!-- ChainLevelView result map for nested select -->

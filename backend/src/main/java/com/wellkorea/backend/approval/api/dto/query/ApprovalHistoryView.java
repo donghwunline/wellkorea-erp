@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
  * Used for displaying approval workflow history.
  */
 public record ApprovalHistoryView(
-        Long id,
         Integer levelOrder,
         ApprovalAction action,
         Long actorId,

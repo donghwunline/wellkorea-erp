@@ -69,24 +69,26 @@ CREATE TABLE approval_level_decisions
 
 CREATE TABLE approval_history
 (
-    id                  BIGSERIAL PRIMARY KEY,
     approval_request_id BIGINT      NOT NULL REFERENCES approval_requests (id) ON DELETE CASCADE,
+    entry_index         INT         NOT NULL,  -- JPA @OrderColumn manages this
     level_order         INT,
     action              VARCHAR(20) NOT NULL,
     actor_id            BIGINT      NOT NULL REFERENCES users (id),
     comments            TEXT,
     created_at          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (approval_request_id, entry_index),
     CONSTRAINT chk_history_action CHECK (action IN ('SUBMITTED', 'APPROVED', 'REJECTED'))
 );
 
 CREATE TABLE approval_comments
 (
-    id                  BIGSERIAL PRIMARY KEY,
     approval_request_id BIGINT    NOT NULL REFERENCES approval_requests (id) ON DELETE CASCADE,
+    entry_index         INT       NOT NULL,  -- JPA @OrderColumn manages this
     commenter_id        BIGINT    NOT NULL REFERENCES users (id),
     comment_text        TEXT      NOT NULL,
     is_rejection_reason BOOLEAN   NOT NULL DEFAULT false,
-    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (approval_request_id, entry_index)
 );
 
 -- =====================================================================
@@ -107,11 +109,11 @@ CREATE INDEX idx_approval_level_decisions_expected_approver ON approval_level_de
 CREATE INDEX idx_approval_level_decisions_decided_by ON approval_level_decisions (decided_by_id) WHERE decided_by_id IS NOT NULL;
 CREATE INDEX idx_approval_level_decisions_decision ON approval_level_decisions (decision);
 
-CREATE INDEX idx_approval_history_request_id ON approval_history (approval_request_id);
+-- Note: idx on approval_request_id is redundant - composite PK already indexes it
 CREATE INDEX idx_approval_history_actor_id ON approval_history (actor_id);
 CREATE INDEX idx_approval_history_created_at ON approval_history (created_at);
 
-CREATE INDEX idx_approval_comments_request_id ON approval_comments (approval_request_id);
+-- Note: idx on approval_request_id is redundant - composite PK already indexes it
 CREATE INDEX idx_approval_comments_commenter_id ON approval_comments (commenter_id);
 
 -- =====================================================================
