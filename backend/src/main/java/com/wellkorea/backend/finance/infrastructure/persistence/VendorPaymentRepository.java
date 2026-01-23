@@ -1,6 +1,6 @@
-package com.wellkorea.backend.purchasing.infrastructure.persistence;
+package com.wellkorea.backend.finance.infrastructure.persistence;
 
-import com.wellkorea.backend.purchasing.domain.VendorPayment;
+import com.wellkorea.backend.finance.domain.VendorPayment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

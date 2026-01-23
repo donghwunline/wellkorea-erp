@@ -1,6 +1,6 @@
-package com.wellkorea.backend.purchasing.domain;
+package com.wellkorea.backend.finance.domain;
 
-import com.wellkorea.backend.purchasing.domain.vo.VendorPaymentMethod;
+import com.wellkorea.backend.finance.domain.vo.VendorPaymentMethod;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;

@@ -1,6 +1,6 @@
-package com.wellkorea.backend.purchasing.api.dto.command;
+package com.wellkorea.backend.finance.api.dto.command;
 
-import com.wellkorea.backend.purchasing.domain.vo.VendorPaymentMethod;
+import com.wellkorea.backend.finance.domain.vo.VendorPaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 

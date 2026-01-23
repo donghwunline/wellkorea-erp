@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.wellkorea.backend.purchasing.infrastructure.mapper.AccountsPayableMapper">
+<mapper namespace="com.wellkorea.backend.finance.infrastructure.mapper.AccountsPayableMapper">
 
     <!-- Result map for AccountsPayableSummaryView (Java record - uses constructor mapping) -->
-    <resultMap id="summaryViewMap" type="com.wellkorea.backend.purchasing.api.dto.query.AccountsPayableSummaryView">
+    <resultMap id="summaryViewMap" type="com.wellkorea.backend.finance.api.dto.query.AccountsPayableSummaryView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="purchase_order_id" javaType="java.lang.Long"/>
@@ -26,7 +26,8 @@
     </resultMap>
 
     <!-- Result map for APAgingSummary (Java record - uses constructor mapping) -->
-    <resultMap id="agingSummaryMap" type="com.wellkorea.backend.purchasing.infrastructure.mapper.AccountsPayableMapper$APAgingSummary">
+    <resultMap id="agingSummaryMap"
+               type="com.wellkorea.backend.finance.infrastructure.mapper.AccountsPayableMapper$APAgingSummary">
         <constructor>
             <arg column="aging_bucket" javaType="java.lang.String"/>
             <arg column="count" javaType="int"/>
@@ -38,58 +39,54 @@
 
     <!-- Common SQL fragment for calculating status from payments -->
     <sql id="apWithCalculatedStatus">
-        SELECT
-            ap.id,
-            ap.purchase_order_id,
-            ap.po_number,
-            v.id AS vendor_id,
-            v.name AS vendor_name,
-            ap.total_amount,
-            ap.currency,
-            ap.due_date,
-            ap.notes,
-            ap.created_at,
-            COALESCE(paid.total_paid, 0) AS total_paid,
-            ap.total_amount - COALESCE(paid.total_paid, 0) AS remaining_balance,
-            CASE
-                WHEN ap.due_date IS NOT NULL
-                     AND ap.due_date &lt; CURRENT_DATE
-                     AND ap.total_amount > COALESCE(paid.total_paid, 0)
-                THEN true
-                ELSE false
-            END AS is_overdue,
-            CASE
-                WHEN ap.due_date IS NOT NULL AND ap.due_date &lt; CURRENT_DATE
-                THEN GREATEST(0, CURRENT_DATE - ap.due_date)
-                ELSE 0
-            END AS days_overdue,
-            CASE
-                WHEN ap.due_date IS NULL OR ap.due_date >= CURRENT_DATE
-                     OR ap.total_amount &lt;= COALESCE(paid.total_paid, 0)
-                THEN 'Current'
-                WHEN CURRENT_DATE - ap.due_date &lt;= 30
-                THEN '1-30 Days'
-                WHEN CURRENT_DATE - ap.due_date &lt;= 60
-                THEN '31-60 Days'
-                WHEN CURRENT_DATE - ap.due_date &lt;= 90
-                THEN '61-90 Days'
-                ELSE '90+ Days'
-            END AS aging_bucket,
-            CASE
-                WHEN COALESCE(paid.total_paid, 0) >= ap.total_amount THEN 'PAID'
-                WHEN COALESCE(paid.total_paid, 0) > 0 THEN 'PARTIALLY_PAID'
-                ELSE 'PENDING'
-            END AS calculated_status
+        SELECT ap.id,
+               ap.purchase_order_id,
+               ap.po_number,
+               v.id                                           AS vendor_id,
+               v.name                                         AS vendor_name,
+               ap.total_amount,
+               ap.currency,
+               ap.due_date,
+               ap.notes,
+               ap.created_at,
+               COALESCE(paid.total_paid, 0)                   AS total_paid,
+               ap.total_amount - COALESCE(paid.total_paid, 0) AS remaining_balance,
+               CASE
+                   WHEN ap.due_date IS NOT NULL
+                       AND ap.due_date &lt; CURRENT_DATE
+                       AND ap.total_amount > COALESCE(paid.total_paid, 0)
+                       THEN true
+                   ELSE false
+                   END                                        AS is_overdue,
+               CASE
+                   WHEN ap.due_date IS NOT NULL AND ap.due_date &lt; CURRENT_DATE
+                       THEN GREATEST(0, CURRENT_DATE - ap.due_date)
+                   ELSE 0
+                   END                                        AS days_overdue,
+               CASE
+                   WHEN ap.due_date IS NULL OR ap.due_date >= CURRENT_DATE
+                       OR ap.total_amount &lt;= COALESCE(paid.total_paid, 0)
+                       THEN 'Current'
+                   WHEN CURRENT_DATE - ap.due_date &lt;= 30
+                       THEN '1-30 Days'
+                   WHEN CURRENT_DATE - ap.due_date &lt;= 60
+                       THEN '31-60 Days'
+                   WHEN CURRENT_DATE - ap.due_date &lt;= 90
+                       THEN '61-90 Days'
+                   ELSE '90+ Days'
+                   END                                        AS aging_bucket,
+               CASE
+                   WHEN COALESCE(paid.total_paid, 0) >= ap.total_amount THEN 'PAID'
+                   WHEN COALESCE(paid.total_paid, 0) > 0 THEN 'PARTIALLY_PAID'
+                   ELSE 'PENDING'
+                   END                                        AS calculated_status
         FROM accounts_payable ap
-        JOIN companies v ON ap.vendor_company_id = v.id
-        LEFT JOIN (
-            SELECT
-                accounts_payable_id,
-                SUM(amount) AS total_paid
-            FROM vendor_payments
-            WHERE accounts_payable_id IS NOT NULL
-            GROUP BY accounts_payable_id
-        ) paid ON paid.accounts_payable_id = ap.id
+                 JOIN companies v ON ap.vendor_company_id = v.id
+                 LEFT JOIN (SELECT accounts_payable_id,
+                                   SUM(amount) AS total_paid
+                            FROM vendor_payments
+                            WHERE accounts_payable_id IS NOT NULL
+                            GROUP BY accounts_payable_id) paid ON paid.accounts_payable_id = ap.id
     </sql>
 
     <!-- Find AP detail by ID -->
@@ -101,7 +98,7 @@
     <!-- Find APs with filters -->
     <select id="findWithFilters" resultMap="summaryViewMap">
         WITH ap_data AS (
-            <include refid="apWithCalculatedStatus"/>
+        <include refid="apWithCalculatedStatus"/>
         )
         SELECT * FROM ap_data
         WHERE 1=1
@@ -115,16 +112,16 @@
             AND is_overdue = true
         </if>
         ORDER BY
-            CASE WHEN is_overdue THEN 0 ELSE 1 END,
-            due_date ASC NULLS LAST,
-            created_at DESC
+        CASE WHEN is_overdue THEN 0 ELSE 1 END,
+        due_date ASC NULLS LAST,
+        created_at DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <!-- Count APs with filters -->
     <select id="countWithFilters" resultType="long">
         WITH ap_data AS (
-            <include refid="apWithCalculatedStatus"/>
+        <include refid="apWithCalculatedStatus"/>
         )
         SELECT COUNT(*) FROM ap_data
         WHERE 1=1
@@ -149,7 +146,7 @@
     <!-- Find overdue APs -->
     <select id="findOverdue" resultMap="summaryViewMap">
         WITH ap_data AS (
-            <include refid="apWithCalculatedStatus"/>
+        <include refid="apWithCalculatedStatus"/>
         )
         SELECT * FROM ap_data
         WHERE is_overdue = true
@@ -159,25 +156,25 @@
     <!-- Get AP aging summary -->
     <select id="getAgingSummary" resultMap="agingSummaryMap">
         WITH ap_data AS (
-            <include refid="apWithCalculatedStatus"/>
+        <include refid="apWithCalculatedStatus"/>
         )
         SELECT
-            aging_bucket,
-            COUNT(*) AS count,
-            SUM(total_amount) AS total_amount,
-            SUM(total_paid) AS total_paid,
-            SUM(remaining_balance) AS remaining_balance
+        aging_bucket,
+        COUNT(*) AS count,
+        SUM(total_amount) AS total_amount,
+        SUM(total_paid) AS total_paid,
+        SUM(remaining_balance) AS remaining_balance
         FROM ap_data
         WHERE calculated_status != 'PAID'
         GROUP BY aging_bucket
         ORDER BY
-            CASE aging_bucket
-                WHEN 'Current' THEN 1
-                WHEN '1-30 Days' THEN 2
-                WHEN '31-60 Days' THEN 3
-                WHEN '61-90 Days' THEN 4
-                WHEN '90+ Days' THEN 5
-            END
+        CASE aging_bucket
+        WHEN 'Current' THEN 1
+        WHEN '1-30 Days' THEN 2
+        WHEN '31-60 Days' THEN 3
+        WHEN '61-90 Days' THEN 4
+        WHEN '90+ Days' THEN 5
+        END
     </select>
 
 </mapper>

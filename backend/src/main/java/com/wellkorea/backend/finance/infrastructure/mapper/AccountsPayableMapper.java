@@ -1,6 +1,6 @@
-package com.wellkorea.backend.purchasing.infrastructure.mapper;
+package com.wellkorea.backend.finance.infrastructure.mapper;
 
-import com.wellkorea.backend.purchasing.api.dto.query.AccountsPayableSummaryView;
+import com.wellkorea.backend.finance.api.dto.query.AccountsPayableSummaryView;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -64,5 +64,6 @@ public interface AccountsPayableMapper {
             java.math.BigDecimal totalAmount,
             java.math.BigDecimal totalPaid,
             java.math.BigDecimal remainingBalance
-    ) {}
+    ) {
+    }
 }

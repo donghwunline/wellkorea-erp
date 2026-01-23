@@ -1,4 +1,4 @@
-package com.wellkorea.backend.purchasing.application;
+package com.wellkorea.backend.purchasing.application.dto;
 
 import java.time.LocalDate;
 

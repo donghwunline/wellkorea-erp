@@ -1,4 +1,4 @@
-package com.wellkorea.backend.purchasing.api.dto.command;
+package com.wellkorea.backend.finance.api.dto.command;
 
 import java.math.BigDecimal;
 

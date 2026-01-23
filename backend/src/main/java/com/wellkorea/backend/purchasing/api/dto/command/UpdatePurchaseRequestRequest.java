@@ -1,6 +1,6 @@
 package com.wellkorea.backend.purchasing.api.dto.command;
 
-import com.wellkorea.backend.purchasing.application.UpdatePurchaseRequestCommand;
+import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseRequestCommand;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

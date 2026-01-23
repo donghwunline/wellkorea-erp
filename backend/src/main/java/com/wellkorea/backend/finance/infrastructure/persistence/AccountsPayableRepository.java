@@ -1,7 +1,7 @@
-package com.wellkorea.backend.purchasing.infrastructure.persistence;
+package com.wellkorea.backend.finance.infrastructure.persistence;
 
-import com.wellkorea.backend.purchasing.domain.AccountsPayable;
-import com.wellkorea.backend.purchasing.domain.vo.AccountsPayableStatus;
+import com.wellkorea.backend.finance.domain.AccountsPayable;
+import com.wellkorea.backend.finance.domain.vo.AccountsPayableStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

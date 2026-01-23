@@ -4,6 +4,8 @@ import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
+import com.wellkorea.backend.purchasing.application.dto.CreatePurchaseOrderCommand;
+import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseOrderCommand;
 import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCanceledEvent;

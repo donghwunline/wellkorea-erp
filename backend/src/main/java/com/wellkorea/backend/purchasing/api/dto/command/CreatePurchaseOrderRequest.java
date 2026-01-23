@@ -1,6 +1,6 @@
 package com.wellkorea.backend.purchasing.api.dto.command;
 
-import com.wellkorea.backend.purchasing.application.CreatePurchaseOrderCommand;
+import com.wellkorea.backend.purchasing.application.dto.CreatePurchaseOrderCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

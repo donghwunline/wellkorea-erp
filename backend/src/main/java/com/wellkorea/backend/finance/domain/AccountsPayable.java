@@ -1,7 +1,8 @@
-package com.wellkorea.backend.purchasing.domain;
+package com.wellkorea.backend.finance.domain;
 
 import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.purchasing.domain.vo.AccountsPayableStatus;
+import com.wellkorea.backend.finance.domain.vo.AccountsPayableStatus;
+import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;

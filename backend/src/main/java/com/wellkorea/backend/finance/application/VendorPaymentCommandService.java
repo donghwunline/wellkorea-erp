@@ -1,11 +1,11 @@
-package com.wellkorea.backend.purchasing.application;
+package com.wellkorea.backend.finance.application;
 
-import com.wellkorea.backend.purchasing.api.dto.command.RecordVendorPaymentRequest;
-import com.wellkorea.backend.purchasing.api.dto.command.VendorPaymentCommandResult;
-import com.wellkorea.backend.purchasing.domain.AccountsPayable;
-import com.wellkorea.backend.purchasing.domain.VendorPayment;
-import com.wellkorea.backend.purchasing.infrastructure.persistence.AccountsPayableRepository;
-import com.wellkorea.backend.purchasing.infrastructure.persistence.VendorPaymentRepository;
+import com.wellkorea.backend.finance.api.dto.command.RecordVendorPaymentRequest;
+import com.wellkorea.backend.finance.api.dto.command.VendorPaymentCommandResult;
+import com.wellkorea.backend.finance.domain.AccountsPayable;
+import com.wellkorea.backend.finance.domain.VendorPayment;
+import com.wellkorea.backend.finance.infrastructure.persistence.AccountsPayableRepository;
+import com.wellkorea.backend.finance.infrastructure.persistence.VendorPaymentRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,12 +33,12 @@ public class VendorPaymentCommandService {
      * Record a payment against an accounts payable.
      *
      * @param accountsPayableId the AP to pay against
-     * @param request the payment details
-     * @param recordedByUserId the user recording the payment
+     * @param request           the payment details
+     * @param recordedByUserId  the user recording the payment
      * @return the payment result with updated AP info
      * @throws ResourceNotFoundException if AP not found
-     * @throws IllegalStateException if AP cannot receive payments
-     * @throws IllegalArgumentException if payment exceeds remaining balance
+     * @throws IllegalStateException     if AP cannot receive payments
+     * @throws IllegalArgumentException  if payment exceeds remaining balance
      */
     public VendorPaymentCommandResult recordPayment(Long accountsPayableId, RecordVendorPaymentRequest request, Long recordedByUserId) {
         log.info("Recording payment of {} for AP ID {} by user {}",
@@ -67,7 +67,7 @@ public class VendorPaymentCommandService {
                 payment.getId(), ap.getStatus(), ap.getRemainingBalance());
 
         // Calculate status string for result
-        String calculatedStatus = ap.isFullyPaid() ? "PAID" : 
+        String calculatedStatus = ap.isFullyPaid() ? "PAID" :
                 ap.getTotalPaid().compareTo(java.math.BigDecimal.ZERO) > 0 ? "PARTIALLY_PAID" : "PENDING";
 
         return VendorPaymentCommandResult.recorded(

@@ -1,11 +1,11 @@
-package com.wellkorea.backend.purchasing.application;
+package com.wellkorea.backend.finance.application;
 
 import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
-import com.wellkorea.backend.purchasing.domain.AccountsPayable;
+import com.wellkorea.backend.finance.domain.AccountsPayable;
+import com.wellkorea.backend.finance.infrastructure.persistence.AccountsPayableRepository;
 import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderConfirmedEvent;
-import com.wellkorea.backend.purchasing.infrastructure.persistence.AccountsPayableRepository;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseOrderRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;

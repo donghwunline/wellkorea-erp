@@ -1,8 +1,8 @@
-package com.wellkorea.backend.purchasing.api.dto.query;
+package com.wellkorea.backend.finance.api.dto.query;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.Instant;
+import java.time.LocalDate;
 
 /**
  * Summary view for AccountsPayable with calculated status from payments.
@@ -26,4 +26,5 @@ public record AccountsPayableSummaryView(
         Integer daysOverdue,
         String agingBucket,
         String calculatedStatus    // PENDING | PARTIALLY_PAID | PAID
-) {}
+) {
+}

@@ -1,8 +1,8 @@
-package com.wellkorea.backend.purchasing.application;
+package com.wellkorea.backend.finance.application;
 
-import com.wellkorea.backend.purchasing.api.dto.query.AccountsPayableSummaryView;
-import com.wellkorea.backend.purchasing.infrastructure.mapper.AccountsPayableMapper;
-import com.wellkorea.backend.purchasing.infrastructure.mapper.AccountsPayableMapper.APAgingSummary;
+import com.wellkorea.backend.finance.api.dto.query.AccountsPayableSummaryView;
+import com.wellkorea.backend.finance.infrastructure.mapper.AccountsPayableMapper;
+import com.wellkorea.backend.finance.infrastructure.mapper.AccountsPayableMapper.APAgingSummary;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -37,10 +37,10 @@ public class AccountsPayableQueryService {
     /**
      * List APs with filters and calculated status.
      *
-     * @param vendorId filter by vendor (optional)
+     * @param vendorId         filter by vendor (optional)
      * @param calculatedStatus filter by status: PENDING, PARTIALLY_PAID, PAID (optional)
-     * @param overdueOnly filter for overdue only (optional)
-     * @param pageable pagination info
+     * @param overdueOnly      filter for overdue only (optional)
+     * @param pageable         pagination info
      */
     public Page<AccountsPayableSummaryView> list(
             Long vendorId,
