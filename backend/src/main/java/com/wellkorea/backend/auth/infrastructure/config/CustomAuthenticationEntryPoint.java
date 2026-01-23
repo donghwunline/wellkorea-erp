@@ -3,6 +3,8 @@ package com.wellkorea.backend.auth.infrastructure.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
 import com.wellkorea.backend.shared.exception.ErrorCode;
+import com.wellkorea.backend.shared.exception.ExpiredJwtAuthenticationException;
+import com.wellkorea.backend.shared.exception.InvalidJwtAuthenticationException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;

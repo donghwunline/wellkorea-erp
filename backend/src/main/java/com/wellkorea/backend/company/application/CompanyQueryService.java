@@ -2,7 +2,7 @@ package com.wellkorea.backend.company.application;
 
 import com.wellkorea.backend.company.api.dto.query.CompanyDetailView;
 import com.wellkorea.backend.company.api.dto.query.CompanySummaryView;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import com.wellkorea.backend.company.infrastructure.mapper.CompanyMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;

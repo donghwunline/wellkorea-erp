@@ -1,17 +1,15 @@
 package com.wellkorea.backend.quotation.api;
 
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.quotation.api.dto.command.CreateQuotationRequest;
 import com.wellkorea.backend.quotation.api.dto.command.QuotationCommandResult;
 import com.wellkorea.backend.quotation.api.dto.command.SendNotificationRequest;
 import com.wellkorea.backend.quotation.api.dto.command.UpdateQuotationRequest;
-
-import java.util.List;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationDetailView;
 import com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView;
 import com.wellkorea.backend.quotation.application.*;
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * REST controller for quotation management.

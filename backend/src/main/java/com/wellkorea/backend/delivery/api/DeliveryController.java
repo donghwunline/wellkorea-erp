@@ -1,6 +1,5 @@
 package com.wellkorea.backend.delivery.api;
 
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.delivery.api.dto.command.CreateDeliveryRequest;
 import com.wellkorea.backend.delivery.api.dto.command.DeliveryCommandResult;
 import com.wellkorea.backend.delivery.api.dto.query.DeliveryDetailView;
@@ -10,6 +9,7 @@ import com.wellkorea.backend.delivery.application.DeliveryPdfService;
 import com.wellkorea.backend.delivery.application.DeliveryQueryService;
 import com.wellkorea.backend.delivery.domain.DeliveryStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

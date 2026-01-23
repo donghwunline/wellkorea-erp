@@ -1,7 +1,9 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
 import com.wellkorea.backend.auth.application.TokenBlacklistService;
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
+import com.wellkorea.backend.shared.exception.InvalidJwtAuthenticationException;
+import com.wellkorea.backend.shared.exception.JwtAuthenticationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

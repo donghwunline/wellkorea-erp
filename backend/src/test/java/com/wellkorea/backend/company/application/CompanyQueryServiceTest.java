@@ -3,7 +3,7 @@ package com.wellkorea.backend.company.application;
 import com.wellkorea.backend.company.api.dto.query.CompanyDetailView;
 import com.wellkorea.backend.company.api.dto.query.CompanyRoleView;
 import com.wellkorea.backend.company.api.dto.query.CompanySummaryView;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import com.wellkorea.backend.company.infrastructure.mapper.CompanyMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.*;
@@ -19,8 +19,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
 
 /**
  * Unit tests for CompanyQueryService.

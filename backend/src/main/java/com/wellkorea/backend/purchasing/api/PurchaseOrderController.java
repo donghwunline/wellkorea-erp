@@ -1,6 +1,5 @@
 package com.wellkorea.backend.purchasing.api;
 
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.purchasing.api.dto.command.CreatePurchaseOrderRequest;
 import com.wellkorea.backend.purchasing.api.dto.command.PurchaseOrderCommandResult;
 import com.wellkorea.backend.purchasing.api.dto.command.SendPurchaseOrderRequest;
@@ -11,6 +10,7 @@ import com.wellkorea.backend.purchasing.application.PurchaseOrderCommandService;
 import com.wellkorea.backend.purchasing.application.PurchaseOrderEmailService;
 import com.wellkorea.backend.purchasing.application.PurchaseOrderQueryService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

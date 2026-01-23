@@ -1,4 +1,4 @@
-package com.wellkorea.backend.auth.infrastructure.config;
+package com.wellkorea.backend.shared.exception;
 
 /**
  * Exception thrown when JWT token is expired.

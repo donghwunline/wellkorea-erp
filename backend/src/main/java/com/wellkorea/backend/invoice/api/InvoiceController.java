@@ -1,6 +1,5 @@
 package com.wellkorea.backend.invoice.api;
 
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.invoice.api.dto.command.CreateInvoiceRequest;
 import com.wellkorea.backend.invoice.api.dto.command.InvoiceCommandResult;
 import com.wellkorea.backend.invoice.api.dto.command.PaymentCommandResult;
@@ -11,6 +10,7 @@ import com.wellkorea.backend.invoice.application.InvoiceCommandService;
 import com.wellkorea.backend.invoice.application.InvoiceQueryService;
 import com.wellkorea.backend.invoice.domain.InvoiceStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

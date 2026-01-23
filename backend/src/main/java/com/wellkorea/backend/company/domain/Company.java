@@ -1,5 +1,7 @@
 package com.wellkorea.backend.company.domain;
 
+import com.wellkorea.backend.company.domain.vo.CompanyRole;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import jakarta.persistence.*;
 
 import java.time.Instant;

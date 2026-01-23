@@ -1,4 +1,4 @@
-package com.wellkorea.backend.auth.application;
+package com.wellkorea.backend.shared.exception;
 
 /**
  * Exception thrown when authentication fails.

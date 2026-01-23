@@ -1,6 +1,6 @@
 package com.wellkorea.backend.auth.api;
 
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

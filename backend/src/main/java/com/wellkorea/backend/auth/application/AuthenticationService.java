@@ -5,6 +5,8 @@ import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.shared.exception.AuthenticationException;
+import com.wellkorea.backend.shared.exception.JwtAuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -88,7 +90,7 @@ public class AuthenticationService {
 
         try {
             jwtTokenProvider.validateToken(token);
-        } catch (com.wellkorea.backend.auth.infrastructure.config.JwtAuthenticationException e) {
+        } catch (JwtAuthenticationException e) {
             throw new AuthenticationException("Invalid token", e);
         }
 
@@ -109,7 +111,7 @@ public class AuthenticationService {
 
         try {
             jwtTokenProvider.validateToken(token);
-        } catch (com.wellkorea.backend.auth.infrastructure.config.JwtAuthenticationException e) {
+        } catch (JwtAuthenticationException e) {
             throw new AuthenticationException("Invalid or expired token", e);
         }
 
@@ -149,7 +151,7 @@ public class AuthenticationService {
 
         try {
             jwtTokenProvider.validateToken(token);
-        } catch (com.wellkorea.backend.auth.infrastructure.config.JwtAuthenticationException e) {
+        } catch (JwtAuthenticationException e) {
             throw new AuthenticationException("Invalid token", e);
         }
 

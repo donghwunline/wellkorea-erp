@@ -1,6 +1,5 @@
 package com.wellkorea.backend.purchasing.api;
 
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.purchasing.api.dto.command.RecordVendorPaymentRequest;
 import com.wellkorea.backend.purchasing.api.dto.command.VendorPaymentCommandResult;
 import com.wellkorea.backend.purchasing.api.dto.query.AccountsPayableSummaryView;
@@ -8,6 +7,7 @@ import com.wellkorea.backend.purchasing.application.AccountsPayableQueryService;
 import com.wellkorea.backend.purchasing.application.VendorPaymentCommandService;
 import com.wellkorea.backend.purchasing.infrastructure.mapper.AccountsPayableMapper.APAgingSummary;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

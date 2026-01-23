@@ -1,6 +1,6 @@
 package com.wellkorea.backend.company.api.dto.query;
 
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 
 import java.time.Instant;
 

@@ -1,7 +1,6 @@
 package com.wellkorea.backend.project.api;
 
 import com.wellkorea.backend.auth.application.CustomerAssignmentService;
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
@@ -15,6 +14,7 @@ import com.wellkorea.backend.project.application.ProjectCommandService.CreatePro
 import com.wellkorea.backend.project.application.ProjectQueryService;
 import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

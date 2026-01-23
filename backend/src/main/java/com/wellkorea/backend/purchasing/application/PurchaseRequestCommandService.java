@@ -7,7 +7,7 @@ import com.wellkorea.backend.catalog.domain.ServiceCategory;
 import com.wellkorea.backend.catalog.infrastructure.persistence.MaterialRepository;
 import com.wellkorea.backend.catalog.infrastructure.persistence.ServiceCategoryRepository;
 import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;

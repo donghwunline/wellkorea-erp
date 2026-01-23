@@ -1,6 +1,6 @@
 package com.wellkorea.backend.company.application;
 
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 
 import java.util.Set;
 

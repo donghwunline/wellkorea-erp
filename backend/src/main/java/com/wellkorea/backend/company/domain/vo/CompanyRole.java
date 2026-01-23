@@ -1,4 +1,4 @@
-package com.wellkorea.backend.company.domain;
+package com.wellkorea.backend.company.domain.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

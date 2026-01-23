@@ -1,4 +1,4 @@
-package com.wellkorea.backend.auth.domain;
+package com.wellkorea.backend.shared.dto;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;

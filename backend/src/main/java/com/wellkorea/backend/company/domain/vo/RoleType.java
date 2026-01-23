@@ -1,4 +1,4 @@
-package com.wellkorea.backend.company.domain;
+package com.wellkorea.backend.company.domain.vo;
 
 /**
  * Types of business relationships a company can have.

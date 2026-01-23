@@ -1,4 +1,4 @@
-package com.wellkorea.backend.auth.infrastructure.config;
+package com.wellkorea.backend.shared.exception;
 
 import org.springframework.security.core.AuthenticationException;
 

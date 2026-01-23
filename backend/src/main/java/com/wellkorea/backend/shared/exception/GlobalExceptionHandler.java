@@ -1,6 +1,5 @@
 package com.wellkorea.backend.shared.exception;
 
-import com.wellkorea.backend.auth.application.AuthenticationException;
 import com.wellkorea.backend.shared.audit.AuditContextHolder;
 import com.wellkorea.backend.shared.audit.AuditLogger;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
