@@ -633,10 +633,10 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
             Long chainTemplateId = setupApprovalChain();
             approvalRequestId = createApprovalRequest(quotationId, chainTemplateId);
 
-            // Insert history for submission
+            // Insert history for submission (entry_index starts at 0)
             jdbcTemplate.update(
-                    "INSERT INTO approval_history (approval_request_id, action, actor_id) " +
-                            "VALUES (?, 'SUBMITTED', ?)",
+                    "INSERT INTO approval_history (approval_request_id, entry_index, action, actor_id) " +
+                            "VALUES (?, 0, 'SUBMITTED', ?)",
                     approvalRequestId, SALES_USER_ID
             );
         }

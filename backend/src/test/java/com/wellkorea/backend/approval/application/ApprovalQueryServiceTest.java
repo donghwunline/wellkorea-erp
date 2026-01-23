@@ -94,7 +94,6 @@ class ApprovalQueryServiceTest {
 
         // ApprovalAction enum uses SUBMITTED (not SUBMIT)
         testHistoryView = new ApprovalHistoryView(
-                1L,
                 1,
                 ApprovalAction.SUBMITTED,
                 1L,

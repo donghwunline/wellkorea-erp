@@ -1,14 +1,10 @@
 package com.wellkorea.backend.approval.application;
 
 import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
-import com.wellkorea.backend.approval.domain.ApprovalComment;
-import com.wellkorea.backend.approval.domain.ApprovalHistory;
 import com.wellkorea.backend.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent;
 import com.wellkorea.backend.approval.domain.vo.*;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
-import com.wellkorea.backend.approval.infrastructure.repository.ApprovalCommentRepository;
-import com.wellkorea.backend.approval.infrastructure.repository.ApprovalHistoryRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalRequestRepository;
 import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
@@ -27,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -49,6 +44,12 @@ import static org.mockito.BDDMockito.verify;
  * 3. If approved → Moves to Level 2 → Level 2 approver can act
  * 4. If rejected at any level → Chain stops, request marked REJECTED
  * 5. When final level approves → Request marked APPROVED, entity status updated
+ * <p>
+ * The ApprovalRequest aggregate now handles:
+ * - Validation (completed status, authorization)
+ * - Recording history entries (embedded)
+ * - Recording comment entries (embedded)
+ * - State transitions
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ApprovalCommandService Unit Tests - Multi-Level Approval (결재)")
@@ -56,12 +57,6 @@ class ApprovalCommandServiceTest {
 
     @Mock
     private ApprovalRequestRepository approvalRequestRepository;
-
-    @Mock
-    private ApprovalHistoryRepository historyRepository;
-
-    @Mock
-    private ApprovalCommentRepository commentRepository;
 
     @Mock
     private ApprovalChainTemplateRepository chainTemplateRepository;
@@ -120,20 +115,31 @@ class ApprovalCommandServiceTest {
         // Set up chain template
         chainTemplate = new ApprovalChainTemplate(1L, EntityType.QUOTATION, "견적서 결재", List.of(level1, level2));
 
-        // Set up approval request with embedded level decisions
-        approvalRequest = new ApprovalRequest();
-        approvalRequest.setId(1L);
-        approvalRequest.setEntityType(EntityType.QUOTATION);
-        approvalRequest.setEntityId(100L);
-        approvalRequest.setEntityDescription("견적서 v1 - WK2K25-0001-1219");
-        approvalRequest.setCurrentLevel(1);
-        approvalRequest.setStatus(ApprovalStatus.PENDING);
-        approvalRequest.setSubmittedBy(submitter);
-        approvalRequest.setSubmittedAt(LocalDateTime.now());
+        // Create approval request using factory method
+        // This properly initializes level decisions and records submission history
+        approvalRequest = ApprovalRequest.create(
+                EntityType.QUOTATION,
+                100L,
+                "견적서 v1 - WK2K25-0001-1219",
+                submitter,
+                chainTemplate
+        );
+        // Set ID via reflection for testing purposes (normally set by JPA)
+        setFieldViaReflection(approvalRequest, "id", 1L);
+    }
 
-        // Use factory method from chain template to create level decisions
-        List<ApprovalLevelDecision> levelDecisions = chainTemplate.createLevelDecisions();
-        approvalRequest.initializeLevelDecisions(levelDecisions);
+    /**
+     * Helper method to set private fields for testing.
+     * This is necessary because ApprovalRequest no longer has setters.
+     */
+    private void setFieldViaReflection(Object target, String fieldName, Object value) {
+        try {
+            java.lang.reflect.Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set field " + fieldName, e);
+        }
     }
 
     @Nested
@@ -153,10 +159,9 @@ class ApprovalCommandServiceTest {
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> {
                         ApprovalRequest ar = invocation.getArgument(0);
-                        ar.setId(1L);
+                        setFieldViaReflection(ar, "id", 1L);
                         return ar;
                     });
-            given(historyRepository.save(any(ApprovalHistory.class))).willAnswer(invocation -> invocation.getArgument(0));
 
             // When
             Long result = commandService.createApprovalRequest(
@@ -174,7 +179,9 @@ class ApprovalCommandServiceTest {
             assertThat(savedRequest.getTotalLevels()).isEqualTo(2);
             assertThat(savedRequest.getStatus()).isEqualTo(ApprovalStatus.PENDING);
             assertThat(savedRequest.getLevelDecisions()).hasSize(2);
-            verify(historyRepository).save(any(ApprovalHistory.class));
+            // History is now embedded in the aggregate
+            assertThat(savedRequest.getHistoryEntries()).hasSize(1);
+            assertThat(savedRequest.getHistoryEntries().getFirst().getAction()).isEqualTo(ApprovalAction.SUBMITTED);
         }
 
         @Test
@@ -198,11 +205,12 @@ class ApprovalCommandServiceTest {
             chainTemplate.replaceAllLevels(List.of());
             given(chainTemplateRepository.findByEntityTypeWithLevels(EntityType.QUOTATION))
                     .willReturn(Optional.of(chainTemplate));
+            given(userRepository.findById(4L)).willReturn(Optional.of(submitter));
 
             // When/Then
             assertThatThrownBy(() ->
                     commandService.createApprovalRequest(EntityType.QUOTATION, 100L, "Test", 4L))
-                    .isInstanceOf(BusinessException.class)
+                    .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("levels");
         }
     }
@@ -216,8 +224,7 @@ class ApprovalCommandServiceTest {
         void approve_AtLevel1_ReturnsId() {
             // Given
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
-            given(userRepository.findById(2L)).willReturn(Optional.of(level1Approver));
-            given(historyRepository.save(any(ApprovalHistory.class))).willAnswer(invocation -> invocation.getArgument(0));
+            given(userRepository.existsById(2L)).willReturn(true);
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -232,19 +239,20 @@ class ApprovalCommandServiceTest {
             ApprovalLevelDecision level1Decision = approvalRequest.getLevelDecision(1).orElseThrow();
             assertThat(level1Decision.getDecision()).isEqualTo(DecisionStatus.APPROVED);
             assertThat(level1Decision.getDecidedByUserId()).isEqualTo(2L);
-            verify(historyRepository).save(any(ApprovalHistory.class));
+            // History is now embedded in the aggregate (initial submission + approval)
+            assertThat(approvalRequest.getHistoryEntries()).hasSize(2);
+            assertThat(approvalRequest.getHistoryEntries().get(1).getAction()).isEqualTo(ApprovalAction.APPROVED);
         }
 
         @Test
         @DisplayName("should complete approval when final level approves and return ID")
         void approve_AtFinalLevel_ReturnsIdAndPublishesEvent() {
             // Given - Simulate Level 1 already approved, now at Level 2
-            approvalRequest.setCurrentLevel(2);
-            approvalRequest.getLevelDecision(1).ifPresent(d -> d.approve(2L, "Level 1 approved"));
+            // First approve at level 1 to advance to level 2
+            approvalRequest.approve(2L, "Level 1 approved");
 
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
-            given(userRepository.findById(1L)).willReturn(Optional.of(level2Approver));
-            given(historyRepository.save(any(ApprovalHistory.class))).willAnswer(invocation -> invocation.getArgument(0));
+            given(userRepository.existsById(1L)).willReturn(true);
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -267,6 +275,7 @@ class ApprovalCommandServiceTest {
         void approve_WrongUser_ThrowsAccessDenied() {
             // Given
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
+            given(userRepository.existsById(4L)).willReturn(true);
 
             // When/Then - Sales user (ID 4) is not the expected approver
             assertThatThrownBy(() -> commandService.approve(1L, 4L, "Trying"))
@@ -278,6 +287,7 @@ class ApprovalCommandServiceTest {
         void approve_OutOfOrder_ThrowsException() {
             // Given - Request is at Level 1, but Admin (Level 2 approver) tries to approve
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
+            given(userRepository.existsById(1L)).willReturn(true);
 
             // When/Then
             assertThatThrownBy(() -> commandService.approve(1L, 1L, "Trying"))
@@ -288,11 +298,12 @@ class ApprovalCommandServiceTest {
         @Test
         @DisplayName("should throw exception when approval is already completed")
         void approve_AlreadyCompleted_ThrowsException() {
-            // Given
-            approvalRequest.setStatus(ApprovalStatus.APPROVED);
-            approvalRequest.setCompletedAt(LocalDateTime.now());
+            // Given - Complete the approval by approving all levels
+            approvalRequest.approve(2L, "Level 1 approved");
+            approvalRequest.approve(1L, "Level 2 approved"); // Now completed
 
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
+            given(userRepository.existsById(2L)).willReturn(true);
 
             // When/Then
             assertThatThrownBy(() -> commandService.approve(1L, 2L, "Trying"))
@@ -321,9 +332,7 @@ class ApprovalCommandServiceTest {
         void reject_WithReason_ReturnsId() {
             // Given
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
-            given(userRepository.findById(2L)).willReturn(Optional.of(level1Approver));
-            given(historyRepository.save(any(ApprovalHistory.class))).willAnswer(invocation -> invocation.getArgument(0));
-            given(commentRepository.save(any(ApprovalComment.class))).willAnswer(invocation -> invocation.getArgument(0));
+            given(userRepository.existsById(2L)).willReturn(true);
             given(approvalRequestRepository.save(any(ApprovalRequest.class)))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
@@ -337,20 +346,34 @@ class ApprovalCommandServiceTest {
             // Check level 1 decision was rejected
             ApprovalLevelDecision level1Decision = approvalRequest.getLevelDecision(1).orElseThrow();
             assertThat(level1Decision.getDecision()).isEqualTo(DecisionStatus.REJECTED);
-            verify(historyRepository).save(any(ApprovalHistory.class));
-            verify(commentRepository).save(any(ApprovalComment.class));
+            // History and comments are now embedded in the aggregate
+            assertThat(approvalRequest.getHistoryEntries()).hasSize(2); // submission + rejection
+            assertThat(approvalRequest.getHistoryEntries().get(1).getAction()).isEqualTo(ApprovalAction.REJECTED);
+            assertThat(approvalRequest.getComments()).hasSize(1); // rejection reason
+            assertThat(approvalRequest.getComments().getFirst().isRejectionReason()).isTrue();
             // Verify event was published for entity-specific handlers
             verify(eventPublisher).publish(any(ApprovalCompletedEvent.class));
         }
 
-        // Note: Reason validation (null/empty) is now handled by @NotBlank on RejectRequest DTO
-        // and tested in controller tests. Service layer trusts pre-validated input.
+        @Test
+        @DisplayName("should throw exception when reason is blank")
+        void reject_BlankReason_ThrowsException() {
+            // Given
+            given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
+            given(userRepository.existsById(2L)).willReturn(true);
+
+            // When/Then - Blank reason is now validated in domain
+            assertThatThrownBy(() -> commandService.reject(1L, 2L, "", null))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("reason");
+        }
 
         @Test
         @DisplayName("should throw exception when wrong user tries to reject")
         void reject_WrongUser_ThrowsAccessDenied() {
             // Given
             given(approvalRequestRepository.findByIdWithLevelDecisions(1L)).willReturn(Optional.of(approvalRequest));
+            given(userRepository.existsById(4L)).willReturn(true);
 
             // When/Then
             assertThatThrownBy(() -> commandService.reject(1L, 4L, "Reason", null))
