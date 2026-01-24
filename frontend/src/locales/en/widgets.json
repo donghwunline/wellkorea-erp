@@ -615,7 +615,12 @@
     "emptyTitle": "Documents",
     "emptyDescription": "No documents are attached to this project.",
     "emptyHint": "Documents attached to task nodes will appear here.",
-    "description": "Blueprints and documents attached to task nodes"
+    "description": "Blueprints and documents attached to task nodes",
+    "sections": {
+      "blueprints": "Design Documents",
+      "deliveryPhotos": "Delivery Photos",
+      "invoices": "Invoices"
+    }
   },
   "arReport": {
     "title": "AR Invoice List",

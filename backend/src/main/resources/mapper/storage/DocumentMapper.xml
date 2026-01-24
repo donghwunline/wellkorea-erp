@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wellkorea.backend.shared.storage.infrastructure.mapper.DocumentMapper">
+
+    <!-- ProjectDocumentView result map for record -->
+    <resultMap id="ProjectDocumentViewResult" type="com.wellkorea.backend.shared.storage.api.dto.query.ProjectDocumentView">
+        <constructor>
+            <arg column="id" javaType="Long"/>
+            <arg column="document_type" javaType="String"/>
+            <arg column="file_name" javaType="String"/>
+            <arg column="file_type" javaType="String"/>
+            <arg column="file_size" javaType="Long"/>
+            <arg column="storage_path" javaType="String"/>
+            <arg column="uploaded_by_name" javaType="String"/>
+            <arg column="uploaded_at" javaType="String"/>
+            <arg column="download_url" javaType="String"/>
+            <arg column="source_id" javaType="Long"/>
+            <arg column="source_label" javaType="String"/>
+        </constructor>
+    </resultMap>
+
+    <!--
+        Find all documents for a project.
+
+        Unified query using UNION ALL to aggregate:
+        1. Blueprint Attachments - from TaskFlow nodes
+        2. Delivery Photos - from DELIVERED deliveries
+
+        Results ordered by upload date descending (newest first).
+    -->
+    <select id="findDocumentsByProjectId" resultMap="ProjectDocumentViewResult">
+        -- Blueprint Attachments (from TaskFlow nodes)
+        SELECT
+            ba.id,
+            'BLUEPRINT' AS document_type,
+            ba.file_name,
+            ba.file_type,
+            ba.file_size,
+            ba.storage_path,
+            u.full_name AS uploaded_by_name,
+            TO_CHAR(ba.uploaded_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS uploaded_at,
+            NULL AS download_url,
+            ba.task_flow_id AS source_id,
+            CONCAT('Node: ', ba.node_id) AS source_label
+        FROM blueprint_attachments ba
+        INNER JOIN task_flows tf ON ba.task_flow_id = tf.id
+        INNER JOIN users u ON ba.uploaded_by_id = u.id
+        WHERE tf.project_id = #{projectId}
+
+        UNION ALL
+
+        -- Delivery Photos
+        SELECT
+            a.id,
+            'DELIVERY_PHOTO' AS document_type,
+            a.file_name,
+            a.file_type,
+            a.file_size,
+            a.storage_path,
+            u.full_name AS uploaded_by_name,
+            TO_CHAR(a.uploaded_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS uploaded_at,
+            NULL AS download_url,
+            d.id AS source_id,
+            CONCAT('Delivery ', TO_CHAR(d.delivery_date, 'YYYY-MM-DD')) AS source_label
+        FROM attachments a
+        INNER JOIN deliveries d ON a.owner_type = 'DELIVERY' AND a.owner_id = d.id
+        INNER JOIN users u ON a.uploaded_by_id = u.id
+        WHERE d.project_id = #{projectId}
+          AND d.status = 'DELIVERED'
+
+        -- Future: UNION ALL for invoice documents
+
+        ORDER BY uploaded_at DESC
+    </select>
+
+</mapper>

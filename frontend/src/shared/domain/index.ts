@@ -34,3 +34,10 @@ export {
   ATTACHMENT_MAX_SIZE,
   attachmentRules,
 } from './attachment';
+
+// Project document types (unified document view)
+export {
+  type ProjectDocumentType,
+  type ProjectDocument,
+  projectDocumentRules,
+} from './project-document';
