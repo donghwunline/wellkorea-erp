@@ -169,18 +169,7 @@ public class BlueprintAttachmentService {
                 .toList();
     }
 
-    /**
-     * Get all attachments for a Project (via TaskFlow relationship).
-     *
-     * @param projectId Project ID
-     * @return List of attachment views
-     */
-    @Transactional(readOnly = true)
-    public List<BlueprintAttachmentView> getAttachmentsByProject(Long projectId) {
-        return attachmentRepository.findByProjectId(projectId).stream()
-                .map(this::toView)
-                .toList();
-    }
+    
 
     /**
      * Get attachment by ID.

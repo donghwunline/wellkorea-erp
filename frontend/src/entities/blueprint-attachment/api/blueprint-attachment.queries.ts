@@ -6,7 +6,6 @@ import { queryOptions } from '@tanstack/react-query';
 import {
   getAttachmentsByFlow,
   getAttachmentsByNode,
-  getAttachmentsByProject,
   getAttachmentById,
   getAttachmentDownloadUrl,
 } from './get-attachments';
@@ -52,19 +51,6 @@ export const blueprintQueries = {
         return blueprintMapper.toDomainList(response);
       },
       enabled: flowId > 0 && nodeId.length > 0,
-    }),
-
-  /**
-   * Query options for fetching all attachments for a Project (via TaskFlow relationship).
-   */
-  byProject: (projectId: number) =>
-    queryOptions({
-      queryKey: [...blueprintQueries.lists(), 'project', projectId],
-      queryFn: async (): Promise<BlueprintAttachment[]> => {
-        const response = await getAttachmentsByProject(projectId);
-        return blueprintMapper.toDomainList(response);
-      },
-      enabled: projectId > 0,
     }),
 
   /**
