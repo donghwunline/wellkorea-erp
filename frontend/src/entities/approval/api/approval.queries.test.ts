@@ -63,7 +63,6 @@ function createMockApprovalHistoryResponse(
   overrides: Partial<ApprovalHistoryResponse> = {}
 ): ApprovalHistoryResponse {
   return {
-    id: 1,
     levelOrder: 1,
     levelName: '',
     action: 'SUBMITTED',
@@ -305,8 +304,8 @@ describe('approvalQueries', () => {
 
     it('should call getApprovalHistory with correct id in queryFn', async () => {
       const mockResponses = [
-        createMockApprovalHistoryResponse({ id: 1, action: 'SUBMITTED' }),
-        createMockApprovalHistoryResponse({ id: 2, action: 'APPROVED' }),
+        createMockApprovalHistoryResponse({ action: 'SUBMITTED' }),
+        createMockApprovalHistoryResponse({ action: 'APPROVED' }),
       ];
       vi.mocked(getApprovalHistory).mockResolvedValue(mockResponses);
 
@@ -318,8 +317,8 @@ describe('approvalQueries', () => {
 
     it('should map each history item using approvalHistoryMapper.toDomain', async () => {
       const mockResponses = [
-        createMockApprovalHistoryResponse({ id: 1 }),
-        createMockApprovalHistoryResponse({ id: 2 }),
+        createMockApprovalHistoryResponse({ levelOrder: 1 }),
+        createMockApprovalHistoryResponse({ levelOrder: 2 }),
       ];
       vi.mocked(getApprovalHistory).mockResolvedValue(mockResponses);
 

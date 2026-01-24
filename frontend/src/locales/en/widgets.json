@@ -432,7 +432,12 @@
     "metadata": "Created: {{createdAt}} | Updated: {{updatedAt}}",
     "sections": {
       "deliveredItems": "Delivered Items",
-      "itemCount": "{{items}} items, {{units}} total units"
+      "itemCount": "{{items}} items, {{units}} total units",
+      "deliveryPhoto": "Delivery Photo"
+    },
+    "photo": {
+      "alt": "Delivery proof photo",
+      "noPhotoLegacy": "This delivery was completed before the photo upload feature was introduced."
     },
     "table": {
       "product": "Product",

@@ -446,7 +446,12 @@
     "metadata": "생성일: {{createdAt}} | 수정일: {{updatedAt}}",
     "sections": {
       "deliveredItems": "출고 항목",
-      "itemCount": "{{items}}개 품목, 총 {{units}}개"
+      "itemCount": "{{items}}개 품목, 총 {{units}}개",
+      "deliveryPhoto": "배송 확인 사진"
+    },
+    "photo": {
+      "alt": "배송 확인 사진",
+      "noPhotoLegacy": "이 출고는 사진 업로드 기능 도입 전에 완료되었습니다."
     },
     "table": {
       "product": "제품",

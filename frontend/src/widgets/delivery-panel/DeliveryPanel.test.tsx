@@ -99,6 +99,7 @@ function createMockDelivery(overrides: Partial<Delivery> = {}): Delivery {
         quantityDelivered: 20,
       },
     ],
+    photo: null,
     ...overrides,
   };
 }

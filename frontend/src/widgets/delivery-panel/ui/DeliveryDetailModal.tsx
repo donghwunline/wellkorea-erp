@@ -28,9 +28,9 @@ import {
   downloadDeliveryStatement,
 } from '@/entities/delivery';
 import { useAuth } from '@/entities/auth';
-import { useMarkDelivered } from '@/features/delivery/mark-delivered';
 import { useMarkReturned } from '@/features/delivery/mark-returned';
 import { useReassignDelivery } from '@/features/delivery/reassign';
+import { MarkDeliveredModal } from '@/features/delivery/mark-delivered-with-photo';
 import { formatDate, formatDateTime } from '@/shared/lib/formatting';
 
 export interface DeliveryDetailModalProps {
@@ -67,6 +67,9 @@ export function DeliveryDetailModal({
     enabled: isOpen && deliveryId > 0,
   });
 
+  // Mark delivered modal state
+  const [isMarkDeliveredModalOpen, setIsMarkDeliveredModalOpen] = useState(false);
+
   // Success message state with auto-dismiss
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -98,16 +101,6 @@ export function DeliveryDetailModal({
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Mutation hooks
-  const { mutate: markDelivered, isPending: isMarkingDelivered } = useMarkDelivered({
-    onSuccess: () => {
-      showSuccess(t('deliveryDetailModal.successMessages.delivered'));
-      onSuccess?.();
-    },
-    onError: (err) => {
-      setError(err.message);
-    },
-  });
-
   const { mutate: markReturned, isPending: isMarkingReturned } = useMarkReturned({
     onSuccess: () => {
       showSuccess(t('deliveryDetailModal.successMessages.returned'));
@@ -147,10 +140,15 @@ export function DeliveryDetailModal({
     }
   }, [deliveryId]);
 
-  const handleMarkDelivered = useCallback(() => {
-    setError(null);
-    markDelivered(deliveryId);
-  }, [deliveryId, markDelivered]);
+  const handleOpenMarkDeliveredModal = useCallback(() => {
+    setIsMarkDeliveredModalOpen(true);
+  }, []);
+
+  const handleMarkDeliveredSuccess = useCallback(() => {
+    setIsMarkDeliveredModalOpen(false);
+    showSuccess(t('deliveryDetailModal.successMessages.delivered'));
+    onSuccess?.();
+  }, [onSuccess, showSuccess, t]);
 
   const handleMarkReturned = useCallback(() => {
     setError(null);
@@ -167,7 +165,7 @@ export function DeliveryDetailModal({
   // Check action permissions
   const canMarkDelivered = delivery && canManageDeliveries && deliveryRules.canMarkDelivered(delivery);
   const canMarkReturned = delivery && canManageDeliveries && deliveryRules.canMarkReturned(delivery);
-  const isActing = isMarkingDelivered || isMarkingReturned || isReassigning;
+  const isActing = isMarkingReturned || isReassigning;
 
   // Check outdated status
   const isOutdated = delivery && deliveryRules.isOutdated(delivery, latestAcceptedQuotationId ?? null);
@@ -319,7 +317,60 @@ export function DeliveryDetailModal({
               </tfoot>
             </Table>
           </div>
+
+          {/* Delivery Photo Section */}
+          {delivery.status === 'DELIVERED' && (
+            <div className="border-t border-steel-700 pt-4">
+              <h3 className="mb-3 text-base font-semibold text-white">
+                {t('deliveryDetailModal.sections.deliveryPhoto')}
+              </h3>
+
+              {delivery.photo ? (
+                <div className="space-y-3">
+                  {/* Photo image */}
+                  <div className="overflow-hidden rounded-xl border border-steel-700 bg-steel-800">
+                    <img
+                      src={delivery.photo.downloadUrl}
+                      alt={t('deliveryDetailModal.photo.alt')}
+                      className="max-h-64 w-full object-contain"
+                    />
+                  </div>
+
+                  {/* Photo metadata */}
+                  <div className="flex items-center gap-4 text-sm text-steel-400">
+                    <span>
+                      <Icon name="user" className="mr-1 inline h-4 w-4" />
+                      {delivery.photo.uploadedByName}
+                    </span>
+                    <span>
+                      <Icon name="clock" className="mr-1 inline h-4 w-4" />
+                      {formatDateTime(delivery.photo.uploadedAt)}
+                    </span>
+                    <span>
+                      <Icon name="document" className="mr-1 inline h-4 w-4" />
+                      {delivery.photo.fileName} ({delivery.photo.formattedFileSize})
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                /* Legacy delivery without photo */
+                <Alert variant="info">
+                  {t('deliveryDetailModal.photo.noPhotoLegacy')}
+                </Alert>
+              )}
+            </div>
+          )}
         </div>
+      )}
+
+      {/* Mark Delivered Modal */}
+      {delivery && (
+        <MarkDeliveredModal
+          deliveryId={deliveryId}
+          isOpen={isMarkDeliveredModalOpen}
+          onClose={() => setIsMarkDeliveredModalOpen(false)}
+          onSuccess={handleMarkDeliveredSuccess}
+        />
       )}
 
       {/* Modal Actions */}
@@ -344,12 +395,9 @@ export function DeliveryDetailModal({
             {canMarkDelivered && (
               <Button
                 variant="primary"
-                onClick={handleMarkDelivered}
+                onClick={handleOpenMarkDeliveredModal}
                 disabled={isActing}
               >
-                {isMarkingDelivered && (
-                  <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
-                )}
                 {t('deliveryDetailModal.actions.markDelivered')}
               </Button>
             )}
