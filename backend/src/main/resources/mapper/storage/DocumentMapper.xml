@@ -75,4 +75,27 @@
         ORDER BY uploaded_at DESC
     </select>
 
+    <!--
+        Count all documents for a project.
+        Uses same UNION logic as findDocumentsByProjectId.
+    -->
+    <select id="countDocumentsByProjectId" resultType="long">
+        SELECT COUNT(*) FROM (
+            -- Blueprint Attachments
+            SELECT ba.id
+            FROM blueprint_attachments ba
+            INNER JOIN task_flows tf ON ba.task_flow_id = tf.id
+            WHERE tf.project_id = #{projectId}
+
+            UNION ALL
+
+            -- Delivery Photos
+            SELECT a.id
+            FROM attachments a
+            INNER JOIN deliveries d ON a.owner_type = 'DELIVERY' AND a.owner_id = d.id
+            WHERE d.project_id = #{projectId}
+              AND d.status = 'DELIVERED'
+        ) AS all_documents
+    </select>
+
 </mapper>

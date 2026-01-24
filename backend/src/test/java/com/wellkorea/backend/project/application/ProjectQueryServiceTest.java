@@ -4,7 +4,7 @@ import com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper;
 import com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper;
 import com.wellkorea.backend.production.domain.TaskFlow;
 import com.wellkorea.backend.production.domain.TaskNode;
-import com.wellkorea.backend.production.infrastructure.persistence.BlueprintAttachmentRepository;
+import com.wellkorea.backend.shared.storage.infrastructure.mapper.DocumentMapper;
 import com.wellkorea.backend.production.infrastructure.persistence.TaskFlowRepository;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSectionsSummaryView;
@@ -55,7 +55,7 @@ class ProjectQueryServiceTest {
     private PurchaseRequestMapper purchaseRequestMapper;
 
     @Mock
-    private BlueprintAttachmentRepository blueprintAttachmentRepository;
+    private DocumentMapper documentMapper;
 
     @Mock
     private DeliveryMapper deliveryMapper;
@@ -76,7 +76,7 @@ class ProjectQueryServiceTest {
                 quotationMapper,
                 taskFlowRepository,
                 purchaseRequestMapper,
-                blueprintAttachmentRepository,
+                documentMapper,
                 deliveryMapper,
                 invoiceMapper
         );
@@ -392,7 +392,7 @@ class ProjectQueryServiceTest {
             given(taskFlowRepository.findByProjectId(projectId)).willReturn(Optional.empty());
             given(purchaseRequestMapper.countWithFilters(null, projectId, "MATERIAL")).willReturn(5L);
             given(purchaseRequestMapper.countWithFilters(null, projectId, "SERVICE")).willReturn(2L);
-            given(blueprintAttachmentRepository.findByProjectId(projectId)).willReturn(List.of());
+            given(documentMapper.countDocumentsByProjectId(projectId)).willReturn(0L);
             given(deliveryMapper.countWithFilters(projectId, null)).willReturn(4L);
             given(invoiceMapper.countWithFilters(projectId, null)).willReturn(1L);
 
@@ -465,7 +465,7 @@ class ProjectQueryServiceTest {
             given(taskFlowRepository.findByProjectId(projectId)).willReturn(Optional.of(taskFlow));
             given(purchaseRequestMapper.countWithFilters(null, projectId, "MATERIAL")).willReturn(0L);
             given(purchaseRequestMapper.countWithFilters(null, projectId, "SERVICE")).willReturn(0L);
-            given(blueprintAttachmentRepository.findByProjectId(projectId)).willReturn(List.of());
+            given(documentMapper.countDocumentsByProjectId(projectId)).willReturn(0L);
             given(deliveryMapper.countWithFilters(projectId, null)).willReturn(0L);
             given(invoiceMapper.countWithFilters(projectId, null)).willReturn(0L);
 

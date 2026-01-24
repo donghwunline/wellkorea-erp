@@ -29,4 +29,14 @@ public interface DocumentMapper {
      * @return List of project documents with source context
      */
     List<ProjectDocumentView> findDocumentsByProjectId(@Param("projectId") Long projectId);
+
+    /**
+     * Count all documents associated with a project.
+     * <p>
+     * Counts documents from all sources (blueprints + delivery photos).
+     *
+     * @param projectId The project ID to count documents for
+     * @return Total number of documents
+     */
+    long countDocumentsByProjectId(@Param("projectId") Long projectId);
 }

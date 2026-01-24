@@ -2,7 +2,7 @@ package com.wellkorea.backend.project.application;
 
 import com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper;
 import com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper;
-import com.wellkorea.backend.production.infrastructure.persistence.BlueprintAttachmentRepository;
+import com.wellkorea.backend.shared.storage.infrastructure.mapper.DocumentMapper;
 import com.wellkorea.backend.production.infrastructure.persistence.TaskFlowRepository;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
 import com.wellkorea.backend.project.api.dto.query.ProjectKPIView;
@@ -38,7 +38,7 @@ public class ProjectQueryService {
     private final QuotationMapper quotationMapper;
     private final TaskFlowRepository taskFlowRepository;
     private final PurchaseRequestMapper purchaseRequestMapper;
-    private final BlueprintAttachmentRepository blueprintAttachmentRepository;
+    private final DocumentMapper documentMapper;
     private final DeliveryMapper deliveryMapper;
     private final InvoiceMapper invoiceMapper;
 
@@ -47,7 +47,7 @@ public class ProjectQueryService {
             QuotationMapper quotationMapper,
             TaskFlowRepository taskFlowRepository,
             PurchaseRequestMapper purchaseRequestMapper,
-            BlueprintAttachmentRepository blueprintAttachmentRepository,
+            DocumentMapper documentMapper,
             DeliveryMapper deliveryMapper,
             InvoiceMapper invoiceMapper
     ) {
@@ -55,7 +55,7 @@ public class ProjectQueryService {
         this.quotationMapper = quotationMapper;
         this.taskFlowRepository = taskFlowRepository;
         this.purchaseRequestMapper = purchaseRequestMapper;
-        this.blueprintAttachmentRepository = blueprintAttachmentRepository;
+        this.documentMapper = documentMapper;
         this.deliveryMapper = deliveryMapper;
         this.invoiceMapper = invoiceMapper;
     }
@@ -196,9 +196,9 @@ public class ProjectQueryService {
         long servicePurchaseTotal = purchaseRequestMapper.countWithFilters(null, projectId, "SERVICE");
         sections.add(ProjectSectionSummaryView.of("outsource", "외주", (int) servicePurchaseTotal, 0));
 
-        // 5. Documents (문서) - total BlueprintAttachment linked to this project
-        int documentTotal = blueprintAttachmentRepository.findByProjectId(projectId).size();
-        sections.add(ProjectSectionSummaryView.of("documents", "문서", documentTotal, 0));
+        // 5. Documents (문서) - total documents (blueprints + delivery photos) linked to this project
+        long documentTotal = documentMapper.countDocumentsByProjectId(projectId);
+        sections.add(ProjectSectionSummaryView.of("documents", "문서", (int) documentTotal, 0));
 
         // 6. Delivery (출고) - total Delivery linked to this project
         long deliveryTotal = deliveryMapper.countWithFilters(projectId, null);
