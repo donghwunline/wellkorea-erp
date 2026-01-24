@@ -2,8 +2,8 @@ package com.wellkorea.backend.production.application;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.shared.stoarage.infrastructure.MinioFileStorage;
-import com.wellkorea.backend.production.api.dto.command.UploadUrlResponse;
+import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
+import com.wellkorea.backend.shared.storage.api.dto.UploadUrlResponse;
 import com.wellkorea.backend.production.api.dto.query.BlueprintAttachmentView;
 import com.wellkorea.backend.production.domain.AllowedFileType;
 import com.wellkorea.backend.production.domain.BlueprintAttachment;
