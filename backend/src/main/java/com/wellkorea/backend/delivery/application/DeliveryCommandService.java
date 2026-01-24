@@ -4,6 +4,7 @@ import com.wellkorea.backend.delivery.api.dto.command.CreateDeliveryRequest;
 import com.wellkorea.backend.delivery.api.dto.command.DeliveryLineItemRequest;
 import com.wellkorea.backend.delivery.domain.Delivery;
 import com.wellkorea.backend.delivery.domain.DeliveryLineItemInput;
+import com.wellkorea.backend.delivery.domain.DeliveryStatus;
 import com.wellkorea.backend.delivery.domain.QuotationDeliveryGuard;
 import com.wellkorea.backend.delivery.infrastructure.persistence.DeliveryRepository;
 import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
@@ -12,6 +13,8 @@ import com.wellkorea.backend.quotation.infrastructure.repository.QuotationReposi
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.lock.QuotationLock;
+import com.wellkorea.backend.shared.storage.application.AttachmentService;
+import com.wellkorea.backend.shared.storage.domain.AttachmentOwnerType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,15 +44,18 @@ public class DeliveryCommandService {
     private final ProjectRepository projectRepository;
     private final QuotationRepository quotationRepository;
     private final QuotationDeliveryGuard quotationDeliveryGuard;
+    private final AttachmentService attachmentService;
 
     public DeliveryCommandService(DeliveryRepository deliveryRepository,
                                   ProjectRepository projectRepository,
                                   QuotationRepository quotationRepository,
-                                  QuotationDeliveryGuard quotationDeliveryGuard) {
+                                  QuotationDeliveryGuard quotationDeliveryGuard,
+                                  AttachmentService attachmentService) {
         this.deliveryRepository = deliveryRepository;
         this.projectRepository = projectRepository;
         this.quotationRepository = quotationRepository;
         this.quotationDeliveryGuard = quotationDeliveryGuard;
+        this.attachmentService = attachmentService;
     }
 
     /**
@@ -121,10 +127,15 @@ public class DeliveryCommandService {
 
     /**
      * Mark a delivery as delivered (status change from PENDING).
+     * <p>
+     * NOTE: This method is deprecated for new deliveries. Use {@link #markAsDeliveredWithPhoto}
+     * instead, which requires a delivery photo as proof of delivery.
      *
      * @param deliveryId Delivery ID
      * @return ID of the updated delivery
+     * @deprecated Use markAsDeliveredWithPhoto for new deliveries
      */
+    @Deprecated
     public Long markAsDelivered(Long deliveryId) {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery", deliveryId));
@@ -132,6 +143,74 @@ public class DeliveryCommandService {
         delivery.markDelivered();
         deliveryRepository.save(delivery);
         return deliveryId;
+    }
+
+    /**
+     * Mark a delivery as delivered with a proof-of-delivery photo.
+     * <p>
+     * This is an atomic operation that:
+     * 1. Registers the uploaded photo as an attachment
+     * 2. Marks the delivery as delivered
+     * <p>
+     * The photo must have already been uploaded to MinIO via the presigned URL.
+     *
+     * @param deliveryId Delivery ID
+     * @param fileName   Original file name of the photo
+     * @param fileSize   Photo file size in bytes
+     * @param objectKey  MinIO storage path (from presigned URL response)
+     * @param uploaderId User ID who is recording the delivery
+     * @return ID of the updated delivery
+     * @throws ResourceNotFoundException if delivery doesn't exist
+     * @throws BusinessException if delivery is not in PENDING status
+     */
+    public Long markAsDeliveredWithPhoto(
+            Long deliveryId,
+            String fileName,
+            Long fileSize,
+            String objectKey,
+            Long uploaderId) {
+
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery", deliveryId));
+
+        // Validate delivery is in PENDING status
+        if (delivery.getStatus() != DeliveryStatus.PENDING) {
+            throw new BusinessException(
+                    "Cannot mark delivery as delivered. Current status: " + delivery.getStatus());
+        }
+
+        // Register photo attachment
+        attachmentService.registerAttachment(
+                AttachmentOwnerType.DELIVERY,
+                deliveryId,
+                fileName,
+                fileSize,
+                objectKey,
+                uploaderId
+        );
+
+        // Mark as delivered
+        delivery.markDelivered();
+        deliveryRepository.save(delivery);
+
+        return deliveryId;
+    }
+
+    /**
+     * Validate that a delivery can receive a photo upload.
+     *
+     * @param deliveryId Delivery ID
+     * @throws ResourceNotFoundException if delivery doesn't exist
+     * @throws BusinessException if delivery is not in PENDING status
+     */
+    public void validateDeliveryForPhotoUpload(Long deliveryId) {
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery", deliveryId));
+
+        if (delivery.getStatus() != DeliveryStatus.PENDING) {
+            throw new BusinessException(
+                    "Cannot upload photo for delivery. Status must be PENDING, but is: " + delivery.getStatus());
+        }
     }
 
     /**

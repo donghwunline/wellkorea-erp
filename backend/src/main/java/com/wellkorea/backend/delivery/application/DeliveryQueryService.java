@@ -5,6 +5,9 @@ import com.wellkorea.backend.delivery.api.dto.query.DeliverySummaryView;
 import com.wellkorea.backend.delivery.domain.DeliveryStatus;
 import com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import com.wellkorea.backend.shared.storage.api.dto.AttachmentView;
+import com.wellkorea.backend.shared.storage.application.AttachmentService;
+import com.wellkorea.backend.shared.storage.domain.AttachmentOwnerType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -25,21 +28,29 @@ import java.util.List;
 public class DeliveryQueryService {
 
     private final DeliveryMapper deliveryMapper;
+    private final AttachmentService attachmentService;
 
-    public DeliveryQueryService(DeliveryMapper deliveryMapper) {
+    public DeliveryQueryService(DeliveryMapper deliveryMapper, AttachmentService attachmentService) {
         this.deliveryMapper = deliveryMapper;
+        this.attachmentService = attachmentService;
     }
 
     /**
      * Get delivery detail by ID.
-     * Returns full detail view including line items.
+     * Returns full detail view including line items and photo (if available).
      *
      * @param deliveryId Delivery ID
-     * @return DeliveryDetailView with all nested data
+     * @return DeliveryDetailView with all nested data including photo
      */
     public DeliveryDetailView getDeliveryDetail(Long deliveryId) {
-        return deliveryMapper.findDetailById(deliveryId)
+        DeliveryDetailView base = deliveryMapper.findDetailById(deliveryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery", deliveryId));
+
+        // Enrich with photo if available
+        AttachmentView photo = attachmentService.getAttachment(
+                AttachmentOwnerType.DELIVERY, deliveryId).orElse(null);
+
+        return DeliveryDetailView.withPhoto(base, photo);
     }
 
     /**

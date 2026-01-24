@@ -10,6 +10,13 @@ import com.wellkorea.backend.delivery.application.DeliveryQueryService;
 import com.wellkorea.backend.delivery.domain.DeliveryStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import com.wellkorea.backend.shared.dto.AuthenticatedUser;
+import com.wellkorea.backend.shared.exception.BusinessException;
+import com.wellkorea.backend.shared.storage.api.dto.AttachmentView;
+import com.wellkorea.backend.shared.storage.api.dto.RegisterAttachmentRequest;
+import com.wellkorea.backend.shared.storage.api.dto.UploadUrlRequest;
+import com.wellkorea.backend.shared.storage.api.dto.UploadUrlResponse;
+import com.wellkorea.backend.shared.storage.application.AttachmentService;
+import com.wellkorea.backend.shared.storage.domain.AttachmentOwnerType;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +28,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller for delivery management.
@@ -33,13 +41,16 @@ public class DeliveryController {
     private final DeliveryCommandService commandService;
     private final DeliveryQueryService queryService;
     private final DeliveryPdfService pdfService;
+    private final AttachmentService attachmentService;
 
     public DeliveryController(DeliveryCommandService commandService,
                               DeliveryQueryService queryService,
-                              DeliveryPdfService pdfService) {
+                              DeliveryPdfService pdfService,
+                              AttachmentService attachmentService) {
         this.commandService = commandService;
         this.queryService = queryService;
         this.pdfService = pdfService;
+        this.attachmentService = attachmentService;
     }
 
     // ==================== QUERY ENDPOINTS ====================
@@ -104,9 +115,10 @@ public class DeliveryController {
     @PostMapping("/api/deliveries/{id}/delivered")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
     public ResponseEntity<ApiResponse<DeliveryCommandResult>> markAsDelivered(@PathVariable Long id) {
-        Long deliveryId = commandService.markAsDelivered(id);
-        DeliveryCommandResult result = DeliveryCommandResult.delivered(deliveryId);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        // Photo upload is now required - redirect to the new endpoint
+        throw new BusinessException(
+                "Photo upload required. Use POST /api/deliveries/" + id + "/photo/register-and-deliver"
+        );
     }
 
     /**
@@ -142,6 +154,75 @@ public class DeliveryController {
         Long deliveryId = commandService.reassignToQuotation(id, quotationId);
         DeliveryCommandResult result = DeliveryCommandResult.reassigned(deliveryId, quotationId);
         return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    // ==================== PHOTO UPLOAD ENDPOINTS ====================
+
+    /**
+     * Get presigned URL for delivery photo upload.
+     * POST /api/deliveries/{id}/photo/upload-url
+     * <p>
+     * Returns a presigned URL for direct upload to MinIO.
+     * Only JPG and PNG images are allowed.
+     */
+    @PostMapping("/api/deliveries/{id}/photo/upload-url")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<UploadUrlResponse>> getPhotoUploadUrl(
+            @PathVariable Long id,
+            @Valid @RequestBody UploadUrlRequest request) {
+
+        // Validate delivery exists and is PENDING
+        commandService.validateDeliveryForPhotoUpload(id);
+
+        UploadUrlResponse response = attachmentService.generateUploadUrl(
+                AttachmentOwnerType.DELIVERY, id,
+                request.fileName(), request.fileSize(), request.contentType(),
+                true  // images only
+        );
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * Register photo and mark delivery as delivered (atomic operation).
+     * POST /api/deliveries/{id}/photo/register-and-deliver
+     * <p>
+     * This endpoint should be called after the photo has been uploaded
+     * to the presigned URL. It atomically:
+     * 1. Registers the photo as an attachment
+     * 2. Marks the delivery as DELIVERED
+     */
+    @PostMapping("/api/deliveries/{id}/photo/register-and-deliver")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<DeliveryCommandResult>> registerPhotoAndMarkDelivered(
+            @PathVariable Long id,
+            @Valid @RequestBody RegisterAttachmentRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+
+        Long deliveryId = commandService.markAsDeliveredWithPhoto(
+                id,
+                request.fileName(),
+                request.fileSize(),
+                request.objectKey(),
+                user.getUserId()
+        );
+        DeliveryCommandResult result = DeliveryCommandResult.delivered(deliveryId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * Get delivery photo.
+     * GET /api/deliveries/{id}/photo
+     * <p>
+     * Returns the photo attachment metadata with download URL.
+     * Returns 404 if no photo exists (legacy deliveries).
+     */
+    @GetMapping("/api/deliveries/{id}/photo")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES', 'PRODUCTION')")
+    public ResponseEntity<ApiResponse<AttachmentView>> getDeliveryPhoto(@PathVariable Long id) {
+        Optional<AttachmentView> photo = attachmentService.getAttachment(AttachmentOwnerType.DELIVERY, id);
+        return photo
+                .map(view -> ResponseEntity.ok(ApiResponse.success(view)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // ==================== SIDE-EFFECT ENDPOINTS ====================
