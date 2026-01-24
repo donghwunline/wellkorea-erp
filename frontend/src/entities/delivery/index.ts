@@ -25,6 +25,8 @@ export { markDelivered } from './api/mark-delivered';
 export { markReturned } from './api/mark-returned';
 export { reassignDelivery } from './api/reassign-delivery';
 export type { ReassignDeliveryInput } from './api/reassign-delivery';
+export { uploadDeliveryPhoto } from './api/upload-delivery-photo';
+export type { UploadDeliveryPhotoInput } from './api/upload-delivery-photo';
 
 // UI - Presentation components
 export { DeliveryStatusBadge } from './ui/DeliveryStatusBadge';

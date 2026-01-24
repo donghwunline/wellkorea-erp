@@ -249,7 +249,7 @@ export const DELIVERY_ENDPOINTS = {
 
   /** GET /deliveries/:id - Get delivery detail */
   byId: (id: number) => `/deliveries/${id}`,
-  /** POST /deliveries/:id/delivered - Mark as delivered */
+  /** POST /deliveries/:id/delivered - Mark as delivered (deprecated - use photo endpoints) */
   markDelivered: (id: number) => `/deliveries/${id}/delivered`,
   /** POST /deliveries/:id/returned - Mark as returned */
   markReturned: (id: number) => `/deliveries/${id}/returned`,
@@ -257,6 +257,15 @@ export const DELIVERY_ENDPOINTS = {
   reassign: (id: number) => `/deliveries/${id}/reassign`,
   /** GET /deliveries/:id/statement - Generate delivery statement PDF */
   statement: (id: number) => `/deliveries/${id}/statement`,
+
+  // ========== PHOTO UPLOAD ENDPOINTS ==========
+
+  /** POST /deliveries/:id/photo/upload-url - Get presigned URL for photo upload */
+  photoUploadUrl: (id: number) => `/deliveries/${id}/photo/upload-url`,
+  /** POST /deliveries/:id/photo/register-and-deliver - Register photo and mark as delivered */
+  registerPhotoAndDeliver: (id: number) => `/deliveries/${id}/photo/register-and-deliver`,
+  /** GET /deliveries/:id/photo - Get photo attachment */
+  photo: (id: number) => `/deliveries/${id}/photo`,
 } as const;
 
 // ============================================================================

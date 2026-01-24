@@ -38,6 +38,7 @@ vi.mock('./delivery.mapper', () => ({
       createdAt: response.createdAt,
       updatedAt: response.updatedAt,
       lineItems: response.lineItems,
+      photo: response.photo ?? null,
       _mapped: true,
     })),
   },
@@ -108,6 +109,7 @@ function createMockDeliveryDetailResponse(
         quantityDelivered: 30,
       },
     ],
+    photo: null,
     ...overrides,
   };
 }

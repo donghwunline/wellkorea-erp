@@ -5,6 +5,7 @@
 
 import type { Delivery, DeliveryLineItem } from '../model/delivery';
 import type { DeliveryStatus } from '../model/delivery-status';
+import type { Attachment } from '@/shared/domain';
 
 /**
  * Command result for write operations.
@@ -26,6 +27,22 @@ interface DeliveryLineItemResponse {
 }
 
 /**
+ * Attachment response from backend (AttachmentView).
+ */
+interface AttachmentResponse {
+  id: number;
+  ownerType: string;
+  ownerId: number;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  formattedFileSize: string;
+  uploadedByName: string;
+  uploadedAt: string;
+  downloadUrl: string;
+}
+
+/**
  * Delivery detail response from backend (DeliveryDetailView).
  */
 export interface DeliveryDetailResponse {
@@ -41,6 +58,7 @@ export interface DeliveryDetailResponse {
   createdAt: string;
   updatedAt: string;
   lineItems: DeliveryLineItemResponse[];
+  photo: AttachmentResponse | null;
 }
 
 /**
@@ -78,6 +96,25 @@ export const deliveryMapper = {
   },
 
   /**
+   * Map attachment response to domain model.
+   */
+  toAttachment(response: AttachmentResponse | null): Attachment | null {
+    if (!response) return null;
+    return {
+      id: response.id,
+      ownerType: response.ownerType as Attachment['ownerType'],
+      ownerId: response.ownerId,
+      fileName: response.fileName,
+      fileType: response.fileType as Attachment['fileType'],
+      fileSize: response.fileSize,
+      formattedFileSize: response.formattedFileSize,
+      uploadedByName: response.uploadedByName,
+      uploadedAt: response.uploadedAt,
+      downloadUrl: response.downloadUrl,
+    };
+  },
+
+  /**
    * Map detail response to Delivery domain model.
    */
   toDomain(response: DeliveryDetailResponse): Delivery {
@@ -94,6 +131,7 @@ export const deliveryMapper = {
       createdAt: response.createdAt,
       updatedAt: response.updatedAt,
       lineItems: response.lineItems.map(deliveryMapper.toLineItem),
+      photo: deliveryMapper.toAttachment(response.photo),
     };
   },
 
@@ -115,6 +153,7 @@ export const deliveryMapper = {
       createdAt: response.createdAt,
       updatedAt: response.createdAt,
       lineItems: response.lineItems.map(deliveryMapper.toLineItem),
+      photo: null, // Not available in summary
     };
   },
 };
