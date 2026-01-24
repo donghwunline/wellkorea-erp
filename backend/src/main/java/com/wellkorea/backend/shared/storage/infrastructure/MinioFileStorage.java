@@ -1,4 +1,4 @@
-package com.wellkorea.backend.shared.stoarage.infrastructure;
+package com.wellkorea.backend.shared.storage.infrastructure;
 
 import com.wellkorea.backend.shared.exception.BusinessException;
 import io.minio.*;

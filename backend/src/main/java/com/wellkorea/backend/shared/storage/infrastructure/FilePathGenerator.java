@@ -1,4 +1,4 @@
-package com.wellkorea.backend.shared.stoarage.infrastructure;
+package com.wellkorea.backend.shared.storage.infrastructure;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
