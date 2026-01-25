@@ -8,6 +8,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -271,6 +272,26 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
 
         log.warn("Illegal state: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle optimistic locking failures (409 Conflict).
+     * This occurs when concurrent updates to the same entity cause a version mismatch.
+     * The client should retry the operation after refreshing their data.
+     */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(
+            OptimisticLockingFailureException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.CONCURRENT_MODIFICATION,
+                "The record was modified by another user. Please refresh and try again.",
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        log.warn("Optimistic locking failure: {} at {}", ex.getMessage(), request.getDescription(false));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
