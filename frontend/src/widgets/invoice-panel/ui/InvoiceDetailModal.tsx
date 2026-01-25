@@ -539,7 +539,7 @@ export function InvoiceDetailModal({
               size="sm"
               onClick={() => window.open(document.downloadUrl, '_blank')}
             >
-              <Icon name="download" className="h-4 w-4" />
+              <Icon name="document-arrow-down" className="h-4 w-4" />
             </Button>
           </div>
         </Card>
