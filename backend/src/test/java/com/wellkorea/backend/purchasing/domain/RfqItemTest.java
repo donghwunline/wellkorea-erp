@@ -1,10 +1,8 @@
 package com.wellkorea.backend.purchasing.domain;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
+import org.junit.jupiter.api.*;
 
 import java.math.BigDecimal;
 
@@ -13,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for RfqItem state machine.
- *
+ * <p>
  * State Diagram:
  * <pre>
  *     [*] --> SENT

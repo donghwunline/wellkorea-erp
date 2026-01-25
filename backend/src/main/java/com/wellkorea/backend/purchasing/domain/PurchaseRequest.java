@@ -2,27 +2,27 @@ package com.wellkorea.backend.purchasing.domain;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Abstract base class for purchase requests.
  * Uses JPA SINGLE_TABLE inheritance with dtype discriminator column.
- *
+ * <p>
  * Concrete subclasses:
  * - ServicePurchaseRequest: For outsourcing services (linked to ServiceCategory)
  * - MaterialPurchaseRequest: For physical materials (linked to Material)
- *
+ * <p>
  * Both types share the same workflow: DRAFT → RFQ_SENT → VENDOR_SELECTED → CLOSED
- *
+ * <p>
  * RfqItems are embedded as @ElementCollection (aggregate pattern).
  */
 @Entity
@@ -75,6 +75,51 @@ public abstract class PurchaseRequest {
     )
     private List<RfqItem> rfqItems = new ArrayList<>();
 
+    // ========== Constructors ==========
+
+    /**
+     * Protected constructor for creating a new PurchaseRequest.
+     * Used by concrete subclasses to initialize common fields.
+     *
+     * @param project       the associated project (nullable)
+     * @param requestNumber the unique request number (required)
+     * @param description   the request description (required)
+     * @param quantity      the requested quantity (required)
+     * @param uom           the unit of measure (nullable)
+     * @param requiredDate  the required delivery date (required)
+     * @param createdBy     the user creating this request (required)
+     */
+    protected PurchaseRequest(
+            Project project,
+            String requestNumber,
+            String description,
+            BigDecimal quantity,
+            String uom,
+            LocalDate requiredDate,
+            User createdBy
+    ) {
+        Objects.requireNonNull(requestNumber, "requestNumber must not be null");
+        Objects.requireNonNull(description, "description must not be null");
+        Objects.requireNonNull(quantity, "quantity must not be null");
+        Objects.requireNonNull(requiredDate, "requiredDate must not be null");
+        Objects.requireNonNull(createdBy, "createdBy must not be null");
+
+        this.project = project;
+        this.requestNumber = requestNumber;
+        this.description = description;
+        this.quantity = quantity;
+        this.uom = uom;
+        this.requiredDate = requiredDate;
+        this.createdBy = createdBy;
+        this.status = PurchaseRequestStatus.DRAFT;
+    }
+
+    /**
+     * Default constructor for JPA.
+     */
+    protected PurchaseRequest() {
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -111,6 +156,30 @@ public abstract class PurchaseRequest {
      */
     public boolean canUpdate() {
         return status == PurchaseRequestStatus.DRAFT;
+    }
+
+    /**
+     * Update the purchase request fields.
+     * Can only be called when in DRAFT status.
+     *
+     * @param description  the updated description (required)
+     * @param quantity     the updated quantity (required)
+     * @param uom          the updated unit of measure (nullable)
+     * @param requiredDate the updated required date (required)
+     * @throws IllegalStateException if not in DRAFT status
+     */
+    public void update(String description, BigDecimal quantity, String uom, LocalDate requiredDate) {
+        if (!canUpdate()) {
+            throw new IllegalStateException("Cannot update purchase request in " + status + " status");
+        }
+        Objects.requireNonNull(description, "description must not be null");
+        Objects.requireNonNull(quantity, "quantity must not be null");
+        Objects.requireNonNull(requiredDate, "requiredDate must not be null");
+
+        this.description = description;
+        this.quantity = quantity;
+        this.uom = uom;
+        this.requiredDate = requiredDate;
     }
 
     // ========== Status Transition Methods ==========
@@ -197,7 +266,7 @@ public abstract class PurchaseRequest {
     /**
      * Add an RFQ item for a vendor.
      *
-     * @param vendorCompanyId the vendor company ID
+     * @param vendorCompanyId  the vendor company ID
      * @param vendorOfferingId optional vendor offering ID (can be null)
      * @return the created RfqItem
      */
@@ -210,10 +279,10 @@ public abstract class PurchaseRequest {
     /**
      * Record a vendor's reply to an RFQ.
      *
-     * @param itemId the RFQ item ID
-     * @param quotedPrice the quoted price
+     * @param itemId         the RFQ item ID
+     * @param quotedPrice    the quoted price
      * @param quotedLeadTime lead time in days
-     * @param notes optional notes
+     * @param notes          optional notes
      */
     public void recordRfqReply(String itemId, BigDecimal quotedPrice, Integer quotedLeadTime, String notes) {
         if (status != PurchaseRequestStatus.RFQ_SENT) {
@@ -317,86 +386,18 @@ public abstract class PurchaseRequest {
         this.status = PurchaseRequestStatus.RFQ_SENT;
     }
 
-    // ========== Getters and Setters ==========
+    // ========== Getters ==========
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Project getProject() {
         return project;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public String getRequestNumber() {
-        return requestNumber;
-    }
-
-    public void setRequestNumber(String requestNumber) {
-        this.requestNumber = requestNumber;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(BigDecimal quantity) {
-        this.quantity = quantity;
-    }
-
-    public String getUom() {
-        return uom;
-    }
-
-    public void setUom(String uom) {
-        this.uom = uom;
-    }
-
-    public LocalDate getRequiredDate() {
-        return requiredDate;
-    }
-
-    public void setRequiredDate(LocalDate requiredDate) {
-        this.requiredDate = requiredDate;
-    }
-
     public PurchaseRequestStatus getStatus() {
         return status;
-    }
-
-    public void setStatus(PurchaseRequestStatus status) {
-        this.status = status;
-    }
-
-    public User getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
     }
 
     /**

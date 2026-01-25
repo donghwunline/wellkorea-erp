@@ -27,6 +27,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/shared/lib/cn';
 import { Icon } from '../primitives/Icon';
 import type { IconName } from '../primitives/Icon';
+import { Badge } from '../primitives/Badge';
+import type { BadgeVariant } from '../primitives/Badge';
 
 // ============================================================================
 // Context
@@ -144,6 +146,10 @@ export interface NavigationLinkProps extends Omit<HTMLAttributes<HTMLAnchorEleme
   children: ReactNode;
   /** Use exact path matching (default: false, uses prefix matching) */
   exact?: boolean;
+  /** Badge count to display (only shown when > 0) */
+  badge?: number;
+  /** Badge variant (default: 'warning') */
+  badgeVariant?: BadgeVariant;
 }
 
 export function NavigationLink({
@@ -151,11 +157,14 @@ export function NavigationLink({
   icon,
   children,
   exact = false,
+  badge,
+  badgeVariant = 'warning',
   className,
   ...props
 }: Readonly<NavigationLinkProps>) {
   const { collapsed, isActive } = useNavigation();
   const active = isActive(to, exact);
+  const showBadge = badge !== undefined && badge > 0;
 
   return (
     <li>
@@ -171,8 +180,24 @@ export function NavigationLink({
         title={collapsed ? String(children) : undefined}
         {...props}
       >
-        <Icon name={icon} className="h-5 w-5 shrink-0" />
-        {!collapsed && <span>{children}</span>}
+        <span className="relative shrink-0">
+          <Icon name={icon} className="h-5 w-5" />
+          {collapsed && showBadge && (
+            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-copper-500 text-[10px] font-bold text-white">
+              {badge > 99 ? '99+' : badge}
+            </span>
+          )}
+        </span>
+        {!collapsed && (
+          <>
+            <span className="flex-1">{children}</span>
+            {showBadge && (
+              <Badge variant={badgeVariant} size="sm">
+                {badge}
+              </Badge>
+            )}
+          </>
+        )}
       </Link>
     </li>
   );

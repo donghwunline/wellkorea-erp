@@ -2,8 +2,8 @@ package com.wellkorea.backend.production.application;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.document.infrastructure.storage.MinioFileStorage;
-import com.wellkorea.backend.production.api.dto.command.UploadUrlResponse;
+import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
+import com.wellkorea.backend.shared.storage.api.dto.UploadUrlResponse;
 import com.wellkorea.backend.production.api.dto.query.BlueprintAttachmentView;
 import com.wellkorea.backend.production.domain.AllowedFileType;
 import com.wellkorea.backend.production.domain.BlueprintAttachment;
@@ -169,18 +169,7 @@ public class BlueprintAttachmentService {
                 .toList();
     }
 
-    /**
-     * Get all attachments for a Project (via TaskFlow relationship).
-     *
-     * @param projectId Project ID
-     * @return List of attachment views
-     */
-    @Transactional(readOnly = true)
-    public List<BlueprintAttachmentView> getAttachmentsByProject(Long projectId) {
-        return attachmentRepository.findByProjectId(projectId).stream()
-                .map(this::toView)
-                .toList();
-    }
+    
 
     /**
      * Get attachment by ID.

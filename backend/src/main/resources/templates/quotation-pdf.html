@@ -211,7 +211,7 @@
 
             <!-- Title row -->
             <tr class="title-row">
-                <td class="title">見 積 書</td>
+                <td class="title">견 적 서</td>
             </tr>
 
             <!-- Customer name and date row -->
@@ -303,8 +303,10 @@
                     <table class="sum-row-inner">
                         <tr>
                             <td class="sum-label" style="width: 32mm;">합계금액</td>
-                            <td class="sum-amount-text" th:text="${totalAmountText}">일금삼천만원정</td>
-                            <td class="vat-info" style="width: 40mm;">-- 부가세별도 --</td>
+                            <td class="sum-amount-text">
+                                <span th:text="${totalAmountText}">일금삼천만원정</span>
+                                (<span th:text="${totalAmountFormatted}">￦ 30,000,000</span>)
+                            </td>
                         </tr>
                     </table>
                 </td>
@@ -335,11 +337,6 @@
                                 <td class="right" th:text="${item.unitPriceFormatted}">￦ 1,000,000</td>
                                 <td class="right" th:text="${item.lineTotalFormatted}">￦ 1,000,000</td>
                             </tr>
-                            <!-- Notes row if exists -->
-                            <tr th:if="${notes != null and !notes.isEmpty()}">
-                                <td class="center">비고</td>
-                                <td colspan="6" th:text="${notes}">비고 내용</td>
-                            </tr>
                             <!-- Total row -->
                             <tr>
                                 <td class="center">합계</td>
@@ -351,22 +348,10 @@
                 </td>
             </tr>
 
-            <!-- Grand total with VAT -->
-            <tr>
-                <td>
-                    <table class="total-table">
-                        <tr>
-                            <td class="total-label">TOTAL (부가세 포함)</td>
-                            <td class="total-amount right" th:text="${grandTotalFormatted}">￦ 33,000,000</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-
             <!-- Notes section -->
             <tr class="outer-bottom">
                 <td style="border-bottom-width: 0;">
-                    <div class="note">※ 참고사항 : 견적유효기간(<span th:text="${validityDays}">30</span>일)</div>
+                    <div class="note">※ 참고사항 : 견적유효기간(<span th:text="${validityDays}">30</span>일), 부가세별도</div>
                 </td>
             </tr>
         </table>

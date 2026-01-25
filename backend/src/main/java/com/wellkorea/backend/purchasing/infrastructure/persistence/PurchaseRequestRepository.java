@@ -1,8 +1,8 @@
 package com.wellkorea.backend.purchasing.infrastructure.persistence;
 
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
-import com.wellkorea.backend.purchasing.domain.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.ServicePurchaseRequest;
+import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -43,9 +43,9 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
      * Note: Subclass-specific relations (serviceCategory, material) are loaded lazily.
      */
     @Query("SELECT pr FROM PurchaseRequest pr " +
-           "LEFT JOIN FETCH pr.project " +
-           "LEFT JOIN FETCH pr.createdBy " +
-           "WHERE pr.id = :id")
+            "LEFT JOIN FETCH pr.project " +
+            "LEFT JOIN FETCH pr.createdBy " +
+            "WHERE pr.id = :id")
     Optional<PurchaseRequest> findByIdWithDetails(@Param("id") Long id);
 
     boolean existsByRequestNumber(String requestNumber);

@@ -25,3 +25,19 @@ export {
 
 // User types (auth/user)
 export type { User } from './user';
+
+// Attachment types (file uploads)
+export {
+  type AttachmentOwnerType,
+  type AttachmentFileType,
+  type Attachment,
+  ATTACHMENT_MAX_SIZE,
+  attachmentRules,
+} from './attachment';
+
+// Project document types (unified document view)
+export {
+  type ProjectDocumentType,
+  type ProjectDocument,
+  projectDocumentRules,
+} from './project-document';

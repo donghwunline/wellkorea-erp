@@ -1,8 +1,8 @@
 package com.wellkorea.backend.company.application;
 
 import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.domain.CompanyRole;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.CompanyRole;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;

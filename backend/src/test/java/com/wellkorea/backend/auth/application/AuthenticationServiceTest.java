@@ -1,10 +1,13 @@
 package com.wellkorea.backend.auth.application;
 
 import com.wellkorea.backend.auth.api.dto.LoginResponse;
-import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.shared.exception.AuthenticationException;
+import com.wellkorea.backend.shared.exception.ExpiredJwtAuthenticationException;
+import com.wellkorea.backend.shared.exception.InvalidJwtAuthenticationException;
 import com.wellkorea.backend.shared.test.TestFixtures;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -214,7 +217,7 @@ class AuthenticationServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception for invalid token")
         void logout_InvalidToken_ThrowsException() {
-            doThrow(new com.wellkorea.backend.auth.infrastructure.config.InvalidJwtAuthenticationException("Invalid token"))
+            doThrow(new InvalidJwtAuthenticationException("Invalid token"))
                     .when(jwtTokenProvider).validateToken(INVALID_JWT_TOKEN);
 
             assertThatThrownBy(() -> authenticationService.logout(INVALID_JWT_TOKEN))
@@ -266,7 +269,7 @@ class AuthenticationServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception for expired token")
         void refreshToken_ExpiredToken_ThrowsException() {
-            doThrow(new com.wellkorea.backend.auth.infrastructure.config.ExpiredJwtAuthenticationException("Token has expired"))
+            doThrow(new ExpiredJwtAuthenticationException("Token has expired"))
                     .when(jwtTokenProvider).validateToken(EXPIRED_JWT_TOKEN);
 
             assertThatThrownBy(() -> authenticationService.refreshToken(EXPIRED_JWT_TOKEN))
@@ -337,7 +340,7 @@ class AuthenticationServiceTest implements TestFixtures {
         @Test
         @DisplayName("should throw exception for invalid token")
         void getCurrentUser_InvalidToken_ThrowsException() {
-            doThrow(new com.wellkorea.backend.auth.infrastructure.config.InvalidJwtAuthenticationException("Invalid token"))
+            doThrow(new InvalidJwtAuthenticationException("Invalid token"))
                     .when(jwtTokenProvider).validateToken(INVALID_JWT_TOKEN);
 
             assertThatThrownBy(() -> authenticationService.getCurrentUser(INVALID_JWT_TOKEN))

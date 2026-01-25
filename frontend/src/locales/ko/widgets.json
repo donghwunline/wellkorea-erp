@@ -258,7 +258,8 @@
       "basicInfo": "기본 정보",
       "lineItems": "항목",
       "amounts": "금액 정보",
-      "paymentHistory": "결제 내역"
+      "paymentHistory": "결제 내역",
+      "taxInvoice": "세금계산서 문서"
     },
     "noPayments": "결제 내역이 없습니다",
     "paymentProgress": "결제 진행률",
@@ -446,7 +447,12 @@
     "metadata": "생성일: {{createdAt}} | 수정일: {{updatedAt}}",
     "sections": {
       "deliveredItems": "출고 항목",
-      "itemCount": "{{items}}개 품목, 총 {{units}}개"
+      "itemCount": "{{items}}개 품목, 총 {{units}}개",
+      "deliveryPhoto": "배송 확인 사진"
+    },
+    "photo": {
+      "alt": "배송 확인 사진",
+      "noPhotoLegacy": "이 출고는 사진 업로드 기능 도입 전에 완료되었습니다."
     },
     "table": {
       "product": "제품",
@@ -624,7 +630,12 @@
     "emptyTitle": "문서",
     "emptyDescription": "이 프로젝트에 첨부된 문서가 없습니다.",
     "emptyHint": "공정 노드에 첨부된 문서가 여기에 표시됩니다.",
-    "description": "공정 노드에 첨부된 도면 및 문서"
+    "description": "공정 노드에 첨부된 도면 및 문서",
+    "sections": {
+      "blueprints": "설계 도면",
+      "deliveryPhotos": "납품 사진",
+      "invoices": "세금계산서"
+    }
   },
   "arReport": {
     "title": "매출채권 목록",

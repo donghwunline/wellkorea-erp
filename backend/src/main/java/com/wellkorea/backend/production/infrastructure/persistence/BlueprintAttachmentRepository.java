@@ -59,12 +59,5 @@ public interface BlueprintAttachmentRepository extends JpaRepository<BlueprintAt
      */
     void deleteByTaskFlowIdAndNodeId(Long flowId, String nodeId);
 
-    /**
-     * Find attachments by project ID (via TaskFlow relationship).
-     *
-     * @param projectId Project ID
-     * @return List of attachments for the project
-     */
-    @Query("SELECT ba FROM BlueprintAttachment ba WHERE ba.taskFlow.project.id = :projectId")
-    List<BlueprintAttachment> findByProjectId(@Param("projectId") Long projectId);
+    
 }

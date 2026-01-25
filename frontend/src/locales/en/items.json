@@ -309,10 +309,14 @@
     "validation": {
       "vendorRequired": "Vendor is required",
       "materialRequired": "Material is required",
+      "vendorMaterialCodeTooLong": "Vendor material code must not exceed 50 characters",
+      "vendorMaterialNameTooLong": "Vendor material name must not exceed 200 characters",
       "priceNegative": "Unit price cannot be negative",
+      "currencyTooLong": "Currency code must not exceed 3 characters",
       "leadTimeNegative": "Lead time cannot be negative",
       "minQuantityNegative": "Minimum quantity cannot be negative",
-      "dateRangeInvalid": "Start date must be before end date"
+      "dateRangeInvalid": "Start date must be before end date",
+      "notesTooLong": "Notes must not exceed 1000 characters"
     },
     "createOffering": "Create Offering",
     "saveChanges": "Save Changes"

@@ -1,7 +1,7 @@
 package com.wellkorea.backend.auth.application;
 
-import com.wellkorea.backend.auth.domain.Role;
 import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.shared.test.TestFixtures;
 import org.junit.jupiter.api.*;

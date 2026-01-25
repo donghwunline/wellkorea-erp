@@ -7,8 +7,8 @@
  * Displays 4 key metrics:
  * - 진행률 (Progress %)
  * - 결재대기 (Pending Approvals)
- * - 문서누락 (Missing Documents)
  * - 미수금 (Accounts Receivable)
+ * - 청구금액 (Invoiced Amount)
  *
  * Entity UI rules:
  * - No router dependencies
@@ -48,10 +48,7 @@ export interface ProjectKPIStripProps {
  * }
  * ```
  */
-export function ProjectKPIStrip({
-  kpis,
-  className,
-}: Readonly<ProjectKPIStripProps>) {
+export function ProjectKPIStrip({ kpis, className }: Readonly<ProjectKPIStripProps>) {
   const { t } = useTranslation('entities');
 
   return (
@@ -75,19 +72,22 @@ export function ProjectKPIStrip({
         icon={<Icon name="clock" className="h-5 w-5" />}
         trend={
           kpis.pendingApprovals > 0
-            ? { value: t('project.kpi.trends.pending', { count: kpis.pendingApprovals }), direction: 'neutral' }
+            ? {
+                value: t('project.kpi.trends.pending', { count: kpis.pendingApprovals }),
+                direction: 'neutral',
+              }
             : undefined
         }
       />
 
       <StatCard
-        label={t('project.kpi.missingDocuments')}
-        value={kpis.missingDocuments}
-        icon={<Icon name="document" className="h-5 w-5" />}
+        label={t('project.kpi.invoicedAmount')}
+        value={formatCurrency(kpis.invoicedAmount)}
+        icon={<Icon name="document-duplicate" className="h-5 w-5" />}
         trend={
-          kpis.missingDocuments > 0
-            ? { value: t('project.kpi.trends.needsAttention'), direction: 'down' }
-            : { value: t('project.kpi.trends.complete'), direction: 'up' }
+          kpis.invoicedAmount > 0
+            ? { value: t('project.kpi.trends.issued'), direction: 'up' }
+            : undefined
         }
       />
 

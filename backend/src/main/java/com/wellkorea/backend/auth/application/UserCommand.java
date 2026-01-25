@@ -1,6 +1,6 @@
 package com.wellkorea.backend.auth.application;
 
-import com.wellkorea.backend.auth.domain.Role;
+import com.wellkorea.backend.auth.domain.vo.Role;
 
 import java.util.Set;
 

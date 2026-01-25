@@ -44,16 +44,15 @@
     "kpi": {
       "progress": "Progress",
       "pendingApprovals": "Pending Approvals",
-      "missingDocuments": "Missing Documents",
       "accountsReceivable": "Accounts Receivable",
+      "invoicedAmount": "Invoiced Amount",
       "trends": {
         "onTrack": "On Track",
         "inProgress": "In Progress",
         "behind": "Behind",
         "pending": "{{count}} pending",
-        "needsAttention": "Needs attention",
-        "complete": "Complete",
-        "outstanding": "Outstanding"
+        "outstanding": "Outstanding",
+        "issued": "Issued"
       }
     },
     "combobox": {

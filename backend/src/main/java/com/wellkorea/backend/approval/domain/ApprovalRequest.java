@@ -1,7 +1,6 @@
 package com.wellkorea.backend.approval.domain;
 
-import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
-import com.wellkorea.backend.approval.domain.vo.EntityType;
+import com.wellkorea.backend.approval.domain.vo.*;
 import com.wellkorea.backend.auth.domain.User;
 import jakarta.persistence.*;
 
@@ -12,8 +11,13 @@ import java.util.*;
  * ApprovalRequest is the aggregate root for approval workflow instances.
  * It tracks the multi-level sequential approval process for a specific entity.
  * <p>
- * This aggregate manages the lifecycle of its ApprovalLevelDecision collection elements.
- * Decisions cannot exist independently and are always accessed through the request.
+ * This aggregate manages the lifecycle of:
+ * - ApprovalLevelDecision collection (approval decisions at each level)
+ * - ApprovalHistoryEntry collection (audit trail of actions)
+ * - ApprovalCommentEntry collection (discussion comments and rejection reasons)
+ * <p>
+ * All approval workflow operations must go through this aggregate root.
+ * External code should not modify embedded collections directly.
  */
 @Entity
 @Table(name = "approval_requests")
@@ -22,6 +26,10 @@ public class ApprovalRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "entity_type", nullable = false, length = 50)
@@ -62,7 +70,6 @@ public class ApprovalRequest {
     /**
      * Ordered list of level decisions in this approval request.
      * Persisted to approval_level_decisions table via @ElementCollection.
-     * JPA automatically manages the collection table for CRUD operations.
      */
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
@@ -71,6 +78,39 @@ public class ApprovalRequest {
     )
     @OrderBy("levelOrder ASC")
     private List<ApprovalLevelDecision> levelDecisions = new ArrayList<>();
+
+    /**
+     * History entries tracking all approval workflow actions.
+     * Persisted to approval_history table via @ElementCollection.
+     * JPA manages entry_index automatically for ordering.
+     */
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "approval_history",
+            joinColumns = @JoinColumn(name = "approval_request_id")
+    )
+    @OrderColumn(name = "entry_index")
+    private List<ApprovalHistoryEntry> historyEntries = new ArrayList<>();
+
+    /**
+     * Comments including discussion and rejection reasons.
+     * Persisted to approval_comments table via @ElementCollection.
+     * JPA manages entry_index automatically for ordering.
+     */
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "approval_comments",
+            joinColumns = @JoinColumn(name = "approval_request_id")
+    )
+    @OrderColumn(name = "entry_index")
+    private List<ApprovalCommentEntry> comments = new ArrayList<>();
+
+    /**
+     * Protected constructor for JPA.
+     * Use the factory method {@link #create} for creating new instances.
+     */
+    protected ApprovalRequest() {
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -86,7 +126,159 @@ public class ApprovalRequest {
         updatedAt = LocalDateTime.now();
     }
 
+    // ==================== FACTORY METHOD ====================
+
+    /**
+     * Create a new approval request.
+     * This is the only way to create an ApprovalRequest instance.
+     *
+     * @param entityType        The type of entity being approved
+     * @param entityId          The ID of the entity being approved
+     * @param entityDescription A description of what is being approved
+     * @param submittedBy       The user submitting the approval request
+     * @param template          The approval chain template to use
+     * @return A new ApprovalRequest instance
+     */
+    public static ApprovalRequest create(
+            EntityType entityType,
+            Long entityId,
+            String entityDescription,
+            User submittedBy,
+            ApprovalChainTemplate template) {
+
+        Objects.requireNonNull(entityType, "Entity type cannot be null");
+        Objects.requireNonNull(entityId, "Entity ID cannot be null");
+        Objects.requireNonNull(submittedBy, "Submitted by user cannot be null");
+        Objects.requireNonNull(template, "Approval chain template cannot be null");
+
+        if (!template.hasLevels()) {
+            throw new IllegalArgumentException("Approval chain template has no levels configured");
+        }
+
+        ApprovalRequest request = new ApprovalRequest();
+        request.entityType = entityType;
+        request.entityId = entityId;
+        request.entityDescription = entityDescription;
+        request.submittedBy = submittedBy;
+        request.status = ApprovalStatus.PENDING;
+        request.currentLevel = 1;
+
+        // Initialize level decisions from template
+        List<ApprovalLevelDecision> decisions = template.createLevelDecisions();
+        request.levelDecisions.addAll(decisions);
+        request.totalLevels = decisions.size();
+
+        // Record submission in history
+        request.historyEntries.add(ApprovalHistoryEntry.submitted(submittedBy.getId()));
+
+        return request;
+    }
+
     // ==================== AGGREGATE BUSINESS METHODS ====================
+
+    /**
+     * Approve at the current level. The aggregate validates and manages all state.
+     * <p>
+     * This method:
+     * - Validates the request is not already completed
+     * - Validates the user is authorized to approve at the current level
+     * - Records the decision on the level
+     * - Records history
+     * - Advances to next level or completes if at final level
+     *
+     * @param approverUserId The user ID performing the approval
+     * @param comments       Optional comments
+     * @throws IllegalStateException    if already completed
+     * @throws IllegalArgumentException if user not authorized at current level
+     */
+    public void approve(Long approverUserId, String comments) {
+        // Validation
+        if (isCompleted()) {
+            throw new IllegalStateException("Approval request is already completed");
+        }
+        if (!isExpectedApprover(approverUserId)) {
+            if (isApproverAtAnyLevel(approverUserId)) {
+                throw new IllegalArgumentException("Cannot approve out of order - not at current level");
+            }
+            throw new IllegalArgumentException("User is not authorized to approve this request");
+        }
+
+        // Record decision on level
+        ApprovalLevelDecision decision = getCurrentLevelDecision()
+                .orElseThrow(() -> new IllegalStateException("No decision found for current level"));
+        decision.approve(approverUserId, comments);
+
+        // Record history
+        historyEntries.add(ApprovalHistoryEntry.approved(currentLevel, approverUserId, comments));
+
+        // State transition
+        if (isAtFinalLevel()) {
+            complete(ApprovalStatus.APPROVED);
+        } else {
+            moveToNextLevel();
+        }
+    }
+
+    /**
+     * Reject at the current level. The aggregate validates and manages all state.
+     * <p>
+     * This method:
+     * - Validates the request is not already completed
+     * - Validates the user is authorized to approve at the current level
+     * - Records the decision on the level
+     * - Records history
+     * - Saves rejection reason as a comment
+     * - Completes the request as rejected (chain stops)
+     *
+     * @param approverUserId The user ID performing the rejection
+     * @param reason         The reason for rejection (required)
+     * @param comments       Optional additional comments
+     * @throws IllegalStateException    if already completed
+     * @throws IllegalArgumentException if user not authorized or reason is blank
+     */
+    public void reject(Long approverUserId, String reason, String comments) {
+        // Validation
+        if (isCompleted()) {
+            throw new IllegalStateException("Approval request is already completed");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("Rejection reason is required");
+        }
+        if (!isExpectedApprover(approverUserId)) {
+            if (isApproverAtAnyLevel(approverUserId)) {
+                throw new IllegalArgumentException("Cannot reject out of order - not at current level");
+            }
+            throw new IllegalArgumentException("User is not authorized to reject this request");
+        }
+
+        // Record decision on level
+        ApprovalLevelDecision decision = getCurrentLevelDecision()
+                .orElseThrow(() -> new IllegalStateException("No decision found for current level"));
+        decision.reject(approverUserId, comments);
+
+        // Record history with reason
+        historyEntries.add(ApprovalHistoryEntry.rejected(currentLevel, approverUserId, reason));
+
+        // Save rejection reason as a comment
+        this.comments.add(ApprovalCommentEntry.rejectionReason(approverUserId, reason));
+
+        // Complete the request as rejected
+        complete(ApprovalStatus.REJECTED);
+    }
+
+    /**
+     * Add a discussion comment to the approval request.
+     *
+     * @param commenterUserId The user ID adding the comment
+     * @param text            The comment text
+     * @throws IllegalArgumentException if text is blank
+     */
+    public void addComment(Long commenterUserId, String text) {
+        if (text == null || text.isBlank()) {
+            throw new IllegalArgumentException("Comment text cannot be blank");
+        }
+        comments.add(ApprovalCommentEntry.discussion(commenterUserId, text));
+    }
 
     /**
      * Check if the request is pending approval.
@@ -110,30 +302,11 @@ public class ApprovalRequest {
     }
 
     /**
-     * Move to the next approval level.
-     */
-    public void moveToNextLevel() {
-        if (currentLevel < totalLevels) {
-            currentLevel++;
-        }
-    }
-
-    /**
-     * Complete the approval request with final status.
-     *
-     * @param finalStatus The final status (APPROVED or REJECTED)
-     */
-    public void complete(ApprovalStatus finalStatus) {
-        this.status = finalStatus;
-        this.completedAt = LocalDateTime.now();
-    }
-
-    /**
      * Get the decision for the current level.
      *
      * @return Optional containing the current level decision, or empty if not found
      */
-    public Optional<ApprovalLevelDecision> getCurrentLevelDecision() {
+    private Optional<ApprovalLevelDecision> getCurrentLevelDecision() {
         return levelDecisions.stream()
                 .filter(d -> d.getLevelOrder().equals(currentLevel))
                 .findFirst();
@@ -157,7 +330,7 @@ public class ApprovalRequest {
      * @param userId The user ID to check
      * @return true if the user is the expected approver at current level
      */
-    public boolean isExpectedApprover(Long userId) {
+    private boolean isExpectedApprover(Long userId) {
         return getCurrentLevelDecision()
                 .map(d -> d.getExpectedApproverUserId().equals(userId))
                 .orElse(false);
@@ -169,53 +342,9 @@ public class ApprovalRequest {
      * @param userId The user ID to check
      * @return true if the user is an approver at any level
      */
-    public boolean isApproverAtAnyLevel(Long userId) {
+    private boolean isApproverAtAnyLevel(Long userId) {
         return levelDecisions.stream()
                 .anyMatch(d -> d.getExpectedApproverUserId().equals(userId));
-    }
-
-    /**
-     * Initialize level decisions from pre-built decisions (created by ApprovalChainTemplate factory).
-     * This is the only way to add decisions - enforcing aggregate boundary.
-     *
-     * @param decisions List of level decisions created by ApprovalChainTemplate.createLevelDecisions()
-     * @throws IllegalArgumentException if decisions is null or empty
-     */
-    public void initializeLevelDecisions(List<ApprovalLevelDecision> decisions) {
-        Objects.requireNonNull(decisions, "Level decisions cannot be null");
-        if (decisions.isEmpty()) {
-            throw new IllegalArgumentException("At least one level decision is required");
-        }
-
-        this.levelDecisions.clear();
-        this.levelDecisions.addAll(decisions);
-        this.totalLevels = decisions.size();
-    }
-
-    /**
-     * Approve at the current level.
-     *
-     * @param approverUserId The user ID performing the approval
-     * @param comments       Optional comments
-     * @throws IllegalStateException if current level decision is not found
-     */
-    public void approveAtCurrentLevel(Long approverUserId, String comments) {
-        ApprovalLevelDecision decision = getCurrentLevelDecision()
-                .orElseThrow(() -> new IllegalStateException("No decision found for current level"));
-        decision.approve(approverUserId, comments);
-    }
-
-    /**
-     * Reject at the current level.
-     *
-     * @param approverUserId The user ID performing the rejection
-     * @param comments       Optional comments
-     * @throws IllegalStateException if current level decision is not found
-     */
-    public void rejectAtCurrentLevel(Long approverUserId, String comments) {
-        ApprovalLevelDecision decision = getCurrentLevelDecision()
-                .orElseThrow(() -> new IllegalStateException("No decision found for current level"));
-        decision.reject(approverUserId, comments);
     }
 
     /**
@@ -226,93 +355,78 @@ public class ApprovalRequest {
         return Collections.unmodifiableList(levelDecisions);
     }
 
-    // ==================== GETTERS AND SETTERS ====================
+    /**
+     * Get unmodifiable view of history entries.
+     */
+    public List<ApprovalHistoryEntry> getHistoryEntries() {
+        return Collections.unmodifiableList(historyEntries);
+    }
+
+    /**
+     * Get unmodifiable view of comments.
+     */
+    public List<ApprovalCommentEntry> getComments() {
+        return Collections.unmodifiableList(comments);
+    }
+
+    // ==================== PRIVATE HELPER METHODS ====================
+
+    /**
+     * Move to the next approval level.
+     */
+    private void moveToNextLevel() {
+        if (currentLevel < totalLevels) {
+            currentLevel++;
+        }
+    }
+
+    /**
+     * Complete the approval request with final status.
+     *
+     * @param finalStatus The final status (APPROVED or REJECTED)
+     */
+    private void complete(ApprovalStatus finalStatus) {
+        this.status = finalStatus;
+        this.completedAt = LocalDateTime.now();
+    }
+
+    // ==================== GETTERS ====================
+    // No setters - JPA uses field access since @Id is on field
+    // All state changes go through domain methods
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public EntityType getEntityType() {
         return entityType;
     }
 
-    public void setEntityType(EntityType entityType) {
-        this.entityType = entityType;
-    }
-
     public Long getEntityId() {
         return entityId;
-    }
-
-    public void setEntityId(Long entityId) {
-        this.entityId = entityId;
-    }
-
-    public String getEntityDescription() {
-        return entityDescription;
-    }
-
-    public void setEntityDescription(String entityDescription) {
-        this.entityDescription = entityDescription;
     }
 
     public Integer getCurrentLevel() {
         return currentLevel;
     }
 
-    public void setCurrentLevel(Integer currentLevel) {
-        this.currentLevel = currentLevel;
-    }
-
     public Integer getTotalLevels() {
         return totalLevels;
-    }
-
-    public void setTotalLevels(Integer totalLevels) {
-        this.totalLevels = totalLevels;
     }
 
     public ApprovalStatus getStatus() {
         return status;
     }
 
-    public void setStatus(ApprovalStatus status) {
-        this.status = status;
-    }
-
     public User getSubmittedBy() {
         return submittedBy;
-    }
-
-    public void setSubmittedBy(User submittedBy) {
-        this.submittedBy = submittedBy;
     }
 
     public LocalDateTime getSubmittedAt() {
         return submittedAt;
     }
 
-    public void setSubmittedAt(LocalDateTime submittedAt) {
-        this.submittedAt = submittedAt;
-    }
-
     public LocalDateTime getCompletedAt() {
         return completedAt;
-    }
-
-    public void setCompletedAt(LocalDateTime completedAt) {
-        this.completedAt = completedAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
     }
 }

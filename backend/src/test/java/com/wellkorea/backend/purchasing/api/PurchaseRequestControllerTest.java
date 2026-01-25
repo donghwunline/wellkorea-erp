@@ -2,7 +2,7 @@ package com.wellkorea.backend.purchasing.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.BaseIntegrationTest;
-import com.wellkorea.backend.auth.domain.Role;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.shared.test.DatabaseTestHelper;
 import com.wellkorea.backend.shared.test.TestFixtures;
@@ -622,7 +622,9 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         void updatePurchaseRequest_AsSales_Returns403() throws Exception {
             String updateRequest = """
                     {
-                        "description": "Sales update"
+                        "description": "Sales update",
+                        "quantity": 10.0,
+                        "requiredDate": "2025-03-01"
                     }
                     """;
 
@@ -638,7 +640,9 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         void updatePurchaseRequest_NonExistent_Returns404() throws Exception {
             String updateRequest = """
                     {
-                        "description": "Updated"
+                        "description": "Updated",
+                        "quantity": 10.0,
+                        "requiredDate": "2025-03-01"
                     }
                     """;
 
@@ -654,7 +658,9 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         void updatePurchaseRequest_WithoutAuth_Returns401() throws Exception {
             String updateRequest = """
                     {
-                        "description": "Updated"
+                        "description": "Updated",
+                        "quantity": 10.0,
+                        "requiredDate": "2025-03-01"
                     }
                     """;
 

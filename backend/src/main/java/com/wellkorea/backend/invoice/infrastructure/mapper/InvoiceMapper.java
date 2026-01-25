@@ -48,4 +48,12 @@ public interface InvoiceMapper {
      * @return List of product quantity summaries
      */
     List<ProductQuantitySum> getInvoicedQuantitiesByQuotation(@Param("quotationId") Long quotationId);
+
+    /**
+     * Check if an invoice exists by ID.
+     *
+     * @param id Invoice ID
+     * @return true if exists
+     */
+    boolean existsById(@Param("id") Long id);
 }

@@ -2,7 +2,7 @@ package com.wellkorea.backend.approval.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.BaseIntegrationTest;
-import com.wellkorea.backend.auth.domain.Role;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.shared.test.DatabaseTestHelper;
 import com.wellkorea.backend.shared.test.TestFixtures;
@@ -633,10 +633,10 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
             Long chainTemplateId = setupApprovalChain();
             approvalRequestId = createApprovalRequest(quotationId, chainTemplateId);
 
-            // Insert history for submission
+            // Insert history for submission (entry_index starts at 0)
             jdbcTemplate.update(
-                    "INSERT INTO approval_history (approval_request_id, action, actor_id) " +
-                            "VALUES (?, 'SUBMITTED', ?)",
+                    "INSERT INTO approval_history (approval_request_id, entry_index, action, actor_id) " +
+                            "VALUES (?, 0, 'SUBMITTED', ?)",
                     approvalRequestId, SALES_USER_ID
             );
         }

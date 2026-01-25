@@ -3,6 +3,7 @@
  */
 
 import type { DeliveryStatus } from './delivery-status';
+import type { Attachment } from '@/shared/domain';
 
 /**
  * Delivery line item - represents a product in a delivery.
@@ -31,6 +32,7 @@ export interface Delivery {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly lineItems: DeliveryLineItem[];
+  readonly photo: Attachment | null; // Proof of delivery photo (null for legacy deliveries)
 }
 
 /**

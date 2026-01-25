@@ -7,7 +7,7 @@
  * FSD Layer: shared/ui
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Modal, ModalActions, Spinner, FormField, EmailTagInput, Icon } from '@/shared/ui';
 
@@ -82,8 +82,8 @@ interface EmailSendModalContentProps {
 
 /**
  * Inner content component for the email send modal.
- * State is initialized from props on mount, with useEffect to handle
- * async prop updates (e.g., when defaultEmail loads after mount).
+ * Uses derived state pattern to avoid useEffect for prop syncing.
+ * Stores only user edits; derives display value from prop when not edited.
  */
 function EmailSendModalContent({
   onClose,
@@ -94,15 +94,12 @@ function EmailSendModalContent({
   isLoading,
 }: EmailSendModalContentProps) {
   const { t } = useTranslation('common');
-  // Form state - initialized from props on mount
-  const [toEmail, setToEmail] = useState(defaultEmail ?? '');
 
-  // Sync defaultEmail prop to state when it becomes available (handles async loading)
-  useEffect(() => {
-    if (defaultEmail && !toEmail) {
-      setToEmail(defaultEmail);
-    }
-  }, [defaultEmail, toEmail]);
+  // Store only what user explicitly edited (null = not edited yet)
+  const [userEditedEmail, setUserEditedEmail] = useState<string | null>(null);
+
+  // Derived value: user edit > prop > empty string
+  const toEmail = userEditedEmail ?? defaultEmail ?? '';
 
   const [ccEmails, setCcEmails] = useState<string[]>([]);
   const [showCcField, setShowCcField] = useState(false);
@@ -139,10 +136,10 @@ function EmailSendModalContent({
     );
   }, [toEmail, ccEmails, validateToEmail, hasInvalidCcEmails, onSend]);
 
-  // Handle TO email change
+  // Handle TO email change - stores user edit
   const handleToEmailChange = useCallback(
     (value: string) => {
-      setToEmail(value);
+      setUserEditedEmail(value);
       if (toError) {
         setToError(undefined);
       }

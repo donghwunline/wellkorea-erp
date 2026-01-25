@@ -1,12 +1,12 @@
 package com.wellkorea.backend.approval.application;
 
-import com.wellkorea.backend.approval.domain.*;
+import com.wellkorea.backend.approval.domain.ApprovalChainTemplate;
+import com.wellkorea.backend.approval.domain.ApprovalRequest;
+import com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent;
 import com.wellkorea.backend.approval.domain.vo.ApprovalChainLevel;
-import com.wellkorea.backend.approval.domain.vo.ApprovalLevelDecision;
+import com.wellkorea.backend.approval.domain.vo.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalChainTemplateRepository;
-import com.wellkorea.backend.approval.infrastructure.repository.ApprovalCommentRepository;
-import com.wellkorea.backend.approval.infrastructure.repository.ApprovalHistoryRepository;
 import com.wellkorea.backend.approval.infrastructure.repository.ApprovalRequestRepository;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
@@ -23,27 +23,27 @@ import java.util.List;
  * Command service for approval write operations.
  * Part of CQRS pattern - handles all create/update/delete operations.
  * Returns only entity IDs - clients should fetch fresh data via ApprovalQueryService.
+ * <p>
+ * This service is a thin orchestrator that:
+ * - Validates external references (user existence)
+ * - Delegates business logic to the ApprovalRequest aggregate
+ * - Manages transaction boundaries
+ * - Publishes domain events for cross-aggregate communication
  */
 @Service
 @Transactional
 public class ApprovalCommandService {
 
     private final ApprovalRequestRepository approvalRequestRepository;
-    private final ApprovalHistoryRepository historyRepository;
-    private final ApprovalCommentRepository commentRepository;
     private final ApprovalChainTemplateRepository chainTemplateRepository;
     private final UserRepository userRepository;
     private final DomainEventPublisher eventPublisher;
 
     public ApprovalCommandService(ApprovalRequestRepository approvalRequestRepository,
-                                  ApprovalHistoryRepository historyRepository,
-                                  ApprovalCommentRepository commentRepository,
                                   ApprovalChainTemplateRepository chainTemplateRepository,
                                   UserRepository userRepository,
                                   DomainEventPublisher eventPublisher) {
         this.approvalRequestRepository = approvalRequestRepository;
-        this.historyRepository = historyRepository;
-        this.commentRepository = commentRepository;
         this.chainTemplateRepository = chainTemplateRepository;
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
@@ -51,6 +51,9 @@ public class ApprovalCommandService {
 
     /**
      * Create an approval request for an entity.
+     * Uses the ApprovalRequest.create() factory method which:
+     * - Initializes level decisions from template
+     * - Records submission in history
      *
      * @return ID of the created approval request
      */
@@ -62,14 +65,10 @@ public class ApprovalCommandService {
         ApprovalChainTemplate chainTemplate = chainTemplateRepository.findByEntityTypeWithLevels(entityType)
                 .orElseThrow(() -> new ResourceNotFoundException("ApprovalChainTemplate", entityType));
 
-        if (!chainTemplate.hasLevels()) {
-            throw new BusinessException("Approval chain template has no levels configured");
-        }
-
         User submittedBy = userRepository.findById(submittedByUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", submittedByUserId));
 
-        // Validate all approver users exist
+        // Validate all approver users exist (external aggregate check)
         List<Long> approverUserIds = chainTemplate.getLevels().stream()
                 .map(ApprovalChainLevel::getApproverUserId)
                 .toList();
@@ -80,30 +79,26 @@ public class ApprovalCommandService {
             }
         }
 
-        // Create level decisions via factory method (captures level names at creation time)
-        List<ApprovalLevelDecision> levelDecisions = chainTemplate.createLevelDecisions();
-
-        ApprovalRequest request = new ApprovalRequest();
-        request.setEntityType(entityType);
-        request.setEntityId(entityId);
-        request.setEntityDescription(entityDescription);
-        request.setCurrentLevel(1);
-        request.setStatus(ApprovalStatus.PENDING);
-        request.setSubmittedBy(submittedBy);
-
-        // Use aggregate method to initialize level decisions
-        request.initializeLevelDecisions(levelDecisions);
+        // Domain factory handles validation and initializes history
+        ApprovalRequest request = ApprovalRequest.create(
+                entityType,
+                entityId,
+                entityDescription,
+                submittedBy,
+                chainTemplate
+        );
 
         ApprovalRequest savedRequest = approvalRequestRepository.save(request);
-
-        // Record history
-        historyRepository.save(ApprovalHistory.submitted(savedRequest, submittedBy));
-
         return savedRequest.getId();
     }
 
     /**
      * Approve at the current level.
+     * The domain aggregate handles:
+     * - Validation (completed status, authorization)
+     * - Recording decision on level
+     * - Recording history
+     * - State transition (next level or completion)
      *
      * @return ID of the approval request
      */
@@ -111,23 +106,21 @@ public class ApprovalCommandService {
         ApprovalRequest request = approvalRequestRepository.findByIdWithLevelDecisions(approvalRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException("ApprovalRequest", approvalRequestId));
 
-        validateApprovalAction(request, approverUserId);
+        // Verify user exists (external aggregate check)
+        if (!userRepository.existsById(approverUserId)) {
+            throw new ResourceNotFoundException("User", approverUserId);
+        }
 
-        User approver = userRepository.findById(approverUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", approverUserId));
-
-        // Use aggregate method to approve at current level
-        request.approveAtCurrentLevel(approverUserId, comments);
-
-        // Record history
-        historyRepository.save(ApprovalHistory.approved(request, request.getCurrentLevel(), approver, comments));
-
-        // Check if this is the final level
-        if (request.isAtFinalLevel()) {
-            request.complete(ApprovalStatus.APPROVED);
-        } else {
-            // Move to next level
-            request.moveToNextLevel();
+        // Delegate to domain - catches domain exceptions and translates to application exceptions
+        try {
+            request.approve(approverUserId, comments);
+        } catch (IllegalStateException e) {
+            throw new BusinessException(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("not authorized")) {
+                throw new AccessDeniedException(e.getMessage());
+            }
+            throw new BusinessException(e.getMessage());
         }
 
         ApprovalRequest savedRequest = approvalRequestRepository.save(request);
@@ -135,7 +128,7 @@ public class ApprovalCommandService {
         // Publish event after final approval (handled by entity-specific handlers)
         if (savedRequest.isCompleted() && savedRequest.getStatus() == ApprovalStatus.APPROVED) {
             eventPublisher.publish(
-                    com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.approved(
+                    ApprovalCompletedEvent.approved(
                             savedRequest.getId(),
                             savedRequest.getEntityType(),
                             savedRequest.getEntityId(),
@@ -149,7 +142,12 @@ public class ApprovalCommandService {
 
     /**
      * Reject at the current level.
-     * Reason validation is handled by @NotBlank on RejectRequest DTO.
+     * The domain aggregate handles:
+     * - Validation (completed status, authorization, reason required)
+     * - Recording decision on level
+     * - Recording history
+     * - Saving rejection reason as comment
+     * - Completing the request as rejected
      *
      * @return ID of the approval request
      */
@@ -157,28 +155,28 @@ public class ApprovalCommandService {
         ApprovalRequest request = approvalRequestRepository.findByIdWithLevelDecisions(approvalRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException("ApprovalRequest", approvalRequestId));
 
-        validateApprovalAction(request, approverUserId);
+        // Verify user exists (external aggregate check)
+        if (!userRepository.existsById(approverUserId)) {
+            throw new ResourceNotFoundException("User", approverUserId);
+        }
 
-        User approver = userRepository.findById(approverUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", approverUserId));
-
-        // Use aggregate method to reject at current level
-        request.rejectAtCurrentLevel(approverUserId, comments);
-
-        // Record history
-        historyRepository.save(ApprovalHistory.rejected(request, request.getCurrentLevel(), approver, reason));
-
-        // Save rejection reason as a comment
-        commentRepository.save(ApprovalComment.rejectionReason(request, approver, reason));
-
-        // Complete the request as rejected (chain stops)
-        request.complete(ApprovalStatus.REJECTED);
+        // Delegate to domain - catches domain exceptions and translates to application exceptions
+        try {
+            request.reject(approverUserId, reason, comments);
+        } catch (IllegalStateException e) {
+            throw new BusinessException(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("not authorized")) {
+                throw new AccessDeniedException(e.getMessage());
+            }
+            throw new BusinessException(e.getMessage());
+        }
 
         ApprovalRequest savedRequest = approvalRequestRepository.save(request);
 
         // Publish event for rejection (handled by entity-specific handlers)
         eventPublisher.publish(
-                com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent.rejected(
+                ApprovalCompletedEvent.rejected(
                         savedRequest.getId(),
                         savedRequest.getEntityType(),
                         savedRequest.getEntityId(),
@@ -199,7 +197,7 @@ public class ApprovalCommandService {
         ApprovalChainTemplate template = chainTemplateRepository.findById(chainTemplateId)
                 .orElseThrow(() -> new ResourceNotFoundException("ApprovalChainTemplate", chainTemplateId));
 
-        // Validate that all approver users exist
+        // Validate that all approver users exist (external aggregate check)
         for (ChainLevelCommand cmd : commands) {
             if (!userRepository.existsById(cmd.approverUserId())) {
                 throw new ResourceNotFoundException("User", cmd.approverUserId());
@@ -220,25 +218,5 @@ public class ApprovalCommandService {
 
         ApprovalChainTemplate saved = chainTemplateRepository.save(template);
         return saved.getId();
-    }
-
-    private void validateApprovalAction(ApprovalRequest request, Long userId) {
-        if (request.isCompleted()) {
-            throw new BusinessException("Approval request is already completed");
-        }
-
-        if (!request.isPending()) {
-            throw new BusinessException("Approval request is not in PENDING status");
-        }
-
-        // Check if user is the expected approver at current level
-        if (!request.isExpectedApprover(userId)) {
-            // Check if user is trying to approve out of order
-            if (request.isApproverAtAnyLevel(userId)) {
-                throw new BusinessException("Cannot approve out of order - not at current level");
-            } else {
-                throw new AccessDeniedException("User is not authorized to approve this request");
-            }
-        }
     }
 }

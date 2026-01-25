@@ -23,9 +23,6 @@ export type ApprovalHistoryAction =
  * Represents a single action in the approval audit trail.
  */
 export interface ApprovalHistory {
-  /** Unique identifier */
-  readonly id: number;
-
   /** Level order where action occurred (null for submission) */
   readonly levelOrder: number | null;
 

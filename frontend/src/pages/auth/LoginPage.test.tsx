@@ -297,8 +297,8 @@ describe('LoginPage', () => {
         expect(screen.getByText(/아이디 또는 비밀번호가 잘못되었습니다/i)).toBeInTheDocument();
       });
 
-      // getErrorMessage called
-      expect(getErrorMessage).toHaveBeenCalledWith(authError);
+      // getErrorMessage called with error and t function
+      expect(getErrorMessage).toHaveBeenCalledWith(authError, expect.any(Function));
     });
 
     it('should clear password and focus password field on AUTH_001', async () => {

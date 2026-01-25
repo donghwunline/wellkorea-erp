@@ -21,6 +21,7 @@
             <arg column="created_by_name" javaType="String"/>
             <arg column="created_at" javaType="java.time.Instant"/>
             <arg column="updated_at" javaType="java.time.Instant"/>
+            <arg column="note" javaType="String"/>
         </constructor>
     </resultMap>
 
@@ -54,7 +55,8 @@
         p.created_by_id,
         cb.full_name AS created_by_name,
         p.created_at,
-        p.updated_at
+        p.updated_at,
+        p.note
     </sql>
 
     <!-- Common SELECT columns for summary view -->
@@ -142,6 +144,58 @@
                 )
             </if>
         </where>
+    </select>
+
+
+    <!-- ============================================================================ -->
+    <!-- KPI Queries -->
+    <!-- ============================================================================ -->
+
+    <!-- Calculate project progress as average of task node progress values -->
+    <select id="calculateProjectProgress" resultType="int">
+        SELECT COALESCE(
+            (SELECT AVG(tn.progress)::int
+             FROM task_flows tf
+             JOIN task_nodes tn ON tf.id = tn.flow_id
+             WHERE tf.project_id = #{projectId}),
+            0
+        )
+    </select>
+
+    <!-- Count pending approval requests for project's quotations -->
+    <select id="countPendingApprovals" resultType="int">
+        SELECT COUNT(DISTINCT ar.id)::int
+        FROM approval_requests ar
+        JOIN quotations q ON ar.entity_type = 'QUOTATION' AND ar.entity_id = q.id
+        WHERE q.project_id = #{projectId}
+          AND ar.status = 'PENDING'
+    </select>
+
+    <!-- Calculate accounts receivable (outstanding balance) for project -->
+    <select id="calculateAccountsReceivable" resultType="long">
+        SELECT COALESCE(
+            (SELECT SUM(
+                i.total_amount - COALESCE(
+                    (SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = i.id),
+                    0
+                )
+            )
+            FROM tax_invoices i
+            WHERE i.project_id = #{projectId}
+              AND i.status IN ('ISSUED', 'PARTIALLY_PAID', 'OVERDUE')),
+            0
+        )
+    </select>
+
+    <!-- Calculate total invoiced amount for project -->
+    <select id="calculateInvoicedAmount" resultType="long">
+        SELECT COALESCE(
+            (SELECT SUM(i.total_amount)
+             FROM tax_invoices i
+             WHERE i.project_id = #{projectId}
+               AND i.status != 'CANCELLED'),
+            0
+        )
     </select>
 
 </mapper>

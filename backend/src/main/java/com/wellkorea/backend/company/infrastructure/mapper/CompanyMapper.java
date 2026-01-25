@@ -2,7 +2,7 @@ package com.wellkorea.backend.company.infrastructure.mapper;
 
 import com.wellkorea.backend.company.api.dto.query.CompanyDetailView;
 import com.wellkorea.backend.company.api.dto.query.CompanySummaryView;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

@@ -683,7 +683,6 @@ export function createMockApprovalHistory(
   overrides?: Partial<ApprovalHistory>
 ): ApprovalHistory {
   return {
-    id: 1,
     levelOrder: 1,
     levelName: '팀장',
     action: 'SUBMITTED',

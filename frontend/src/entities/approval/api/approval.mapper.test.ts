@@ -61,7 +61,6 @@ function createMockApprovalHistoryResponse(
   overrides?: Partial<ApprovalHistoryResponse>
 ): ApprovalHistoryResponse {
   return {
-    id: 1,
     levelOrder: 1,
     levelName: 'Manager',
     action: 'APPROVED',
@@ -374,7 +373,6 @@ describe('approvalHistoryMapper', () => {
       const result = approvalHistoryMapper.toDomain(response);
 
       expectDomainShape(result, [
-        'id',
         'levelOrder',
         'levelName',
         'action',
@@ -389,7 +387,6 @@ describe('approvalHistoryMapper', () => {
       const response = createMockApprovalHistoryResponse();
       const result = approvalHistoryMapper.toDomain(response);
 
-      expect(result.id).toBe(1);
       expect(result.levelOrder).toBe(1);
       expect(result.levelName).toBe('Manager');
       expect(result.action).toBe('APPROVED');

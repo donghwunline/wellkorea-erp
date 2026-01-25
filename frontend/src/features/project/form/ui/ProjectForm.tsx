@@ -25,6 +25,7 @@ interface ProjectFormData {
   requesterName: string;
   dueDate: string;
   internalOwnerId: number | null;
+  note: string;
 }
 
 const EMPTY_FORM_DATA: ProjectFormData = {
@@ -33,6 +34,7 @@ const EMPTY_FORM_DATA: ProjectFormData = {
   requesterName: '',
   dueDate: '',
   internalOwnerId: null,
+  note: '',
 };
 
 function toFormData(data: Project): ProjectFormData {
@@ -42,6 +44,7 @@ function toFormData(data: Project): ProjectFormData {
     requesterName: data.requesterName ?? '',
     dueDate: data.dueDate,
     internalOwnerId: data.internalOwnerId,
+    note: data.note ?? '',
   };
 }
 
@@ -60,6 +63,7 @@ function toUpdateInput(data: ProjectFormData): UpdateProjectInput {
     projectName: data.projectName.trim(),
     requesterName: data.requesterName.trim() || undefined,
     dueDate: data.dueDate,
+    note: data.note || undefined,
   };
 }
 
@@ -212,6 +216,24 @@ export function ProjectForm({
         helpText={mode === 'edit' ? t('form.cannotChangeAfterCreation') : undefined}
         initialLabel={initialData?.internalOwnerName}
       />
+
+      {/* Note (edit mode only) */}
+      {mode === 'edit' && (
+        <div>
+          <label htmlFor="note" className="mb-2 block text-sm font-medium text-steel-300">
+            Note
+          </label>
+          <textarea
+            id="note"
+            value={formData.note}
+            onChange={e => setFormData(prev => ({ ...prev, note: e.target.value }))}
+            disabled={isSubmitting}
+            placeholder="Add notes about this project (optional)"
+            rows={3}
+            className="w-full rounded-lg border border-steel-700/50 bg-steel-800/60 px-4 py-2.5 text-white placeholder-steel-500 focus:border-copper-400 focus:outline-none focus:ring-1 focus:ring-copper-400 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
+      )}
 
       {/* Job Code (read-only in edit mode) */}
       {mode === 'edit' && initialData && (

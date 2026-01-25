@@ -115,7 +115,8 @@ public class ProjectCommandService {
                 request.projectName(),
                 request.requesterName(),
                 request.dueDate(),
-                newStatus
+                newStatus,
+                request.note()
         );
 
         Project saved = projectRepository.save(updatedProject);

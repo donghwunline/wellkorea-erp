@@ -52,6 +52,9 @@ export type { ComboboxProps, ComboboxOption } from './forms/Combobox';
 export { EmailTagInput } from './forms/EmailTagInput';
 export type { EmailTagInputProps } from './forms/EmailTagInput';
 
+export { FileUploader } from './forms/FileUploader';
+export type { FileUploaderProps, FileAcceptType } from './forms/FileUploader';
+
 // ============================================================================
 // Feedback - User feedback and status indicators
 // ============================================================================

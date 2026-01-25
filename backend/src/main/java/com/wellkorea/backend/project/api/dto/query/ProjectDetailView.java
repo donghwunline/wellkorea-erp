@@ -23,6 +23,7 @@ public record ProjectDetailView(
         Long createdById,
         String createdByName,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        String note
 ) {
 }

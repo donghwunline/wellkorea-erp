@@ -8,10 +8,10 @@ import com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView;
 import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
 import com.wellkorea.backend.approval.application.ApprovalCommandService;
 import com.wellkorea.backend.approval.application.ApprovalQueryService;
-import com.wellkorea.backend.approval.domain.ApprovalStatus;
+import com.wellkorea.backend.approval.domain.vo.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -85,6 +85,19 @@ public class ApprovalController {
     public ResponseEntity<ApiResponse<List<ApprovalHistoryView>>> getHistory(@PathVariable Long id) {
         List<ApprovalHistoryView> history = queryService.getApprovalHistory(id);
         return ResponseEntity.ok(ApiResponse.success(history));
+    }
+
+    /**
+     * Get pending approval count for current user.
+     * GET /api/approvals/pending-count
+     * Used for badge display in navigation.
+     */
+    @GetMapping("/pending-count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'SALES', 'PRODUCTION')")
+    public ResponseEntity<ApiResponse<Long>> getPendingCount(@AuthenticationPrincipal AuthenticatedUser user) {
+        Long userId = user.getUserId();
+        long count = queryService.countPendingForUser(userId);
+        return ResponseEntity.ok(ApiResponse.success(count));
     }
 
     // ==================== COMMAND ENDPOINTS ====================

@@ -13,7 +13,7 @@
  * Can import from: features, entities, shared
  */
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -273,57 +273,37 @@ function VendorEmailForm({
   );
 }
 
-export function SendRfqModal(props: SendRfqModalProps) {
+/**
+ * Props for SendRfqModalContent (internal component).
+ */
+interface SendRfqModalContentProps {
+  readonly type: 'SERVICE' | 'MATERIAL';
+  readonly purchaseRequestId: number;
+  readonly serviceCategoryId?: number;
+  readonly materialId?: number;
+  readonly onClose: () => void;
+  readonly onSuccess?: () => void;
+}
+
+/**
+ * Internal content component for SendRfqModal.
+ * All state is initialized fresh on mount - key-based reset ensures clean state.
+ */
+function SendRfqModalContent({
+  type,
+  purchaseRequestId,
+  serviceCategoryId,
+  materialId,
+  onClose,
+  onSuccess,
+}: SendRfqModalContentProps) {
   const { t } = useTranslation('widgets');
-  const { purchaseRequestId, isOpen, onClose, onSuccess, type } = props;
 
-  // State
+  // State - initialized fresh on each mount (no useEffect reset needed)
   const [step, setStep] = useState<ModalStep>('vendor-selection');
-  
-  // Selected vendor IDs - keyed by purchaseRequestId to auto-reset
-  const [selectionState, setSelectionState] = useState<{
-    requestId: number;
-    vendorIds: number[];
-  }>({ requestId: purchaseRequestId, vendorIds: [] });
-
-  // Email state: vendorId -> { to, ccEmails }
+  const [selectedVendorIds, setSelectedVendorIds] = useState<number[]>([]);
   const [emailStates, setEmailStates] = useState<Record<number, VendorEmailState>>({});
-  
   const [error, setError] = useState<string | null>(null);
-
-  // Reset state when modal opens or request changes
-  useEffect(() => {
-    if (isOpen) {
-      setStep('vendor-selection');
-      setError(null);
-      // Note: we don't reset selection here to preserve it if user closes/reopens
-      // But we do ensuring requestId matches in selectionState
-      setSelectionState((prev) => {
-         if (prev.requestId !== purchaseRequestId) {
-             return { requestId: purchaseRequestId, vendorIds: [] };
-         }
-         return prev;
-      });
-      setEmailStates({});
-    }
-  }, [isOpen, purchaseRequestId]);
-
-  // Derive selected vendor IDs
-  const selectedVendorIds = useMemo(
-    () => (selectionState.requestId === purchaseRequestId ? selectionState.vendorIds : []),
-    [selectionState.requestId, selectionState.vendorIds, purchaseRequestId]
-  );
-
-  // Update selection for current request
-  const updateSelectedVendorIds = useCallback(
-    (updater: (prev: number[]) => number[]) => {
-      setSelectionState((prev) => ({
-        requestId: purchaseRequestId,
-        vendorIds: updater(prev.requestId === purchaseRequestId ? prev.vendorIds : []),
-      }));
-    },
-    [purchaseRequestId]
-  );
 
   // ==========================================================================
   // FETCH OFFERINGS BASED ON TYPE
@@ -331,16 +311,14 @@ export function SendRfqModal(props: SendRfqModalProps) {
 
   // SERVICE type: Fetch service category offerings
   const serviceQuery = useQuery({
-    ...catalogQueries.currentOfferings(
-      type === 'SERVICE' ? props.serviceCategoryId : 0
-    ),
-    enabled: isOpen && type === 'SERVICE' && props.serviceCategoryId > 0,
+    ...catalogQueries.currentOfferings(type === 'SERVICE' && serviceCategoryId ? serviceCategoryId : 0),
+    enabled: type === 'SERVICE' && !!serviceCategoryId && serviceCategoryId > 0,
   });
 
   // MATERIAL type: Fetch material offerings
   const materialQuery = useQuery({
-    ...materialQueries.currentOfferings(type === 'MATERIAL' ? props.materialId : 0),
-    enabled: isOpen && type === 'MATERIAL' && props.materialId > 0,
+    ...materialQueries.currentOfferings(type === 'MATERIAL' && materialId ? materialId : 0),
+    enabled: type === 'MATERIAL' && !!materialId && materialId > 0,
   });
 
   // Determine which query to use based on type
@@ -374,59 +352,56 @@ export function SendRfqModal(props: SendRfqModalProps) {
   });
 
   // Toggle vendor selection
-  const handleToggleVendor = useCallback(
-    (vendorId: number, checked: boolean) => {
-      updateSelectedVendorIds((prev) =>
-        checked ? [...prev, vendorId] : prev.filter((id) => id !== vendorId)
-      );
-      setError(null);
-    },
-    [updateSelectedVendorIds]
-  );
+  const handleToggleVendor = useCallback((vendorId: number, checked: boolean) => {
+    setSelectedVendorIds((prev) =>
+      checked ? [...prev, vendorId] : prev.filter((id) => id !== vendorId)
+    );
+    setError(null);
+  }, []);
 
   // Select all vendors
   const handleSelectAll = useCallback(() => {
     if (offerings) {
       const allVendorIds = [...new Set(offerings.map((o) => o.vendorId))];
-      updateSelectedVendorIds(() => allVendorIds);
+      setSelectedVendorIds(allVendorIds);
     }
-  }, [offerings, updateSelectedVendorIds]);
+  }, [offerings]);
 
   // Deselect all vendors
   const handleDeselectAll = useCallback(() => {
-    updateSelectedVendorIds(() => []);
-  }, [updateSelectedVendorIds]);
+    setSelectedVendorIds([]);
+  }, []);
 
   // Handle "Next" - Prepare email states
   const handleNext = useCallback(() => {
-     if (selectedVendorIds.length === 0) {
-       setError(t('sendRfqModal.noVendorsSelected'));
-       return;
-     }
+    if (selectedVendorIds.length === 0) {
+      setError(t('sendRfqModal.noVendorsSelected'));
+      return;
+    }
 
-     // Initialize email states for selected vendors
-     const newEmailStates: Record<number, VendorEmailState> = {};
-     
-     selectedVendorIds.forEach(vendorId => {
-         // Find vendor info (use first offering found for this vendor)
-         const offering = offerings?.find(o => o.vendorId === vendorId);
-         const vendorEmail = offering?.vendorEmail || '';
-         
-         // Preserve existing state if user went back and forth
-         if (emailStates[vendorId]) {
-             newEmailStates[vendorId] = emailStates[vendorId];
-         } else {
-             newEmailStates[vendorId] = {
-                 to: vendorEmail,
-                 ccEmails: [],
-             };
-         }
-     });
+    // Initialize email states for selected vendors
+    const newEmailStates: Record<number, VendorEmailState> = {};
 
-     setEmailStates(newEmailStates);
-     setStep('email-editing');
-     setError(null);
-  }, [selectedVendorIds, offerings, emailStates]);
+    selectedVendorIds.forEach((vendorId) => {
+      // Find vendor info (use first offering found for this vendor)
+      const offering = offerings?.find((o) => o.vendorId === vendorId);
+      const vendorEmail = offering?.vendorEmail || '';
+
+      // Preserve existing state if user went back and forth
+      if (emailStates[vendorId]) {
+        newEmailStates[vendorId] = emailStates[vendorId];
+      } else {
+        newEmailStates[vendorId] = {
+          to: vendorEmail,
+          ccEmails: [],
+        };
+      }
+    });
+
+    setEmailStates(newEmailStates);
+    setStep('email-editing');
+    setError(null);
+  }, [selectedVendorIds, offerings, emailStates, t]);
 
   // Handle "Back"
   const handleBack = useCallback(() => {
@@ -437,10 +412,10 @@ export function SendRfqModal(props: SendRfqModalProps) {
   // Submit RFQ
   const handleSubmit = useCallback(() => {
     // Validate emails
-    const invalidEmails = Object.entries(emailStates).some(([_, state]) => !state.to.trim());
+    const invalidEmails = Object.entries(emailStates).some(([, state]) => !state.to.trim());
     if (invalidEmails) {
-        setError(t('sendRfqModal.allEmailsRequired'));
-        return;
+      setError(t('sendRfqModal.allEmailsRequired'));
+      return;
     }
 
     sendRfqMutation.mutate({
@@ -448,7 +423,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
       vendorIds: selectedVendorIds,
       vendorEmails: emailStates,
     });
-  }, [purchaseRequestId, selectedVendorIds, emailStates, sendRfqMutation]);
+  }, [purchaseRequestId, selectedVendorIds, emailStates, sendRfqMutation, t]);
 
   // Get unique vendor count
   const uniqueVendorIds = offerings ? [...new Set(offerings.map((o) => o.vendorId))] : [];
@@ -545,11 +520,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
         <Button variant="ghost" onClick={onClose}>
           {t('sendRfqModal.cancel')}
         </Button>
-        <Button
-          variant="primary"
-          onClick={handleNext}
-          disabled={selectedVendorIds.length === 0}
-        >
+        <Button variant="primary" onClick={handleNext} disabled={selectedVendorIds.length === 0}>
           {t('sendRfqModal.next')}
         </Button>
       </ModalActions>
@@ -558,60 +529,78 @@ export function SendRfqModal(props: SendRfqModalProps) {
 
   // Render Email Editing Step
   const renderEmailStep = () => (
-      <>
-        <div className="mb-4 text-sm text-steel-400">
-             {t('sendRfqModal.emailVerifyDescription')}
-        </div>
+    <>
+      <div className="mb-4 text-sm text-steel-400">{t('sendRfqModal.emailVerifyDescription')}</div>
 
-        {error && (
-            <Alert variant="error" className="mb-4" onClose={() => setError(null)}>
-            {error}
-            </Alert>
-        )}
+      {error && (
+        <Alert variant="error" className="mb-4" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
-        <div className="max-h-96 space-y-4 overflow-y-auto pr-1">
-            {selectedVendorIds.map(vendorId => {
-                const offering = offerings?.find(o => o.vendorId === vendorId);
-                const vendorName = offering?.vendorName || `Vendor ${vendorId}`;
-                const emailState = emailStates[vendorId] || { to: '', ccEmails: [] };
+      <div className="max-h-96 space-y-4 overflow-y-auto pr-1">
+        {selectedVendorIds.map((vendorId) => {
+          const offering = offerings?.find((o) => o.vendorId === vendorId);
+          const vendorName = offering?.vendorName || `Vendor ${vendorId}`;
+          const emailState = emailStates[vendorId] || { to: '', ccEmails: [] };
 
-                return (
-                    <VendorEmailForm 
-                        key={vendorId}
-                        vendorName={vendorName}
-                        emailState={emailState}
-                        onChange={(newState) => setEmailStates(prev => ({ ...prev, [vendorId]: newState }))}
-                    />
-                );
-            })}
-        </div>
+          return (
+            <VendorEmailForm
+              key={vendorId}
+              vendorName={vendorName}
+              emailState={emailState}
+              onChange={(newState) => setEmailStates((prev) => ({ ...prev, [vendorId]: newState }))}
+            />
+          );
+        })}
+      </div>
 
-        <ModalActions>
-            <Button variant="secondary" onClick={handleBack} disabled={sendRfqMutation.isPending}>
-                {t('sendRfqModal.back')}
-            </Button>
-            <Button
-                variant="primary"
-                onClick={handleSubmit}
-                disabled={sendRfqMutation.isPending}
-            >
-                {sendRfqMutation.isPending && (
-                    <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {t('sendRfqModal.sendWithCount', { count: selectedVendorIds.length })}
-            </Button>
-        </ModalActions>
-      </>
+      <ModalActions>
+        <Button variant="secondary" onClick={handleBack} disabled={sendRfqMutation.isPending}>
+          {t('sendRfqModal.back')}
+        </Button>
+        <Button variant="primary" onClick={handleSubmit} disabled={sendRfqMutation.isPending}>
+          {sendRfqMutation.isPending && (
+            <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          {t('sendRfqModal.sendWithCount', { count: selectedVendorIds.length })}
+        </Button>
+      </ModalActions>
+    </>
   );
 
+  return step === 'vendor-selection' ? renderSelectionStep() : renderEmailStep();
+}
+
+/**
+ * Send RFQ Modal wrapper.
+ * Uses key-based reset pattern: content component remounts when purchaseRequestId changes,
+ * automatically resetting all state without needing useEffect.
+ */
+export function SendRfqModal(props: SendRfqModalProps) {
+  const { t } = useTranslation('widgets');
+  const { purchaseRequestId, isOpen, onClose, onSuccess, type } = props;
+
+  // Don't render content when modal is closed
+  if (!isOpen) {
+    return null;
+  }
+
+  // Determine the modal title based on step - we need to track step externally for title
+  // Since we can't access content state, we show a generic title
+  const title = t('sendRfqModal.title');
+
   return (
-    <Modal
-        isOpen={isOpen}
+    <Modal isOpen={isOpen} onClose={onClose} title={title} size="md">
+      <SendRfqModalContent
+        key={purchaseRequestId}
+        type={type}
+        purchaseRequestId={purchaseRequestId}
+        serviceCategoryId={type === 'SERVICE' ? props.serviceCategoryId : undefined}
+        materialId={type === 'MATERIAL' ? props.materialId : undefined}
         onClose={onClose}
-        title={step === 'vendor-selection' ? t('sendRfqModal.titleVendorSelect') : t('sendRfqModal.titleEmailEdit')}
-        size="md"
-    >
-      {step === 'vendor-selection' ? renderSelectionStep() : renderEmailStep()}
+        onSuccess={onSuccess}
+      />
     </Modal>
   );
 }

@@ -1,6 +1,7 @@
 package com.wellkorea.backend.shared.exception;
 
-import com.wellkorea.backend.auth.application.AuthenticationException;
+import com.wellkorea.backend.finance.domain.exception.PaymentExceedsBalanceException;
+import com.wellkorea.backend.finance.domain.exception.PaymentNotAllowedException;
 import com.wellkorea.backend.shared.audit.AuditContextHolder;
 import com.wellkorea.backend.shared.audit.AuditLogger;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
@@ -9,6 +10,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -276,6 +278,26 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
+     * Handle optimistic locking failures (409 Conflict).
+     * This occurs when concurrent updates to the same entity cause a version mismatch.
+     * The client should retry the operation after refreshing their data.
+     */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(
+            OptimisticLockingFailureException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.CONCURRENT_MODIFICATION,
+                "The record was modified by another user. Please refresh and try again.",
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        log.warn("Optimistic locking failure: {} at {}", ex.getMessage(), request.getDescription(false));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
      * Handle distributed lock acquisition failures (409 Conflict).
      * This occurs when a lock cannot be acquired within the timeout period,
      * indicating a concurrent operation on the same resource.
@@ -296,6 +318,44 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         log.warn("Lock acquisition failed: {} at {}", ex.getMessage(), request.getDescription(false));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle payment not allowed exceptions (409 Conflict).
+     * Thrown when attempting to add a payment to an AP in a status that doesn't allow payments.
+     */
+    @ExceptionHandler(PaymentNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentNotAllowed(
+            PaymentNotAllowedException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.PAYMENT_NOT_ALLOWED,
+                ex.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        log.warn("Payment not allowed: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle payment exceeds balance exceptions (400 Bad Request).
+     * Thrown when a payment amount exceeds the remaining AP balance.
+     */
+    @ExceptionHandler(PaymentExceedsBalanceException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentExceedsBalance(
+            PaymentExceedsBalanceException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.PAYMENT_EXCEEDS_BALANCE,
+                ex.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        log.warn("Payment exceeds balance: {}", ex.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     /**

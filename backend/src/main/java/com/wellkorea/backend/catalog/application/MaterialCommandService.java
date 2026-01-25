@@ -7,7 +7,7 @@ import com.wellkorea.backend.catalog.infrastructure.persistence.MaterialCategory
 import com.wellkorea.backend.catalog.infrastructure.persistence.MaterialRepository;
 import com.wellkorea.backend.catalog.infrastructure.persistence.VendorMaterialOfferingRepository;
 import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
@@ -29,9 +29,9 @@ public class MaterialCommandService {
     private final VendorMaterialOfferingRepository vendorMaterialOfferingRepository;
 
     public MaterialCommandService(MaterialRepository materialRepository,
-                                   MaterialCategoryRepository categoryRepository,
-                                   CompanyRepository companyRepository,
-                                   VendorMaterialOfferingRepository vendorMaterialOfferingRepository) {
+                                  MaterialCategoryRepository categoryRepository,
+                                  CompanyRepository companyRepository,
+                                  VendorMaterialOfferingRepository vendorMaterialOfferingRepository) {
         this.materialRepository = materialRepository;
         this.categoryRepository = categoryRepository;
         this.companyRepository = companyRepository;
@@ -143,7 +143,7 @@ public class MaterialCommandService {
      * @param command The creation command
      * @return ID of the created offering
      * @throws ResourceNotFoundException if vendor or material not found
-     * @throws BusinessException if vendor doesn't have VENDOR role or duplicate offering exists
+     * @throws BusinessException         if vendor doesn't have VENDOR role or duplicate offering exists
      */
     public Long createVendorMaterialOffering(CreateVendorMaterialOfferingCommand command) {
         // Validate vendor exists and has proper role
@@ -197,10 +197,10 @@ public class MaterialCommandService {
      * Update a vendor material offering.
      *
      * @param offeringId The offering ID
-     * @param command The update command
+     * @param command    The update command
      * @return ID of the updated offering
      * @throws ResourceNotFoundException if offering not found
-     * @throws BusinessException if update would create duplicate
+     * @throws BusinessException         if update would create duplicate
      */
     public Long updateVendorMaterialOffering(Long offeringId, UpdateVendorMaterialOfferingCommand command) {
         VendorMaterialOffering offering = vendorMaterialOfferingRepository.findById(offeringId)

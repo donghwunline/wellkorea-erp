@@ -2,7 +2,7 @@ package com.wellkorea.backend.auth.api;
 
 import com.wellkorea.backend.auth.api.dto.AuditLogResponse;
 import com.wellkorea.backend.auth.application.AuditService;
-import com.wellkorea.backend.auth.domain.AuditAction;
+import com.wellkorea.backend.auth.domain.vo.AuditAction;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

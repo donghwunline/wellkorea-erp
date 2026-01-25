@@ -1,9 +1,14 @@
 /**
  * Issue invoice mutation hook.
+ * Handles file upload and invoice issuance.
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { issueInvoice, invoiceQueries } from '@/entities/invoice';
+import {
+  issueInvoice,
+  invoiceQueries,
+  type IssueInvoiceInput,
+} from '@/entities/invoice';
 
 interface UseIssueInvoiceOptions {
   onSuccess?: (result: { id: number; message: string }) => void;
@@ -11,23 +16,23 @@ interface UseIssueInvoiceOptions {
 }
 
 /**
- * Hook for issuing an invoice (DRAFT → ISSUED).
- * Invalidates invoice cache on success.
+ * Hook for issuing an invoice with document attachment (DRAFT → ISSUED).
+ * Handles the 3-step upload flow and invalidates queries on success.
  */
 export function useIssueInvoice(options: UseIssueInvoiceOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (invoiceId: number) => issueInvoice(invoiceId),
-    onSuccess: (result, invoiceId) => {
+    mutationFn: (input: IssueInvoiceInput) => issueInvoice(input),
+    onSuccess: (result, variables) => {
       // Invalidate both list and detail queries
       queryClient.invalidateQueries({ queryKey: invoiceQueries.all() });
       queryClient.invalidateQueries({
-        queryKey: invoiceQueries.detail(invoiceId).queryKey
+        queryKey: invoiceQueries.detail(variables.invoiceId).queryKey,
       });
       options.onSuccess?.(result);
     },
-    onError: error => {
+    onError: (error) => {
       options.onError?.(error as Error);
     },
   });

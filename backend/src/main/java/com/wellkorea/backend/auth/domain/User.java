@@ -1,5 +1,7 @@
 package com.wellkorea.backend.auth.domain;
 
+import com.wellkorea.backend.auth.domain.vo.AssignedRole;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 

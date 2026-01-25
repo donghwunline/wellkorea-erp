@@ -16,7 +16,9 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { Button } from '@/shared/ui';
+import { useTranslation } from 'react-i18next';
+
+import { Alert, Button } from '@/shared/ui';
 import { Icon } from '@/shared/ui/primitives/Icon';
 import {
   TaskNodeComponent,
@@ -59,6 +61,7 @@ export function TaskFlowCanvas({
   onChangesStatusChange,
 }: TaskFlowCanvasProps) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation('purchasing');
 
   // Edit modal state
   const [editingNode, setEditingNode] = useState<TaskNode | null>(null);
@@ -67,6 +70,15 @@ export function TaskFlowCanvas({
   // Purchase request modal states
   const [isServiceRequestOpen, setIsServiceRequestOpen] = useState(false);
   const [isMaterialRequestOpen, setIsMaterialRequestOpen] = useState(false);
+
+  // Success message state
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Show success message callback
+  const showSuccess = useCallback((message: string) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(null), 3000);
+  }, []);
 
   // Flow state management
   const {
@@ -210,6 +222,13 @@ export function TaskFlowCanvas({
         </div>
       </div>
 
+      {/* Success Alert */}
+      {successMessage && (
+        <Alert variant="success" className="mx-4 mt-2" onClose={() => setSuccessMessage(null)}>
+          {successMessage}
+        </Alert>
+      )}
+
       {/* React Flow Canvas */}
       <div className="flex-1">
         <ReactFlow
@@ -267,6 +286,7 @@ export function TaskFlowCanvas({
         projectId={flow.projectId}
         flowId={flow.id}
         nodeId={editingNode?.id ?? null}
+        onSuccess={() => showSuccess(t('purchaseRequest.create.success'))}
       />
 
       {/* Material Purchase Request Modal */}
@@ -274,6 +294,7 @@ export function TaskFlowCanvas({
         isOpen={isMaterialRequestOpen}
         onClose={() => setIsMaterialRequestOpen(false)}
         projectId={flow.projectId}
+        onSuccess={() => showSuccess(t('purchaseRequest.create.success'))}
       />
     </div>
   );

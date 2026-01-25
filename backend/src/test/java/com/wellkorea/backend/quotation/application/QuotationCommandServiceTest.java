@@ -1,21 +1,26 @@
 package com.wellkorea.backend.quotation.application;
 
-import com.wellkorea.backend.quotation.domain.*;
-import com.wellkorea.backend.quotation.domain.event.QuotationSubmittedEvent;
-import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
-import com.wellkorea.backend.quotation.infrastructure.repository.QuotationLineItemRepository;
+import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.auth.domain.vo.Role;
+import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.product.domain.Product;
+import com.wellkorea.backend.product.infrastructure.repository.ProductRepository;
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
-import com.wellkorea.backend.product.domain.Product;
-import com.wellkorea.backend.product.infrastructure.repository.ProductRepository;
-import com.wellkorea.backend.auth.domain.Role;
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.quotation.domain.Quotation;
+import com.wellkorea.backend.quotation.domain.QuotationLineItem;
+import com.wellkorea.backend.quotation.domain.QuotationStatus;
+import com.wellkorea.backend.quotation.domain.event.QuotationSubmittedEvent;
+import com.wellkorea.backend.quotation.infrastructure.repository.QuotationLineItemRepository;
+import com.wellkorea.backend.quotation.infrastructure.repository.QuotationRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -29,9 +34,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.verify;
 
 /**
  * Unit tests for QuotationCommandService.

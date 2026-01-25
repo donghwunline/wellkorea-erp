@@ -30,7 +30,7 @@ import {
 } from '@/entities/invoice';
 import { quotationQueries, QuotationStatus } from '@/entities/quotation';
 import { useAuth } from '@/entities/auth';
-import { useIssueInvoice } from '@/features/invoice/issue';
+import { IssueInvoiceModal } from '@/features/invoice/issue';
 import { useCancelInvoice } from '@/features/invoice/cancel';
 import { InvoiceCreateModal } from './ui/InvoiceCreateModal';
 import { InvoiceDetailModal } from './ui/InvoiceDetailModal';
@@ -103,15 +103,6 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
   }, []);
 
   // Mutations
-  const { mutate: issueInvoice } = useIssueInvoice({
-    onSuccess: () => {
-      showSuccess(t('invoicePanel.successMessages.issued'));
-      setIssueConfirm(null);
-      void refetchInvoices();
-      onDataChange?.();
-    },
-  });
-
   const { mutate: cancelInvoice } = useCancelInvoice({
     onSuccess: () => {
       showSuccess(t('invoicePanel.successMessages.cancelled'));
@@ -136,11 +127,12 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
     setDetailInvoiceId(invoice.id);
   }, []);
 
-  const handleIssueConfirm = useCallback(() => {
-    if (issueConfirm) {
-      issueInvoice(issueConfirm.id);
-    }
-  }, [issueConfirm, issueInvoice]);
+  const handleIssueSuccess = useCallback(() => {
+    showSuccess(t('invoicePanel.successMessages.issued'));
+    setIssueConfirm(null);
+    void refetchInvoices();
+    onDataChange?.();
+  }, [refetchInvoices, onDataChange, showSuccess, t]);
 
   const handleCancelConfirm = useCallback(() => {
     if (cancelConfirm) {
@@ -310,20 +302,16 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
         latestAcceptedQuotationId={latestAcceptedQuotationId}
       />
 
-      {/* Issue Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={!!issueConfirm}
-        onClose={() => setIssueConfirm(null)}
-        onConfirm={handleIssueConfirm}
-        title={t('invoicePanel.confirmIssue')}
-        message={
-          issueConfirm
-            ? t('invoicePanel.confirmIssueMessage', { invoiceNumber: issueConfirm.invoiceNumber })
-            : ''
-        }
-        confirmLabel={t('invoicePanel.issueButton')}
-        variant="warning"
-      />
+      {/* Issue Invoice Modal with Document Upload */}
+      {issueConfirm && (
+        <IssueInvoiceModal
+          invoiceId={issueConfirm.id}
+          invoiceNumber={issueConfirm.invoiceNumber}
+          isOpen={true}
+          onClose={() => setIssueConfirm(null)}
+          onSuccess={handleIssueSuccess}
+        />
+      )}
 
       {/* Cancel Confirmation Modal */}
       <ConfirmationModal

@@ -432,7 +432,12 @@
     "metadata": "Created: {{createdAt}} | Updated: {{updatedAt}}",
     "sections": {
       "deliveredItems": "Delivered Items",
-      "itemCount": "{{items}} items, {{units}} total units"
+      "itemCount": "{{items}} items, {{units}} total units",
+      "deliveryPhoto": "Delivery Photo"
+    },
+    "photo": {
+      "alt": "Delivery proof photo",
+      "noPhotoLegacy": "This delivery was completed before the photo upload feature was introduced."
     },
     "table": {
       "product": "Product",
@@ -610,7 +615,12 @@
     "emptyTitle": "Documents",
     "emptyDescription": "No documents are attached to this project.",
     "emptyHint": "Documents attached to task nodes will appear here.",
-    "description": "Blueprints and documents attached to task nodes"
+    "description": "Blueprints and documents attached to task nodes",
+    "sections": {
+      "blueprints": "Design Documents",
+      "deliveryPhotos": "Delivery Photos",
+      "invoices": "Invoices"
+    }
   },
   "arReport": {
     "title": "AR Invoice List",

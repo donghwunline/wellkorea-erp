@@ -63,6 +63,7 @@ export interface Project {
   readonly createdByName: string | null;
   readonly createdAt: string; // ISO datetime string
   readonly updatedAt: string; // ISO datetime string
+  readonly note: string | null;
 }
 
 /**
@@ -139,10 +140,10 @@ export interface ProjectKPI {
   progressPercent: number;
   /** Number of pending approval requests */
   pendingApprovals: number;
-  /** Number of missing required documents */
-  missingDocuments: number;
-  /** Accounts receivable amount (KRW) */
+  /** Accounts receivable amount (KRW) - outstanding unpaid invoices */
   accountsReceivable: number;
+  /** Total invoiced amount (KRW) - all issued invoices */
+  invoicedAmount: number;
 }
 
 // ============================================================================

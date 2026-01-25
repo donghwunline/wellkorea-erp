@@ -43,4 +43,32 @@ public interface ProjectMapper {
             @Param("status") ProjectStatus status,
             @Param("customerIds") List<Long> customerIds,
             @Param("search") String search);
+
+
+    // ============================================================================
+    // KPI Queries
+    // ============================================================================
+
+    /**
+     * Calculate project progress as average of task node progress values.
+     * Returns 0 if no task flow or nodes exist.
+     */
+    int calculateProjectProgress(@Param("projectId") Long projectId);
+
+    /**
+     * Count pending approval requests for project's quotations.
+     */
+    int countPendingApprovals(@Param("projectId") Long projectId);
+
+    /**
+     * Calculate accounts receivable (outstanding balance) for project.
+     * Sum of (invoice total - payments received) for unpaid invoices.
+     */
+    long calculateAccountsReceivable(@Param("projectId") Long projectId);
+
+    /**
+     * Calculate total invoiced amount for project.
+     * Sum of total_amount from all non-cancelled invoices.
+     */
+    long calculateInvoicedAmount(@Param("projectId") Long projectId);
 }

@@ -4,14 +4,17 @@ import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
+import com.wellkorea.backend.purchasing.application.dto.CreatePurchaseOrderCommand;
+import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseOrderCommand;
 import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
-import com.wellkorea.backend.purchasing.domain.PurchaseOrderStatus;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
-import com.wellkorea.backend.purchasing.domain.RfqItem;
-import com.wellkorea.backend.purchasing.domain.RfqItemStatus;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCanceledEvent;
+import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderConfirmedEvent;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCreatedEvent;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderReceivedEvent;
+import com.wellkorea.backend.purchasing.domain.vo.PurchaseOrderStatus;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseOrderRepository;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
@@ -162,6 +165,7 @@ public class PurchaseOrderCommandService {
 
     /**
      * Confirm a purchase order (vendor has confirmed).
+     * Publishes PurchaseOrderConfirmedEvent to create AccountsPayable.
      */
     public Long confirmPurchaseOrder(Long id) {
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(id)
@@ -169,6 +173,16 @@ public class PurchaseOrderCommandService {
 
         purchaseOrder.confirm();
         purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
+
+        // Publish event to create AccountsPayable
+        eventPublisher.publish(new PurchaseOrderConfirmedEvent(
+                purchaseOrder.getId(),
+                purchaseOrder.getVendor().getId(),
+                purchaseOrder.getPoNumber(),
+                purchaseOrder.getTotalAmount(),
+                purchaseOrder.getCurrency()
+        ));
+
         return purchaseOrder.getId();
     }
 

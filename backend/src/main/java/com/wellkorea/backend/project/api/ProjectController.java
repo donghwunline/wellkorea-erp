@@ -1,18 +1,20 @@
 package com.wellkorea.backend.project.api;
 
 import com.wellkorea.backend.auth.application.CustomerAssignmentService;
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
-import com.wellkorea.backend.auth.domain.Role;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.project.api.dto.CreateProjectRequest;
 import com.wellkorea.backend.project.api.dto.UpdateProjectRequest;
 import com.wellkorea.backend.project.api.dto.command.ProjectCommandResult;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
+import com.wellkorea.backend.project.api.dto.query.ProjectKPIView;
+import com.wellkorea.backend.project.api.dto.query.ProjectSectionsSummaryView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSummaryView;
 import com.wellkorea.backend.project.application.ProjectCommandService;
 import com.wellkorea.backend.project.application.ProjectCommandService.CreateProjectResult;
 import com.wellkorea.backend.project.application.ProjectQueryService;
 import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -125,6 +127,38 @@ public class ProjectController {
         }
 
         return ResponseEntity.ok(ApiResponse.success(projectsPage));
+    }
+
+    /**
+     * Get project sections summary for tab badge counts.
+     * <p>
+     * GET /api/projects/{id}/summary
+     * <p>
+     * Access: All authenticated users
+     *
+     * @param id Project ID
+     * @return Project sections summary with counts for each tab
+     */
+    @GetMapping("/{id}/summary")
+    public ResponseEntity<ApiResponse<ProjectSectionsSummaryView>> getProjectSummary(@PathVariable Long id) {
+        ProjectSectionsSummaryView summary = queryService.getProjectSummary(id);
+        return ResponseEntity.ok(ApiResponse.success(summary));
+    }
+
+    /**
+     * Get project KPIs for the dashboard strip.
+     * <p>
+     * GET /api/projects/{id}/kpi
+     * <p>
+     * Access: All authenticated users
+     *
+     * @param id Project ID
+     * @return Project KPIs (progress, pending approvals, accounts receivable, invoiced amount)
+     */
+    @GetMapping("/{id}/kpi")
+    public ResponseEntity<ApiResponse<ProjectKPIView>> getProjectKPI(@PathVariable Long id) {
+        ProjectKPIView kpi = queryService.getProjectKPI(id);
+        return ResponseEntity.ok(ApiResponse.success(kpi));
     }
 
     // ========== COMMAND ENDPOINTS ==========

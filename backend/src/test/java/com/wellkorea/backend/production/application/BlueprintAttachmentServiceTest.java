@@ -1,8 +1,8 @@
 package com.wellkorea.backend.production.application;
 
 import com.wellkorea.backend.BaseIntegrationTest;
-import com.wellkorea.backend.document.infrastructure.storage.MinioFileStorage;
-import com.wellkorea.backend.production.api.dto.command.UploadUrlResponse;
+import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
+import com.wellkorea.backend.shared.storage.api.dto.UploadUrlResponse;
 import com.wellkorea.backend.production.api.dto.query.BlueprintAttachmentView;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;

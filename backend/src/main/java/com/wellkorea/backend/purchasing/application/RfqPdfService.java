@@ -2,7 +2,7 @@ package com.wellkorea.backend.purchasing.application;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestDetailView;
-import com.wellkorea.backend.purchasing.domain.PurchaseRequestStatus;
+import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseRequestMapper;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.BusinessException;

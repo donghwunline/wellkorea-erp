@@ -124,7 +124,7 @@ export function ProjectViewPage() {
     (tabId: string) => {
       if (!summary) return undefined;
       const section = summary.sections.find(s => s.section === tabId);
-      return section?.pendingCount && section.pendingCount > 0 ? section.pendingCount : undefined;
+      return section?.totalCount && section.totalCount > 0 ? section.totalCount : undefined;
     },
     [summary]
   );

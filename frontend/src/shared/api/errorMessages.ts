@@ -9,20 +9,25 @@
  * - Business errors (BUS_*): Context-dependent (inline or toast)
  */
 
-import i18n from '@/app/i18n';
 import type { ApiError, ErrorResponse } from './types';
+
+/**
+ * Translation function type (compatible with i18next's t function).
+ */
+export type TranslateFunction = (key: string) => string;
 
 /**
  * Get user-friendly error message for an error using i18n.
  * Falls back to error's original message if no translation exists.
  *
  * @param error Normalized API error or backend error response
+ * @param t Translation function from useTranslation hook
  * @returns User-friendly error message in the current language
  */
-export function getErrorMessage(error: ApiError | ErrorResponse): string {
+export function getErrorMessage(error: ApiError | ErrorResponse, t: TranslateFunction): string {
   if (error.errorCode) {
     const translationKey = `errors:codes.${error.errorCode}`;
-    const translatedMessage = i18n.t(translationKey);
+    const translatedMessage = t(translationKey);
 
     // If translation exists (key is different from result), return it
     if (translatedMessage !== translationKey) {
@@ -38,30 +43,31 @@ export function getErrorMessage(error: ApiError | ErrorResponse): string {
  * Get a generic error message based on HTTP status or error type.
  *
  * @param statusCode HTTP status code
+ * @param t Translation function from useTranslation hook
  * @returns Generic error message for the status
  */
-export function getGenericErrorMessage(statusCode?: number): string {
+export function getGenericErrorMessage(statusCode: number | undefined, t: TranslateFunction): string {
   if (!statusCode) {
-    return i18n.t('errors:generic.unknown');
+    return t('errors:generic.unknown');
   }
 
   if (statusCode === 401) {
-    return i18n.t('errors:codes.AUTH_001');
+    return t('errors:codes.AUTH_001');
   }
   if (statusCode === 403) {
-    return i18n.t('errors:codes.AUTHZ_001');
+    return t('errors:codes.AUTHZ_001');
   }
   if (statusCode === 404) {
-    return i18n.t('errors:codes.RES_001');
+    return t('errors:codes.RES_001');
   }
   if (statusCode === 409) {
-    return i18n.t('errors:generic.conflict');
+    return t('errors:generic.conflict');
   }
   if (statusCode >= 500) {
-    return i18n.t('errors:generic.serverError');
+    return t('errors:generic.serverError');
   }
 
-  return i18n.t('errors:generic.unknown');
+  return t('errors:generic.unknown');
 }
 
 /**

@@ -1191,7 +1191,12 @@ const mockTranslations: Record<string, string> = {
   'pages:projectEdit.editDetails': 'Edit Project Details',
 
   // Project View Page translations
-  'pages:projectView.loading': 'Loading project details...',
+  'pages:projectView.loading': 'Loading...',
+  'pages:projectView.loadingProject': 'Loading...',
+  'pages:projectView.error': 'Error',
+  'pages:projectView.backToProjects': 'Back to Projects',
+  'pages:projectView.notFound': 'Project Not Found',
+  'pages:projectView.notFoundMessage': 'The requested project could not be found.',
   'pages:projectView.tabs.quotations': 'Quotations',
   'pages:projectView.tabs.taskFlow': 'Task Flow',
   'pages:projectView.tabs.purchase': 'Purchase',
@@ -1199,6 +1204,19 @@ const mockTranslations: Record<string, string> = {
   'pages:projectView.tabs.documents': 'Documents',
   'pages:projectView.tabs.deliveries': 'Deliveries',
   'pages:projectView.tabs.invoices': 'Invoices',
+
+  // ProjectRelatedNavigationGrid widget translations
+  'widgets:projectRelatedNavigationGrid.loading': 'Loading project summary',
+  'widgets:projectRelatedNavigationGrid.loadError': 'Failed to load project summary',
+  'widgets:projectRelatedNavigationGrid.retry': 'Retry',
+  'widgets:projectRelatedNavigationGrid.emptyTitle': 'No sections available',
+  'widgets:projectRelatedNavigationGrid.emptyDescription': 'No sections available for this project.',
+
+  // DeliverySummaryStats widget translations
+  'widgets:deliverySummaryStats.totalDeliveries': 'Total Deliveries',
+  'widgets:deliverySummaryStats.itemsDelivered': 'Items Delivered',
+  'widgets:deliverySummaryStats.pending': 'Pending',
+  'widgets:deliverySummaryStats.delivered': 'Delivered',
 };
 
 /**
@@ -1255,17 +1273,6 @@ vi.mock('react-i18next', () => ({
     type: '3rdParty',
     init: vi.fn(),
   },
-}));
-
-// Mock the i18n instance used in non-React contexts (e.g., errorMessages.ts)
-vi.mock('@/app/i18n', () => ({
-  default: {
-    t: (key: string, options?: Record<string, unknown>) => mockT(key, options),
-    changeLanguage: vi.fn(),
-    language: 'en',
-  },
-  changeLanguage: vi.fn(),
-  getCurrentLanguage: () => 'en',
 }));
 
 // Automatically cleanup after each test

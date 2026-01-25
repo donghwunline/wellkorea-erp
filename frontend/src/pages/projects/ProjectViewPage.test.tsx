@@ -93,6 +93,7 @@ function createMockProject(overrides: Partial<Project> = {}): Project {
     createdByName: 'Lee Jiwon',
     createdAt: '2025-01-15T10:30:00Z',
     updatedAt: '2025-01-16T14:45:00Z',
+    note: null,
     ...overrides,
   };
 }
@@ -253,8 +254,9 @@ describe('ProjectViewPage', () => {
 
       renderProjectViewPage();
 
-      // Initially shows loading
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      // Initially shows loading (component shows it in multiple places)
+      const loadingElements = screen.getAllByText('Loading...');
+      expect(loadingElements.length).toBeGreaterThan(0);
     });
   });
 

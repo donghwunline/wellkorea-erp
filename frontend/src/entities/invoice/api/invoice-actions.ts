@@ -1,26 +1,91 @@
 /**
  * Invoice action command functions (issue, cancel, record payment).
+ * Issue now includes document upload flow.
  */
 
 import { httpClient } from '@/shared/api';
+import { INVOICE_ENDPOINTS } from '@/shared/config/endpoints';
+import { attachmentRules, ATTACHMENT_MAX_SIZE } from '@/shared/domain';
 import type { CommandResult, PaymentCommandResult } from './invoice.mapper';
 import type { PaymentMethod } from '../model/payment-method';
 
-const INVOICE_ENDPOINTS = {
-  ISSUE: (id: number) => `/invoices/${id}/issue`,
-  CANCEL: (id: number) => `/invoices/${id}/cancel`,
-  PAYMENTS: (id: number) => `/invoices/${id}/payments`,
-  NOTES: (id: number) => `/invoices/${id}/notes`,
-};
+/**
+ * Response from upload URL endpoint.
+ */
+interface UploadUrlResponse {
+  uploadUrl: string;
+  objectKey: string;
+}
 
 /**
- * Issue an invoice (DRAFT → ISSUED).
+ * Input for issuing an invoice with document.
  */
-export async function issueInvoice(invoiceId: number): Promise<CommandResult> {
+export interface IssueInvoiceInput {
+  invoiceId: number;
+  file: File;
+}
+
+/**
+ * Issue an invoice with attached document (DRAFT → ISSUED).
+ *
+ * This is a 3-step process:
+ * 1. Get a presigned upload URL from the backend
+ * 2. Upload the file directly to MinIO using the presigned URL
+ * 3. Call issue endpoint with document info to atomically register document and issue invoice
+ *
+ * @throws Error if file type is not allowed (only JPG/PNG/PDF)
+ * @throws Error if file size exceeds 10MB limit
+ * @throws Error if upload to MinIO fails
+ */
+export async function issueInvoice(input: IssueInvoiceInput): Promise<CommandResult> {
+  const { invoiceId, file } = input;
+
   if (!invoiceId || invoiceId <= 0) {
     throw new Error('Invalid invoice ID');
   }
-  return httpClient.post<CommandResult>(INVOICE_ENDPOINTS.ISSUE(invoiceId), {});
+
+  // Validate file type (JPG, PNG, PDF allowed for invoice documents)
+  if (!attachmentRules.isAllowed(file.name)) {
+    throw new Error('파일 형식이 올바르지 않습니다. JPG, PNG 또는 PDF 파일만 허용됩니다.');
+  }
+
+  // Validate file size
+  if (!attachmentRules.isValidSize(file.size)) {
+    throw new Error(
+      `파일 크기가 너무 큽니다. 최대 ${attachmentRules.formatFileSize(ATTACHMENT_MAX_SIZE)}까지 허용됩니다.`
+    );
+  }
+
+  // Step 1: Get presigned URL from backend
+  const contentType = attachmentRules.getContentType(file.name);
+  const { uploadUrl, objectKey } = await httpClient.post<UploadUrlResponse>(
+    INVOICE_ENDPOINTS.documentUploadUrl(invoiceId),
+    {
+      fileName: file.name,
+      fileSize: file.size,
+      contentType,
+    }
+  );
+
+  // Step 2: Upload file directly to MinIO
+  const uploadResponse = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: file,
+    headers: {
+      'Content-Type': contentType,
+    },
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error('파일 업로드에 실패했습니다. 다시 시도해 주세요.');
+  }
+
+  // Step 3: Issue invoice with document info (atomic operation)
+  return httpClient.post<CommandResult>(INVOICE_ENDPOINTS.issue(invoiceId), {
+    fileName: file.name,
+    fileSize: file.size,
+    objectKey,
+  });
 }
 
 /**
@@ -30,7 +95,7 @@ export async function cancelInvoice(invoiceId: number): Promise<CommandResult> {
   if (!invoiceId || invoiceId <= 0) {
     throw new Error('Invalid invoice ID');
   }
-  return httpClient.post<CommandResult>(INVOICE_ENDPOINTS.CANCEL(invoiceId), {});
+  return httpClient.post<CommandResult>(INVOICE_ENDPOINTS.cancel(invoiceId), {});
 }
 
 /**
@@ -81,9 +146,7 @@ function validatePaymentInput(input: RecordPaymentInput): void {
 /**
  * Record a payment against an invoice.
  */
-export async function recordPayment(
-  input: RecordPaymentInput
-): Promise<PaymentCommandResult> {
+export async function recordPayment(input: RecordPaymentInput): Promise<PaymentCommandResult> {
   validatePaymentInput(input);
 
   const request: RecordPaymentRequest = {
@@ -94,24 +157,15 @@ export async function recordPayment(
     notes: input.notes ?? null,
   };
 
-  return httpClient.post<PaymentCommandResult>(
-    INVOICE_ENDPOINTS.PAYMENTS(input.invoiceId),
-    request
-  );
+  return httpClient.post<PaymentCommandResult>(INVOICE_ENDPOINTS.payments(input.invoiceId), request);
 }
 
 /**
  * Update invoice notes.
  */
-export async function updateInvoiceNotes(
-  invoiceId: number,
-  notes: string
-): Promise<CommandResult> {
+export async function updateInvoiceNotes(invoiceId: number, notes: string): Promise<CommandResult> {
   if (!invoiceId || invoiceId <= 0) {
     throw new Error('Invalid invoice ID');
   }
-  return httpClient.patch<CommandResult>(
-    INVOICE_ENDPOINTS.NOTES(invoiceId),
-    notes
-  );
+  return httpClient.patch<CommandResult>(INVOICE_ENDPOINTS.notes(invoiceId), notes);
 }

@@ -2,7 +2,7 @@ package com.wellkorea.backend.project.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.BaseIntegrationTest;
-import com.wellkorea.backend.auth.domain.Role;
+import com.wellkorea.backend.auth.domain.vo.Role;
 import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.shared.test.DatabaseTestHelper;
 import com.wellkorea.backend.shared.test.TestFixtures;
@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -533,6 +532,85 @@ class ProjectControllerTest extends BaseIntegrationTest implements TestFixtures 
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updateRequest))
                     .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/projects/{id}/summary - Get Project Summary")
+    class GetProjectSummaryTests {
+
+        @BeforeEach
+        void setUpProject() {
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("MMdd"));
+            String year = LocalDate.now().format(DateTimeFormatter.ofPattern("yy"));
+            jdbcTemplate.update(
+                    "INSERT INTO projects (id, job_code, customer_company_id, project_name, due_date, internal_owner_id, status, created_by_id) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                            "ON CONFLICT (id) DO NOTHING",
+                    300L, "WK2K" + year + "-0300-" + today, 1L, "Summary Test Project",
+                    LocalDate.now().plusDays(30), 1L, "ACTIVE", 1L
+            );
+        }
+
+        @Test
+        @DisplayName("should return 200 with sections summary for Admin")
+        void getProjectSummary_AsAdmin_Returns200WithSections() throws Exception {
+            mockMvc.perform(get(PROJECTS_URL + "/300/summary")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.projectId").value(300))
+                    .andExpect(jsonPath("$.data.sections").isArray())
+                    .andExpect(jsonPath("$.data.sections", hasSize(7)))
+                    // Check all sections are present
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='quotation')]").exists())
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='process')]").exists())
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='purchase')]").exists())
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='outsource')]").exists())
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='documents')]").exists())
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='delivery')]").exists())
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='finance')]").exists());
+        }
+
+        @Test
+        @DisplayName("should return 200 with sections summary for Production (read-only access)")
+        void getProjectSummary_AsProduction_Returns200WithSections() throws Exception {
+            mockMvc.perform(get(PROJECTS_URL + "/300/summary")
+                            .header("Authorization", "Bearer " + productionToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.sections").isArray());
+        }
+
+        @Test
+        @DisplayName("should return 404 for non-existent project")
+        void getProjectSummary_NonExistent_Returns404() throws Exception {
+            mockMvc.perform(get(PROJECTS_URL + "/9999/summary")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("should return 401 without authentication")
+        void getProjectSummary_WithoutAuth_Returns401() throws Exception {
+            mockMvc.perform(get(PROJECTS_URL + "/300/summary"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("should include correct labels in sections")
+        void getProjectSummary_HasCorrectLabels() throws Exception {
+            mockMvc.perform(get(PROJECTS_URL + "/300/summary")
+                            .header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='quotation')].label").value("견적"))
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='process')].label").value("공정"))
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='purchase')].label").value("구매"))
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='outsource')].label").value("외주"))
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='documents')].label").value("문서"))
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='delivery')].label").value("출고"))
+                    .andExpect(jsonPath("$.data.sections[?(@.section=='finance')].label").value("정산"));
         }
     }
 

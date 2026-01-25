@@ -7,13 +7,15 @@ import com.wellkorea.backend.catalog.domain.ServiceCategory;
 import com.wellkorea.backend.catalog.infrastructure.persistence.MaterialRepository;
 import com.wellkorea.backend.catalog.infrastructure.persistence.ServiceCategoryRepository;
 import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
+import com.wellkorea.backend.purchasing.application.dto.CreateMaterialPurchaseRequestCommand;
+import com.wellkorea.backend.purchasing.application.dto.CreateServicePurchaseRequestCommand;
+import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseRequestCommand;
 import com.wellkorea.backend.purchasing.domain.MaterialPurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
-import com.wellkorea.backend.purchasing.domain.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.ServicePurchaseRequest;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
@@ -81,17 +83,17 @@ public class PurchaseRequestCommandService {
         // Generate request number
         String requestNumber = generateRequestNumber();
 
-        // Create service purchase request
-        ServicePurchaseRequest purchaseRequest = new ServicePurchaseRequest();
-        purchaseRequest.setProject(project);
-        purchaseRequest.setServiceCategory(serviceCategory);
-        purchaseRequest.setRequestNumber(requestNumber);
-        purchaseRequest.setDescription(command.description());
-        purchaseRequest.setQuantity(command.quantity());
-        purchaseRequest.setUom(command.uom());
-        purchaseRequest.setRequiredDate(command.requiredDate());
-        purchaseRequest.setStatus(PurchaseRequestStatus.DRAFT);
-        purchaseRequest.setCreatedBy(user);
+        // Create service purchase request using constructor
+        ServicePurchaseRequest purchaseRequest = new ServicePurchaseRequest(
+                project,
+                serviceCategory,
+                requestNumber,
+                command.description(),
+                command.quantity(),
+                command.uom(),
+                command.requiredDate(),
+                user
+        );
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
         return purchaseRequest.getId();
@@ -125,17 +127,20 @@ public class PurchaseRequestCommandService {
         // Generate request number
         String requestNumber = generateRequestNumber();
 
-        // Create material purchase request
-        MaterialPurchaseRequest purchaseRequest = new MaterialPurchaseRequest();
-        purchaseRequest.setProject(project);
-        purchaseRequest.setMaterial(material);
-        purchaseRequest.setRequestNumber(requestNumber);
-        purchaseRequest.setDescription(command.description());
-        purchaseRequest.setQuantity(command.quantity());
-        purchaseRequest.setUom(command.uom() != null ? command.uom() : material.getUnit());
-        purchaseRequest.setRequiredDate(command.requiredDate());
-        purchaseRequest.setStatus(PurchaseRequestStatus.DRAFT);
-        purchaseRequest.setCreatedBy(user);
+        // Determine UOM: use provided value or fall back to material's default unit
+        String uom = command.uom() != null ? command.uom() : material.getUnit();
+
+        // Create material purchase request using constructor
+        MaterialPurchaseRequest purchaseRequest = new MaterialPurchaseRequest(
+                project,
+                material,
+                requestNumber,
+                command.description(),
+                command.quantity(),
+                uom,
+                command.requiredDate(),
+                user
+        );
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
         return purchaseRequest.getId();
@@ -150,22 +155,13 @@ public class PurchaseRequestCommandService {
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + id));
 
-        if (!purchaseRequest.canUpdate()) {
-            throw new BusinessException("Cannot update purchase request in " + purchaseRequest.getStatus() + " status");
-        }
-
-        if (command.description() != null) {
-            purchaseRequest.setDescription(command.description());
-        }
-        if (command.quantity() != null) {
-            purchaseRequest.setQuantity(command.quantity());
-        }
-        if (command.uom() != null) {
-            purchaseRequest.setUom(command.uom());
-        }
-        if (command.requiredDate() != null) {
-            purchaseRequest.setRequiredDate(command.requiredDate());
-        }
+        // Use the domain's update method which enforces status check
+        purchaseRequest.update(
+                command.description(),
+                command.quantity(),
+                command.uom(),
+                command.requiredDate()
+        );
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
         return purchaseRequest.getId();

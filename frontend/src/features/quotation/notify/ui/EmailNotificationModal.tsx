@@ -8,7 +8,7 @@
  * Can import from: entities, shared
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Modal, ModalActions, Spinner, FormField, EmailTagInput, Icon } from '@/shared/ui';
 
@@ -84,8 +84,8 @@ interface EmailNotificationModalContentProps {
 
 /**
  * Inner content component for the email notification modal.
- * State is initialized from props on mount, with useEffect to handle
- * async prop updates (e.g., when customerEmail loads after mount).
+ * Uses derived state pattern to avoid useEffect for prop syncing.
+ * Stores only user edits; derives display value from prop when not edited.
  */
 function EmailNotificationModalContent({
   onClose,
@@ -95,15 +95,12 @@ function EmailNotificationModalContent({
   isLoading,
 }: EmailNotificationModalContentProps) {
   const { t } = useTranslation(['quotations', 'common']);
-  // Form state - initialized from props on mount
-  const [toEmail, setToEmail] = useState(customerEmail ?? '');
 
-  // Sync customerEmail prop to state when it becomes available (handles async loading)
-  useEffect(() => {
-    if (customerEmail && !toEmail) {
-      setToEmail(customerEmail);
-    }
-  }, [customerEmail, toEmail]);
+  // Store only what user explicitly edited (null = not edited yet)
+  const [userEditedEmail, setUserEditedEmail] = useState<string | null>(null);
+
+  // Derived value: user edit > prop > empty string
+  const toEmail = userEditedEmail ?? customerEmail ?? '';
 
   const [ccEmails, setCcEmails] = useState<string[]>([]);
   const [showCcField, setShowCcField] = useState(false);
@@ -137,9 +134,9 @@ function EmailNotificationModalContent({
     onSend(toEmail.trim(), ccEmails.filter(e => e.trim()));
   }, [toEmail, ccEmails, validateToEmail, hasInvalidCcEmails, onSend]);
 
-  // Handle TO email change
+  // Handle TO email change - stores user edit
   const handleToEmailChange = useCallback((value: string) => {
-    setToEmail(value);
+    setUserEditedEmail(value);
     if (toError) {
       setToError(undefined);
     }

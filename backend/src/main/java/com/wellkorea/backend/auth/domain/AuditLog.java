@@ -1,5 +1,6 @@
 package com.wellkorea.backend.auth.domain;
 
+import com.wellkorea.backend.auth.domain.vo.AuditAction;
 import jakarta.persistence.*;
 
 import java.time.Instant;

@@ -76,6 +76,7 @@ function createMockProjectDetailsResponse(
     createdByName: null,
     createdAt: '',
     updatedAt: '',
+    note: null,
     ...overrides,
   };
 }
@@ -372,8 +373,8 @@ describe('projectQueries', () => {
       const mockKPI = {
         progressPercent: 50,
         pendingApprovals: 2,
-        missingDocuments: 1,
         accountsReceivable: 1000000,
+        invoicedAmount: 2000000,
       };
       vi.mocked(projectSummaryApi.getKPIs).mockResolvedValue(mockKPI);
 

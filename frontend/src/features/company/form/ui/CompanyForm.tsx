@@ -106,9 +106,7 @@ export function CompanyForm({
   const toggleRole = (role: RoleType) => {
     setFormData(prev => ({
       ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter(r => r !== role)
-        : [...prev.roles, role],
+      roles: prev.roles.includes(role) ? prev.roles.filter(r => r !== role) : [...prev.roles, role],
     }));
   };
 
@@ -199,6 +197,7 @@ export function CompanyForm({
             type="email"
             value={formData.email}
             onChange={value => setFormData(prev => ({ ...prev, email: value }))}
+            required
             disabled={isSubmitting}
             placeholder={t('form.placeholders.email')}
           />
@@ -241,15 +240,10 @@ export function CompanyForm({
           <h3 className="text-sm font-medium text-steel-400 mb-4 pb-2 border-b border-steel-800">
             {t('form.companyRoles')} <span className="text-red-400">*</span>
           </h3>
-          <p className="text-xs text-steel-500 mb-3">
-            {t('form.rolesDescription')}
-          </p>
+          <p className="text-xs text-steel-500 mb-3">{t('form.rolesDescription')}</p>
           <div className="flex flex-wrap gap-4">
             {ALL_ROLE_TYPES.map(role => (
-              <label
-                key={role}
-                className="flex items-center gap-2 cursor-pointer group"
-              >
+              <label key={role} className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={formData.roles.includes(role)}

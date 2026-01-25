@@ -1,7 +1,7 @@
 package com.wellkorea.backend.company.api.dto.command;
 
 import com.wellkorea.backend.company.application.CreateCompanyCommand;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

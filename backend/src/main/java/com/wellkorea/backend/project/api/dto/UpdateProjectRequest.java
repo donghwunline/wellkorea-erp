@@ -20,6 +20,8 @@ public record UpdateProjectRequest(
         @FutureOrPresent(message = "Due date must be today or in the future")
         LocalDate dueDate,
 
-        String status
+        String status,
+
+        String note
 ) {
 }

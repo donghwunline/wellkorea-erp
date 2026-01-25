@@ -116,7 +116,7 @@ export function CreatePurchaseOrderModal({
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [formData]);
+  }, [formData, t]);
 
   // Handle order date change - auto-update expected delivery
   const handleOrderDateChange = useCallback((value: string) => {

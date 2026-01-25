@@ -4,6 +4,7 @@ import com.wellkorea.backend.invoice.api.dto.query.InvoiceDetailView;
 import com.wellkorea.backend.invoice.api.dto.query.InvoiceSummaryView;
 import com.wellkorea.backend.invoice.domain.InvoiceStatus;
 import com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper;
+import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -58,5 +59,32 @@ public class InvoiceQueryService {
                 projectId, status, pageable.getPageSize(), pageable.getOffset());
         long total = invoiceMapper.countWithFilters(projectId, status);
         return new PageImpl<>(content, pageable, total);
+    }
+
+    /**
+     * Validate that an invoice exists.
+     *
+     * @param id Invoice ID
+     * @throws ResourceNotFoundException if invoice doesn't exist
+     */
+    public void validateExists(Long id) {
+        if (!invoiceMapper.existsById(id)) {
+            throw new ResourceNotFoundException("Invoice", id);
+        }
+    }
+
+    /**
+     * Validate that an invoice exists and can be issued (is in DRAFT status).
+     *
+     * @param id Invoice ID
+     * @throws ResourceNotFoundException if invoice doesn't exist
+     * @throws BusinessException if invoice is not in DRAFT status
+     */
+    public void validateCanIssue(Long id) {
+        InvoiceDetailView invoice = getInvoiceDetail(id);
+        if (invoice.status() != InvoiceStatus.DRAFT) {
+            throw new BusinessException(
+                    "Invoice can only be issued from DRAFT status. Current status: " + invoice.status().getLabelKo());
+        }
     }
 }

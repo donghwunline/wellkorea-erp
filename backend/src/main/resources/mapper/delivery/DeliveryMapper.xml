@@ -16,6 +16,7 @@
     </resultMap>
 
     <!-- DeliveryDetailView result map with nested select for line items -->
+    <!-- Note: photo field is set to null here and enriched by DeliveryQueryService -->
     <resultMap id="DeliveryDetailViewResult" type="com.wellkorea.backend.delivery.api.dto.query.DeliveryDetailView">
         <constructor>
             <idArg column="id" javaType="Long"/>
@@ -30,6 +31,7 @@
             <arg column="created_at" javaType="String"/>
             <arg column="updated_at" javaType="String"/>
             <arg column="id" javaType="java.util.List" select="findLineItemsByDeliveryId"/>
+            <arg column="photo_placeholder" javaType="com.wellkorea.backend.shared.storage.api.dto.AttachmentView"/>
         </constructor>
     </resultMap>
 
@@ -46,7 +48,8 @@
             u.full_name AS delivered_by_name,
             d.notes,
             TO_CHAR(d.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS created_at,
-            TO_CHAR(d.updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS updated_at
+            TO_CHAR(d.updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS updated_at,
+            NULL AS photo_placeholder
         FROM deliveries d
         INNER JOIN projects p ON d.project_id = p.id
         INNER JOIN users u ON d.delivered_by_id = u.id

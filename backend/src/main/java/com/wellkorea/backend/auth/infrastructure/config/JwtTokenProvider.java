@@ -1,5 +1,7 @@
 package com.wellkorea.backend.auth.infrastructure.config;
 
+import com.wellkorea.backend.shared.exception.ExpiredJwtAuthenticationException;
+import com.wellkorea.backend.shared.exception.InvalidJwtAuthenticationException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;

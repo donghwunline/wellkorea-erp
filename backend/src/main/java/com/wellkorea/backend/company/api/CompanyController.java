@@ -8,7 +8,7 @@ import com.wellkorea.backend.company.api.dto.query.CompanyDetailView;
 import com.wellkorea.backend.company.api.dto.query.CompanySummaryView;
 import com.wellkorea.backend.company.application.CompanyCommandService;
 import com.wellkorea.backend.company.application.CompanyQueryService;
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;

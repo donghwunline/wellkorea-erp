@@ -29,7 +29,7 @@ interface BucketCardProps {
   color: 'green' | 'yellow' | 'orange' | 'red' | 'gray';
 }
 
-function BucketCard({ label, amount, count, countLabel, percentage, color }: BucketCardProps) {
+function BucketCard({ label, amount, countLabel, percentage, color }: BucketCardProps) {
   const colorClasses = {
     green: 'border-green-500/30 bg-green-500/10',
     yellow: 'border-yellow-500/30 bg-yellow-500/10',

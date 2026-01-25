@@ -123,6 +123,7 @@ company:
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   type-aliases-package: com.wellkorea.backend
+  type-handlers-package: com.wellkorea.backend.shared.storage.infrastructure
   configuration:
     map-underscore-to-camel-case: true
     default-fetch-size: 100

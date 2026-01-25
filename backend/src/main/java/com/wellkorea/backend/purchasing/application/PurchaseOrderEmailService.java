@@ -4,7 +4,7 @@ import com.wellkorea.backend.company.api.dto.query.CompanyDetailView;
 import com.wellkorea.backend.company.infrastructure.mapper.CompanyMapper;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderDetailView;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestDetailView;
-import com.wellkorea.backend.purchasing.domain.PurchaseOrderStatus;
+import com.wellkorea.backend.purchasing.domain.vo.PurchaseOrderStatus;
 import com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseOrderMapper;
 import com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseRequestMapper;
 import com.wellkorea.backend.shared.config.CompanyProperties;

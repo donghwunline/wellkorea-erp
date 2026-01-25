@@ -1,6 +1,6 @@
 package com.wellkorea.backend.company.api.dto.command;
 
-import com.wellkorea.backend.company.domain.RoleType;
+import com.wellkorea.backend.company.domain.vo.RoleType;
 
 /**
  * Result of a company command operation.

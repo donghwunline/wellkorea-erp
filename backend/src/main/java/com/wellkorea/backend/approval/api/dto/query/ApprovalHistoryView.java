@@ -1,6 +1,6 @@
 package com.wellkorea.backend.approval.api.dto.query;
 
-import com.wellkorea.backend.approval.domain.ApprovalAction;
+import com.wellkorea.backend.approval.domain.vo.ApprovalAction;
 
 import java.time.LocalDateTime;
 
@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
  * Used for displaying approval workflow history.
  */
 public record ApprovalHistoryView(
-        Long id,
         Integer levelOrder,
         ApprovalAction action,
         Long actorId,

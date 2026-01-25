@@ -1,7 +1,7 @@
 package com.wellkorea.backend.auth.infrastructure.persistence;
 
-import com.wellkorea.backend.auth.domain.AuditAction;
 import com.wellkorea.backend.auth.domain.AuditLog;
+import com.wellkorea.backend.auth.domain.vo.AuditAction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

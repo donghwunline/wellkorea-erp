@@ -106,7 +106,7 @@ export function LoginPage() {
       }
 
       // Use smart error message mapping (Korean messages)
-      const errorMessage = getErrorMessage(apiError);
+      const errorMessage = getErrorMessage(apiError, t);
       setError(errorMessage);
     } finally {
       setIsLoading(false);

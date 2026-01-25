@@ -1,9 +1,18 @@
 package com.wellkorea.backend.project.application;
 
+import com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper;
+import com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper;
+import com.wellkorea.backend.shared.storage.infrastructure.mapper.DocumentMapper;
+import com.wellkorea.backend.production.infrastructure.persistence.TaskFlowRepository;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
+import com.wellkorea.backend.project.api.dto.query.ProjectKPIView;
+import com.wellkorea.backend.project.api.dto.query.ProjectSectionSummaryView;
+import com.wellkorea.backend.project.api.dto.query.ProjectSectionsSummaryView;
 import com.wellkorea.backend.project.api.dto.query.ProjectSummaryView;
 import com.wellkorea.backend.project.domain.ProjectStatus;
 import com.wellkorea.backend.project.infrastructure.mapper.ProjectMapper;
+import com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseRequestMapper;
+import com.wellkorea.backend.quotation.infrastructure.mapper.QuotationMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -11,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,9 +35,29 @@ import java.util.List;
 public class ProjectQueryService {
 
     private final ProjectMapper projectMapper;
+    private final QuotationMapper quotationMapper;
+    private final TaskFlowRepository taskFlowRepository;
+    private final PurchaseRequestMapper purchaseRequestMapper;
+    private final DocumentMapper documentMapper;
+    private final DeliveryMapper deliveryMapper;
+    private final InvoiceMapper invoiceMapper;
 
-    public ProjectQueryService(ProjectMapper projectMapper) {
+    public ProjectQueryService(
+            ProjectMapper projectMapper,
+            QuotationMapper quotationMapper,
+            TaskFlowRepository taskFlowRepository,
+            PurchaseRequestMapper purchaseRequestMapper,
+            DocumentMapper documentMapper,
+            DeliveryMapper deliveryMapper,
+            InvoiceMapper invoiceMapper
+    ) {
         this.projectMapper = projectMapper;
+        this.quotationMapper = quotationMapper;
+        this.taskFlowRepository = taskFlowRepository;
+        this.purchaseRequestMapper = purchaseRequestMapper;
+        this.documentMapper = documentMapper;
+        this.deliveryMapper = deliveryMapper;
+        this.invoiceMapper = invoiceMapper;
     }
 
     /**
@@ -132,5 +162,74 @@ public class ProjectQueryService {
                 null, null, search, pageable.getPageSize(), pageable.getOffset());
         long total = projectMapper.countWithFilters(null, null, search);
         return new PageImpl<>(content, pageable, total);
+    }
+
+    /**
+     * Get project sections summary for tab badge counts.
+     * Returns counts for each section (quotation, process, purchase, outsource, documents, delivery, finance).
+     *
+     * @param projectId Project ID
+     * @return Project sections summary with counts for each tab
+     * @throws ResourceNotFoundException if project not found
+     */
+    public ProjectSectionsSummaryView getProjectSummary(Long projectId) {
+        // Verify project exists
+        projectMapper.findDetailById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+
+        List<ProjectSectionSummaryView> sections = new ArrayList<>();
+
+        // 1. Quotation (견적) - total quotations linked to this project
+        long quotationTotal = quotationMapper.countWithFilters(null, projectId);
+        sections.add(ProjectSectionSummaryView.of("quotation", "견적", (int) quotationTotal, 0));
+
+        // 2. Process (공정) - total nodes linked to this project
+        var taskFlowOpt = taskFlowRepository.findByProjectId(projectId);
+        int nodeCount = taskFlowOpt.map(flow -> flow.getNodes().size()).orElse(0);
+        sections.add(ProjectSectionSummaryView.of("process", "공정", nodeCount, 0));
+
+        // 3. Purchase (구매) - total MaterialPurchaseRequest linked to this project
+        long materialPurchaseTotal = purchaseRequestMapper.countWithFilters(null, projectId, "MATERIAL");
+        sections.add(ProjectSectionSummaryView.of("purchase", "구매", (int) materialPurchaseTotal, 0));
+
+        // 4. Outsource (외주) - total ServicePurchaseRequest linked to this project
+        long servicePurchaseTotal = purchaseRequestMapper.countWithFilters(null, projectId, "SERVICE");
+        sections.add(ProjectSectionSummaryView.of("outsource", "외주", (int) servicePurchaseTotal, 0));
+
+        // 5. Documents (문서) - total documents (blueprints + delivery photos) linked to this project
+        long documentTotal = documentMapper.countDocumentsByProjectId(projectId);
+        sections.add(ProjectSectionSummaryView.of("documents", "문서", (int) documentTotal, 0));
+
+        // 6. Delivery (출고) - total Delivery linked to this project
+        long deliveryTotal = deliveryMapper.countWithFilters(projectId, null);
+        sections.add(ProjectSectionSummaryView.of("delivery", "출고", (int) deliveryTotal, 0));
+
+        // 7. Finance (정산) - total TaxInvoice linked to this project
+        long invoiceTotal = invoiceMapper.countWithFilters(projectId, null);
+        sections.add(ProjectSectionSummaryView.of("finance", "정산", (int) invoiceTotal, 0));
+
+        return ProjectSectionsSummaryView.of(projectId, sections);
+    }
+
+
+    /**
+     * Get project KPIs for the dashboard strip.
+     * Returns key performance indicators: progress, pending approvals, accounts receivable, invoiced amount.
+     *
+     * @param projectId Project ID
+     * @return Project KPI view with calculated metrics
+     * @throws ResourceNotFoundException if project not found
+     */
+    public ProjectKPIView getProjectKPI(Long projectId) {
+        // Verify project exists
+        projectMapper.findDetailById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+
+        int progress = projectMapper.calculateProjectProgress(projectId);
+        int pending = projectMapper.countPendingApprovals(projectId);
+        long ar = projectMapper.calculateAccountsReceivable(projectId);
+        long invoiced = projectMapper.calculateInvoicedAmount(projectId);
+
+        return ProjectKPIView.of(progress, pending, ar, invoiced);
     }
 }

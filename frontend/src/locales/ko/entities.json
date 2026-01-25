@@ -44,16 +44,15 @@
     "kpi": {
       "progress": "진행률",
       "pendingApprovals": "결재대기",
-      "missingDocuments": "문서누락",
       "accountsReceivable": "미수금",
+      "invoicedAmount": "청구금액",
       "trends": {
         "onTrack": "정상 진행",
         "inProgress": "진행 중",
         "behind": "지연",
         "pending": "{{count}}건 대기",
-        "needsAttention": "확인 필요",
-        "complete": "완료",
-        "outstanding": "미결제"
+        "outstanding": "미결제",
+        "issued": "청구 완료"
       }
     },
     "combobox": {

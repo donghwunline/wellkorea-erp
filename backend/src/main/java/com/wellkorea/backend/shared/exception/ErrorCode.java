@@ -28,6 +28,10 @@ public enum ErrorCode {
     DUPLICATE_RESOURCE(409, "BUS_003", "Resource already exists"),
     CONCURRENT_MODIFICATION(409, "BUS_004", "Concurrent modification detected - please retry"),
 
+    // ========== Finance Domain Errors ==========
+    PAYMENT_NOT_ALLOWED(409, "FIN_001", "Payment not allowed in current AP status"),
+    PAYMENT_EXCEEDS_BALANCE(400, "FIN_002", "Payment amount exceeds remaining balance"),
+
     // ========== Authentication Errors (401) ==========
     AUTHENTICATION_FAILED(401, "AUTH_001", "Authentication failed"),
     INVALID_TOKEN(401, "AUTH_002", "Invalid or expired token"),

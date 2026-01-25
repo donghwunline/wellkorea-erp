@@ -1,13 +1,13 @@
 package com.wellkorea.backend.production.api;
 
-import com.wellkorea.backend.auth.domain.AuthenticatedUser;
 import com.wellkorea.backend.production.api.dto.command.BlueprintCommandResult;
-import com.wellkorea.backend.production.api.dto.command.RegisterAttachmentRequest;
-import com.wellkorea.backend.production.api.dto.command.UploadUrlRequest;
-import com.wellkorea.backend.production.api.dto.command.UploadUrlResponse;
+import com.wellkorea.backend.shared.storage.api.dto.RegisterAttachmentRequest;
+import com.wellkorea.backend.shared.storage.api.dto.UploadUrlRequest;
+import com.wellkorea.backend.shared.storage.api.dto.UploadUrlResponse;
 import com.wellkorea.backend.production.api.dto.query.BlueprintAttachmentView;
 import com.wellkorea.backend.production.application.BlueprintAttachmentService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -73,16 +73,7 @@ public class BlueprintAttachmentController {
         return ResponseEntity.ok(ApiResponse.success(attachments));
     }
 
-    /**
-     * List all attachments for a Project (via TaskFlow relationship).
-     * GET /api/projects/{projectId}/attachments
-     */
-    @GetMapping("/projects/{projectId}/attachments")
-    @PreAuthorize("hasAnyRole('ADMIN', 'PRODUCTION', 'SALES')")
-    public ResponseEntity<ApiResponse<List<BlueprintAttachmentView>>> listAttachmentsByProject(@PathVariable Long projectId) {
-        List<BlueprintAttachmentView> attachments = attachmentService.getAttachmentsByProject(projectId);
-        return ResponseEntity.ok(ApiResponse.success(attachments));
-    }
+    
 
     /**
      * Get attachment metadata by ID.

@@ -21,6 +21,7 @@ public record CreateVendorMaterialOfferingRequest(
         @Size(max = 50, message = "Vendor material code must be at most 50 characters")
         String vendorMaterialCode,
 
+        @Size(max = 200, message = "Vendor material name must be at most 200 characters")
         String vendorMaterialName,
 
         @PositiveOrZero(message = "Unit price must be zero or positive")
@@ -41,6 +42,7 @@ public record CreateVendorMaterialOfferingRequest(
 
         Boolean isPreferred,
 
+        @Size(max = 1000, message = "Notes must be at most 1000 characters")
         String notes
 ) {
     /**

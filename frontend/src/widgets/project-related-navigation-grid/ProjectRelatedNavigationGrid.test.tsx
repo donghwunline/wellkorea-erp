@@ -186,7 +186,8 @@ describe('ProjectRelatedNavigationGrid', () => {
       renderWithProviders(<ProjectRelatedNavigationGrid projectId={1} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/No sections available/i)).toBeInTheDocument();
+        // Use role query to be more specific (h3 is heading level 3)
+        expect(screen.getByRole('heading', { name: /No sections available/i })).toBeInTheDocument();
       });
     });
   });

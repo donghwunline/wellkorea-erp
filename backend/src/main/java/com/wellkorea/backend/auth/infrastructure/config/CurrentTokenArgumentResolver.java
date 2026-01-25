@@ -12,7 +12,20 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 /**
  * Argument resolver for {@link CurrentToken} annotation.
  * Extracts JWT token from the Authorization header and injects it into controller method parameters.
+ *
+ * @deprecated since 1.0. This resolver is deprecated in favor of Spring Security's built-in
+ *             authentication mechanisms. The planned replacement approach:
+ *             <ul>
+ *             <li>Use {@code @AuthenticationPrincipal} with a custom {@code UserDetails} implementation</li>
+ *             <li>For JWT claims, use {@code Authentication.getCredentials()} or a custom
+ *                 {@code JwtAuthenticationToken}</li>
+ *             <li>Keycloak integration (planned) will provide OAuth2 resource server support
+ *                 with automatic token validation</li>
+ *             </ul>
+ *             This class is retained for backward compatibility until the migration to OAuth2/Keycloak
+ *             is complete. Not marked for removal as existing controllers may still depend on it.
  */
+@Deprecated(since = "1.0", forRemoval = false)
 @Component
 public class CurrentTokenArgumentResolver implements HandlerMethodArgumentResolver {
 

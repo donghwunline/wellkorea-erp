@@ -66,6 +66,10 @@ export const PROJECT_ENDPOINTS = {
   byId: (id: number) => `/projects/${id}`,
   /** GET /projects/jobcode/:jobCode */
   byJobCode: (jobCode: string) => `/projects/jobcode/${jobCode}`,
+  /** GET /projects/:id/summary - Get tab badge counts */
+  summary: (id: number) => `/projects/${id}/summary`,
+  /** GET /projects/:id/kpi - Get project KPIs */
+  kpi: (id: number) => `/projects/${id}/kpi`,
 } as const;
 
 // ============================================================================
@@ -106,6 +110,8 @@ export const APPROVAL_ENDPOINTS = {
   reject: (id: number) => `/approvals/${id}/reject`,
   /** GET /approvals/:id/history */
   history: (id: number) => `/approvals/${id}/history`,
+  /** GET /approvals/pending-count - Get pending approval count for current user */
+  PENDING_COUNT: '/approvals/pending-count',
 } as const;
 
 // ============================================================================
@@ -215,8 +221,6 @@ export const BLUEPRINT_ENDPOINTS = {
   /** List attachments for a node: GET /task-flows/:flowId/nodes/:nodeId/attachments */
   byNode: (flowId: number, nodeId: string) =>
     `/task-flows/${flowId}/nodes/${nodeId}/attachments`,
-  /** List all attachments for a project: GET /projects/:projectId/attachments */
-  byProject: (projectId: number) => `/projects/${projectId}/attachments`,
   /** Get presigned upload URL: POST /task-flows/:flowId/nodes/:nodeId/attachments/upload-url */
   uploadUrl: (flowId: number, nodeId: string) =>
     `/task-flows/${flowId}/nodes/${nodeId}/attachments/upload-url`,
@@ -243,7 +247,7 @@ export const DELIVERY_ENDPOINTS = {
 
   /** GET /deliveries/:id - Get delivery detail */
   byId: (id: number) => `/deliveries/${id}`,
-  /** POST /deliveries/:id/delivered - Mark as delivered */
+  /** POST /deliveries/:id/delivered - Mark as delivered (deprecated - use photo endpoints) */
   markDelivered: (id: number) => `/deliveries/${id}/delivered`,
   /** POST /deliveries/:id/returned - Mark as returned */
   markReturned: (id: number) => `/deliveries/${id}/returned`,
@@ -251,6 +255,15 @@ export const DELIVERY_ENDPOINTS = {
   reassign: (id: number) => `/deliveries/${id}/reassign`,
   /** GET /deliveries/:id/statement - Generate delivery statement PDF */
   statement: (id: number) => `/deliveries/${id}/statement`,
+
+  // ========== PHOTO UPLOAD ENDPOINTS ==========
+
+  /** POST /deliveries/:id/photo/upload-url - Get presigned URL for photo upload */
+  photoUploadUrl: (id: number) => `/deliveries/${id}/photo/upload-url`,
+  /** POST /deliveries/:id/photo/register-and-deliver - Register photo and mark as delivered */
+  registerPhotoAndDeliver: (id: number) => `/deliveries/${id}/photo/register-and-deliver`,
+  /** GET /deliveries/:id/photo - Get photo attachment */
+  photo: (id: number) => `/deliveries/${id}/photo`,
 } as const;
 
 // ============================================================================
@@ -338,4 +351,33 @@ export const PURCHASE_ORDER_ENDPOINTS = {
   receive: (id: number) => `/purchase-orders/${id}/receive`,
   /** DELETE /purchase-orders/:id - Cancel purchase order */
   cancel: (id: number) => `/purchase-orders/${id}`,
+} as const;
+
+// ============================================================================
+// Invoice Endpoints
+// ============================================================================
+
+export const INVOICE_ENDPOINTS = {
+  /** Base path for invoice operations */
+  /** GET /invoices?projectId={projectId}&status={status} - List invoices */
+  /** POST /invoices - Create invoice */
+  BASE: '/invoices',
+
+  /** GET /invoices/:id - Get invoice detail */
+  byId: (id: number) => `/invoices/${id}`,
+  /** POST /invoices/:id/issue - Issue invoice with document */
+  issue: (id: number) => `/invoices/${id}/issue`,
+  /** POST /invoices/:id/cancel - Cancel invoice */
+  cancel: (id: number) => `/invoices/${id}/cancel`,
+  /** POST /invoices/:id/payments - Record payment */
+  payments: (id: number) => `/invoices/${id}/payments`,
+  /** PATCH /invoices/:id/notes - Update notes */
+  notes: (id: number) => `/invoices/${id}/notes`,
+
+  // ========== DOCUMENT UPLOAD ENDPOINTS ==========
+
+  /** POST /invoices/:id/document/upload-url - Get presigned URL for document upload */
+  documentUploadUrl: (id: number) => `/invoices/${id}/document/upload-url`,
+  /** GET /invoices/:id/document - Get invoice document */
+  document: (id: number) => `/invoices/${id}/document`,
 } as const;

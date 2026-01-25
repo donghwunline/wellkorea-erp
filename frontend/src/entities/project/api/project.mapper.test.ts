@@ -34,6 +34,7 @@ function createMockProjectDetailsResponse(
     createdByName: 'Admin User',
     createdAt: '2025-01-15T00:00:00Z',
     updatedAt: '2025-01-15T00:00:00Z',
+    note: null,
     ...overrides,
   };
 }

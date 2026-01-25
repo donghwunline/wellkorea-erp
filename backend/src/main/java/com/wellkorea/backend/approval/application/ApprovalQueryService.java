@@ -4,7 +4,7 @@ import com.wellkorea.backend.approval.api.dto.query.ApprovalDetailView;
 import com.wellkorea.backend.approval.api.dto.query.ApprovalHistoryView;
 import com.wellkorea.backend.approval.api.dto.query.ApprovalSummaryView;
 import com.wellkorea.backend.approval.api.dto.query.ChainTemplateView;
-import com.wellkorea.backend.approval.domain.ApprovalStatus;
+import com.wellkorea.backend.approval.domain.vo.ApprovalStatus;
 import com.wellkorea.backend.approval.domain.vo.EntityType;
 import com.wellkorea.backend.approval.infrastructure.mapper.ApprovalMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
@@ -118,5 +118,16 @@ public class ApprovalQueryService {
      */
     public boolean exists(Long approvalRequestId) {
         return approvalMapper.existsById(approvalRequestId);
+    }
+
+    /**
+     * Count pending approvals for a user.
+     * Used for badge display in navigation.
+     *
+     * @param userId User ID to count pending approvals for
+     * @return Count of pending approvals where user is the expected approver at current level
+     */
+    public long countPendingForUser(Long userId) {
+        return approvalMapper.countPendingByApproverUserId(userId);
     }
 }

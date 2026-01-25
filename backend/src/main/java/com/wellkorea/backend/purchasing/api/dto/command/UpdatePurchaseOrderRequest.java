@@ -1,6 +1,6 @@
 package com.wellkorea.backend.purchasing.api.dto.command;
 
-import com.wellkorea.backend.purchasing.application.UpdatePurchaseOrderCommand;
+import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseOrderCommand;
 
 import java.time.LocalDate;
 

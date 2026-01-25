@@ -12,6 +12,7 @@ import { PageHeader, Tab, TabList, TabPanel, Tabs } from '@/shared/ui';
 import { PurchaseRequestsTab } from './ui/PurchaseRequestsTab';
 import { RfqTab } from './ui/RfqTab';
 import { PurchaseOrdersTab } from './ui/PurchaseOrdersTab';
+import { AccountsPayableTab } from './ui/AccountsPayableTab';
 
 /**
  * Procurement page with tabbed navigation.
@@ -40,6 +41,9 @@ export function ProcurementPage() {
             <Tab id="orders" icon="shopping-cart">
               {t('tabs.purchaseOrders')}
             </Tab>
+            <Tab id="ap" icon="banknotes">
+              {t('tabs.accountsPayable')}
+            </Tab>
           </TabList>
 
           <TabPanel id="requests">
@@ -52,6 +56,10 @@ export function ProcurementPage() {
 
           <TabPanel id="orders">
             <PurchaseOrdersTab />
+          </TabPanel>
+
+          <TabPanel id="ap">
+            <AccountsPayableTab />
           </TabPanel>
         </Tabs>
       </div>

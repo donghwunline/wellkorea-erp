@@ -31,11 +31,14 @@ import {
   getPaymentMethodOptions,
   type PaymentMethod,
 } from '@/entities/invoice';
-import { useIssueInvoice } from '@/features/invoice/issue';
+import { IssueInvoiceModal } from '@/features/invoice/issue';
 import { useCancelInvoice } from '@/features/invoice/cancel';
 import { useRecordPayment } from '@/features/payment/record';
 import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatting';
 import { useAuth } from '@/entities/auth';
+import { httpClient } from '@/shared/api';
+import { INVOICE_ENDPOINTS } from '@/shared/config/endpoints';
+import type { Attachment } from '@/shared/domain';
 
 export interface InvoiceDetailModalProps {
   /** Invoice ID to display */
@@ -80,6 +83,7 @@ export function InvoiceDetailModal({
   // Modal state
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showIssueModal, setShowIssueModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState<PaymentFormState>(defaultPaymentForm);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -94,17 +98,20 @@ export function InvoiceDetailModal({
     enabled: isOpen && invoiceId > 0,
   });
 
-  // Mutations
-  const { mutate: issueInvoice, isPending: isIssuing } = useIssueInvoice({
-    onSuccess: () => {
-      refetch();
-      onSuccess?.();
+  // Fetch invoice document (only for issued invoices)
+  const { data: document } = useQuery({
+    queryKey: ['invoice', invoiceId, 'document'],
+    queryFn: async () => {
+      try {
+        return await httpClient.get<Attachment>(INVOICE_ENDPOINTS.document(invoiceId));
+      } catch {
+        return null; // No document attached
+      }
     },
-    onError: err => {
-      setFormError(err.message);
-    },
+    enabled: isOpen && invoiceId > 0 && invoice?.status !== 'DRAFT',
   });
 
+  // Mutations
   const { mutate: cancelInvoice, isPending: isCancelling } = useCancelInvoice({
     onSuccess: () => {
       setShowCancelConfirm(false);
@@ -128,11 +135,17 @@ export function InvoiceDetailModal({
     },
   });
 
-  // Handle issue invoice
+  // Handle issue invoice - opens the IssueInvoiceModal
   const handleIssue = useCallback(() => {
-    setFormError(null);
-    issueInvoice(invoiceId);
-  }, [invoiceId, issueInvoice]);
+    setShowIssueModal(true);
+  }, []);
+
+  // Handle issue modal success
+  const handleIssueSuccess = useCallback(() => {
+    setShowIssueModal(false);
+    refetch();
+    onSuccess?.();
+  }, [refetch, onSuccess]);
 
   // Handle cancel invoice
   const handleCancel = useCallback(() => {
@@ -182,7 +195,7 @@ export function InvoiceDetailModal({
         notes: paymentForm.notes || null,
       });
     },
-    [invoiceId, paymentForm, invoice, recordPayment]
+    [invoiceId, paymentForm, invoice, recordPayment, t]
   );
 
   // Open payment form with pre-filled remaining balance
@@ -506,6 +519,32 @@ export function InvoiceDetailModal({
         </div>
       </Card>
 
+      {/* Tax Invoice Document */}
+      {/* TODO: Add inline PDF viewer with toggle button (currently download-only) */}
+      {document && (
+        <Card className="mb-4 border-steel-700 bg-steel-800/50 p-4">
+          <h4 className="mb-3 text-sm font-semibold text-white">
+            {t('invoiceDetailModal.sections.taxInvoice')}
+          </h4>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Icon name="document" className="h-8 w-8 text-red-400" />
+              <div>
+                <p className="text-sm font-medium text-white">{document.fileName}</p>
+                <p className="text-xs text-steel-400">{document.formattedFileSize}</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.open(document.downloadUrl, '_blank')}
+            >
+              <Icon name="document-arrow-down" className="h-4 w-4" />
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* Timestamps */}
       <div className="mb-4 text-xs text-steel-500">
         {t('invoiceDetailModal.metadata', { createdBy: invoice.createdByName, createdAt: formatDateTime(invoice.createdAt), updatedAt: formatDateTime(invoice.updatedAt) })}
@@ -515,8 +554,8 @@ export function InvoiceDetailModal({
       <ModalActions align="between">
         <div className="flex gap-2">
           {canManageInvoices && invoiceRules.canIssue(invoice) && (
-            <Button onClick={handleIssue} disabled={isIssuing} size="sm">
-              {isIssuing ? t('invoiceDetailModal.issuing') : t('invoiceDetailModal.issueInvoice')}
+            <Button onClick={handleIssue} size="sm">
+              {t('invoiceDetailModal.issueInvoice')}
             </Button>
           )}
           {canManageInvoices && invoiceRules.canReceivePayment(invoice) && (
@@ -539,6 +578,17 @@ export function InvoiceDetailModal({
           {t('invoiceDetailModal.close')}
         </Button>
       </ModalActions>
+
+      {/* Issue Invoice Modal with Document Upload */}
+      {showIssueModal && invoice && (
+        <IssueInvoiceModal
+          invoiceId={invoice.id}
+          invoiceNumber={invoice.invoiceNumber}
+          isOpen={true}
+          onClose={() => setShowIssueModal(false)}
+          onSuccess={handleIssueSuccess}
+        />
+      )}
     </Modal>
   );
 }
