@@ -254,8 +254,9 @@ describe('ProjectViewPage', () => {
 
       renderProjectViewPage();
 
-      // Initially shows loading
-      expect(screen.getByText('Loading...')).toBeInTheDocument();
+      // Initially shows loading (component shows it in multiple places)
+      const loadingElements = screen.getAllByText('Loading...');
+      expect(loadingElements.length).toBeGreaterThan(0);
     });
   });
 

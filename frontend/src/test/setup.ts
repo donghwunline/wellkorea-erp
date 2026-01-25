@@ -1191,7 +1191,12 @@ const mockTranslations: Record<string, string> = {
   'pages:projectEdit.editDetails': 'Edit Project Details',
 
   // Project View Page translations
-  'pages:projectView.loading': 'Loading project details...',
+  'pages:projectView.loading': 'Loading...',
+  'pages:projectView.loadingProject': 'Loading...',
+  'pages:projectView.error': 'Error',
+  'pages:projectView.backToProjects': 'Back to Projects',
+  'pages:projectView.notFound': 'Project Not Found',
+  'pages:projectView.notFoundMessage': 'The requested project could not be found.',
   'pages:projectView.tabs.quotations': 'Quotations',
   'pages:projectView.tabs.taskFlow': 'Task Flow',
   'pages:projectView.tabs.purchase': 'Purchase',
@@ -1199,6 +1204,37 @@ const mockTranslations: Record<string, string> = {
   'pages:projectView.tabs.documents': 'Documents',
   'pages:projectView.tabs.deliveries': 'Deliveries',
   'pages:projectView.tabs.invoices': 'Invoices',
+
+  // ProjectRelatedNavigationGrid widget translations
+  'widgets:projectRelatedNavigationGrid.loading': 'Loading project summary',
+  'widgets:projectRelatedNavigationGrid.loadError': 'Failed to load project summary',
+  'widgets:projectRelatedNavigationGrid.retry': 'Retry',
+  'widgets:projectRelatedNavigationGrid.emptyTitle': 'No sections available',
+  'widgets:projectRelatedNavigationGrid.emptyDescription': 'No sections available for this project.',
+
+  // DeliveryPanel widget translations
+  'widgets:deliveryPanel.loading': 'Loading delivery data',
+  'widgets:deliveryPanel.loadError': 'Failed to load deliveries: {{message}}',
+  'widgets:deliveryPanel.noQuotation': 'No Accepted Quotation',
+  'widgets:deliveryPanel.noQuotationDesc': 'A quotation must be accepted by the customer before recording deliveries.',
+  'widgets:deliveryPanel.noDeliveries': 'No Deliveries Yet',
+  'widgets:deliveryPanel.noDeliveriesDesc': 'No deliveries have been recorded for this project.',
+  'widgets:deliveryPanel.recordDelivery': 'Record Delivery',
+  'widgets:deliveryPanel.table.id': 'ID',
+  'widgets:deliveryPanel.table.deliveryDate': 'Delivery Date',
+  'widgets:deliveryPanel.table.deliveredBy': 'Delivered By',
+  'widgets:deliveryPanel.table.items': 'Items',
+  'widgets:deliveryPanel.table.status': 'Status',
+  'widgets:deliveryPanel.table.actions': 'Actions',
+  'widgets:deliveryPanel.table.itemCount': '{{count}} items ({{units}} units)',
+  'widgets:deliveryPanel.actions.downloadStatement': 'Download Statement PDF',
+  'widgets:deliveryPanel.actions.viewDetails': 'View Details',
+
+  // DeliverySummaryStats widget translations
+  'widgets:deliverySummaryStats.totalDeliveries': 'Total Deliveries',
+  'widgets:deliverySummaryStats.itemsDelivered': 'Items Delivered',
+  'widgets:deliverySummaryStats.pending': 'Pending',
+  'widgets:deliverySummaryStats.delivered': 'Delivered',
 };
 
 /**
