@@ -138,7 +138,7 @@ export function DeliveryDetailModal({
     } finally {
       setIsDownloading(false);
     }
-  }, [deliveryId]);
+  }, [deliveryId, t]);
 
   const handleOpenMarkDeliveredModal = useCallback(() => {
     setIsMarkDeliveredModalOpen(true);

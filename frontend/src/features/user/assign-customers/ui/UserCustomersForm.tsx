@@ -61,7 +61,7 @@ export function UserCustomersForm({
     } finally {
       setIsLoadingAssignments(false);
     }
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     if (isOpen && user) {
