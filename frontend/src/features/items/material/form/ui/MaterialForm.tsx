@@ -102,7 +102,7 @@ export function MaterialForm({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData]);
+  }, [formData, t]);
 
   // Handle submit
   const handleSubmit = (e: FormEvent) => {

@@ -104,7 +104,7 @@ export function RecordPaymentModal({
         notes: notes || null,
       });
     },
-    [invoice, paymentDate, amount, paymentMethod, referenceNumber, notes, recordPayment]
+    [invoice, paymentDate, amount, paymentMethod, referenceNumber, notes, recordPayment, t]
   );
 
   return (

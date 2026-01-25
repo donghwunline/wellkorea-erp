@@ -91,7 +91,7 @@ export function RecordReplyModal({
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [formData]);
+  }, [formData, t]);
 
   // Handle field change
   const handleFieldChange = useCallback((field: keyof FormData, value: string) => {

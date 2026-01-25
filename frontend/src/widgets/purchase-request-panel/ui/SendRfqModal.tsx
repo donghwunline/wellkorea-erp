@@ -426,7 +426,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
      setEmailStates(newEmailStates);
      setStep('email-editing');
      setError(null);
-  }, [selectedVendorIds, offerings, emailStates]);
+  }, [selectedVendorIds, offerings, emailStates, t]);
 
   // Handle "Back"
   const handleBack = useCallback(() => {
@@ -437,7 +437,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
   // Submit RFQ
   const handleSubmit = useCallback(() => {
     // Validate emails
-    const invalidEmails = Object.entries(emailStates).some(([_, state]) => !state.to.trim());
+    const invalidEmails = Object.entries(emailStates).some(([, state]) => !state.to.trim());
     if (invalidEmails) {
         setError(t('sendRfqModal.allEmailsRequired'));
         return;
@@ -448,7 +448,7 @@ export function SendRfqModal(props: SendRfqModalProps) {
       vendorIds: selectedVendorIds,
       vendorEmails: emailStates,
     });
-  }, [purchaseRequestId, selectedVendorIds, emailStates, sendRfqMutation]);
+  }, [purchaseRequestId, selectedVendorIds, emailStates, sendRfqMutation, t]);
 
   // Get unique vendor count
   const uniqueVendorIds = offerings ? [...new Set(offerings.map((o) => o.vendorId))] : [];
