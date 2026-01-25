@@ -323,12 +323,61 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
     class IssueInvoiceTests {
 
         @Test
-        @DisplayName("should return 200 when issuing draft invoice")
+        @DisplayName("should return 200 when issuing draft invoice with document")
         void issueInvoice_FromDraft_Returns200() throws Exception {
             Long invoiceId = createTestInvoice();
+            String fileName = "tax-invoice.pdf";
+            byte[] testFileContent = "Test PDF content for invoice".getBytes();
+            long fileSize = testFileContent.length;
+
+            // Step 1: Get presigned upload URL
+            String uploadUrlRequest = """
+                    {
+                        "fileName": "%s",
+                        "fileSize": %d,
+                        "contentType": "application/pdf"
+                    }
+                    """.formatted(fileName, fileSize);
+
+            String uploadUrlResponse = mockMvc.perform(post(INVOICES_BASE_URL + "/" + invoiceId + "/document/upload-url")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(uploadUrlRequest))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            String uploadUrl = objectMapper.readTree(uploadUrlResponse).path("data").path("uploadUrl").asText();
+            String objectKey = objectMapper.readTree(uploadUrlResponse).path("data").path("objectKey").asText();
+
+            // Step 2: Upload file directly to MinIO
+            java.net.http.HttpClient httpClient = java.net.http.HttpClient.newHttpClient();
+            java.net.http.HttpRequest uploadRequest = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create(uploadUrl))
+                    .header("Content-Type", "application/pdf")
+                    .PUT(java.net.http.HttpRequest.BodyPublishers.ofByteArray(testFileContent))
+                    .build();
+            java.net.http.HttpResponse<String> uploadResponse = httpClient.send(uploadRequest,
+                    java.net.http.HttpResponse.BodyHandlers.ofString());
+
+            if (uploadResponse.statusCode() != 200) {
+                throw new RuntimeException("Failed to upload file to MinIO: " + uploadResponse.statusCode());
+            }
+
+            // Step 3: Issue invoice with document info
+            String issueRequest = """
+                    {
+                        "fileName": "%s",
+                        "fileSize": %d,
+                        "objectKey": "%s"
+                    }
+                    """.formatted(fileName, fileSize, objectKey);
 
             mockMvc.perform(post(INVOICES_BASE_URL + "/" + invoiceId + "/issue")
-                            .header("Authorization", "Bearer " + adminToken))
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(issueRequest))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.id").value(invoiceId))
@@ -449,9 +498,67 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
         return objectMapper.readTree(response).path("data").path("id").asLong();
     }
 
+    /**
+     * Helper to issue an invoice with document upload.
+     * Performs the full 3-step flow:
+     * 1. Get presigned URL
+     * 2. Upload file to MinIO
+     * 3. Issue invoice with document info
+     */
     private void issueInvoice(Long invoiceId) throws Exception {
+        String fileName = "test-invoice.pdf";
+        byte[] testFileContent = "Test PDF content".getBytes();
+        long fileSize = testFileContent.length;
+
+        // Step 1: Get presigned upload URL
+        String uploadUrlRequest = """
+                {
+                    "fileName": "%s",
+                    "fileSize": %d,
+                    "contentType": "application/pdf"
+                }
+                """.formatted(fileName, fileSize);
+
+        String uploadUrlResponse = mockMvc.perform(post(INVOICES_BASE_URL + "/" + invoiceId + "/document/upload-url")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(uploadUrlRequest))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // Extract uploadUrl and objectKey from response
+        String uploadUrl = objectMapper.readTree(uploadUrlResponse).path("data").path("uploadUrl").asText();
+        String objectKey = objectMapper.readTree(uploadUrlResponse).path("data").path("objectKey").asText();
+
+        // Step 2: Upload file directly to MinIO using presigned URL
+        java.net.http.HttpClient httpClient = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest uploadRequest = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create(uploadUrl))
+                .header("Content-Type", "application/pdf")
+                .PUT(java.net.http.HttpRequest.BodyPublishers.ofByteArray(testFileContent))
+                .build();
+        java.net.http.HttpResponse<String> uploadResponse = httpClient.send(uploadRequest,
+                java.net.http.HttpResponse.BodyHandlers.ofString());
+
+        if (uploadResponse.statusCode() != 200) {
+            throw new RuntimeException("Failed to upload file to MinIO: " + uploadResponse.statusCode());
+        }
+
+        // Step 3: Issue invoice with document info
+        String issueRequest = """
+                {
+                    "fileName": "%s",
+                    "fileSize": %d,
+                    "objectKey": "%s"
+                }
+                """.formatted(fileName, fileSize, objectKey);
+
         mockMvc.perform(post(INVOICES_BASE_URL + "/" + invoiceId + "/issue")
-                        .header("Authorization", "Bearer " + adminToken))
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(issueRequest))
                 .andExpect(status().isOk());
     }
 }
