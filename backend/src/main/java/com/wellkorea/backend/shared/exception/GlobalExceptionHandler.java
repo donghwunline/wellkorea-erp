@@ -1,5 +1,7 @@
 package com.wellkorea.backend.shared.exception;
 
+import com.wellkorea.backend.finance.domain.exception.PaymentExceedsBalanceException;
+import com.wellkorea.backend.finance.domain.exception.PaymentNotAllowedException;
 import com.wellkorea.backend.shared.audit.AuditContextHolder;
 import com.wellkorea.backend.shared.audit.AuditLogger;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
@@ -316,6 +318,44 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         log.warn("Lock acquisition failed: {} at {}", ex.getMessage(), request.getDescription(false));
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle payment not allowed exceptions (409 Conflict).
+     * Thrown when attempting to add a payment to an AP in a status that doesn't allow payments.
+     */
+    @ExceptionHandler(PaymentNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentNotAllowed(
+            PaymentNotAllowedException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.PAYMENT_NOT_ALLOWED,
+                ex.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        log.warn("Payment not allowed: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * Handle payment exceeds balance exceptions (400 Bad Request).
+     * Thrown when a payment amount exceeds the remaining AP balance.
+     */
+    @ExceptionHandler(PaymentExceedsBalanceException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentExceedsBalance(
+            PaymentExceedsBalanceException ex,
+            WebRequest request) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(
+                ErrorCode.PAYMENT_EXCEEDS_BALANCE,
+                ex.getMessage(),
+                request.getDescription(false).replace("uri=", "")
+        );
+
+        log.warn("Payment exceeds balance: {}", ex.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     /**

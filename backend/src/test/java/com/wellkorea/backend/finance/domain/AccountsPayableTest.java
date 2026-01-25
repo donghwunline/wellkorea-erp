@@ -1,6 +1,8 @@
 package com.wellkorea.backend.finance.domain;
 
 import com.wellkorea.backend.company.domain.Company;
+import com.wellkorea.backend.finance.domain.exception.PaymentExceedsBalanceException;
+import com.wellkorea.backend.finance.domain.exception.PaymentNotAllowedException;
 import com.wellkorea.backend.finance.domain.vo.AccountsPayableStatus;
 import com.wellkorea.backend.finance.domain.vo.DisbursementCause;
 import com.wellkorea.backend.finance.domain.vo.VendorPaymentMethod;
@@ -259,7 +261,7 @@ class AccountsPayableTest {
             // When / Then
             VendorPayment excessivePayment = createPayment(new BigDecimal("300"));
             assertThatThrownBy(() -> ap.addPayment(excessivePayment))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(PaymentExceedsBalanceException.class)
                     .hasMessageContaining("exceeds remaining balance");
         }
 
@@ -274,8 +276,7 @@ class AccountsPayableTest {
             // When / Then
             VendorPayment additionalPayment = createPayment(new BigDecimal("100"));
             assertThatThrownBy(() -> ap.addPayment(additionalPayment))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Cannot add payment")
+                    .isInstanceOf(PaymentNotAllowedException.class)
                     .hasMessageContaining("PAID");
         }
 
@@ -290,8 +291,7 @@ class AccountsPayableTest {
             // When / Then
             VendorPayment payment = createPayment(new BigDecimal("500"));
             assertThatThrownBy(() -> ap.addPayment(payment))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Cannot add payment")
+                    .isInstanceOf(PaymentNotAllowedException.class)
                     .hasMessageContaining("CANCELLED");
         }
 

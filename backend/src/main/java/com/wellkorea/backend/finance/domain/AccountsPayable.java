@@ -1,10 +1,13 @@
 package com.wellkorea.backend.finance.domain;
 
 import com.wellkorea.backend.company.domain.Company;
+import com.wellkorea.backend.finance.domain.exception.PaymentExceedsBalanceException;
+import com.wellkorea.backend.finance.domain.exception.PaymentNotAllowedException;
 import com.wellkorea.backend.finance.domain.vo.AccountsPayableStatus;
 import com.wellkorea.backend.finance.domain.vo.DisbursementCause;
 import com.wellkorea.backend.finance.domain.vo.DisbursementCauseType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -60,6 +63,7 @@ public class AccountsPayable {
     private String notes;
 
     @OneToMany(mappedBy = "accountsPayable", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private List<VendorPayment> payments = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -200,18 +204,17 @@ public class AccountsPayable {
      * Updates status based on remaining balance.
      *
      * @param payment the payment to add
-     * @throws IllegalStateException    if AP cannot receive payments
-     * @throws IllegalArgumentException if payment exceeds remaining balance
+     * @throws PaymentNotAllowedException   if AP cannot receive payments (status-based)
+     * @throws PaymentExceedsBalanceException if payment exceeds remaining balance
      */
     public void addPayment(VendorPayment payment) {
         if (!status.canReceivePayment()) {
-            throw new IllegalStateException("Cannot add payment to AP in " + status + " status");
+            throw new PaymentNotAllowedException(status);
         }
 
         BigDecimal remaining = getRemainingBalance();
         if (payment.getAmount().compareTo(remaining) > 0) {
-            throw new IllegalArgumentException(
-                    "Payment amount " + payment.getAmount() + " exceeds remaining balance " + remaining);
+            throw new PaymentExceedsBalanceException(payment.getAmount(), remaining);
         }
 
         payment.setAccountsPayable(this);
