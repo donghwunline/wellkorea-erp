@@ -4,12 +4,12 @@ import com.wellkorea.backend.company.domain.Company;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.finance.domain.AccountsPayable;
 import com.wellkorea.backend.finance.domain.vo.DisbursementCause;
-import com.wellkorea.backend.finance.domain.vo.DisbursementCauseType;
 import com.wellkorea.backend.finance.infrastructure.persistence.AccountsPayableRepository;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderConfirmedEvent;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -37,6 +37,9 @@ public class AccountsPayableEventHandler {
     /**
      * Handle purchase order confirmed events.
      * Creates an AccountsPayable entry to track payment obligations.
+     * <p>
+     * Uses optimistic save with DataIntegrityViolationException catch for idempotency,
+     * relying on the unique constraint (cause_type, cause_id) to prevent race conditions.
      *
      * @param event the PO confirmed event
      */
@@ -44,14 +47,6 @@ public class AccountsPayableEventHandler {
     public void onPurchaseOrderConfirmed(PurchaseOrderConfirmedEvent event) {
         log.debug("Handling PO confirmed event: poId={}, vendorId={}, amount={}",
                 event.purchaseOrderId(), event.vendorId(), event.totalAmount());
-
-        // Check if AP already exists for this disbursement cause (idempotency)
-        if (accountsPayableRepository.existsByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(
-                DisbursementCauseType.PURCHASE_ORDER, event.purchaseOrderId())) {
-            log.info("AccountsPayable already exists for PO {}, skipping creation",
-                    event.purchaseOrderId());
-            return;
-        }
 
         Company vendor = companyRepository.findById(event.vendorId())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -71,10 +66,15 @@ public class AccountsPayableEventHandler {
                 .currency(event.currency())
                 .build();
 
-        accountsPayableRepository.save(accountsPayable);
-
-        log.info("Created AccountsPayable for PO {} with amount {} {} (causeType={}, causeId={})",
-                event.poNumber(), event.totalAmount(), event.currency(),
-                disbursementCause.getCauseType(), disbursementCause.getCauseId());
+        try {
+            accountsPayableRepository.save(accountsPayable);
+            log.info("Created AccountsPayable for PO {} with amount {} {} (causeType={}, causeId={})",
+                    event.poNumber(), event.totalAmount(), event.currency(),
+                    disbursementCause.getCauseType(), disbursementCause.getCauseId());
+        } catch (DataIntegrityViolationException e) {
+            // AP already exists - idempotent handling via unique constraint
+            log.info("AccountsPayable already exists for PO {}, skipping (constraint violation)",
+                    event.purchaseOrderId());
+        }
     }
 }

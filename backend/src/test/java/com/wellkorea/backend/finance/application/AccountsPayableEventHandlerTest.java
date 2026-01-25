@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -70,8 +71,6 @@ class AccountsPayableEventHandlerTest {
         @DisplayName("should create AccountsPayable when PO confirmed event is received")
         void shouldCreateAccountsPayable_WhenPoConfirmed() {
             // Given
-            when(accountsPayableRepository.existsByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(
-                    DisbursementCauseType.PURCHASE_ORDER, 1L)).thenReturn(false);
             when(companyRepository.findById(100L)).thenReturn(Optional.of(vendor));
 
             // When
@@ -91,26 +90,24 @@ class AccountsPayableEventHandlerTest {
         }
 
         @Test
-        @DisplayName("should skip AP creation when AP already exists (idempotency)")
-        void shouldSkipCreation_WhenApAlreadyExists() {
+        @DisplayName("should handle duplicate gracefully when AP already exists (idempotency via unique constraint)")
+        void shouldHandleDuplicateGracefully_WhenApAlreadyExists() {
             // Given
-            when(accountsPayableRepository.existsByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(
-                    DisbursementCauseType.PURCHASE_ORDER, 1L)).thenReturn(true);
+            when(companyRepository.findById(100L)).thenReturn(Optional.of(vendor));
+            when(accountsPayableRepository.save(any(AccountsPayable.class)))
+                    .thenThrow(new DataIntegrityViolationException("Duplicate entry for cause_type/cause_id"));
 
-            // When
+            // When - should NOT throw, just log and continue
             eventHandler.onPurchaseOrderConfirmed(event);
 
-            // Then
-            verify(accountsPayableRepository, never()).save(any());
-            verify(companyRepository, never()).findById(any());
+            // Then - save was attempted, exception was caught and handled
+            verify(accountsPayableRepository).save(any(AccountsPayable.class));
         }
 
         @Test
         @DisplayName("should throw ResourceNotFoundException when vendor not found")
         void shouldThrowException_WhenVendorNotFound() {
             // Given
-            when(accountsPayableRepository.existsByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(
-                    DisbursementCauseType.PURCHASE_ORDER, 1L)).thenReturn(false);
             when(companyRepository.findById(100L)).thenReturn(Optional.empty());
 
             // When / Then
@@ -127,8 +124,6 @@ class AccountsPayableEventHandlerTest {
                     2L, 100L, "PO-2025-000002", new BigDecimal("1000"), "USD"
             );
 
-            when(accountsPayableRepository.existsByDisbursementCause_CauseTypeAndDisbursementCause_CauseId(
-                    DisbursementCauseType.PURCHASE_ORDER, 2L)).thenReturn(false);
             when(companyRepository.findById(100L)).thenReturn(Optional.of(vendor));
 
             // When
