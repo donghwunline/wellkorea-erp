@@ -45,7 +45,7 @@ export {
   recordPayment,
   updateInvoiceNotes,
 } from './api/invoice-actions';
-export type { RecordPaymentInput } from './api/invoice-actions';
+export type { IssueInvoiceInput, RecordPaymentInput } from './api/invoice-actions';
 
 // UI components
 export { InvoiceStatusBadge } from './ui/InvoiceStatusBadge';

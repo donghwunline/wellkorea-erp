@@ -352,3 +352,32 @@ export const PURCHASE_ORDER_ENDPOINTS = {
   /** DELETE /purchase-orders/:id - Cancel purchase order */
   cancel: (id: number) => `/purchase-orders/${id}`,
 } as const;
+
+// ============================================================================
+// Invoice Endpoints
+// ============================================================================
+
+export const INVOICE_ENDPOINTS = {
+  /** Base path for invoice operations */
+  /** GET /invoices?projectId={projectId}&status={status} - List invoices */
+  /** POST /invoices - Create invoice */
+  BASE: '/invoices',
+
+  /** GET /invoices/:id - Get invoice detail */
+  byId: (id: number) => `/invoices/${id}`,
+  /** POST /invoices/:id/issue - Issue invoice with document */
+  issue: (id: number) => `/invoices/${id}/issue`,
+  /** POST /invoices/:id/cancel - Cancel invoice */
+  cancel: (id: number) => `/invoices/${id}/cancel`,
+  /** POST /invoices/:id/payments - Record payment */
+  payments: (id: number) => `/invoices/${id}/payments`,
+  /** PATCH /invoices/:id/notes - Update notes */
+  notes: (id: number) => `/invoices/${id}/notes`,
+
+  // ========== DOCUMENT UPLOAD ENDPOINTS ==========
+
+  /** POST /invoices/:id/document/upload-url - Get presigned URL for document upload */
+  documentUploadUrl: (id: number) => `/invoices/${id}/document/upload-url`,
+  /** GET /invoices/:id/document - Get invoice document */
+  document: (id: number) => `/invoices/${id}/document`,
+} as const;
