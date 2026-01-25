@@ -65,8 +65,24 @@ public class AccountsPayableQueryService {
     }
 
     /**
-     * Get APs for a specific vendor.
+     * Get APs for a specific vendor (paginated).
+     *
+     * @param vendorId the vendor ID
+     * @param pageable pagination info
+     * @return paginated AP summary views
      */
+    public Page<AccountsPayableSummaryView> getByVendorPaged(Long vendorId, Pageable pageable) {
+        List<AccountsPayableSummaryView> aps = accountsPayableMapper.findByVendorIdPaged(
+                vendorId, pageable.getPageSize(), pageable.getOffset());
+        long total = accountsPayableMapper.countByVendorId(vendorId);
+        return new PageImpl<>(aps, pageable, total);
+    }
+
+    /**
+     * Get APs for a specific vendor.
+     * @deprecated Use {@link #getByVendorPaged(Long, Pageable)} to prevent OOM on large datasets
+     */
+    @Deprecated(since = "1.0", forRemoval = true)
     public List<AccountsPayableSummaryView> getByVendor(Long vendorId) {
         return accountsPayableMapper.findByVendorId(vendorId);
     }

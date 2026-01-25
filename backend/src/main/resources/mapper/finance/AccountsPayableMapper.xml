@@ -156,11 +156,25 @@
         </if>
     </select>
 
-    <!-- Find APs by vendor -->
+    <!-- Find APs by vendor (deprecated - use findByVendorIdPaged) -->
     <select id="findByVendorId" resultMap="summaryViewMap">
         <include refid="apWithCalculatedStatus"/>
         WHERE v.id = #{vendorId}
         ORDER BY ap.created_at DESC
+    </select>
+
+    <!-- Find APs by vendor (paginated) -->
+    <select id="findByVendorIdPaged" resultMap="summaryViewMap">
+        <include refid="apWithCalculatedStatus"/>
+        WHERE v.id = #{vendorId}
+        ORDER BY ap.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- Count APs by vendor -->
+    <select id="countByVendorId" resultType="long">
+        SELECT COUNT(*) FROM accounts_payable ap
+        WHERE ap.vendor_company_id = #{vendorId}
     </select>
 
     <!-- Find APs by cause type -->
