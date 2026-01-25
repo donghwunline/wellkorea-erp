@@ -32,6 +32,10 @@ public class AccountsPayable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Embedded
     private DisbursementCause disbursementCause;
 
@@ -97,6 +101,10 @@ public class AccountsPayable {
 
     public Long getId() {
         return id;
+    }
+
+    public Long getVersion() {
+        return version;
     }
 
     /**
@@ -383,6 +391,12 @@ public class AccountsPayable {
         }
 
         public AccountsPayable build() {
+            Objects.requireNonNull(disbursementCause, "Disbursement cause is required");
+            Objects.requireNonNull(vendor, "Vendor is required");
+            Objects.requireNonNull(totalAmount, "Total amount is required");
+            if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Total amount must be positive");
+            }
             return new AccountsPayable(this);
         }
     }

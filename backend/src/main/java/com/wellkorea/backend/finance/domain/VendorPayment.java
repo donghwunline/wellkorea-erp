@@ -203,6 +203,13 @@ public class VendorPayment {
         }
 
         public VendorPayment build() {
+            Objects.requireNonNull(paymentDate, "Payment date is required");
+            Objects.requireNonNull(amount, "Amount is required");
+            Objects.requireNonNull(paymentMethod, "Payment method is required");
+            Objects.requireNonNull(recordedById, "Recorded by user ID is required");
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Amount must be positive");
+            }
             return new VendorPayment(this);
         }
     }
