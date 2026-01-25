@@ -36,7 +36,7 @@ export function DocumentPanel({ projectId }: DocumentPanelProps) {
   const groupedDocuments = projectDocumentRules.groupByType(documents);
   const blueprints = groupedDocuments.BLUEPRINT;
   const deliveryPhotos = groupedDocuments.DELIVERY_PHOTO;
-  // Future: const invoices = groupedDocuments.INVOICE;
+  const invoices = groupedDocuments.INVOICE;
 
   // Loading state
   if (isLoading) {
@@ -102,7 +102,14 @@ export function DocumentPanel({ projectId }: DocumentPanelProps) {
         />
       )}
 
-      {/* Future: Invoice documents section */}
+      {/* Invoice documents section */}
+      {invoices.length > 0 && (
+        <DocumentSection
+          title={t('documentPanel.sections.invoices')}
+          documents={invoices}
+          documentType="INVOICE"
+        />
+      )}
     </Card>
   );
 }

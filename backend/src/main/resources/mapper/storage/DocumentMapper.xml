@@ -70,7 +70,26 @@
         WHERE d.project_id = #{projectId}
           AND d.status = 'DELIVERED'
 
-        -- Future: UNION ALL for invoice documents
+        UNION ALL
+
+        -- Invoice Documents
+        SELECT
+            a.id,
+            'INVOICE' AS document_type,
+            a.file_name,
+            a.file_type,
+            a.file_size,
+            a.storage_path,
+            u.full_name AS uploaded_by_name,
+            TO_CHAR(a.uploaded_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS uploaded_at,
+            NULL AS download_url,
+            i.id AS source_id,
+            CONCAT('세금계산서 ', i.invoice_number) AS source_label
+        FROM attachments a
+        INNER JOIN tax_invoices i ON a.owner_type = 'INVOICE' AND a.owner_id = i.id
+        INNER JOIN users u ON a.uploaded_by_id = u.id
+        WHERE i.project_id = #{projectId}
+          AND i.status != 'CANCELLED'
 
         ORDER BY uploaded_at DESC
     </select>
@@ -95,6 +114,15 @@
             INNER JOIN deliveries d ON a.owner_type = 'DELIVERY' AND a.owner_id = d.id
             WHERE d.project_id = #{projectId}
               AND d.status = 'DELIVERED'
+
+            UNION ALL
+
+            -- Invoice Documents
+            SELECT a.id
+            FROM attachments a
+            INNER JOIN tax_invoices i ON a.owner_type = 'INVOICE' AND a.owner_id = i.id
+            WHERE i.project_id = #{projectId}
+              AND i.status != 'CANCELLED'
         ) AS all_documents
     </select>
 
