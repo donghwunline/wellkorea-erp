@@ -11,8 +11,6 @@ import type { AccountsPayable, APAgingSummary } from '../model/accounts-payable'
 import {
   getAccountsPayableList,
   getAccountsPayableById,
-  getAccountsPayableByVendor,
-  getOverdueAccountsPayable,
   getAPAgingSummary,
 } from './get-accounts-payable';
 
@@ -31,8 +29,6 @@ const keys = {
   ) => [...keys.lists(), page, size, vendorId, status, overdueOnly] as const,
   details: () => [...keys.all, 'detail'] as const,
   detail: (id: number) => [...keys.details(), id] as const,
-  byVendor: (vendorId: number) => [...keys.all, 'by-vendor', vendorId] as const,
-  overdue: () => [...keys.all, 'overdue'] as const,
   aging: () => [...keys.all, 'aging'] as const,
 };
 
@@ -73,25 +69,6 @@ export const accountsPayableQueries = {
       queryKey: keys.detail(id),
       queryFn: () => getAccountsPayableById(id),
       enabled: id > 0,
-    }),
-
-  /**
-   * Query options for accounts payable by vendor.
-   */
-  byVendor: (vendorId: number) =>
-    queryOptions<AccountsPayable[]>({
-      queryKey: keys.byVendor(vendorId),
-      queryFn: () => getAccountsPayableByVendor(vendorId),
-      enabled: vendorId > 0,
-    }),
-
-  /**
-   * Query options for overdue accounts payable.
-   */
-  overdue: () =>
-    queryOptions<AccountsPayable[]>({
-      queryKey: keys.overdue(),
-      queryFn: () => getOverdueAccountsPayable(),
     }),
 
   /**

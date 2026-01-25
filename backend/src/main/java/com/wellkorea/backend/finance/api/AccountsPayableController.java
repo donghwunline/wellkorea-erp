@@ -12,8 +12,6 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -90,49 +88,6 @@ public class AccountsPayableController {
 
         AccountsPayableSummaryView detail = queryService.getDetail(id);
         return ResponseEntity.ok(ApiResponse.success(detail));
-    }
-
-    /**
-     * Get accounts payable for a specific vendor (paginated).
-     * <p>
-     * GET /api/accounts-payable/vendor/{vendorId}
-     * GET /api/accounts-payable/vendor/{vendorId}?page=0&size=20
-     */
-    @GetMapping("/vendor/{vendorId}")
-    public ResponseEntity<ApiResponse<Page<AccountsPayableSummaryView>>> getByVendor(
-            @PathVariable Long vendorId,
-            @PageableDefault(size = 20, sort = "createdAt",
-                    direction = Sort.Direction.DESC)
-            Pageable pageable) {
-
-        Page<AccountsPayableSummaryView> result = queryService.getByVendorPaged(vendorId, pageable);
-        return ResponseEntity.ok(ApiResponse.success(result));
-    }
-
-    /**
-     * Get accounts payable by disbursement cause type.
-     * <p>
-     * GET /api/accounts-payable/cause-type/{causeType}
-     *
-     * @param causeType the cause type (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
-     */
-    @GetMapping("/cause-type/{causeType}")
-    public ResponseEntity<ApiResponse<List<AccountsPayableSummaryView>>> getByCauseType(
-            @PathVariable String causeType) {
-
-        List<AccountsPayableSummaryView> result = queryService.getByCauseType(causeType);
-        return ResponseEntity.ok(ApiResponse.success(result));
-    }
-
-    /**
-     * Get all overdue accounts payable.
-     * <p>
-     * GET /api/accounts-payable/overdue
-     */
-    @GetMapping("/overdue")
-    public ResponseEntity<ApiResponse<List<AccountsPayableSummaryView>>> getOverdue() {
-        List<AccountsPayableSummaryView> result = queryService.getOverdue();
-        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     /**

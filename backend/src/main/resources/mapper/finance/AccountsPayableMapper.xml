@@ -156,44 +156,6 @@
         </if>
     </select>
 
-    <!-- Find APs by vendor (deprecated - use findByVendorIdPaged) -->
-    <select id="findByVendorId" resultMap="summaryViewMap">
-        <include refid="apWithCalculatedStatus"/>
-        WHERE v.id = #{vendorId}
-        ORDER BY ap.created_at DESC
-    </select>
-
-    <!-- Find APs by vendor (paginated) -->
-    <select id="findByVendorIdPaged" resultMap="summaryViewMap">
-        <include refid="apWithCalculatedStatus"/>
-        WHERE v.id = #{vendorId}
-        ORDER BY ap.created_at DESC
-        LIMIT #{limit} OFFSET #{offset}
-    </select>
-
-    <!-- Count APs by vendor -->
-    <select id="countByVendorId" resultType="long">
-        SELECT COUNT(*) FROM accounts_payable ap
-        WHERE ap.vendor_company_id = #{vendorId}
-    </select>
-
-    <!-- Find APs by cause type -->
-    <select id="findByCauseType" resultMap="summaryViewMap">
-        <include refid="apWithCalculatedStatus"/>
-        WHERE ap.cause_type = #{causeType}
-        ORDER BY ap.created_at DESC
-    </select>
-
-    <!-- Find overdue APs -->
-    <select id="findOverdue" resultMap="summaryViewMap">
-        WITH ap_data AS (
-        <include refid="apWithCalculatedStatus"/>
-        )
-        SELECT * FROM ap_data
-        WHERE is_overdue = true
-        ORDER BY days_overdue DESC, remaining_balance DESC
-    </select>
-
     <!-- Get AP aging summary -->
     <select id="getAgingSummary" resultMap="agingSummaryMap">
         WITH ap_data AS (

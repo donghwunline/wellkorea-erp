@@ -12,8 +12,6 @@ import { mapToAccountsPayable, mapToAPAgingSummary } from './accounts-payable.ma
 const ENDPOINTS = {
   list: '/accounts-payable',
   detail: (id: number) => `/accounts-payable/${id}`,
-  byVendor: (vendorId: number) => `/accounts-payable/vendor/${vendorId}`,
-  overdue: '/accounts-payable/overdue',
   aging: '/accounts-payable/aging-summary',
 };
 
@@ -57,22 +55,6 @@ export async function getAccountsPayableList(
 export async function getAccountsPayableById(id: number): Promise<AccountsPayable> {
   const response = await httpClient.get<AccountsPayableResponse>(ENDPOINTS.detail(id));
   return mapToAccountsPayable(response);
-}
-
-/**
- * Get accounts payable for a specific vendor.
- */
-export async function getAccountsPayableByVendor(vendorId: number): Promise<AccountsPayable[]> {
-  const response = await httpClient.get<AccountsPayableResponse[]>(ENDPOINTS.byVendor(vendorId));
-  return response.map(mapToAccountsPayable);
-}
-
-/**
- * Get overdue accounts payable.
- */
-export async function getOverdueAccountsPayable(): Promise<AccountsPayable[]> {
-  const response = await httpClient.get<AccountsPayableResponse[]>(ENDPOINTS.overdue);
-  return response.map(mapToAccountsPayable);
 }
 
 /**

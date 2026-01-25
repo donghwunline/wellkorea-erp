@@ -57,47 +57,6 @@ public interface AccountsPayableMapper {
     );
 
     /**
-     * Find APs for a specific vendor with calculated status.
-     * @deprecated Use {@link #findByVendorIdPaged(Long, int, long)} to prevent OOM on large datasets
-     */
-    @Deprecated(since = "1.0", forRemoval = true)
-    List<AccountsPayableSummaryView> findByVendorId(@Param("vendorId") Long vendorId);
-
-    /**
-     * Find APs for a specific vendor with calculated status (paginated).
-     *
-     * @param vendorId the vendor ID
-     * @param limit    pagination limit
-     * @param offset   pagination offset
-     * @return list of AP summary views
-     */
-    List<AccountsPayableSummaryView> findByVendorIdPaged(
-            @Param("vendorId") Long vendorId,
-            @Param("limit") int limit,
-            @Param("offset") long offset);
-
-    /**
-     * Count APs for a specific vendor.
-     *
-     * @param vendorId the vendor ID
-     * @return count of APs
-     */
-    long countByVendorId(@Param("vendorId") Long vendorId);
-
-    /**
-     * Find APs by disbursement cause type.
-     *
-     * @param causeType the cause type (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
-     * @return list of AP summary views
-     */
-    List<AccountsPayableSummaryView> findByCauseType(@Param("causeType") String causeType);
-
-    /**
-     * Find overdue APs (past due date with remaining balance).
-     */
-    List<AccountsPayableSummaryView> findOverdue();
-
-    /**
      * Get AP aging summary (grouped by aging bucket).
      */
     List<APAgingSummary> getAgingSummary();
