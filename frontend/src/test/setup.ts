@@ -1212,24 +1212,6 @@ const mockTranslations: Record<string, string> = {
   'widgets:projectRelatedNavigationGrid.emptyTitle': 'No sections available',
   'widgets:projectRelatedNavigationGrid.emptyDescription': 'No sections available for this project.',
 
-  // DeliveryPanel widget translations
-  'widgets:deliveryPanel.loading': 'Loading delivery data',
-  'widgets:deliveryPanel.loadError': 'Failed to load deliveries: {{message}}',
-  'widgets:deliveryPanel.noQuotation': 'No Accepted Quotation',
-  'widgets:deliveryPanel.noQuotationDesc': 'A quotation must be accepted by the customer before recording deliveries.',
-  'widgets:deliveryPanel.noDeliveries': 'No Deliveries Yet',
-  'widgets:deliveryPanel.noDeliveriesDesc': 'No deliveries have been recorded for this project.',
-  'widgets:deliveryPanel.recordDelivery': 'Record Delivery',
-  'widgets:deliveryPanel.table.id': 'ID',
-  'widgets:deliveryPanel.table.deliveryDate': 'Delivery Date',
-  'widgets:deliveryPanel.table.deliveredBy': 'Delivered By',
-  'widgets:deliveryPanel.table.items': 'Items',
-  'widgets:deliveryPanel.table.status': 'Status',
-  'widgets:deliveryPanel.table.actions': 'Actions',
-  'widgets:deliveryPanel.table.itemCount': '{{count}} items ({{units}} units)',
-  'widgets:deliveryPanel.actions.downloadStatement': 'Download Statement PDF',
-  'widgets:deliveryPanel.actions.viewDetails': 'View Details',
-
   // DeliverySummaryStats widget translations
   'widgets:deliverySummaryStats.totalDeliveries': 'Total Deliveries',
   'widgets:deliverySummaryStats.itemsDelivered': 'Items Delivered',
