@@ -1257,17 +1257,6 @@ vi.mock('react-i18next', () => ({
   },
 }));
 
-// Mock the i18n instance used in non-React contexts (e.g., errorMessages.ts)
-vi.mock('@/app/i18n', () => ({
-  default: {
-    t: (key: string, options?: Record<string, unknown>) => mockT(key, options),
-    changeLanguage: vi.fn(),
-    language: 'en',
-  },
-  changeLanguage: vi.fn(),
-  getCurrentLanguage: () => 'en',
-}));
-
 // Automatically cleanup after each test
 afterEach(() => {
   cleanup();
