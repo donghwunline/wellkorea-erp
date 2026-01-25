@@ -27,6 +27,10 @@ public class ApprovalRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "entity_type", nullable = false, length = 50)
     private EntityType entityType;
