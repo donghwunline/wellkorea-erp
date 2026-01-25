@@ -2,6 +2,7 @@ package com.wellkorea.backend.invoice.application;
 
 import com.wellkorea.backend.invoice.api.dto.command.CreateInvoiceRequest;
 import com.wellkorea.backend.invoice.api.dto.command.InvoiceLineItemRequest;
+import com.wellkorea.backend.invoice.api.dto.command.IssueInvoiceRequest;
 import com.wellkorea.backend.invoice.api.dto.command.RecordPaymentRequest;
 import com.wellkorea.backend.invoice.domain.*;
 import com.wellkorea.backend.invoice.infrastructure.persistence.TaxInvoiceRepository;
@@ -10,6 +11,8 @@ import com.wellkorea.backend.quotation.infrastructure.repository.QuotationReposi
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.lock.QuotationLock;
+import com.wellkorea.backend.shared.storage.application.AttachmentService;
+import com.wellkorea.backend.shared.storage.domain.AttachmentOwnerType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,15 +42,18 @@ public class InvoiceCommandService {
     private final QuotationRepository quotationRepository;
     private final QuotationInvoiceGuard quotationInvoiceGuard;
     private final InvoiceNumberGenerator invoiceNumberGenerator;
+    private final AttachmentService attachmentService;
 
     public InvoiceCommandService(TaxInvoiceRepository invoiceRepository,
                                  QuotationRepository quotationRepository,
                                  QuotationInvoiceGuard quotationInvoiceGuard,
-                                 InvoiceNumberGenerator invoiceNumberGenerator) {
+                                 InvoiceNumberGenerator invoiceNumberGenerator,
+                                 AttachmentService attachmentService) {
         this.invoiceRepository = invoiceRepository;
         this.quotationRepository = quotationRepository;
         this.quotationInvoiceGuard = quotationInvoiceGuard;
         this.invoiceNumberGenerator = invoiceNumberGenerator;
+        this.attachmentService = attachmentService;
     }
 
     /**
@@ -127,15 +133,34 @@ public class InvoiceCommandService {
     }
 
     /**
-     * Issue an invoice (change from DRAFT to ISSUED).
+     * Issue an invoice with document attachment (DRAFT -> ISSUED).
+     * <p>
+     * Atomically:
+     * 1. Registers the document attachment
+     * 2. Issues the invoice (changes status from DRAFT to ISSUED)
      *
-     * @param invoiceId Invoice ID
+     * @param invoiceId  Invoice ID
+     * @param request    Issue request containing document info (fileName, fileSize, objectKey)
+     * @param uploaderId ID of the user issuing the invoice
      * @return Invoice ID
      */
-    public Long issueInvoice(Long invoiceId) {
+    public Long issueInvoice(Long invoiceId, IssueInvoiceRequest request, Long uploaderId) {
         TaxInvoice invoice = findInvoiceById(invoiceId);
+
+        // 1. Register document attachment
+        attachmentService.registerAttachment(
+                AttachmentOwnerType.INVOICE,
+                invoiceId,
+                request.fileName(),
+                request.fileSize(),
+                request.objectKey(),
+                uploaderId
+        );
+
+        // 2. Issue invoice (DRAFT -> ISSUED)
         invoice.issue();
         invoiceRepository.save(invoice);
+
         return invoiceId;
     }
 

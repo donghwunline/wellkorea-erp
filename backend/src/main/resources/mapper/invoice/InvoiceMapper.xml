@@ -279,4 +279,9 @@
         GROUP BY ili.product_id
     </select>
 
+    <!-- Check if invoice exists -->
+    <select id="existsById" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM tax_invoices WHERE id = #{id}
+    </select>
+
 </mapper>
