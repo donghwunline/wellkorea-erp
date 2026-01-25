@@ -37,7 +37,7 @@ import {
   getPaymentMethodOptions,
   type PaymentMethod,
 } from '@/entities/invoice';
-import { useIssueInvoice } from '@/features/invoice/issue';
+import { IssueInvoiceModal } from '@/features/invoice/issue';
 import { useCancelInvoice } from '@/features/invoice/cancel';
 import { useRecordPayment } from '@/features/payment/record';
 import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatting';
@@ -74,6 +74,7 @@ export function InvoiceDetailPage() {
   // Modal state
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showIssueModal, setShowIssueModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState<PaymentFormState>(defaultPaymentForm);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -86,15 +87,6 @@ export function InvoiceDetailPage() {
   } = useQuery(invoiceQueries.detail(invoiceId));
 
   // Mutations
-  const { mutate: issueInvoice, isPending: isIssuing } = useIssueInvoice({
-    onSuccess: () => {
-      refetch();
-    },
-    onError: (err) => {
-      setFormError(err.message);
-    },
-  });
-
   const { mutate: cancelInvoice, isPending: isCancelling } = useCancelInvoice({
     onSuccess: () => {
       setShowCancelConfirm(false);
@@ -116,11 +108,10 @@ export function InvoiceDetailPage() {
     },
   });
 
-  // Handle issue invoice
+  // Handle issue invoice - opens modal with file upload
   const handleIssue = useCallback(() => {
-    setFormError(null);
-    issueInvoice(invoiceId);
-  }, [invoiceId, issueInvoice]);
+    setShowIssueModal(true);
+  }, []);
 
   // Handle cancel invoice
   const handleCancel = useCallback(() => {
@@ -238,8 +229,8 @@ export function InvoiceDetailPage() {
             {t('actions.backToList')}
           </Button>
           {canManageInvoices && invoiceRules.canIssue(invoice) && (
-            <Button onClick={handleIssue} disabled={isIssuing}>
-              {isIssuing ? t('actions.issuing') : t('actions.issue')}
+            <Button onClick={handleIssue}>
+              {t('actions.issue')}
             </Button>
           )}
           {canManageInvoices && invoiceRules.canReceivePayment(invoice) && (
@@ -544,6 +535,20 @@ export function InvoiceDetailPage() {
           </Button>
         </div>
       </Modal>
+
+      {/* Issue Invoice Modal */}
+      {invoice && (
+        <IssueInvoiceModal
+          invoiceId={invoiceId}
+          invoiceNumber={invoice.invoiceNumber}
+          isOpen={showIssueModal}
+          onClose={() => setShowIssueModal(false)}
+          onSuccess={() => {
+            setShowIssueModal(false);
+            refetch();
+          }}
+        />
+      )}
     </div>
   );
 }
