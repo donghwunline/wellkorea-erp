@@ -17,6 +17,7 @@ import { LoginPage } from '@/pages/auth';
 import { DashboardPage } from '@/pages/dashboard';
 import { UserManagementPage } from '@/pages/admin/UserManagementPage';
 import { AuditLogPage } from '@/pages/admin/AuditLogPage';
+import { MailSettingsPage } from '@/pages/admin/MailSettingsPage';
 import { ApprovalChainConfigPage } from '@/pages/approval/ApprovalChainConfigPage';
 import { ApprovalListPage } from '@/pages/approval/ApprovalListPage';
 import { ProjectCreatePage, ProjectEditPage, ProjectListPage, ProjectViewPage, } from '@/pages/projects';
@@ -133,6 +134,7 @@ export function AppRouter() {
         <Route path="/admin/users" element={<UserManagementPage />} />
         <Route path="/admin/audit" element={<AuditLogPage />} />
         <Route path="/admin/approval-chains" element={<ApprovalChainConfigPage />} />
+        <Route path="/admin/settings/mail" element={<MailSettingsPage />} />
       </Route>
 
       {/* ========== CATCH-ALL ========== */}

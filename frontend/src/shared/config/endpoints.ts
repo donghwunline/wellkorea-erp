@@ -354,6 +354,22 @@ export const PURCHASE_ORDER_ENDPOINTS = {
 } as const;
 
 // ============================================================================
+// Admin Mail OAuth2 Endpoints
+// ============================================================================
+
+export const MAIL_OAUTH2_ENDPOINTS = {
+  /** Base path for mail OAuth2 operations */
+  BASE: '/admin/mail/oauth2',
+
+  /** GET /admin/mail/oauth2/status - Get connection status */
+  STATUS: '/admin/mail/oauth2/status',
+  /** GET /admin/mail/oauth2/authorize - Get authorization URL */
+  AUTHORIZE: '/admin/mail/oauth2/authorize',
+  /** DELETE /admin/mail/oauth2 - Disconnect */
+  DISCONNECT: '/admin/mail/oauth2',
+} as const;
+
+// ============================================================================
 // Invoice Endpoints
 // ============================================================================
 

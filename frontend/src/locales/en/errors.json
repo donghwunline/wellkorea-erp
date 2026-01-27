@@ -16,7 +16,15 @@
     "SRV_001": "Something went wrong. Please try again later.",
     "SRV_002": "Database connection failed. Please try again.",
     "SRV_003": "External service unavailable.",
-    "SRV_004": "Service temporarily unavailable."
+    "SRV_004": "Service temporarily unavailable.",
+    "OAUTH_001": "Invalid authorization state. Please try again.",
+    "OAUTH_002": "Authorization timed out. Please try again.",
+    "OAUTH_003": "Failed to complete authorization. Please try again.",
+    "OAUTH_004": "Microsoft did not provide required permissions. Please authorize all requested permissions.",
+    "OAUTH_005": "Microsoft Graph is not configured. Contact your administrator.",
+    "OAUTH_006": "Failed to refresh access token. Please reconnect your Microsoft account.",
+    "OAUTH_007": "Invalid authorization code. Please try again.",
+    "OAUTH_008": "Database error during authorization. Please try again later."
   },
   "generic": {
     "unknown": "An unknown error occurred",

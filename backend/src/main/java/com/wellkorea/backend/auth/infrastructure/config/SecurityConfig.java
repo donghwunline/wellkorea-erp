@@ -95,6 +95,9 @@ public class SecurityConfig {
                     auth.requestMatchers("/actuator/health", "/actuator/info").permitAll();
                     auth.requestMatchers("/error").permitAll();
 
+                    // OAuth2 callback (Microsoft redirects here, state parameter provides security)
+                    auth.requestMatchers("/api/admin/mail/oauth2/callback").permitAll();
+
                     // Swagger/OpenAPI (profile-conditional)
                     if (swaggerEnabled) {
                         auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();

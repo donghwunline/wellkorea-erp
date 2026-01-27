@@ -19,7 +19,8 @@
     "pendingApprovals": "결재 대기 문서",
     "approvalSettings": "결재 설정",
     "userManagement": "사용자 관리",
-    "auditLogs": "이력 확인"
+    "auditLogs": "이력 확인",
+    "mailSettings": "메일 설정"
   },
   "userMenu": {
     "profile": "프로필",

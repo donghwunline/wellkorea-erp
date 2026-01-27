@@ -32,6 +32,16 @@ public enum ErrorCode {
     PAYMENT_NOT_ALLOWED(409, "FIN_001", "Payment not allowed in current AP status"),
     PAYMENT_EXCEEDS_BALANCE(400, "FIN_002", "Payment amount exceeds remaining balance"),
 
+    // ========== OAuth2 Errors ==========
+    OAUTH_INVALID_STATE(400, "OAUTH_001", "Invalid or expired OAuth2 state"),
+    OAUTH_STATE_EXPIRED(400, "OAUTH_002", "OAuth2 state has expired"),
+    OAUTH_TOKEN_EXCHANGE_FAILED(400, "OAUTH_003", "Failed to exchange authorization code"),
+    OAUTH_NO_REFRESH_TOKEN(400, "OAUTH_004", "No refresh token received"),
+    OAUTH_CONFIG_MISSING(400, "OAUTH_005", "OAuth2 provider not configured"),
+    OAUTH_TOKEN_REFRESH_FAILED(500, "OAUTH_006", "Failed to refresh access token"),
+    OAUTH_INVALID_CODE(400, "OAUTH_007", "Invalid authorization code"),
+    OAUTH_DATABASE_ERROR(500, "OAUTH_008", "Database error during OAuth operation"),
+
     // ========== Authentication Errors (401) ==========
     AUTHENTICATION_FAILED(401, "AUTH_001", "Authentication failed"),
     INVALID_TOKEN(401, "AUTH_002", "Invalid or expired token"),

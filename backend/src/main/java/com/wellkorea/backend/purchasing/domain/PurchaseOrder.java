@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * PurchaseOrder entity representing an official order to a vendor
@@ -80,6 +81,61 @@ public class PurchaseOrder {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // ========== Constructors ==========
+
+    /**
+     * Creates a new PurchaseOrder with all required fields.
+     *
+     * @param purchaseRequest      the parent purchase request (required)
+     * @param rfqItemId            the RFQ item ID within the purchase request (required)
+     * @param vendor               the vendor company (required)
+     * @param poNumber             the unique PO number (required)
+     * @param orderDate            the order date (required)
+     * @param expectedDeliveryDate the expected delivery date (required)
+     * @param totalAmount          the total amount (required)
+     * @param createdBy            the user creating this order (required)
+     * @param notes                optional notes (nullable)
+     */
+    public PurchaseOrder(
+            PurchaseRequest purchaseRequest,
+            String rfqItemId,
+            Company vendor,
+            String poNumber,
+            LocalDate orderDate,
+            LocalDate expectedDeliveryDate,
+            BigDecimal totalAmount,
+            User createdBy,
+            String notes
+    ) {
+        Objects.requireNonNull(purchaseRequest, "purchaseRequest must not be null");
+        Objects.requireNonNull(rfqItemId, "rfqItemId must not be null");
+        Objects.requireNonNull(vendor, "vendor must not be null");
+        Objects.requireNonNull(poNumber, "poNumber must not be null");
+        Objects.requireNonNull(orderDate, "orderDate must not be null");
+        Objects.requireNonNull(expectedDeliveryDate, "expectedDeliveryDate must not be null");
+        Objects.requireNonNull(totalAmount, "totalAmount must not be null");
+        Objects.requireNonNull(createdBy, "createdBy must not be null");
+
+        this.purchaseRequest = purchaseRequest;
+        this.rfqItemId = rfqItemId;
+        this.project = purchaseRequest.getProject(); // Derived from purchase request
+        this.vendor = vendor;
+        this.poNumber = poNumber;
+        this.orderDate = orderDate;
+        this.expectedDeliveryDate = expectedDeliveryDate;
+        this.totalAmount = totalAmount;
+        this.currency = "KRW";
+        this.status = PurchaseOrderStatus.DRAFT;
+        this.notes = notes;
+        this.createdBy = createdBy;
+    }
+
+    /**
+     * Default constructor for JPA.
+     */
+    protected PurchaseOrder() {
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -89,6 +145,30 @@ public class PurchaseOrder {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // ========== Domain Update Method ==========
+
+    /**
+     * Update the purchase order fields that can be modified.
+     * Can only be called when in DRAFT status.
+     *
+     * @param expectedDeliveryDate the new expected delivery date (required)
+     * @param notes                the updated notes (nullable)
+     * @throws IllegalStateException if not in DRAFT status
+     */
+    public void update(LocalDate expectedDeliveryDate, String notes) {
+        if (!canUpdate()) {
+            throw new IllegalStateException("Cannot update purchase order in " + status + " status");
+        }
+        Objects.requireNonNull(expectedDeliveryDate, "expectedDeliveryDate must not be null");
+
+        if (expectedDeliveryDate.isBefore(this.orderDate)) {
+            throw new IllegalArgumentException("Expected delivery date cannot be before order date");
+        }
+
+        this.expectedDeliveryDate = expectedDeliveryDate;
+        this.notes = notes;
     }
 
     // Domain methods
@@ -181,7 +261,7 @@ public class PurchaseOrder {
         this.status = PurchaseOrderStatus.CANCELED;
     }
 
-    // Getters and Setters
+    // ========== Getters ==========
 
     public Long getId() {
         return id;
@@ -191,79 +271,55 @@ public class PurchaseOrder {
         return purchaseRequest;
     }
 
-    public void setPurchaseRequest(PurchaseRequest purchaseRequest) {
-        this.purchaseRequest = purchaseRequest;
-    }
-
     public String getRfqItemId() {
         return rfqItemId;
     }
 
-    public void setRfqItemId(String rfqItemId) {
-        this.rfqItemId = rfqItemId;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
+    public Project getProject() {
+        return project;
     }
 
     public Company getVendor() {
         return vendor;
     }
 
-    public void setVendor(Company vendor) {
-        this.vendor = vendor;
-    }
-
     public String getPoNumber() {
         return poNumber;
-    }
-
-    public void setPoNumber(String poNumber) {
-        this.poNumber = poNumber;
     }
 
     public LocalDate getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(LocalDate orderDate) {
-        this.orderDate = orderDate;
-    }
-
-    public void setExpectedDeliveryDate(LocalDate expectedDeliveryDate) {
-        this.expectedDeliveryDate = expectedDeliveryDate;
+    public LocalDate getExpectedDeliveryDate() {
+        return expectedDeliveryDate;
     }
 
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
     public String getCurrency() {
         return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
     }
 
     public PurchaseOrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(PurchaseOrderStatus status) {
-        this.status = status;
+    public String getNotes() {
+        return notes;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public User getCreatedBy() {
+        return createdBy;
     }
 
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

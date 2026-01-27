@@ -27,7 +27,7 @@
 #   MAIL_PROVIDER (smtp or graph, default: smtp)
 #   MICROSOFT_GRAPH_CLIENT_ID (required if MAIL_PROVIDER=graph)
 #   MICROSOFT_GRAPH_CLIENT_SECRET (required if MAIL_PROVIDER=graph)
-#   MICROSOFT_GRAPH_REFRESH_TOKEN (required if MAIL_PROVIDER=graph)
+#   Note: Refresh token is configured via Admin Settings > Mail (in-app OAuth2)
 # =====================================================================
 
 spring:
@@ -94,11 +94,11 @@ mail:
 
 # Microsoft Graph Configuration (required when mail.provider=graph)
 # For Outlook/Microsoft 365 email via OAuth2 (personal accounts like hotmail.com)
+# Refresh token is configured via Admin Settings > Mail (in-app OAuth2 flow)
 microsoft:
   graph:
     client-id: ${MICROSOFT_GRAPH_CLIENT_ID:}
     client-secret: ${MICROSOFT_GRAPH_CLIENT_SECRET:}
-    refresh-token: ${MICROSOFT_GRAPH_REFRESH_TOKEN:}
 
 # MinIO Configuration
 # REQUIRED: All MinIO properties must be set via environment variables

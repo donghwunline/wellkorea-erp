@@ -42,34 +42,19 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: wellkorea-erp-backend
+    env_file: .env
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Only variables that need TRANSFORMATION go here (env_file loads the rest)
 
-      # Database Configuration
+      # Database Configuration (transforms POSTGRES_* to Spring format)
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-wellkorea_erp}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${DDL_AUTO:-validate}
 
-      # MinIO Configuration (uses minio.local hostname for presigned URL compatibility)
-      MINIO_URL: ${MINIO_URL:-http://minio.local:9000}
+      # MinIO Configuration (maps MINIO_ROOT_* to MINIO_ACCESS_*/SECRET_*)
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
-      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-wellkorea-erp-documents}
-
-      # JWT Configuration
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-minimum-256-bits-required-for-hs256-algorithm-do-not-use-in-production}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
-
-      # Email Configuration
-      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
-      MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME:-}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
-
-      # Security Configuration
-      SECURITY_CORS_ALLOWED_ORIGINS: ${SECURITY_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:4173,http://localhost:3000,http://localhost:80}
-      SECURITY_SWAGGER_ENABLED: ${SECURITY_SWAGGER_ENABLED:-true}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     depends_on:

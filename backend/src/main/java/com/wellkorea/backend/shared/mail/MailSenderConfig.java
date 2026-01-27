@@ -1,5 +1,6 @@
 package com.wellkorea.backend.shared.mail;
 
+import com.wellkorea.backend.admin.mail.infrastructure.MailOAuth2ConfigRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,8 @@ import org.springframework.mail.javamail.JavaMailSender;
  * <p>Configuration properties:
  * <ul>
  *     <li>mail.provider=smtp (default) - Use SMTP via JavaMailSender</li>
- *     <li>mail.provider=graph - Use Microsoft Graph API</li>
+ *     <li>mail.provider=graph - Use Microsoft Graph API (Delegated/Refresh Token)</li>
+ *     <li>mail.provider=graph-client-credentials - Use Microsoft Graph API (Client Credentials)</li>
  * </ul>
  */
 @Configuration
@@ -38,8 +40,22 @@ public class MailSenderConfig {
     public MailSender graphMailSender(
             @Value("${microsoft.graph.client-id}") String clientId,
             @Value("${microsoft.graph.client-secret}") String clientSecret,
-            @Value("${microsoft.graph.refresh-token}") String refreshToken) {
-        log.info("Configuring Microsoft Graph mail sender");
-        return new GraphMailSender(clientId, clientSecret, refreshToken);
+            MailOAuth2ConfigRepository configRepository,
+            MailTokenLockService lockService,
+            MailTokenRefreshService tokenRefreshService) {
+        log.info("Configuring Microsoft Graph mail sender (Delegated/Refresh Token)");
+        return new GraphMailSender(clientId, clientSecret, configRepository, lockService, tokenRefreshService);
+    }
+
+    @Bean
+    @Primary
+    @ConditionalOnProperty(name = "mail.provider", havingValue = "graph-client-credentials")
+    public MailSender graphClientCredentialsMailSender(
+            @Value("${microsoft.graph.tenant-id}") String tenantId,
+            @Value("${microsoft.graph.client-id}") String clientId,
+            @Value("${microsoft.graph.client-secret}") String clientSecret,
+            @Value("${microsoft.graph.sender-email}") String senderEmail) {
+        log.info("Configuring Microsoft Graph mail sender (Client Credentials)");
+        return new GraphClientCredentialsMailSender(tenantId, clientId, clientSecret, senderEmail);
     }
 }
