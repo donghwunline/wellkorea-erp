@@ -1,5 +1,6 @@
 package com.wellkorea.backend.admin.mail.domain;
 
+import com.wellkorea.backend.shared.security.EncryptedStringConverter;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
@@ -28,6 +29,7 @@ public class MailOAuth2Config {
     private String configKey = "SINGLETON";
 
     @Column(name = "refresh_token", nullable = false, columnDefinition = "TEXT")
+    @Convert(converter = EncryptedStringConverter.class)
     private String refreshToken;
 
     @Column(name = "sender_email")
@@ -59,6 +61,13 @@ public class MailOAuth2Config {
      */
     @Column(name = "last_refresh_at")
     private Instant lastRefreshAt;
+
+    /**
+     * Timestamp when refresh token was last rotated.
+     * Microsoft may return a new refresh token during token refresh.
+     */
+    @Column(name = "refresh_token_rotated_at")
+    private Instant refreshTokenRotatedAt;
 
     protected MailOAuth2Config() {
         // JPA requires default constructor
@@ -106,6 +115,17 @@ public class MailOAuth2Config {
                 && Instant.now().isBefore(tokenExpiresAt.minusSeconds(60));
     }
 
+    /**
+     * Rotate the refresh token when Microsoft returns a new one.
+     * This implements token rotation security best practice.
+     *
+     * @param newRefreshToken the new refresh token from Microsoft
+     */
+    public void rotateRefreshToken(String newRefreshToken) {
+        this.refreshToken = Objects.requireNonNull(newRefreshToken, "newRefreshToken must not be null");
+        this.refreshTokenRotatedAt = Instant.now();
+    }
+
     // Getters
 
     public Long getId() {
@@ -142,6 +162,10 @@ public class MailOAuth2Config {
 
     public Instant getLastRefreshAt() {
         return lastRefreshAt;
+    }
+
+    public Instant getRefreshTokenRotatedAt() {
+        return refreshTokenRotatedAt;
     }
 
     @Override

@@ -8,17 +8,13 @@ import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphBody;
 import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphEmailAddress;
 import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphMessage;
 import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphRecipient;
-import com.wellkorea.backend.shared.mail.dto.MicrosoftTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
-import java.time.Instant;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -42,23 +38,25 @@ public class GraphMailSender implements MailSender {
 
     private static final Logger log = LoggerFactory.getLogger(GraphMailSender.class);
     private static final String GRAPH_SEND_MAIL_URL = "https://graph.microsoft.com/v1.0/me/sendMail";
-    private static final String TOKEN_URL = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
 
     private final String clientId;
     private final String clientSecret;
     private final MailOAuth2ConfigRepository configRepository;
     private final MailTokenLockService lockService;
+    private final MailTokenRefreshService tokenRefreshService;
     private final RestClient restClient;
 
     public GraphMailSender(
             String clientId,
             String clientSecret,
             MailOAuth2ConfigRepository configRepository,
-            MailTokenLockService lockService) {
+            MailTokenLockService lockService,
+            MailTokenRefreshService tokenRefreshService) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.configRepository = configRepository;
         this.lockService = lockService;
+        this.tokenRefreshService = tokenRefreshService;
         this.restClient = RestClient.create();
     }
 
@@ -115,52 +113,9 @@ public class GraphMailSender implements MailSender {
                 return freshConfig.getAccessToken();
             }
 
-            return refreshAndStoreToken(freshConfig);
+            // Delegate to transactional service for proper transaction boundaries
+            return tokenRefreshService.refreshToken(freshConfig, clientId, clientSecret);
         });
-    }
-
-    /**
-     * Refresh the access token and store in database.
-     * Must be called while holding the refresh lock.
-     */
-    private String refreshAndStoreToken(MailOAuth2Config config) {
-        log.debug("Refreshing access token");
-
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("client_id", clientId);
-        formData.add("client_secret", clientSecret);
-        formData.add("refresh_token", config.getRefreshToken());
-        formData.add("grant_type", "refresh_token");
-        formData.add("scope", "Mail.Send offline_access");
-
-        try {
-            MicrosoftTokenResponse response = restClient.post()
-                    .uri(TOKEN_URL)
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(formData)
-                    .retrieve()
-                    .onStatus(HttpStatusCode::isError, (req, res) -> {
-                        throw new MailSendException("Token refresh failed: " + res.getStatusCode());
-                    })
-                    .body(MicrosoftTokenResponse.class);
-
-            if (response == null || response.accessToken() == null) {
-                throw new MailSendException("No access token in refresh response");
-            }
-
-            // Update config in database
-            Instant expiresAt = Instant.now().plusSeconds(response.expiresIn());
-            config.updateAccessToken(response.accessToken(), expiresAt);
-            configRepository.save(config);
-
-            log.debug("Access token refreshed, expires at {}", expiresAt);
-            return response.accessToken();
-
-        } catch (MailSendException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new MailSendException("Failed to refresh access token: " + e.getMessage(), e);
-        }
     }
 
     private GraphMailRequest buildMailRequest(MailMessage msg) {

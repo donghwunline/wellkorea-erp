@@ -41,9 +41,10 @@ public class MailSenderConfig {
             @Value("${microsoft.graph.client-id}") String clientId,
             @Value("${microsoft.graph.client-secret}") String clientSecret,
             MailOAuth2ConfigRepository configRepository,
-            MailTokenLockService lockService) {
+            MailTokenLockService lockService,
+            MailTokenRefreshService tokenRefreshService) {
         log.info("Configuring Microsoft Graph mail sender (Delegated/Refresh Token)");
-        return new GraphMailSender(clientId, clientSecret, configRepository, lockService);
+        return new GraphMailSender(clientId, clientSecret, configRepository, lockService, tokenRefreshService);
     }
 
     @Bean
