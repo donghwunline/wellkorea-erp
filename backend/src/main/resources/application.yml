@@ -56,6 +56,7 @@ mail:
 
 # Microsoft Graph Configuration
 # - graph: Delegated permissions with refresh token (personal accounts like hotmail.com)
+#          Configure via Admin Settings > Mail (in-app OAuth2 flow)
 # - graph-client-credentials: Application permissions (Microsoft 365 organizations)
 microsoft:
   graph:
@@ -63,7 +64,6 @@ microsoft:
     client-id: ${MICROSOFT_GRAPH_CLIENT_ID:}
     client-secret: ${MICROSOFT_GRAPH_CLIENT_SECRET:}
     sender-email: ${MICROSOFT_GRAPH_SENDER_EMAIL:}
-    refresh-token: ${MICROSOFT_GRAPH_REFRESH_TOKEN:}
 
   # File Upload Configuration
   servlet:

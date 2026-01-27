@@ -6,10 +6,9 @@ This document explains how to configure Microsoft Graph API for sending emails f
 
 The application supports sending emails via Microsoft Graph API using OAuth2 delegated permissions. This is useful for personal Microsoft accounts (hotmail.com, outlook.com) where SMTP access may be restricted.
 
-**Two configuration methods are available:**
+**Configuration method:**
 
-1. **In-App OAuth2** (Recommended) - Admin connects via the UI, tokens stored in database
-2. **Environment Variable** (Fallback) - Refresh token provided via `MICROSOFT_GRAPH_REFRESH_TOKEN`
+**In-App OAuth2** - Admin connects via the UI (Admin Settings > Mail), tokens stored securely in database
 
 ## Prerequisites
 
@@ -73,10 +72,9 @@ MICROSOFT_GRAPH_CLIENT_SECRET=your-client-secret-here
 # App URLs (required for OAuth2 redirect)
 APP_BASE_URL=http://localhost:8080          # Backend URL
 APP_FRONTEND_URL=http://localhost:5173      # Frontend URL
-
-# Optional: Fallback refresh token (if not using in-app OAuth2)
-# MICROSOFT_GRAPH_REFRESH_TOKEN=your-refresh-token-here
 ```
+
+> **Note**: Refresh tokens are configured via Admin Settings > Mail after application startup.
 
 ### Production Configuration
 
@@ -173,17 +171,14 @@ CREATE TABLE mail_oauth2_state (
 );
 ```
 
-## Token Priority
+## Token Storage
 
-The `GraphMailSender` uses tokens in this order:
+The `GraphMailSender` retrieves refresh tokens exclusively from the database, configured via the in-app OAuth2 flow.
 
-1. **Database** - Token stored via in-app OAuth2 (takes priority)
-2. **Environment Variable** - `MICROSOFT_GRAPH_REFRESH_TOKEN` (fallback)
-
-This allows:
-- Initial setup via environment variable
-- Seamless transition to in-app configuration
-- No app restart required when token is updated via UI
+Benefits:
+- Secure storage in database (not in environment variables)
+- No app restart required when token is updated
+- Easy token rotation via reconnect in Admin Settings
 
 ## Troubleshooting
 
@@ -221,11 +216,9 @@ This allows:
 
 ### "No refresh token available"
 
-**Cause**: Neither database nor environment variable has a refresh token.
+**Cause**: No refresh token has been configured in the database.
 
-**Solution**: Either:
-- Connect via Admin Settings > Mail
-- Set `MICROSOFT_GRAPH_REFRESH_TOKEN` environment variable
+**Solution**: Connect via Admin Settings > Mail to complete the OAuth2 flow.
 
 ### Emails not sending after token refresh
 
@@ -244,29 +237,6 @@ This allows:
 2. **State parameter prevents CSRF** - Each authorization flow uses a unique, time-limited state
 3. **Callback endpoint is public** - But protected by state validation
 4. **Admin-only access** - Only users with ADMIN role can configure mail
-
-## Manual Token Generation (Legacy)
-
-If you need to generate a refresh token manually (without the in-app flow), use the provided script:
-
-```bash
-# 1. Get authorization URL
-# Visit: https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?
-#   client_id=YOUR_CLIENT_ID&
-#   response_type=code&
-#   redirect_uri=http://localhost:3000/callback&
-#   scope=offline_access%20Mail.Send&
-#   response_mode=query
-
-# 2. After authorization, copy the code from the redirect URL
-
-# 3. Run the script
-./scripts/get-outlook-refresh-token.sh
-
-# 4. Copy the refresh token to your .env file
-```
-
-> **Note**: The in-app OAuth2 flow is recommended over manual token generation.
 
 ## Related Documentation
 

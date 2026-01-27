@@ -8,37 +8,28 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 /**
- * Provides refresh tokens from database with environment variable fallback.
- * Database takes priority; if no DB config exists, falls back to env var.
+ * Provides refresh tokens from database storage.
+ * Tokens are configured via the in-app OAuth2 flow (Admin Settings > Mail).
  */
 public class DatabaseRefreshTokenProvider implements RefreshTokenProvider {
 
     private static final Logger log = LoggerFactory.getLogger(DatabaseRefreshTokenProvider.class);
 
     private final MailOAuth2ConfigRepository configRepository;
-    private final String fallbackToken;
 
-    public DatabaseRefreshTokenProvider(MailOAuth2ConfigRepository configRepository, String fallbackToken) {
+    public DatabaseRefreshTokenProvider(MailOAuth2ConfigRepository configRepository) {
         this.configRepository = configRepository;
-        this.fallbackToken = fallbackToken;
     }
 
     @Override
     public Optional<String> getRefreshToken() {
-        // Try database first
         Optional<MailOAuth2Config> dbConfig = configRepository.findFirstByOrderByConnectedAtDesc();
         if (dbConfig.isPresent()) {
             log.debug("Using refresh token from database");
             return Optional.of(dbConfig.get().getRefreshToken());
         }
 
-        // Fall back to environment variable
-        if (fallbackToken != null && !fallbackToken.isBlank()) {
-            log.debug("Using refresh token from environment variable");
-            return Optional.of(fallbackToken);
-        }
-
-        log.debug("No refresh token available");
+        log.debug("No refresh token available - configure via Admin Settings > Mail");
         return Optional.empty();
     }
 }

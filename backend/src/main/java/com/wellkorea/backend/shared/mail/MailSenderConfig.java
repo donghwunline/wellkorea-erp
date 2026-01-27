@@ -39,10 +39,9 @@ public class MailSenderConfig {
     public MailSender graphMailSender(
             @Value("${microsoft.graph.client-id}") String clientId,
             @Value("${microsoft.graph.client-secret}") String clientSecret,
-            @Value("${microsoft.graph.refresh-token:}") String refreshToken,
             MailOAuth2ConfigRepository configRepository) {
         log.info("Configuring Microsoft Graph mail sender (Refresh Token)");
-        RefreshTokenProvider tokenProvider = new DatabaseRefreshTokenProvider(configRepository, refreshToken);
+        RefreshTokenProvider tokenProvider = new DatabaseRefreshTokenProvider(configRepository);
         return new GraphMailSender(clientId, clientSecret, tokenProvider);
     }
 
