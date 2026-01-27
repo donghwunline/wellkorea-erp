@@ -67,6 +67,12 @@ jwt:
   secret: ${JWT_SECRET:dev-secret-key-minimum-256-bits-required-for-hs256-algorithm-do-not-use-in-production}
   expiration: ${JWT_EXPIRATION:86400000}  # 24 hours
 
+# Token Encryption - Safe defaults for development
+# DO NOT use these in production - generate new keys
+app:
+  token-encryption-key: ${APP_TOKEN_ENCRYPTION_KEY:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+  token-encryption-salt: ${APP_TOKEN_ENCRYPTION_SALT:0123456789abcdef}
+
 # MinIO Configuration - Local MinIO defaults
 minio:
   url: ${MINIO_URL:http://localhost:9000}

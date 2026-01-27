@@ -67,6 +67,11 @@ jwt:
   secret: test-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256
   expiration: 3600000  # 1 hour
 
+# Token Encryption - Test keys for OAuth2 token encryption
+app:
+  token-encryption-key: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+  token-encryption-salt: 0123456789abcdef
+
 # MinIO - Configured by @DynamicPropertySource in BaseIntegrationTest
 # No default MinIO URL - must come from Testcontainers
 
