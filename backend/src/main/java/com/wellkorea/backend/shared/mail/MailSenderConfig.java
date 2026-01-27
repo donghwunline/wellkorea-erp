@@ -1,5 +1,6 @@
 package com.wellkorea.backend.shared.mail;
 
+import com.wellkorea.backend.admin.mail.infrastructure.MailOAuth2ConfigRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,9 +39,11 @@ public class MailSenderConfig {
     public MailSender graphMailSender(
             @Value("${microsoft.graph.client-id}") String clientId,
             @Value("${microsoft.graph.client-secret}") String clientSecret,
-            @Value("${microsoft.graph.refresh-token}") String refreshToken) {
+            @Value("${microsoft.graph.refresh-token:}") String refreshToken,
+            MailOAuth2ConfigRepository configRepository) {
         log.info("Configuring Microsoft Graph mail sender (Refresh Token)");
-        return new GraphMailSender(clientId, clientSecret, refreshToken);
+        RefreshTokenProvider tokenProvider = new DatabaseRefreshTokenProvider(configRepository, refreshToken);
+        return new GraphMailSender(clientId, clientSecret, tokenProvider);
     }
 
     @Bean

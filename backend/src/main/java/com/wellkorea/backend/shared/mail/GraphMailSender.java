@@ -18,12 +18,13 @@ import java.util.Base64;
  * <ul>
  *     <li>microsoft.graph.client-id - Azure AD app client ID</li>
  *     <li>microsoft.graph.client-secret - Azure AD app client secret</li>
- *     <li>microsoft.graph.refresh-token - User's refresh token (obtained via initial auth)</li>
- *     <li>microsoft.graph.user-email - The user's email (e.g., wellkorea@hotmail.com)</li>
  * </ul>
  *
- * <p>Note: Initial token acquisition requires manual OAuth2 authorization flow.
- * After that, the refresh token can be used to obtain new access tokens.
+ * <p>Refresh token can be provided via:
+ * <ul>
+ *     <li>In-app OAuth2 configuration (stored in database)</li>
+ *     <li>Environment variable MICROSOFT_GRAPH_REFRESH_TOKEN (fallback)</li>
+ * </ul>
  */
 public class GraphMailSender implements MailSender {
 
@@ -33,16 +34,17 @@ public class GraphMailSender implements MailSender {
 
     private final String clientId;
     private final String clientSecret;
-    private final String refreshToken;
+    private final RefreshTokenProvider refreshTokenProvider;
     private final HttpClient httpClient;
 
     private String accessToken;
     private long tokenExpiryTime;
+    private String cachedRefreshToken;
 
-    public GraphMailSender(String clientId, String clientSecret, String refreshToken) {
+    public GraphMailSender(String clientId, String clientSecret, RefreshTokenProvider refreshTokenProvider) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
-        this.refreshToken = refreshToken;
+        this.refreshTokenProvider = refreshTokenProvider;
         this.httpClient = HttpClient.newHttpClient();
     }
 
@@ -78,12 +80,20 @@ public class GraphMailSender implements MailSender {
     }
 
     private void ensureValidAccessToken() {
-        if (accessToken == null || System.currentTimeMillis() >= tokenExpiryTime) {
-            refreshAccessToken();
+        String currentRefreshToken = refreshTokenProvider.getRefreshToken()
+                .orElseThrow(() -> new MailSendException("No refresh token available. Configure via admin settings or environment variable."));
+
+        // If refresh token changed or no valid access token, refresh
+        if (accessToken == null ||
+                System.currentTimeMillis() >= tokenExpiryTime ||
+                !currentRefreshToken.equals(cachedRefreshToken)) {
+            refreshAccessToken(currentRefreshToken);
         }
     }
 
-    private void refreshAccessToken() {
+    private void refreshAccessToken(String refreshToken) {
+        this.cachedRefreshToken = refreshToken;
+
         String requestBody = String.format(
                 "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token&scope=Mail.Send",
                 clientId, clientSecret, refreshToken
@@ -190,7 +200,7 @@ public class GraphMailSender implements MailSender {
     public boolean isAvailable() {
         return clientId != null && !clientId.isBlank()
                 && clientSecret != null && !clientSecret.isBlank()
-                && refreshToken != null && !refreshToken.isBlank();
+                && refreshTokenProvider.hasToken();
     }
 
     @Override
