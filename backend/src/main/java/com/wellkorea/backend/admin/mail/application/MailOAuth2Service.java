@@ -4,18 +4,21 @@ import com.wellkorea.backend.admin.mail.domain.MailOAuth2Config;
 import com.wellkorea.backend.admin.mail.domain.MailOAuth2State;
 import com.wellkorea.backend.admin.mail.infrastructure.MailOAuth2ConfigRepository;
 import com.wellkorea.backend.admin.mail.infrastructure.MailOAuth2StateRepository;
-import com.wellkorea.backend.shared.exception.BusinessException;
+import com.wellkorea.backend.shared.exception.ErrorCode;
+import com.wellkorea.backend.shared.exception.OAuth2Exception;
+import com.wellkorea.backend.shared.mail.dto.MicrosoftTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 
-import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
@@ -34,7 +37,7 @@ public class MailOAuth2Service {
 
     private final MailOAuth2ConfigRepository configRepository;
     private final MailOAuth2StateRepository stateRepository;
-    private final HttpClient httpClient;
+    private final RestClient restClient;
 
     @Value("${microsoft.graph.client-id:}")
     private String clientId;
@@ -49,7 +52,7 @@ public class MailOAuth2Service {
                              MailOAuth2StateRepository stateRepository) {
         this.configRepository = configRepository;
         this.stateRepository = stateRepository;
-        this.httpClient = HttpClient.newHttpClient();
+        this.restClient = RestClient.create();
     }
 
     /**
@@ -57,7 +60,7 @@ public class MailOAuth2Service {
      */
     @Transactional(readOnly = true)
     public MailConfigStatus getStatus() {
-        Optional<MailOAuth2Config> config = configRepository.findFirstByOrderByConnectedAtDesc();
+        Optional<MailOAuth2Config> config = configRepository.findSingletonConfig();
 
         if (config.isPresent()) {
             MailOAuth2Config c = config.get();
@@ -100,6 +103,9 @@ public class MailOAuth2Service {
 
     /**
      * Handle OAuth2 callback - exchange code for tokens and store refresh token.
+     * Uses upsert pattern to maintain singleton constraint.
+     *
+     * @throws OAuth2Exception with error codes for redirect handling
      */
     @Transactional
     public void handleCallback(String code, String stateValue) {
@@ -107,61 +113,59 @@ public class MailOAuth2Service {
 
         // Validate state
         MailOAuth2State state = stateRepository.findById(stateValue)
-                .orElseThrow(() -> new BusinessException("Invalid OAuth2 state parameter"));
+                .orElseThrow(() -> new OAuth2Exception(ErrorCode.OAUTH_INVALID_STATE));
 
         if (state.isExpired()) {
             stateRepository.delete(state);
-            throw new BusinessException("OAuth2 state has expired. Please try again.");
+            throw new OAuth2Exception(ErrorCode.OAUTH_STATE_EXPIRED);
         }
 
         // Exchange code for tokens
-        String requestBody = "client_id=" + encode(clientId) +
-                "&client_secret=" + encode(clientSecret) +
-                "&code=" + encode(code) +
-                "&redirect_uri=" + encode(getRedirectUri()) +
-                "&grant_type=authorization_code" +
-                "&scope=" + encode(SCOPE);
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("client_id", clientId);
+        formData.add("client_secret", clientSecret);
+        formData.add("code", code);
+        formData.add("redirect_uri", getRedirectUri());
+        formData.add("grant_type", "authorization_code");
+        formData.add("scope", SCOPE);
 
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(TOKEN_URL))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
+            MicrosoftTokenResponse response = restClient.post()
+                    .uri(TOKEN_URL)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(formData)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, (req, res) -> {
+                        log.error("Token exchange failed: status={}", res.getStatusCode());
+                        throw new OAuth2Exception(ErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED);
+                    })
+                    .body(MicrosoftTokenResponse.class);
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                String body = response.body();
-                String refreshToken = extractJsonValue(body, "refresh_token");
-
-                if (refreshToken == null || refreshToken.isBlank()) {
-                    throw new BusinessException("No refresh token received from Microsoft");
-                }
-
-                // Delete existing configs and save new one
-                configRepository.deleteAll();
-                MailOAuth2Config config = new MailOAuth2Config(
-                        refreshToken,
-                        null, // sender email could be fetched from Graph API if needed
-                        state.getUserId()
-                );
-                configRepository.save(config);
-
-                // Clean up state
-                stateRepository.delete(state);
-
-                log.info("Mail OAuth2 configured successfully by user {}", state.getUserId());
-            } else {
-                log.error("Token exchange failed: {}", response.body());
-                throw new BusinessException("Failed to exchange authorization code: " + extractErrorMessage(response.body()));
+            if (response == null || response.refreshToken() == null || response.refreshToken().isBlank()) {
+                throw new OAuth2Exception(ErrorCode.OAUTH_NO_REFRESH_TOKEN);
             }
 
-        } catch (BusinessException e) {
+            // Upsert pattern: update existing or create new (maintains singleton)
+            MailOAuth2Config config = configRepository.findSingletonConfig()
+                    .orElseGet(() -> new MailOAuth2Config(
+                            response.refreshToken(),
+                            null,
+                            state.getUserId()
+                    ));
+
+            config.updateTokens(response.refreshToken(), null, state.getUserId());
+            configRepository.save(config);
+
+            // Clean up state
+            stateRepository.delete(state);
+
+            log.info("Mail OAuth2 configured successfully by user {}", state.getUserId());
+
+        } catch (OAuth2Exception e) {
             throw e;
         } catch (Exception e) {
             log.error("OAuth2 callback processing failed", e);
-            throw new BusinessException("Failed to process OAuth2 callback: " + e.getMessage());
+            throw new OAuth2Exception(ErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED, e);
         }
     }
 
@@ -179,7 +183,7 @@ public class MailOAuth2Service {
      */
     @Transactional(readOnly = true)
     public Optional<String> getRefreshToken() {
-        return configRepository.findFirstByOrderByConnectedAtDesc()
+        return configRepository.findSingletonConfig()
                 .map(MailOAuth2Config::getRefreshToken);
     }
 
@@ -193,8 +197,7 @@ public class MailOAuth2Service {
 
     private void validateMicrosoftConfig() {
         if (!isMicrosoftConfigured()) {
-            throw new BusinessException(
-                    "Microsoft Graph is not configured. Set MICROSOFT_GRAPH_CLIENT_ID and MICROSOFT_GRAPH_CLIENT_SECRET.");
+            throw new OAuth2Exception(ErrorCode.OAUTH_CONFIG_MISSING);
         }
     }
 
@@ -204,37 +207,6 @@ public class MailOAuth2Service {
 
     private String encode(String value) {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
-    }
-
-    private String extractJsonValue(String json, String key) {
-        String searchKey = "\"" + key + "\":";
-        int start = json.indexOf(searchKey);
-        if (start == -1) return null;
-        start += searchKey.length();
-
-        // Skip whitespace
-        while (start < json.length() && Character.isWhitespace(json.charAt(start))) {
-            start++;
-        }
-
-        if (start >= json.length()) return null;
-
-        if (json.charAt(start) == '"') {
-            start++;
-            int end = json.indexOf("\"", start);
-            return end > start ? json.substring(start, end) : null;
-        } else {
-            int end = json.indexOf(",", start);
-            if (end == -1) end = json.indexOf("}", start);
-            return end > start ? json.substring(start, end).trim() : null;
-        }
-    }
-
-    private String extractErrorMessage(String json) {
-        String desc = extractJsonValue(json, "error_description");
-        if (desc != null) return desc;
-        String error = extractJsonValue(json, "error");
-        return error != null ? error : "Unknown error";
     }
 
     /**

@@ -5,6 +5,8 @@ import com.wellkorea.backend.admin.mail.api.dto.MailConfigStatusResponse;
 import com.wellkorea.backend.admin.mail.application.MailOAuth2Service;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import com.wellkorea.backend.shared.dto.AuthenticatedUser;
+import com.wellkorea.backend.shared.exception.ErrorCode;
+import com.wellkorea.backend.shared.exception.OAuth2Exception;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,8 +76,11 @@ public class MailOAuth2Controller {
      * Handle Microsoft OAuth2 callback.
      * GET /api/admin/mail/oauth2/callback?code=X&state=Y
      *
-     * This endpoint is public because Microsoft redirects here after authorization.
+     * <p>This endpoint is public because Microsoft redirects here after authorization.
      * Security is handled via the state parameter (CSRF protection).
+     *
+     * <p>Error handling returns only error codes (not messages) in the redirect URL
+     * to prevent information leakage. Frontend translates codes to user messages.
      */
     @GetMapping("/callback")
     public void handleCallback(
@@ -87,11 +92,16 @@ public class MailOAuth2Controller {
             oAuth2Service.handleCallback(code, state);
             // Redirect to frontend settings page with success
             response.sendRedirect(frontendUrl + "/admin/settings/mail?success=true");
+
+        } catch (OAuth2Exception e) {
+            log.error("OAuth2 callback failed: {} - {}", e.getCode(), e.getMessage());
+            // Return only error code, not message (prevents information leakage)
+            response.sendRedirect(frontendUrl + "/admin/settings/mail?error=" + e.getCode());
+
         } catch (Exception e) {
-            log.error("OAuth2 callback failed", e);
-            // Redirect to frontend settings page with error
-            String errorMessage = java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
-            response.sendRedirect(frontendUrl + "/admin/settings/mail?error=" + errorMessage);
+            log.error("Unexpected OAuth2 error", e);
+            // Generic server error code for unexpected errors
+            response.sendRedirect(frontendUrl + "/admin/settings/mail?error=" + ErrorCode.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 
