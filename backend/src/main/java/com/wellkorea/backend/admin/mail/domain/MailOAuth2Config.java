@@ -5,8 +5,12 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Stores Microsoft Graph OAuth2 refresh token for mail sending.
- * Only one active configuration should exist at a time.
+ * Stores Microsoft Graph OAuth2 tokens for mail sending.
+ * Uses singleton pattern - only one configuration can exist at a time.
+ *
+ * <p>Access tokens are cached in the database for scale-out deployments,
+ * allowing multiple application instances to share the same token without
+ * redundant refresh calls.
  */
 @Entity
 @Table(name = "mail_oauth2_config")
@@ -15,6 +19,13 @@ public class MailOAuth2Config {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /**
+     * Singleton constraint key - always "SINGLETON".
+     * Ensures only one configuration can exist via unique constraint.
+     */
+    @Column(name = "config_key", nullable = false, updatable = false)
+    private String configKey = "SINGLETON";
 
     @Column(name = "refresh_token", nullable = false, columnDefinition = "TEXT")
     private String refreshToken;
@@ -28,6 +39,27 @@ public class MailOAuth2Config {
     @Column(name = "connected_at", nullable = false)
     private Instant connectedAt;
 
+    /**
+     * Cached access token for Graph API calls.
+     * Stored in database for sharing across multiple application instances.
+     */
+    @Column(name = "access_token", columnDefinition = "TEXT")
+    private String accessToken;
+
+    /**
+     * Access token expiry timestamp.
+     * Token should be refreshed before this time.
+     */
+    @Column(name = "token_expires_at")
+    private Instant tokenExpiresAt;
+
+    /**
+     * Last successful token refresh timestamp.
+     * Used for monitoring and debugging.
+     */
+    @Column(name = "last_refresh_at")
+    private Instant lastRefreshAt;
+
     protected MailOAuth2Config() {
         // JPA requires default constructor
     }
@@ -39,8 +71,49 @@ public class MailOAuth2Config {
         this.connectedAt = Instant.now();
     }
 
+    /**
+     * Update tokens after OAuth callback (initial connection or reconnection).
+     */
+    public void updateTokens(String refreshToken, String senderEmail, Long connectedById) {
+        this.refreshToken = Objects.requireNonNull(refreshToken, "refreshToken must not be null");
+        this.senderEmail = senderEmail;
+        this.connectedById = Objects.requireNonNull(connectedById, "connectedById must not be null");
+        this.connectedAt = Instant.now();
+        // Clear cached access token to force refresh
+        this.accessToken = null;
+        this.tokenExpiresAt = null;
+    }
+
+    /**
+     * Update cached access token after successful refresh.
+     *
+     * @param accessToken The new access token
+     * @param expiresAt When the token expires
+     */
+    public void updateAccessToken(String accessToken, Instant expiresAt) {
+        this.accessToken = Objects.requireNonNull(accessToken, "accessToken must not be null");
+        this.tokenExpiresAt = Objects.requireNonNull(expiresAt, "expiresAt must not be null");
+        this.lastRefreshAt = Instant.now();
+    }
+
+    /**
+     * Check if the cached access token is still valid.
+     * Returns false if no token exists or if it expires within 60 seconds.
+     */
+    public boolean hasValidAccessToken() {
+        return accessToken != null
+                && tokenExpiresAt != null
+                && Instant.now().isBefore(tokenExpiresAt.minusSeconds(60));
+    }
+
+    // Getters
+
     public Long getId() {
         return id;
+    }
+
+    public String getConfigKey() {
+        return configKey;
     }
 
     public String getRefreshToken() {
@@ -57,6 +130,18 @@ public class MailOAuth2Config {
 
     public Instant getConnectedAt() {
         return connectedAt;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public Instant getTokenExpiresAt() {
+        return tokenExpiresAt;
+    }
+
+    public Instant getLastRefreshAt() {
+        return lastRefreshAt;
     }
 
     @Override
@@ -79,6 +164,8 @@ public class MailOAuth2Config {
                 ", senderEmail='" + senderEmail + '\'' +
                 ", connectedById=" + connectedById +
                 ", connectedAt=" + connectedAt +
+                ", hasAccessToken=" + (accessToken != null) +
+                ", tokenExpiresAt=" + tokenExpiresAt +
                 '}';
     }
 }
