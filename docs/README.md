@@ -47,6 +47,7 @@ docs/
 
 | Document | Description |
 |----------|-------------|
+| [Microsoft Graph Mail Setup](operations/microsoft-graph-mail-setup.md) | OAuth2 mail configuration guide |
 | [Keycloak Migration](operations/keycloak-migration.md) | OAuth2/SSO migration plan |
 | [Service Management](operations/service-management.md) | Docker, health checks, maintenance |
 
