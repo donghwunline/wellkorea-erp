@@ -23,6 +23,7 @@ import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.Year;
 
 /**
@@ -98,19 +99,17 @@ public class PurchaseOrderCommandService {
         }
 
         // Create purchase order
-        PurchaseOrder purchaseOrder = new PurchaseOrder();
-        purchaseOrder.setPurchaseRequest(purchaseRequest);
-        purchaseOrder.setRfqItemId(command.rfqItemId());
-        purchaseOrder.setProject(purchaseRequest.getProject());
-        purchaseOrder.setVendor(vendor);
-        purchaseOrder.setPoNumber(poNumber);
-        purchaseOrder.setOrderDate(command.orderDate());
-        purchaseOrder.setExpectedDeliveryDate(command.expectedDeliveryDate());
-        purchaseOrder.setTotalAmount(rfqItem.getQuotedPrice());
-        purchaseOrder.setCurrency("KRW");
-        purchaseOrder.setStatus(PurchaseOrderStatus.DRAFT);
-        purchaseOrder.setNotes(command.notes());
-        purchaseOrder.setCreatedBy(user);
+        PurchaseOrder purchaseOrder = new PurchaseOrder(
+                purchaseRequest,
+                command.rfqItemId(),
+                vendor,
+                poNumber,
+                command.orderDate(),
+                command.expectedDeliveryDate(),
+                rfqItem.getQuotedPrice(),
+                user,
+                command.notes()
+        );
 
         purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
 
@@ -133,19 +132,15 @@ public class PurchaseOrderCommandService {
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with ID: " + id));
 
-        if (!purchaseOrder.canUpdate()) {
-            throw new BusinessException("Cannot update purchase order in " + purchaseOrder.getStatus() + " status");
-        }
+        // Determine values for update (use current values if not provided in command)
+        LocalDate newExpectedDeliveryDate = command.expectedDeliveryDate() != null
+                ? command.expectedDeliveryDate()
+                : purchaseOrder.getExpectedDeliveryDate();
 
-        if (command.expectedDeliveryDate() != null) {
-            if (command.expectedDeliveryDate().isBefore(purchaseOrder.getOrderDate())) {
-                throw new BusinessException("Expected delivery date cannot be before order date");
-            }
-            purchaseOrder.setExpectedDeliveryDate(command.expectedDeliveryDate());
-        }
-        if (command.notes() != null) {
-            purchaseOrder.setNotes(command.notes());
-        }
+        String newNotes = command.notes() != null ? command.notes() : purchaseOrder.getNotes();
+
+        // Use domain method (validates DRAFT status)
+        purchaseOrder.update(newExpectedDeliveryDate, newNotes);
 
         purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
         return purchaseOrder.getId();
