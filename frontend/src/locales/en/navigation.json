@@ -19,7 +19,8 @@
     "pendingApprovals": "Pending Approvals",
     "approvalSettings": "Approval Settings",
     "userManagement": "User Management",
-    "auditLogs": "Audit Logs"
+    "auditLogs": "Audit Logs",
+    "mailSettings": "Mail Settings"
   },
   "userMenu": {
     "profile": "Profile",

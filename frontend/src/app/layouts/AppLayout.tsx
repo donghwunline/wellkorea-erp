@@ -120,6 +120,12 @@ const ADMIN_NAV_ITEMS: NavItem[] = [
     icon: 'document',
     roles: ['ROLE_ADMIN'],
   },
+  {
+    labelKey: 'navigation:items.mailSettings',
+    path: '/admin/settings/mail',
+    icon: 'envelope',
+    roles: ['ROLE_ADMIN'],
+  },
 ];
 
 interface AppLayoutProps {
