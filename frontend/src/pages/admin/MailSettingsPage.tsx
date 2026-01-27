@@ -23,21 +23,30 @@ import { useDisconnectMail } from '@/features/mail/disconnect';
 /**
  * Hook to handle OAuth callback result from URL params.
  * Extracts success/error from URL and clears the params.
+ * Error codes are translated to user-friendly messages via i18n.
  */
 function useOAuthCallbackResult() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   // Extract callback result from URL params once
   const [callbackResult] = useState<{ type: 'success' | 'error'; text: string } | null>(() => {
     const success = searchParams.get('success') === 'true';
-    const errorParam = searchParams.get('error');
+    const errorCode = searchParams.get('error');
 
     if (success) {
       return { type: 'success', text: 'Microsoft account connected successfully!' };
     }
-    if (errorParam) {
-      return { type: 'error', text: `Connection failed: ${errorParam}` };
+    if (errorCode) {
+      // Translate error code to user-friendly message
+      const translationKey = `errors:codes.${errorCode}`;
+      const translatedMessage = t(translationKey);
+      // If translation exists, use it; otherwise use a generic message
+      const message = translatedMessage !== translationKey
+        ? translatedMessage
+        : t('errors:generic.unknown');
+      return { type: 'error', text: message };
     }
     return null;
   });
