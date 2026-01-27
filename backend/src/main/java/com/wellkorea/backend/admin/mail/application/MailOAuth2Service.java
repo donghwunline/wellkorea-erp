@@ -10,6 +10,7 @@ import com.wellkorea.backend.shared.mail.dto.MicrosoftTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -83,12 +85,13 @@ public class MailOAuth2Service {
     public String generateAuthorizationUrl(Long userId) {
         validateMicrosoftConfig();
 
-        // Clean up expired states
-        stateRepository.deleteExpiredStates(Instant.now());
-
-        // Create new state
+        // Create and save new state FIRST (before cleanup to avoid race condition)
         MailOAuth2State state = new MailOAuth2State(userId);
         stateRepository.save(state);
+
+        // Clean up expired states AFTER saving new state (with 60-second grace period)
+        // Grace period ensures newly created states aren't accidentally deleted
+        stateRepository.deleteExpiredStates(Instant.now().minusSeconds(60));
 
         String redirectUri = getRedirectUri();
 
@@ -111,7 +114,20 @@ public class MailOAuth2Service {
     public void handleCallback(String code, String stateValue) {
         validateMicrosoftConfig();
 
-        // Validate state
+        // Validate code parameter
+        if (code == null || code.isBlank()) {
+            throw new OAuth2Exception(ErrorCode.OAUTH_INVALID_CODE);
+        }
+        if (code.length() > 2048) {  // Microsoft codes are typically < 1KB
+            throw new OAuth2Exception(ErrorCode.OAUTH_INVALID_CODE);
+        }
+
+        // Validate state parameter
+        if (stateValue == null || stateValue.isBlank()) {
+            throw new OAuth2Exception(ErrorCode.OAUTH_INVALID_STATE);
+        }
+
+        // Validate state exists and is not expired
         MailOAuth2State state = stateRepository.findById(stateValue)
                 .orElseThrow(() -> new OAuth2Exception(ErrorCode.OAUTH_INVALID_STATE));
 
@@ -163,9 +179,15 @@ public class MailOAuth2Service {
 
         } catch (OAuth2Exception e) {
             throw e;
-        } catch (Exception e) {
-            log.error("OAuth2 callback processing failed", e);
+        } catch (RestClientException e) {
+            log.error("HTTP error during token exchange", e);
             throw new OAuth2Exception(ErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED, e);
+        } catch (DataAccessException e) {
+            log.error("Database error during OAuth callback", e);
+            throw new OAuth2Exception(ErrorCode.OAUTH_DATABASE_ERROR, e);
+        } catch (Exception e) {
+            log.error("Unexpected error during OAuth callback", e);
+            throw new OAuth2Exception(ErrorCode.INTERNAL_SERVER_ERROR, e);
         }
     }
 

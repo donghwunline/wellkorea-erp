@@ -39,6 +39,8 @@ public enum ErrorCode {
     OAUTH_NO_REFRESH_TOKEN(400, "OAUTH_004", "No refresh token received"),
     OAUTH_CONFIG_MISSING(400, "OAUTH_005", "OAuth2 provider not configured"),
     OAUTH_TOKEN_REFRESH_FAILED(500, "OAUTH_006", "Failed to refresh access token"),
+    OAUTH_INVALID_CODE(400, "OAUTH_007", "Invalid authorization code"),
+    OAUTH_DATABASE_ERROR(500, "OAUTH_008", "Database error during OAuth operation"),
 
     // ========== Authentication Errors (401) ==========
     AUTHENTICATION_FAILED(401, "AUTH_001", "Authentication failed"),
