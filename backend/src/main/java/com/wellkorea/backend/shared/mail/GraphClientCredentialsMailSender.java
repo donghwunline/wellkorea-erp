@@ -1,19 +1,34 @@
 package com.wellkorea.backend.shared.mail;
 
+import com.wellkorea.backend.shared.mail.dto.GraphMailRequest;
+import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphAttachment;
+import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphBody;
+import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphEmailAddress;
+import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphMessage;
+import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphRecipient;
+import com.wellkorea.backend.shared.mail.dto.MicrosoftTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 
-import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Microsoft Graph API implementation of MailSender using Client Credentials flow.
  * Suitable for Microsoft 365 organization accounts (server-to-server communication).
+ *
+ * <p>Note: Client Credentials flow doesn't require distributed locking because
+ * each instance can independently obtain its own access token - there's no shared
+ * refresh token that gets invalidated upon use.
  *
  * <p>Required configuration properties:
  * <ul>
@@ -25,10 +40,10 @@ import java.util.Base64;
  *
  * <p>Azure AD Setup Requirements:
  * <ol>
- *     <li>Register app in Azure Portal → App registrations</li>
- *     <li>Add API permission: Microsoft Graph → Application → Mail.Send</li>
+ *     <li>Register app in Azure Portal - App registrations</li>
+ *     <li>Add API permission: Microsoft Graph - Application - Mail.Send</li>
  *     <li>Grant admin consent for the permission</li>
- *     <li>Create client secret under Certificates & secrets</li>
+ *     <li>Create client secret under Certificates &amp; secrets</li>
  * </ol>
  */
 public class GraphClientCredentialsMailSender implements MailSender {
@@ -41,8 +56,9 @@ public class GraphClientCredentialsMailSender implements MailSender {
     private final String clientId;
     private final String clientSecret;
     private final String senderEmail;
-    private final HttpClient httpClient;
+    private final RestClient restClient;
 
+    // In-memory token cache (safe for client credentials - each instance can refresh independently)
     private String accessToken;
     private long tokenExpiryTime;
 
@@ -51,7 +67,7 @@ public class GraphClientCredentialsMailSender implements MailSender {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.senderEmail = senderEmail;
-        this.httpClient = HttpClient.newHttpClient();
+        this.restClient = RestClient.create();
     }
 
     @Override
@@ -60,28 +76,23 @@ public class GraphClientCredentialsMailSender implements MailSender {
 
         String sendMailUrl = String.format("%s/users/%s/sendMail", GRAPH_API_BASE,
                 URLEncoder.encode(senderEmail, StandardCharsets.UTF_8));
-        String jsonBody = buildGraphMailJson(message);
+
+        GraphMailRequest request = buildMailRequest(message);
 
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(sendMailUrl))
-                    .header("Authorization", "Bearer " + accessToken)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                    .build();
+            restClient.post()
+                    .uri(sendMailUrl)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(request)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, (req, res) -> {
+                        throw new MailSendException("Microsoft Graph API returned status " + res.getStatusCode());
+                    })
+                    .toBodilessEntity();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 202) {
-                log.info("Graph (Client Credentials): Sent email from {} to {} (cc: {}) with subject: {}",
-                        senderEmail, message.to(), message.cc().size(), message.subject());
-            } else {
-                String errorBody = response.body();
-                log.error("Graph API sendMail failed: status={}, url={}, body={}",
-                        response.statusCode(), sendMailUrl, errorBody);
-                throw new MailSendException("Microsoft Graph API returned status " + response.statusCode()
-                        + ": " + (errorBody != null && !errorBody.isBlank() ? errorBody : "(empty response body)"));
-            }
+            log.info("Graph (Client Credentials): Sent email from {} to {} (cc: {}) with subject: {}",
+                    senderEmail, message.to(), message.cc().size(), message.subject());
 
         } catch (MailSendException e) {
             throw e;
@@ -90,7 +101,7 @@ public class GraphClientCredentialsMailSender implements MailSender {
         }
     }
 
-    private void ensureValidAccessToken() {
+    private synchronized void ensureValidAccessToken() {
         if (accessToken == null || System.currentTimeMillis() >= tokenExpiryTime) {
             obtainAccessToken();
         }
@@ -98,31 +109,31 @@ public class GraphClientCredentialsMailSender implements MailSender {
 
     private void obtainAccessToken() {
         String tokenUrl = String.format(TOKEN_URL_TEMPLATE, tenantId);
-        String requestBody = String.format(
-                "client_id=%s&client_secret=%s&scope=%s&grant_type=client_credentials",
-                URLEncoder.encode(clientId, StandardCharsets.UTF_8),
-                URLEncoder.encode(clientSecret, StandardCharsets.UTF_8),
-                URLEncoder.encode("https://graph.microsoft.com/.default", StandardCharsets.UTF_8)
-        );
+
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("client_id", clientId);
+        formData.add("client_secret", clientSecret);
+        formData.add("scope", "https://graph.microsoft.com/.default");
+        formData.add("grant_type", "client_credentials");
 
         try {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(tokenUrl))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
+            MicrosoftTokenResponse response = restClient.post()
+                    .uri(tokenUrl)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(formData)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, (req, res) -> {
+                        throw new MailSendException("Failed to obtain access token: " + res.getStatusCode());
+                    })
+                    .body(MicrosoftTokenResponse.class);
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 200) {
-                String body = response.body();
-                accessToken = extractJsonValue(body, "access_token");
-                int expiresIn = Integer.parseInt(extractJsonValue(body, "expires_in"));
-                tokenExpiryTime = System.currentTimeMillis() + (expiresIn - 60) * 1000L; // Refresh 60s before expiry
-                log.debug("Graph (Client Credentials): Access token obtained, expires in {} seconds", expiresIn);
-            } else {
-                throw new MailSendException("Failed to obtain access token: " + response.body());
+            if (response == null || response.accessToken() == null) {
+                throw new MailSendException("No access token in response");
             }
+
+            accessToken = response.accessToken();
+            tokenExpiryTime = System.currentTimeMillis() + (response.expiresIn() - 60) * 1000L;
+            log.debug("Graph (Client Credentials): Access token obtained, expires in {} seconds", response.expiresIn());
 
         } catch (MailSendException e) {
             throw e;
@@ -131,74 +142,40 @@ public class GraphClientCredentialsMailSender implements MailSender {
         }
     }
 
-    private String buildGraphMailJson(MailMessage message) {
-        StringBuilder json = new StringBuilder();
-        json.append("{\"message\":{");
-        json.append("\"subject\":\"").append(escapeJson(message.subject())).append("\",");
-        json.append("\"body\":{");
-        json.append("\"contentType\":\"").append(message.html() ? "HTML" : "Text").append("\",");
-        json.append("\"content\":\"").append(escapeJson(message.body())).append("\"");
-        json.append("},");
-        json.append("\"toRecipients\":[{\"emailAddress\":{\"address\":\"")
-                .append(escapeJson(message.to())).append("\"}}]");
+    private GraphMailRequest buildMailRequest(MailMessage msg) {
+        List<GraphRecipient> toRecipients = List.of(toRecipient(msg.to()));
+        List<GraphRecipient> ccRecipients = msg.cc().stream()
+                .map(this::toRecipient)
+                .toList();
 
-        // Add CC recipients if present
-        if (!message.cc().isEmpty()) {
-            json.append(",\"ccRecipients\":[");
-            boolean first = true;
-            for (String ccRecipient : message.cc()) {
-                if (!first) json.append(",");
-                json.append("{\"emailAddress\":{\"address\":\"")
-                        .append(escapeJson(ccRecipient)).append("\"}}");
-                first = false;
-            }
-            json.append("]");
-        }
+        List<GraphAttachment> attachments = msg.attachments().isEmpty()
+                ? Collections.emptyList()
+                : msg.attachments().stream()
+                .map(this::toAttachment)
+                .toList();
 
-        if (!message.attachments().isEmpty()) {
-            json.append(",\"attachments\":[");
-            boolean first = true;
-            for (MailAttachment attachment : message.attachments()) {
-                if (!first) json.append(",");
-                json.append("{");
-                json.append("\"@odata.type\":\"#microsoft.graph.fileAttachment\",");
-                json.append("\"name\":\"").append(escapeJson(attachment.filename())).append("\",");
-                json.append("\"contentType\":\"").append(escapeJson(attachment.contentType())).append("\",");
-                json.append("\"contentBytes\":\"").append(Base64.getEncoder().encodeToString(attachment.content())).append("\"");
-                json.append("}");
-                first = false;
-            }
-            json.append("]");
-        }
+        GraphMessage message = new GraphMessage(
+                msg.subject(),
+                new GraphBody(msg.html() ? "HTML" : "Text", msg.body()),
+                toRecipients,
+                ccRecipients.isEmpty() ? null : ccRecipients,
+                attachments.isEmpty() ? null : attachments
+        );
 
-        json.append("},\"saveToSentItems\":true}");
-        return json.toString();
+        return new GraphMailRequest(message, true);
     }
 
-    private String escapeJson(String value) {
-        if (value == null) return "";
-        return value
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+    private GraphRecipient toRecipient(String email) {
+        return new GraphRecipient(new GraphEmailAddress(email));
     }
 
-    private String extractJsonValue(String json, String key) {
-        String searchKey = "\"" + key + "\":";
-        int start = json.indexOf(searchKey);
-        if (start == -1) return "";
-        start += searchKey.length();
-        if (json.charAt(start) == '"') {
-            start++;
-            int end = json.indexOf("\"", start);
-            return json.substring(start, end);
-        } else {
-            int end = json.indexOf(",", start);
-            if (end == -1) end = json.indexOf("}", start);
-            return json.substring(start, end).trim();
-        }
+    private GraphAttachment toAttachment(MailAttachment attachment) {
+        String base64Content = Base64.getEncoder().encodeToString(attachment.content());
+        return GraphAttachment.fileAttachment(
+                attachment.filename(),
+                attachment.contentType(),
+                base64Content
+        );
     }
 
     @Override

@@ -17,7 +17,8 @@ import org.springframework.mail.javamail.JavaMailSender;
  * <p>Configuration properties:
  * <ul>
  *     <li>mail.provider=smtp (default) - Use SMTP via JavaMailSender</li>
- *     <li>mail.provider=graph - Use Microsoft Graph API</li>
+ *     <li>mail.provider=graph - Use Microsoft Graph API (Delegated/Refresh Token)</li>
+ *     <li>mail.provider=graph-client-credentials - Use Microsoft Graph API (Client Credentials)</li>
  * </ul>
  */
 @Configuration
@@ -39,10 +40,10 @@ public class MailSenderConfig {
     public MailSender graphMailSender(
             @Value("${microsoft.graph.client-id}") String clientId,
             @Value("${microsoft.graph.client-secret}") String clientSecret,
-            MailOAuth2ConfigRepository configRepository) {
-        log.info("Configuring Microsoft Graph mail sender (Refresh Token)");
-        RefreshTokenProvider tokenProvider = new DatabaseRefreshTokenProvider(configRepository);
-        return new GraphMailSender(clientId, clientSecret, tokenProvider);
+            MailOAuth2ConfigRepository configRepository,
+            MailTokenLockService lockService) {
+        log.info("Configuring Microsoft Graph mail sender (Delegated/Refresh Token)");
+        return new GraphMailSender(clientId, clientSecret, configRepository, lockService);
     }
 
     @Bean
