@@ -39,7 +39,19 @@ public class MailSenderConfig {
             @Value("${microsoft.graph.client-id}") String clientId,
             @Value("${microsoft.graph.client-secret}") String clientSecret,
             @Value("${microsoft.graph.refresh-token}") String refreshToken) {
-        log.info("Configuring Microsoft Graph mail sender");
+        log.info("Configuring Microsoft Graph mail sender (Refresh Token)");
         return new GraphMailSender(clientId, clientSecret, refreshToken);
+    }
+
+    @Bean
+    @Primary
+    @ConditionalOnProperty(name = "mail.provider", havingValue = "graph-client-credentials")
+    public MailSender graphClientCredentialsMailSender(
+            @Value("${microsoft.graph.tenant-id}") String tenantId,
+            @Value("${microsoft.graph.client-id}") String clientId,
+            @Value("${microsoft.graph.client-secret}") String clientSecret,
+            @Value("${microsoft.graph.sender-email}") String senderEmail) {
+        log.info("Configuring Microsoft Graph mail sender (Client Credentials)");
+        return new GraphClientCredentialsMailSender(tenantId, clientId, clientSecret, senderEmail);
     }
 }

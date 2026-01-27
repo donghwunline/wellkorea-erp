@@ -45,16 +45,19 @@ spring:
             enable: true
 
 # Mail Provider Configuration
-# Options: smtp (default), graph (Microsoft Graph API)
+# Options: smtp (default), graph (refresh token), graph-client-credentials (M365 organizations)
 mail:
   provider: ${MAIL_PROVIDER:smtp}
 
-# Microsoft Graph Configuration (required when mail.provider=graph)
-# Used for Outlook/Microsoft 365 email via OAuth2 (for personal accounts like hotmail.com)
+# Microsoft Graph Configuration
+# - graph: Delegated permissions with refresh token (personal accounts like hotmail.com)
+# - graph-client-credentials: Application permissions (Microsoft 365 organizations)
 microsoft:
   graph:
+    tenant-id: ${MICROSOFT_GRAPH_TENANT_ID:}
     client-id: ${MICROSOFT_GRAPH_CLIENT_ID:}
     client-secret: ${MICROSOFT_GRAPH_CLIENT_SECRET:}
+    sender-email: ${MICROSOFT_GRAPH_SENDER_EMAIL:}
     refresh-token: ${MICROSOFT_GRAPH_REFRESH_TOKEN:}
 
   # File Upload Configuration
