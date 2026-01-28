@@ -1,11 +1,14 @@
 package com.wellkorea.backend.purchasing.domain;
 
+import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
 import org.junit.jupiter.api.*;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -50,6 +53,11 @@ class PurchaseRequestTest {
         @Override
         public String getItemName() {
             return "Test Item";
+        }
+
+        @Override
+        public List<AttachmentReference> getAttachments() {
+            return Collections.emptyList();
         }
     }
 

@@ -3,11 +3,15 @@ package com.wellkorea.backend.purchasing.application;
 import com.wellkorea.backend.company.api.dto.query.CompanyDetailView;
 import com.wellkorea.backend.company.infrastructure.mapper.CompanyMapper;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestDetailView;
+import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
+import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseRequestMapper;
+import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.config.CompanyProperties;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.mail.MailMessage;
 import com.wellkorea.backend.shared.mail.MockMailSender;
+import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -40,6 +44,9 @@ class RfqEmailServiceTest {
     private PurchaseRequestMapper purchaseRequestMapper;
 
     @Mock
+    private PurchaseRequestRepository purchaseRequestRepository;
+
+    @Mock
     private CompanyMapper companyMapper;
 
     @Mock
@@ -50,6 +57,9 @@ class RfqEmailServiceTest {
 
     @Mock
     private RfqPdfService rfqPdfService;
+
+    @Mock
+    private MinioFileStorage minioFileStorage;
 
     private MockMailSender mockMailSender;
 
@@ -67,11 +77,13 @@ class RfqEmailServiceTest {
 
         rfqEmailService = new RfqEmailService(
                 purchaseRequestMapper,
+                purchaseRequestRepository,
                 companyMapper,
                 mockMailSender,
                 companyProperties,
                 templateEngine,
-                rfqPdfService
+                rfqPdfService,
+                minioFileStorage
         );
 
         testPurchaseRequest = createTestPurchaseRequest();
@@ -142,6 +154,10 @@ class RfqEmailServiceTest {
             given(companyMapper.findDetailById(VENDOR_ID)).willReturn(Optional.of(testVendor));
             given(rfqPdfService.generatePdf(PR_ID)).willReturn(new byte[]{1, 2, 3});
             given(templateEngine.process(eq("rfq-email-ko"), any(Context.class))).willReturn("Content");
+            // Mock PR entity with no attachments
+            PurchaseRequest mockPr = org.mockito.Mockito.mock(PurchaseRequest.class);
+            given(mockPr.getAttachments()).willReturn(List.of());
+            given(purchaseRequestRepository.findById(PR_ID)).willReturn(Optional.of(mockPr));
 
             Map<Long, RfqEmailService.VendorEmailInfo> vendorEmails = Map.of(
                     VENDOR_ID, new RfqEmailService.VendorEmailInfo(null, null)
@@ -152,7 +168,7 @@ class RfqEmailServiceTest {
             assertThat(result.successCount()).isEqualTo(1);
             assertThat(result.failureCount()).isEqualTo(0);
             assertThat(mockMailSender.hasSentMessages()).isTrue();
-            
+
             MailMessage sent = mockMailSender.getLastMessage();
             assertThat(sent.to()).isEqualTo("vendor@test.com");
             assertThat(sent.attachments()).hasSize(1);
@@ -165,6 +181,10 @@ class RfqEmailServiceTest {
             given(companyMapper.findDetailById(VENDOR_ID)).willReturn(Optional.of(testVendor));
             given(rfqPdfService.generatePdf(PR_ID)).willReturn(new byte[]{1, 2, 3});
             given(templateEngine.process(eq("rfq-email-ko"), any(Context.class))).willReturn("Content");
+            // Mock PR entity with no attachments
+            PurchaseRequest mockPr = org.mockito.Mockito.mock(PurchaseRequest.class);
+            given(mockPr.getAttachments()).willReturn(List.of());
+            given(purchaseRequestRepository.findById(PR_ID)).willReturn(Optional.of(mockPr));
 
             String overrideEmail = "override@vendor.com";
             List<String> ccEmails = List.of("cc@vendor.com");
@@ -188,6 +208,10 @@ class RfqEmailServiceTest {
             given(companyMapper.findDetailById(VENDOR_ID + 1)).willReturn(Optional.empty()); // Fail for vendor 2
             given(rfqPdfService.generatePdf(PR_ID)).willReturn(new byte[]{1, 2, 3});
             given(templateEngine.process(eq("rfq-email-ko"), any(Context.class))).willReturn("Content");
+            // Mock PR entity with no attachments
+            PurchaseRequest mockPr = org.mockito.Mockito.mock(PurchaseRequest.class);
+            given(mockPr.getAttachments()).willReturn(List.of());
+            given(purchaseRequestRepository.findById(PR_ID)).willReturn(Optional.of(mockPr));
 
             Map<Long, RfqEmailService.VendorEmailInfo> vendorEmails = Map.of(
                     VENDOR_ID, new RfqEmailService.VendorEmailInfo(null, null),
