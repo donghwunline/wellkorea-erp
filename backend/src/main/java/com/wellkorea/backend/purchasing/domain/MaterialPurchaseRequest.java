@@ -3,10 +3,13 @@ package com.wellkorea.backend.purchasing.domain;
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.catalog.domain.Material;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -65,5 +68,16 @@ public class MaterialPurchaseRequest extends PurchaseRequest {
     @Override
     public String getItemName() {
         return material != null ? material.getName() : null;
+    }
+
+    /**
+     * Material purchase requests do not support attachments.
+     * Returns empty list for polymorphic compatibility.
+     *
+     * @return Empty list
+     */
+    @Override
+    public List<AttachmentReference> getAttachments() {
+        return Collections.emptyList();
     }
 }

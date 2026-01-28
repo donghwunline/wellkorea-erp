@@ -2,6 +2,7 @@ package com.wellkorea.backend.purchasing.domain;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
@@ -133,6 +134,18 @@ public abstract class PurchaseRequest {
 
     // Abstract method to get the item name for display
     public abstract String getItemName();
+
+    /**
+     * Get attachments linked to this purchase request.
+     * <p>
+     * ServicePurchaseRequest: Returns list of linked attachment references (blueprints/drawings)
+     * MaterialPurchaseRequest: Returns empty list (no attachment support)
+     * <p>
+     * This enables polymorphic access in RfqEmailService without type checking.
+     *
+     * @return Unmodifiable list of attachment references
+     */
+    public abstract List<AttachmentReference> getAttachments();
 
     // ========== State Check Methods ==========
 
