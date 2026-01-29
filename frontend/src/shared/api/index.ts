@@ -39,7 +39,10 @@ const onUnauthorized = () => {
 export const httpClient = new HttpClient(BASE_URL, tokenStore, onUnauthorized);
 
 // Re-export types
-export type { Tokens, ApiError } from './types';
+export type { Tokens } from './types';
+
+// Re-export ApiError class (needed for instanceof checks)
+export { ApiError } from './types';
 
 // Re-export PagedResponse (deprecated from barrel - use @/shared/api/types directly)
 export type { PagedResponse } from './types';
