@@ -11,6 +11,7 @@ import com.wellkorea.backend.company.domain.vo.RoleType;
 import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
+import com.wellkorea.backend.purchasing.api.dto.command.AttachmentInfo;
 import com.wellkorea.backend.purchasing.application.dto.CreateMaterialPurchaseRequestCommand;
 import com.wellkorea.backend.purchasing.application.dto.CreateServicePurchaseRequestCommand;
 import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseRequestCommand;
@@ -20,6 +21,7 @@ import com.wellkorea.backend.purchasing.domain.ServicePurchaseRequest;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,19 +42,22 @@ public class PurchaseRequestCommandService {
     private final ProjectRepository projectRepository;
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
+    private final MinioFileStorage minioFileStorage;
 
     public PurchaseRequestCommandService(PurchaseRequestRepository purchaseRequestRepository,
                                          ServiceCategoryRepository serviceCategoryRepository,
                                          MaterialRepository materialRepository,
                                          ProjectRepository projectRepository,
                                          CompanyRepository companyRepository,
-                                         UserRepository userRepository) {
+                                         UserRepository userRepository,
+                                         MinioFileStorage minioFileStorage) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.materialRepository = materialRepository;
         this.projectRepository = projectRepository;
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
+        this.minioFileStorage = minioFileStorage;
     }
 
     /**
@@ -94,6 +99,19 @@ public class PurchaseRequestCommandService {
                 command.requiredDate(),
                 user
         );
+
+        // Link attachments in same transaction
+        if (command.attachments() != null && !command.attachments().isEmpty()) {
+            for (AttachmentInfo att : command.attachments()) {
+                if (!minioFileStorage.fileExists(att.storagePath())) {
+                    throw new BusinessException("File not found in storage: " + att.fileName());
+                }
+                purchaseRequest.linkAttachment(
+                        att.fileName(), att.fileType(), att.fileSize(),
+                        att.storagePath(), userId
+                );
+            }
+        }
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
         return purchaseRequest.getId();
