@@ -2,6 +2,8 @@
   "buttons": {
     "save": "Save",
     "cancel": "Cancel",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
     "create": "Create",
     "edit": "Edit",
     "delete": "Delete",
@@ -256,6 +258,9 @@
     "outsourceTitle": "Outsourcing Request",
     "attachmentsInfo": "{{count}} blueprints attached to this task.",
     "andMore": "and {{count}} more",
+    "attachToRfq": "Attach to RFQ",
+    "sizeLimitWarning": "Selected files exceed 20MB total. Email delivery may be limited.",
+    "linkingAttachments": "Linking attachments...",
     "errors": {
       "selectMaterial": "Please select a material",
       "enterContent": "Please enter content",

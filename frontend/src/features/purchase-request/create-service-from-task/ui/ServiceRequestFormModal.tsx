@@ -61,6 +61,8 @@ export function ServiceRequestFormModal({
   const { t } = useTranslation(['common', 'items']);
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [error, setError] = useState<string | null>(null);
+  // Exclusion set pattern: empty = all selected (default)
+  const [excludedAttachmentIds, setExcludedAttachmentIds] = useState<Set<number>>(new Set());
 
   // Fetch service categories for dropdown
   const { data: categories, isLoading: categoriesLoading } = useQuery({
@@ -74,23 +76,19 @@ export function ServiceRequestFormModal({
     enabled: isOpen && nodeId !== null,
   });
 
-  const createMutation = useCreateServiceRequest({
-    onSuccess: () => {
-      onSuccess?.();
-      handleClose();
-    },
-    onError: (err: Error) => {
-      setError(err.message || t('purchaseRequest.errors.outsourceFailed'));
-    },
-  });
+  // Derive selected: all except excluded
+  const selectedAttachments = attachments?.filter(a => !excludedAttachmentIds.has(a.id)) ?? [];
+
+  const createMutation = useCreateServiceRequest({});
 
   const handleClose = () => {
     setFormState(initialFormState);
     setError(null);
+    setExcludedAttachmentIds(new Set());
     onClose();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -122,9 +120,21 @@ export function ServiceRequestFormModal({
       quantity,
       uom: formState.uom.trim() || null,
       requiredDate: formState.requiredDate,
+      attachments: selectedAttachments.map(att => ({
+        fileName: att.fileName,
+        fileType: att.fileType,
+        fileSize: att.fileSize,
+        storagePath: att.storagePath,
+      })),
     };
 
-    createMutation.mutate(input);
+    try {
+      await createMutation.mutateAsync(input);
+      onSuccess?.();
+      handleClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('purchaseRequest.errors.outsourceFailed'));
+    }
   };
 
   const activeCategories = categories?.filter((c: ServiceCategoryListItem) => c.isActive) ?? [];
@@ -201,23 +211,57 @@ export function ServiceRequestFormModal({
           required
         />
 
-        {/* Existing Attachments Info */}
+        {/* Attachment Selection */}
         {attachments && attachments.length > 0 && (
-          <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
-            <div className="flex items-center gap-2 text-sm text-blue-400">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{t('purchaseRequest.attachmentsInfo', { count: attachments.length })}</span>
+          <div className="rounded-lg border border-steel-700 bg-steel-800/50 p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-medium text-steel-300">
+                {t('purchaseRequest.attachToRfq')}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setExcludedAttachmentIds(
+                    excludedAttachmentIds.size === 0
+                      ? new Set(attachments.map(a => a.id)) // Exclude all
+                      : new Set() // Clear exclusions = select all
+                  )
+                }
+                className="text-xs text-copper-400 hover:underline"
+              >
+                {excludedAttachmentIds.size === 0
+                  ? t('buttons.deselectAll')
+                  : t('buttons.selectAll')}
+              </button>
             </div>
-            <ul className="mt-2 space-y-1 pl-6 text-xs text-steel-400">
-              {attachments.slice(0, 3).map((att: BlueprintAttachment) => (
-                <li key={att.id}>{att.fileName}</li>
+            <div className="max-h-32 space-y-1.5 overflow-y-auto">
+              {attachments.map((att: BlueprintAttachment) => (
+                <label key={att.id} className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={!excludedAttachmentIds.has(att.id)}
+                    onChange={e => {
+                      setExcludedAttachmentIds(prev => {
+                        const newSet = new Set(prev);
+                        if (e.target.checked) {
+                          newSet.delete(att.id); // Remove from exclusions = selected
+                        } else {
+                          newSet.add(att.id); // Add to exclusions = unselected
+                        }
+                        return newSet;
+                      });
+                    }}
+                    className="h-3.5 w-3.5 rounded border-steel-600 bg-steel-800 text-copper-500"
+                  />
+                  <span className="truncate text-xs text-steel-400">{att.fileName}</span>
+                  <span className="text-xs text-steel-500">({att.formattedFileSize})</span>
+                </label>
               ))}
-              {attachments.length > 3 && (
-                <li>{t('purchaseRequest.andMore', { count: attachments.length - 3 })}</li>
-              )}
-            </ul>
+            </div>
+            {/* Size warning for email limit (20MB) */}
+            {selectedAttachments.reduce((sum, a) => sum + a.fileSize, 0) > 20 * 1024 * 1024 && (
+              <p className="mt-2 text-xs text-amber-400">{t('purchaseRequest.sizeLimitWarning')}</p>
+            )}
           </div>
         )}
 
@@ -233,7 +277,11 @@ export function ServiceRequestFormModal({
           <Button type="button" variant="secondary" onClick={handleClose}>
             {t('buttons.cancel')}
           </Button>
-          <Button type="submit" variant="primary" isLoading={createMutation.isPending}>
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={createMutation.isPending}
+          >
             {t('purchaseRequest.outsourceTitle')}
           </Button>
         </div>

@@ -2,6 +2,8 @@
   "buttons": {
     "save": "저장",
     "cancel": "취소",
+    "selectAll": "전체 선택",
+    "deselectAll": "전체 해제",
     "create": "생성",
     "edit": "수정",
     "delete": "삭제",
@@ -256,6 +258,9 @@
     "outsourceTitle": "외주 요청",
     "attachmentsInfo": "이 작업에 {{count}}개의 도면이 첨부되어 있습니다.",
     "andMore": "외 {{count}}개",
+    "attachToRfq": "RFQ에 첨부할 도면",
+    "sizeLimitWarning": "선택한 파일의 총 용량이 20MB를 초과합니다. 이메일 발송 시 제한될 수 있습니다.",
+    "linkingAttachments": "도면 첨부 중...",
     "errors": {
       "selectMaterial": "자재를 선택해주세요",
       "enterContent": "내용을 입력해주세요",
