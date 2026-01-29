@@ -11,6 +11,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Button, DatePicker, FormField, Modal, Spinner } from '@/shared/ui';
+import { ApiError } from '@/shared/api';
+import { ATTACHMENT_LIMITS } from '@/shared/lib/attachment-limits';
 import { catalogQueries, type ServiceCategoryListItem } from '@/entities/catalog';
 import { blueprintQueries, type BlueprintAttachment } from '@/entities/blueprint-attachment';
 import type { CreateServicePurchaseRequestInput } from '@/entities/purchase-request';
@@ -133,7 +135,33 @@ export function ServiceRequestFormModal({
       onSuccess?.();
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('purchaseRequest.errors.outsourceFailed'));
+      if (err instanceof ApiError) {
+        switch (err.errorCode) {
+          case 'ATTACHMENT_SIZE_EXCEEDED':
+            setError(
+              t('purchaseRequest.errors.attachmentSizeExceeded', {
+                limit: ATTACHMENT_LIMITS.MAX_TOTAL_SIZE / 1024 / 1024,
+              })
+            );
+            break;
+          case 'ATTACHMENT_COUNT_EXCEEDED':
+            setError(
+              t('purchaseRequest.errors.attachmentCountExceeded', {
+                limit: ATTACHMENT_LIMITS.MAX_ATTACHMENT_COUNT,
+              })
+            );
+            break;
+          case 'VAL_001':
+            setError(err.message || t('purchaseRequest.errors.validationError'));
+            break;
+          default:
+            setError(err.message || t('purchaseRequest.errors.outsourceFailed'));
+        }
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(t('purchaseRequest.errors.networkError'));
+      }
     }
   };
 
@@ -258,8 +286,8 @@ export function ServiceRequestFormModal({
                 </label>
               ))}
             </div>
-            {/* Size warning for email limit (20MB) */}
-            {selectedAttachments.reduce((sum, a) => sum + a.fileSize, 0) > 20 * 1024 * 1024 && (
+            {/* Size warning for email limit */}
+            {selectedAttachments.reduce((sum, a) => sum + a.fileSize, 0) > ATTACHMENT_LIMITS.MAX_TOTAL_SIZE && (
               <p className="mt-2 text-xs text-amber-400">{t('purchaseRequest.sizeLimitWarning')}</p>
             )}
           </div>
