@@ -8,6 +8,7 @@ import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseRequestMapper;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.config.CompanyProperties;
+import com.wellkorea.backend.shared.constant.AttachmentLimits;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.mail.MailAttachment;
@@ -42,7 +43,6 @@ public class RfqEmailService {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
     private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,###");
     private static final int DEFAULT_RESPONSE_DAYS = 7;
-    private static final long MAX_EMAIL_ATTACHMENT_SIZE = 20 * 1024 * 1024; // 20MB total email attachment limit
 
     private final PurchaseRequestMapper purchaseRequestMapper;
     private final PurchaseRequestRepository purchaseRequestRepository;
@@ -196,6 +196,9 @@ public class RfqEmailService {
             List<MailAttachment> mailAttachments = new ArrayList<>();
             mailAttachments.add(MailAttachment.pdf(pdfFilename, pdfBytes));
 
+            // TODO: Potential N+1 optimization - load attachments once before vendor loop
+            //       Current: purchaseRequestRepository.findById() called per vendor in sendRfqEmails()
+            //       Optimal: Load once in sendRfqEmails(), pass entity to this method
             // Load full aggregate to access attachments (polymorphic access)
             PurchaseRequest purchaseRequestEntity = purchaseRequestRepository.findById(purchaseRequest.id())
                     .orElseThrow(() -> new ResourceNotFoundException("Purchase request", purchaseRequest.id()));
@@ -203,11 +206,11 @@ public class RfqEmailService {
             List<AttachmentReference> attachments = purchaseRequestEntity.getAttachments();
 
             if (!attachments.isEmpty()) {
-                // Validate total email size (20MB limit)
+                // Validate total email size
                 long totalSize = pdfBytes.length + attachments.stream()
                         .mapToLong(AttachmentReference::getFileSize)
                         .sum();
-                if (totalSize > MAX_EMAIL_ATTACHMENT_SIZE) {
+                if (totalSize > AttachmentLimits.MAX_TOTAL_SIZE) {
                     throw new BusinessException("Total attachment size (" + formatFileSize(totalSize) +
                             ") exceeds email limit (20MB). Remove some attachments before sending.");
                 }

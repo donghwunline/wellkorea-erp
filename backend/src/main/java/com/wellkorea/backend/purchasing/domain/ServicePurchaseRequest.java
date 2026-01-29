@@ -3,6 +3,7 @@ package com.wellkorea.backend.purchasing.domain;
 import com.wellkorea.backend.catalog.domain.ServiceCategory;
 import com.wellkorea.backend.production.domain.AllowedFileType;
 import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
+import com.wellkorea.backend.shared.constant.AttachmentLimits;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -17,9 +18,6 @@ import java.util.*;
 @Entity
 @DiscriminatorValue("SERVICE")
 public class ServicePurchaseRequest extends PurchaseRequest {
-
-    private static final int MAX_ATTACHMENTS = 20;
-    private static final long MAX_TOTAL_ATTACHMENT_SIZE = 20 * 1024 * 1024; // 20MB
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_category_id", nullable = false)
@@ -127,16 +125,16 @@ public class ServicePurchaseRequest extends PurchaseRequest {
         }
 
         // Check attachment count limit
-        if (attachments.size() >= MAX_ATTACHMENTS) {
+        if (attachments.size() >= AttachmentLimits.MAX_ATTACHMENT_COUNT) {
             throw new IllegalStateException(
-                    "Maximum number of attachments (" + MAX_ATTACHMENTS + ") reached");
+                    "Maximum number of attachments (" + AttachmentLimits.MAX_ATTACHMENT_COUNT + ") reached");
         }
 
         // Check total size limit
         long currentTotalSize = attachments.stream()
                 .mapToLong(AttachmentReference::getFileSize)
                 .sum();
-        if (currentTotalSize + fileSize > MAX_TOTAL_ATTACHMENT_SIZE) {
+        if (currentTotalSize + fileSize > AttachmentLimits.MAX_TOTAL_SIZE) {
             throw new IllegalStateException(
                     "Total attachment size would exceed limit of 20MB");
         }

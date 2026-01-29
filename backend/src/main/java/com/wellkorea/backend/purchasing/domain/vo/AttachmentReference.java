@@ -1,6 +1,7 @@
 package com.wellkorea.backend.purchasing.domain.vo;
 
 import com.wellkorea.backend.production.domain.AllowedFileType;
+import com.wellkorea.backend.shared.constant.AttachmentLimits;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
@@ -24,7 +25,6 @@ import java.util.UUID;
 public class AttachmentReference {
 
     private static final String[] SIZE_UNITS = {"B", "KB", "MB", "GB"};
-    private static final long MAX_FILE_SIZE = 52_428_800L; // 50MB (same as BlueprintAttachment)
     private static final int MAX_FILE_NAME_LENGTH = 255;   // Matches DB column
     private static final int MAX_STORAGE_PATH_LENGTH = 500; // Matches DB column
 
@@ -124,7 +124,7 @@ public class AttachmentReference {
         if (fileSize <= 0) {
             throw new IllegalArgumentException("fileSize must be positive");
         }
-        if (fileSize > MAX_FILE_SIZE) {
+        if (fileSize > AttachmentLimits.MAX_FILE_SIZE) {
             throw new IllegalArgumentException("fileSize exceeds maximum allowed (50MB)");
         }
 
