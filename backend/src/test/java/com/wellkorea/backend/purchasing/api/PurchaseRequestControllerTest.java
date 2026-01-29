@@ -740,8 +740,8 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
         }
 
         @Test
-        @DisplayName("should return 400 when purchase request in VENDOR_SELECTED status")
-        void sendRfq_InVendorSelected_Returns400() throws Exception {
+        @DisplayName("should return 409 Conflict when purchase request in VENDOR_SELECTED status")
+        void sendRfq_InVendorSelected_Returns409() throws Exception {
             // Update status to VENDOR_SELECTED (not allowed)
             jdbcTemplate.update("UPDATE purchase_requests SET status = 'VENDOR_SELECTED' WHERE id = 300");
 
@@ -755,7 +755,7 @@ class PurchaseRequestControllerTest extends BaseIntegrationTest implements TestF
                             .header("Authorization", "Bearer " + adminToken)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(sendRfqRequest))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isConflict());
         }
     }
 

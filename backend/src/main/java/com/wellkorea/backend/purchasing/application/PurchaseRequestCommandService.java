@@ -6,9 +6,6 @@ import com.wellkorea.backend.catalog.domain.Material;
 import com.wellkorea.backend.catalog.domain.ServiceCategory;
 import com.wellkorea.backend.catalog.infrastructure.persistence.MaterialRepository;
 import com.wellkorea.backend.catalog.infrastructure.persistence.ServiceCategoryRepository;
-import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.domain.vo.RoleType;
-import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.purchasing.api.dto.command.AttachmentInfo;
@@ -18,6 +15,7 @@ import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseRequestCom
 import com.wellkorea.backend.purchasing.domain.MaterialPurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.ServicePurchaseRequest;
+import com.wellkorea.backend.purchasing.domain.service.RfqItemFactory;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
@@ -40,7 +38,7 @@ public class PurchaseRequestCommandService {
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final MaterialRepository materialRepository;
     private final ProjectRepository projectRepository;
-    private final CompanyRepository companyRepository;
+    private final RfqItemFactory rfqItemFactory;
     private final UserRepository userRepository;
     private final MinioFileStorage minioFileStorage;
 
@@ -48,14 +46,14 @@ public class PurchaseRequestCommandService {
                                          ServiceCategoryRepository serviceCategoryRepository,
                                          MaterialRepository materialRepository,
                                          ProjectRepository projectRepository,
-                                         CompanyRepository companyRepository,
+                                         RfqItemFactory rfqItemFactory,
                                          UserRepository userRepository,
                                          MinioFileStorage minioFileStorage) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.materialRepository = materialRepository;
         this.projectRepository = projectRepository;
-        this.companyRepository = companyRepository;
+        this.rfqItemFactory = rfqItemFactory;
         this.userRepository = userRepository;
         this.minioFileStorage = minioFileStorage;
     }
@@ -187,36 +185,19 @@ public class PurchaseRequestCommandService {
 
     /**
      * Send RFQ to vendors.
-     * Creates RFQ items for each vendor using the aggregate method.
+     * Delegates entirely to aggregate - domain service validates vendors and creates RfqItems.
      *
-     * @return the number of RFQs sent
+     * @return list of created RFQ item IDs for correlation with email sending
      */
-    public int sendRfq(Long purchaseRequestId, List<Long> vendorIds) {
+    public List<String> sendRfq(Long purchaseRequestId, List<Long> vendorIds) {
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(purchaseRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + purchaseRequestId));
 
-        if (!purchaseRequest.canSendRfq()) {
-            throw new BusinessException("Cannot send RFQ for purchase request in " + purchaseRequest.getStatus() + " status");
-        }
-
-        // Validate vendors and create RFQ items using aggregate method
-        for (Long vendorId : vendorIds) {
-            Company vendor = companyRepository.findById(vendorId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Vendor not found with ID: " + vendorId));
-
-            if (!vendor.hasRole(RoleType.VENDOR) && !vendor.hasRole(RoleType.OUTSOURCE)) {
-                throw new BusinessException("Company with ID " + vendorId + " is not a vendor");
-            }
-
-            // Use aggregate method to add RFQ item (no vendorOfferingId for now)
-            purchaseRequest.addRfqItem(vendorId, null);
-        }
-
-        // Transition status to RFQ_SENT
-        purchaseRequest.sendRfq();
+        // Delegate entirely to aggregate - pass domain service for item creation
+        List<String> itemIds = purchaseRequest.sendRfq(vendorIds, rfqItemFactory);
         purchaseRequestRepository.save(purchaseRequest);
 
-        return vendorIds.size();
+        return itemIds;
     }
 
     /**

@@ -2,6 +2,7 @@ package com.wellkorea.backend.purchasing.domain;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.purchasing.domain.service.RfqItemFactory;
 import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
@@ -147,30 +148,6 @@ public abstract class PurchaseRequest {
      */
     public abstract List<AttachmentReference> getAttachments();
 
-    // ========== State Check Methods ==========
-
-    /**
-     * Check if the purchase request can be sent to vendors (RFQ).
-     * Allowed in DRAFT status (initial send) or RFQ_SENT status (adding more vendors).
-     */
-    public boolean canSendRfq() {
-        return status == PurchaseRequestStatus.DRAFT || status == PurchaseRequestStatus.RFQ_SENT;
-    }
-
-    /**
-     * Check if the purchase request can be canceled.
-     */
-    public boolean canCancel() {
-        return status != PurchaseRequestStatus.CLOSED && status != PurchaseRequestStatus.CANCELED;
-    }
-
-    /**
-     * Check if the purchase request can be updated.
-     */
-    public boolean canUpdate() {
-        return status == PurchaseRequestStatus.DRAFT;
-    }
-
     /**
      * Update the purchase request fields.
      * Can only be called when in DRAFT status.
@@ -182,7 +159,7 @@ public abstract class PurchaseRequest {
      * @throws IllegalStateException if not in DRAFT status
      */
     public void update(String description, BigDecimal quantity, String uom, LocalDate requiredDate) {
-        if (!canUpdate()) {
+        if (!status.canUpdate()) {
             throw new IllegalStateException("Cannot update purchase request in " + status + " status");
         }
         Objects.requireNonNull(description, "description must not be null");
@@ -198,15 +175,37 @@ public abstract class PurchaseRequest {
     // ========== Status Transition Methods ==========
 
     /**
-     * Send RFQ to vendors - transition to RFQ_SENT status.
-     * This is idempotent when already in RFQ_SENT (allows adding more vendors).
+     * Send RFQ to vendors - validates via domain service, adds RfqItems, transitions status.
+     * Idempotent when already RFQ_SENT (allows adding more vendors).
+     *
+     * @param vendorIds      Raw vendor IDs from the request
+     * @param rfqItemFactory Domain service to validate vendors and create RfqItems
+     * @return Created RfqItem IDs for correlation with email sending
+     * @throws IllegalArgumentException if vendorIds is null or empty
+     * @throws IllegalStateException    if not in a state that allows sending RFQ
      */
-    public void sendRfq() {
-        if (!canSendRfq()) {
+    public List<String> sendRfq(List<Long> vendorIds, RfqItemFactory rfqItemFactory) {
+        Objects.requireNonNull(vendorIds, "vendorIds must not be null");
+        Objects.requireNonNull(rfqItemFactory, "rfqItemFactory must not be null");
+        if (vendorIds.isEmpty()) {
+            throw new IllegalArgumentException("vendorIds list must not be empty");
+        }
+        if (!status.canSendRfq()) {
             throw new IllegalStateException("Cannot send RFQ for purchase request in " + status + " status");
         }
-        // Idempotent: no-op if already RFQ_SENT (adding more vendors)
+
+        // Factory validates vendors and creates RfqItems (with UUID, sentAt initialized)
+        List<RfqItem> newItems = rfqItemFactory.createRfqItems(vendorIds);
+
+        // Add to aggregate and collect IDs
+        List<String> itemIds = new ArrayList<>();
+        for (RfqItem item : newItems) {
+            rfqItems.add(item);
+            itemIds.add(item.getItemId());
+        }
+
         this.status = PurchaseRequestStatus.RFQ_SENT;
+        return Collections.unmodifiableList(itemIds);
     }
 
     /**
@@ -243,7 +242,7 @@ public abstract class PurchaseRequest {
      * Cancel the purchase request.
      */
     public void cancel() {
-        if (!canCancel()) {
+        if (!status.canCancel()) {
             throw new IllegalStateException("Cannot cancel purchase request in " + status + " status");
         }
         this.status = PurchaseRequestStatus.CANCELED;
@@ -274,19 +273,6 @@ public abstract class PurchaseRequest {
         return findRfqItemById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "RFQ item not found with ID: " + itemId + " in purchase request: " + id));
-    }
-
-    /**
-     * Add an RFQ item for a vendor.
-     *
-     * @param vendorCompanyId  the vendor company ID
-     * @param vendorOfferingId optional vendor offering ID (can be null)
-     * @return the created RfqItem
-     */
-    public RfqItem addRfqItem(Long vendorCompanyId, Long vendorOfferingId) {
-        RfqItem rfqItem = new RfqItem(vendorCompanyId, vendorOfferingId);
-        rfqItems.add(rfqItem);
-        return rfqItem;
     }
 
     /**

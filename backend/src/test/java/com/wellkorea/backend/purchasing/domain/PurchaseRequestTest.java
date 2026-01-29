@@ -1,5 +1,6 @@
 package com.wellkorea.backend.purchasing.domain;
 
+import com.wellkorea.backend.purchasing.domain.service.RfqItemFactory;
 import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
@@ -40,10 +41,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PurchaseRequestTest {
 
     private TestPurchaseRequest purchaseRequest;
+    private RfqItemFactory mockFactory;
 
     @BeforeEach
     void setUp() {
         purchaseRequest = new TestPurchaseRequest();
+        mockFactory = new TestRfqItemFactory();
     }
 
     /**
@@ -58,6 +61,18 @@ class PurchaseRequestTest {
         @Override
         public List<AttachmentReference> getAttachments() {
             return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Mock RfqItemFactory for testing - creates RfqItems without vendor validation.
+     */
+    static class TestRfqItemFactory implements RfqItemFactory {
+        @Override
+        public List<RfqItem> createRfqItems(List<Long> vendorIds) {
+            return vendorIds.stream()
+                    .map(id -> new RfqItem(id, null))
+                    .toList();
         }
     }
 
@@ -77,86 +92,6 @@ class PurchaseRequestTest {
     }
 
     @Nested
-    @DisplayName("Guard Methods")
-    class GuardMethods {
-
-        @Test
-        @DisplayName("canSendRfq should return true for DRAFT")
-        void canSendRfqShouldReturnTrueForDraft() {
-            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.DRAFT);
-            assertThat(purchaseRequest.canSendRfq()).isTrue();
-        }
-
-        @Test
-        @DisplayName("canSendRfq should return true for RFQ_SENT")
-        void canSendRfqShouldReturnTrueForRfqSent() {
-            // Given
-            purchaseRequest.sendRfq();
-
-            // Then
-            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
-            assertThat(purchaseRequest.canSendRfq()).isTrue();
-        }
-
-        @Test
-        @DisplayName("canSendRfq should return false for VENDOR_SELECTED")
-        void canSendRfqShouldReturnFalseForVendorSelected() {
-            // Given
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
-
-            // Then
-            assertThat(purchaseRequest.canSendRfq()).isFalse();
-        }
-
-        @Test
-        @DisplayName("canCancel should return true for non-terminal states")
-        void canCancelShouldReturnTrueForNonTerminalStates() {
-            // DRAFT
-            assertThat(purchaseRequest.canCancel()).isTrue();
-
-            // RFQ_SENT
-            purchaseRequest.sendRfq();
-            assertThat(purchaseRequest.canCancel()).isTrue();
-
-            // VENDOR_SELECTED
-            purchaseRequest.markVendorSelected();
-            assertThat(purchaseRequest.canCancel()).isTrue();
-
-            // ORDERED
-            purchaseRequest.markOrdered();
-            assertThat(purchaseRequest.canCancel()).isTrue();
-        }
-
-        @Test
-        @DisplayName("canCancel should return false for terminal states")
-        void canCancelShouldReturnFalseForTerminalStates() {
-            // CLOSED (now requires ORDERED state first)
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
-            purchaseRequest.markOrdered();
-            purchaseRequest.close();
-            assertThat(purchaseRequest.canCancel()).isFalse();
-
-            // CANCELED
-            TestPurchaseRequest canceledRequest = new TestPurchaseRequest();
-            canceledRequest.cancel();
-            assertThat(canceledRequest.canCancel()).isFalse();
-        }
-
-        @Test
-        @DisplayName("canUpdate should return true only for DRAFT")
-        void canUpdateShouldReturnTrueOnlyForDraft() {
-            // DRAFT
-            assertThat(purchaseRequest.canUpdate()).isTrue();
-
-            // RFQ_SENT
-            purchaseRequest.sendRfq();
-            assertThat(purchaseRequest.canUpdate()).isFalse();
-        }
-    }
-
-    @Nested
     @DisplayName("DRAFT → RFQ_SENT transition (sendRfq)")
     class SendRfqTransition {
 
@@ -167,35 +102,52 @@ class PurchaseRequestTest {
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.DRAFT);
 
             // When
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
 
             // Then
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
         }
 
         @Test
-        @DisplayName("should be idempotent when already in RFQ_SENT")
+        @DisplayName("should create RfqItems and return their IDs")
+        void shouldCreateRfqItemsAndReturnIds() {
+            // When
+            List<String> itemIds = purchaseRequest.sendRfq(List.of(1L, 2L, 3L), mockFactory);
+
+            // Then
+            assertThat(itemIds).hasSize(3);
+            assertThat(purchaseRequest.getRfqItems()).hasSize(3);
+            assertThat(purchaseRequest.getRfqItems().stream().map(RfqItem::getItemId).toList())
+                    .containsExactlyElementsOf(itemIds);
+        }
+
+        @Test
+        @DisplayName("should be idempotent when already in RFQ_SENT (adding more vendors)")
         void shouldBeIdempotentWhenAlreadyInRfqSent() {
             // Given
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
+            assertThat(purchaseRequest.getRfqItems()).hasSize(1);
 
             // When - send again (adding more vendors)
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(2L, 3L), mockFactory);
 
-            // Then - still RFQ_SENT
+            // Then - still RFQ_SENT but more items
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
+            assertThat(purchaseRequest.getRfqItems()).hasSize(3);
         }
 
         @Test
         @DisplayName("should throw when sending from VENDOR_SELECTED")
         void shouldThrowWhenSendingFromVendorSelected() {
             // Given
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
 
             // When / Then
-            assertThatThrownBy(() -> purchaseRequest.sendRfq())
+            assertThatThrownBy(() -> purchaseRequest.sendRfq(List.of(2L), mockFactory))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Cannot send RFQ")
                     .hasMessageContaining("VENDOR_SELECTED");
@@ -205,16 +157,42 @@ class PurchaseRequestTest {
         @DisplayName("should throw when sending from CLOSED")
         void shouldThrowWhenSendingFromClosed() {
             // Given (now requires ORDERED state before CLOSED)
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
             purchaseRequest.markOrdered();
             purchaseRequest.close();
 
             // When / Then
-            assertThatThrownBy(() -> purchaseRequest.sendRfq())
+            assertThatThrownBy(() -> purchaseRequest.sendRfq(List.of(2L), mockFactory))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Cannot send RFQ")
                     .hasMessageContaining("CLOSED");
+        }
+
+        @Test
+        @DisplayName("should throw when vendorIds is null")
+        void shouldThrowWhenVendorIdsIsNull() {
+            assertThatThrownBy(() -> purchaseRequest.sendRfq(null, mockFactory))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("vendorIds must not be null");
+        }
+
+        @Test
+        @DisplayName("should throw when vendorIds is empty")
+        void shouldThrowWhenVendorIdsIsEmpty() {
+            assertThatThrownBy(() -> purchaseRequest.sendRfq(List.of(), mockFactory))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("vendorIds list must not be empty");
+        }
+
+        @Test
+        @DisplayName("should throw when rfqItemFactory is null")
+        void shouldThrowWhenRfqItemFactoryIsNull() {
+            assertThatThrownBy(() -> purchaseRequest.sendRfq(List.of(1L), null))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("rfqItemFactory must not be null");
         }
     }
 
@@ -224,7 +202,7 @@ class PurchaseRequestTest {
 
         @BeforeEach
         void setUpRfqSentState() {
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
         }
 
         @Test
@@ -258,10 +236,14 @@ class PurchaseRequestTest {
     @DisplayName("VENDOR_SELECTED → ORDERED transition (markOrdered)")
     class MarkOrderedTransition {
 
+        private RfqItem item;
+
         @BeforeEach
         void setUpVendorSelectedState() {
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
         }
 
         @Test
@@ -282,7 +264,7 @@ class PurchaseRequestTest {
         void shouldThrowWhenMarkingOrderedFromRfqSent() {
             // Given
             TestPurchaseRequest rfqSentRequest = new TestPurchaseRequest();
-            rfqSentRequest.sendRfq();
+            rfqSentRequest.sendRfq(List.of(1L), mockFactory);
 
             // When / Then
             assertThatThrownBy(() -> rfqSentRequest.markOrdered())
@@ -311,8 +293,10 @@ class PurchaseRequestTest {
 
         @BeforeEach
         void setUpOrderedState() {
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
             purchaseRequest.markOrdered();
         }
 
@@ -334,8 +318,10 @@ class PurchaseRequestTest {
         void shouldThrowWhenClosingFromVendorSelected() {
             // Given
             TestPurchaseRequest vendorSelectedRequest = new TestPurchaseRequest();
-            vendorSelectedRequest.sendRfq();
-            vendorSelectedRequest.markVendorSelected();
+            vendorSelectedRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = vendorSelectedRequest.getRfqItems().get(0);
+            vendorSelectedRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            vendorSelectedRequest.selectVendor(item.getItemId());
 
             // When / Then
             assertThatThrownBy(() -> vendorSelectedRequest.close())
@@ -349,7 +335,7 @@ class PurchaseRequestTest {
         void shouldThrowWhenClosingFromRfqSent() {
             // Given
             TestPurchaseRequest rfqSentRequest = new TestPurchaseRequest();
-            rfqSentRequest.sendRfq();
+            rfqSentRequest.sendRfq(List.of(1L), mockFactory);
 
             // When / Then
             assertThatThrownBy(() -> rfqSentRequest.close())
@@ -380,7 +366,7 @@ class PurchaseRequestTest {
         @DisplayName("should transition from RFQ_SENT to CANCELED")
         void shouldTransitionFromRfqSentToCanceled() {
             // Given
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
 
             // When
             purchaseRequest.cancel();
@@ -393,8 +379,10 @@ class PurchaseRequestTest {
         @DisplayName("should transition from VENDOR_SELECTED to CANCELED")
         void shouldTransitionFromVendorSelectedToCanceled() {
             // Given
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
 
             // When
             purchaseRequest.cancel();
@@ -407,8 +395,10 @@ class PurchaseRequestTest {
         @DisplayName("should transition from ORDERED to CANCELED")
         void shouldTransitionFromOrderedToCanceled() {
             // Given
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
             purchaseRequest.markOrdered();
 
             // When
@@ -422,8 +412,10 @@ class PurchaseRequestTest {
         @DisplayName("should throw when canceling from CLOSED")
         void shouldThrowWhenCancelingFromClosed() {
             // Given (now requires ORDERED state before CLOSED)
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
             purchaseRequest.markOrdered();
             purchaseRequest.close();
 
@@ -459,14 +451,13 @@ class PurchaseRequestTest {
 
         @BeforeEach
         void setUpVendorSelectedStateWithRfqItems() {
-            // Add RFQ items
-            selectedItem = purchaseRequest.addRfqItem(1L, null);
-            rejectedItem1 = purchaseRequest.addRfqItem(2L, null);
-            rejectedItem2 = purchaseRequest.addRfqItem(3L, null);
-            sentItem = purchaseRequest.addRfqItem(4L, null);
-
-            // Transition to RFQ_SENT
-            purchaseRequest.sendRfq();
+            // Add RFQ items via sendRfq
+            purchaseRequest.sendRfq(List.of(1L, 2L, 3L, 4L), mockFactory);
+            List<RfqItem> items = purchaseRequest.getRfqItems();
+            selectedItem = items.get(0);
+            rejectedItem1 = items.get(1);
+            rejectedItem2 = items.get(2);
+            sentItem = items.get(3);
 
             // Record replies for items 1-3
             purchaseRequest.recordRfqReply(selectedItem.getItemId(), new BigDecimal("1000"), 7, null);
@@ -535,8 +526,8 @@ class PurchaseRequestTest {
         void shouldThrowWhenRevertingFromRfqSent() {
             // Given
             TestPurchaseRequest rfqSentRequest = new TestPurchaseRequest();
-            RfqItem item = rfqSentRequest.addRfqItem(1L, null);
-            rfqSentRequest.sendRfq();
+            rfqSentRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = rfqSentRequest.getRfqItems().get(0);
 
             // When / Then
             assertThatThrownBy(() -> rfqSentRequest.revertVendorSelection(item.getItemId()))
@@ -566,10 +557,11 @@ class PurchaseRequestTest {
             purchaseRequest.revertVendorSelection(selectedItem.getItemId());
 
             // Then - can add new vendor
-            assertThat(purchaseRequest.canSendRfq()).isTrue();
-            RfqItem newItem = purchaseRequest.addRfqItem(5L, null);
-            purchaseRequest.sendRfq();
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
+            purchaseRequest.sendRfq(List.of(5L), mockFactory);
 
+            assertThat(purchaseRequest.getRfqItems()).hasSize(5);
+            RfqItem newItem = purchaseRequest.getRfqItems().get(4);
             assertThat(newItem.getStatus()).isEqualTo(RfqItemStatus.SENT);
         }
     }
@@ -579,24 +571,24 @@ class PurchaseRequestTest {
     class RfqItemAggregateMethods {
 
         @Test
-        @DisplayName("addRfqItem should create item with SENT status")
-        void addRfqItemShouldCreateItemWithSentStatus() {
+        @DisplayName("sendRfq should create items with SENT status")
+        void sendRfqShouldCreateItemsWithSentStatus() {
             // When
-            RfqItem item = purchaseRequest.addRfqItem(1L, 100L);
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
 
             // Then
+            assertThat(purchaseRequest.getRfqItems()).hasSize(1);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
             assertThat(item.getStatus()).isEqualTo(RfqItemStatus.SENT);
             assertThat(item.getVendorCompanyId()).isEqualTo(1L);
-            assertThat(item.getVendorOfferingId()).isEqualTo(100L);
-            assertThat(purchaseRequest.getRfqItems()).hasSize(1);
         }
 
         @Test
         @DisplayName("selectVendor should transition both PR and RfqItem status")
         void selectVendorShouldTransitionBothStatuses() {
             // Given
-            RfqItem item = purchaseRequest.addRfqItem(1L, null);
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
             purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
 
             // When
@@ -611,8 +603,8 @@ class PurchaseRequestTest {
         @DisplayName("should throw when selecting vendor that is not REPLIED")
         void shouldThrowWhenSelectingVendorThatIsNotReplied() {
             // Given
-            RfqItem item = purchaseRequest.addRfqItem(1L, null);
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
 
             // When / Then - item is still SENT
             assertThatThrownBy(() -> purchaseRequest.selectVendor(item.getItemId()))
@@ -625,9 +617,10 @@ class PurchaseRequestTest {
         @DisplayName("should throw when selecting second vendor (PR already in VENDOR_SELECTED)")
         void shouldThrowWhenSelectingSecondVendor() {
             // Given
-            RfqItem item1 = purchaseRequest.addRfqItem(1L, null);
-            RfqItem item2 = purchaseRequest.addRfqItem(2L, null);
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L, 2L), mockFactory);
+            List<RfqItem> items = purchaseRequest.getRfqItems();
+            RfqItem item1 = items.get(0);
+            RfqItem item2 = items.get(1);
             purchaseRequest.recordRfqReply(item1.getItemId(), new BigDecimal("1000"), 7, null);
             purchaseRequest.recordRfqReply(item2.getItemId(), new BigDecimal("2000"), 14, null);
             purchaseRequest.selectVendor(item1.getItemId());
@@ -649,10 +642,10 @@ class PurchaseRequestTest {
         void happyPathDraftToRfqSentToVendorSelectedToOrderedToClosed() {
             // Given
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.DRAFT);
-            RfqItem item = purchaseRequest.addRfqItem(1L, null);
 
             // When - send RFQ
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
 
             // When - vendor replies
@@ -679,9 +672,10 @@ class PurchaseRequestTest {
         @DisplayName("Revert scenario: select → revert → select different vendor")
         void revertScenarioSelectRevertSelectDifferent() {
             // Given - setup with 2 vendors
-            RfqItem vendor1 = purchaseRequest.addRfqItem(1L, null);
-            RfqItem vendor2 = purchaseRequest.addRfqItem(2L, null);
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L, 2L), mockFactory);
+            List<RfqItem> items = purchaseRequest.getRfqItems();
+            RfqItem vendor1 = items.get(0);
+            RfqItem vendor2 = items.get(1);
             purchaseRequest.recordRfqReply(vendor1.getItemId(), new BigDecimal("1000"), 7, null);
             purchaseRequest.recordRfqReply(vendor2.getItemId(), new BigDecimal("800"), 10, null);
 
@@ -709,8 +703,8 @@ class PurchaseRequestTest {
         @DisplayName("Add more vendors after revert")
         void addMoreVendorsAfterRevert() {
             // Given - setup and select vendor
-            RfqItem vendor1 = purchaseRequest.addRfqItem(1L, null);
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem vendor1 = purchaseRequest.getRfqItems().get(0);
             purchaseRequest.recordRfqReply(vendor1.getItemId(), new BigDecimal("1000"), 7, null);
             purchaseRequest.selectVendor(vendor1.getItemId());
 
@@ -718,11 +712,11 @@ class PurchaseRequestTest {
             purchaseRequest.revertVendorSelection(vendor1.getItemId());
 
             // When - add new vendor
-            RfqItem vendor2 = purchaseRequest.addRfqItem(2L, null);
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(2L), mockFactory);
 
             // Then - new vendor added, can get quote and be selected
             assertThat(purchaseRequest.getRfqItems()).hasSize(2);
+            RfqItem vendor2 = purchaseRequest.getRfqItems().get(1);
             assertThat(vendor2.getStatus()).isEqualTo(RfqItemStatus.SENT);
 
             purchaseRequest.recordRfqReply(vendor2.getItemId(), new BigDecimal("800"), 5, null);
@@ -736,10 +730,11 @@ class PurchaseRequestTest {
         @DisplayName("Add new vendors when all existing RfqItems are NO_RESPONSE or REJECTED")
         void addNewVendorsWhenAllItemsNoResponseOrRejected() {
             // Given - send RFQ to 3 vendors
-            RfqItem vendor1 = purchaseRequest.addRfqItem(1L, null);
-            RfqItem vendor2 = purchaseRequest.addRfqItem(2L, null);
-            RfqItem vendor3 = purchaseRequest.addRfqItem(3L, null);
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L, 2L, 3L), mockFactory);
+            List<RfqItem> items = purchaseRequest.getRfqItems();
+            RfqItem vendor1 = items.get(0);
+            RfqItem vendor2 = items.get(1);
+            RfqItem vendor3 = items.get(2);
 
             // Vendor 1 doesn't respond
             purchaseRequest.markRfqNoResponse(vendor1.getItemId());
@@ -757,14 +752,13 @@ class PurchaseRequestTest {
 
             // PR should still be in RFQ_SENT, allowing user to add more vendors
             assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.RFQ_SENT);
-            assertThat(purchaseRequest.canSendRfq()).isTrue();
 
             // When - add new vendor
-            RfqItem vendor4 = purchaseRequest.addRfqItem(4L, null);
-            purchaseRequest.sendRfq(); // idempotent
+            purchaseRequest.sendRfq(List.of(4L), mockFactory);
 
             // Then - new vendor added successfully
             assertThat(purchaseRequest.getRfqItems()).hasSize(4);
+            RfqItem vendor4 = purchaseRequest.getRfqItems().get(3);
             assertThat(vendor4.getStatus()).isEqualTo(RfqItemStatus.SENT);
 
             // And - can complete the workflow with the new vendor
@@ -784,13 +778,15 @@ class PurchaseRequestTest {
         @DisplayName("CLOSED should not allow any transitions except terminal state checks")
         void closedShouldNotAllowAnyTransitions() {
             // Given (now requires ORDERED state before CLOSED)
-            purchaseRequest.sendRfq();
-            purchaseRequest.markVendorSelected();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
             purchaseRequest.markOrdered();
             purchaseRequest.close();
 
             // Then
-            assertThatThrownBy(() -> purchaseRequest.sendRfq())
+            assertThatThrownBy(() -> purchaseRequest.sendRfq(List.of(2L), mockFactory))
                     .isInstanceOf(IllegalStateException.class);
             assertThatThrownBy(() -> purchaseRequest.cancel())
                     .isInstanceOf(IllegalStateException.class);
@@ -803,7 +799,7 @@ class PurchaseRequestTest {
             purchaseRequest.cancel();
 
             // Then
-            assertThatThrownBy(() -> purchaseRequest.sendRfq())
+            assertThatThrownBy(() -> purchaseRequest.sendRfq(List.of(1L), mockFactory))
                     .isInstanceOf(IllegalStateException.class);
             assertThatThrownBy(() -> purchaseRequest.cancel())
                     .isInstanceOf(IllegalStateException.class);
@@ -820,11 +816,10 @@ class PurchaseRequestTest {
         @BeforeEach
         void setUpOrderedStateWithRfqItems() {
             // Add RFQ items
-            selectedItem = purchaseRequest.addRfqItem(1L, null);
-            rejectedItem = purchaseRequest.addRfqItem(2L, null);
-
-            // Transition to RFQ_SENT
-            purchaseRequest.sendRfq();
+            purchaseRequest.sendRfq(List.of(1L, 2L), mockFactory);
+            List<RfqItem> items = purchaseRequest.getRfqItems();
+            selectedItem = items.get(0);
+            rejectedItem = items.get(1);
 
             // Record replies
             purchaseRequest.recordRfqReply(selectedItem.getItemId(), new BigDecimal("1000"), 7, null);

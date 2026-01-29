@@ -166,7 +166,7 @@ public class PurchaseRequestController {
                                                                              @Valid @RequestBody SendRfqRequest request) {
 
         // Create RFQ items and transition status
-        int vendorCount = commandService.sendRfq(id, request.vendorIds());
+        List<String> itemIds = commandService.sendRfq(id, request.vendorIds());
 
         // Build vendor email map for email service
         Map<Long, RfqEmailService.VendorEmailInfo> vendorEmailMap = new HashMap<>();
@@ -188,7 +188,7 @@ public class PurchaseRequestController {
         // Return success even if some emails failed (RFQ items are created)
         PurchaseRequestCommandResult result = PurchaseRequestCommandResult.rfqSent(
                 id,
-                vendorCount,
+                itemIds.size(),
                 emailResult.successCount(),
                 emailResult.failureCount()
         );
