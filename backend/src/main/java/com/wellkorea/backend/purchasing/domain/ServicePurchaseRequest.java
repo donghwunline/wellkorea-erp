@@ -18,6 +18,9 @@ import java.util.*;
 @DiscriminatorValue("SERVICE")
 public class ServicePurchaseRequest extends PurchaseRequest {
 
+    private static final int MAX_ATTACHMENTS = 20;
+    private static final long MAX_TOTAL_ATTACHMENT_SIZE = 20 * 1024 * 1024; // 20MB
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_category_id", nullable = false)
     private ServiceCategory serviceCategory;
@@ -121,6 +124,21 @@ public class ServicePurchaseRequest extends PurchaseRequest {
                 .anyMatch(ref -> ref.getStoragePath().equals(storagePath));
         if (alreadyLinked) {
             throw new IllegalArgumentException("Attachment already linked: " + storagePath);
+        }
+
+        // Check attachment count limit
+        if (attachments.size() >= MAX_ATTACHMENTS) {
+            throw new IllegalStateException(
+                    "Maximum number of attachments (" + MAX_ATTACHMENTS + ") reached");
+        }
+
+        // Check total size limit
+        long currentTotalSize = attachments.stream()
+                .mapToLong(AttachmentReference::getFileSize)
+                .sum();
+        if (currentTotalSize + fileSize > MAX_TOTAL_ATTACHMENT_SIZE) {
+            throw new IllegalStateException(
+                    "Total attachment size would exceed limit of 20MB");
         }
 
         AttachmentReference ref = AttachmentReference.link(fileName, fileType, fileSize, storagePath, linkedById);
