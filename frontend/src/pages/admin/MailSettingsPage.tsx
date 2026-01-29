@@ -106,7 +106,7 @@ export function MailSettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-steel-950 p-8 space-y-6">
       <PageHeader>
         <PageHeader.Title
           title={t('mailSettings.title', 'Mail Settings')}
