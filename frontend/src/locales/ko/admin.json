@@ -87,7 +87,10 @@
       "LOGIN": "로그인",
       "LOGOUT": "로그아웃",
       "APPROVE": "승인",
-      "REJECT": "반려"
+      "REJECT": "반려",
+      "VIEW": "조회",
+      "DOWNLOAD": "다운로드",
+      "ACCESS_DENIED": "접근 거부"
     },
     "filters": {
       "dateRange": "기간",
@@ -106,6 +109,10 @@
       "entry": "항목 #{{id}}",
       "metadata": "메타데이터"
     }
+  },
+  "mailSettings": {
+    "title": "메일 설정",
+    "description": "Microsoft Graph OAuth2를 사용한 이메일 발송 설정"
   },
   "common": {
     "retry": "다시 시도"

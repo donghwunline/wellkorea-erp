@@ -87,7 +87,10 @@
       "LOGIN": "Login",
       "LOGOUT": "Logout",
       "APPROVE": "Approve",
-      "REJECT": "Reject"
+      "REJECT": "Reject",
+      "VIEW": "View",
+      "DOWNLOAD": "Download",
+      "ACCESS_DENIED": "Access Denied"
     },
     "filters": {
       "dateRange": "Date Range",
@@ -106,6 +109,10 @@
       "entry": "Entry #{{id}}",
       "metadata": "Metadata"
     }
+  },
+  "mailSettings": {
+    "title": "Mail Settings",
+    "description": "Configure Microsoft Graph OAuth2 for sending emails"
   },
   "common": {
     "retry": "Retry"
