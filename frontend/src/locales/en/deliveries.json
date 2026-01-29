@@ -72,7 +72,8 @@
     "SHIPPED": "Shipped",
     "IN_TRANSIT": "In Transit",
     "DELIVERED": "Delivered",
-    "CANCELLED": "Cancelled"
+    "CANCELLED": "Cancelled",
+    "RETURNED": "Returned"
   },
   "shippingMethod": {
     "PARCEL": "Parcel",

@@ -72,7 +72,8 @@
     "SHIPPED": "출고완료",
     "IN_TRANSIT": "배송중",
     "DELIVERED": "배송완료",
-    "CANCELLED": "취소"
+    "CANCELLED": "취소",
+    "RETURNED": "반품"
   },
   "shippingMethod": {
     "PARCEL": "택배",
