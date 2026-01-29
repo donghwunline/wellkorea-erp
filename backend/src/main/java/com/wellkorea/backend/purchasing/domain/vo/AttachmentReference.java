@@ -24,6 +24,9 @@ import java.util.UUID;
 public class AttachmentReference {
 
     private static final String[] SIZE_UNITS = {"B", "KB", "MB", "GB"};
+    private static final long MAX_FILE_SIZE = 52_428_800L; // 50MB (same as BlueprintAttachment)
+    private static final int MAX_FILE_NAME_LENGTH = 255;   // Matches DB column
+    private static final int MAX_STORAGE_PATH_LENGTH = 500; // Matches DB column
 
     /**
      * UUID identifier for this attachment reference.
@@ -103,6 +106,27 @@ public class AttachmentReference {
         Objects.requireNonNull(fileType, "fileType must not be null");
         Objects.requireNonNull(storagePath, "storagePath must not be null");
         Objects.requireNonNull(linkedById, "linkedById must not be null");
+
+        if (fileName.isBlank()) {
+            throw new IllegalArgumentException("fileName cannot be blank");
+        }
+        if (storagePath.isBlank()) {
+            throw new IllegalArgumentException("storagePath cannot be blank");
+        }
+        if (fileName.length() > MAX_FILE_NAME_LENGTH) {
+            throw new IllegalArgumentException(
+                    "fileName exceeds maximum length of " + MAX_FILE_NAME_LENGTH + " characters");
+        }
+        if (storagePath.length() > MAX_STORAGE_PATH_LENGTH) {
+            throw new IllegalArgumentException(
+                    "storagePath exceeds maximum length of " + MAX_STORAGE_PATH_LENGTH + " characters");
+        }
+        if (fileSize <= 0) {
+            throw new IllegalArgumentException("fileSize must be positive");
+        }
+        if (fileSize > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("fileSize exceeds maximum allowed (50MB)");
+        }
 
         return new AttachmentReference(fileName, fileType, fileSize, storagePath, linkedById);
     }
