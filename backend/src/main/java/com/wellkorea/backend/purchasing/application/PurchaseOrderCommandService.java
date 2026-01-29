@@ -1,9 +1,5 @@
 package com.wellkorea.backend.purchasing.application;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.purchasing.application.dto.CreatePurchaseOrderCommand;
 import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseOrderCommand;
 import com.wellkorea.backend.purchasing.domain.PurchaseOrder;
@@ -12,9 +8,7 @@ import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCanceledEvent;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderConfirmedEvent;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderCreatedEvent;
 import com.wellkorea.backend.purchasing.domain.event.PurchaseOrderReceivedEvent;
-import com.wellkorea.backend.purchasing.domain.vo.PurchaseOrderStatus;
-import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
-import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
+import com.wellkorea.backend.purchasing.domain.service.PurchaseOrderCreationGuard;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseOrderRepository;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
@@ -35,82 +29,52 @@ public class PurchaseOrderCommandService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PurchaseRequestRepository purchaseRequestRepository;
-    private final CompanyRepository companyRepository;
-    private final UserRepository userRepository;
+    private final PurchaseOrderCreationGuard purchaseOrderCreationGuard;
     private final DomainEventPublisher eventPublisher;
 
     public PurchaseOrderCommandService(PurchaseOrderRepository purchaseOrderRepository,
                                        PurchaseRequestRepository purchaseRequestRepository,
-                                       CompanyRepository companyRepository,
-                                       UserRepository userRepository,
+                                       PurchaseOrderCreationGuard purchaseOrderCreationGuard,
                                        DomainEventPublisher eventPublisher) {
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.purchaseRequestRepository = purchaseRequestRepository;
-        this.companyRepository = companyRepository;
-        this.userRepository = userRepository;
+        this.purchaseOrderCreationGuard = purchaseOrderCreationGuard;
         this.eventPublisher = eventPublisher;
     }
 
     /**
      * Create a new purchase order from an RFQ item.
+     * <p>
+     * Uses the aggregate factory method on PurchaseRequest to create the PO,
+     * encapsulating RfqItem validation and vendor selection within the aggregate.
      *
      * @return the created purchase order ID
      */
     public Long createPurchaseOrder(CreatePurchaseOrderCommand command, Long userId) {
-        // Validate purchase request and get RFQ item
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(command.purchaseRequestId())
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + command.purchaseRequestId()));
-
-        RfqItem rfqItem = purchaseRequest.findRfqItemById(command.rfqItemId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "RFQ item not found with ID: " + command.rfqItemId() + " in purchase request: " + command.purchaseRequestId()));
-
-        if (rfqItem.getStatus() != RfqItemStatus.REPLIED && rfqItem.getStatus() != RfqItemStatus.SELECTED) {
-            throw new BusinessException("RFQ item must be in REPLIED or SELECTED status to create PO");
-        }
-
-        // Check if an active (non-canceled) PO already exists for this RFQ
-        // This allows re-creating a PO after the previous one was canceled
-        if (purchaseOrderRepository.existsByPurchaseRequestIdAndRfqItemIdAndStatusNot(
-                command.purchaseRequestId(), command.rfqItemId(), PurchaseOrderStatus.CANCELED)) {
-            throw new BusinessException("Purchase order already exists for this RFQ item");
-        }
 
         // Validate dates
         if (command.expectedDeliveryDate().isBefore(command.orderDate())) {
             throw new BusinessException("Expected delivery date cannot be before order date");
         }
 
-        // Get user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-
-        // Get vendor company
-        Company vendor = companyRepository.findById(rfqItem.getVendorCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Vendor not found with ID: " + rfqItem.getVendorCompanyId()));
-
-        // Generate PO number
         String poNumber = generatePoNumber();
 
-        // If RFQ item is in REPLIED status, select it through the aggregate
-        if (rfqItem.getStatus() == RfqItemStatus.REPLIED) {
-            purchaseRequest.selectVendor(command.rfqItemId());
-            purchaseRequestRepository.save(purchaseRequest);
-        }
-
-        // Create purchase order
-        PurchaseOrder purchaseOrder = new PurchaseOrder(
-                purchaseRequest,
+        // Create PO via aggregate factory method - RfqItem internals are encapsulated
+        // Guard handles duplicate check
+        PurchaseOrder purchaseOrder = purchaseRequest.createPurchaseOrder(
                 command.rfqItemId(),
-                vendor,
+                purchaseOrderCreationGuard,
                 poNumber,
                 command.orderDate(),
                 command.expectedDeliveryDate(),
-                rfqItem.getQuotedPrice(),
-                user,
+                userId,
                 command.notes()
         );
 
+        // Save both - PR may have status change (VENDOR_SELECTED)
+        purchaseRequestRepository.save(purchaseRequest);
         purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
 
         // Publish event to transition PurchaseRequest to ORDERED
@@ -172,7 +136,7 @@ public class PurchaseOrderCommandService {
         // Publish event to create AccountsPayable
         eventPublisher.publish(new PurchaseOrderConfirmedEvent(
                 purchaseOrder.getId(),
-                purchaseOrder.getVendor().getId(),
+                purchaseOrder.getVendorCompanyId(),
                 purchaseOrder.getPoNumber(),
                 purchaseOrder.getTotalAmount(),
                 purchaseOrder.getCurrency()

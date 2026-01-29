@@ -884,4 +884,247 @@ class PurchaseRequestTest {
             assertThat(rejectedItem.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
         }
     }
+
+    @Nested
+    @DisplayName("createPurchaseOrder Factory Method")
+    class CreatePurchaseOrderFactoryMethod {
+
+        private com.wellkorea.backend.purchasing.domain.service.PurchaseOrderCreationGuard mockGuard;
+        private static final Long MOCK_USER_ID = 1L;
+
+        /**
+         * Test guard implementation that doesn't throw exceptions.
+         */
+        class PassingGuard implements com.wellkorea.backend.purchasing.domain.service.PurchaseOrderCreationGuard {
+            @Override
+            public void validateNoDuplicatePurchaseOrder(Long purchaseRequestId, String rfqItemId) {
+                // No exception = validation passes
+            }
+        }
+
+        /**
+         * Test guard that throws BusinessException on duplicate validation.
+         */
+        class DuplicateGuard implements com.wellkorea.backend.purchasing.domain.service.PurchaseOrderCreationGuard {
+            @Override
+            public void validateNoDuplicatePurchaseOrder(Long purchaseRequestId, String rfqItemId) {
+                throw new com.wellkorea.backend.shared.exception.BusinessException(
+                        "Purchase order already exists for this RFQ item");
+            }
+        }
+
+        @Test
+        @DisplayName("should create PurchaseOrder from REPLIED RfqItem")
+        void shouldCreatePurchaseOrderFromRepliedRfqItem() {
+            // Given
+            mockGuard = new PassingGuard();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+
+            assertThat(item.getStatus()).isEqualTo(RfqItemStatus.REPLIED);
+
+            // When
+            com.wellkorea.backend.purchasing.domain.PurchaseOrder po = purchaseRequest.createPurchaseOrder(
+                    item.getItemId(),
+                    mockGuard,
+                    "PO-2024-000001",
+                    java.time.LocalDate.now(),
+                    java.time.LocalDate.now().plusDays(7),
+                    MOCK_USER_ID,
+                    "Test notes"
+            );
+
+            // Then
+            assertThat(po).isNotNull();
+            assertThat(po.getPoNumber()).isEqualTo("PO-2024-000001");
+            assertThat(po.getTotalAmount()).isEqualByComparingTo(new BigDecimal("1000"));
+            // RfqItem should be auto-selected
+            assertThat(item.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
+            assertThat(purchaseRequest.getStatus()).isEqualTo(PurchaseRequestStatus.VENDOR_SELECTED);
+        }
+
+        @Test
+        @DisplayName("should create PurchaseOrder from SELECTED RfqItem")
+        void shouldCreatePurchaseOrderFromSelectedRfqItem() {
+            // Given
+            mockGuard = new PassingGuard();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.selectVendor(item.getItemId());
+
+            assertThat(item.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
+
+            // When
+            com.wellkorea.backend.purchasing.domain.PurchaseOrder po = purchaseRequest.createPurchaseOrder(
+                    item.getItemId(),
+                    mockGuard,
+                    "PO-2024-000001",
+                    java.time.LocalDate.now(),
+                    java.time.LocalDate.now().plusDays(7),
+                    MOCK_USER_ID,
+                    null
+            );
+
+            // Then
+            assertThat(po).isNotNull();
+            // Status should remain SELECTED
+            assertThat(item.getStatus()).isEqualTo(RfqItemStatus.SELECTED);
+        }
+
+        @Test
+        @DisplayName("should throw when RfqItem is in SENT status")
+        void shouldThrowWhenRfqItemIsSent() {
+            // Given
+            mockGuard = new PassingGuard();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+
+            assertThat(item.getStatus()).isEqualTo(RfqItemStatus.SENT);
+
+            // When / Then
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    item.getItemId(),
+                    mockGuard,
+                    "PO-2024-000001",
+                    java.time.LocalDate.now(),
+                    java.time.LocalDate.now().plusDays(7),
+                    MOCK_USER_ID,
+                    null
+            ))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("REPLIED or SELECTED")
+                    .hasMessageContaining("SENT");
+        }
+
+        @Test
+        @DisplayName("should throw when RfqItem is in REJECTED status")
+        void shouldThrowWhenRfqItemIsRejected() {
+            // Given
+            mockGuard = new PassingGuard();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+            purchaseRequest.rejectRfq(item.getItemId());
+
+            assertThat(item.getStatus()).isEqualTo(RfqItemStatus.REJECTED);
+
+            // When / Then
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    item.getItemId(),
+                    mockGuard,
+                    "PO-2024-000001",
+                    java.time.LocalDate.now(),
+                    java.time.LocalDate.now().plusDays(7),
+                    MOCK_USER_ID,
+                    null
+            ))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("REPLIED or SELECTED")
+                    .hasMessageContaining("REJECTED");
+        }
+
+        @Test
+        @DisplayName("should throw when duplicate PO exists (via guard)")
+        void shouldThrowWhenDuplicatePOExists() {
+            // Given
+            mockGuard = new DuplicateGuard();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+
+            // When / Then
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    item.getItemId(),
+                    mockGuard,
+                    "PO-2024-000001",
+                    java.time.LocalDate.now(),
+                    java.time.LocalDate.now().plusDays(7),
+                    MOCK_USER_ID,
+                    null
+            ))
+                    .isInstanceOf(com.wellkorea.backend.shared.exception.BusinessException.class)
+                    .hasMessageContaining("already exists");
+        }
+
+        @Test
+        @DisplayName("should throw when rfqItemId not found")
+        void shouldThrowWhenRfqItemIdNotFound() {
+            // Given
+            mockGuard = new PassingGuard();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+
+            // When / Then
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    "non-existent-id",
+                    mockGuard,
+                    "PO-2024-000001",
+                    java.time.LocalDate.now(),
+                    java.time.LocalDate.now().plusDays(7),
+                    MOCK_USER_ID,
+                    null
+            ))
+                    .isInstanceOf(com.wellkorea.backend.shared.exception.ResourceNotFoundException.class)
+                    .hasMessageContaining("RFQ item not found");
+        }
+
+        @Test
+        @DisplayName("should throw when required parameters are null")
+        void shouldThrowWhenRequiredParametersAreNull() {
+            // Given
+            mockGuard = new PassingGuard();
+            purchaseRequest.sendRfq(List.of(1L), mockFactory);
+            RfqItem item = purchaseRequest.getRfqItems().get(0);
+            purchaseRequest.recordRfqReply(item.getItemId(), new BigDecimal("1000"), 7, null);
+
+            // When / Then - null rfqItemId
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    null, mockGuard, "PO-2024-000001",
+                    java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(7), MOCK_USER_ID, null
+            ))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("rfqItemId must not be null");
+
+            // null guard
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    item.getItemId(), null, "PO-2024-000001",
+                    java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(7), MOCK_USER_ID, null
+            ))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("guard must not be null");
+
+            // null poNumber
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    item.getItemId(), mockGuard, null,
+                    java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(7), MOCK_USER_ID, null
+            ))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("poNumber must not be null");
+
+            // null orderDate
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    item.getItemId(), mockGuard, "PO-2024-000001",
+                    null, java.time.LocalDate.now().plusDays(7), MOCK_USER_ID, null
+            ))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("orderDate must not be null");
+
+            // null expectedDeliveryDate
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    item.getItemId(), mockGuard, "PO-2024-000001",
+                    java.time.LocalDate.now(), null, MOCK_USER_ID, null
+            ))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("expectedDeliveryDate must not be null");
+
+            // null createdById
+            assertThatThrownBy(() -> purchaseRequest.createPurchaseOrder(
+                    item.getItemId(), mockGuard, "PO-2024-000001",
+                    java.time.LocalDate.now(), java.time.LocalDate.now().plusDays(7), null, null
+            ))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("createdById must not be null");
+        }
+    }
 }

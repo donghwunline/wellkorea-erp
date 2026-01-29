@@ -1,13 +1,9 @@
 package com.wellkorea.backend.purchasing.application;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.catalog.domain.Material;
 import com.wellkorea.backend.catalog.domain.ServiceCategory;
 import com.wellkorea.backend.catalog.infrastructure.persistence.MaterialRepository;
 import com.wellkorea.backend.catalog.infrastructure.persistence.ServiceCategoryRepository;
-import com.wellkorea.backend.project.domain.Project;
-import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.purchasing.api.dto.command.AttachmentInfo;
 import com.wellkorea.backend.purchasing.application.dto.CreateMaterialPurchaseRequestCommand;
 import com.wellkorea.backend.purchasing.application.dto.CreateServicePurchaseRequestCommand;
@@ -37,24 +33,18 @@ public class PurchaseRequestCommandService {
     private final PurchaseRequestRepository purchaseRequestRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final MaterialRepository materialRepository;
-    private final ProjectRepository projectRepository;
     private final RfqItemFactory rfqItemFactory;
-    private final UserRepository userRepository;
     private final MinioFileStorage minioFileStorage;
 
     public PurchaseRequestCommandService(PurchaseRequestRepository purchaseRequestRepository,
                                          ServiceCategoryRepository serviceCategoryRepository,
                                          MaterialRepository materialRepository,
-                                         ProjectRepository projectRepository,
                                          RfqItemFactory rfqItemFactory,
-                                         UserRepository userRepository,
                                          MinioFileStorage minioFileStorage) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.materialRepository = materialRepository;
-        this.projectRepository = projectRepository;
         this.rfqItemFactory = rfqItemFactory;
-        this.userRepository = userRepository;
         this.minioFileStorage = minioFileStorage;
     }
 
@@ -72,30 +62,19 @@ public class PurchaseRequestCommandService {
             throw new BusinessException("Service category is not active");
         }
 
-        // Validate project if provided
-        Project project = null;
-        if (command.projectId() != null) {
-            project = projectRepository.findById(command.projectId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + command.projectId()));
-        }
-
-        // Get user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-
         // Generate request number
         String requestNumber = generateRequestNumber();
 
-        // Create service purchase request using constructor
+        // Create service purchase request using constructor with ID references
         ServicePurchaseRequest purchaseRequest = new ServicePurchaseRequest(
-                project,
+                command.projectId(),
                 serviceCategory,
                 requestNumber,
                 command.description(),
                 command.quantity(),
                 command.uom(),
                 command.requiredDate(),
-                user
+                userId
         );
 
         // Link attachments in same transaction
@@ -129,33 +108,22 @@ public class PurchaseRequestCommandService {
             throw new BusinessException("Material is not active");
         }
 
-        // Validate project if provided
-        Project project = null;
-        if (command.projectId() != null) {
-            project = projectRepository.findById(command.projectId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + command.projectId()));
-        }
-
-        // Get user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-
         // Generate request number
         String requestNumber = generateRequestNumber();
 
         // Determine UOM: use provided value or fall back to material's default unit
         String uom = command.uom() != null ? command.uom() : material.getUnit();
 
-        // Create material purchase request using constructor
+        // Create material purchase request using constructor with ID references
         MaterialPurchaseRequest purchaseRequest = new MaterialPurchaseRequest(
-                project,
+                command.projectId(),
                 material,
                 requestNumber,
                 command.description(),
                 command.quantity(),
                 uom,
                 command.requiredDate(),
-                user
+                userId
         );
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);

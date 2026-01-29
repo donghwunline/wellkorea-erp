@@ -1,8 +1,6 @@
 package com.wellkorea.backend.purchasing.domain;
 
-import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.catalog.domain.Material;
-import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import jakarta.persistence.*;
 
@@ -36,26 +34,26 @@ public class MaterialPurchaseRequest extends PurchaseRequest {
     /**
      * Creates a new MaterialPurchaseRequest with all required fields.
      *
-     * @param project       the associated project (nullable)
+     * @param projectId     the associated project ID (nullable)
      * @param material      the material being purchased (required)
      * @param requestNumber the unique request number (required)
      * @param description   the request description (required)
      * @param quantity      the requested quantity (required)
      * @param uom           the unit of measure (nullable)
      * @param requiredDate  the required delivery date (required)
-     * @param createdBy     the user creating this request (required)
+     * @param createdById   the user ID creating this request (required)
      */
     public MaterialPurchaseRequest(
-            Project project,
+            Long projectId,
             Material material,
             String requestNumber,
             String description,
             BigDecimal quantity,
             String uom,
             LocalDate requiredDate,
-            User createdBy
+            Long createdById
     ) {
-        super(project, requestNumber, description, quantity, uom, requiredDate, createdBy);
+        super(projectId, requestNumber, description, quantity, uom, requiredDate, createdById);
         Objects.requireNonNull(material, "material must not be null");
         this.material = material;
     }
