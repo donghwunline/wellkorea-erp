@@ -76,7 +76,8 @@
     "PAID": "결제 완료",
     "OVERDUE": "연체",
     "CANCELLED": "취소",
-    "VOID": "무효"
+    "VOID": "무효",
+    "ISSUED": "발행됨"
   },
   "paymentMethod": {
     "BANK_TRANSFER": "계좌 이체",
