@@ -8,6 +8,7 @@ import com.wellkorea.backend.invoice.domain.InvoiceLineItemInput;
 import com.wellkorea.backend.invoice.domain.QuotationInvoiceGuard;
 import com.wellkorea.backend.invoice.domain.TaxInvoice;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.shared.approval.domain.ApprovalChainTemplate;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import jakarta.persistence.*;
 
@@ -152,7 +153,7 @@ public class Quotation {
      * Check if quotation is in a customer-accepted state.
      * Accepted states are: SENT, ACCEPTED
      * (i.e., quotation has been sent to customer and can be used for deliveries/invoices)
-     *
+     * <p>
      * Note: APPROVED status is internal approval only. Customer must accept (via ACCEPTED status)
      * or at minimum receive the quotation (SENT status) before deliveries/invoices can be created.
      *
@@ -171,7 +172,7 @@ public class Quotation {
      * as a parameter, allowing the domain entity to delegate validation to
      * infrastructure without having direct repository dependencies.
      * <p>
-     * Similar pattern: {@link com.wellkorea.backend.approval.domain.ApprovalChainTemplate#createLevelDecisions()}
+     * Similar pattern: {@link ApprovalChainTemplate#createLevelDecisions()}
      *
      * @param quotationDeliveryGuard Guard that validates delivery against quotation limits
      * @param deliveryDate           Date of the delivery

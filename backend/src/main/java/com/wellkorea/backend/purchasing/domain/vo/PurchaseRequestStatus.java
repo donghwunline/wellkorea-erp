@@ -18,6 +18,11 @@ public enum PurchaseRequestStatus {
     RFQ_SENT,
 
     /**
+     * Awaiting vendor selection approval.
+     */
+    PENDING_VENDOR_APPROVAL,
+
+    /**
      * Vendor chosen, PO to be created.
      */
     VENDOR_SELECTED,
@@ -55,7 +60,8 @@ public enum PurchaseRequestStatus {
         }
         return switch (this) {
             case DRAFT -> target == RFQ_SENT || target == CANCELED;
-            case RFQ_SENT -> target == RFQ_SENT || target == VENDOR_SELECTED || target == CANCELED;
+            case RFQ_SENT -> target == RFQ_SENT || target == PENDING_VENDOR_APPROVAL || target == VENDOR_SELECTED || target == CANCELED;
+            case PENDING_VENDOR_APPROVAL -> target == VENDOR_SELECTED || target == RFQ_SENT || target == CANCELED;
             case VENDOR_SELECTED -> target == ORDERED || target == RFQ_SENT || target == CANCELED;
             case ORDERED -> target == CLOSED || target == RFQ_SENT || target == CANCELED;
             case CLOSED, CANCELED -> false;
@@ -99,5 +105,15 @@ public enum PurchaseRequestStatus {
      */
     public boolean isTerminal() {
         return this == CLOSED || this == CANCELED;
+    }
+
+    /**
+     * Check if vendor selection can be submitted for approval in this status.
+     * Only allowed in RFQ_SENT status.
+     *
+     * @return true if vendor selection can be submitted for approval
+     */
+    public boolean canSubmitForVendorApproval() {
+        return this == RFQ_SENT;
     }
 }

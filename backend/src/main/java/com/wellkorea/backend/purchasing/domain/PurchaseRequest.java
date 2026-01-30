@@ -1,11 +1,15 @@
 package com.wellkorea.backend.purchasing.domain;
 
+import com.wellkorea.backend.shared.approval.domain.vo.ApprovalState;
+import com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus;
+import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
 import com.wellkorea.backend.purchasing.domain.service.PurchaseOrderCreationGuard;
 import com.wellkorea.backend.purchasing.domain.service.RfqItemFactory;
 import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
+import com.wellkorea.backend.shared.approval.domain.Approvable;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import jakarta.persistence.*;
 
@@ -30,7 +34,7 @@ import java.util.*;
 @Table(name = "purchase_requests")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING, length = 31)
-public abstract class PurchaseRequest {
+public abstract class PurchaseRequest implements Approvable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,6 +77,18 @@ public abstract class PurchaseRequest {
             joinColumns = @JoinColumn(name = "purchase_request_id")
     )
     private List<RfqItem> rfqItems = new ArrayList<>();
+
+    // ========== Approvable Fields ==========
+
+    @Embedded
+    private ApprovalState approvalState = new ApprovalState();
+
+    /**
+     * The RFQ item ID pending approval for vendor selection.
+     * Set when vendor selection is submitted for approval, cleared when approved/rejected.
+     */
+    @Column(name = "pending_selected_rfq_item_id", length = 36)
+    private String pendingSelectedRfqItemId;
 
     // ========== Constructors ==========
 
@@ -452,8 +468,102 @@ public abstract class PurchaseRequest {
         );
     }
 
+    // ========== Approvable Interface Implementation ==========
+
+    @Override
+    public EntityType getApprovalEntityType() {
+        return EntityType.VENDOR_SELECTION;
+    }
+
+    @Override
+    public ApprovalState getApprovalState() {
+        return approvalState;
+    }
+
+    @Override
+    public String getApprovalDescription() {
+        if (pendingSelectedRfqItemId == null) {
+            return String.format("업체선정: %s", requestNumber);
+        }
+        RfqItem item = getRfqItemById(pendingSelectedRfqItemId);
+        return String.format("업체선정: %s, 업체 ID: %d (₩%s)",
+                requestNumber, item.getVendorCompanyId(), item.getQuotedPrice());
+    }
+
+    @Override
+    public void onApprovalGranted() {
+        if (approvalState.getStatus() != ApprovalStateStatus.PENDING) {
+            throw new IllegalStateException("Not pending approval");
+        }
+        if (pendingSelectedRfqItemId == null) {
+            throw new IllegalStateException("No pending vendor selection to approve");
+        }
+
+        RfqItem item = getRfqItemById(pendingSelectedRfqItemId);
+        item.select();
+
+        this.status = PurchaseRequestStatus.VENDOR_SELECTED;
+        this.approvalState.markApproved();
+        this.pendingSelectedRfqItemId = null;
+    }
+
+    @Override
+    public void onApprovalRejected(String reason) {
+        if (approvalState.getStatus() != ApprovalStateStatus.PENDING) {
+            throw new IllegalStateException("Not pending approval");
+        }
+
+        // Revert selection - keep item as REPLIED so user can try again
+        this.status = PurchaseRequestStatus.RFQ_SENT;
+        this.approvalState.markRejected();
+        this.pendingSelectedRfqItemId = null;
+    }
+
+    /**
+     * Submit vendor selection for approval workflow.
+     * Does NOT select immediately - waits for approval.
+     * The actual selection happens when {@link #onApprovalGranted()} is called.
+     *
+     * @param itemId the RFQ item ID to select pending approval
+     * @throws IllegalStateException if not in RFQ_SENT status or already pending approval
+     */
+    public void submitVendorSelectionForApproval(String itemId) {
+        if (!status.canSubmitForVendorApproval()) {
+            throw new IllegalStateException("Can only submit for vendor approval in RFQ_SENT status, current: " + status);
+        }
+        if (approvalState.isPending()) {
+            throw new IllegalStateException("Already pending vendor selection approval");
+        }
+
+        RfqItem item = getRfqItemById(itemId);
+        if (item.getStatus() != RfqItemStatus.REPLIED) {
+            throw new IllegalStateException("Only REPLIED items can be selected, current: " + item.getStatus());
+        }
+
+        // Check no other vendor already selected
+        boolean hasSelected = rfqItems.stream()
+                .anyMatch(i -> i.getStatus() == RfqItemStatus.SELECTED);
+        if (hasSelected) {
+            throw new IllegalStateException("A vendor has already been selected");
+        }
+
+        this.pendingSelectedRfqItemId = itemId;
+        this.status = PurchaseRequestStatus.PENDING_VENDOR_APPROVAL;
+        this.approvalState.submitForApproval("VENDOR_SELECTION");
+    }
+
+    /**
+     * Get the pending selected RFQ item ID.
+     *
+     * @return the pending item ID or null if no selection is pending
+     */
+    public String getPendingSelectedRfqItemId() {
+        return pendingSelectedRfqItemId;
+    }
+
     // ========== Getters ==========
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -464,6 +574,10 @@ public abstract class PurchaseRequest {
 
     public PurchaseRequestStatus getStatus() {
         return status;
+    }
+
+    public String getRequestNumber() {
+        return requestNumber;
     }
 
     /**

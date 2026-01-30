@@ -50,4 +50,8 @@ public record PurchaseRequestCommandResult(
     public static PurchaseRequestCommandResult rfqRejected(Long id) {
         return new PurchaseRequestCommandResult(id, "RFQ rejected successfully");
     }
+
+    public static PurchaseRequestCommandResult vendorSelectionSubmitted(Long id) {
+        return new PurchaseRequestCommandResult(id, "Vendor selection submitted for approval");
+    }
 }
