@@ -180,6 +180,7 @@ public class ApprovalCommandService {
                         savedRequest.getId(),
                         savedRequest.getEntityType(),
                         savedRequest.getEntityId(),
+                        approverUserId,
                         reason
                 )
         );

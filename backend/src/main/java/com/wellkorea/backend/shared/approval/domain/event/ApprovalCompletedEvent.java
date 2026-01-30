@@ -41,13 +41,14 @@ public record ApprovalCompletedEvent(
             Long approvalRequestId,
             EntityType entityType,
             Long entityId,
+            Long rejectorUserId,
             String rejectionReason) {
         return new ApprovalCompletedEvent(
                 approvalRequestId,
                 entityType,
                 entityId,
                 ApprovalStatus.REJECTED,
-                null,
+                rejectorUserId,
                 rejectionReason
         );
     }

@@ -63,13 +63,13 @@ public class GenericApprovalCompletedHandler {
                         "Approvable entity not found: type=" + event.entityType() + ", id=" + event.entityId()));
 
         if (event.isApproved()) {
-            entity.onApprovalGranted();
-            log.info("{} {} approved via generic handler",
-                    event.entityType(), event.entityId());
+            entity.onApprovalGranted(event.approverUserId());
+            log.info("{} {} approved via generic handler by user {}",
+                    event.entityType(), event.entityId(), event.approverUserId());
         } else if (event.isRejected()) {
-            entity.onApprovalRejected(event.rejectionReason());
-            log.info("{} {} rejected via generic handler: {}",
-                    event.entityType(), event.entityId(), event.rejectionReason());
+            entity.onApprovalRejected(event.approverUserId(), event.rejectionReason());
+            log.info("{} {} rejected via generic handler by user {}: {}",
+                    event.entityType(), event.entityId(), event.approverUserId(), event.rejectionReason());
         }
     }
 }

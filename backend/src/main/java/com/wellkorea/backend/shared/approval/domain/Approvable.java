@@ -31,17 +31,17 @@ import com.wellkorea.backend.shared.approval.application.GenericApprovalComplete
  *     }
  *
  *     &#64;Override
- *     public void onApprovalGranted() {
+ *     public void onApprovalGranted(Long approverUserId) {
  *         // Transition to approved state
  *         this.status = Status.VENDOR_SELECTED;
- *         this.approvalState.markApproved();
+ *         this.approvalState.markApproved(approverUserId);
  *     }
  *
  *     &#64;Override
- *     public void onApprovalRejected(String reason) {
+ *     public void onApprovalRejected(Long rejectorUserId, String reason) {
  *         // Revert to previous state
  *         this.status = Status.RFQ_SENT;
- *         this.approvalState.markRejected();
+ *         this.approvalState.markRejected(rejectorUserId, reason);
  *     }
  * }
  * </pre>
@@ -75,22 +75,25 @@ public interface Approvable {
      * The implementation should:
      * <ul>
      *   <li>Transition the entity to its approved state</li>
-     *   <li>Call {@code approvalState.markApproved()}</li>
+     *   <li>Call {@code approvalState.markApproved(approverUserId)}</li>
      *   <li>Perform any post-approval actions</li>
      * </ul>
+     *
+     * @param approverUserId the ID of the user who approved
      */
-    void onApprovalGranted();
+    void onApprovalGranted(Long approverUserId);
 
     /**
      * Callback invoked when approval is rejected.
      * The implementation should:
      * <ul>
      *   <li>Revert the entity to its pre-approval state</li>
-     *   <li>Call {@code approvalState.markRejected()}</li>
+     *   <li>Call {@code approvalState.markRejected(rejectorUserId, reason)}</li>
      *   <li>Perform any post-rejection cleanup</li>
      * </ul>
      *
-     * @param reason the rejection reason provided by the approver
+     * @param rejectorUserId the ID of the user who rejected
+     * @param reason         the rejection reason provided by the approver
      */
-    void onApprovalRejected(String reason);
+    void onApprovalRejected(Long rejectorUserId, String reason);
 }
