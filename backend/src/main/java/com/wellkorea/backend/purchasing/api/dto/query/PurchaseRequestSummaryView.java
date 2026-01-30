@@ -28,6 +28,7 @@ public record PurchaseRequestSummaryView(
         String uom,
         LocalDate requiredDate,
         String status,
+        String pendingSelectedRfqItemId,  // RFQ item pending vendor approval
         String createdByName,
         LocalDateTime createdAt
 ) {

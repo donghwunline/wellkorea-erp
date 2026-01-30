@@ -111,11 +111,23 @@
       "noResponse": "No Response",
       "selectVendor": "Select Vendor",
       "select": "Select",
+      "submitForApproval": "Submit for Approval",
       "reject": "Reject",
       "createPo": "Create PO",
       "close": "Close",
       "poCreated": "PO Created",
       "selectionComplete": "Selection Complete"
+    },
+    "pendingApproval": {
+      "title": "Vendor selection pending approval",
+      "vendor": "Pending vendor: {{vendorName}}",
+      "badge": "Pending Approval"
+    },
+    "confirmSubmitForApproval": {
+      "title": "Submit for Approval",
+      "message": "Are you sure you want to select {{vendorName}}? The vendor will be confirmed after approval.",
+      "confirm": "Submit for Approval",
+      "cancel": "Cancel"
     },
     "confirmSelectVendor": {
       "title": "Select Vendor",

@@ -81,6 +81,21 @@ export function RfqTab() {
     })
   );
 
+  // Fetch PENDING_VENDOR_APPROVAL for requests awaiting approval
+  const {
+    data: pendingApprovalData,
+    isLoading: pendingApprovalLoading,
+    refetch: refetchPendingApproval,
+  } = useQuery(
+    purchaseRequestQueries.list({
+      page: 0,
+      size: 100,
+      status: PurchaseRequestStatus.PENDING_VENDOR_APPROVAL,
+      projectId: null,
+      dtype: null,
+    })
+  );
+
   // Fetch ORDERED for items with PO created but not yet received
   const {
     data: orderedData,
@@ -97,10 +112,11 @@ export function RfqTab() {
   );
 
   const rfqSentRequests = rfqSentData?.data ?? [];
+  const pendingApprovalRequests = pendingApprovalData?.data ?? [];
   const vendorSelectedRequests = vendorSelectedData?.data ?? [];
   const orderedRequests = orderedData?.data ?? [];
   const pagination = rfqSentData?.pagination;
-  const isLoading = rfqSentLoading || vendorSelectedLoading || orderedLoading;
+  const isLoading = rfqSentLoading || pendingApprovalLoading || vendorSelectedLoading || orderedLoading;
 
   // Row click handler
   const handleRowClick = useCallback((request: PurchaseRequestListItem) => {
@@ -122,18 +138,25 @@ export function RfqTab() {
   // Refetch all data
   const refetchAll = useCallback(() => {
     refetchRfqSent();
+    refetchPendingApproval();
     refetchVendorSelected();
     refetchOrdered();
-  }, [refetchRfqSent, refetchVendorSelected, refetchOrdered]);
+  }, [refetchRfqSent, refetchPendingApproval, refetchVendorSelected, refetchOrdered]);
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="text-sm text-steel-400">{t('rfq.summary.rfqSent')}</div>
           <div className="mt-1 text-2xl font-bold text-blue-400">
             {rfqSentData?.pagination?.totalElements ?? 0}
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="text-sm text-steel-400">{t('rfq.summary.pendingApproval')}</div>
+          <div className="mt-1 text-2xl font-bold text-yellow-400">
+            {pendingApprovalData?.pagination?.totalElements ?? 0}
           </div>
         </Card>
         <Card className="p-4">
@@ -257,6 +280,66 @@ export function RfqTab() {
               itemLabel={t('purchaseRequest.title').toLowerCase()}
             />
           )}
+        </>
+      )}
+
+      {/* Pending Vendor Approval Section */}
+      {!isLoading && pendingApprovalRequests.length > 0 && (
+        <>
+          <div className="flex items-center gap-2">
+            <Icon name="clock" className="h-5 w-5 text-yellow-400" />
+            <h3 className="text-lg font-semibold text-white">{t('rfq.sections.pendingApproval')}</h3>
+            <span className="text-sm text-steel-400">({t('rfq.summary.count', { count: pendingApprovalRequests.length })})</span>
+          </div>
+
+          <Card className="overflow-hidden">
+            <Table>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>{t('table.headers.requestNumber')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.type')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.project')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.item')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.quantity')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.requiredDate')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {pendingApprovalRequests.map((request: PurchaseRequestListItem) => {
+                  const isOverdue = purchaseRequestRules.isOverdue(request);
+
+                  return (
+                    <Table.Row
+                      key={request.id}
+                      onClick={() => handleRowClick(request)}
+                      className="cursor-pointer transition-colors hover:bg-steel-800/50"
+                    >
+                      <Table.Cell>
+                        <span className="font-medium text-copper-400">{request.requestNumber}</span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Badge variant={request.dtype === 'SERVICE' ? 'info' : 'copper'} size="sm">
+                          {t(`type.${request.dtype}`)}
+                        </Badge>
+                      </Table.Cell>
+                      <Table.Cell className="text-steel-300">{request.jobCode ?? '-'}</Table.Cell>
+                      <Table.Cell className="text-steel-300">{request.itemName}</Table.Cell>
+                      <Table.Cell className="text-steel-300">
+                        {request.quantity} {request.uom}
+                      </Table.Cell>
+                      <Table.Cell className={isOverdue ? 'text-red-400' : 'text-steel-300'}>
+                        {formatDate(request.requiredDate)}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <RfqStatusBadge status={request.status} />
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table>
+          </Card>
         </>
       )}
 

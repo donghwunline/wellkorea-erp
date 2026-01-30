@@ -33,6 +33,7 @@ public record PurchaseRequestDetailView(
         String uom,
         LocalDate requiredDate,
         String status,
+        String pendingSelectedRfqItemId,  // RFQ item pending vendor approval (null if not in PENDING_VENDOR_APPROVAL status)
         Long createdById,
         String createdByName,
         LocalDateTime createdAt,

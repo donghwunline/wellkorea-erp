@@ -5,6 +5,7 @@
 export const PurchaseRequestStatus = {
   DRAFT: 'DRAFT',
   RFQ_SENT: 'RFQ_SENT',
+  PENDING_VENDOR_APPROVAL: 'PENDING_VENDOR_APPROVAL',
   VENDOR_SELECTED: 'VENDOR_SELECTED',
   ORDERED: 'ORDERED',
   CLOSED: 'CLOSED',
@@ -32,6 +33,12 @@ export const PurchaseRequestStatusConfig: Record<PurchaseRequestStatus, StatusCo
     labelKo: 'RFQ 발송',
     color: 'info',
     description: 'RFQ sent to vendors, awaiting quotes',
+  },
+  [PurchaseRequestStatus.PENDING_VENDOR_APPROVAL]: {
+    label: 'Pending Approval',
+    labelKo: '업체선정 승인대기',
+    color: 'warning',
+    description: 'Vendor selection awaiting approval',
   },
   [PurchaseRequestStatus.VENDOR_SELECTED]: {
     label: 'Vendor Selected',

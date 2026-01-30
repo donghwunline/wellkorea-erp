@@ -327,6 +327,9 @@ export const PURCHASE_REQUEST_ENDPOINTS = {
   selectVendor: (id: number) => `/purchase-requests/${id}/select-vendor`,
   /** POST /purchase-requests/:id/reject-rfq - Reject vendor quote */
   rejectRfq: (id: number) => `/purchase-requests/${id}/reject-rfq`,
+  /** POST /purchase-requests/:id/rfq/:itemId/submit-for-approval - Submit vendor selection for approval */
+  submitVendorSelectionForApproval: (id: number, itemId: string) =>
+    `/purchase-requests/${id}/rfq/${itemId}/submit-for-approval`,
   /** DELETE /purchase-requests/:id - Cancel purchase request */
   cancel: (id: number) => `/purchase-requests/${id}`,
 } as const;

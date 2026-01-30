@@ -49,6 +49,7 @@
     "status": {
       "DRAFT": "초안",
       "RFQ_SENT": "RFQ 발송",
+      "PENDING_VENDOR_APPROVAL": "승인대기",
       "VENDOR_SELECTED": "업체 선정",
       "ORDERED": "발주 완료",
       "CLOSED": "완료",
@@ -79,12 +80,14 @@
     },
     "summary": {
       "rfqSent": "RFQ 발송 완료",
+      "pendingApproval": "승인대기",
       "vendorSelected": "업체 선정 완료",
       "ordered": "발주 완료",
       "count": "{{count}}건"
     },
     "sections": {
       "rfqSent": "RFQ 발송 완료",
+      "pendingApproval": "업체선정 승인대기",
       "vendorSelectedPending": "업체 선정 완료 - PO 생성 대기",
       "orderedPending": "발주 완료 - 입고 대기"
     },

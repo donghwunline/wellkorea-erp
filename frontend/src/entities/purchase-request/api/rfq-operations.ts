@@ -186,3 +186,26 @@ export async function rejectRfq(input: RfqItemOperationInput): Promise<CommandRe
     request
   );
 }
+
+/**
+ * Submit vendor selection for approval.
+ * This initiates an approval workflow instead of directly selecting the vendor.
+ *
+ * @param input - Purchase request ID and RFQ item ID
+ * @returns Command result
+ * @throws DomainValidationError for validation failures
+ * @throws ApiError for server errors
+ */
+export async function submitVendorSelectionForApproval(
+  input: RfqItemOperationInput
+): Promise<CommandResult> {
+  validateRfqItemOperationInput(input);
+
+  return httpClient.post<CommandResult>(
+    PURCHASE_REQUEST_ENDPOINTS.submitVendorSelectionForApproval(
+      input.purchaseRequestId,
+      input.itemId
+    ),
+    {}
+  );
+}
