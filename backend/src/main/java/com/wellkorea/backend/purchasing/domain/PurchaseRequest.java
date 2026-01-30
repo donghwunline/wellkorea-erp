@@ -40,6 +40,10 @@ public abstract class PurchaseRequest implements Approvable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     @Column(name = "project_id")
     private Long projectId;
 

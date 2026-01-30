@@ -97,6 +97,7 @@ CREATE UNIQUE INDEX idx_vendor_material_offering_null_effective
 CREATE TABLE purchase_requests
 (
     id                  BIGSERIAL PRIMARY KEY,
+    version             BIGINT         NOT NULL DEFAULT 0,
     dtype               VARCHAR(31)    NOT NULL DEFAULT 'SERVICE',
     project_id          BIGINT REFERENCES projects (id) ON DELETE SET NULL,
     service_category_id BIGINT REFERENCES service_categories (id) ON DELETE RESTRICT,
@@ -231,6 +232,7 @@ COMMENT ON COLUMN vendor_material_offerings.effective_to IS 'Price effective end
 COMMENT ON COLUMN vendor_material_offerings.is_preferred IS 'Whether this is a preferred vendor for this material';
 
 COMMENT ON TABLE purchase_requests IS 'Internal request for purchasing materials or outsourcing services';
+COMMENT ON COLUMN purchase_requests.version IS 'Optimistic lock version for concurrent modification detection';
 COMMENT ON COLUMN purchase_requests.dtype IS 'Discriminator column for JPA inheritance: SERVICE or MATERIAL';
 COMMENT ON COLUMN purchase_requests.project_id IS 'Optional project reference (null for general purchases)';
 COMMENT ON COLUMN purchase_requests.request_number IS 'Unique request ID: PR-YYYY-NNNNNN';
