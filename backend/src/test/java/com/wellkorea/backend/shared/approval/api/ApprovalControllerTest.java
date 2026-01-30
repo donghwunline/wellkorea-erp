@@ -128,10 +128,11 @@ class ApprovalControllerTest extends BaseIntegrationTest implements TestFixtures
     private Long insertPendingQuotation(Long projectId) {
         Long quotationId = 2000L;
         jdbcTemplate.update(
-                "INSERT INTO quotations (id, project_id, version, status, quotation_date, validity_days, total_amount, created_by_id, submitted_at) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) " +
+                "INSERT INTO quotations (id, project_id, version, status, quotation_date, validity_days, total_amount, created_by_id, " +
+                        "approval_status, approval_submitted_by_id, approval_submitted_at) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, CURRENT_TIMESTAMP) " +
                         "ON CONFLICT (id) DO NOTHING",
-                quotationId, projectId, 1, "PENDING", LocalDate.now(), 30, 500000.00, SALES_USER_ID
+                quotationId, projectId, 1, "PENDING", LocalDate.now(), 30, 500000.00, SALES_USER_ID, SALES_USER_ID
         );
         return quotationId;
     }

@@ -38,6 +38,9 @@
             <arg column="notes" javaType="String"/>
             <arg column="created_by_id" javaType="Long"/>
             <arg column="created_by_name" javaType="String"/>
+            <arg column="approval_status" javaType="com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus"/>
+            <arg column="submitted_by_id" javaType="Long"/>
+            <arg column="submitted_by_name" javaType="String"/>
             <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
             <arg column="approved_at" javaType="java.time.LocalDateTime"/>
             <arg column="approved_by_id" javaType="Long"/>
@@ -66,17 +69,21 @@
             q.notes,
             q.created_by_id,
             cu.full_name AS created_by_name,
-            q.submitted_at,
-            q.approved_at,
-            q.approved_by_id,
+            q.approval_status,
+            q.approval_submitted_by_id AS submitted_by_id,
+            su.full_name AS submitted_by_name,
+            q.approval_submitted_at AS submitted_at,
+            CASE WHEN q.approval_status = 'APPROVED' THEN q.approval_completed_at END AS approved_at,
+            CASE WHEN q.approval_status IN ('APPROVED', 'REJECTED') THEN q.approval_completed_by_id END AS approved_by_id,
             au.full_name AS approved_by_name,
-            q.rejection_reason,
+            q.approval_rejection_reason AS rejection_reason,
             q.created_at,
             q.updated_at
         FROM quotations q
         INNER JOIN projects p ON q.project_id = p.id
         INNER JOIN users cu ON q.created_by_id = cu.id
-        LEFT JOIN users au ON q.approved_by_id = au.id
+        LEFT JOIN users su ON q.approval_submitted_by_id = su.id
+        LEFT JOIN users au ON q.approval_completed_by_id = au.id
         WHERE q.id = #{id} AND q.is_deleted = false
     </select>
 
@@ -116,6 +123,9 @@
             <arg column="notes" javaType="String"/>
             <arg column="created_by_id" javaType="Long"/>
             <arg column="created_by_name" javaType="String"/>
+            <arg column="approval_status" javaType="com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus"/>
+            <arg column="submitted_by_id" javaType="Long"/>
+            <arg column="submitted_by_name" javaType="String"/>
             <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
             <arg column="approved_at" javaType="java.time.LocalDateTime"/>
             <arg column="approved_by_id" javaType="Long"/>
@@ -142,17 +152,21 @@
             q.notes,
             q.created_by_id,
             cu.full_name AS created_by_name,
-            q.submitted_at,
-            q.approved_at,
-            q.approved_by_id,
+            q.approval_status,
+            q.approval_submitted_by_id AS submitted_by_id,
+            su.full_name AS submitted_by_name,
+            q.approval_submitted_at AS submitted_at,
+            CASE WHEN q.approval_status = 'APPROVED' THEN q.approval_completed_at END AS approved_at,
+            CASE WHEN q.approval_status IN ('APPROVED', 'REJECTED') THEN q.approval_completed_by_id END AS approved_by_id,
             au.full_name AS approved_by_name,
-            q.rejection_reason,
+            q.approval_rejection_reason AS rejection_reason,
             q.created_at,
             q.updated_at
         FROM quotations q
         INNER JOIN projects p ON q.project_id = p.id
         INNER JOIN users cu ON q.created_by_id = cu.id
-        LEFT JOIN users au ON q.approved_by_id = au.id
+        LEFT JOIN users su ON q.approval_submitted_by_id = su.id
+        LEFT JOIN users au ON q.approval_completed_by_id = au.id
         <where>
             q.is_deleted = false
             <if test="status != null">

@@ -79,11 +79,14 @@ class QuotationQueryServiceTest {
                 "Test quotation notes",
                 1L,
                 "Admin User",
-                null,
-                null,
-                null,
-                null,
-                null,
+                null,  // approvalStatus
+                null,  // submittedById
+                null,  // submittedByName
+                null,  // submittedAt
+                null,  // approvedAt
+                null,  // approvedById
+                null,  // approvedByName
+                null,  // rejectionReason
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 List.of(testLineItem)
@@ -103,11 +106,14 @@ class QuotationQueryServiceTest {
                 "Test quotation notes",
                 1L,
                 "Admin User",
-                null,
-                null,
-                null,
-                null,
-                null,
+                null,  // approvalStatus
+                null,  // submittedById
+                null,  // submittedByName
+                null,  // submittedAt
+                null,  // approvedAt
+                null,  // approvedById
+                null,  // approvedByName
+                null,  // rejectionReason
                 LocalDateTime.now(),
                 LocalDateTime.now()
         );

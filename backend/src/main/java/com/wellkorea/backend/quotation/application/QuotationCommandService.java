@@ -18,7 +18,6 @@ import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -134,7 +133,7 @@ public class QuotationCommandService {
         }
 
         quotation.setStatus(QuotationStatus.PENDING);
-        quotation.setSubmittedAt(LocalDateTime.now());
+        quotation.getApprovalState().submitForApproval(submittedByUserId, "QUOTATION");
         Quotation savedQuotation = quotationRepository.save(quotation);
 
         // Publish event - handled by ApprovalEventHandler within same transaction
@@ -192,52 +191,6 @@ public class QuotationCommandService {
 
         newQuotation.recalculateTotalAmount();
         Quotation saved = quotationRepository.save(newQuotation);
-        return saved.getId();
-    }
-
-    /**
-     * Approve quotation (called by approval workflow via event).
-     * Only quotations in PENDING status can be approved.
-     *
-     * @return ID of the approved quotation
-     */
-    public Long approveQuotation(Long quotationId, Long approvedByUserId) {
-        Quotation quotation = quotationRepository.findById(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
-
-        if (quotation.getStatus() != QuotationStatus.PENDING) {
-            throw new BusinessException("Only PENDING quotations can be approved");
-        }
-
-        User approvedBy = userRepository.findById(approvedByUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", approvedByUserId));
-
-        quotation.setStatus(QuotationStatus.APPROVED);
-        quotation.setApprovedAt(LocalDateTime.now());
-        quotation.setApprovedBy(approvedBy);
-
-        Quotation saved = quotationRepository.save(quotation);
-        return saved.getId();
-    }
-
-    /**
-     * Reject quotation (called by approval workflow via event).
-     * Only quotations in PENDING status can be rejected.
-     *
-     * @return ID of the rejected quotation
-     */
-    public Long rejectQuotation(Long quotationId, String rejectionReason) {
-        Quotation quotation = quotationRepository.findById(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
-
-        if (quotation.getStatus() != QuotationStatus.PENDING) {
-            throw new BusinessException("Only PENDING quotations can be rejected");
-        }
-
-        quotation.setStatus(QuotationStatus.REJECTED);
-        quotation.setRejectionReason(rejectionReason);
-
-        Quotation saved = quotationRepository.save(quotation);
         return saved.getId();
     }
 

@@ -319,53 +319,7 @@ class QuotationCommandServiceTest {
         }
     }
 
-    @Nested
-    @DisplayName("approveQuotation - Approve quotation after approval workflow")
-    class ApproveQuotationTests {
-
-        @Test
-        @DisplayName("should approve PENDING quotation and return ID")
-        void approveQuotation_PendingStatus_ReturnsId() {
-            // Given
-            testQuotation.setStatus(QuotationStatus.PENDING);
-            testQuotation.setId(1L);
-            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
-            given(userRepository.findById(1L)).willReturn(Optional.of(testUser));
-            given(quotationRepository.save(any(Quotation.class))).willAnswer(invocation -> invocation.getArgument(0));
-
-            // When
-            Long result = commandService.approveQuotation(1L, 1L);
-
-            // Then
-            assertThat(result).isEqualTo(1L);
-            ArgumentCaptor<Quotation> quotationCaptor = ArgumentCaptor.forClass(Quotation.class);
-            verify(quotationRepository).save(quotationCaptor.capture());
-            assertThat(quotationCaptor.getValue().getStatus()).isEqualTo(QuotationStatus.APPROVED);
-        }
-    }
-
-    @Nested
-    @DisplayName("rejectQuotation - Reject quotation with reason")
-    class RejectQuotationTests {
-
-        @Test
-        @DisplayName("should reject PENDING quotation and return ID")
-        void rejectQuotation_PendingStatus_ReturnsId() {
-            // Given
-            testQuotation.setStatus(QuotationStatus.PENDING);
-            testQuotation.setId(1L);
-            given(quotationRepository.findById(1L)).willReturn(Optional.of(testQuotation));
-            given(quotationRepository.save(any(Quotation.class))).willAnswer(invocation -> invocation.getArgument(0));
-
-            // When
-            Long result = commandService.rejectQuotation(1L, "Price too high");
-
-            // Then
-            assertThat(result).isEqualTo(1L);
-            ArgumentCaptor<Quotation> quotationCaptor = ArgumentCaptor.forClass(Quotation.class);
-            verify(quotationRepository).save(quotationCaptor.capture());
-            assertThat(quotationCaptor.getValue().getStatus()).isEqualTo(QuotationStatus.REJECTED);
-            assertThat(quotationCaptor.getValue().getRejectionReason()).isEqualTo("Price too high");
-        }
-    }
+    // approveQuotation and rejectQuotation have been removed from the service.
+    // Approval/rejection is now handled by Quotation.onApprovalGranted()/onApprovalRejected()
+    // via the Approvable pattern and GenericApprovalCompletedHandler.
 }
