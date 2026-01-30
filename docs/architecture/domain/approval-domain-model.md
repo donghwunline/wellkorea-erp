@@ -460,41 +460,96 @@ Map<Long, User> usersById = userRepository.findAllById(userIds)
     .collect(Collectors.toMap(User::getId, Function.identity()));
 ```
 
+## Shared Kernel Pattern
+
+The approval domain is implemented as a **Shared Kernel** in `com.wellkorea.backend.shared.approval`. This design choice enables:
+
+1. **Cross-Domain Reusability**: Any entity that needs approval workflow (Quotation, Purchase Order, Vendor Selection) can implement the `Approvable` interface
+2. **Consistent Approval Behavior**: All approval workflows follow the same multi-level sequential pattern
+3. **Centralized Extension Point**: New approval-requiring entities only need to implement `Approvable` and register with `ApprovableRegistry`
+
+### Approvable Pattern
+
+Entities requiring approval implement the `Approvable` interface:
+
+```java
+public interface Approvable {
+    Long getId();
+    void onApprovalCompleted(ApprovalStatus status);
+}
+```
+
+The `ApprovalState` embeddable can be used by entities to track their approval state:
+
+```java
+@Embedded
+private ApprovalState approvalState = new ApprovalState(); // Status: NONE, PENDING, APPROVED, REJECTED
+```
+
 ## Package Structure
 
 ```
-com/wellkorea/backend/approval/
+com/wellkorea/backend/shared/approval/
 ├── api/
 │   ├── ApprovalController.java
 │   ├── AdminApprovalChainController.java
 │   └── dto/
-│       ├── command/     # Request DTOs
-│       └── query/       # View DTOs
+│       ├── command/                      # Request DTOs
+│       │   ├── ApprovalCommandResult.java
+│       │   ├── ApproveRequest.java
+│       │   ├── ChainLevelRequest.java
+│       │   ├── RejectRequest.java
+│       │   └── UpdateChainLevelsRequest.java
+│       └── query/                        # View DTOs
+│           ├── ApprovalDetailView.java
+│           ├── ApprovalHistoryView.java
+│           ├── ApprovalSummaryView.java
+│           ├── ChainLevelView.java
+│           ├── ChainTemplateView.java
+│           └── LevelDecisionView.java
 ├── application/
-│   ├── ApprovalCommandService.java    # Write operations
-│   ├── ApprovalQueryService.java      # Read operations
-│   └── ApprovalEventHandler.java      # Domain event handling
+│   ├── ApprovalCommandService.java       # Write operations
+│   ├── ApprovalQueryService.java         # Read operations
+│   ├── ApprovalEventHandler.java         # Domain event handling
+│   ├── ApprovableRegistry.java           # Registry for approvable entities
+│   ├── ApprovableResolver.java           # Resolver for finding approvables
+│   ├── GenericApprovalCompletedHandler.java  # Generic completion handler
+│   └── ChainLevelCommand.java            # Internal command object
 ├── domain/
-│   ├── ApprovalRequest.java           # Aggregate Root
-│   ├── ApprovalChainTemplate.java     # Aggregate Root
-│   ├── ApprovalHistory.java           # Entity
-│   ├── ApprovalComment.java           # Entity
-│   ├── ApprovalStatus.java            # Enum
-│   ├── DecisionStatus.java            # Enum
-│   ├── ApprovalAction.java            # Enum
+│   ├── Approvable.java                   # Interface for approvable entities
+│   ├── ApprovalRequest.java              # Aggregate Root
+│   ├── ApprovalChainTemplate.java        # Aggregate Root
 │   ├── event/
 │   │   └── ApprovalCompletedEvent.java
 │   └── vo/
-│       ├── ApprovalChainLevel.java    # @Embeddable
-│       ├── ApprovalLevelDecision.java # @Embeddable
-│       └── EntityType.java            # Enum
+│       ├── ApprovalAction.java           # Enum
+│       ├── ApprovalChainLevel.java       # @Embeddable
+│       ├── ApprovalCommentEntry.java     # @Embeddable (embedded in ApprovalRequest)
+│       ├── ApprovalHistoryEntry.java     # @Embeddable (embedded in ApprovalRequest)
+│       ├── ApprovalLevelDecision.java    # @Embeddable
+│       ├── ApprovalState.java            # @Embeddable for entity state tracking
+│       ├── ApprovalStateStatus.java      # Enum (NONE, PENDING, APPROVED, REJECTED)
+│       ├── ApprovalStatus.java           # Enum
+│       ├── DecisionStatus.java           # Enum
+│       └── EntityType.java               # Enum
 └── infrastructure/
+    ├── mapper/
+    │   └── ApprovalMapper.java           # MyBatis mapper interface
     └── repository/
         ├── ApprovalRequestRepository.java
-        ├── ApprovalChainTemplateRepository.java
-        ├── ApprovalHistoryRepository.java
-        └── ApprovalCommentRepository.java
+        └── ApprovalChainTemplateRepository.java
 ```
+
+### Key Changes from Original Design
+
+| Original | Current | Reason |
+|----------|---------|--------|
+| `ApprovalHistory` (Entity) | `ApprovalHistoryEntry` (@Embeddable) | Embedded in ApprovalRequest aggregate |
+| `ApprovalComment` (Entity) | `ApprovalCommentEntry` (@Embeddable) | Embedded in ApprovalRequest aggregate |
+| Separate repositories for History/Comment | Removed | Now part of ApprovalRequest aggregate |
+| N/A | `Approvable` interface | Enables generic approval for any entity |
+| N/A | `ApprovalState` embeddable | Reusable state tracking for entities |
+| N/A | `ApprovableRegistry`/`Resolver` | Dynamic discovery of approvable entities |
 
 ## Design Decisions
 
