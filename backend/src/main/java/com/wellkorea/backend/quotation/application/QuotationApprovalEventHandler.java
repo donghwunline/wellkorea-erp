@@ -1,7 +1,7 @@
 package com.wellkorea.backend.quotation.application;
 
-import com.wellkorea.backend.approval.domain.event.ApprovalCompletedEvent;
-import com.wellkorea.backend.approval.domain.vo.EntityType;
+import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
+import com.wellkorea.backend.shared.approval.domain.event.ApprovalCompletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

@@ -1,0 +1,19 @@
+package com.wellkorea.backend.shared.approval.api.dto.query;
+
+import com.wellkorea.backend.shared.approval.domain.vo.ApprovalAction;
+
+import java.time.LocalDateTime;
+
+/**
+ * Read model for approval history entry.
+ * Used for displaying approval workflow history.
+ */
+public record ApprovalHistoryView(
+        Integer levelOrder,
+        ApprovalAction action,
+        Long actorId,
+        String actorName,
+        String comments,
+        LocalDateTime createdAt
+) {
+}
