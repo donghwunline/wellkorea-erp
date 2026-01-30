@@ -1,8 +1,5 @@
 package com.wellkorea.backend.purchasing.domain;
 
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalState;
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus;
-import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
 import com.wellkorea.backend.purchasing.domain.service.PurchaseOrderCreationGuard;
 import com.wellkorea.backend.purchasing.domain.service.RfqItemFactory;
 import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
@@ -10,6 +7,9 @@ import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
 import com.wellkorea.backend.shared.approval.domain.Approvable;
+import com.wellkorea.backend.shared.approval.domain.vo.ApprovalState;
+import com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus;
+import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import jakarta.persistence.*;
 
@@ -491,7 +491,7 @@ public abstract class PurchaseRequest implements Approvable {
     }
 
     @Override
-    public void onApprovalGranted() {
+    public void onApprovalGranted(Long approverUserId) {
         if (approvalState.getStatus() != ApprovalStateStatus.PENDING) {
             throw new IllegalStateException("Not pending approval");
         }
@@ -503,31 +503,32 @@ public abstract class PurchaseRequest implements Approvable {
         item.select();
 
         this.status = PurchaseRequestStatus.VENDOR_SELECTED;
-        this.approvalState.markApproved();
+        this.approvalState.markApproved(approverUserId);
         this.pendingSelectedRfqItemId = null;
     }
 
     @Override
-    public void onApprovalRejected(String reason) {
+    public void onApprovalRejected(Long rejectorUserId, String reason) {
         if (approvalState.getStatus() != ApprovalStateStatus.PENDING) {
             throw new IllegalStateException("Not pending approval");
         }
 
         // Revert selection - keep item as REPLIED so user can try again
         this.status = PurchaseRequestStatus.RFQ_SENT;
-        this.approvalState.markRejected();
+        this.approvalState.markRejected(rejectorUserId, reason);
         this.pendingSelectedRfqItemId = null;
     }
 
     /**
      * Submit vendor selection for approval workflow.
      * Does NOT select immediately - waits for approval.
-     * The actual selection happens when {@link #onApprovalGranted()} is called.
+     * The actual selection happens when {@link #onApprovalGranted(Long)} is called.
      *
-     * @param itemId the RFQ item ID to select pending approval
+     * @param itemId          the RFQ item ID to select pending approval
+     * @param submitterUserId the ID of the user submitting for approval
      * @throws IllegalStateException if not in RFQ_SENT status or already pending approval
      */
-    public void submitVendorSelectionForApproval(String itemId) {
+    public void submitVendorSelectionForApproval(String itemId, Long submitterUserId) {
         if (!status.canSubmitForVendorApproval()) {
             throw new IllegalStateException("Can only submit for vendor approval in RFQ_SENT status, current: " + status);
         }
@@ -549,7 +550,7 @@ public abstract class PurchaseRequest implements Approvable {
 
         this.pendingSelectedRfqItemId = itemId;
         this.status = PurchaseRequestStatus.PENDING_VENDOR_APPROVAL;
-        this.approvalState.submitForApproval("VENDOR_SELECTION");
+        this.approvalState.submitForApproval(submitterUserId, "VENDOR_SELECTION");
     }
 
     /**

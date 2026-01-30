@@ -106,7 +106,7 @@ public class RfqCommandService {
         PurchaseRequest purchaseRequest = getPurchaseRequest(purchaseRequestId);
 
         // Domain validates state and stores pending selection
-        purchaseRequest.submitVendorSelectionForApproval(itemId);
+        purchaseRequest.submitVendorSelectionForApproval(itemId, userId);
 
         RfqItem item = purchaseRequest.getRfqItemById(itemId);
 
