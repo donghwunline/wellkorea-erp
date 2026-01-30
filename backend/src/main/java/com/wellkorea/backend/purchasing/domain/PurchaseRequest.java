@@ -513,7 +513,9 @@ public abstract class PurchaseRequest implements Approvable {
             throw new IllegalStateException("Not pending approval");
         }
 
-        // Revert selection - keep item as REPLIED so user can try again
+        // Revert to RFQ_SENT status so user can select a different vendor.
+        // Note: The RfqItem remains in REPLIED status (never changed during pending state).
+        // Only onApprovalGranted() calls item.select() to change item status to SELECTED.
         this.status = PurchaseRequestStatus.RFQ_SENT;
         this.approvalState.markRejected(rejectorUserId, reason);
         this.pendingSelectedRfqItemId = null;
