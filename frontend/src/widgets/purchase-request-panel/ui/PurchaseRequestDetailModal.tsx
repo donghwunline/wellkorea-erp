@@ -39,7 +39,7 @@ import {
 } from '@/entities/purchase-request';
 import { useAuth } from '@/entities/auth';
 import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatting';
-import { useMarkNoResponse, useSelectVendor, useRejectRfq } from '@/features/rfq/manage';
+import { useMarkNoResponse, useRejectRfq, useSubmitVendorSelection } from '@/features/rfq/manage';
 import { RecordReplyModal } from '@/features/rfq/record-reply';
 import { CreatePurchaseOrderModal } from '@/features/purchase-order/create';
 
@@ -168,10 +168,11 @@ export function PurchaseRequestDetailModal({
   // Combined check for either type
   const canSendRfqForRequest = canSendRfqForService || canSendRfqForMaterial;
 
-  // Check if RFQ status allows management (RFQ_SENT for quotes, VENDOR_SELECTED for PO creation)
+  // Check if RFQ status allows management (RFQ_SENT for quotes, PENDING_VENDOR_APPROVAL, VENDOR_SELECTED for PO creation)
   const canManageRfqItems =
     request &&
     (request.status === PurchaseRequestStatus.RFQ_SENT ||
+      request.status === PurchaseRequestStatus.PENDING_VENDOR_APPROVAL ||
       request.status === PurchaseRequestStatus.VENDOR_SELECTED);
 
   // Mutation hooks
@@ -183,21 +184,6 @@ export function PurchaseRequestDetailModal({
     onError: (error) => setActionError(error.message),
   });
 
-  const { mutate: selectVendor, isPending: isSelecting } = useSelectVendor({
-    onSuccess: () => {
-      setActionError(null);
-      setSelectVendorItem(null);
-      // Show PO prompt - vendor was stored in handleConfirmSelectVendor before mutation
-      setShowPoPrompt(true);
-      onSuccess?.();
-    },
-    onError: (error) => {
-      // Clear stored vendor on error since selection failed
-      setSelectedVendorForPo(null);
-      setActionError(error.message);
-    },
-  });
-
   const { mutate: rejectRfq, isPending: isRejecting } = useRejectRfq({
     onSuccess: () => {
       setActionError(null);
@@ -206,7 +192,16 @@ export function PurchaseRequestDetailModal({
     onError: (error) => setActionError(error.message),
   });
 
-  const isActing = isMarkingNoResponse || isSelecting || isRejecting;
+  const { mutate: submitForApproval, isPending: isSubmittingForApproval } = useSubmitVendorSelection({
+    onSuccess: () => {
+      setActionError(null);
+      setSelectVendorItem(null);
+      onSuccess?.();
+    },
+    onError: (error) => setActionError(error.message),
+  });
+
+  const isActing = isMarkingNoResponse || isRejecting || isSubmittingForApproval;
 
   // Handlers
   const handleOpenSendRfq = useCallback(() => {
@@ -244,11 +239,10 @@ export function PurchaseRequestDetailModal({
 
   const handleConfirmSelectVendor = useCallback(() => {
     if (selectVendorItem) {
-      // Store vendor BEFORE mutation so onSuccess has access (avoids stale closure)
-      setSelectedVendorForPo(selectVendorItem);
-      selectVendor({ purchaseRequestId, itemId: selectVendorItem.itemId });
+      // Submit for approval instead of direct selection
+      submitForApproval({ purchaseRequestId, itemId: selectVendorItem.itemId });
     }
-  }, [purchaseRequestId, selectVendorItem, selectVendor]);
+  }, [purchaseRequestId, selectVendorItem, submitForApproval]);
 
   const handleRejectRfq = useCallback((item: RfqItem) => {
     setActionError(null);
@@ -320,8 +314,23 @@ export function PurchaseRequestDetailModal({
       );
     }
 
-    // REPLIED status: Select, Reject
+    // REPLIED status: actions depend on purchase request status
     if (item.status === RfqItemStatus.REPLIED) {
+      // If pending vendor approval, show appropriate state
+      if (request?.status === PurchaseRequestStatus.PENDING_VENDOR_APPROVAL) {
+        // This item is the one pending approval
+        if (request.pendingSelectedRfqItemId === item.itemId) {
+          return (
+            <Badge variant="warning" size="sm">
+              {t('purchaseRequestPanel.pendingApproval.badge')}
+            </Badge>
+          );
+        }
+        // Other REPLIED items during pending approval - disabled
+        return <span className="text-steel-500">-</span>;
+      }
+
+      // RFQ_SENT status: Submit for Approval, Reject
       return (
         <div className="flex gap-1">
           <Button
@@ -331,7 +340,7 @@ export function PurchaseRequestDetailModal({
             disabled={isActing}
           >
             <Icon name="check" className="mr-1 h-3 w-3" />
-            {t('purchaseRequestPanel.actions.select')}
+            {t('purchaseRequestPanel.actions.submitForApproval')}
           </Button>
           <Button
             variant="ghost"
@@ -394,6 +403,20 @@ export function PurchaseRequestDetailModal({
             {actionError && (
               <Alert variant="error" onClose={() => setActionError(null)}>
                 {actionError}
+              </Alert>
+            )}
+
+            {/* Pending Vendor Approval Banner */}
+            {request.status === PurchaseRequestStatus.PENDING_VENDOR_APPROVAL && request.pendingSelectedRfqItemId && (
+              <Alert variant="warning">
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold">{t('purchaseRequestPanel.pendingApproval.title')}</span>
+                  <span className="text-sm">
+                    {t('purchaseRequestPanel.pendingApproval.vendor', {
+                      vendorName: request.rfqItems.find(item => item.itemId === request.pendingSelectedRfqItemId)?.vendorName ?? '-',
+                    })}
+                  </span>
+                </div>
               </Alert>
             )}
 
@@ -544,17 +567,17 @@ export function PurchaseRequestDetailModal({
         />
       )}
 
-      {/* Select Vendor Confirmation Modal */}
+      {/* Submit for Approval Confirmation Modal */}
       {selectVendorItem && (
         <ConfirmationModal
           isOpen={Boolean(selectVendorItem)}
           onClose={() => setSelectVendorItem(null)}
           onConfirm={handleConfirmSelectVendor}
-          title={t('purchaseRequestPanel.confirmSelectVendor.title')}
-          message={t('purchaseRequestPanel.confirmSelectVendor.message', { vendorName: selectVendorItem.vendorName })}
+          title={t('purchaseRequestPanel.confirmSubmitForApproval.title')}
+          message={t('purchaseRequestPanel.confirmSubmitForApproval.message', { vendorName: selectVendorItem.vendorName })}
           variant="warning"
-          confirmLabel={t('purchaseRequestPanel.confirmSelectVendor.confirm')}
-          cancelLabel={t('purchaseRequestPanel.confirmSelectVendor.cancel')}
+          confirmLabel={t('purchaseRequestPanel.confirmSubmitForApproval.confirm')}
+          cancelLabel={t('purchaseRequestPanel.confirmSubmitForApproval.cancel')}
         />
       )}
 

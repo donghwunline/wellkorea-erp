@@ -48,6 +48,13 @@ export interface PurchaseRequest {
   readonly uom: string; // Unit of measure
   readonly requiredDate: string; // ISO date: "2025-02-15"
   readonly status: PurchaseRequestStatus;
+  /**
+   * UUID of the RFQ item awaiting manager approval for vendor selection.
+   * Only populated when status is PENDING_VENDOR_APPROVAL.
+   * References an RfqItem by its itemId field.
+   * Null when no approval is pending or after approval completes.
+   */
+  readonly pendingSelectedRfqItemId: string | null;
   readonly createdById: number;
   readonly createdByName: string;
   readonly createdAt: string; // ISO datetime
@@ -78,6 +85,10 @@ export interface PurchaseRequestListItem {
   readonly uom: string;
   readonly requiredDate: string;
   readonly status: PurchaseRequestStatus;
+  /**
+   * UUID of RFQ item pending vendor approval (null if not applicable).
+   */
+  readonly pendingSelectedRfqItemId: string | null;
   readonly createdByName: string;
   readonly createdAt: string;
 }
@@ -164,5 +175,34 @@ export const purchaseRequestRules = {
    */
   hasQuotesToCompare(request: PurchaseRequest): boolean {
     return purchaseRequestRules.getQuoteCount(request) > 0;
+  },
+
+  /**
+   * Check if request is pending vendor approval.
+   */
+  isPendingVendorApproval(request: Pick<PurchaseRequest, 'status'>): boolean {
+    return request.status === PurchaseRequestStatus.PENDING_VENDOR_APPROVAL;
+  },
+
+  /**
+   * Check if vendor selection can be submitted for approval.
+   * Only allowed in RFQ_SENT status with at least one REPLIED RFQ item.
+   */
+  canSubmitVendorSelection(request: PurchaseRequest): boolean {
+    return (
+      request.status === PurchaseRequestStatus.RFQ_SENT &&
+      request.rfqItems.some(item => item.status === 'REPLIED')
+    );
+  },
+
+  /**
+   * Get the RFQ item pending vendor approval.
+   * Returns null if not in PENDING_VENDOR_APPROVAL status or no pending item.
+   */
+  getPendingRfqItem(request: PurchaseRequest): RfqItem | null {
+    if (!request.pendingSelectedRfqItemId) return null;
+    return request.rfqItems.find(
+      item => item.itemId === request.pendingSelectedRfqItemId
+    ) ?? null;
   },
 };

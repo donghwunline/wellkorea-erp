@@ -49,6 +49,7 @@
     "status": {
       "DRAFT": "Draft",
       "RFQ_SENT": "RFQ Sent",
+      "PENDING_VENDOR_APPROVAL": "Pending Approval",
       "VENDOR_SELECTED": "Vendor Selected",
       "ORDERED": "Ordered",
       "CLOSED": "Closed",
@@ -79,12 +80,14 @@
     },
     "summary": {
       "rfqSent": "RFQ Sent",
+      "pendingApproval": "Pending Approval",
       "vendorSelected": "Vendor Selected",
       "ordered": "Ordered",
       "count": "{{count}} items"
     },
     "sections": {
       "rfqSent": "RFQ Sent",
+      "pendingApproval": "Pending Vendor Approval",
       "vendorSelectedPending": "Vendor Selected - Awaiting PO",
       "orderedPending": "Ordered - Awaiting Delivery"
     },

@@ -6,29 +6,16 @@
 import { HttpClient } from './httpClient';
 import { tokenStore } from './tokenStore';
 import { navigation } from '@/shared/lib/navigation';
+import { authEvents } from '@/shared/events';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 /**
  * Callback when token refresh fails.
- * Emits unauthorized event via authEvents.
- *
- * NOTE: Uses dynamic import to avoid circular dependency:
- * - api/httpClient.ts imports from api/index.ts
- * - entities/auth/store imports httpClient from @/shared/api
- * - If we statically import authEvents here, we get: httpClient ← authStore ← httpClient
+ * Emits unauthorized event via authEvents, then redirects to login.
  */
 const onUnauthorized = () => {
-  // Emit unauthorized event (dynamic import prevents circular dependency)
-  import('@/entities/auth')
-    .then(({ authEvents }) => {
-      authEvents.emit({ type: 'unauthorized' });
-    })
-    .catch(err => {
-      console.error('Failed to emit unauthorized event:', err);
-    });
-
-  // Redirect to login (happens immediately, doesn't wait for event)
+  authEvents.emit({ type: 'unauthorized' });
   navigation.redirectToLogin();
 };
 

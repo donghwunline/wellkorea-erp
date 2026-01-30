@@ -111,11 +111,23 @@
       "noResponse": "무응답",
       "selectVendor": "업체 선정",
       "select": "선정",
+      "submitForApproval": "승인요청",
       "reject": "미선정",
       "createPo": "발주서 생성",
       "close": "닫기",
       "poCreated": "발주완료",
       "selectionComplete": "선정완료"
+    },
+    "pendingApproval": {
+      "title": "업체선정 승인 대기 중",
+      "vendor": "선정 대기 업체: {{vendorName}}",
+      "badge": "승인대기"
+    },
+    "confirmSubmitForApproval": {
+      "title": "업체선정 승인요청",
+      "message": "{{vendorName}}을(를) 선정하시겠습니까? 결재 승인 후 업체가 확정됩니다.",
+      "confirm": "승인요청",
+      "cancel": "취소"
     },
     "confirmSelectVendor": {
       "title": "업체 선정",

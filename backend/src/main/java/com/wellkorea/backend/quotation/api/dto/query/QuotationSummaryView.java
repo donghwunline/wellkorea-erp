@@ -1,6 +1,7 @@
 package com.wellkorea.backend.quotation.api.dto.query;
 
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
+import com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +25,10 @@ public record QuotationSummaryView(
         String notes,
         Long createdById,
         String createdByName,
+        // Approval fields (from ApprovalState embedded columns)
+        ApprovalStateStatus approvalStatus,
+        Long submittedById,
+        String submittedByName,
         LocalDateTime submittedAt,
         LocalDateTime approvedAt,
         Long approvedById,

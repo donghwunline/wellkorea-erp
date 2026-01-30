@@ -1,7 +1,10 @@
 package com.wellkorea.backend.purchasing.application;
 
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
+import com.wellkorea.backend.purchasing.domain.event.VendorSelectionSubmittedEvent;
+import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
+import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +22,13 @@ import java.math.BigDecimal;
 public class RfqCommandService {
 
     private final PurchaseRequestRepository purchaseRequestRepository;
+    private final DomainEventPublisher eventPublisher;
 
-    public RfqCommandService(PurchaseRequestRepository purchaseRequestRepository) {
+    public RfqCommandService(
+            PurchaseRequestRepository purchaseRequestRepository,
+            DomainEventPublisher eventPublisher) {
         this.purchaseRequestRepository = purchaseRequestRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -84,6 +91,38 @@ public class RfqCommandService {
         purchaseRequest.rejectRfq(itemId);
 
         purchaseRequestRepository.save(purchaseRequest);
+    }
+
+    /**
+     * Submit vendor selection for approval workflow.
+     * The actual selection happens after approval is granted.
+     *
+     * @param purchaseRequestId the purchase request ID
+     * @param itemId            the RFQ item ID to select
+     * @param userId            the user ID submitting for approval
+     * @return the purchase request ID
+     */
+    public Long submitVendorSelectionForApproval(Long purchaseRequestId, String itemId, Long userId) {
+        PurchaseRequest purchaseRequest = getPurchaseRequest(purchaseRequestId);
+
+        // Domain validates state and stores pending selection
+        purchaseRequest.submitVendorSelectionForApproval(itemId, userId);
+
+        RfqItem item = purchaseRequest.getRfqItemById(itemId);
+
+        // Save first to ensure PR is persisted
+        purchaseRequestRepository.save(purchaseRequest);
+
+        // Publish event - ApprovalEventHandler creates ApprovalRequest
+        eventPublisher.publish(new VendorSelectionSubmittedEvent(
+                purchaseRequest.getId(),
+                itemId,
+                item.getVendorCompanyId(),
+                item.getQuotedPrice(),
+                userId
+        ));
+
+        return purchaseRequest.getId();
     }
 
     private PurchaseRequest getPurchaseRequest(Long id) {

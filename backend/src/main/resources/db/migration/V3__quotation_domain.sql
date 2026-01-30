@@ -1,5 +1,6 @@
 -- V3: Quotation domain tables for sales quotations and line items
 -- Supports quotation creation with product catalog selection, versioning, and status tracking.
+-- NOTE: ApprovalState columns are added via V13 (Approvable pattern consolidation)
 
 -- =====================================================================
 -- QUOTATION DOMAIN
@@ -7,22 +8,19 @@
 
 CREATE TABLE quotations
 (
-    id               BIGSERIAL PRIMARY KEY,
-    project_id       BIGINT         NOT NULL REFERENCES projects (id),
-    version          INT            NOT NULL DEFAULT 1,
-    status           VARCHAR(20)    NOT NULL DEFAULT 'DRAFT',
-    quotation_date   DATE           NOT NULL DEFAULT CURRENT_DATE,
-    validity_days    INT            NOT NULL DEFAULT 30,
-    total_amount     DECIMAL(15, 2) NOT NULL DEFAULT 0,
-    notes            TEXT,
-    created_by_id    BIGINT         NOT NULL REFERENCES users (id),
-    submitted_at     TIMESTAMP,
-    approved_at      TIMESTAMP,
-    approved_by_id   BIGINT REFERENCES users (id),
-    rejection_reason TEXT,
-    created_at       TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at       TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_deleted       BOOLEAN        NOT NULL DEFAULT false,
+    id                        BIGSERIAL PRIMARY KEY,
+    project_id                BIGINT         NOT NULL REFERENCES projects (id),
+    version                   INT            NOT NULL DEFAULT 1,
+    status                    VARCHAR(20)    NOT NULL DEFAULT 'DRAFT',
+    quotation_date            DATE           NOT NULL DEFAULT CURRENT_DATE,
+    validity_days             INT            NOT NULL DEFAULT 30,
+    total_amount              DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    notes                     TEXT,
+    created_by_id             BIGINT         NOT NULL REFERENCES users (id),
+    -- Timestamps
+    created_at                TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_deleted                BOOLEAN        NOT NULL DEFAULT false,
     CONSTRAINT chk_quotation_status CHECK (status IN
                                            ('DRAFT', 'PENDING', 'APPROVED', 'SENDING', 'SENT', 'REJECTED', 'ACCEPTED')),
     CONSTRAINT chk_quotation_version_positive CHECK (version > 0),
@@ -58,7 +56,6 @@ CREATE INDEX idx_quotations_created_by_id ON quotations (created_by_id);
 CREATE INDEX idx_quotations_quotation_date ON quotations (quotation_date);
 CREATE INDEX idx_quotations_created_at ON quotations (created_at);
 CREATE INDEX idx_quotations_is_deleted ON quotations (is_deleted);
-CREATE INDEX idx_quotations_approved_by_id ON quotations (approved_by_id) WHERE approved_by_id IS NOT NULL;
 
 CREATE INDEX idx_quotation_line_items_quotation_id ON quotation_line_items (quotation_id);
 CREATE INDEX idx_quotation_line_items_product_id ON quotation_line_items (product_id);

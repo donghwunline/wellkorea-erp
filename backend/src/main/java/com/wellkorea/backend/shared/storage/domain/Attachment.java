@@ -1,6 +1,7 @@
 package com.wellkorea.backend.shared.storage.domain;
 
 import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.shared.constant.AttachmentLimits;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -20,8 +21,6 @@ import java.util.Objects;
         @Index(name = "idx_attachments_owner", columnList = "owner_type, owner_id")
 })
 public class Attachment {
-
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -101,8 +100,8 @@ public class Attachment {
             throw new IllegalArgumentException("File size must be positive");
         }
 
-        if (fileSize > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File size exceeds maximum of 10MB");
+        if (fileSize > AttachmentLimits.MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("File size exceeds maximum of 50MB");
         }
 
         AttachmentFileType fileType = AttachmentFileType.fromFileName(fileName);

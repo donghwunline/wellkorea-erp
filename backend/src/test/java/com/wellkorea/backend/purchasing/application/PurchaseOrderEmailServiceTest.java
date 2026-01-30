@@ -130,6 +130,7 @@ class PurchaseOrderEmailServiceTest {
                 "EA",
                 LocalDate.now().plusDays(7),
                 "RFQ_SENT",
+                null,  // pendingSelectedRfqItemId
                 1L,
                 "User",
                 LocalDateTime.now(),

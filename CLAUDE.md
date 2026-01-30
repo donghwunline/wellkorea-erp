@@ -204,10 +204,13 @@ Backend follows a layered Domain-Driven Design approach with **CQRS (Command Que
 
 ```
 com/wellkorea/backend/
-├── shared/               # Cross-cutting concerns
+├── shared/               # Cross-cutting concerns (Shared Kernel)
+│   ├── approval/        # Multi-level approval workflow (Approvable pattern)
 │   ├── audit/           # AuditLogger, AuditContextHolder
 │   ├── dto/             # ApiResponse, ErrorResponse
-│   └── exception/       # GlobalExceptionHandler, ErrorCode
+│   ├── event/           # Domain events (ApprovalRequiredEvent, etc.)
+│   ├── exception/       # GlobalExceptionHandler, ErrorCode
+│   └── storage/         # File storage abstraction (MinIO)
 │
 ├── {domain}/            # Feature-specific packages (auth, project, quotation)
 │   ├── api/            # REST controllers
@@ -253,6 +256,7 @@ GET /api/quotations/{id} → queryService.getQuotationDetail(id) → QuotationDe
 - **JWT Authentication**: Custom `JwtAuthenticationFilter` with token refresh support (temporary, will migrate to Keycloak OAuth2)
 - **Audit Logging**: `AuditLogger` with `AuditContextHolder` for request context tracking
 - **Domain Events**: Use `DomainEventPublisher` for cross-domain communication (e.g., approval workflow)
+- **Approvable Pattern** (extensible approval workflow): Entities implement `Approvable` interface and embed `ApprovalState`. Register resolver in `ApprovableRegistry` via `@PostConstruct` config class. `GenericApprovalCompletedHandler` invokes entity callbacks on completion. See `docs/architecture/domain/approval-domain-model.md` for full documentation. Reference implementations: `PurchaseRequest` (vendor selection), `Quotation`.
 
 ### Frontend Architecture (FSD-Lite: Feature-Sliced Design)
 

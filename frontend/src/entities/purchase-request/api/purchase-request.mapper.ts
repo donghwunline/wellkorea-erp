@@ -57,6 +57,7 @@ export interface PurchaseRequestSummaryResponse {
   uom: string;
   requiredDate: string;
   status: string;
+  pendingSelectedRfqItemId: string | null;
   createdByName: string;
   createdAt: string;
 }
@@ -85,6 +86,7 @@ export interface PurchaseRequestDetailResponse {
   uom: string;
   requiredDate: string;
   status: string;
+  pendingSelectedRfqItemId: string | null;
   createdById: number;
   createdByName: string;
   createdAt: string;
@@ -154,6 +156,7 @@ export const purchaseRequestMapper = {
       uom: response.uom,
       requiredDate: response.requiredDate,
       status: response.status as PurchaseRequestStatus,
+      pendingSelectedRfqItemId: response.pendingSelectedRfqItemId,
       createdById: response.createdById,
       createdByName: response.createdByName.trim(),
       createdAt: response.createdAt,
@@ -186,6 +189,7 @@ export const purchaseRequestMapper = {
       uom: response.uom,
       requiredDate: response.requiredDate,
       status: response.status as PurchaseRequestStatus,
+      pendingSelectedRfqItemId: response.pendingSelectedRfqItemId,
       createdByName: response.createdByName.trim(),
       createdAt: response.createdAt,
     };

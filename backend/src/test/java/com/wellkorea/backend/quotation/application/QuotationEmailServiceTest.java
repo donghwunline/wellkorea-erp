@@ -105,11 +105,14 @@ class QuotationEmailServiceTest {
                 "Test notes",
                 1L,
                 "테스트 사용자",
-                null,
-                null,
-                null,
-                null,
-                null,
+                null,  // approvalStatus
+                null,  // submittedById
+                null,  // submittedByName
+                null,  // submittedAt
+                null,  // approvedAt
+                null,  // approvedById
+                null,  // approvedByName
+                null,  // rejectionReason
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 List.of(lineItem)

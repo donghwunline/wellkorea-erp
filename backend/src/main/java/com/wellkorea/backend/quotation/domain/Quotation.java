@@ -8,6 +8,10 @@ import com.wellkorea.backend.invoice.domain.InvoiceLineItemInput;
 import com.wellkorea.backend.invoice.domain.QuotationInvoiceGuard;
 import com.wellkorea.backend.invoice.domain.TaxInvoice;
 import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.shared.approval.domain.Approvable;
+import com.wellkorea.backend.shared.approval.domain.ApprovalChainTemplate;
+import com.wellkorea.backend.shared.approval.domain.vo.ApprovalState;
+import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import jakarta.persistence.*;
 
@@ -19,11 +23,11 @@ import java.util.List;
 
 /**
  * Quotation entity representing a sales quotation linked to a project.
- * Supports versioning, line items, and approval workflow.
+ * Supports versioning, line items, and approval workflow via Approvable pattern.
  */
 @Entity
 @Table(name = "quotations")
-public class Quotation {
+public class Quotation implements Approvable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,18 +60,10 @@ public class Quotation {
     @JoinColumn(name = "created_by_id", nullable = false)
     private User createdBy;
 
-    @Column(name = "submitted_at")
-    private LocalDateTime submittedAt;
+    // ========== Approvable Fields ==========
 
-    @Column(name = "approved_at")
-    private LocalDateTime approvedAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approved_by_id")
-    private User approvedBy;
-
-    @Column(name = "rejection_reason", columnDefinition = "TEXT")
-    private String rejectionReason;
+    @Embedded
+    private ApprovalState approvalState = new ApprovalState();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -152,7 +148,7 @@ public class Quotation {
      * Check if quotation is in a customer-accepted state.
      * Accepted states are: SENT, ACCEPTED
      * (i.e., quotation has been sent to customer and can be used for deliveries/invoices)
-     *
+     * <p>
      * Note: APPROVED status is internal approval only. Customer must accept (via ACCEPTED status)
      * or at minimum receive the quotation (SENT status) before deliveries/invoices can be created.
      *
@@ -171,7 +167,7 @@ public class Quotation {
      * as a parameter, allowing the domain entity to delegate validation to
      * infrastructure without having direct repository dependencies.
      * <p>
-     * Similar pattern: {@link com.wellkorea.backend.approval.domain.ApprovalChainTemplate#createLevelDecisions()}
+     * Similar pattern: {@link ApprovalChainTemplate#createLevelDecisions()}
      *
      * @param quotationDeliveryGuard Guard that validates delivery against quotation limits
      * @param deliveryDate           Date of the delivery
@@ -290,7 +286,44 @@ public class Quotation {
         return invoice;
     }
 
-    // Getters and Setters
+    // ========== Approvable Interface Implementation ==========
+
+    @Override
+    public EntityType getApprovalEntityType() {
+        return EntityType.QUOTATION;
+    }
+
+    @Override
+    public ApprovalState getApprovalState() {
+        return approvalState;
+    }
+
+    @Override
+    public String getApprovalDescription() {
+        return String.format("견적서: %s v%d", project.getJobCode(), version);
+    }
+
+    @Override
+    public void onApprovalGranted(Long approverUserId) {
+        if (!approvalState.isPending()) {
+            throw new IllegalStateException("Not pending approval");
+        }
+        this.status = QuotationStatus.APPROVED;
+        this.approvalState.markApproved(approverUserId);
+    }
+
+    @Override
+    public void onApprovalRejected(Long rejectorUserId, String reason) {
+        if (!approvalState.isPending()) {
+            throw new IllegalStateException("Not pending approval");
+        }
+        this.status = QuotationStatus.REJECTED;
+        this.approvalState.markRejected(rejectorUserId, reason);
+    }
+
+    // ========== Getters and Setters ==========
+
+    @Override
     public Long getId() {
         return id;
     }
@@ -363,36 +396,43 @@ public class Quotation {
         this.createdBy = createdBy;
     }
 
+    // ========== Convenience Getters (delegating to ApprovalState) ==========
+
+    /**
+     * Get the user ID who submitted this quotation for approval.
+     */
+    public Long getSubmittedByUserId() {
+        return approvalState.getSubmittedByUserId();
+    }
+
+    /**
+     * Get the timestamp when this quotation was submitted for approval.
+     */
     public LocalDateTime getSubmittedAt() {
-        return submittedAt;
+        return approvalState.getSubmittedAt();
     }
 
-    public void setSubmittedAt(LocalDateTime submittedAt) {
-        this.submittedAt = submittedAt;
-    }
-
+    /**
+     * Get the timestamp when this quotation was approved.
+     * Returns null if not in APPROVED status.
+     */
     public LocalDateTime getApprovedAt() {
-        return approvedAt;
+        return approvalState.isApproved() ? approvalState.getCompletedAt() : null;
     }
 
-    public void setApprovedAt(LocalDateTime approvedAt) {
-        this.approvedAt = approvedAt;
+    /**
+     * Get the user ID who approved this quotation.
+     * Returns null if not in APPROVED status.
+     */
+    public Long getApprovedByUserId() {
+        return approvalState.isApproved() ? approvalState.getCompletedByUserId() : null;
     }
 
-    public User getApprovedBy() {
-        return approvedBy;
-    }
-
-    public void setApprovedBy(User approvedBy) {
-        this.approvedBy = approvedBy;
-    }
-
+    /**
+     * Get the rejection reason.
+     */
     public String getRejectionReason() {
-        return rejectionReason;
-    }
-
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
+        return approvalState.getRejectionReason();
     }
 
     public LocalDateTime getCreatedAt() {

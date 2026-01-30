@@ -45,6 +45,7 @@
             <arg column="uom" javaType="String"/>
             <arg column="requiredDate" javaType="java.time.LocalDate"/>
             <arg column="status" javaType="String"/>
+            <arg column="pendingSelectedRfqItemId" javaType="String"/>
             <arg column="createdById" javaType="Long"/>
             <arg column="createdByName" javaType="String"/>
             <arg column="createdAt" javaType="java.time.LocalDateTime"/>
@@ -72,6 +73,7 @@
             <arg column="uom" javaType="String"/>
             <arg column="requiredDate" javaType="java.time.LocalDate"/>
             <arg column="status" javaType="String"/>
+            <arg column="pendingSelectedRfqItemId" javaType="String"/>
             <arg column="createdByName" javaType="String"/>
             <arg column="createdAt" javaType="java.time.LocalDateTime"/>
         </constructor>
@@ -96,6 +98,7 @@
             pr.uom,
             pr.required_date AS requiredDate,
             pr.status,
+            pr.pending_selected_rfq_item_id AS pendingSelectedRfqItemId,
             u.full_name AS createdByName,
             pr.created_at AS createdAt
         FROM purchase_requests pr
@@ -158,6 +161,7 @@
             pr.uom,
             pr.required_date AS requiredDate,
             pr.status,
+            pr.pending_selected_rfq_item_id AS pendingSelectedRfqItemId,
             pr.created_by_id AS createdById,
             u.full_name AS createdByName,
             pr.created_at AS createdAt,
@@ -190,6 +194,7 @@
         JOIN companies c ON ri.vendor_company_id = c.id
         LEFT JOIN purchase_orders po ON ri.purchase_request_id = po.purchase_request_id
             AND ri.item_id = po.rfq_item_id
+            AND po.status != 'CANCELED'
         WHERE ri.purchase_request_id = #{purchaseRequestId}
         ORDER BY ri.sent_at
     </select>

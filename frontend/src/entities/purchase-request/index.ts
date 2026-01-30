@@ -72,6 +72,7 @@ export {
   markRfqNoResponse,
   selectVendor,
   rejectRfq,
+  submitVendorSelectionForApproval,
 } from './api/rfq-operations';
 export type {
   RecordRfqReplyInput,

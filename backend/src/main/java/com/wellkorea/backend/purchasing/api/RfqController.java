@@ -5,9 +5,11 @@ import com.wellkorea.backend.purchasing.api.dto.command.RecordRfqReplyRequest;
 import com.wellkorea.backend.purchasing.api.dto.command.RfqItemActionRequest;
 import com.wellkorea.backend.purchasing.application.RfqCommandService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -101,6 +103,26 @@ public class RfqController {
 
         rfqCommandService.rejectRfq(id, request.itemId());
         PurchaseRequestCommandResult result = PurchaseRequestCommandResult.rfqRejected(id);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    /**
+     * Submit vendor selection for approval.
+     * <p>
+     * POST /api/purchase-requests/{id}/rfq/{itemId}/submit-for-approval
+     * <p>
+     * Access: ADMIN, FINANCE, PRODUCTION
+     */
+    @PostMapping("/rfq/{itemId}/submit-for-approval")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
+    public ResponseEntity<ApiResponse<PurchaseRequestCommandResult>> submitVendorSelectionForApproval(
+            @PathVariable Long id,
+            @PathVariable String itemId,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+
+        Long resultId = rfqCommandService.submitVendorSelectionForApproval(id, itemId, user.getUserId());
+        PurchaseRequestCommandResult result = PurchaseRequestCommandResult.vendorSelectionSubmitted(resultId);
 
         return ResponseEntity.ok(ApiResponse.success(result));
     }
