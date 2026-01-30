@@ -256,6 +256,7 @@ GET /api/quotations/{id} → queryService.getQuotationDetail(id) → QuotationDe
 - **JWT Authentication**: Custom `JwtAuthenticationFilter` with token refresh support (temporary, will migrate to Keycloak OAuth2)
 - **Audit Logging**: `AuditLogger` with `AuditContextHolder` for request context tracking
 - **Domain Events**: Use `DomainEventPublisher` for cross-domain communication (e.g., approval workflow)
+- **Approvable Pattern** (extensible approval workflow): Entities implement `Approvable` interface and embed `ApprovalState`. Register resolver in `ApprovableRegistry` via `@PostConstruct` config class. `GenericApprovalCompletedHandler` invokes entity callbacks on completion. See `docs/architecture/domain/approval-domain-model.md` for full documentation. Reference implementations: `PurchaseRequest` (vendor selection), `Quotation`.
 
 ### Frontend Architecture (FSD-Lite: Feature-Sliced Design)
 
