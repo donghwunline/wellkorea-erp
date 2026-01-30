@@ -85,6 +85,9 @@ public class ApprovalState {
      * @throws IllegalStateException if already pending approval
      */
     public void submitForApproval(Long submitterUserId, String context) {
+        java.util.Objects.requireNonNull(submitterUserId, "Submitter user ID cannot be null");
+        java.util.Objects.requireNonNull(context, "Context cannot be null");
+
         if (status == ApprovalStateStatus.PENDING) {
             throw new IllegalStateException("Already pending approval");
         }
