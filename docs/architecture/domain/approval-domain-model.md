@@ -115,6 +115,7 @@ classDiagram
         <<enumeration>>
         QUOTATION
         PURCHASE_ORDER
+        VENDOR_SELECTION
     }
 
     class ApprovalStatus {
@@ -475,16 +476,93 @@ Entities requiring approval implement the `Approvable` interface:
 ```java
 public interface Approvable {
     Long getId();
-    void onApprovalCompleted(ApprovalStatus status);
+    EntityType getApprovalEntityType();
+    ApprovalState getApprovalState();
+    String getApprovalDescription();
+    void onApprovalGranted(Long approverUserId);
+    void onApprovalRejected(Long rejectorUserId, String reason);
 }
 ```
 
-The `ApprovalState` embeddable can be used by entities to track their approval state:
+**Implementation requirements:**
+1. Embed an `ApprovalState` field to track approval status
+2. Register a resolver in `ApprovableRegistry` via `@PostConstruct`
+3. Implement callback methods to handle approval/rejection state transitions
+
+**Example implementation (PurchaseRequest for vendor selection):**
+```java
+@Entity
+public class PurchaseRequest implements Approvable {
+    @Embedded
+    private ApprovalState approvalState = new ApprovalState();
+
+    @Override
+    public EntityType getApprovalEntityType() {
+        return EntityType.VENDOR_SELECTION;
+    }
+
+    @Override
+    public ApprovalState getApprovalState() {
+        return approvalState;
+    }
+
+    @Override
+    public String getApprovalDescription() {
+        return String.format("업체선정: %s", requestNumber);
+    }
+
+    @Override
+    public void onApprovalGranted(Long approverUserId) {
+        this.status = PurchaseRequestStatus.VENDOR_SELECTED;
+        this.approvalState.markApproved(approverUserId);
+        // Select the pending RFQ item
+        getRfqItemById(pendingSelectedRfqItemId).select();
+        this.pendingSelectedRfqItemId = null;
+    }
+
+    @Override
+    public void onApprovalRejected(Long rejectorUserId, String reason) {
+        this.status = PurchaseRequestStatus.RFQ_SENT;
+        this.approvalState.markRejected(rejectorUserId, reason);
+        this.pendingSelectedRfqItemId = null;
+    }
+}
+```
+
+**Registry configuration:**
+```java
+@Configuration
+public class PurchaseRequestApprovalConfig {
+    private final ApprovableRegistry registry;
+    private final PurchaseRequestRepository repository;
+
+    @PostConstruct
+    public void registerResolver() {
+        registry.register(EntityType.VENDOR_SELECTION,
+            entityId -> repository.findById(entityId).map(pr -> (Approvable) pr));
+    }
+}
+```
+
+The `ApprovalState` embeddable tracks approval state within the entity:
 
 ```java
 @Embedded
 private ApprovalState approvalState = new ApprovalState(); // Status: NONE, PENDING, APPROVED, REJECTED
 ```
+
+### Adding a New Approvable Entity
+
+To add a new entity to the approval system:
+
+1. **Implement `Approvable` interface** on the entity
+2. **Embed `ApprovalState`** field for tracking approval status
+3. **Create a configuration class** that registers the resolver with `ApprovableRegistry`
+4. **Add entity type** to `EntityType` enum
+5. **Create approval chain template** (via migration or admin UI)
+6. **Implement submission logic** that sets `ApprovalState` to PENDING
+
+The `GenericApprovalCompletedHandler` will automatically invoke callbacks when approval completes.
 
 ## Package Structure
 
