@@ -32,9 +32,6 @@ SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
 
 INSERT INTO user_roles (user_id, role_name)
 VALUES (1, 'ADMIN'),
-       (1, 'FINANCE'),
-       (1, 'PRODUCTION'),
-       (1, 'SALES'),
        (2, 'FINANCE'),
        (3, 'PRODUCTION'),
        (4, 'SALES'),
