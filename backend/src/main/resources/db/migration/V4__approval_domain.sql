@@ -51,8 +51,8 @@ CREATE TABLE approval_requests
     CONSTRAINT chk_approval_status CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
     CONSTRAINT chk_entity_type CHECK (entity_type IN ('QUOTATION', 'PURCHASE_ORDER')),
     CONSTRAINT chk_current_level_valid CHECK (current_level >= 1),
-    CONSTRAINT chk_total_levels_valid CHECK (total_levels >= 1),
-    CONSTRAINT uq_approval_entity UNIQUE (entity_type, entity_id)
+    CONSTRAINT chk_total_levels_valid CHECK (total_levels >= 1)
+    -- Note: Uniqueness enforced via partial index uq_approval_entity_pending (only for PENDING status)
 );
 
 CREATE TABLE approval_level_decisions
@@ -106,6 +106,12 @@ CREATE INDEX idx_approval_requests_status ON approval_requests (status);
 CREATE INDEX idx_approval_requests_current_level ON approval_requests (current_level);
 CREATE INDEX idx_approval_requests_submitted_by ON approval_requests (submitted_by_id);
 CREATE INDEX idx_approval_requests_submitted_at ON approval_requests (submitted_at);
+
+-- Partial unique index: only one PENDING approval per entity allowed
+-- Completed (APPROVED/REJECTED) requests preserved for audit trail
+CREATE UNIQUE INDEX uq_approval_entity_pending
+ON approval_requests (entity_type, entity_id)
+WHERE status = 'PENDING';
 
 CREATE INDEX idx_approval_level_decisions_expected_approver ON approval_level_decisions (expected_approver_id);
 CREATE INDEX idx_approval_level_decisions_decided_by ON approval_level_decisions (decided_by_id) WHERE decided_by_id IS NOT NULL;
