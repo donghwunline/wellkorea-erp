@@ -48,6 +48,12 @@ export interface PurchaseRequest {
   readonly uom: string; // Unit of measure
   readonly requiredDate: string; // ISO date: "2025-02-15"
   readonly status: PurchaseRequestStatus;
+  /**
+   * UUID of the RFQ item awaiting manager approval for vendor selection.
+   * Only populated when status is PENDING_VENDOR_APPROVAL.
+   * References an RfqItem by its itemId field.
+   * Null when no approval is pending or after approval completes.
+   */
   readonly pendingSelectedRfqItemId: string | null;
   readonly createdById: number;
   readonly createdByName: string;
@@ -79,6 +85,9 @@ export interface PurchaseRequestListItem {
   readonly uom: string;
   readonly requiredDate: string;
   readonly status: PurchaseRequestStatus;
+  /**
+   * UUID of RFQ item pending vendor approval (null if not applicable).
+   */
   readonly pendingSelectedRfqItemId: string | null;
   readonly createdByName: string;
   readonly createdAt: string;
