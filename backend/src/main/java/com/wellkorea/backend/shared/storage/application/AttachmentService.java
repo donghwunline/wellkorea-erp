@@ -2,6 +2,7 @@ package com.wellkorea.backend.shared.storage.application;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.shared.constant.AttachmentLimits;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.storage.api.dto.AttachmentView;
@@ -31,7 +32,6 @@ public class AttachmentService {
 
     private static final Logger log = LoggerFactory.getLogger(AttachmentService.class);
 
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private static final int UPLOAD_URL_EXPIRY_MINUTES = 15;
     private static final int DOWNLOAD_URL_EXPIRY_MINUTES = 60;
 
@@ -68,8 +68,8 @@ public class AttachmentService {
             boolean imagesOnly) {
 
         // Validate file size
-        if (fileSize <= 0 || fileSize > MAX_FILE_SIZE) {
-            throw new BusinessException("File size must be between 1 byte and 10MB");
+        if (fileSize <= 0 || fileSize > AttachmentLimits.MAX_FILE_SIZE) {
+            throw new BusinessException("File size must be between 1 byte and 50MB");
         }
 
         // Validate file type
