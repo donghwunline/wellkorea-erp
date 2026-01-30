@@ -1,12 +1,14 @@
 package com.wellkorea.backend.purchasing.api.dto.command;
 
 import com.wellkorea.backend.purchasing.application.dto.CreateServicePurchaseRequestCommand;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Request DTO for creating a service purchase request (outsourcing).
@@ -27,7 +29,10 @@ public record CreateServicePurchaseRequestRequest(
         String uom,
 
         @NotNull(message = "Required date is required")
-        LocalDate requiredDate
+        LocalDate requiredDate,
+
+        @Valid
+        List<AttachmentInfo> attachments
 ) {
     /**
      * Convert to internal command.
@@ -39,7 +44,8 @@ public record CreateServicePurchaseRequestRequest(
                 description,
                 quantity,
                 uom,
-                requiredDate
+                requiredDate,
+                attachments != null ? attachments : List.of()
         );
     }
 }

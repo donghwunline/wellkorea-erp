@@ -76,7 +76,8 @@
     "PAID": "Paid",
     "OVERDUE": "Overdue",
     "CANCELLED": "Cancelled",
-    "VOID": "Void"
+    "VOID": "Void",
+    "ISSUED": "Issued"
   },
   "paymentMethod": {
     "BANK_TRANSFER": "Bank Transfer",

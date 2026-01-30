@@ -72,12 +72,9 @@ CREATE UNIQUE INDEX idx_companies_registration_number_unique
 
 CREATE TABLE company_roles
 (
-    company_id           BIGINT      NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
-    role_type            VARCHAR(20) NOT NULL,
-    credit_limit         DECIMAL(15, 2),
-    default_payment_days INTEGER,
-    notes                TEXT,
-    created_at           TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    company_id BIGINT      NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
+    role_type  VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (company_id, role_type),
     CONSTRAINT chk_role_type CHECK (role_type IN ('CUSTOMER', 'VENDOR', 'OUTSOURCE'))
 );
@@ -115,25 +112,26 @@ CREATE TABLE service_categories
 
 CREATE TABLE vendor_service_offerings
 (
-    id                   BIGSERIAL PRIMARY KEY,
-    vendor_company_id    BIGINT         NOT NULL REFERENCES companies (id) ON DELETE RESTRICT,
-    service_category_id  BIGINT         NOT NULL REFERENCES service_categories (id) ON DELETE RESTRICT,
-    vendor_service_code  VARCHAR(50),
-    vendor_service_name  VARCHAR(255),
-    unit_price           DECIMAL(15, 2),
-    currency             VARCHAR(3)              DEFAULT 'KRW',
-    lead_time_days       INTEGER,
-    min_order_quantity   INTEGER,
-    effective_from       DATE,
-    effective_to         DATE,
-    is_preferred         BOOLEAN        NOT NULL DEFAULT false,
-    notes                TEXT,
-    created_at           TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at           TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id                  BIGSERIAL PRIMARY KEY,
+    vendor_company_id   BIGINT    NOT NULL REFERENCES companies (id) ON DELETE RESTRICT,
+    service_category_id BIGINT    NOT NULL REFERENCES service_categories (id) ON DELETE RESTRICT,
+    vendor_service_code VARCHAR(50),
+    vendor_service_name VARCHAR(255),
+    unit_price          DECIMAL(15, 2),
+    currency            VARCHAR(3)         DEFAULT 'KRW',
+    lead_time_days      INTEGER,
+    min_order_quantity  INTEGER,
+    effective_from      DATE,
+    effective_to        DATE,
+    is_preferred        BOOLEAN   NOT NULL DEFAULT false,
+    notes               TEXT,
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_price_positive CHECK (unit_price IS NULL OR unit_price >= 0),
     CONSTRAINT chk_lead_time_positive CHECK (lead_time_days IS NULL OR lead_time_days >= 0),
     CONSTRAINT chk_min_order_positive CHECK (min_order_quantity IS NULL OR min_order_quantity >= 1),
-    CONSTRAINT chk_effective_dates CHECK (effective_to IS NULL OR effective_from IS NULL OR effective_to >= effective_from)
+    CONSTRAINT chk_effective_dates CHECK (effective_to IS NULL OR effective_from IS NULL OR
+                                          effective_to >= effective_from)
 );
 
 CREATE UNIQUE INDEX idx_vendor_offering_unique

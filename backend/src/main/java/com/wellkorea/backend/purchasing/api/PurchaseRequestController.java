@@ -1,11 +1,15 @@
 package com.wellkorea.backend.purchasing.api;
 
 import com.wellkorea.backend.purchasing.api.dto.command.*;
+import com.wellkorea.backend.purchasing.api.dto.query.AttachmentReferenceView;
+import com.wellkorea.backend.purchasing.api.dto.query.DownloadUrlResponse;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestDetailView;
 import com.wellkorea.backend.purchasing.api.dto.query.PurchaseRequestSummaryView;
+import com.wellkorea.backend.purchasing.application.LinkAttachmentCommand;
 import com.wellkorea.backend.purchasing.application.PurchaseRequestCommandService;
 import com.wellkorea.backend.purchasing.application.PurchaseRequestQueryService;
 import com.wellkorea.backend.purchasing.application.RfqEmailService;
+import com.wellkorea.backend.purchasing.application.ServicePRAttachmentService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import jakarta.validation.Valid;
@@ -18,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,13 +40,16 @@ public class PurchaseRequestController {
     private final PurchaseRequestCommandService commandService;
     private final PurchaseRequestQueryService queryService;
     private final RfqEmailService rfqEmailService;
+    private final ServicePRAttachmentService attachmentService;
 
     public PurchaseRequestController(PurchaseRequestCommandService commandService,
                                      PurchaseRequestQueryService queryService,
-                                     RfqEmailService rfqEmailService) {
+                                     RfqEmailService rfqEmailService,
+                                     ServicePRAttachmentService attachmentService) {
         this.commandService = commandService;
         this.queryService = queryService;
         this.rfqEmailService = rfqEmailService;
+        this.attachmentService = attachmentService;
     }
 
     // ========== QUERY ENDPOINTS ==========
@@ -158,7 +166,7 @@ public class PurchaseRequestController {
                                                                              @Valid @RequestBody SendRfqRequest request) {
 
         // Create RFQ items and transition status
-        int vendorCount = commandService.sendRfq(id, request.vendorIds());
+        List<String> itemIds = commandService.sendRfq(id, request.vendorIds());
 
         // Build vendor email map for email service
         Map<Long, RfqEmailService.VendorEmailInfo> vendorEmailMap = new HashMap<>();
@@ -180,7 +188,7 @@ public class PurchaseRequestController {
         // Return success even if some emails failed (RFQ items are created)
         PurchaseRequestCommandResult result = PurchaseRequestCommandResult.rfqSent(
                 id,
-                vendorCount,
+                itemIds.size(),
                 emailResult.successCount(),
                 emailResult.failureCount()
         );
@@ -200,5 +208,78 @@ public class PurchaseRequestController {
     public ResponseEntity<Void> cancelPurchaseRequest(@PathVariable Long id) {
         commandService.cancelPurchaseRequest(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ========== ATTACHMENT QUERY ENDPOINTS ==========
+
+    /**
+     * List linked attachments for a purchase request.
+     * Returns empty list for MaterialPurchaseRequest (no attachment support).
+     * <p>
+     * GET /api/purchase-requests/{id}/attachments
+     * <p>
+     * Access: All authenticated users
+     */
+    @GetMapping("/{id}/attachments")
+    public ResponseEntity<ApiResponse<List<AttachmentReferenceView>>> getLinkedAttachments(@PathVariable Long id) {
+        List<AttachmentReferenceView> attachments = attachmentService.getLinkedAttachments(id);
+        return ResponseEntity.ok(ApiResponse.success(attachments));
+    }
+
+    /**
+     * Generate presigned download URL for an attachment.
+     * <p>
+     * GET /api/purchase-requests/{id}/attachments/{referenceId}/url
+     * <p>
+     * Access: All authenticated users
+     */
+    @GetMapping("/{id}/attachments/{referenceId}/url")
+    public ResponseEntity<ApiResponse<DownloadUrlResponse>> getDownloadUrl(@PathVariable Long id,
+                                                                           @PathVariable String referenceId) {
+        String url = attachmentService.generateDownloadUrl(id, referenceId);
+        return ResponseEntity.ok(ApiResponse.success(new DownloadUrlResponse(url)));
+    }
+
+    // ========== ATTACHMENT COMMAND ENDPOINTS ==========
+
+    /**
+     * Link an existing file (from TaskFlow blueprint) to a ServicePurchaseRequest.
+     * Only allowed for SERVICE type purchase requests.
+     * <p>
+     * POST /api/purchase-requests/{id}/attachments/link
+     * <p>
+     * Access: ADMIN, FINANCE, PRODUCTION
+     */
+    @PostMapping("/{id}/attachments/link")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
+    public ResponseEntity<ApiResponse<AttachmentCommandResult>> linkAttachment(
+            @PathVariable Long id,
+            @Valid @RequestBody LinkAttachmentRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+
+        LinkAttachmentCommand command = new LinkAttachmentCommand(
+                request.fileName(),
+                request.fileType(),
+                request.fileSize(),
+                request.storagePath()
+        );
+        String referenceId = attachmentService.linkAttachment(id, command, user.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(AttachmentCommandResult.linked(referenceId)));
+    }
+
+    /**
+     * Unlink an attachment from a ServicePurchaseRequest.
+     * Does not delete the actual file (it belongs to TaskFlow).
+     * <p>
+     * DELETE /api/purchase-requests/{id}/attachments/{referenceId}
+     * <p>
+     * Access: ADMIN, FINANCE, PRODUCTION
+     */
+    @DeleteMapping("/{id}/attachments/{referenceId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'PRODUCTION')")
+    public ResponseEntity<ApiResponse<AttachmentCommandResult>> unlinkAttachment(@PathVariable Long id,
+                                                                                 @PathVariable String referenceId) {
+        attachmentService.unlinkAttachment(id, referenceId);
+        return ResponseEntity.ok(ApiResponse.success(AttachmentCommandResult.unlinked(referenceId)));
     }
 }

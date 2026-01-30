@@ -75,7 +75,7 @@ public class RfqItem {
      * Record vendor's response to the RFQ.
      */
     public void recordReply(BigDecimal quotedPrice, Integer quotedLeadTime, String notes) {
-        if (status != RfqItemStatus.SENT) {
+        if (!status.canRecordReply()) {
             throw new IllegalStateException("Cannot record reply for RFQ item in " + status + " status");
         }
         this.quotedPrice = quotedPrice;
@@ -89,7 +89,7 @@ public class RfqItem {
      * Mark as no response from vendor.
      */
     public void markNoResponse() {
-        if (status != RfqItemStatus.SENT) {
+        if (!status.canMarkNoResponse()) {
             throw new IllegalStateException("Cannot mark no response for RFQ item in " + status + " status");
         }
         this.status = RfqItemStatus.NO_RESPONSE;
@@ -99,7 +99,7 @@ public class RfqItem {
      * Select this vendor's quote.
      */
     public void select() {
-        if (status != RfqItemStatus.REPLIED) {
+        if (!status.canSelect()) {
             throw new IllegalStateException("Cannot select RFQ item in " + status + " status");
         }
         this.status = RfqItemStatus.SELECTED;
@@ -109,7 +109,7 @@ public class RfqItem {
      * Reject this vendor's quote.
      */
     public void reject() {
-        if (status != RfqItemStatus.REPLIED) {
+        if (!status.canReject()) {
             throw new IllegalStateException("Cannot reject RFQ item in " + status + " status");
         }
         this.status = RfqItemStatus.REJECTED;
@@ -120,7 +120,7 @@ public class RfqItem {
      * Called when the associated purchase order is canceled.
      */
     public void deselect() {
-        if (status != RfqItemStatus.SELECTED) {
+        if (!status.canDeselect()) {
             throw new IllegalStateException("Cannot deselect RFQ item in " + status + " status");
         }
         this.status = RfqItemStatus.REPLIED;
@@ -132,7 +132,7 @@ public class RfqItem {
      * user needs to re-evaluate previously rejected vendors.
      */
     public void unreject() {
-        if (status != RfqItemStatus.REJECTED) {
+        if (!status.canUnreject()) {
             throw new IllegalStateException("Cannot unreject RFQ item in " + status + " status");
         }
         this.status = RfqItemStatus.REPLIED;

@@ -1,10 +1,6 @@
 package com.wellkorea.backend.purchasing.domain;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.project.domain.Project;
 import com.wellkorea.backend.purchasing.domain.vo.PurchaseOrderStatus;
-import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -41,13 +37,11 @@ public class PurchaseOrder {
     @Column(name = "rfq_item_id", nullable = false, length = 36)
     private String rfqItemId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    private Project project;
+    @Column(name = "project_id")
+    private Long projectId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_company_id", nullable = false)
-    private Company vendor;
+    @Column(name = "vendor_company_id", nullable = false)
+    private Long vendorCompanyId;
 
     @Column(name = "po_number", nullable = false, unique = true, length = 50)
     private String poNumber;
@@ -71,9 +65,8 @@ public class PurchaseOrder {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id", nullable = false)
-    private User createdBy;
+    @Column(name = "created_by_id", nullable = false)
+    private Long createdById;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -88,38 +81,38 @@ public class PurchaseOrder {
      *
      * @param purchaseRequest      the parent purchase request (required)
      * @param rfqItemId            the RFQ item ID within the purchase request (required)
-     * @param vendor               the vendor company (required)
+     * @param vendorCompanyId      the vendor company ID (required)
      * @param poNumber             the unique PO number (required)
      * @param orderDate            the order date (required)
      * @param expectedDeliveryDate the expected delivery date (required)
      * @param totalAmount          the total amount (required)
-     * @param createdBy            the user creating this order (required)
+     * @param createdById          the user ID creating this order (required)
      * @param notes                optional notes (nullable)
      */
     public PurchaseOrder(
             PurchaseRequest purchaseRequest,
             String rfqItemId,
-            Company vendor,
+            Long vendorCompanyId,
             String poNumber,
             LocalDate orderDate,
             LocalDate expectedDeliveryDate,
             BigDecimal totalAmount,
-            User createdBy,
+            Long createdById,
             String notes
     ) {
         Objects.requireNonNull(purchaseRequest, "purchaseRequest must not be null");
         Objects.requireNonNull(rfqItemId, "rfqItemId must not be null");
-        Objects.requireNonNull(vendor, "vendor must not be null");
+        Objects.requireNonNull(vendorCompanyId, "vendorCompanyId must not be null");
         Objects.requireNonNull(poNumber, "poNumber must not be null");
         Objects.requireNonNull(orderDate, "orderDate must not be null");
         Objects.requireNonNull(expectedDeliveryDate, "expectedDeliveryDate must not be null");
         Objects.requireNonNull(totalAmount, "totalAmount must not be null");
-        Objects.requireNonNull(createdBy, "createdBy must not be null");
+        Objects.requireNonNull(createdById, "createdById must not be null");
 
         this.purchaseRequest = purchaseRequest;
         this.rfqItemId = rfqItemId;
-        this.project = purchaseRequest.getProject(); // Derived from purchase request
-        this.vendor = vendor;
+        this.projectId = purchaseRequest.getProjectId(); // Derived from purchase request
+        this.vendorCompanyId = vendorCompanyId;
         this.poNumber = poNumber;
         this.orderDate = orderDate;
         this.expectedDeliveryDate = expectedDeliveryDate;
@@ -127,7 +120,7 @@ public class PurchaseOrder {
         this.currency = "KRW";
         this.status = PurchaseOrderStatus.DRAFT;
         this.notes = notes;
-        this.createdBy = createdBy;
+        this.createdById = createdById;
     }
 
     /**
@@ -172,19 +165,6 @@ public class PurchaseOrder {
     }
 
     // Domain methods
-
-    /**
-     * Get the RfqItem from the parent purchase request.
-     * Convenience method to access the embedded RfqItem.
-     *
-     * @return the RfqItem referenced by rfqItemId
-     */
-    public RfqItem getRfqItem() {
-        if (purchaseRequest == null) {
-            return null;
-        }
-        return purchaseRequest.findRfqItemById(rfqItemId).orElse(null);
-    }
 
     /**
      * Check if the PO can be sent to vendor.
@@ -275,12 +255,12 @@ public class PurchaseOrder {
         return rfqItemId;
     }
 
-    public Project getProject() {
-        return project;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public Company getVendor() {
-        return vendor;
+    public Long getVendorCompanyId() {
+        return vendorCompanyId;
     }
 
     public String getPoNumber() {
@@ -311,8 +291,8 @@ public class PurchaseOrder {
         return notes;
     }
 
-    public User getCreatedBy() {
-        return createdBy;
+    public Long getCreatedById() {
+        return createdById;
     }
 
     public LocalDateTime getCreatedAt() {

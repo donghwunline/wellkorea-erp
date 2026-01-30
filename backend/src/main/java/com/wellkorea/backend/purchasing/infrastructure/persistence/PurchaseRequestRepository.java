@@ -39,13 +39,11 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
     Integer findMaxSequenceForYear(@Param("prefix") String prefix);
 
     /**
-     * Find purchase request by ID with eager loading of common relations.
-     * Note: Subclass-specific relations (serviceCategory, material) are loaded lazily.
+     * Find purchase request by ID.
+     * Note: project and createdBy are now ID references (not entity relations).
+     * Subclass-specific relations (serviceCategory, material) are loaded lazily.
      */
-    @Query("SELECT pr FROM PurchaseRequest pr " +
-            "LEFT JOIN FETCH pr.project " +
-            "LEFT JOIN FETCH pr.createdBy " +
-            "WHERE pr.id = :id")
+    @Query("SELECT pr FROM PurchaseRequest pr WHERE pr.id = :id")
     Optional<PurchaseRequest> findByIdWithDetails(@Param("id") Long id);
 
     boolean existsByRequestNumber(String requestNumber);

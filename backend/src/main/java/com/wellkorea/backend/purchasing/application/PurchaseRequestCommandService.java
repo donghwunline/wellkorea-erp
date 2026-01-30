@@ -1,25 +1,21 @@
 package com.wellkorea.backend.purchasing.application;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.catalog.domain.Material;
 import com.wellkorea.backend.catalog.domain.ServiceCategory;
 import com.wellkorea.backend.catalog.infrastructure.persistence.MaterialRepository;
 import com.wellkorea.backend.catalog.infrastructure.persistence.ServiceCategoryRepository;
-import com.wellkorea.backend.company.domain.Company;
-import com.wellkorea.backend.company.domain.vo.RoleType;
-import com.wellkorea.backend.company.infrastructure.persistence.CompanyRepository;
-import com.wellkorea.backend.project.domain.Project;
-import com.wellkorea.backend.project.infrastructure.repository.ProjectRepository;
+import com.wellkorea.backend.purchasing.api.dto.command.AttachmentInfo;
 import com.wellkorea.backend.purchasing.application.dto.CreateMaterialPurchaseRequestCommand;
 import com.wellkorea.backend.purchasing.application.dto.CreateServicePurchaseRequestCommand;
 import com.wellkorea.backend.purchasing.application.dto.UpdatePurchaseRequestCommand;
 import com.wellkorea.backend.purchasing.domain.MaterialPurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.PurchaseRequest;
 import com.wellkorea.backend.purchasing.domain.ServicePurchaseRequest;
+import com.wellkorea.backend.purchasing.domain.service.RfqItemFactory;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,22 +33,19 @@ public class PurchaseRequestCommandService {
     private final PurchaseRequestRepository purchaseRequestRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final MaterialRepository materialRepository;
-    private final ProjectRepository projectRepository;
-    private final CompanyRepository companyRepository;
-    private final UserRepository userRepository;
+    private final RfqItemFactory rfqItemFactory;
+    private final MinioFileStorage minioFileStorage;
 
     public PurchaseRequestCommandService(PurchaseRequestRepository purchaseRequestRepository,
                                          ServiceCategoryRepository serviceCategoryRepository,
                                          MaterialRepository materialRepository,
-                                         ProjectRepository projectRepository,
-                                         CompanyRepository companyRepository,
-                                         UserRepository userRepository) {
+                                         RfqItemFactory rfqItemFactory,
+                                         MinioFileStorage minioFileStorage) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.materialRepository = materialRepository;
-        this.projectRepository = projectRepository;
-        this.companyRepository = companyRepository;
-        this.userRepository = userRepository;
+        this.rfqItemFactory = rfqItemFactory;
+        this.minioFileStorage = minioFileStorage;
     }
 
     /**
@@ -69,31 +62,33 @@ public class PurchaseRequestCommandService {
             throw new BusinessException("Service category is not active");
         }
 
-        // Validate project if provided
-        Project project = null;
-        if (command.projectId() != null) {
-            project = projectRepository.findById(command.projectId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + command.projectId()));
-        }
-
-        // Get user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-
         // Generate request number
         String requestNumber = generateRequestNumber();
 
-        // Create service purchase request using constructor
+        // Create service purchase request using constructor with ID references
         ServicePurchaseRequest purchaseRequest = new ServicePurchaseRequest(
-                project,
+                command.projectId(),
                 serviceCategory,
                 requestNumber,
                 command.description(),
                 command.quantity(),
                 command.uom(),
                 command.requiredDate(),
-                user
+                userId
         );
+
+        // Link attachments in same transaction
+        if (command.attachments() != null && !command.attachments().isEmpty()) {
+            for (AttachmentInfo att : command.attachments()) {
+                if (!minioFileStorage.fileExists(att.storagePath())) {
+                    throw new BusinessException("File not found in storage: " + att.fileName());
+                }
+                purchaseRequest.linkAttachment(
+                        att.fileName(), att.fileType(), att.fileSize(),
+                        att.storagePath(), userId
+                );
+            }
+        }
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
         return purchaseRequest.getId();
@@ -113,33 +108,22 @@ public class PurchaseRequestCommandService {
             throw new BusinessException("Material is not active");
         }
 
-        // Validate project if provided
-        Project project = null;
-        if (command.projectId() != null) {
-            project = projectRepository.findById(command.projectId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Project not found with ID: " + command.projectId()));
-        }
-
-        // Get user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-
         // Generate request number
         String requestNumber = generateRequestNumber();
 
         // Determine UOM: use provided value or fall back to material's default unit
         String uom = command.uom() != null ? command.uom() : material.getUnit();
 
-        // Create material purchase request using constructor
+        // Create material purchase request using constructor with ID references
         MaterialPurchaseRequest purchaseRequest = new MaterialPurchaseRequest(
-                project,
+                command.projectId(),
                 material,
                 requestNumber,
                 command.description(),
                 command.quantity(),
                 uom,
                 command.requiredDate(),
-                user
+                userId
         );
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
@@ -169,36 +153,19 @@ public class PurchaseRequestCommandService {
 
     /**
      * Send RFQ to vendors.
-     * Creates RFQ items for each vendor using the aggregate method.
+     * Delegates entirely to aggregate - domain service validates vendors and creates RfqItems.
      *
-     * @return the number of RFQs sent
+     * @return list of created RFQ item IDs for correlation with email sending
      */
-    public int sendRfq(Long purchaseRequestId, List<Long> vendorIds) {
+    public List<String> sendRfq(Long purchaseRequestId, List<Long> vendorIds) {
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(purchaseRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + purchaseRequestId));
 
-        if (!purchaseRequest.canSendRfq()) {
-            throw new BusinessException("Cannot send RFQ for purchase request in " + purchaseRequest.getStatus() + " status");
-        }
-
-        // Validate vendors and create RFQ items using aggregate method
-        for (Long vendorId : vendorIds) {
-            Company vendor = companyRepository.findById(vendorId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Vendor not found with ID: " + vendorId));
-
-            if (!vendor.hasRole(RoleType.VENDOR) && !vendor.hasRole(RoleType.OUTSOURCE)) {
-                throw new BusinessException("Company with ID " + vendorId + " is not a vendor");
-            }
-
-            // Use aggregate method to add RFQ item (no vendorOfferingId for now)
-            purchaseRequest.addRfqItem(vendorId, null);
-        }
-
-        // Transition status to RFQ_SENT
-        purchaseRequest.sendRfq();
+        // Delegate entirely to aggregate - pass domain service for item creation
+        List<String> itemIds = purchaseRequest.sendRfq(vendorIds, rfqItemFactory);
         purchaseRequestRepository.save(purchaseRequest);
 
-        return vendorIds.size();
+        return itemIds;
     }
 
     /**

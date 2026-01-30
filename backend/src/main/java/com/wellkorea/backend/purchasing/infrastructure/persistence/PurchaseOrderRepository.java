@@ -19,10 +19,7 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     Integer findMaxSequenceForYear(@Param("prefix") String prefix);
 
     @Query("SELECT po FROM PurchaseOrder po " +
-            "LEFT JOIN FETCH po.vendor " +
             "LEFT JOIN FETCH po.purchaseRequest " +
-            "LEFT JOIN FETCH po.project " +
-            "LEFT JOIN FETCH po.createdBy " +
             "WHERE po.id = :id")
     Optional<PurchaseOrder> findByIdWithDetails(@Param("id") Long id);
 

@@ -1,7 +1,8 @@
 package com.wellkorea.backend.purchasing.domain;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.project.domain.Project;
+import com.wellkorea.backend.purchasing.domain.service.PurchaseOrderCreationGuard;
+import com.wellkorea.backend.purchasing.domain.service.RfqItemFactory;
+import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
@@ -35,9 +36,8 @@ public abstract class PurchaseRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    private Project project;
+    @Column(name = "project_id")
+    private Long projectId;
 
     @Column(name = "request_number", nullable = false, unique = true, length = 50)
     private String requestNumber;
@@ -58,9 +58,8 @@ public abstract class PurchaseRequest {
     @Column(name = "status", nullable = false, length = 20)
     private PurchaseRequestStatus status = PurchaseRequestStatus.DRAFT;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by_id", nullable = false)
-    private User createdBy;
+    @Column(name = "created_by_id", nullable = false)
+    private Long createdById;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -81,36 +80,36 @@ public abstract class PurchaseRequest {
      * Protected constructor for creating a new PurchaseRequest.
      * Used by concrete subclasses to initialize common fields.
      *
-     * @param project       the associated project (nullable)
+     * @param projectId     the associated project ID (nullable)
      * @param requestNumber the unique request number (required)
      * @param description   the request description (required)
      * @param quantity      the requested quantity (required)
      * @param uom           the unit of measure (nullable)
      * @param requiredDate  the required delivery date (required)
-     * @param createdBy     the user creating this request (required)
+     * @param createdById   the user ID creating this request (required)
      */
     protected PurchaseRequest(
-            Project project,
+            Long projectId,
             String requestNumber,
             String description,
             BigDecimal quantity,
             String uom,
             LocalDate requiredDate,
-            User createdBy
+            Long createdById
     ) {
         Objects.requireNonNull(requestNumber, "requestNumber must not be null");
         Objects.requireNonNull(description, "description must not be null");
         Objects.requireNonNull(quantity, "quantity must not be null");
         Objects.requireNonNull(requiredDate, "requiredDate must not be null");
-        Objects.requireNonNull(createdBy, "createdBy must not be null");
+        Objects.requireNonNull(createdById, "createdById must not be null");
 
-        this.project = project;
+        this.projectId = projectId;
         this.requestNumber = requestNumber;
         this.description = description;
         this.quantity = quantity;
         this.uom = uom;
         this.requiredDate = requiredDate;
-        this.createdBy = createdBy;
+        this.createdById = createdById;
         this.status = PurchaseRequestStatus.DRAFT;
     }
 
@@ -134,29 +133,17 @@ public abstract class PurchaseRequest {
     // Abstract method to get the item name for display
     public abstract String getItemName();
 
-    // ========== State Check Methods ==========
-
     /**
-     * Check if the purchase request can be sent to vendors (RFQ).
-     * Allowed in DRAFT status (initial send) or RFQ_SENT status (adding more vendors).
+     * Get attachments linked to this purchase request.
+     * <p>
+     * ServicePurchaseRequest: Returns list of linked attachment references (blueprints/drawings)
+     * MaterialPurchaseRequest: Returns empty list (no attachment support)
+     * <p>
+     * This enables polymorphic access in RfqEmailService without type checking.
+     *
+     * @return Unmodifiable list of attachment references
      */
-    public boolean canSendRfq() {
-        return status == PurchaseRequestStatus.DRAFT || status == PurchaseRequestStatus.RFQ_SENT;
-    }
-
-    /**
-     * Check if the purchase request can be canceled.
-     */
-    public boolean canCancel() {
-        return status != PurchaseRequestStatus.CLOSED && status != PurchaseRequestStatus.CANCELED;
-    }
-
-    /**
-     * Check if the purchase request can be updated.
-     */
-    public boolean canUpdate() {
-        return status == PurchaseRequestStatus.DRAFT;
-    }
+    public abstract List<AttachmentReference> getAttachments();
 
     /**
      * Update the purchase request fields.
@@ -169,7 +156,7 @@ public abstract class PurchaseRequest {
      * @throws IllegalStateException if not in DRAFT status
      */
     public void update(String description, BigDecimal quantity, String uom, LocalDate requiredDate) {
-        if (!canUpdate()) {
+        if (!status.canUpdate()) {
             throw new IllegalStateException("Cannot update purchase request in " + status + " status");
         }
         Objects.requireNonNull(description, "description must not be null");
@@ -185,15 +172,37 @@ public abstract class PurchaseRequest {
     // ========== Status Transition Methods ==========
 
     /**
-     * Send RFQ to vendors - transition to RFQ_SENT status.
-     * This is idempotent when already in RFQ_SENT (allows adding more vendors).
+     * Send RFQ to vendors - validates via domain service, adds RfqItems, transitions status.
+     * Idempotent when already RFQ_SENT (allows adding more vendors).
+     *
+     * @param vendorIds      Raw vendor IDs from the request
+     * @param rfqItemFactory Domain service to validate vendors and create RfqItems
+     * @return Created RfqItem IDs for correlation with email sending
+     * @throws IllegalArgumentException if vendorIds is null or empty
+     * @throws IllegalStateException    if not in a state that allows sending RFQ
      */
-    public void sendRfq() {
-        if (!canSendRfq()) {
+    public List<String> sendRfq(List<Long> vendorIds, RfqItemFactory rfqItemFactory) {
+        Objects.requireNonNull(vendorIds, "vendorIds must not be null");
+        Objects.requireNonNull(rfqItemFactory, "rfqItemFactory must not be null");
+        if (vendorIds.isEmpty()) {
+            throw new IllegalArgumentException("vendorIds list must not be empty");
+        }
+        if (!status.canSendRfq()) {
             throw new IllegalStateException("Cannot send RFQ for purchase request in " + status + " status");
         }
-        // Idempotent: no-op if already RFQ_SENT (adding more vendors)
+
+        // Factory validates vendors and creates RfqItems (with UUID, sentAt initialized)
+        List<RfqItem> newItems = rfqItemFactory.createRfqItems(vendorIds);
+
+        // Add to aggregate and collect IDs
+        List<String> itemIds = new ArrayList<>();
+        for (RfqItem item : newItems) {
+            rfqItems.add(item);
+            itemIds.add(item.getItemId());
+        }
+
         this.status = PurchaseRequestStatus.RFQ_SENT;
+        return Collections.unmodifiableList(itemIds);
     }
 
     /**
@@ -230,7 +239,7 @@ public abstract class PurchaseRequest {
      * Cancel the purchase request.
      */
     public void cancel() {
-        if (!canCancel()) {
+        if (!status.canCancel()) {
             throw new IllegalStateException("Cannot cancel purchase request in " + status + " status");
         }
         this.status = PurchaseRequestStatus.CANCELED;
@@ -240,6 +249,9 @@ public abstract class PurchaseRequest {
 
     /**
      * Find an RFQ item by its itemId.
+     * <p>
+     * Use this when absence is expected/acceptable (caller handles Optional).
+     * For cases where item MUST exist, use {@link #getRfqItemById(String)} instead.
      *
      * @param itemId the UUID string identifier
      * @return Optional containing the RfqItem if found
@@ -252,6 +264,9 @@ public abstract class PurchaseRequest {
 
     /**
      * Get an RFQ item by its itemId, throwing exception if not found.
+     * <p>
+     * Use this when item MUST exist (e.g., processing a reply for existing RFQ).
+     * For optional lookups, use {@link #findRfqItemById(String)} instead.
      *
      * @param itemId the UUID string identifier
      * @return the RfqItem
@@ -261,19 +276,6 @@ public abstract class PurchaseRequest {
         return findRfqItemById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "RFQ item not found with ID: " + itemId + " in purchase request: " + id));
-    }
-
-    /**
-     * Add an RFQ item for a vendor.
-     *
-     * @param vendorCompanyId  the vendor company ID
-     * @param vendorOfferingId optional vendor offering ID (can be null)
-     * @return the created RfqItem
-     */
-    public RfqItem addRfqItem(Long vendorCompanyId, Long vendorOfferingId) {
-        RfqItem rfqItem = new RfqItem(vendorCompanyId, vendorOfferingId);
-        rfqItems.add(rfqItem);
-        return rfqItem;
     }
 
     /**
@@ -386,14 +388,78 @@ public abstract class PurchaseRequest {
         this.status = PurchaseRequestStatus.RFQ_SENT;
     }
 
+    // ========== Factory Methods ==========
+
+    /**
+     * Create a PurchaseOrder from a selected RfqItem.
+     * <p>
+     * Validates RfqItem status, selects vendor if needed, and creates the PO.
+     * Uses Guard pattern for infrastructure-dependent validation (like Quotation.createDelivery).
+     *
+     * @param rfqItemId            The RFQ item ID to create PO from
+     * @param guard                Guard for duplicate check
+     * @param poNumber             Generated PO number
+     * @param orderDate            Order date
+     * @param expectedDeliveryDate Expected delivery date
+     * @param createdById          User ID creating the PO
+     * @param notes                Optional notes
+     * @return Created PurchaseOrder (not yet persisted)
+     * @throws ResourceNotFoundException                                if rfqItemId not found
+     * @throws IllegalStateException                                    if RfqItem not in valid status for PO creation
+     * @throws com.wellkorea.backend.shared.exception.BusinessException if PO already exists for this RFQ item
+     */
+    public PurchaseOrder createPurchaseOrder(
+            String rfqItemId,
+            PurchaseOrderCreationGuard guard,
+            String poNumber,
+            LocalDate orderDate,
+            LocalDate expectedDeliveryDate,
+            Long createdById,
+            String notes
+    ) {
+        Objects.requireNonNull(rfqItemId, "rfqItemId must not be null");
+        Objects.requireNonNull(guard, "guard must not be null");
+        Objects.requireNonNull(poNumber, "poNumber must not be null");
+        Objects.requireNonNull(orderDate, "orderDate must not be null");
+        Objects.requireNonNull(expectedDeliveryDate, "expectedDeliveryDate must not be null");
+        Objects.requireNonNull(createdById, "createdById must not be null");
+
+        // Validate no duplicate PO (via guard - requires repository)
+        guard.validateNoDuplicatePurchaseOrder(this.id, rfqItemId);
+
+        // Validate RfqItem exists and is in valid status
+        RfqItem rfqItem = getRfqItemById(rfqItemId);
+        if (!rfqItem.getStatus().canCreatePurchaseOrder()) {
+            throw new IllegalStateException(
+                    "RFQ item must be in REPLIED or SELECTED status to create PO, current: " + rfqItem.getStatus());
+        }
+
+        // If REPLIED, select the vendor (transitions this PR to VENDOR_SELECTED)
+        if (rfqItem.getStatus() == RfqItemStatus.REPLIED) {
+            selectVendor(rfqItemId);
+        }
+
+        return new PurchaseOrder(
+                this,
+                rfqItemId,
+                rfqItem.getVendorCompanyId(),
+                poNumber,
+                orderDate,
+                expectedDeliveryDate,
+                rfqItem.getQuotedPrice(),
+                createdById,
+                notes
+        );
+    }
+
     // ========== Getters ==========
 
     public Long getId() {
         return id;
     }
 
-    public Project getProject() {
-        return project;
+    public Long getProjectId() {
+        return projectId;
     }
 
     public PurchaseRequestStatus getStatus() {

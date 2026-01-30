@@ -32,6 +32,7 @@ CREATE TABLE approval_chain_levels
 -- APPROVAL REQUESTS
 -- =====================================================================
 
+-- approval_requests WITH version column (added from V20)
 CREATE TABLE approval_requests
 (
     id                 BIGSERIAL PRIMARY KEY,
@@ -41,6 +42,7 @@ CREATE TABLE approval_requests
     current_level      INT         NOT NULL DEFAULT 1,
     total_levels       INT         NOT NULL,
     status             VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    version            BIGINT      NOT NULL DEFAULT 0,
     submitted_by_id    BIGINT      NOT NULL REFERENCES users (id),
     submitted_at       TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     completed_at       TIMESTAMP,
@@ -130,6 +132,7 @@ COMMENT ON COLUMN approval_chain_levels.level_name IS 'Position title: 팀장, �
 COMMENT ON TABLE approval_requests IS 'Tracks approval workflow instances';
 COMMENT ON COLUMN approval_requests.current_level IS 'Which level the request is currently awaiting approval at';
 COMMENT ON COLUMN approval_requests.status IS 'PENDING until all levels approve, APPROVED when complete, REJECTED if any level rejects';
+COMMENT ON COLUMN approval_requests.version IS 'Optimistic lock version for concurrent approval processing';
 
 COMMENT ON TABLE approval_level_decisions IS 'Tracking decisions at each level';
 COMMENT ON COLUMN approval_level_decisions.level_name IS 'Display name snapshotted from chain template at creation time';

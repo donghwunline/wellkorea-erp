@@ -23,6 +23,12 @@ export interface CreateServicePurchaseRequestInput {
   readonly quantity: number;
   readonly uom?: string | null;
   readonly requiredDate: string;
+  readonly attachments?: ReadonlyArray<{
+    readonly fileName: string;
+    readonly fileType: 'PDF' | 'DXF' | 'DWG' | 'JPG' | 'PNG';
+    readonly fileSize: number;
+    readonly storagePath: string;
+  }>;
 }
 
 /**
@@ -36,6 +42,12 @@ interface CreateServicePurchaseRequestRequest {
   quantity: number;
   uom: string | null;
   requiredDate: string;
+  attachments: Array<{
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    storagePath: string;
+  }> | null;
 }
 
 /**
@@ -85,6 +97,12 @@ export async function createServicePurchaseRequest(
     quantity: input.quantity,
     uom: input.uom?.trim() ?? null,
     requiredDate: input.requiredDate,
+    attachments: input.attachments?.map(a => ({
+      fileName: a.fileName,
+      fileType: a.fileType,
+      fileSize: a.fileSize,
+      storagePath: a.storagePath,
+    })) ?? null,
   };
 
   return httpClient.post<CommandResult>(PURCHASE_REQUEST_ENDPOINTS.SERVICE, request);

@@ -17,18 +17,19 @@ CREATE TABLE job_code_sequences
 
 CREATE TABLE projects
 (
-    id                    BIGSERIAL PRIMARY KEY,
-    job_code              VARCHAR(20)  NOT NULL UNIQUE,
-    customer_company_id   BIGINT       NOT NULL REFERENCES companies (id),
-    project_name          VARCHAR(255) NOT NULL,
-    requester_name        VARCHAR(100),
-    due_date              DATE         NOT NULL,
-    internal_owner_id     BIGINT       NOT NULL REFERENCES users (id),
-    status                VARCHAR(50)  NOT NULL DEFAULT 'DRAFT',
-    created_by_id         BIGINT       NOT NULL REFERENCES users (id),
-    created_at            TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at            TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_deleted            BOOLEAN      NOT NULL DEFAULT false,
+    id                  BIGSERIAL PRIMARY KEY,
+    job_code            VARCHAR(20)  NOT NULL UNIQUE,
+    customer_company_id BIGINT       NOT NULL REFERENCES companies (id),
+    project_name        VARCHAR(255) NOT NULL,
+    requester_name      VARCHAR(100),
+    due_date            DATE         NOT NULL,
+    internal_owner_id   BIGINT       NOT NULL REFERENCES users (id),
+    status              VARCHAR(50)  NOT NULL DEFAULT 'DRAFT',
+    note                TEXT,
+    created_by_id       BIGINT       NOT NULL REFERENCES users (id),
+    created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_deleted          BOOLEAN      NOT NULL DEFAULT false,
     CONSTRAINT chk_project_status CHECK (status IN ('DRAFT', 'ACTIVE', 'COMPLETED', 'ARCHIVED')),
     CONSTRAINT chk_job_code_format CHECK (job_code ~ '^WK2K\d{2}-\d{4}-\d{4}$')
 );
@@ -68,9 +69,9 @@ CREATE TABLE work_progress_step_templates
     step_name          VARCHAR(100) NOT NULL,
     step_number        INT          NOT NULL,
     is_required        BOOLEAN      NOT NULL DEFAULT true,
-    estimated_hours    NUMERIC(5,2),
+    estimated_hours    NUMERIC(5, 2),
     is_outsourceable   BOOLEAN      NOT NULL DEFAULT false,
-    parent_template_id BIGINT REFERENCES work_progress_step_templates(id) ON DELETE SET NULL,
+    parent_template_id BIGINT       REFERENCES work_progress_step_templates (id) ON DELETE SET NULL,
     created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (product_type_id, step_name),
     UNIQUE (product_type_id, step_number)
@@ -106,7 +107,7 @@ CREATE INDEX idx_products_name_search ON products (LOWER(name) text_pattern_ops)
 CREATE INDEX idx_product_types_name ON product_types (name);
 CREATE INDEX idx_work_progress_step_templates_product_type_id ON work_progress_step_templates (product_type_id);
 CREATE INDEX idx_work_progress_step_templates_step_number ON work_progress_step_templates (product_type_id, step_number);
-CREATE INDEX idx_step_templates_parent ON work_progress_step_templates(parent_template_id);
+CREATE INDEX idx_step_templates_parent ON work_progress_step_templates (parent_template_id);
 
 -- =====================================================================
 -- COMMENTS
@@ -115,6 +116,7 @@ CREATE INDEX idx_step_templates_parent ON work_progress_step_templates(parent_te
 COMMENT ON TABLE job_code_sequences IS 'Stores last used sequence number per year for thread-safe JobCode generation';
 COMMENT ON TABLE projects IS 'Core domain entity representing customer work requests. JobCode is the unique business identifier.';
 COMMENT ON COLUMN projects.job_code IS 'Unique business identifier: WK2K{YY}-{SSSS}-{MMDD}';
+COMMENT ON COLUMN projects.note IS 'Optional note for project, can be added/edited after project creation';
 COMMENT ON TABLE products IS 'Product catalog for quotations, production, and invoicing';
 COMMENT ON TABLE product_types IS 'Product categories with manufacturing step templates';
 COMMENT ON TABLE work_progress_step_templates IS 'Manufacturing step templates per product type';
