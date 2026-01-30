@@ -69,6 +69,11 @@ ALTER TABLE purchase_requests
 -- 4. UPDATE PURCHASE REQUEST STATUS CONSTRAINT (add PENDING_VENDOR_APPROVAL)
 -- =====================================================================
 
+-- Expand status column to accommodate PENDING_VENDOR_APPROVAL (23 chars)
+-- Original V8__purchasing_domain.sql defined it as VARCHAR(20), which is too small
+ALTER TABLE purchase_requests
+    ALTER COLUMN status TYPE VARCHAR(30);
+
 ALTER TABLE purchase_requests
     DROP CONSTRAINT IF EXISTS chk_pr_status;
 ALTER TABLE purchase_requests
