@@ -2,10 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.wellkorea.backend.catalog.infrastructure.mapper.MaterialMapper">
+<mapper namespace="com.wellkorea.backend.core.catalog.infrastructure.mapper.MaterialMapper">
 
     <!-- MaterialSummaryView result map -->
-    <resultMap id="MaterialSummaryViewResult" type="com.wellkorea.backend.catalog.api.dto.query.MaterialSummaryView">
+    <resultMap id="MaterialSummaryViewResult"
+               type="com.wellkorea.backend.core.catalog.api.dto.query.MaterialSummaryView">
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="sku" javaType="String"/>
@@ -24,7 +25,7 @@
     </resultMap>
 
     <!-- MaterialDetailView result map -->
-    <resultMap id="MaterialDetailViewResult" type="com.wellkorea.backend.catalog.api.dto.query.MaterialDetailView">
+    <resultMap id="MaterialDetailViewResult" type="com.wellkorea.backend.core.catalog.api.dto.query.MaterialDetailView">
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="sku" javaType="String"/>
@@ -45,19 +46,19 @@
     <!-- Find materials with filters -->
     <select id="findWithFilters" resultMap="MaterialSummaryViewResult">
         SELECT
-            m.id,
-            m.sku,
-            m.name,
-            m.description,
-            m.category_id AS categoryId,
-            mc.name AS categoryName,
-            m.unit,
-            m.standard_price AS standardPrice,
-            m.preferred_vendor_id AS preferredVendorId,
-            c.name AS preferredVendorName,
-            m.is_active AS active,
-            m.created_at AS createdAt,
-            m.updated_at AS updatedAt
+        m.id,
+        m.sku,
+        m.name,
+        m.description,
+        m.category_id AS categoryId,
+        mc.name AS categoryName,
+        m.unit,
+        m.standard_price AS standardPrice,
+        m.preferred_vendor_id AS preferredVendorId,
+        c.name AS preferredVendorName,
+        m.is_active AS active,
+        m.created_at AS createdAt,
+        m.updated_at AS updatedAt
         FROM materials m
         JOIN material_categories mc ON m.category_id = mc.id
         LEFT JOIN companies c ON m.preferred_vendor_id = c.id
@@ -96,19 +97,19 @@
     <!-- Find all active materials -->
     <select id="findAllActive" resultMap="MaterialSummaryViewResult">
         SELECT
-            m.id,
-            m.sku,
-            m.name,
-            m.description,
-            m.category_id AS categoryId,
-            mc.name AS categoryName,
-            m.unit,
-            m.standard_price AS standardPrice,
-            m.preferred_vendor_id AS preferredVendorId,
-            c.name AS preferredVendorName,
-            m.is_active AS active,
-            m.created_at AS createdAt,
-            m.updated_at AS updatedAt
+        m.id,
+        m.sku,
+        m.name,
+        m.description,
+        m.category_id AS categoryId,
+        mc.name AS categoryName,
+        m.unit,
+        m.standard_price AS standardPrice,
+        m.preferred_vendor_id AS preferredVendorId,
+        c.name AS preferredVendorName,
+        m.is_active AS active,
+        m.created_at AS createdAt,
+        m.updated_at AS updatedAt
         FROM materials m
         JOIN material_categories mc ON m.category_id = mc.id
         LEFT JOIN companies c ON m.preferred_vendor_id = c.id
@@ -119,19 +120,19 @@
     <!-- Find material by ID -->
     <select id="findById" resultMap="MaterialDetailViewResult">
         SELECT
-            m.id,
-            m.sku,
-            m.name,
-            m.description,
-            m.category_id AS categoryId,
-            mc.name AS categoryName,
-            m.unit,
-            m.standard_price AS standardPrice,
-            m.preferred_vendor_id AS preferredVendorId,
-            c.name AS preferredVendorName,
-            m.is_active AS active,
-            m.created_at AS createdAt,
-            m.updated_at AS updatedAt
+        m.id,
+        m.sku,
+        m.name,
+        m.description,
+        m.category_id AS categoryId,
+        mc.name AS categoryName,
+        m.unit,
+        m.standard_price AS standardPrice,
+        m.preferred_vendor_id AS preferredVendorId,
+        c.name AS preferredVendorName,
+        m.is_active AS active,
+        m.created_at AS createdAt,
+        m.updated_at AS updatedAt
         FROM materials m
         JOIN material_categories mc ON m.category_id = mc.id
         LEFT JOIN companies c ON m.preferred_vendor_id = c.id
@@ -141,7 +142,8 @@
     <!-- ========== VENDOR MATERIAL OFFERING QUERIES ========== -->
 
     <!-- VendorMaterialOfferingView result map -->
-    <resultMap id="VendorMaterialOfferingViewResult" type="com.wellkorea.backend.catalog.api.dto.query.VendorMaterialOfferingView">
+    <resultMap id="VendorMaterialOfferingViewResult"
+               type="com.wellkorea.backend.core.catalog.api.dto.query.VendorMaterialOfferingView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="vendor_id" javaType="java.lang.Long"/>
@@ -193,20 +195,20 @@
     <!-- NULL effective_to means no expiry -->
     <select id="findCurrentOfferingsByMaterialId" resultMap="VendorMaterialOfferingViewResult">
         SELECT
-            <include refid="vendorMaterialOfferingColumns"/>
+        <include refid="vendorMaterialOfferingColumns"/>
         FROM vendor_material_offerings vmo
         INNER JOIN companies c ON vmo.vendor_company_id = c.id
         INNER JOIN materials m ON vmo.material_id = m.id
         WHERE vmo.material_id = #{materialId}
-          AND (vmo.effective_from IS NULL OR vmo.effective_from &lt;= #{currentDate})
-          AND (vmo.effective_to IS NULL OR vmo.effective_to &gt;= #{currentDate})
+        AND (vmo.effective_from IS NULL OR vmo.effective_from &lt;= #{currentDate})
+        AND (vmo.effective_to IS NULL OR vmo.effective_to &gt;= #{currentDate})
         ORDER BY vmo.is_preferred DESC, c.name
     </select>
 
     <!-- Find offerings by material ID for pagination -->
     <select id="findOfferingsByMaterialId" resultMap="VendorMaterialOfferingViewResult">
         SELECT
-            <include refid="vendorMaterialOfferingColumns"/>
+        <include refid="vendorMaterialOfferingColumns"/>
         FROM vendor_material_offerings vmo
         INNER JOIN companies c ON vmo.vendor_company_id = c.id
         INNER JOIN materials m ON vmo.material_id = m.id
@@ -225,7 +227,7 @@
     <!-- Find offering by ID -->
     <select id="findOfferingById" resultMap="VendorMaterialOfferingViewResult">
         SELECT
-            <include refid="vendorMaterialOfferingColumns"/>
+        <include refid="vendorMaterialOfferingColumns"/>
         FROM vendor_material_offerings vmo
         INNER JOIN companies c ON vmo.vendor_company_id = c.id
         INNER JOIN materials m ON vmo.material_id = m.id
