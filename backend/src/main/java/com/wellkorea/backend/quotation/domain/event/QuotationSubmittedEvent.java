@@ -1,7 +1,7 @@
 package com.wellkorea.backend.quotation.domain.event;
 
-import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
-import com.wellkorea.backend.shared.event.ApprovalRequiredEvent;
+import com.wellkorea.backend.supporting.approval.domain.event.ApprovalRequiredEvent;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 
 /**
  * Domain event published when a quotation is submitted for approval.

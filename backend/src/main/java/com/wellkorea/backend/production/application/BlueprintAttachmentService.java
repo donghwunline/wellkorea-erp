@@ -2,8 +2,8 @@ package com.wellkorea.backend.production.application;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
-import com.wellkorea.backend.shared.storage.api.dto.UploadUrlResponse;
+import com.wellkorea.backend.supporting.storage.infrastructure.MinioFileStorage;
+import com.wellkorea.backend.supporting.storage.api.dto.UploadUrlResponse;
 import com.wellkorea.backend.production.api.dto.query.BlueprintAttachmentView;
 import com.wellkorea.backend.production.domain.AllowedFileType;
 import com.wellkorea.backend.production.domain.BlueprintAttachment;
@@ -37,9 +37,9 @@ public class BlueprintAttachmentService {
     private final MinioFileStorage minioFileStorage;
 
     public BlueprintAttachmentService(BlueprintAttachmentRepository attachmentRepository,
-                                       TaskFlowRepository taskFlowRepository,
-                                       UserRepository userRepository,
-                                       MinioFileStorage minioFileStorage) {
+                                      TaskFlowRepository taskFlowRepository,
+                                      UserRepository userRepository,
+                                      MinioFileStorage minioFileStorage) {
         this.attachmentRepository = attachmentRepository;
         this.taskFlowRepository = taskFlowRepository;
         this.userRepository = userRepository;
@@ -58,7 +58,7 @@ public class BlueprintAttachmentService {
      * @return UploadUrlResponse with presigned URL and object key
      */
     public UploadUrlResponse generateUploadUrl(Long flowId, String nodeId,
-                                                String fileName, Long fileSize, String contentType) {
+                                               String fileName, Long fileSize, String contentType) {
         // Validate TaskFlow exists
         TaskFlow taskFlow = taskFlowRepository.findById(flowId)
                 .orElseThrow(() -> new ResourceNotFoundException("TaskFlow", flowId));
@@ -104,7 +104,7 @@ public class BlueprintAttachmentService {
      * @return ID of created attachment
      */
     public Long registerAttachment(Long flowId, String nodeId,
-                                    String fileName, Long fileSize, String objectKey, Long userId) {
+                                   String fileName, Long fileSize, String objectKey, Long userId) {
         // Validate TaskFlow exists
         TaskFlow taskFlow = taskFlowRepository.findById(flowId)
                 .orElseThrow(() -> new ResourceNotFoundException("TaskFlow", flowId));
@@ -169,7 +169,6 @@ public class BlueprintAttachmentService {
                 .toList();
     }
 
-    
 
     /**
      * Get attachment by ID.
@@ -223,7 +222,7 @@ public class BlueprintAttachmentService {
     /**
      * Generate a presigned download URL for an attachment.
      *
-     * @param attachmentId Attachment ID
+     * @param attachmentId  Attachment ID
      * @param expiryMinutes URL expiry time in minutes
      * @return Presigned URL
      */

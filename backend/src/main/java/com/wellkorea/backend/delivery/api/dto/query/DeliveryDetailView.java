@@ -1,6 +1,6 @@
 package com.wellkorea.backend.delivery.api.dto.query;
 
-import com.wellkorea.backend.shared.storage.api.dto.AttachmentView;
+import com.wellkorea.backend.supporting.storage.api.dto.AttachmentView;
 
 import java.time.LocalDate;
 import java.util.List;

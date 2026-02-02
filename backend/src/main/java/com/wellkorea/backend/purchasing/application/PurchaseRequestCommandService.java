@@ -15,7 +15,7 @@ import com.wellkorea.backend.purchasing.domain.service.RfqItemFactory;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
-import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
+import com.wellkorea.backend.supporting.storage.infrastructure.MinioFileStorage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

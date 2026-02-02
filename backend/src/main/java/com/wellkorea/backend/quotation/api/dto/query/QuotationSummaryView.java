@@ -1,7 +1,7 @@
 package com.wellkorea.backend.quotation.api.dto.query;
 
 import com.wellkorea.backend.quotation.domain.QuotationStatus;
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStateStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

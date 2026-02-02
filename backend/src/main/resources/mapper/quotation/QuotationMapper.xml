@@ -38,7 +38,8 @@
             <arg column="notes" javaType="String"/>
             <arg column="created_by_id" javaType="Long"/>
             <arg column="created_by_name" javaType="String"/>
-            <arg column="approval_status" javaType="com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus"/>
+            <arg column="approval_status"
+                 javaType="com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStateStatus"/>
             <arg column="submitted_by_id" javaType="Long"/>
             <arg column="submitted_by_name" javaType="String"/>
             <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
@@ -55,30 +56,30 @@
     <!-- Main query: Find quotation detail by ID -->
     <select id="findDetailById" resultMap="QuotationDetailViewResult">
         SELECT
-            q.id,
-            q.project_id,
-            p.customer_company_id AS customer_id,
-            p.project_name,
-            p.job_code,
-            q.version,
-            q.status,
-            q.quotation_date,
-            q.validity_days,
-            q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
-            q.total_amount,
-            q.notes,
-            q.created_by_id,
-            cu.full_name AS created_by_name,
-            q.approval_status,
-            q.approval_submitted_by_id AS submitted_by_id,
-            su.full_name AS submitted_by_name,
-            q.approval_submitted_at AS submitted_at,
-            CASE WHEN q.approval_status = 'APPROVED' THEN q.approval_completed_at END AS approved_at,
-            CASE WHEN q.approval_status IN ('APPROVED', 'REJECTED') THEN q.approval_completed_by_id END AS approved_by_id,
-            au.full_name AS approved_by_name,
-            q.approval_rejection_reason AS rejection_reason,
-            q.created_at,
-            q.updated_at
+        q.id,
+        q.project_id,
+        p.customer_company_id AS customer_id,
+        p.project_name,
+        p.job_code,
+        q.version,
+        q.status,
+        q.quotation_date,
+        q.validity_days,
+        q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
+        q.total_amount,
+        q.notes,
+        q.created_by_id,
+        cu.full_name AS created_by_name,
+        q.approval_status,
+        q.approval_submitted_by_id AS submitted_by_id,
+        su.full_name AS submitted_by_name,
+        q.approval_submitted_at AS submitted_at,
+        CASE WHEN q.approval_status = 'APPROVED' THEN q.approval_completed_at END AS approved_at,
+        CASE WHEN q.approval_status IN ('APPROVED', 'REJECTED') THEN q.approval_completed_by_id END AS approved_by_id,
+        au.full_name AS approved_by_name,
+        q.approval_rejection_reason AS rejection_reason,
+        q.created_at,
+        q.updated_at
         FROM quotations q
         INNER JOIN projects p ON q.project_id = p.id
         INNER JOIN users cu ON q.created_by_id = cu.id
@@ -90,17 +91,17 @@
     <!-- Nested select: Find line items for a quotation (called once per quotation, not N times) -->
     <select id="findLineItemsByQuotationId" resultMap="LineItemViewResult">
         SELECT
-            li.id,
-            li.product_id,
-            prod.sku AS product_sku,
-            prod.name AS product_name,
-            prod.description AS specification,
-            prod.unit AS unit,
-            li.sequence,
-            li.quantity,
-            li.unit_price,
-            li.line_total,
-            li.notes
+        li.id,
+        li.product_id,
+        prod.sku AS product_sku,
+        prod.name AS product_name,
+        prod.description AS specification,
+        prod.unit AS unit,
+        li.sequence,
+        li.quantity,
+        li.unit_price,
+        li.line_total,
+        li.notes
         FROM quotation_line_items li
         INNER JOIN products prod ON li.product_id = prod.id
         WHERE li.quotation_id = #{quotationId}
@@ -108,7 +109,8 @@
     </select>
 
     <!-- QuotationSummaryView result map for list queries -->
-    <resultMap id="QuotationSummaryViewResult" type="com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView">
+    <resultMap id="QuotationSummaryViewResult"
+               type="com.wellkorea.backend.quotation.api.dto.query.QuotationSummaryView">
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="project_id" javaType="Long"/>
@@ -123,7 +125,8 @@
             <arg column="notes" javaType="String"/>
             <arg column="created_by_id" javaType="Long"/>
             <arg column="created_by_name" javaType="String"/>
-            <arg column="approval_status" javaType="com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus"/>
+            <arg column="approval_status"
+                 javaType="com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStateStatus"/>
             <arg column="submitted_by_id" javaType="Long"/>
             <arg column="submitted_by_name" javaType="String"/>
             <arg column="submitted_at" javaType="java.time.LocalDateTime"/>
@@ -139,29 +142,29 @@
     <!-- Find quotations with filters -->
     <select id="findWithFilters" resultMap="QuotationSummaryViewResult">
         SELECT
-            q.id,
-            q.project_id,
-            p.project_name,
-            p.job_code,
-            q.version,
-            q.status,
-            q.quotation_date,
-            q.validity_days,
-            q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
-            q.total_amount,
-            q.notes,
-            q.created_by_id,
-            cu.full_name AS created_by_name,
-            q.approval_status,
-            q.approval_submitted_by_id AS submitted_by_id,
-            su.full_name AS submitted_by_name,
-            q.approval_submitted_at AS submitted_at,
-            CASE WHEN q.approval_status = 'APPROVED' THEN q.approval_completed_at END AS approved_at,
-            CASE WHEN q.approval_status IN ('APPROVED', 'REJECTED') THEN q.approval_completed_by_id END AS approved_by_id,
-            au.full_name AS approved_by_name,
-            q.approval_rejection_reason AS rejection_reason,
-            q.created_at,
-            q.updated_at
+        q.id,
+        q.project_id,
+        p.project_name,
+        p.job_code,
+        q.version,
+        q.status,
+        q.quotation_date,
+        q.validity_days,
+        q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
+        q.total_amount,
+        q.notes,
+        q.created_by_id,
+        cu.full_name AS created_by_name,
+        q.approval_status,
+        q.approval_submitted_by_id AS submitted_by_id,
+        su.full_name AS submitted_by_name,
+        q.approval_submitted_at AS submitted_at,
+        CASE WHEN q.approval_status = 'APPROVED' THEN q.approval_completed_at END AS approved_at,
+        CASE WHEN q.approval_status IN ('APPROVED', 'REJECTED') THEN q.approval_completed_by_id END AS approved_by_id,
+        au.full_name AS approved_by_name,
+        q.approval_rejection_reason AS rejection_reason,
+        q.created_at,
+        q.updated_at
         FROM quotations q
         INNER JOIN projects p ON q.project_id = p.id
         INNER JOIN users cu ON q.created_by_id = cu.id

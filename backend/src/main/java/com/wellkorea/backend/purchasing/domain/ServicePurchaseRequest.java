@@ -3,7 +3,7 @@ package com.wellkorea.backend.purchasing.domain;
 import com.wellkorea.backend.catalog.domain.ServiceCategory;
 import com.wellkorea.backend.production.domain.AllowedFileType;
 import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
-import com.wellkorea.backend.shared.constant.AttachmentLimits;
+import com.wellkorea.backend.supporting.storage.domain.constant.AttachmentLimits;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;

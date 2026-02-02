@@ -6,10 +6,10 @@ import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.domain.vo.PurchaseRequestStatus;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItem;
 import com.wellkorea.backend.purchasing.domain.vo.RfqItemStatus;
-import com.wellkorea.backend.shared.approval.domain.Approvable;
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalState;
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalStateStatus;
-import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
+import com.wellkorea.backend.supporting.approval.domain.Approvable;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalState;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStateStatus;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import jakarta.persistence.*;
 

@@ -2,7 +2,7 @@ package com.wellkorea.backend.project.application;
 
 import com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper;
 import com.wellkorea.backend.invoice.infrastructure.mapper.InvoiceMapper;
-import com.wellkorea.backend.shared.storage.infrastructure.mapper.DocumentMapper;
+import com.wellkorea.backend.supporting.storage.infrastructure.mapper.DocumentMapper;
 import com.wellkorea.backend.production.infrastructure.persistence.TaskFlowRepository;
 import com.wellkorea.backend.project.api.dto.query.ProjectDetailView;
 import com.wellkorea.backend.project.api.dto.query.ProjectKPIView;

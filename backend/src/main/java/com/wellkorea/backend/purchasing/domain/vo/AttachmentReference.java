@@ -1,7 +1,7 @@
 package com.wellkorea.backend.purchasing.domain.vo;
 
 import com.wellkorea.backend.production.domain.AllowedFileType;
-import com.wellkorea.backend.shared.constant.AttachmentLimits;
+import com.wellkorea.backend.supporting.storage.domain.constant.AttachmentLimits;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;

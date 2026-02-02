@@ -1,9 +1,9 @@
 package com.wellkorea.backend.production.api;
 
 import com.wellkorea.backend.production.api.dto.command.BlueprintCommandResult;
-import com.wellkorea.backend.shared.storage.api.dto.RegisterAttachmentRequest;
-import com.wellkorea.backend.shared.storage.api.dto.UploadUrlRequest;
-import com.wellkorea.backend.shared.storage.api.dto.UploadUrlResponse;
+import com.wellkorea.backend.supporting.storage.api.dto.RegisterAttachmentRequest;
+import com.wellkorea.backend.supporting.storage.api.dto.UploadUrlRequest;
+import com.wellkorea.backend.supporting.storage.api.dto.UploadUrlResponse;
 import com.wellkorea.backend.production.api.dto.query.BlueprintAttachmentView;
 import com.wellkorea.backend.production.application.BlueprintAttachmentService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
@@ -73,7 +73,6 @@ public class BlueprintAttachmentController {
         return ResponseEntity.ok(ApiResponse.success(attachments));
     }
 
-    
 
     /**
      * Get attachment metadata by ID.

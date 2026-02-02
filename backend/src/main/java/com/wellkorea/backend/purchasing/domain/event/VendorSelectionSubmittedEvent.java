@@ -1,7 +1,7 @@
 package com.wellkorea.backend.purchasing.domain.event;
 
-import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
-import com.wellkorea.backend.shared.event.ApprovalRequiredEvent;
+import com.wellkorea.backend.supporting.approval.domain.event.ApprovalRequiredEvent;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 
 import java.math.BigDecimal;
 

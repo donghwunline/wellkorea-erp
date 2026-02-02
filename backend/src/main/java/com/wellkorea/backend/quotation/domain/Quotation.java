@@ -8,10 +8,10 @@ import com.wellkorea.backend.invoice.domain.InvoiceLineItemInput;
 import com.wellkorea.backend.invoice.domain.QuotationInvoiceGuard;
 import com.wellkorea.backend.invoice.domain.TaxInvoice;
 import com.wellkorea.backend.project.domain.Project;
-import com.wellkorea.backend.shared.approval.domain.Approvable;
-import com.wellkorea.backend.shared.approval.domain.ApprovalChainTemplate;
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalState;
-import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
+import com.wellkorea.backend.supporting.approval.domain.Approvable;
+import com.wellkorea.backend.supporting.approval.domain.ApprovalChainTemplate;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalState;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import jakarta.persistence.*;
 

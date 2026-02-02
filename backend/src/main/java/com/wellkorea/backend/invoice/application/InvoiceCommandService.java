@@ -11,8 +11,8 @@ import com.wellkorea.backend.quotation.infrastructure.repository.QuotationReposi
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.lock.QuotationLock;
-import com.wellkorea.backend.shared.storage.application.AttachmentService;
-import com.wellkorea.backend.shared.storage.domain.AttachmentOwnerType;
+import com.wellkorea.backend.supporting.storage.application.AttachmentService;
+import com.wellkorea.backend.supporting.storage.domain.AttachmentOwnerType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -8,14 +8,14 @@ import com.wellkorea.backend.purchasing.domain.vo.AttachmentReference;
 import com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseRequestMapper;
 import com.wellkorea.backend.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.config.CompanyProperties;
-import com.wellkorea.backend.shared.constant.AttachmentLimits;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.mail.MailAttachment;
 import com.wellkorea.backend.shared.mail.MailMessage;
 import com.wellkorea.backend.shared.mail.MailSendException;
 import com.wellkorea.backend.shared.mail.MailSender;
-import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
+import com.wellkorea.backend.supporting.storage.domain.constant.AttachmentLimits;
+import com.wellkorea.backend.supporting.storage.infrastructure.MinioFileStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,13 +54,13 @@ public class RfqEmailService {
     private final MinioFileStorage minioFileStorage;
 
     public RfqEmailService(PurchaseRequestMapper purchaseRequestMapper,
-                          PurchaseRequestRepository purchaseRequestRepository,
-                          CompanyMapper companyMapper,
-                          MailSender mailSender,
-                          CompanyProperties companyProperties,
-                          TemplateEngine templateEngine,
-                          RfqPdfService rfqPdfService,
-                          MinioFileStorage minioFileStorage) {
+                           PurchaseRequestRepository purchaseRequestRepository,
+                           CompanyMapper companyMapper,
+                           MailSender mailSender,
+                           CompanyProperties companyProperties,
+                           TemplateEngine templateEngine,
+                           RfqPdfService rfqPdfService,
+                           MinioFileStorage minioFileStorage) {
         this.purchaseRequestMapper = purchaseRequestMapper;
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.companyMapper = companyMapper;
