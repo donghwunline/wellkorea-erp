@@ -1,0 +1,40 @@
+package com.wellkorea.backend.core.quotation.api.dto.query;
+
+import com.wellkorea.backend.core.quotation.domain.QuotationStatus;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStateStatus;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * Read model for quotation list views.
+ * Optimized for summary display - excludes line items for performance.
+ */
+public record QuotationSummaryView(
+        Long id,
+        Long projectId,
+        String projectName,
+        String jobCode,
+        Integer version,
+        QuotationStatus status,
+        LocalDate quotationDate,
+        Integer validityDays,
+        LocalDate expiryDate,
+        BigDecimal totalAmount,
+        String notes,
+        Long createdById,
+        String createdByName,
+        // Approval fields (from ApprovalState embedded columns)
+        ApprovalStateStatus approvalStatus,
+        Long submittedById,
+        String submittedByName,
+        LocalDateTime submittedAt,
+        LocalDateTime approvedAt,
+        Long approvedById,
+        String approvedByName,
+        String rejectionReason,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
+) {
+}
