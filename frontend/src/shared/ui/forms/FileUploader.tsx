@@ -5,7 +5,7 @@
 
 import { useCallback, useState } from 'react';
 import { cn } from '@/shared/lib/cn';
-import { attachmentRules, ATTACHMENT_MAX_SIZE } from '@/shared/domain';
+import { ATTACHMENT_MAX_SIZE, attachmentRules } from '@/shared/domain';
 
 export type FileAcceptType = 'images' | 'documents' | 'all';
 

@@ -14,15 +14,8 @@ import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Card,
-  PageHeader,
-  Button,
-  LoadingState,
-  Alert,
-  EmptyState,
-} from '@/shared/ui';
-import { projectQueries, type ProjectListItem } from '@/entities/project';
+import { Alert, Button, Card, EmptyState, LoadingState, PageHeader } from '@/shared/ui';
+import { type ProjectListItem, projectQueries } from '@/entities/project';
 
 export function InvoiceSelectProjectPage() {
   const { t } = useTranslation('pages');
@@ -47,9 +40,7 @@ export function InvoiceSelectProjectPage() {
   const projects = useMemo(() => {
     if (!projectsData?.data) return [];
     // Show active and completed projects - the create page will validate quotation status
-    return projectsData.data.filter(
-      (p) => p.status === 'ACTIVE' || p.status === 'COMPLETED'
-    );
+    return projectsData.data.filter(p => p.status === 'ACTIVE' || p.status === 'COMPLETED');
   }, [projectsData]);
 
   const handleSelectProject = useCallback(
@@ -76,7 +67,9 @@ export function InvoiceSelectProjectPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">{t('invoiceSelectProject.loadError')}: {error.message}</Alert>
+        <Alert variant="error">
+          {t('invoiceSelectProject.loadError')}: {error.message}
+        </Alert>
       </div>
     );
   }
@@ -112,7 +105,7 @@ export function InvoiceSelectProjectPage() {
           />
         ) : (
           <div className="space-y-2">
-            {projects.map((project) => (
+            {projects.map(project => (
               <button
                 key={project.id}
                 onClick={() => handleSelectProject(project)}
@@ -120,12 +113,8 @@ export function InvoiceSelectProjectPage() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-white">
-                      {project.jobCode}
-                    </div>
-                    <div className="text-sm text-steel-400">
-                      {project.customerName}
-                    </div>
+                    <div className="font-medium text-white">{project.jobCode}</div>
+                    <div className="text-sm text-steel-400">{project.customerName}</div>
                   </div>
                   <div className="text-sm text-steel-500">
                     {project.status === 'ACTIVE'

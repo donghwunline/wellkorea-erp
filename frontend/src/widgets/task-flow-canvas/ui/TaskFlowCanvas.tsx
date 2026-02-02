@@ -5,13 +5,13 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import {
-  ReactFlow,
   Background,
+  BackgroundVariant,
   Controls,
   MiniMap,
-  type NodeTypes,
   type NodeMouseHandler,
-  BackgroundVariant,
+  type NodeTypes,
+  ReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useQueryClient } from '@tanstack/react-query';
@@ -21,11 +21,11 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Button } from '@/shared/ui';
 import { Icon } from '@/shared/ui/primitives/Icon';
 import {
-  TaskNodeComponent,
-  type TaskFlow,
-  type TaskNode,
   type TaskEdge,
+  type TaskFlow,
   type TaskFlowNode,
+  type TaskNode,
+  TaskNodeComponent,
 } from '@/entities/task-flow';
 import { blueprintQueries } from '@/entities/blueprint-attachment';
 import { EditNodeModal } from '@/features/task-flow/edit-node';

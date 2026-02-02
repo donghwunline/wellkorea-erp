@@ -4,7 +4,7 @@
  * Follows FSD Command Function pattern with built-in validation.
  */
 
-import { httpClient, PURCHASE_ORDER_ENDPOINTS, DomainValidationError } from '@/shared/api';
+import { DomainValidationError, httpClient, PURCHASE_ORDER_ENDPOINTS } from '@/shared/api';
 import type { CommandResult } from './purchase-order.mapper';
 
 // =============================================================================

@@ -6,7 +6,7 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui';
 import { Icon } from '@/shared/ui/primitives/Icon';
-import type { TaskNode, TaskEdge } from '@/entities/task-flow';
+import type { TaskEdge, TaskNode } from '@/entities/task-flow';
 import { useSaveFlow } from '../model/use-save-flow';
 
 export interface SaveFlowButtonProps {

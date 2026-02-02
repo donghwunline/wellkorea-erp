@@ -3,7 +3,7 @@
  * Used by query factory - not exported from entity barrel.
  */
 
-import { httpClient, DELIVERY_ENDPOINTS } from '@/shared/api';
+import { DELIVERY_ENDPOINTS, httpClient } from '@/shared/api';
 import type { DeliveryDetailResponse, DeliverySummaryResponse } from './delivery.mapper';
 import type { DeliveryStatus } from '../model/delivery-status';
 

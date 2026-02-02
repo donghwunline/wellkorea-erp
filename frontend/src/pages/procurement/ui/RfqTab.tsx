@@ -18,7 +18,11 @@ import {
 } from '@/entities/purchase-request';
 import { Badge, Card, Icon, Pagination, Spinner, Table } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting';
-import { PurchaseRequestDetailModal, type SendRfqData, SendRfqModal, } from '@/widgets/purchase-request-panel';
+import {
+  PurchaseRequestDetailModal,
+  type SendRfqData,
+  SendRfqModal,
+} from '@/widgets/purchase-request-panel';
 
 const PAGE_SIZE = 20;
 

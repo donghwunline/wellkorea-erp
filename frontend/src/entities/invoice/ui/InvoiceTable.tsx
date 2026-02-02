@@ -4,7 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Table, Icon } from '@/shared/ui';
+import { Icon, Table } from '@/shared/ui';
 import type { InvoiceSummary } from '../model/invoice';
 import { invoiceRules } from '../model/invoice';
 import { InvoiceStatusBadge } from './InvoiceStatusBadge';

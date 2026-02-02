@@ -46,7 +46,11 @@ export function ApprovalChainConfigPage() {
   const { t } = useTranslation('approval');
 
   // Server state via TanStack Query
-  const { data: templates = [], isLoading, error: fetchError } = useQuery(chainTemplateQueries.list());
+  const {
+    data: templates = [],
+    isLoading,
+    error: fetchError,
+  } = useQuery(chainTemplateQueries.list());
 
   // Mutation hook
   const {
@@ -171,10 +175,7 @@ export function ApprovalChainConfigPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title={t('chain.title')}
-          description={t('chain.description')}
-        />
+        <PageHeader.Title title={t('chain.title')} description={t('chain.description')} />
       </PageHeader>
 
       {/* Success Message */}
@@ -215,7 +216,9 @@ export function ApprovalChainConfigPage() {
                 <Table.HeaderCell>{t('chain.table.name')}</Table.HeaderCell>
                 <Table.HeaderCell>{t('chain.table.approvalLevels')}</Table.HeaderCell>
                 <Table.HeaderCell>{t('chain.table.approvers')}</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">{t('table.headers.actions')}</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">
+                  {t('table.headers.actions')}
+                </Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -288,7 +291,9 @@ export function ApprovalChainConfigPage() {
             {/* Levels */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <h4 className="text-sm font-medium text-white">{t('chain.table.approvalLevels')}</h4>
+                <h4 className="text-sm font-medium text-white">
+                  {t('chain.table.approvalLevels')}
+                </h4>
                 <Button variant="secondary" size="sm" onClick={handleAddLevel} disabled={isSaving}>
                   <Icon name="plus" className="mr-1 h-4 w-4" />
                   {t('chain.steps.add')}
@@ -296,9 +301,7 @@ export function ApprovalChainConfigPage() {
               </div>
 
               {editingChain.levels.length === 0 ? (
-                <p className="text-sm text-steel-400">
-                  {t('chain.steps.noLevels')}
-                </p>
+                <p className="text-sm text-steel-400">{t('chain.steps.noLevels')}</p>
               ) : (
                 <div className="space-y-3">
                   {editingChain.levels.map((level, index) => (
@@ -332,9 +335,7 @@ export function ApprovalChainConfigPage() {
               )}
             </div>
 
-            <p className="text-xs text-steel-500">
-              {t('chain.steps.processOrder')}
-            </p>
+            <p className="text-xs text-steel-500">{t('chain.steps.processOrder')}</p>
 
             {/* Actions */}
             <div className="flex justify-end gap-3 border-t border-steel-700/50 pt-4">

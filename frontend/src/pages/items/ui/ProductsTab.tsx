@@ -171,11 +171,7 @@ export function ProductsTab() {
         <>
           <ProductTable
             products={products}
-            emptyMessage={
-              canManage
-                ? t('products.list.emptyWithAction')
-                : t('products.list.empty')
-            }
+            emptyMessage={canManage ? t('products.list.emptyWithAction') : t('products.list.empty')}
             renderActions={
               canManage
                 ? product => (

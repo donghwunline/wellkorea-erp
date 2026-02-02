@@ -2,7 +2,7 @@
  * Create invoice command function.
  */
 
-import { httpClient, DomainValidationError } from '@/shared/api';
+import { DomainValidationError, httpClient } from '@/shared/api';
 import type { CommandResult } from './invoice.mapper';
 
 const INVOICE_ENDPOINTS = {

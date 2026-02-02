@@ -6,19 +6,19 @@
 
 import { httpClient, type PagedResponse } from '@/shared/api';
 import { MATERIAL_ENDPOINTS } from '@/shared/config/endpoints';
-import { transformPagedResponse, type Paginated } from '@/shared/lib/pagination';
+import { type Paginated, transformPagedResponse } from '@/shared/lib/pagination';
 import type { Material, MaterialListItem } from '../model/material';
 import type { MaterialCategory, MaterialCategoryListItem } from '../model/material-category';
 import type { VendorMaterialOffering } from '../model/vendor-material-offering';
 import {
-  type MaterialResponse,
-  type MaterialCategoryResponse,
-  type VendorMaterialOfferingResponse,
   mapMaterial,
-  mapMaterialListItem,
   mapMaterialCategory,
   mapMaterialCategoryListItem,
+  mapMaterialListItem,
   mapVendorMaterialOffering,
+  type MaterialCategoryResponse,
+  type MaterialResponse,
+  type VendorMaterialOfferingResponse,
 } from './material.mapper';
 
 // =============================================================================

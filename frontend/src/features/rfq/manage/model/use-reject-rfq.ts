@@ -8,7 +8,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { rejectRfq, purchaseRequestQueries } from '@/entities/purchase-request';
+import { purchaseRequestQueries, rejectRfq } from '@/entities/purchase-request';
 
 export interface UseRejectRfqOptions {
   /** Called after successfully rejecting RFQ item */

@@ -10,11 +10,7 @@
 
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type {
-  CreateProjectInput,
-  Project,
-  UpdateProjectInput,
-} from '@/entities/project';
+import type { CreateProjectInput, Project, UpdateProjectInput } from '@/entities/project';
 import { Button, DatePicker, ErrorAlert, FormField } from '@/shared/ui';
 import { CompanyCombobox } from '@/entities/company';
 import { UserCombobox } from '@/entities/user';

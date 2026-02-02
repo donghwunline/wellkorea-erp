@@ -8,13 +8,15 @@
  * - Callback invocation
  */
 
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import {
+  createCommandResult,
   createQueryWrapper,
   createTestQueryClient,
-  createCommandResult,
 } from '@/test/entity-test-utils';
+// Import after mock setup
+import { useApproveApproval } from './use-approve-approval';
 
 // Inline httpClient mock (vi.hoisted cannot import external modules)
 const httpClient = vi.hoisted(() => ({
@@ -29,9 +31,6 @@ vi.mock('@/shared/api', async () => {
   const actual = await vi.importActual('@/shared/api');
   return { ...actual, httpClient };
 });
-
-// Import after mock setup
-import { useApproveApproval } from './use-approve-approval';
 
 // Helper functions for httpClient mock
 function mockSuccess<T>(method: keyof typeof httpClient, data: T) {

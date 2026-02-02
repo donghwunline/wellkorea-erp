@@ -5,7 +5,7 @@
  * Follows FSD pattern: entities/{entity}/api/update-{entity}.ts
  */
 
-import { DomainValidationError, httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
+import { COMPANY_ENDPOINTS, DomainValidationError, httpClient } from '@/shared/api';
 import type { CommandResult } from './company.mapper';
 
 // =============================================================================

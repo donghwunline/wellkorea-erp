@@ -6,11 +6,11 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  toServiceCategoryListItem,
-  toServiceCategory,
-  toVendorOffering,
-  type ServiceCategorySummaryResponse,
   type ServiceCategoryDetailsResponse,
+  type ServiceCategorySummaryResponse,
+  toServiceCategory,
+  toServiceCategoryListItem,
+  toVendorOffering,
   type VendorOfferingResponse,
 } from './catalog.mapper';
 import { expectDomainShape } from '@/test/entity-test-utils';

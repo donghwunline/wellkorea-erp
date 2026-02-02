@@ -4,7 +4,7 @@
  * Adds a new role (CUSTOMER, VENDOR, OUTSOURCE) to an existing company.
  */
 
-import { httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
+import { COMPANY_ENDPOINTS, httpClient } from '@/shared/api';
 import type { RoleType } from '../model/role-type';
 import type { CommandResult } from './company.mapper';
 

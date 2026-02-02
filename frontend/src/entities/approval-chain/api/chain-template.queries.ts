@@ -17,7 +17,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import type { ChainTemplate } from '../model/chain-template';
 import { chainTemplateMapper } from './chain-template.mapper';
-import { getChainTemplates, getChainTemplate } from './get-chain-template';
+import { getChainTemplate, getChainTemplates } from './get-chain-template';
 
 // =============================================================================
 // Query Factory

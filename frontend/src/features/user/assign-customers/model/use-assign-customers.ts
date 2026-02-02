@@ -3,7 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { assignCustomers, userQueries, type AssignCustomersInput } from '@/entities/user';
+import { assignCustomers, type AssignCustomersInput, userQueries } from '@/entities/user';
 
 /**
  * Options for useAssignCustomers hook.

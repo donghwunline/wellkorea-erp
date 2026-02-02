@@ -11,10 +11,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  updateCompany,
-  companyQueries,
-  type UpdateCompanyInput,
   type CommandResult,
+  companyQueries,
+  updateCompany,
+  type UpdateCompanyInput,
 } from '@/entities/company';
 
 export type UpdateCompanyParams = UpdateCompanyInput;

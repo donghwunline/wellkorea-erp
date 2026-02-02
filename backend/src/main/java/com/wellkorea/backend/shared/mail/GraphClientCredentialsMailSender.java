@@ -1,11 +1,7 @@
 package com.wellkorea.backend.shared.mail;
 
 import com.wellkorea.backend.shared.mail.dto.GraphMailRequest;
-import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphAttachment;
-import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphBody;
-import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphEmailAddress;
-import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphMessage;
-import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.GraphRecipient;
+import com.wellkorea.backend.shared.mail.dto.GraphMailRequest.*;
 import com.wellkorea.backend.shared.mail.dto.MicrosoftTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

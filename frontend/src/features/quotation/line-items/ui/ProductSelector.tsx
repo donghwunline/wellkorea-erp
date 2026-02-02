@@ -71,7 +71,7 @@ export function ProductSelector({
     ...productQueries.detail(selectedProductId ?? 0),
     enabled: selectedProductId !== null && selectedProductId > 0,
     // Initialize unit price when data loads for a new product
-    select: (data) => {
+    select: data => {
       // Only initialize price once per product selection
       if (data && priceInitializedForId !== data.id && selectedProductId === data.id) {
         // Schedule state update for next render cycle
@@ -119,21 +119,18 @@ export function ProductSelector({
   }, []);
 
   // Handle product selection from combobox
-  const handleProductSelect = useCallback(
-    (value: string | number | null) => {
-      if (value === null) {
-        setSelectedProductId(null);
-        setUnitPrice('');
-        setPriceInitializedForId(null);
-        return;
-      }
+  const handleProductSelect = useCallback((value: string | number | null) => {
+    if (value === null) {
+      setSelectedProductId(null);
+      setUnitPrice('');
+      setPriceInitializedForId(null);
+      return;
+    }
 
-      const productId = Number(value);
-      setSelectedProductId(productId);
-      // Price will be initialized when productDetail loads via the render-time check above
-    },
-    []
-  );
+    const productId = Number(value);
+    setSelectedProductId(productId);
+    // Price will be initialized when productDetail loads via the render-time check above
+  }, []);
 
   // Add selected product to line items
   const handleAddProduct = useCallback(() => {
@@ -278,7 +275,9 @@ export function ProductSelector({
                 <span className="font-medium text-white">{selectedProduct.name}</span>
                 <span className="ml-2 text-steel-400">({selectedProduct.sku})</span>
                 {selectedProduct.unit && (
-                  <span className="ml-2 text-steel-500">{t('productSelector.unit')}: {selectedProduct.unit}</span>
+                  <span className="ml-2 text-steel-500">
+                    {t('productSelector.unit')}: {selectedProduct.unit}
+                  </span>
                 )}
               </div>
             </div>
@@ -294,9 +293,15 @@ export function ProductSelector({
               <Table.Row>
                 <Table.HeaderCell className="w-8">#</Table.HeaderCell>
                 <Table.HeaderCell>{t('productSelector.product')}</Table.HeaderCell>
-                <Table.HeaderCell className="w-24 text-right">{t('productSelector.qty')}</Table.HeaderCell>
-                <Table.HeaderCell className="w-32 text-right">{t('productSelector.unitPrice')}</Table.HeaderCell>
-                <Table.HeaderCell className="w-32 text-right">{t('productSelector.amount')}</Table.HeaderCell>
+                <Table.HeaderCell className="w-24 text-right">
+                  {t('productSelector.qty')}
+                </Table.HeaderCell>
+                <Table.HeaderCell className="w-32 text-right">
+                  {t('productSelector.unitPrice')}
+                </Table.HeaderCell>
+                <Table.HeaderCell className="w-32 text-right">
+                  {t('productSelector.amount')}
+                </Table.HeaderCell>
                 <Table.HeaderCell className="w-32">{t('productSelector.note')}</Table.HeaderCell>
                 {!disabled && <Table.HeaderCell className="w-12">{''}</Table.HeaderCell>}
               </Table.Row>

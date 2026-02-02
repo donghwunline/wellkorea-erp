@@ -10,12 +10,12 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   type AccountsPayable,
-  type CalculatedAPStatus,
   accountsPayableQueries,
   AccountsPayableTable,
+  type CalculatedAPStatus,
 } from '@/entities/accounts-payable';
 import { RecordAPPaymentModal } from '@/features/accounts-payable/record-payment';
-import { Card, Spinner, Button } from '@/shared/ui';
+import { Button, Card, Spinner } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
 

@@ -19,7 +19,7 @@
 // Import user and auth types from entities (public API only)
 import type { RoleName, User, UserDetails } from '@/entities/user';
 import type { AuthStore } from '@/entities/auth';
-import type { Quotation, LineItem } from '@/entities/quotation';
+import type { LineItem, Quotation } from '@/entities/quotation';
 import { QuotationStatus } from '@/entities/quotation';
 import type { Approval, ApprovalHistory, ApprovalLevel, ApprovalStatus } from '@/entities/approval';
 import type { ChainLevel, ChainTemplate } from '@/entities/approval-chain';
@@ -679,9 +679,7 @@ export const mockApprovals = {
 /**
  * Factory function to create a mock ApprovalHistory.
  */
-export function createMockApprovalHistory(
-  overrides?: Partial<ApprovalHistory>
-): ApprovalHistory {
+export function createMockApprovalHistory(overrides?: Partial<ApprovalHistory>): ApprovalHistory {
   return {
     levelOrder: 1,
     levelName: '팀장',

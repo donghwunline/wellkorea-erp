@@ -5,11 +5,8 @@
  * Returns raw responses - mapping to domain models happens in query factory.
  */
 
-import { httpClient, QUOTATION_ENDPOINTS, type PagedResponse } from '@/shared/api';
-import {
-  transformPagedResponse,
-  type Paginated,
-} from '@/shared/lib/pagination';
+import { httpClient, type PagedResponse, QUOTATION_ENDPOINTS } from '@/shared/api';
+import { type Paginated, transformPagedResponse, } from '@/shared/lib/pagination';
 import type { QuotationDetailsResponse, QuotationListParams } from './quotation.mapper';
 
 /**

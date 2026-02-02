@@ -2,7 +2,7 @@
  * Create delivery command function.
  */
 
-import { httpClient, DELIVERY_ENDPOINTS, DomainValidationError } from '@/shared/api';
+import { DELIVERY_ENDPOINTS, DomainValidationError, httpClient } from '@/shared/api';
 import type { CommandResult } from './delivery.mapper';
 
 /**

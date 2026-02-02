@@ -5,7 +5,7 @@
  * Used by audit.queries.ts for TanStack Query integration.
  */
 
-import { httpClient, AUDIT_ENDPOINTS } from '@/shared/api';
+import { AUDIT_ENDPOINTS, httpClient } from '@/shared/api';
 import type { AuditLogResponse } from './audit.mapper';
 
 // =============================================================================

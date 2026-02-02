@@ -133,10 +133,7 @@ export function CompanyListPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title={t('title')}
-          description={t('description')}
-        />
+        <PageHeader.Title title={t('title')} description={t('description')} />
         <PageHeader.Actions>
           <Button onClick={handleCreate}>
             <Icon name="plus" className="h-5 w-5" />

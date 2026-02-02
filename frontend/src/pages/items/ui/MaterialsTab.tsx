@@ -17,10 +17,10 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  type Material,
+  type MaterialListItem,
   materialQueries,
   setPreferredVendorOffering,
-  type MaterialListItem,
-  type Material,
   type VendorMaterialOffering,
 } from '@/entities/material';
 import { useAuth } from '@/entities/auth';
@@ -63,7 +63,9 @@ export function MaterialsTab() {
 
   // Vendor offering form modal state
   const [isOfferingFormOpen, setIsOfferingFormOpen] = useState(false);
-  const [editingOffering, setEditingOffering] = useState<VendorMaterialOffering | undefined>(undefined);
+  const [editingOffering, setEditingOffering] = useState<VendorMaterialOffering | undefined>(
+    undefined
+  );
 
   // Vendor offering delete modal state
   const [isOfferingDeleteOpen, setIsOfferingDeleteOpen] = useState(false);
@@ -98,18 +100,17 @@ export function MaterialsTab() {
     isLoading: materialsLoading,
     error: materialsError,
     refetch: refetchMaterials,
-  } = useQuery(materialQueries.list({
-    page,
-    size: PAGE_SIZE,
-    search: search || undefined,
-    categoryId,
-  }));
+  } = useQuery(
+    materialQueries.list({
+      page,
+      size: PAGE_SIZE,
+      search: search || undefined,
+      categoryId,
+    })
+  );
 
   // Server state for offerings (only when material selected)
-  const {
-    data: offeringsData,
-    isLoading: offeringsLoading,
-  } = useQuery({
+  const { data: offeringsData, isLoading: offeringsLoading } = useQuery({
     ...materialQueries.offeringList(materialForOfferings?.id ?? 0),
     enabled: !!materialForOfferings,
   });
@@ -320,19 +321,12 @@ export function MaterialsTab() {
               </thead>
               <tbody className="divide-y divide-steel-700/30 bg-steel-900/40">
                 {materials.map(material => (
-                  <tr
-                    key={material.id}
-                    className="hover:bg-steel-800/30"
-                  >
+                  <tr key={material.id} className="hover:bg-steel-800/30">
                     <td className="whitespace-nowrap px-4 py-3 text-sm font-mono text-copper-400">
                       {material.sku}
                     </td>
-                    <td className="px-4 py-3 text-sm text-white">
-                      {material.name}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-steel-300">
-                      {material.categoryName}
-                    </td>
+                    <td className="px-4 py-3 text-sm text-white">{material.name}</td>
+                    <td className="px-4 py-3 text-sm text-steel-300">{material.categoryName}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
                       {material.unit}
                     </td>
@@ -407,27 +401,39 @@ export function MaterialsTab() {
                 <p className="font-mono text-copper-400">{selectedMaterial.sku}</p>
               </div>
               <div>
-                <label className="text-xs uppercase text-steel-500">{t('table.headers.category')}</label>
+                <label className="text-xs uppercase text-steel-500">
+                  {t('table.headers.category')}
+                </label>
                 <p className="text-white">{selectedMaterial.categoryName}</p>
               </div>
               <div>
-                <label className="text-xs uppercase text-steel-500">{t('table.headers.unit')}</label>
+                <label className="text-xs uppercase text-steel-500">
+                  {t('table.headers.unit')}
+                </label>
                 <p className="text-white">{selectedMaterial.unit}</p>
               </div>
               <div>
-                <label className="text-xs uppercase text-steel-500">{t('table.headers.standardPrice')}</label>
+                <label className="text-xs uppercase text-steel-500">
+                  {t('table.headers.standardPrice')}
+                </label>
                 <p className="text-white">
-                  {selectedMaterial.standardPrice ? formatCurrency(selectedMaterial.standardPrice) : '-'}
+                  {selectedMaterial.standardPrice
+                    ? formatCurrency(selectedMaterial.standardPrice)
+                    : '-'}
                 </p>
               </div>
               <div className="col-span-2">
-                <label className="text-xs uppercase text-steel-500">{t('materials.fields.description')}</label>
+                <label className="text-xs uppercase text-steel-500">
+                  {t('materials.fields.description')}
+                </label>
                 <p className="text-steel-300">
                   {selectedMaterial.description || t('materials.view.noDescription')}
                 </p>
               </div>
               <div className="col-span-2">
-                <label className="text-xs uppercase text-steel-500">{t('table.headers.preferredVendor')}</label>
+                <label className="text-xs uppercase text-steel-500">
+                  {t('table.headers.preferredVendor')}
+                </label>
                 <p className="text-white">
                   {selectedMaterial.preferredVendorName ?? t('materials.view.preferredVendorNone')}
                 </p>
@@ -464,11 +470,7 @@ export function MaterialsTab() {
             <div className="py-8 text-center text-steel-400">
               <p>{t('materials.offerings.empty')}</p>
               {canManage && (
-                <Button
-                  variant="primary"
-                  className="mt-4"
-                  onClick={handleOpenOfferingCreate}
-                >
+                <Button variant="primary" className="mt-4" onClick={handleOpenOfferingCreate}>
                   {t('materials.offerings.addOffering')}
                 </Button>
               )}
@@ -516,7 +518,9 @@ export function MaterialsTab() {
                           {formatPrice(offering.unitPrice)}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
-                          {offering.leadTimeDays ? t('common.days', { count: offering.leadTimeDays }) : '-'}
+                          {offering.leadTimeDays
+                            ? t('common.days', { count: offering.leadTimeDays })
+                            : '-'}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
                           {offering.effectiveFrom && offering.effectiveTo

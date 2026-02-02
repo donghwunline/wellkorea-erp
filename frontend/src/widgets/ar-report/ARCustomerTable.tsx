@@ -9,7 +9,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Card, Table, Icon } from '@/shared/ui';
+import { Card, Icon, Table } from '@/shared/ui';
 import type { CustomerAR } from '@/entities/invoice';
 import { arReportRules } from '@/entities/invoice';
 

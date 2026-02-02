@@ -7,7 +7,7 @@
  */
 
 import { httpClient } from '@/shared/api';
-import { attachmentRules, ATTACHMENT_MAX_SIZE } from '@/shared/domain';
+import { ATTACHMENT_MAX_SIZE, attachmentRules } from '@/shared/domain';
 import { DELIVERY_ENDPOINTS } from '@/shared/config/endpoints';
 import type { CommandResult } from './delivery.mapper';
 

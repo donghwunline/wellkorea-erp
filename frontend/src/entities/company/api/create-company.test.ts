@@ -4,7 +4,7 @@
  * Tests for input validation, mapping, and API call.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createCompany, type CreateCompanyInput } from './create-company';
 import { DomainValidationError } from '@/shared/lib/errors/domain-validation-error';
 import { createCommandResult } from '@/test/entity-test-utils';

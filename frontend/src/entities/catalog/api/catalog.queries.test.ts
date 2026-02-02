@@ -4,16 +4,25 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   catalogQueries,
   type ServiceCategoryListQueryParams,
   type VendorOfferingListQueryParams,
 } from './catalog.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { ServiceCategory, ServiceCategoryListItem } from '../model/service-category';
 import type { VendorOffering } from '../model/vendor-offering';
+// Import mocked modules
+import {
+  getAllServiceCategories,
+  getCurrentOfferingsForCategory,
+  getOfferingsForCategory,
+  getServiceCategories,
+  getServiceCategory,
+  getVendorOffering,
+} from './get-catalog';
 
 // Mock dependencies
 vi.mock('./get-catalog', () => ({
@@ -24,16 +33,6 @@ vi.mock('./get-catalog', () => ({
   getCurrentOfferingsForCategory: vi.fn(),
   getVendorOffering: vi.fn(),
 }));
-
-// Import mocked modules
-import {
-  getServiceCategories,
-  getAllServiceCategories,
-  getServiceCategory,
-  getOfferingsForCategory,
-  getCurrentOfferingsForCategory,
-  getVendorOffering,
-} from './get-catalog';
 
 // =============================================================================
 // Test Fixtures - Domain types (mapping happens inside get-catalog.ts)

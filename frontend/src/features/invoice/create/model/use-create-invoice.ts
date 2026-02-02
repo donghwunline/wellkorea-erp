@@ -3,8 +3,8 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createInvoice, invoiceQueries } from '@/entities/invoice';
 import type { CreateInvoiceInput } from '@/entities/invoice';
+import { createInvoice, invoiceQueries } from '@/entities/invoice';
 
 interface UseCreateInvoiceOptions {
   onSuccess?: (result: { id: number; message: string }) => void;

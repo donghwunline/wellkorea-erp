@@ -8,11 +8,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import type { CalculatedAPStatus } from '../model/accounts-payable-status';
 import type { AccountsPayable, APAgingSummary } from '../model/accounts-payable';
-import {
-  getAccountsPayableList,
-  getAccountsPayableById,
-  getAPAgingSummary,
-} from './get-accounts-payable';
+import { getAccountsPayableById, getAccountsPayableList, getAPAgingSummary, } from './get-accounts-payable';
 
 /**
  * Query keys for accounts payable queries.

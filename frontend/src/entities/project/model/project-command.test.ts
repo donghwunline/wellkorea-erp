@@ -4,7 +4,11 @@
 
 import { describe, expect, it } from 'vitest';
 import { DomainValidationError } from '@/shared/api';
-import { projectValidation, type CreateProjectCommand, type UpdateProjectCommand } from './project-command';
+import {
+  type CreateProjectCommand,
+  projectValidation,
+  type UpdateProjectCommand,
+} from './project-command';
 
 describe('projectValidation', () => {
   describe('validateCreate', () => {
@@ -44,7 +48,9 @@ describe('projectValidation', () => {
 
     it('should throw for invalid dueDate format', () => {
       const command = { ...validCommand, dueDate: '2025/02/15' };
-      expect(() => projectValidation.validateCreate(command)).toThrow('Due date must be in YYYY-MM-DD format');
+      expect(() => projectValidation.validateCreate(command)).toThrow(
+        'Due date must be in YYYY-MM-DD format'
+      );
     });
 
     it('should throw for missing internalOwnerId', () => {
@@ -84,12 +90,16 @@ describe('projectValidation', () => {
 
     it('should throw for empty projectName when provided', () => {
       const command: UpdateProjectCommand = { projectName: '' };
-      expect(() => projectValidation.validateUpdate(command)).toThrow('Project name cannot be empty');
+      expect(() => projectValidation.validateUpdate(command)).toThrow(
+        'Project name cannot be empty'
+      );
     });
 
     it('should throw for invalid dueDate format when provided', () => {
       const command: UpdateProjectCommand = { dueDate: 'invalid-date' };
-      expect(() => projectValidation.validateUpdate(command)).toThrow('Due date must be in YYYY-MM-DD format');
+      expect(() => projectValidation.validateUpdate(command)).toThrow(
+        'Due date must be in YYYY-MM-DD format'
+      );
     });
 
     it('should allow valid status update', () => {

@@ -14,7 +14,7 @@
  * ```
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { AuditLog } from '../model/audit-log';
 import { getAuditList, type GetAuditListParams } from './get-audit-list';

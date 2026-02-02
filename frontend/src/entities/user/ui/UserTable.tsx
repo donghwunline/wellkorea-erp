@@ -16,15 +16,7 @@ import type { UserDetails } from '../model/user';
 import type { RoleName } from '../model/role';
 import { ROLE_LABELS } from '../model/role';
 import { formatDateTime } from '@/shared/lib/formatting';
-import {
-  Badge,
-  type BadgeVariant,
-  Card,
-  EmptyState,
-  Icon,
-  IconButton,
-  Table,
-} from '@/shared/ui';
+import { Badge, type BadgeVariant, Card, EmptyState, Icon, IconButton, Table, } from '@/shared/ui';
 
 /** Role badge variant mapping */
 const ROLE_BADGE_VARIANTS: Record<RoleName, BadgeVariant> = {

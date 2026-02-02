@@ -17,13 +17,13 @@
  * ```
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { Approval } from '../model/approval';
 import type { ApprovalHistory } from '../model/approval-history';
 import type { ApprovalStatus } from '../model/approval-status';
 import type { EntityType } from '../model/entity-type';
-import { approvalMapper, approvalHistoryMapper } from './approval.mapper';
+import { approvalHistoryMapper, approvalMapper } from './approval.mapper';
 import { getApproval, getApprovals } from './get-approval';
 import { getApprovalHistory } from './get-approval-history';
 import { getPendingApprovalCount } from './get-pending-count';

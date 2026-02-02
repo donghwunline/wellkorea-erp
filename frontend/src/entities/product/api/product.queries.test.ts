@@ -4,11 +4,18 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { productQueries, type ProductListQueryParams } from './product.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type ProductListQueryParams, productQueries } from './product.queries';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
 import type { Paginated } from '@/shared/lib/pagination';
-import type { ProductSummaryResponse, ProductDetailResponse, ProductTypeResponse } from './product.mapper';
+import type {
+  ProductDetailResponse,
+  ProductSummaryResponse,
+  ProductTypeResponse,
+} from './product.mapper';
+import { productMapper, productTypeMapper } from './product.mapper';
+// Import mocked modules
+import { getProduct, getProducts, getProductTypes } from './get-product';
 
 // Mock dependencies
 vi.mock('./get-product', () => ({
@@ -26,10 +33,6 @@ vi.mock('./product.mapper', () => ({
     toDomain: vi.fn((response) => ({ ...response, _typeMapped: true })),
   },
 }));
-
-// Import mocked modules
-import { getProduct, getProducts, getProductTypes } from './get-product';
-import { productMapper, productTypeMapper } from './product.mapper';
 
 // =============================================================================
 // Test Fixtures - Minimal Response objects to satisfy TypeScript

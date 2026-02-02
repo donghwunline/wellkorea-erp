@@ -6,9 +6,9 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  type ChainLevelResponse,
   chainTemplateMapper,
   type ChainTemplateResponse,
-  type ChainLevelResponse,
 } from './chain-template.mapper';
 import { expectDomainShape } from '@/test/entity-test-utils';
 

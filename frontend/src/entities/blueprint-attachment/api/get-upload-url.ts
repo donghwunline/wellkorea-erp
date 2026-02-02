@@ -2,7 +2,7 @@
  * Get presigned upload URL for direct MinIO upload.
  */
 
-import { httpClient, DomainValidationError } from '@/shared/api';
+import { DomainValidationError, httpClient } from '@/shared/api';
 import { BLUEPRINT_ENDPOINTS } from '@/shared/config/endpoints';
 import { fileTypeRules, MAX_FILE_SIZE } from '../model/allowed-file-type';
 

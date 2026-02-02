@@ -10,11 +10,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  submitQuotation,
-  quotationQueries,
-  type CommandResult,
-} from '@/entities/quotation';
+import { type CommandResult, quotationQueries, submitQuotation } from '@/entities/quotation';
 
 export interface UseSubmitQuotationOptions {
   /**

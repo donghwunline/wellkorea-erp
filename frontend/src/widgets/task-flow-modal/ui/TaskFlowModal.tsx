@@ -4,7 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Modal, LoadingState, ErrorAlert } from '@/shared/ui';
+import { ErrorAlert, LoadingState, Modal } from '@/shared/ui';
 import { TaskFlowCanvas } from '@/widgets/task-flow-canvas';
 import { useTaskFlowModal } from '../model/use-task-flow-modal';
 

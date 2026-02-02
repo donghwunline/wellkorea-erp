@@ -15,7 +15,13 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { catalogQueries, updateServiceCategory, type ServiceCategoryListItem, type ServiceCategory, type VendorOffering } from '@/entities/catalog';
+import {
+  catalogQueries,
+  type ServiceCategory,
+  type ServiceCategoryListItem,
+  updateServiceCategory,
+  type VendorOffering,
+} from '@/entities/catalog';
 import { useAuth } from '@/entities/auth';
 import { ServiceCategoryFormModal } from '@/features/items/service-category/form';
 import { DeleteServiceCategoryModal } from '@/features/items/service-category/delete';
@@ -78,18 +84,17 @@ export function OutsourceItemsTab() {
     isLoading: categoriesLoading,
     error: categoriesError,
     refetch: refetchCategories,
-  } = useQuery(catalogQueries.categoryList({
-    page,
-    size: PAGE_SIZE,
-    search: search || undefined,
-    isActive: showInactive ? undefined : true,
-  }));
+  } = useQuery(
+    catalogQueries.categoryList({
+      page,
+      size: PAGE_SIZE,
+      search: search || undefined,
+      isActive: showInactive ? undefined : true,
+    })
+  );
 
   // Server state for offerings (only when category selected)
-  const {
-    data: offeringsData,
-    isLoading: offeringsLoading,
-  } = useQuery({
+  const { data: offeringsData, isLoading: offeringsLoading } = useQuery({
     ...catalogQueries.offeringList(selectedCategory?.id ?? 0),
     enabled: !!selectedCategory,
   });
@@ -195,7 +200,7 @@ export function OutsourceItemsTab() {
               <input
                 type="checkbox"
                 checked={showInactive}
-                onChange={(e) => {
+                onChange={e => {
                   setShowInactive(e.target.checked);
                   setPage(0);
                 }}
@@ -236,7 +241,9 @@ export function OutsourceItemsTab() {
       {/* Category List */}
       {!categoriesLoading && !categoriesError && categories.length === 0 && (
         <Card className="p-8 text-center text-steel-400">
-          <p>{canManage ? t('outsourceItems.list.emptyWithAction') : t('outsourceItems.list.empty')}</p>
+          <p>
+            {canManage ? t('outsourceItems.list.emptyWithAction') : t('outsourceItems.list.empty')}
+          </p>
         </Card>
       )}
 
@@ -278,25 +285,36 @@ export function OutsourceItemsTab() {
                     {canManage && (
                       <>
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleOpenCategoryEdit(category); }}
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleOpenCategoryEdit(category);
+                          }}
                           className="text-sm text-steel-400 hover:text-white"
                         >
                           {t('actions.edit')}
                         </button>
                         {category.isActive ? (
                           <button
-                            onClick={(e) => { e.stopPropagation(); handleOpenCategoryDelete(category); }}
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleOpenCategoryDelete(category);
+                            }}
                             className="text-sm text-red-400 hover:text-red-300"
                           >
                             {t('actions.deactivate')}
                           </button>
                         ) : (
                           <button
-                            onClick={(e) => { e.stopPropagation(); handleActivateCategory(category); }}
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleActivateCategory(category);
+                            }}
                             className="text-sm text-emerald-400 hover:text-emerald-300"
                             disabled={activateMutation.isPending}
                           >
-                            {activateMutation.isPending ? t('actions.activating') : t('actions.activate')}
+                            {activateMutation.isPending
+                              ? t('actions.activating')
+                              : t('actions.activate')}
                           </button>
                         )}
                       </>
@@ -340,11 +358,7 @@ export function OutsourceItemsTab() {
             <div className="py-8 text-center text-steel-400">
               <p>{t('outsourceItems.offerings.empty')}</p>
               {canManage && (
-                <Button
-                  variant="primary"
-                  className="mt-4"
-                  onClick={handleOpenOfferingCreate}
-                >
+                <Button variant="primary" className="mt-4" onClick={handleOpenOfferingCreate}>
                   {t('outsourceItems.offerings.addOffering')}
                 </Button>
               )}
@@ -389,7 +403,9 @@ export function OutsourceItemsTab() {
                           {formatPrice(offering.unitPrice)}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
-                          {offering.leadTimeDays ? t('common.days', { count: offering.leadTimeDays }) : '-'}
+                          {offering.leadTimeDays
+                            ? t('common.days', { count: offering.leadTimeDays })
+                            : '-'}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center">
                           {offering.isPreferred && (

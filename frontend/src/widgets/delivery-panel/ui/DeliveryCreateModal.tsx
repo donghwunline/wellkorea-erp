@@ -9,7 +9,7 @@
  * Can import from: features, entities, shared
  */
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -23,8 +23,12 @@ import {
   Modal,
   ModalActions,
 } from '@/shared/ui';
-import { quotationQueries, QuotationStatus, type LineItem } from '@/entities/quotation';
-import { deliveryQueries, deliveryRules, type CreateDeliveryLineItemInput } from '@/entities/delivery';
+import { type LineItem, quotationQueries, QuotationStatus } from '@/entities/quotation';
+import {
+  type CreateDeliveryLineItemInput,
+  deliveryQueries,
+  deliveryRules,
+} from '@/entities/delivery';
 import { useCreateDelivery } from '@/features/delivery/create';
 
 export interface DeliveryCreateModalProps {

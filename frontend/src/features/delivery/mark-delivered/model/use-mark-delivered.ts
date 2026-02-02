@@ -3,7 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { markDelivered, deliveryQueries } from '@/entities/delivery';
+import { deliveryQueries, markDelivered } from '@/entities/delivery';
 
 interface UseMarkDeliveredOptions {
   onSuccess?: (result: { id: number; message: string }) => void;

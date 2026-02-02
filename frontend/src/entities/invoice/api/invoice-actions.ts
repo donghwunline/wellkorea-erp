@@ -5,7 +5,7 @@
 
 import { httpClient } from '@/shared/api';
 import { INVOICE_ENDPOINTS } from '@/shared/config/endpoints';
-import { attachmentRules, ATTACHMENT_MAX_SIZE } from '@/shared/domain';
+import { ATTACHMENT_MAX_SIZE, attachmentRules } from '@/shared/domain';
 import type { CommandResult, PaymentCommandResult } from './invoice.mapper';
 import type { PaymentMethod } from '../model/payment-method';
 

@@ -3,24 +3,18 @@
  * Provides controlled state for nodes and edges with change tracking.
  */
 
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  useNodesState,
-  useEdgesState,
   addEdge,
-  type Edge,
   type Connection,
-  type NodeChange,
+  type Edge,
   type EdgeChange,
+  type NodeChange,
+  useEdgesState,
+  useNodesState,
 } from '@xyflow/react';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  type TaskNode,
-  type TaskEdge,
-  type TaskFlow,
-  type TaskFlowNode,
-  taskNodeRules,
-} from '@/entities/task-flow';
+import { type TaskEdge, type TaskFlow, type TaskFlowNode, type TaskNode, taskNodeRules, } from '@/entities/task-flow';
 
 /**
  * Convert domain TaskNode to React Flow node.

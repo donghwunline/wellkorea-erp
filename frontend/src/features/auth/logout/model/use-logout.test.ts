@@ -2,8 +2,9 @@
  * useLogout Hook Tests.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
+import { useLogout } from './use-logout';
 
 const mockLogout = vi.hoisted(() => vi.fn());
 
@@ -23,8 +24,6 @@ vi.mock('@/entities/auth', async () => {
     }),
   };
 });
-
-import { useLogout } from './use-logout';
 
 describe('useLogout', () => {
   beforeEach(() => {

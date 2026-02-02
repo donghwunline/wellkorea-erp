@@ -4,7 +4,7 @@
  * Soft-deletes a company by setting isActive to false.
  */
 
-import { httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
+import { COMPANY_ENDPOINTS, httpClient } from '@/shared/api';
 
 // =============================================================================
 // INPUT TYPES

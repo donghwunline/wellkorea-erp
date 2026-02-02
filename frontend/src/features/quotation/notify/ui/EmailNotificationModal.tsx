@@ -8,9 +8,9 @@
  * Can import from: entities, shared
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Modal, ModalActions, Spinner, FormField, EmailTagInput, Icon } from '@/shared/ui';
+import { Button, EmailTagInput, FormField, Icon, Modal, ModalActions, Spinner } from '@/shared/ui';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

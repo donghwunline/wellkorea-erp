@@ -5,7 +5,7 @@
  * Note: User creation doesn't have front-end validation - that's handled by the backend.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createUser, type CreateUserInput } from './create-user';
 
 // =============================================================================

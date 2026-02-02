@@ -321,16 +321,16 @@
 - [X] T067 [P] [US2] Write contract tests for POST /api/quotations endpoint (validates product selection, quantity > 0, calculates totals) in backend/src/test/java/com/wellkorea/backend/quotation/api/QuotationControllerTest.java - ✅ Tests written and passing
 - [X] T068 [P] [US2] Write contract tests for GET /api/quotations and PUT /api/quotations/{id} endpoints in backend/src/test/java/com/wellkorea/backend/quotation/api/QuotationControllerTest.java - ✅ Tests written and passing
 - [X] T069 [P] [US2] Write contract tests for POST /api/quotations/{id}/pdf endpoint (expects PDF content-type, valid PDF structure) in backend/src/test/java/com/wellkorea/backend/quotation/api/QuotationControllerTest.java - ✅ Tests written and passing
-- [X] T070 [P] [US2] Write contract tests for POST /api/approvals endpoint (creates multi-level approval request, initializes level_decisions for all levels) in backend/src/test/java/com/wellkorea/backend/shared/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
-- [X] T070a [P] [US2] Write contract tests for GET/PUT /api/admin/approval-chains/{entityType}/levels endpoints (Admin chain configuration) in backend/src/test/java/com/wellkorea/backend/shared/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
-- [X] T071 [P] [US2] Write contract tests for POST /api/approvals/{id}/approve endpoint (only expected approver at current level can approve, advances workflow) in backend/src/test/java/com/wellkorea/backend/shared/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
-- [X] T071a [P] [US2] Write contract tests for POST /api/approvals/{id}/reject endpoint (mandatory comments, stops workflow immediately) in backend/src/test/java/com/wellkorea/backend/shared/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
-- [X] T072 [P] [US2] Write contract tests for GET /api/approvals/{id} endpoint (includes level_decisions, history, comments) in backend/src/test/java/com/wellkorea/backend/shared/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
+- [X] T070 [P] [US2] Write contract tests for POST /api/approvals endpoint (creates multi-level approval request, initializes level_decisions for all levels) in backend/src/test/java/com/wellkorea/backend/supporting/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
+- [X] T070a [P] [US2] Write contract tests for GET/PUT /api/admin/approval-chains/{entityType}/levels endpoints (Admin chain configuration) in backend/src/test/java/com/wellkorea/backend/supporting/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
+- [X] T071 [P] [US2] Write contract tests for POST /api/approvals/{id}/approve endpoint (only expected approver at current level can approve, advances workflow) in backend/src/test/java/com/wellkorea/backend/supporting/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
+- [X] T071a [P] [US2] Write contract tests for POST /api/approvals/{id}/reject endpoint (mandatory comments, stops workflow immediately) in backend/src/test/java/com/wellkorea/backend/supporting/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
+- [X] T072 [P] [US2] Write contract tests for GET /api/approvals/{id} endpoint (includes level_decisions, history, comments) in backend/src/test/java/com/wellkorea/backend/supporting/approval/api/ApprovalControllerTest.java - ✅ Tests written and passing
 - [X] T073 [US2] Write unit tests for QuotationService (quotation total calculation, versioning logic) in backend/src/test/java/com/wellkorea/backend/quotation/application/QuotationServiceTest.java - ✅ Tests written and passing
-- [X] T074 [US2] Write unit tests for ApprovalCommandService (multi-level workflow state transitions: submit → level 1 approve → level 2 approve → complete) in backend/src/test/java/com/wellkorea/backend/shared/approval/application/ApprovalCommandServiceTest.java - ✅ Tests written and passing
+- [X] T074 [US2] Write unit tests for ApprovalCommandService (multi-level workflow state transitions: submit → level 1 approve → level 2 approve → complete) in backend/src/test/java/com/wellkorea/backend/supporting/approval/application/ApprovalCommandServiceTest.java - ✅ Tests written and passing
 - [X] T074a [US2] Write unit tests for ApprovalChainService (get chain for entity type, configure approval levels) - Covered in ApprovalControllerTest and ApprovalCommandServiceTest - ✅ Tests written and passing
-- [X] T075 [US2] Write integration test for multi-level quotation approval workflow (submit → 팀장 approve → 부서장 approve → verify quotation status changes to Approved) in backend/src/test/java/com/wellkorea/backend/shared/approval/api/ApprovalControllerTest.java MultiLevelApprovalFlowTests - ✅ Tests written and passing
-- [X] T075a [US2] Write integration test for approval rejection (submit → 팀장 reject with comments → verify workflow stops, quotation returns to Draft) in backend/src/test/java/com/wellkorea/backend/shared/approval/api/ApprovalControllerTest.java MultiLevelApprovalFlowTests - ✅ Tests written and passing
+- [X] T075 [US2] Write integration test for multi-level quotation approval workflow (submit → 팀장 approve → 부서장 approve → verify quotation status changes to Approved) in backend/src/test/java/com/wellkorea/backend/supporting/approval/api/ApprovalControllerTest.java MultiLevelApprovalFlowTests - ✅ Tests written and passing
+- [X] T075a [US2] Write integration test for approval rejection (submit → 팀장 reject with comments → verify workflow stops, quotation returns to Draft) in backend/src/test/java/com/wellkorea/backend/supporting/approval/api/ApprovalControllerTest.java MultiLevelApprovalFlowTests - ✅ Tests written and passing
 
 ### Database Schema for User Story 2
 
@@ -368,38 +368,38 @@
 
 #### Core Entities (Multi-Level Approval)
 
-> **Note (2025-01-30)**: Approval domain moved to Shared Kernel at `com.wellkorea.backend.shared.approval`.
+> **Note (2025-01-30)**: Approval domain moved to Supporting Domain at `com.wellkorea.backend.supporting.approval`.
 > See [approval-domain-model.md](../../docs/architecture/domain/approval-domain-model.md) for architecture details.
 
-- [X] T079 [P] [US2] Create ApprovalChainTemplate entity (entity_type, name, is_active) in backend/src/main/java/com/wellkorea/backend/shared/approval/domain/ApprovalChainTemplate.java - ✅ Implemented
-- [X] T079a [P] [US2] Create ApprovalChainLevel value object (level_order, level_name, approver_user_id, is_required) in backend/src/main/java/com/wellkorea/backend/shared/approval/domain/vo/ApprovalChainLevel.java - ✅ Implemented as @Embeddable
-- [X] T080 [P] [US2] Create ApprovalStatus enum (PENDING, APPROVED, REJECTED) in backend/src/main/java/com/wellkorea/backend/shared/approval/domain/vo/ApprovalStatus.java - ✅ Implemented
-- [X] T081 [P] [US2] Create ApprovalRequest entity (entity_type, entity_id, current_level, total_levels, status, submitted_by_id) in backend/src/main/java/com/wellkorea/backend/shared/approval/domain/ApprovalRequest.java - ✅ Implemented
-- [X] T081a [P] [US2] Create ApprovalLevelDecision value object (level_order, expected_approver_id, decision, decided_by_id, comments) in backend/src/main/java/com/wellkorea/backend/shared/approval/domain/vo/ApprovalLevelDecision.java - ✅ Implemented as @Embeddable
-- [X] T082 [P] [US2] Create ApprovalHistoryEntry value object (level_order, action, actor_id, comments) in backend/src/main/java/com/wellkorea/backend/shared/approval/domain/vo/ApprovalHistoryEntry.java - ✅ Implemented as @Embeddable (embedded in ApprovalRequest)
-- [X] T082a [P] [US2] Create ApprovalCommentEntry value object (commenter_id, comment_text, is_rejection_reason) in backend/src/main/java/com/wellkorea/backend/shared/approval/domain/vo/ApprovalCommentEntry.java - ✅ Implemented as @Embeddable (embedded in ApprovalRequest)
+- [X] T079 [P] [US2] Create ApprovalChainTemplate entity (entity_type, name, is_active) in backend/src/main/java/com/wellkorea/backend/supporting/approval/domain/ApprovalChainTemplate.java - ✅ Implemented
+- [X] T079a [P] [US2] Create ApprovalChainLevel value object (level_order, level_name, approver_user_id, is_required) in backend/src/main/java/com/wellkorea/backend/supporting/approval/domain/vo/ApprovalChainLevel.java - ✅ Implemented as @Embeddable
+- [X] T080 [P] [US2] Create ApprovalStatus enum (PENDING, APPROVED, REJECTED) in backend/src/main/java/com/wellkorea/backend/supporting/approval/domain/vo/ApprovalStatus.java - ✅ Implemented
+- [X] T081 [P] [US2] Create ApprovalRequest entity (entity_type, entity_id, current_level, total_levels, status, submitted_by_id) in backend/src/main/java/com/wellkorea/backend/supporting/approval/domain/ApprovalRequest.java - ✅ Implemented
+- [X] T081a [P] [US2] Create ApprovalLevelDecision value object (level_order, expected_approver_id, decision, decided_by_id, comments) in backend/src/main/java/com/wellkorea/backend/supporting/approval/domain/vo/ApprovalLevelDecision.java - ✅ Implemented as @Embeddable
+- [X] T082 [P] [US2] Create ApprovalHistoryEntry value object (level_order, action, actor_id, comments) in backend/src/main/java/com/wellkorea/backend/supporting/approval/domain/vo/ApprovalHistoryEntry.java - ✅ Implemented as @Embeddable (embedded in ApprovalRequest)
+- [X] T082a [P] [US2] Create ApprovalCommentEntry value object (commenter_id, comment_text, is_rejection_reason) in backend/src/main/java/com/wellkorea/backend/supporting/approval/domain/vo/ApprovalCommentEntry.java - ✅ Implemented as @Embeddable (embedded in ApprovalRequest)
 
 #### Repositories (Multi-Level Approval)
 
-- [X] T083 [US2] Create ApprovalChainTemplateRepository in backend/src/main/java/com/wellkorea/backend/shared/approval/infrastructure/repository/ApprovalChainTemplateRepository.java - ✅ Implemented
+- [X] T083 [US2] Create ApprovalChainTemplateRepository in backend/src/main/java/com/wellkorea/backend/supporting/approval/infrastructure/repository/ApprovalChainTemplateRepository.java - ✅ Implemented
 - [X] T083a [US2] ApprovalChainLevel embedded in ApprovalChainTemplate (no separate repository needed) - ✅ @Embeddable
-- [X] T083b [US2] Create ApprovalRequestRepository in backend/src/main/java/com/wellkorea/backend/shared/approval/infrastructure/repository/ApprovalRequestRepository.java - ✅ Implemented
+- [X] T083b [US2] Create ApprovalRequestRepository in backend/src/main/java/com/wellkorea/backend/supporting/approval/infrastructure/repository/ApprovalRequestRepository.java - ✅ Implemented
 - [X] T083c [US2] ApprovalLevelDecision embedded in ApprovalRequest (no separate repository needed) - ✅ @Embeddable
 
 #### Services (Multi-Level Approval Workflow)
 
 - [X] T084 [US2] Implement ApprovalChainService (get chain for entity type, Admin configure chain levels) - ✅ Implemented in ApprovalCommandService.java
-- [X] T084a [US2] Implement ApprovalCommandService with multi-level workflow (submit, approve at current level, reject, advance level, complete) in backend/src/main/java/com/wellkorea/backend/shared/approval/application/ApprovalCommandService.java - ✅ Implemented
+- [X] T084a [US2] Implement ApprovalCommandService with multi-level workflow (submit, approve at current level, reject, advance level, complete) in backend/src/main/java/com/wellkorea/backend/supporting/approval/application/ApprovalCommandService.java - ✅ Implemented
 - [X] T084b [US2] Add multi-level approval validation logic: only expected_approver at current_level can approve/reject - ✅ Implemented in ApprovalCommandService
 - [X] T084c [US2] Implement approval level advancement: after Level N approval, increment current_level and enable Level N+1 approver - ✅ Implemented in ApprovalCommandService
 
 #### Controllers (Multi-Level Approval API)
 
-- [X] T085 [US2] Create AdminApprovalChainController with REST endpoints for Admin chain configuration in backend/src/main/java/com/wellkorea/backend/shared/approval/api/AdminApprovalChainController.java - ✅ Implemented
+- [X] T085 [US2] Create AdminApprovalChainController with REST endpoints for Admin chain configuration in backend/src/main/java/com/wellkorea/backend/supporting/approval/api/AdminApprovalChainController.java - ✅ Implemented
   - GET /api/admin/approval-chains - list all approval chain templates
   - GET /api/admin/approval-chains/{id} - get chain by ID
   - PUT /api/admin/approval-chains/{id}/levels - Admin configure approval levels (level_order, level_name, approver_user_id)
-- [X] T085a [US2] Create ApprovalController with REST endpoints for approval workflow in backend/src/main/java/com/wellkorea/backend/shared/approval/api/ApprovalController.java - ✅ Implemented
+- [X] T085a [US2] Create ApprovalController with REST endpoints for approval workflow in backend/src/main/java/com/wellkorea/backend/supporting/approval/api/ApprovalController.java - ✅ Implemented
   - GET /api/approvals - list approval requests (with myPending filter)
   - GET /api/approvals/{id} - get approval request with level_decisions, history
   - POST /api/approvals/{id}/approve - approve at current level (advances workflow or completes)
@@ -408,7 +408,7 @@
 
 #### DTOs (Multi-Level Approval)
 
-- [X] T086 [US2] Create DTOs in backend/src/main/java/com/wellkorea/backend/shared/approval/api/dto/ - ✅ All implemented:
+- [X] T086 [US2] Create DTOs in backend/src/main/java/com/wellkorea/backend/supporting/approval/api/dto/ - ✅ All implemented:
   - ChainTemplateResponse, ChainLevelResponse, UpdateChainLevelsRequest, ChainLevelRequest
   - ApprovalRequestResponse (with level_decisions, history), LevelDecisionResponse
   - ApprovalHistoryResponse

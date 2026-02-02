@@ -3,8 +3,8 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteAttachment, blueprintQueries } from '@/entities/blueprint-attachment';
 import type { CommandResult } from '@/entities/blueprint-attachment';
+import { blueprintQueries, deleteAttachment } from '@/entities/blueprint-attachment';
 
 interface UseDeleteAttachmentOptions {
   onSuccess?: (result: CommandResult) => void;

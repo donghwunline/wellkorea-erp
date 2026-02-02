@@ -4,7 +4,7 @@
  * Tests for mapping and API call.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { approveApproval, type ApproveApprovalInput } from './approve-approval';
 import { createCommandResult } from '@/test/entity-test-utils';
 

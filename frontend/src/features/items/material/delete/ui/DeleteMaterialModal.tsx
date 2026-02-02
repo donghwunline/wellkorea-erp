@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ConfirmationModal } from '@/shared/ui';
 import type { MaterialListItem } from '@/entities/material';
-import { materialQueries, deleteMaterial } from '@/entities/material';
+import { deleteMaterial, materialQueries } from '@/entities/material';
 
 // =============================================================================
 // TYPES

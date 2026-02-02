@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.wellkorea.backend.finance.infrastructure.mapper.AccountsPayableMapper">
+<mapper namespace="com.wellkorea.backend.core.finance.infrastructure.mapper.AccountsPayableMapper">
 
     <!-- Result map for AccountsPayableSummaryView (Java record - uses constructor mapping) -->
-    <resultMap id="summaryViewMap" type="com.wellkorea.backend.finance.api.dto.query.AccountsPayableSummaryView">
+    <resultMap id="summaryViewMap" type="com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableSummaryView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
             <!-- Disbursement cause fields -->
@@ -34,7 +34,7 @@
 
     <!-- Result map for APAgingSummary (Java record - uses constructor mapping) -->
     <resultMap id="agingSummaryMap"
-               type="com.wellkorea.backend.finance.infrastructure.mapper.AccountsPayableMapper$APAgingSummary">
+               type="com.wellkorea.backend.core.finance.infrastructure.mapper.AccountsPayableMapper$APAgingSummary">
         <constructor>
             <arg column="aging_bucket" javaType="java.lang.String"/>
             <arg column="count" javaType="int"/>

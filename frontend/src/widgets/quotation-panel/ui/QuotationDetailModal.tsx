@@ -25,7 +25,7 @@ import {
 import { useAuth } from '@/entities/auth';
 import { formatDate } from '@/shared/lib/formatting/date';
 import { QuotationCard, quotationQueries, quotationRules } from '@/entities/quotation';
-import { ApprovalRequestCard, approvalQueries, approvalRules } from '@/entities/approval';
+import { approvalQueries, ApprovalRequestCard, approvalRules } from '@/entities/approval';
 import { useSubmitQuotation } from '@/features/quotation/submit';
 import { useCreateVersion } from '@/features/quotation/version';
 import { useDownloadPdf } from '@/features/quotation/download-pdf';

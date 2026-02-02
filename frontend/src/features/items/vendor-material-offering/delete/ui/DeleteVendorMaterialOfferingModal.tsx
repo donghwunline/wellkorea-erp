@@ -10,7 +10,11 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ConfirmationModal } from '@/shared/ui';
 import type { VendorMaterialOffering } from '@/entities/material';
-import { materialQueries, deleteVendorMaterialOffering, vendorMaterialOfferingRules } from '@/entities/material';
+import {
+  deleteVendorMaterialOffering,
+  materialQueries,
+  vendorMaterialOfferingRules,
+} from '@/entities/material';
 
 // =============================================================================
 // TYPES

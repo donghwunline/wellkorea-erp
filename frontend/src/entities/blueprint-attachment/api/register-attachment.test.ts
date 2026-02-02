@@ -4,7 +4,7 @@
  * Tests for registering attachment metadata after successful MinIO upload.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerAttachment, type RegisterAttachmentInput } from './register-attachment';
 
 // =============================================================================

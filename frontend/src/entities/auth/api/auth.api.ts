@@ -4,7 +4,7 @@
  * Raw HTTP calls without business logic.
  */
 
-import { httpClient, AUTH_ENDPOINTS } from '@/shared/api';
+import { AUTH_ENDPOINTS, httpClient } from '@/shared/api';
 import type { User } from '@/shared/domain';
 import type { LoginRequestDTO, LoginResponseDTO } from './auth.dto';
 import type { LoginResult } from './auth.mapper';

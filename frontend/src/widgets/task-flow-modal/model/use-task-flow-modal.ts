@@ -4,7 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { taskFlowQueries, type TaskFlow, type TaskNode, type TaskEdge } from '@/entities/task-flow';
+import { type TaskEdge, type TaskFlow, taskFlowQueries, type TaskNode } from '@/entities/task-flow';
 import { useSaveFlow } from '@/features/task-flow/save-flow';
 
 export interface UseTaskFlowModalOptions {

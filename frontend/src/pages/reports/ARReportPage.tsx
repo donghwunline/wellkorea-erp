@@ -14,7 +14,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Card, Icon, LoadingState, PageHeader, Button } from '@/shared/ui';
+import { Alert, Button, Card, Icon, LoadingState, PageHeader } from '@/shared/ui';
 import { arReportQueries } from '@/entities/invoice';
 import { ARAgingSummary, ARCustomerTable, ARInvoiceList } from '@/widgets/ar-report';
 import { useAuth } from '@/entities/auth';
@@ -37,9 +37,7 @@ export function ARReportPage() {
   if (!canViewReport) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">
-          {t('arReport.noPermission')}
-        </Alert>
+        <Alert variant="error">{t('arReport.noPermission')}</Alert>
       </div>
     );
   }
@@ -57,7 +55,9 @@ export function ARReportPage() {
   if (fetchError) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">{t('arReport.loadError')}: {fetchError.message}</Alert>
+        <Alert variant="error">
+          {t('arReport.loadError')}: {fetchError.message}
+        </Alert>
       </div>
     );
   }
@@ -74,10 +74,7 @@ export function ARReportPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title={t('arReport.title')}
-          description={t('arReport.description')}
-        />
+        <PageHeader.Title title={t('arReport.title')} description={t('arReport.description')} />
         <PageHeader.Actions>
           <Button variant="secondary" onClick={() => refetch()}>
             <Icon name="arrow-path" className="mr-2 h-4 w-4" />

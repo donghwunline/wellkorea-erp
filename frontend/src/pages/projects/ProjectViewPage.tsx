@@ -64,7 +64,11 @@ interface TabConfig {
 
 const ALL_TABS: readonly TabConfig[] = [
   // { id: 'overview', labelKey: 'overview' },
-  { id: 'quotation', labelKey: 'quotation', requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'] },
+  {
+    id: 'quotation',
+    labelKey: 'quotation',
+    requiredRoles: ['ROLE_ADMIN', 'ROLE_FINANCE', 'ROLE_SALES'],
+  },
   { id: 'process', labelKey: 'process' },
   { id: 'purchase', labelKey: 'purchase' },
   { id: 'outsource', labelKey: 'outsource' },

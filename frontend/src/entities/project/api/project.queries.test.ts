@@ -4,11 +4,15 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { projectQueries, type ProjectListQueryParams } from './project.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type ProjectListQueryParams, projectQueries } from './project.queries';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
 import type { Paginated } from '@/shared/lib/pagination';
-import type { ProjectListItemResponse, ProjectDetailsResponse } from './project.mapper';
+import type { ProjectDetailsResponse, ProjectListItemResponse } from './project.mapper';
+import { projectMapper } from './project.mapper';
+// Import mocked modules
+import { getProject, getProjectByJobCode, getProjects } from './get-project';
+import { projectSummaryApi } from './project-summary.api';
 
 // Mock dependencies
 vi.mock('./get-project', () => ({
@@ -30,11 +34,6 @@ vi.mock('./project-summary.api', () => ({
     getKPIs: vi.fn(),
   },
 }));
-
-// Import mocked modules
-import { getProject, getProjectByJobCode, getProjects } from './get-project';
-import { projectMapper } from './project.mapper';
-import { projectSummaryApi } from './project-summary.api';
 
 // =============================================================================
 // Test Fixtures - Minimal Response objects to satisfy TypeScript

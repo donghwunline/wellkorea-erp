@@ -6,10 +6,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  approveApproval,
-  approvalQueries,
-  type ApproveApprovalInput,
   type ApprovalCommandResult,
+  approvalQueries,
+  approveApproval,
+  type ApproveApprovalInput,
 } from '@/entities/approval';
 import { quotationQueries } from '@/entities/quotation';
 

@@ -11,10 +11,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  createCompany,
-  companyQueries,
-  type CreateCompanyInput,
   type CommandResult,
+  companyQueries,
+  createCompany,
+  type CreateCompanyInput,
 } from '@/entities/company';
 
 export interface UseCreateCompanyOptions {

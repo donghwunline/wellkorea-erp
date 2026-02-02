@@ -189,13 +189,16 @@ const mockTranslations: Record<string, string> = {
   'quotations:panel.versionSuccess': 'New version created',
   'quotations:panel.emailSuccess': 'Email notification sent successfully',
   'quotations:panel.confirmSubmit.title': 'Submit for Approval',
-  'quotations:panel.confirmSubmit.message': 'Are you sure you want to submit "{{jobCode}}" for approval?',
+  'quotations:panel.confirmSubmit.message':
+    'Are you sure you want to submit "{{jobCode}}" for approval?',
   'quotations:panel.confirmSubmit.confirm': 'Submit',
   'quotations:panel.confirmAccept.title': 'Accept Quotation',
-  'quotations:panel.confirmAccept.message': 'Mark "{{jobCode}} v{{version}}" as accepted by customer?',
+  'quotations:panel.confirmAccept.message':
+    'Mark "{{jobCode}} v{{version}}" as accepted by customer?',
   'quotations:panel.confirmAccept.confirm': 'Accept',
   'quotations:panel.confirmVersion.title': 'Create New Version',
-  'quotations:panel.confirmVersion.message': 'Create a new version based on "{{jobCode}} v{{version}}"?',
+  'quotations:panel.confirmVersion.message':
+    'Create a new version based on "{{jobCode}} v{{version}}"?',
   'quotations:panel.confirmVersion.confirm': 'Create Version',
   'quotations:createModal.title': 'Create Quotation',
   'quotations:createModal.loadingProject': 'Loading project details...',
@@ -284,7 +287,8 @@ const mockTranslations: Record<string, string> = {
   'deliveries:create.saving': 'Saving...',
   'deliveries:validation.noQuotationFound': 'No accepted quotation found',
   'deliveries:validation.enterAtLeastOne': 'Please enter quantity for at least one item',
-  'deliveries:validation.exceedsRemaining': 'Quantity for {{product}} exceeds remaining ({{remaining}})',
+  'deliveries:validation.exceedsRemaining':
+    'Quantity for {{product}} exceeds remaining ({{remaining}})',
 
   // Invoice translations
   'invoices:title': 'Tax Invoices',
@@ -353,7 +357,8 @@ const mockTranslations: Record<string, string> = {
   'invoices:cancel.warning': 'This action cannot be undone.',
   'invoices:validation.invalidAmount': 'Please enter a valid payment amount',
   'invoices:validation.paymentDateRequired': 'Please enter a payment date',
-  'invoices:validation.exceedsBalance': 'Payment amount ({{amount}}) exceeds remaining balance ({{balance}})',
+  'invoices:validation.exceedsBalance':
+    'Payment amount ({{amount}}) exceeds remaining balance ({{balance}})',
 
   // Purchasing translations
   'purchasing:title': 'Procurement',
@@ -423,7 +428,8 @@ const mockTranslations: Record<string, string> = {
   'purchasing:recordReplyModal.hints.quotedLeadTime': 'Expected delivery time in business days',
   'purchasing:recordReplyModal.hints.notes': 'Any additional information from vendor',
   'purchasing:recordReplyModal.validation.quotedPriceRequired': 'Quoted price is required',
-  'purchasing:recordReplyModal.validation.quotedPriceInvalid': 'Please enter a valid positive number',
+  'purchasing:recordReplyModal.validation.quotedPriceInvalid':
+    'Please enter a valid positive number',
   'purchasing:recordReplyModal.validation.leadTimeInvalid': 'Please enter a valid positive number',
   'purchasing:recordReplyModal.saving': 'Saving...',
 
@@ -439,11 +445,15 @@ const mockTranslations: Record<string, string> = {
   'purchasing:createPurchaseOrderModal.fields.expectedDeliveryDate': 'Expected Delivery Date',
   'purchasing:createPurchaseOrderModal.fields.notes': 'Notes',
   'purchasing:createPurchaseOrderModal.placeholders.notes': 'Additional order notes',
-  'purchasing:createPurchaseOrderModal.hints.vendorLeadTime': 'Based on vendor lead time of {{days}} days',
-  'purchasing:createPurchaseOrderModal.hints.notes': 'Optional instructions or notes for the vendor',
+  'purchasing:createPurchaseOrderModal.hints.vendorLeadTime':
+    'Based on vendor lead time of {{days}} days',
+  'purchasing:createPurchaseOrderModal.hints.notes':
+    'Optional instructions or notes for the vendor',
   'purchasing:createPurchaseOrderModal.validation.orderDateRequired': 'Order date is required',
-  'purchasing:createPurchaseOrderModal.validation.expectedDeliveryDateRequired': 'Expected delivery date is required',
-  'purchasing:createPurchaseOrderModal.validation.expectedDeliveryDateInvalid': 'Expected delivery date must be after order date',
+  'purchasing:createPurchaseOrderModal.validation.expectedDeliveryDateRequired':
+    'Expected delivery date is required',
+  'purchasing:createPurchaseOrderModal.validation.expectedDeliveryDateInvalid':
+    'Expected delivery date must be after order date',
   'purchasing:createPurchaseOrderModal.creating': 'Creating...',
   'purchasing:createPurchaseOrderModal.create': 'Create Purchase Order',
 
@@ -455,13 +465,15 @@ const mockTranslations: Record<string, string> = {
   'items:tabs.outsourceItems': 'Outsource Items',
   'items:products.title': 'Products',
   'items:products.list.empty': 'No products found.',
-  'items:products.list.emptyWithAction': 'No products found. Click "Add Product" to create your first product.',
+  'items:products.list.emptyWithAction':
+    'No products found. Click "Add Product" to create your first product.',
   'items:products.list.allTypes': 'All Types',
   'items:products.list.searchPlaceholder': 'Search by name or SKU...',
   'items:products.list.loadError': 'Failed to load products',
   'items:materials.title': 'Materials',
   'items:materials.list.empty': 'No materials found.',
-  'items:materials.list.emptyWithAction': 'No materials found. Click "Add Material" to create your first material.',
+  'items:materials.list.emptyWithAction':
+    'No materials found. Click "Add Material" to create your first material.',
   'items:materials.list.allCategories': 'All Categories',
   'items:materials.list.searchPlaceholder': 'Search materials by name or SKU...',
   'items:materials.list.loadError': 'Failed to load materials',
@@ -475,7 +487,8 @@ const mockTranslations: Record<string, string> = {
   'items:materials.fields.description': 'Description',
   'items:outsourceItems.title': 'Outsource Items',
   'items:outsourceItems.list.empty': 'No service categories found.',
-  'items:outsourceItems.list.emptyWithAction': 'No service categories found. Click "Add Category" to create your first service category.',
+  'items:outsourceItems.list.emptyWithAction':
+    'No service categories found. Click "Add Category" to create your first service category.',
   'items:outsourceItems.list.searchPlaceholder': 'Search service categories...',
   'items:outsourceItems.list.includeInactive': 'Include Inactive',
   'items:outsourceItems.list.loadError': 'Failed to load service categories',
@@ -539,13 +552,15 @@ const mockTranslations: Record<string, string> = {
   // Delete Material Category Modal translations
   'items:deleteMaterialCategoryModal.title': 'Deactivate Category',
   'items:deleteMaterialCategoryModal.message': 'Are you sure you want to deactivate "{{name}}"?',
-  'items:deleteMaterialCategoryModal.materialCountWarning': 'This category contains {{count}} material(s).',
+  'items:deleteMaterialCategoryModal.materialCountWarning':
+    'This category contains {{count}} material(s).',
 
   // Service Category Form translations
   'items:serviceCategoryForm.fields.name': 'Category Name',
   'items:serviceCategoryForm.fields.description': 'Description',
   'items:serviceCategoryForm.placeholders.name': 'e.g., Laser Cutting',
-  'items:serviceCategoryForm.placeholders.description': 'Optional description of this service category',
+  'items:serviceCategoryForm.placeholders.description':
+    'Optional description of this service category',
   'items:serviceCategoryForm.validation.nameRequired': 'Category name is required',
   'items:serviceCategoryForm.validation.nameMinLength': 'Name must be at least 2 characters',
   'items:serviceCategoryForm.validation.nameMaxLength': 'Name must not exceed 100 characters',
@@ -559,7 +574,8 @@ const mockTranslations: Record<string, string> = {
   // Delete Service Category Modal translations
   'items:deleteServiceCategoryModal.title': 'Deactivate Category',
   'items:deleteServiceCategoryModal.message': 'Are you sure you want to deactivate "{{name}}"?',
-  'items:deleteServiceCategoryModal.vendorCountWarning': 'This category has {{count}} vendor offering(s) associated with it.',
+  'items:deleteServiceCategoryModal.vendorCountWarning':
+    'This category has {{count}} vendor offering(s) associated with it.',
 
   // Material Form translations
   'items:materialForm.fields.sku': 'SKU',
@@ -621,7 +637,8 @@ const mockTranslations: Record<string, string> = {
 
   // Delete Vendor Offering Modal translations
   'items:deleteVendorOfferingModal.title': 'Delete Vendor Offering',
-  'items:deleteVendorOfferingModal.message': 'Are you sure you want to delete the offering "{{name}}" from {{vendor}}? {{price}}',
+  'items:deleteVendorOfferingModal.message':
+    'Are you sure you want to delete the offering "{{name}}" from {{vendor}}? {{price}}',
 
   // Vendor Material Offering Form translations
   'items:vendorMaterialOfferingForm.fields.vendor': 'Vendor',
@@ -645,8 +662,10 @@ const mockTranslations: Record<string, string> = {
   'items:vendorMaterialOfferingForm.validation.materialRequired': 'Material is required',
   'items:vendorMaterialOfferingForm.validation.unitPriceNegative': 'Price cannot be negative',
   'items:vendorMaterialOfferingForm.validation.leadTimeNegative': 'Lead time cannot be negative',
-  'items:vendorMaterialOfferingForm.validation.minQuantityNegative': 'Minimum quantity cannot be negative',
-  'items:vendorMaterialOfferingForm.validation.dateRangeInvalid': 'End date must be after start date',
+  'items:vendorMaterialOfferingForm.validation.minQuantityNegative':
+    'Minimum quantity cannot be negative',
+  'items:vendorMaterialOfferingForm.validation.dateRangeInvalid':
+    'End date must be after start date',
   'items:vendorMaterialOfferingForm.saveChanges': 'Save Changes',
   'items:vendorMaterialOfferingForm.createOffering': 'Create Offering',
   'items:vendorMaterialOfferingFormModal.addTitle': 'Add Vendor Material Offering',
@@ -657,7 +676,8 @@ const mockTranslations: Record<string, string> = {
 
   // Delete Vendor Material Offering Modal translations
   'items:deleteVendorMaterialOfferingModal.title': 'Delete Vendor Material Offering',
-  'items:deleteVendorMaterialOfferingModal.message': 'Are you sure you want to delete the offering "{{name}}" from {{vendor}}? {{price}}',
+  'items:deleteVendorMaterialOfferingModal.message':
+    'Are you sure you want to delete the offering "{{name}}" from {{vendor}}? {{price}}',
 
   // Attachment translations
   'items:downloadButton.error': 'Failed to download {{fileName}}',
@@ -665,7 +685,8 @@ const mockTranslations: Record<string, string> = {
   'items:attachmentUploader.clickToUpload': 'Click to upload',
   'items:attachmentUploader.orDragDrop': 'or drag and drop',
   'items:attachmentUploader.maxSize': 'max {{size}}',
-  'items:attachmentUploader.validation.fileTypeNotAllowed': 'File type not allowed. Allowed types: {{types}}',
+  'items:attachmentUploader.validation.fileTypeNotAllowed':
+    'File type not allowed. Allowed types: {{types}}',
   'items:attachmentUploader.validation.fileSizeExceeds': 'File size exceeds maximum of {{maxSize}}',
   'items:deleteAttachmentButton.deleting': 'Deleting...',
 
@@ -675,7 +696,8 @@ const mockTranslations: Record<string, string> = {
   'items:jobCodeSuccessModal.copied': 'Copied!',
   'items:jobCodeSuccessModal.copyToClipboard': 'Copy to clipboard',
   'items:jobCodeSuccessModal.copiedMessage': 'Copied to clipboard!',
-  'items:jobCodeSuccessModal.hint': 'Use this Job Code to reference this project in quotations, production, and invoicing.',
+  'items:jobCodeSuccessModal.hint':
+    'Use this Job Code to reference this project in quotations, production, and invoicing.',
   'items:jobCodeSuccessModal.backToList': 'Back to List',
   'items:jobCodeSuccessModal.viewProject': 'View Project',
 
@@ -708,7 +730,8 @@ const mockTranslations: Record<string, string> = {
   'approval:chain.steps.add': 'Add Level',
   'approval:chain.steps.noLevels': 'No levels configured. Add at least one approval level.',
   'approval:chain.steps.selectApprover': 'Select approver...',
-  'approval:chain.steps.processOrder': 'Approvals will be processed in order from Level 1 to the highest level.',
+  'approval:chain.steps.processOrder':
+    'Approvals will be processed in order from Level 1 to the highest level.',
   'approval:common.cancel': 'Cancel',
   'approval:common.save': 'Save Changes',
   'approval:common.saving': 'Saving...',
@@ -773,7 +796,8 @@ const mockTranslations: Record<string, string> = {
 
   // User Deactivate Modal translations
   'admin:userDeactivate.title': 'Deactivate User',
-  'admin:userDeactivate.message': 'Are you sure you want to deactivate "{{username}}"? This user will no longer be able to access the system.',
+  'admin:userDeactivate.message':
+    'Are you sure you want to deactivate "{{username}}"? This user will no longer be able to access the system.',
   'admin:userDeactivate.confirm': 'Deactivate',
 
   // User Customers Form translations
@@ -804,8 +828,10 @@ const mockTranslations: Record<string, string> = {
   'widgets:purchasePanel.loading': 'Loading material purchase requests...',
   'widgets:purchasePanel.loadError': 'Failed to load material purchase requests: {{message}}',
   'widgets:purchasePanel.emptyTitle': 'No Material Purchases Yet',
-  'widgets:purchasePanel.emptyDescription': 'Create your first material purchase request for this project.',
-  'widgets:purchasePanel.emptyHint': 'Material purchase requests can be created from the task flow panel.',
+  'widgets:purchasePanel.emptyDescription':
+    'Create your first material purchase request for this project.',
+  'widgets:purchasePanel.emptyHint':
+    'Material purchase requests can be created from the task flow panel.',
   'widgets:purchasePanel.overdueWarning': 'Required date has passed',
   'widgets:purchasePanel.stats.total': 'Total',
   'widgets:purchasePanel.stats.draft': 'Draft',
@@ -827,8 +853,10 @@ const mockTranslations: Record<string, string> = {
   'widgets:outsourcePanel.loading': 'Loading outsourcing requests...',
   'widgets:outsourcePanel.loadError': 'Failed to load outsourcing requests: {{message}}',
   'widgets:outsourcePanel.emptyTitle': 'No Outsourcing Requests Yet',
-  'widgets:outsourcePanel.emptyDescription': 'Create your first outsourcing request for this project.',
-  'widgets:outsourcePanel.emptyHint': 'Outsourcing requests can be created from the task flow panel.',
+  'widgets:outsourcePanel.emptyDescription':
+    'Create your first outsourcing request for this project.',
+  'widgets:outsourcePanel.emptyHint':
+    'Outsourcing requests can be created from the task flow panel.',
   'widgets:outsourcePanel.overdueWarning': 'Required date has passed',
   'widgets:outsourcePanel.stats.total': 'Total',
   'widgets:outsourcePanel.stats.draft': 'Draft',
@@ -851,7 +879,8 @@ const mockTranslations: Record<string, string> = {
   'widgets:deliveryPanel.loading': 'Loading delivery data...',
   'widgets:deliveryPanel.loadError': 'Failed to load deliveries: {{message}}',
   'widgets:deliveryPanel.noQuotation': 'No Accepted Quotation',
-  'widgets:deliveryPanel.noQuotationDesc': 'A quotation must be accepted by the customer before recording deliveries.',
+  'widgets:deliveryPanel.noQuotationDesc':
+    'A quotation must be accepted by the customer before recording deliveries.',
   'widgets:deliveryPanel.noDeliveries': 'No Deliveries Yet',
   'widgets:deliveryPanel.noDeliveriesDesc': 'No deliveries have been recorded for this project.',
   'widgets:deliveryPanel.table.id': 'ID',
@@ -870,7 +899,8 @@ const mockTranslations: Record<string, string> = {
   'widgets:deliveryDetailModal.loading': 'Loading delivery details...',
   'widgets:deliveryDetailModal.loadError': 'Failed to load delivery: {{message}}',
   'widgets:deliveryDetailModal.outdatedWarning.title': 'Outdated Quotation Reference',
-  'widgets:deliveryDetailModal.outdatedWarning.description': 'This delivery references an older version of the quotation.',
+  'widgets:deliveryDetailModal.outdatedWarning.description':
+    'This delivery references an older version of the quotation.',
   'widgets:deliveryDetailModal.fields.status': 'Status',
   'widgets:deliveryDetailModal.fields.deliveryDate': 'Delivery Date',
   'widgets:deliveryDetailModal.fields.deliveredBy': 'Delivered By',
@@ -890,20 +920,24 @@ const mockTranslations: Record<string, string> = {
   'widgets:deliveryDetailModal.actions.reassignToLatest': 'Reassign to Latest',
   'widgets:deliveryDetailModal.successMessages.delivered': 'Delivery marked as delivered',
   'widgets:deliveryDetailModal.successMessages.returned': 'Delivery marked as returned',
-  'widgets:deliveryDetailModal.successMessages.reassigned': 'Delivery reassigned to latest quotation',
+  'widgets:deliveryDetailModal.successMessages.reassigned':
+    'Delivery reassigned to latest quotation',
 
   // Invoice Panel translations
   'widgets:invoicePanel.title': 'Invoices',
   'widgets:invoicePanel.loading': 'Loading invoice data...',
   'widgets:invoicePanel.loadError': 'Failed to load invoices: {{message}}',
   'widgets:invoicePanel.noQuotation': 'No Accepted Quotation',
-  'widgets:invoicePanel.noQuotationDesc': 'A quotation must be accepted by the customer before creating invoices.',
+  'widgets:invoicePanel.noQuotationDesc':
+    'A quotation must be accepted by the customer before creating invoices.',
   'widgets:invoicePanel.noInvoices': 'No Invoices Yet',
   'widgets:invoicePanel.noInvoicesDesc': 'No invoices have been created for this project.',
   'widgets:invoicePanel.confirmIssue': 'Issue Invoice',
   'widgets:invoicePanel.confirmCancel': 'Cancel Invoice',
-  'widgets:invoicePanel.confirmIssueMessage': 'Are you sure you want to issue invoice #{{invoiceNumber}}? Once issued, it cannot be edited.',
-  'widgets:invoicePanel.confirmCancelMessage': 'Are you sure you want to cancel invoice #{{invoiceNumber}}? This action cannot be undone.',
+  'widgets:invoicePanel.confirmIssueMessage':
+    'Are you sure you want to issue invoice #{{invoiceNumber}}? Once issued, it cannot be edited.',
+  'widgets:invoicePanel.confirmCancelMessage':
+    'Are you sure you want to cancel invoice #{{invoiceNumber}}? This action cannot be undone.',
   'widgets:invoicePanel.issueButton': 'Issue',
   'widgets:invoicePanel.cancelButton': 'Cancel Invoice',
   'widgets:invoicePanel.successMessages.issued': 'Invoice issued successfully',
@@ -928,7 +962,8 @@ const mockTranslations: Record<string, string> = {
   'widgets:recordPaymentModal.maxAmount': 'Max: {{amount}}',
   'widgets:recordPaymentModal.validation.dateRequired': 'Payment date is required',
   'widgets:recordPaymentModal.validation.amountPositive': 'Amount must be greater than 0',
-  'widgets:recordPaymentModal.validation.amountExceedsBalance': 'Amount cannot exceed remaining balance ({{balance}})',
+  'widgets:recordPaymentModal.validation.amountExceedsBalance':
+    'Amount cannot exceed remaining balance ({{balance}})',
   'widgets:recordPaymentModal.actions.cancel': 'Cancel',
   'widgets:recordPaymentModal.actions.record': 'Record Payment',
   'widgets:recordPaymentModal.actions.recording': 'Recording...',
@@ -959,7 +994,8 @@ const mockTranslations: Record<string, string> = {
   'widgets:purchaseRequestPanel.table.notes': 'Notes',
   'widgets:purchaseRequestPanel.table.actions': 'Actions',
   'widgets:purchaseRequestPanel.table.leadTimeDays': '{{days}} days',
-  'widgets:purchaseRequestPanel.metadata': 'Requester: {{requester}} | Created: {{createdAt}} | Updated: {{updatedAt}}',
+  'widgets:purchaseRequestPanel.metadata':
+    'Requester: {{requester}} | Created: {{createdAt}} | Updated: {{updatedAt}}',
   'widgets:purchaseRequestPanel.actions.sendRfq': 'Send RFQ',
   'widgets:purchaseRequestPanel.actions.recordReply': 'Record Reply',
   'widgets:purchaseRequestPanel.actions.noResponse': 'No Response',
@@ -971,11 +1007,13 @@ const mockTranslations: Record<string, string> = {
   'widgets:purchaseRequestPanel.actions.poCreated': 'PO Created',
   'widgets:purchaseRequestPanel.actions.selectionComplete': 'Selection Complete',
   'widgets:purchaseRequestPanel.confirmSelectVendor.title': 'Select Vendor',
-  'widgets:purchaseRequestPanel.confirmSelectVendor.message': 'Are you sure you want to select {{vendorName}}? Other vendors with replies will be automatically rejected.',
+  'widgets:purchaseRequestPanel.confirmSelectVendor.message':
+    'Are you sure you want to select {{vendorName}}? Other vendors with replies will be automatically rejected.',
   'widgets:purchaseRequestPanel.confirmSelectVendor.confirm': 'Select',
   'widgets:purchaseRequestPanel.confirmSelectVendor.cancel': 'Cancel',
   'widgets:purchaseRequestPanel.confirmCreatePo.title': 'Create Purchase Order',
-  'widgets:purchaseRequestPanel.confirmCreatePo.message': '{{vendorName}} has been selected. Would you like to create a purchase order now?',
+  'widgets:purchaseRequestPanel.confirmCreatePo.message':
+    '{{vendorName}} has been selected. Would you like to create a purchase order now?',
   'widgets:purchaseRequestPanel.confirmCreatePo.confirm': 'Create PO',
   'widgets:purchaseRequestPanel.confirmCreatePo.later': 'Later',
   'widgets:purchaseRequestPanel.noVendorSelected': 'No vendor selected',
@@ -989,8 +1027,10 @@ const mockTranslations: Record<string, string> = {
   'widgets:sendRfqModal.emptyStateService': 'No vendors registered for this service category.',
   'widgets:sendRfqModal.emptyStateServiceHint': 'Register vendors in Settings > Service Catalog.',
   'widgets:sendRfqModal.emptyStateMaterial': 'No suppliers registered for this material.',
-  'widgets:sendRfqModal.emptyStateMaterialHint': 'Register suppliers in Settings > Material Management.',
-  'widgets:sendRfqModal.vendorCountInfo': 'Select vendors to request quotes from ({{total}} vendors, {{selected}} selected)',
+  'widgets:sendRfqModal.emptyStateMaterialHint':
+    'Register suppliers in Settings > Material Management.',
+  'widgets:sendRfqModal.vendorCountInfo':
+    'Select vendors to request quotes from ({{total}} vendors, {{selected}} selected)',
   'widgets:sendRfqModal.selectAll': 'Select All',
   'widgets:sendRfqModal.deselectAll': 'Deselect All',
   'widgets:sendRfqModal.preferredVendor': 'Preferred',
@@ -1002,7 +1042,8 @@ const mockTranslations: Record<string, string> = {
   'widgets:sendRfqModal.next': 'Next: Write Email',
   'widgets:sendRfqModal.back': 'Back',
   'widgets:sendRfqModal.send': 'Send RFQ',
-  'widgets:sendRfqModal.emailVerifyDescription': 'Verify each vendor contact email. An RFQ PDF will be attached and sent.',
+  'widgets:sendRfqModal.emailVerifyDescription':
+    'Verify each vendor contact email. An RFQ PDF will be attached and sent.',
   'widgets:sendRfqModal.allEmailsRequired': 'Please enter a recipient email for all vendors.',
   'widgets:sendRfqModal.noVendorsSelected': 'Please select at least one vendor',
   'widgets:sendRfqModal.error': 'Failed to send RFQ',
@@ -1013,7 +1054,8 @@ const mockTranslations: Record<string, string> = {
   'widgets:companyManagement.loadError': 'Failed to load companies',
   'widgets:companyManagement.retry': 'Retry',
   'widgets:companyManagement.totalCount': 'Total {{count}} companies',
-  'widgets:companyManagement.searchPlaceholder': 'Search by company name, business number, contact...',
+  'widgets:companyManagement.searchPlaceholder':
+    'Search by company name, business number, contact...',
   'widgets:companyManagement.emptySearch': 'No results found for "{{search}}"',
   'widgets:companyManagement.empty': 'No companies registered',
   'widgets:companyManagement.createCompany': 'Register Company',
@@ -1210,7 +1252,8 @@ const mockTranslations: Record<string, string> = {
   'widgets:projectRelatedNavigationGrid.loadError': 'Failed to load project summary',
   'widgets:projectRelatedNavigationGrid.retry': 'Retry',
   'widgets:projectRelatedNavigationGrid.emptyTitle': 'No sections available',
-  'widgets:projectRelatedNavigationGrid.emptyDescription': 'No sections available for this project.',
+  'widgets:projectRelatedNavigationGrid.emptyDescription':
+    'No sections available for this project.',
 
   // DeliverySummaryStats widget translations
   'widgets:deliverySummaryStats.totalDeliveries': 'Total Deliveries',

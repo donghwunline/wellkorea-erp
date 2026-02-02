@@ -14,23 +14,14 @@
  * - Uses features/invoice/create for mutation
  */
 
-import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useQuery, useQueries } from '@tanstack/react-query';
-import {
-  Alert,
-  Button,
-  Card,
-  FormField,
-  Icon,
-  Input,
-  LoadingState,
-  PageHeader,
-} from '@/shared/ui';
-import { quotationQueries, QuotationStatus, type LineItem } from '@/entities/quotation';
-import { deliveryQueries, deliveryRules, type Delivery } from '@/entities/delivery';
-import { invoiceQueries, type CreateInvoiceLineItemInput } from '@/entities/invoice';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import { Alert, Button, Card, FormField, Icon, Input, LoadingState, PageHeader } from '@/shared/ui';
+import { type LineItem, quotationQueries, QuotationStatus } from '@/entities/quotation';
+import { type Delivery, deliveryQueries, deliveryRules } from '@/entities/delivery';
+import { type CreateInvoiceLineItemInput, invoiceQueries } from '@/entities/invoice';
 import { useCreateInvoice } from '@/features/invoice/create';
 import { formatCurrency } from '@/shared/lib/formatting';
 
@@ -124,22 +115,22 @@ export function InvoiceCreatePage() {
   const nonCancelledInvoiceIds = useMemo(
     () =>
       (existingInvoicesPage?.data ?? [])
-        .filter((inv) => inv.status !== 'CANCELLED')
-        .map((inv) => inv.id),
+        .filter(inv => inv.status !== 'CANCELLED')
+        .map(inv => inv.id),
     [existingInvoicesPage?.data]
   );
 
   // Fetch full details for each non-cancelled invoice to get line items
   const invoiceDetailQueries = useQueries({
-    queries: nonCancelledInvoiceIds.map((id) => ({
+    queries: nonCancelledInvoiceIds.map(id => ({
       ...invoiceQueries.detail(id),
       enabled: id > 0,
     })),
   });
 
-  const loadingInvoiceDetails = invoiceDetailQueries.some((q) => q.isLoading);
+  const loadingInvoiceDetails = invoiceDetailQueries.some(q => q.isLoading);
   const invoiceDetails = invoiceDetailQueries
-    .map((q) => q.data)
+    .map(q => q.data)
     .filter((d): d is NonNullable<typeof d> => d !== undefined);
 
   // Derive line items data from quotation, deliveries, and existing invoices
@@ -187,7 +178,7 @@ export function InvoiceCreatePage() {
         return;
       }
 
-      const selectedDelivery = deliveries.find((d) => d.id === deliveryId);
+      const selectedDelivery = deliveries.find(d => d.id === deliveryId);
       if (!selectedDelivery) {
         setQuantitiesToInvoice({});
         return;
@@ -196,7 +187,7 @@ export function InvoiceCreatePage() {
       // Build quantities from selected delivery, capped at remaining invoiceable qty
       const newQuantities: Record<number, number> = {};
       for (const deliveryItem of selectedDelivery.lineItems) {
-        const lineItem = lineItemsData.find((li) => li.productId === deliveryItem.productId);
+        const lineItem = lineItemsData.find(li => li.productId === deliveryItem.productId);
         if (lineItem && lineItem.remainingQuantity > 0) {
           // Take the lesser of: delivered qty from this delivery or remaining invoiceable qty
           newQuantities[deliveryItem.productId] = Math.min(
@@ -218,11 +209,11 @@ export function InvoiceCreatePage() {
     if (!preselectedDeliveryId || !lineItemsData.length || !deliveries.length) return;
     initializedRef.current = true;
     // Only set quantities, don't call full handler to avoid setting deliveryId again
-    const selectedDelivery = deliveries.find((d) => d.id === preselectedDeliveryId);
+    const selectedDelivery = deliveries.find(d => d.id === preselectedDeliveryId);
     if (!selectedDelivery) return;
     const newQuantities: Record<number, number> = {};
     for (const deliveryItem of selectedDelivery.lineItems) {
-      const lineItem = lineItemsData.find((li) => li.productId === deliveryItem.productId);
+      const lineItem = lineItemsData.find(li => li.productId === deliveryItem.productId);
       if (lineItem && lineItem.remainingQuantity > 0) {
         newQuantities[deliveryItem.productId] = Math.min(
           deliveryItem.quantityDelivered,
@@ -248,7 +239,7 @@ export function InvoiceCreatePage() {
 
   // Mutation hook
   const { mutate: createInvoice, isPending: isSubmitting } = useCreateInvoice({
-    onSuccess: (result) => {
+    onSuccess: result => {
       navigate(`/invoices/${result.id}`);
     },
     onError: (err: Error) => {
@@ -259,7 +250,7 @@ export function InvoiceCreatePage() {
   // Handle quantity change
   const handleQuantityChange = useCallback((productId: number, value: string) => {
     const numValue = parseFloat(value) || 0;
-    setQuantitiesToInvoice((prev) => ({
+    setQuantitiesToInvoice(prev => ({
       ...prev,
       [productId]: numValue,
     }));
@@ -273,8 +264,8 @@ export function InvoiceCreatePage() {
 
       // Build line items for submission (only items with quantity > 0)
       const lineItems: CreateInvoiceLineItemInput[] = lineItemsData
-        .filter((item) => (quantitiesToInvoice[item.productId] || 0) > 0)
-        .map((item) => ({
+        .filter(item => (quantitiesToInvoice[item.productId] || 0) > 0)
+        .map(item => ({
           productId: item.productId,
           productName: item.productName,
           productSku: item.productSku,
@@ -292,7 +283,10 @@ export function InvoiceCreatePage() {
         const qtyToInvoice = quantitiesToInvoice[item.productId] || 0;
         if (qtyToInvoice > item.remainingQuantity) {
           setError(
-            t('invoiceCreate.errors.exceedsQuantity', { product: item.productName, max: item.remainingQuantity })
+            t('invoiceCreate.errors.exceedsQuantity', {
+              product: item.productName,
+              max: item.remainingQuantity,
+            })
           );
           return;
         }
@@ -330,10 +324,14 @@ export function InvoiceCreatePage() {
 
   // Loading state
   const isLoading =
-    loadingQuotations || loadingDeliveries || loadingQuotationDetail || loadingInvoices || loadingInvoiceDetails;
+    loadingQuotations ||
+    loadingDeliveries ||
+    loadingQuotationDetail ||
+    loadingInvoices ||
+    loadingInvoiceDetails;
 
   // Check if there are any items with remaining quantity to invoice
-  const hasInvoiceableItems = lineItemsData.some((item) => item.remainingQuantity > 0);
+  const hasInvoiceableItems = lineItemsData.some(item => item.remainingQuantity > 0);
 
   // Calculate total quantity to invoice
   const totalToInvoice = lineItemsData.reduce(
@@ -365,7 +363,9 @@ export function InvoiceCreatePage() {
   if (quotationsError) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">{t('invoiceCreate.loadError')}: {quotationsError.message}</Alert>
+        <Alert variant="error">
+          {t('invoiceCreate.loadError')}: {quotationsError.message}
+        </Alert>
       </div>
     );
   }
@@ -375,7 +375,9 @@ export function InvoiceCreatePage() {
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
-          <h3 className="text-lg font-semibold text-white">{t('invoiceCreate.noAcceptedQuotation.title')}</h3>
+          <h3 className="text-lg font-semibold text-white">
+            {t('invoiceCreate.noAcceptedQuotation.title')}
+          </h3>
           <p className="mt-2 text-steel-400">
             {t('invoiceCreate.noAcceptedQuotation.description')}
           </p>
@@ -396,10 +398,10 @@ export function InvoiceCreatePage() {
       <div className="min-h-screen bg-steel-950 p-8">
         <Card className="p-12 text-center">
           <Icon name="check-circle" className="mx-auto mb-4 h-12 w-12 text-green-500" />
-          <h3 className="text-lg font-semibold text-white">{t('invoiceCreate.allItemsInvoiced.title')}</h3>
-          <p className="mt-2 text-steel-400">
-            {t('invoiceCreate.allItemsInvoiced.description')}
-          </p>
+          <h3 className="text-lg font-semibold text-white">
+            {t('invoiceCreate.allItemsInvoiced.title')}
+          </h3>
+          <p className="mt-2 text-steel-400">{t('invoiceCreate.allItemsInvoiced.description')}</p>
           <Button
             variant="secondary"
             className="mt-6"
@@ -437,13 +439,15 @@ export function InvoiceCreatePage() {
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <Card className="mb-6 p-6">
-          <h3 className="mb-4 text-lg font-semibold text-white">{t('invoiceCreate.invoiceInfo')}</h3>
+          <h3 className="mb-4 text-lg font-semibold text-white">
+            {t('invoiceCreate.invoiceInfo')}
+          </h3>
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             <FormField label={t('invoiceCreate.issueDate')} required>
               <Input
                 type="date"
                 value={issueDate}
-                onChange={(e) => setIssueDate(e.target.value)}
+                onChange={e => setIssueDate(e.target.value)}
                 required
               />
             </FormField>
@@ -451,7 +455,7 @@ export function InvoiceCreatePage() {
               <Input
                 type="date"
                 value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                onChange={e => setDueDate(e.target.value)}
                 min={issueDate}
                 required
               />
@@ -460,7 +464,7 @@ export function InvoiceCreatePage() {
               <Input
                 type="number"
                 value={taxRate}
-                onChange={(e) => setTaxRate(Number(e.target.value))}
+                onChange={e => setTaxRate(Number(e.target.value))}
                 min={0}
                 max={100}
                 step={0.1}
@@ -470,10 +474,10 @@ export function InvoiceCreatePage() {
             <FormField label={t('invoiceCreate.relatedDelivery')}>
               <select
                 value={selectedDeliveryId?.toString() || ''}
-                onChange={(e) => handleDeliveryChange(e.target.value ? Number(e.target.value) : null)}
+                onChange={e => handleDeliveryChange(e.target.value ? Number(e.target.value) : null)}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               >
-                {deliveryOptions.map((opt) => (
+                {deliveryOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -485,7 +489,7 @@ export function InvoiceCreatePage() {
             <FormField label={t('invoiceCreate.notes')}>
               <textarea
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={e => setNotes(e.target.value)}
                 placeholder={t('invoiceCreate.notesPlaceholder')}
                 rows={2}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
@@ -495,10 +499,10 @@ export function InvoiceCreatePage() {
         </Card>
 
         <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-white">{t('invoiceCreate.lineItems.title')}</h3>
-          <p className="mb-6 text-sm text-steel-400">
-            {t('invoiceCreate.lineItems.description')}
-          </p>
+          <h3 className="mb-4 text-lg font-semibold text-white">
+            {t('invoiceCreate.lineItems.title')}
+          </h3>
+          <p className="mb-6 text-sm text-steel-400">{t('invoiceCreate.lineItems.description')}</p>
 
           {/* Line items table */}
           <div className="overflow-x-auto">
@@ -530,8 +534,8 @@ export function InvoiceCreatePage() {
               </thead>
               <tbody>
                 {lineItemsData
-                  .filter((item) => item.remainingQuantity > 0)
-                  .map((item) => {
+                  .filter(item => item.remainingQuantity > 0)
+                  .map(item => {
                     const qtyToInvoice = quantitiesToInvoice[item.productId] || 0;
                     const lineTotal = qtyToInvoice * item.quotationUnitPrice;
                     return (
@@ -564,7 +568,7 @@ export function InvoiceCreatePage() {
                             max={item.remainingQuantity}
                             step="0.01"
                             value={quantitiesToInvoice[item.productId] || ''}
-                            onChange={(e) => handleQuantityChange(item.productId, e.target.value)}
+                            onChange={e => handleQuantityChange(item.productId, e.target.value)}
                             className="w-24 text-right"
                             placeholder="0"
                           />

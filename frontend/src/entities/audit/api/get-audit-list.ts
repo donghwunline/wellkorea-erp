@@ -5,8 +5,8 @@
  * Used by audit.queries.ts for TanStack Query integration.
  */
 
-import { httpClient, AUDIT_ENDPOINTS, type PagedResponse } from '@/shared/api';
-import { transformPagedResponse, type Paginated } from '@/shared/lib/pagination';
+import { AUDIT_ENDPOINTS, httpClient, type PagedResponse } from '@/shared/api';
+import { type Paginated, transformPagedResponse } from '@/shared/lib/pagination';
 import type { AuditLogResponse } from './audit.mapper';
 
 // =============================================================================

@@ -4,11 +4,14 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { companyQueries, type CompanyListQueryParams } from './company.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type CompanyListQueryParams, companyQueries } from './company.queries';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
 import type { Paginated } from '@/shared/lib/pagination';
-import type { CompanySummaryResponse, CompanyDetailsResponse } from './company.mapper';
+import type { CompanyDetailsResponse, CompanySummaryResponse } from './company.mapper';
+import { companyMapper } from './company.mapper';
+// Import mocked modules
+import { getCompanies, getCompany } from './get-company';
 
 // Mock dependencies
 vi.mock('./get-company', () => ({
@@ -22,10 +25,6 @@ vi.mock('./company.mapper', () => ({
     toListItem: vi.fn((response) => ({ id: response.id, name: response.name })),
   },
 }));
-
-// Import mocked modules
-import { getCompany, getCompanies } from './get-company';
-import { companyMapper } from './company.mapper';
 
 // =============================================================================
 // Test Fixtures - Minimal Response objects to satisfy TypeScript

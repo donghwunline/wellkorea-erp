@@ -2,8 +2,8 @@
  * Modal for marking a delivery as delivered with a proof-of-delivery photo.
  */
 
-import { useState, useCallback } from 'react';
-import { Modal, ModalActions, Button, Alert } from '@/shared/ui';
+import { useCallback, useState } from 'react';
+import { Alert, Button, Modal, ModalActions } from '@/shared/ui';
 import { PhotoUploader } from './PhotoUploader';
 import { useMarkDeliveredWithPhoto } from '../model/use-mark-delivered-with-photo';
 

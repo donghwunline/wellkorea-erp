@@ -17,15 +17,15 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Card, Icon, Input, Spinner, Pagination } from '@/shared/ui';
+import { Button, Card, Icon, Input, Pagination, Spinner } from '@/shared/ui';
 
 // Entity imports
 import {
-  CompanyTable,
-  companyQueries,
   type CompanyListItem,
-  type RoleType,
+  companyQueries,
+  CompanyTable,
   ROLE_TYPE_LABELS,
+  type RoleType,
 } from '@/entities/company';
 
 export interface CompanyManagementPanelProps {

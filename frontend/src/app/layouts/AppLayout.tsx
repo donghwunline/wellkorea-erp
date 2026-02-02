@@ -243,7 +243,12 @@ export function AppLayout({ children }: Readonly<AppLayoutProps>) {
           {visibleApprovalItems.length > 0 && (
             <Navigation.Section title={t('sections.approval')} showDivider>
               {visibleApprovalItems.map(item => (
-                <Navigation.Link key={item.path} to={item.path} icon={item.icon} badge={getBadgeCount(item.badgeKey)}>
+                <Navigation.Link
+                  key={item.path}
+                  to={item.path}
+                  icon={item.icon}
+                  badge={getBadgeCount(item.badgeKey)}
+                >
                   {t(item.labelKey)}
                 </Navigation.Link>
               ))}

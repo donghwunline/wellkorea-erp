@@ -14,8 +14,8 @@ import type { VendorOffering } from '@/entities/catalog';
 import {
   catalogQueries,
   createVendorOffering,
-  updateVendorOffering,
   type CreateVendorOfferingInput,
+  updateVendorOffering,
   type UpdateVendorOfferingInput,
 } from '@/entities/catalog';
 import { VendorOfferingForm, type VendorOfferingFormData } from './VendorOfferingForm';

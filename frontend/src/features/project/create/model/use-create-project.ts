@@ -7,9 +7,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createProject,
-  projectQueries,
   type CreateProjectInput,
   type ProjectCommandResult,
+  projectQueries,
 } from '@/entities/project';
 
 export interface UseCreateProjectOptions {

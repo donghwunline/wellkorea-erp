@@ -10,10 +10,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  saveTaskFlow,
-  taskFlowQueries,
-  type SaveTaskFlowInput,
   type CommandResult,
+  saveTaskFlow,
+  type SaveTaskFlowInput,
+  taskFlowQueries,
 } from '@/entities/task-flow';
 
 export interface UseSaveFlowOptions {
@@ -47,7 +47,7 @@ export function useSaveFlow(options?: UseSaveFlowOptions) {
   return useMutation({
     mutationFn: (input: SaveTaskFlowInput) => saveTaskFlow(input),
 
-    onSuccess: (result) => {
+    onSuccess: result => {
       // Invalidate task flow queries to refetch
       queryClient.invalidateQueries({ queryKey: taskFlowQueries.all() });
       options?.onSuccess?.(result);

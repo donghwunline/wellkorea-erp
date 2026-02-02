@@ -10,7 +10,7 @@
  * - Invalidate: queryClient.invalidateQueries({ queryKey: purchaseRequestQueries.lists() })
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { PurchaseRequest, PurchaseRequestListItem } from '../model/purchase-request';
 import type { PurchaseRequestStatus } from '../model/purchase-request-status';
 import { purchaseRequestMapper } from './purchase-request.mapper';

@@ -4,7 +4,7 @@
  * Statement PDF generation and download operations.
  */
 
-import { httpClient, DELIVERY_ENDPOINTS } from '@/shared/api';
+import { DELIVERY_ENDPOINTS, httpClient } from '@/shared/api';
 
 /**
  * Generate delivery statement PDF.

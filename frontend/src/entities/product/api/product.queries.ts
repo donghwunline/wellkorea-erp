@@ -10,7 +10,7 @@
  * - Invalidation: queryClient.invalidateQueries({ queryKey: productQueries.lists() })
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { Product, ProductListItem } from '../model/product';
 import type { ProductType } from '../model/product-type';
 import type { Paginated } from '@/shared/lib/pagination';

@@ -8,8 +8,8 @@
  * - Default node creation
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { taskNodeRules, type TaskNode, type ProgressLevel, type ProgressColor } from './task-node';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { type ProgressColor, type ProgressLevel, type TaskNode, taskNodeRules } from './task-node';
 
 // =============================================================================
 // Test Fixtures

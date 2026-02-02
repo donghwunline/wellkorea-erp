@@ -4,7 +4,7 @@
  * Sends Request for Quotation to selected vendors.
  */
 
-import { httpClient, PURCHASE_REQUEST_ENDPOINTS, DomainValidationError } from '@/shared/api';
+import { DomainValidationError, httpClient, PURCHASE_REQUEST_ENDPOINTS } from '@/shared/api';
 import type { CommandResult } from './purchase-request.mapper';
 
 // =============================================================================

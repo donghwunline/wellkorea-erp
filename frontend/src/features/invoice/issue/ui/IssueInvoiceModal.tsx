@@ -2,8 +2,8 @@
  * Modal for issuing an invoice with a tax invoice document attachment.
  */
 
-import { useState, useCallback } from 'react';
-import { Modal, ModalActions, Button, Alert, FileUploader } from '@/shared/ui';
+import { useCallback, useState } from 'react';
+import { Alert, Button, FileUploader, Modal, ModalActions } from '@/shared/ui';
 import { useIssueInvoice } from '../model/use-issue-invoice';
 
 interface IssueInvoiceModalProps {

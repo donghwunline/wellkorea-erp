@@ -4,7 +4,7 @@
  * Tests for mapping and API call.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { updateChainLevels } from './update-chain-levels';
 import { createCommandResult } from '@/test/entity-test-utils';
 import type { ChainLevelInput } from '../model/chain-template';

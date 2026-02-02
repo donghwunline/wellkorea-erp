@@ -173,7 +173,7 @@ erDiagram
 ### Domain Classes
 
 ```
-com.wellkorea.backend.purchasing/
+com.wellkorea.backend.core.purchasing/
 ├── domain/
 │   ├── PurchaseRequest.java          # Aggregate root
 │   ├── PurchaseRequestStatus.java    # Status enum

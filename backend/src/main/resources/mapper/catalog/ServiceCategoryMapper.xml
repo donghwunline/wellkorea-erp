@@ -2,10 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.wellkorea.backend.catalog.infrastructure.mapper.ServiceCategoryMapper">
+<mapper namespace="com.wellkorea.backend.core.catalog.infrastructure.mapper.ServiceCategoryMapper">
 
     <!-- ServiceCategoryDetailView result map for record -->
-    <resultMap id="ServiceCategoryDetailViewResult" type="com.wellkorea.backend.catalog.api.dto.query.ServiceCategoryDetailView">
+    <resultMap id="ServiceCategoryDetailViewResult"
+               type="com.wellkorea.backend.core.catalog.api.dto.query.ServiceCategoryDetailView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="name" javaType="java.lang.String"/>
@@ -18,7 +19,8 @@
     </resultMap>
 
     <!-- ServiceCategorySummaryView result map for record -->
-    <resultMap id="ServiceCategorySummaryViewResult" type="com.wellkorea.backend.catalog.api.dto.query.ServiceCategorySummaryView">
+    <resultMap id="ServiceCategorySummaryViewResult"
+               type="com.wellkorea.backend.core.catalog.api.dto.query.ServiceCategorySummaryView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="name" javaType="java.lang.String"/>
@@ -29,7 +31,8 @@
     </resultMap>
 
     <!-- VendorServiceOfferingView result map for record -->
-    <resultMap id="VendorServiceOfferingViewResult" type="com.wellkorea.backend.catalog.api.dto.query.VendorServiceOfferingView">
+    <resultMap id="VendorServiceOfferingViewResult"
+               type="com.wellkorea.backend.core.catalog.api.dto.query.VendorServiceOfferingView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="vendor_id" javaType="java.lang.Long"/>
@@ -57,13 +60,13 @@
     <!-- Find service category detail by ID with vendor count using subquery -->
     <select id="findDetailById" resultMap="ServiceCategoryDetailViewResult">
         SELECT
-            sc.id,
-            sc.name,
-            sc.description,
-            sc.is_active,
-            (SELECT COUNT(*) FROM vendor_service_offerings vso WHERE vso.service_category_id = sc.id) AS vendor_count,
-            sc.created_at,
-            sc.updated_at
+        sc.id,
+        sc.name,
+        sc.description,
+        sc.is_active,
+        (SELECT COUNT(*) FROM vendor_service_offerings vso WHERE vso.service_category_id = sc.id) AS vendor_count,
+        sc.created_at,
+        sc.updated_at
         FROM service_categories sc
         WHERE sc.id = #{id}
     </select>
@@ -71,11 +74,11 @@
     <!-- Find service categories with filters - uses subquery COUNT to avoid N+1 -->
     <select id="findWithFilters" resultMap="ServiceCategorySummaryViewResult">
         SELECT
-            sc.id,
-            sc.name,
-            sc.description,
-            sc.is_active,
-            (SELECT COUNT(*) FROM vendor_service_offerings vso WHERE vso.service_category_id = sc.id) AS vendor_count
+        sc.id,
+        sc.name,
+        sc.description,
+        sc.is_active,
+        (SELECT COUNT(*) FROM vendor_service_offerings vso WHERE vso.service_category_id = sc.id) AS vendor_count
         FROM service_categories sc
         <where>
             <if test="isActive != null">
@@ -106,11 +109,11 @@
     <!-- Find all active service categories -->
     <select id="findAllActive" resultMap="ServiceCategorySummaryViewResult">
         SELECT
-            sc.id,
-            sc.name,
-            sc.description,
-            sc.is_active,
-            (SELECT COUNT(*) FROM vendor_service_offerings vso WHERE vso.service_category_id = sc.id) AS vendor_count
+        sc.id,
+        sc.name,
+        sc.description,
+        sc.is_active,
+        (SELECT COUNT(*) FROM vendor_service_offerings vso WHERE vso.service_category_id = sc.id) AS vendor_count
         FROM service_categories sc
         WHERE sc.is_active = true
         ORDER BY sc.name
@@ -143,7 +146,7 @@
     <!-- Find offerings by service category for pagination -->
     <select id="findOfferingsByServiceCategoryId" resultMap="VendorServiceOfferingViewResult">
         SELECT
-            <include refid="vendorOfferingColumns"/>
+        <include refid="vendorOfferingColumns"/>
         FROM vendor_service_offerings vso
         INNER JOIN companies c ON vso.vendor_company_id = c.id
         INNER JOIN service_categories sc ON vso.service_category_id = sc.id
@@ -164,20 +167,20 @@
     <!-- NULL effective_to means no expiry -->
     <select id="findCurrentOfferingsByServiceCategoryId" resultMap="VendorServiceOfferingViewResult">
         SELECT
-            <include refid="vendorOfferingColumns"/>
+        <include refid="vendorOfferingColumns"/>
         FROM vendor_service_offerings vso
         INNER JOIN companies c ON vso.vendor_company_id = c.id
         INNER JOIN service_categories sc ON vso.service_category_id = sc.id
         WHERE vso.service_category_id = #{serviceCategoryId}
-          AND (vso.effective_from IS NULL OR vso.effective_from &lt;= #{currentDate})
-          AND (vso.effective_to IS NULL OR vso.effective_to &gt;= #{currentDate})
+        AND (vso.effective_from IS NULL OR vso.effective_from &lt;= #{currentDate})
+        AND (vso.effective_to IS NULL OR vso.effective_to &gt;= #{currentDate})
         ORDER BY vso.is_preferred DESC, c.name
     </select>
 
     <!-- Find offerings by vendor for pagination -->
     <select id="findOfferingsByVendorId" resultMap="VendorServiceOfferingViewResult">
         SELECT
-            <include refid="vendorOfferingColumns"/>
+        <include refid="vendorOfferingColumns"/>
         FROM vendor_service_offerings vso
         INNER JOIN companies c ON vso.vendor_company_id = c.id
         INNER JOIN service_categories sc ON vso.service_category_id = sc.id
@@ -196,7 +199,7 @@
     <!-- Find offering by ID -->
     <select id="findOfferingById" resultMap="VendorServiceOfferingViewResult">
         SELECT
-            <include refid="vendorOfferingColumns"/>
+        <include refid="vendorOfferingColumns"/>
         FROM vendor_service_offerings vso
         INNER JOIN companies c ON vso.vendor_company_id = c.id
         INNER JOIN service_categories sc ON vso.service_category_id = sc.id

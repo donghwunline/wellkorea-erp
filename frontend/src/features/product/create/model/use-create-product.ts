@@ -12,9 +12,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createProduct,
-  productQueries,
   type CreateProductInput,
   type ProductCommandResult,
+  productQueries,
 } from '@/entities/product';
 
 export interface UseCreateProductOptions {

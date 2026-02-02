@@ -5,8 +5,8 @@
  * Used by user.queries.ts for TanStack Query integration.
  */
 
-import { httpClient, USER_ENDPOINTS, type PagedResponse } from '@/shared/api';
-import { transformPagedResponse, type Paginated } from '@/shared/lib/pagination';
+import { httpClient, type PagedResponse, USER_ENDPOINTS } from '@/shared/api';
+import { type Paginated, transformPagedResponse } from '@/shared/lib/pagination';
 import type { UserDetailsResponse } from './user.mapper';
 
 // =============================================================================

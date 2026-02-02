@@ -1,6 +1,6 @@
 package com.wellkorea.backend.shared.mail;
 
-import com.wellkorea.backend.admin.mail.infrastructure.MailOAuth2ConfigRepository;
+import com.wellkorea.backend.supporting.mail.infrastructure.MailOAuth2ConfigRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

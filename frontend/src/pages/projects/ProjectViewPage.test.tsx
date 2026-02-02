@@ -72,7 +72,9 @@ vi.mock('@/entities/project', async () => {
       );
     }),
     ProjectKPIStrip: vi.fn(() => <div data-testid="kpi-strip">KPI Strip</div>),
-    ProjectKPIStripSkeleton: vi.fn(() => <div data-testid="kpi-strip-skeleton">Loading KPI...</div>),
+    ProjectKPIStripSkeleton: vi.fn(() => (
+      <div data-testid="kpi-strip-skeleton">Loading KPI...</div>
+    )),
   };
 });
 
@@ -165,17 +167,32 @@ vi.mock('@/shared/ui', async () => {
   return {
     ...actual,
     PageHeader: PageHeaderMock,
-    Alert: vi.fn(({ children, variant }: { children: React.ReactNode; variant?: string; className?: string }) => (
-      <div data-testid="alert" data-variant={variant}>{children}</div>
-    )),
+    Alert: vi.fn(
+      ({
+        children,
+        variant,
+      }: {
+        children: React.ReactNode;
+        variant?: string;
+        className?: string;
+      }) => (
+        <div data-testid="alert" data-variant={variant}>
+          {children}
+        </div>
+      )
+    ),
     Card: vi.fn(({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="card" className={className}>{children}</div>
+      <div data-testid="card" className={className}>
+        {children}
+      </div>
     )),
     Icon: vi.fn(({ name, className }: { name: string; className?: string }) => (
       <span data-testid={`icon-${name}`} className={className} />
     )),
     Spinner: vi.fn(({ size, label }: { size?: string; label?: string }) => (
-      <div data-testid="spinner" data-size={size}>{label}</div>
+      <div data-testid="spinner" data-size={size}>
+        {label}
+      </div>
     )),
     Tabs: vi.fn(({ children, defaultTab }: { children: React.ReactNode; defaultTab?: string }) => (
       <div data-testid="tabs" data-default-tab={defaultTab}>

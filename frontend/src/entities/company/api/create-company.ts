@@ -5,7 +5,7 @@
  * Follows FSD pattern: entities/{entity}/api/create-{entity}.ts
  */
 
-import { DomainValidationError, httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
+import { COMPANY_ENDPOINTS, DomainValidationError, httpClient } from '@/shared/api';
 import type { RoleType } from '../model/role-type';
 import type { CommandResult } from './company.mapper';
 

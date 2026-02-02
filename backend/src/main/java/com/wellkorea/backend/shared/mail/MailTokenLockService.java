@@ -47,7 +47,7 @@ public class MailTokenLockService {
      * Used when refreshing access tokens to prevent concurrent refresh attempts.
      *
      * @param action The action to execute while holding the lock
-     * @param <T> Return type of the action
+     * @param <T>    Return type of the action
      * @return The result of the action
      * @throws MailSendException if the lock cannot be acquired within timeout
      */

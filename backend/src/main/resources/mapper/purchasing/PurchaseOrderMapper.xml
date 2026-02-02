@@ -2,10 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.wellkorea.backend.purchasing.infrastructure.mapper.PurchaseOrderMapper">
+<mapper namespace="com.wellkorea.backend.core.purchasing.infrastructure.mapper.PurchaseOrderMapper">
 
     <!-- PurchaseOrderSummaryView result map -->
-    <resultMap id="PurchaseOrderSummaryViewResult" type="com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderSummaryView">
+    <resultMap id="PurchaseOrderSummaryViewResult"
+               type="com.wellkorea.backend.core.purchasing.api.dto.query.PurchaseOrderSummaryView">
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="poNumber" javaType="String"/>
@@ -26,7 +27,8 @@
     </resultMap>
 
     <!-- PurchaseOrderDetailView result map -->
-    <resultMap id="PurchaseOrderDetailViewResult" type="com.wellkorea.backend.purchasing.api.dto.query.PurchaseOrderDetailView">
+    <resultMap id="PurchaseOrderDetailViewResult"
+               type="com.wellkorea.backend.core.purchasing.api.dto.query.PurchaseOrderDetailView">
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="poNumber" javaType="String"/>
@@ -55,21 +57,21 @@
     <!-- Find purchase orders with filters (status, vendorId) -->
     <select id="findWithFilters" resultMap="PurchaseOrderSummaryViewResult">
         SELECT
-            po.id,
-            po.po_number AS poNumber,
-            po.purchase_request_id AS purchaseRequestId,
-            po.rfq_item_id AS rfqItemId,
-            po.project_id AS projectId,
-            p.job_code AS jobCode,
-            po.vendor_company_id AS vendorId,
-            c.name AS vendorName,
-            po.order_date AS orderDate,
-            po.expected_delivery_date AS expectedDeliveryDate,
-            po.total_amount AS totalAmount,
-            po.currency,
-            po.status,
-            u.full_name AS createdByName,
-            po.created_at AS createdAt
+        po.id,
+        po.po_number AS poNumber,
+        po.purchase_request_id AS purchaseRequestId,
+        po.rfq_item_id AS rfqItemId,
+        po.project_id AS projectId,
+        p.job_code AS jobCode,
+        po.vendor_company_id AS vendorId,
+        c.name AS vendorName,
+        po.order_date AS orderDate,
+        po.expected_delivery_date AS expectedDeliveryDate,
+        po.total_amount AS totalAmount,
+        po.currency,
+        po.status,
+        u.full_name AS createdByName,
+        po.created_at AS createdAt
         FROM purchase_orders po
         LEFT JOIN projects p ON po.project_id = p.id
         JOIN companies c ON po.vendor_company_id = c.id
@@ -103,27 +105,27 @@
     <!-- Find detail by ID -->
     <select id="findDetailById" resultMap="PurchaseOrderDetailViewResult">
         SELECT
-            po.id,
-            po.po_number AS poNumber,
-            po.purchase_request_id AS purchaseRequestId,
-            pr.request_number AS purchaseRequestNumber,
-            po.rfq_item_id AS rfqItemId,
-            po.project_id AS projectId,
-            p.job_code AS jobCode,
-            p.project_name AS projectName,
-            po.vendor_company_id AS vendorId,
-            c.name AS vendorName,
-            c.email AS vendorEmail,
-            po.order_date AS orderDate,
-            po.expected_delivery_date AS expectedDeliveryDate,
-            po.total_amount AS totalAmount,
-            po.currency,
-            po.status,
-            po.notes,
-            po.created_by_id AS createdById,
-            u.full_name AS createdByName,
-            po.created_at AS createdAt,
-            po.updated_at AS updatedAt
+        po.id,
+        po.po_number AS poNumber,
+        po.purchase_request_id AS purchaseRequestId,
+        pr.request_number AS purchaseRequestNumber,
+        po.rfq_item_id AS rfqItemId,
+        po.project_id AS projectId,
+        p.job_code AS jobCode,
+        p.project_name AS projectName,
+        po.vendor_company_id AS vendorId,
+        c.name AS vendorName,
+        c.email AS vendorEmail,
+        po.order_date AS orderDate,
+        po.expected_delivery_date AS expectedDeliveryDate,
+        po.total_amount AS totalAmount,
+        po.currency,
+        po.status,
+        po.notes,
+        po.created_by_id AS createdById,
+        u.full_name AS createdByName,
+        po.created_at AS createdAt,
+        po.updated_at AS updatedAt
         FROM purchase_orders po
         JOIN purchase_requests pr ON po.purchase_request_id = pr.id
         LEFT JOIN projects p ON po.project_id = p.id

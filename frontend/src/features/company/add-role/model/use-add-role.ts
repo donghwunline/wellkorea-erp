@@ -10,12 +10,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  addRole,
-  companyQueries,
-  type AddRoleInput,
-  type CommandResult,
-} from '@/entities/company';
+import { addRole, type AddRoleInput, type CommandResult, companyQueries } from '@/entities/company';
 
 export type AddRoleParams = AddRoleInput;
 

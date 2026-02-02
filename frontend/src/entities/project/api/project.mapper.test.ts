@@ -6,9 +6,9 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  projectMapper,
   type ProjectDetailsResponse,
   type ProjectListItemResponse,
+  projectMapper,
 } from './project.mapper';
 import { expectDomainShape, expectTrimmedStrings } from '@/test/entity-test-utils';
 

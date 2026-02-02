@@ -13,25 +13,25 @@
  * Can import from: features, entities, shared
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   Badge,
+  Button,
+  EmailTagInput,
+  FormField,
+  Icon,
   LoadingState,
   Modal,
   ModalActions,
-  Button,
-  Icon,
-  FormField,
-  EmailTagInput,
 } from '@/shared/ui';
-import { catalogQueries, vendorOfferingRules, type VendorOffering } from '@/entities/catalog';
+import { catalogQueries, type VendorOffering, vendorOfferingRules } from '@/entities/catalog';
 import {
   materialQueries,
-  vendorMaterialOfferingRules,
   type VendorMaterialOffering,
+  vendorMaterialOfferingRules,
 } from '@/entities/material';
 import { useSendRfq } from '@/features/rfq/send';
 

@@ -2,9 +2,9 @@
  * Delivery query factory using TanStack Query v5 queryOptions pattern.
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
-import { getDeliveries, getDeliveryById } from './get-delivery';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { DeliveryListParams } from './get-delivery';
+import { getDeliveries, getDeliveryById } from './get-delivery';
 import { deliveryMapper } from './delivery.mapper';
 import type { Delivery } from '../model/delivery';
 

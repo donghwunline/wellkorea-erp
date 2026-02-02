@@ -4,7 +4,7 @@
  * Tests for input validation and API call for presigned upload URL.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getUploadUrl, type GetUploadUrlInput } from './get-upload-url';
 import { DomainValidationError } from '@/shared/lib/errors/domain-validation-error';
 

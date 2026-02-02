@@ -6,10 +6,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  updateProject,
-  projectQueries,
-  type UpdateProjectInput,
   type ProjectCommandResult,
+  projectQueries,
+  updateProject,
+  type UpdateProjectInput,
 } from '@/entities/project';
 
 export interface UseUpdateProjectOptions {

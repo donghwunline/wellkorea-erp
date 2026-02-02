@@ -6,12 +6,12 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  type ApprovalDetailsResponse,
+  approvalHistoryMapper,
+  type ApprovalHistoryResponse,
   approvalLevelMapper,
   approvalMapper,
-  approvalHistoryMapper,
-  type ApprovalDetailsResponse,
   type LevelDecisionResponse,
-  type ApprovalHistoryResponse,
 } from './approval.mapper';
 import { expectDomainShape } from '@/test/entity-test-utils';
 

@@ -3,7 +3,7 @@
  * Internal - used by query factory.
  */
 
-import { httpClient, BLUEPRINT_ENDPOINTS } from '@/shared/api';
+import { BLUEPRINT_ENDPOINTS, httpClient } from '@/shared/api';
 import type { BlueprintAttachmentResponse } from './blueprint-attachment.mapper';
 
 /**

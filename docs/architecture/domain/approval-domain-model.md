@@ -461,9 +461,9 @@ Map<Long, User> usersById = userRepository.findAllById(userIds)
     .collect(Collectors.toMap(User::getId, Function.identity()));
 ```
 
-## Shared Kernel Pattern
+## Supporting Domain Pattern
 
-The approval domain is implemented as a **Shared Kernel** in `com.wellkorea.backend.shared.approval`. This design choice enables:
+The approval domain is implemented as a **Supporting Domain** in `com.wellkorea.backend.supporting.approval`. This design choice enables:
 
 1. **Cross-Domain Reusability**: Any entity that needs approval workflow (Quotation, Purchase Order, Vendor Selection) can implement the `Approvable` interface
 2. **Consistent Approval Behavior**: All approval workflows follow the same multi-level sequential pattern
@@ -567,7 +567,7 @@ The `GenericApprovalCompletedHandler` will automatically invoke callbacks when a
 ## Package Structure
 
 ```
-com/wellkorea/backend/shared/approval/
+com/wellkorea/backend/supporting/approval/
 ├── api/
 │   ├── ApprovalController.java
 │   ├── AdminApprovalChainController.java

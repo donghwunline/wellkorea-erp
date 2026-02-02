@@ -3,8 +3,8 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { uploadAttachment, blueprintQueries } from '@/entities/blueprint-attachment';
 import type { CommandResult } from '@/entities/blueprint-attachment';
+import { blueprintQueries, uploadAttachment } from '@/entities/blueprint-attachment';
 
 interface UseUploadAttachmentOptions {
   onSuccess?: (result: CommandResult) => void;

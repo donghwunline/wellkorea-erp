@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
-import { projectQueries, ProjectCombobox } from '@/entities/project';
+import { ProjectCombobox, projectQueries } from '@/entities/project';
 import { QuotationForm } from '@/features/quotation/form';
 import { useCreateQuotation } from '@/features/quotation/create';
 import type { CreateQuotationInput } from '@/entities/quotation';
@@ -118,7 +118,9 @@ export function QuotationCreatePage() {
       {/* Project Selection (if not from project route) */}
       {!routeProjectId && (
         <Card className="mb-6 p-6">
-          <h3 className="mb-4 text-lg font-medium text-white">{t('quotationCreate.selectProject')}</h3>
+          <h3 className="mb-4 text-lg font-medium text-white">
+            {t('quotationCreate.selectProject')}
+          </h3>
           <div className="max-w-md">
             <ProjectCombobox
               value={selectedProjectId}

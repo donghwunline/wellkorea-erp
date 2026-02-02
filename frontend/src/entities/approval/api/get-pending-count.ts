@@ -5,7 +5,7 @@
  * Used for badge display in navigation.
  */
 
-import { httpClient, APPROVAL_ENDPOINTS } from '@/shared/api';
+import { APPROVAL_ENDPOINTS, httpClient } from '@/shared/api';
 
 /**
  * Fetch pending approval count for current user.

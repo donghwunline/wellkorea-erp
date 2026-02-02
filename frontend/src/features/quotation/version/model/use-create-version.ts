@@ -10,11 +10,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  createQuotationVersion,
-  quotationQueries,
-  type CommandResult,
-} from '@/entities/quotation';
+import { type CommandResult, createQuotationVersion, quotationQueries } from '@/entities/quotation';
 
 export interface UseCreateVersionOptions {
   /**
@@ -60,7 +56,7 @@ export function useCreateVersion(options: UseCreateVersionOptions = {}) {
   return useMutation({
     mutationFn: (quotationId: number) => createQuotationVersion(quotationId),
 
-    onSuccess: (result) => {
+    onSuccess: result => {
       // Invalidate list queries to include new version
       queryClient.invalidateQueries({ queryKey: quotationQueries.lists() });
       // Also invalidate the source quotation detail (version history may have changed)

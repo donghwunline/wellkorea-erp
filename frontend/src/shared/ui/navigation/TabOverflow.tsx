@@ -19,12 +19,12 @@
 
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
-  type ReactNode,
 } from 'react';
 import { Badge, type BadgeVariant } from '../primitives/Badge';
 import { Icon, type IconName } from '../primitives/Icon';

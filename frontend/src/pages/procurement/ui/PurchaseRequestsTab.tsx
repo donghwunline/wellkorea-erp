@@ -11,17 +11,17 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   type PurchaseRequestListItem,
-  type PurchaseRequestStatus,
   purchaseRequestQueries,
   purchaseRequestRules,
+  type PurchaseRequestStatus,
   PurchaseRequestStatusConfig,
 } from '@/entities/purchase-request';
 import { Badge, Card, Pagination, Spinner, Table } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting';
 import {
   PurchaseRequestDetailModal,
-  SendRfqModal,
   type SendRfqData,
+  SendRfqModal,
 } from '@/widgets/purchase-request-panel';
 
 const PAGE_SIZE = 20;

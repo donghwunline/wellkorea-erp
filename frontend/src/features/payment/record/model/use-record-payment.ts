@@ -3,8 +3,8 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { recordPayment, invoiceQueries, arReportQueries } from '@/entities/invoice';
 import type { RecordPaymentInput } from '@/entities/invoice';
+import { arReportQueries, invoiceQueries, recordPayment } from '@/entities/invoice';
 
 interface PaymentResult {
   id: number | null;

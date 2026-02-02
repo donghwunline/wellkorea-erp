@@ -1,7 +1,7 @@
 package com.wellkorea.backend;
 
 import com.wellkorea.backend.shared.mail.TestMailConfig;
-import com.wellkorea.backend.shared.test.TestFixtures;
+import com.wellkorea.backend.test.TestFixtures;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;

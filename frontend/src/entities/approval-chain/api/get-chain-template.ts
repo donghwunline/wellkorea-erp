@@ -5,7 +5,7 @@
  * Returns raw responses - mapping to domain models happens in query factory.
  */
 
-import { httpClient, APPROVAL_CHAIN_ENDPOINTS } from '@/shared/api';
+import { APPROVAL_CHAIN_ENDPOINTS, httpClient } from '@/shared/api';
 import type { ChainTemplateResponse } from './chain-template.mapper';
 
 /**

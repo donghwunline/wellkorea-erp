@@ -5,10 +5,10 @@
  * Mocks @xyflow/react hooks to focus on our business logic.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
 import { useFlowState } from './use-flow-state';
-import type { TaskFlow, TaskNode, TaskEdge } from '@/entities/task-flow';
+import type { TaskEdge, TaskFlow, TaskNode } from '@/entities/task-flow';
 
 // Mock uuid
 vi.mock('uuid', () => ({

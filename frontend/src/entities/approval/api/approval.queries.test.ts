@@ -4,9 +4,15 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { approvalQueries, type ApprovalListQueryParams } from './approval.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type ApprovalListQueryParams, approvalQueries } from './approval.queries';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
+// Import mocked modules
+import { getApproval, getApprovals } from './get-approval';
+import { getApprovalHistory } from './get-approval-history';
+import type { ApprovalDetailsResponse, ApprovalHistoryResponse } from './approval.mapper';
+import { approvalHistoryMapper, approvalMapper } from './approval.mapper';
+import type { Paginated } from '@/shared/lib/pagination';
 
 // Mock dependencies
 vi.mock('./get-approval', () => ({
@@ -26,13 +32,6 @@ vi.mock('./approval.mapper', () => ({
     toDomain: vi.fn((response) => ({ ...response, _historyMapped: true })),
   },
 }));
-
-// Import mocked modules
-import { getApproval, getApprovals } from './get-approval';
-import { getApprovalHistory } from './get-approval-history';
-import { approvalMapper, approvalHistoryMapper } from './approval.mapper';
-import type { ApprovalDetailsResponse, ApprovalHistoryResponse } from './approval.mapper';
-import type { Paginated } from '@/shared/lib/pagination';
 
 // =============================================================================
 // Test Fixtures - Minimal Response objects to satisfy TypeScript
