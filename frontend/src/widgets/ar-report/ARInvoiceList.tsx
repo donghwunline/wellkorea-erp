@@ -229,7 +229,7 @@ export function ARInvoiceList({ invoices, loading = false }: ARInvoiceListProps)
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <InvoiceStatusBadge status={invoice.status} />
+                    <InvoiceStatusBadge status={invoice.status} size="sm" />
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-yellow-400">
                     {arReportRules.formatCurrency(invoice.remainingBalance)}

@@ -21,11 +21,11 @@ import {
   purchaseRequestQueries,
   purchaseRequestRules,
   PurchaseRequestStatus,
-  PurchaseRequestStatusConfig,
+  PurchaseRequestStatusBadge,
   type RfqItem,
   rfqItemRules,
   RfqItemStatus,
-  RfqItemStatusConfig,
+  RfqItemStatusBadge,
 } from '@/entities/purchase-request';
 import { useAuth } from '@/entities/auth';
 import { formatCurrency, formatDate, formatDateTime } from '@/shared/lib/formatting';
@@ -60,30 +60,6 @@ function TypeBadge({ dtype, t }: { readonly dtype: 'SERVICE' | 'MATERIAL'; reado
   return (
     <Badge variant={dtype === 'SERVICE' ? 'info' : 'copper'} size="sm">
       {dtype === 'SERVICE' ? t('purchaseRequestPanel.types.service') : t('purchaseRequestPanel.types.material')}
-    </Badge>
-  );
-}
-
-/**
- * Status badge component.
- */
-function StatusBadge({ status }: { readonly status: PurchaseRequestStatus }) {
-  const config = PurchaseRequestStatusConfig[status];
-  return (
-    <Badge variant={config.color} dot>
-      {config.labelKo}
-    </Badge>
-  );
-}
-
-/**
- * RFQ item status badge.
- */
-function RfqItemStatusBadge({ status }: { readonly status: RfqItem['status'] }) {
-  const config = RfqItemStatusConfig[status];
-  return (
-    <Badge variant={config.color} size="sm">
-      {config.labelKo}
     </Badge>
   );
 }
@@ -419,7 +395,7 @@ export function PurchaseRequestDetailModal({
                 <TypeBadge dtype={request.dtype} t={t} />
               </InfoField>
               <InfoField label={t('purchaseRequestPanel.fields.status')}>
-                <StatusBadge status={request.status} />
+                <PurchaseRequestStatusBadge status={request.status} dot />
               </InfoField>
               <InfoField label={t('purchaseRequestPanel.fields.project')}>
                 {request.jobCode || request.projectName || '-'}

@@ -18,15 +18,15 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Badge, Button, Card, Icon, PageHeader, Spinner, Table } from '@/shared/ui';
+import { Alert, Button, Card, Icon, PageHeader, Spinner, Table } from '@/shared/ui';
 import { formatCurrency, formatDate, formatDateTime } from '@/shared/lib/formatting';
 import { useAuth } from '@/entities/auth';
 import {
   purchaseRequestQueries,
   purchaseRequestRules,
-  PurchaseRequestStatusConfig,
+  PurchaseRequestStatusBadge,
   type RfqItem,
-  RfqItemStatusConfig,
+  RfqItemStatusBadge,
 } from '@/entities/purchase-request';
 import {
   approvalQueries,
@@ -51,18 +51,6 @@ function InfoField({
       <div className="text-sm text-steel-400">{label}</div>
       <div className="mt-1 text-white">{children}</div>
     </div>
-  );
-}
-
-/**
- * RFQ item status badge.
- */
-function RfqItemStatusBadge({ status }: { readonly status: RfqItem['status'] }) {
-  const config = RfqItemStatusConfig[status];
-  return (
-    <Badge variant={config.color} size="sm">
-      {config.labelKo}
-    </Badge>
   );
 }
 
@@ -232,8 +220,6 @@ export function VendorSelectionApprovalPage() {
     );
   }
 
-  const statusConfig = PurchaseRequestStatusConfig[request.status];
-
   return (
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
@@ -298,9 +284,7 @@ export function VendorSelectionApprovalPage() {
                 {request.jobCode || request.projectName || '-'}
               </InfoField>
               <InfoField label={t('vendorSelectionApproval.fields.status')}>
-                <Badge variant={statusConfig.color} dot>
-                  {statusConfig.labelKo}
-                </Badge>
+                <PurchaseRequestStatusBadge status={request.status} dot />
               </InfoField>
             </div>
           </Card>
@@ -376,7 +360,7 @@ export function VendorSelectionApprovalPage() {
                         </div>
                       </Table.Cell>
                       <Table.Cell>
-                        <RfqItemStatusBadge status={item.status} />
+                        <RfqItemStatusBadge status={item.status} size="sm" />
                       </Table.Cell>
                       <Table.Cell className="text-right font-medium text-copper-400">
                         {item.quotedPrice ? formatCurrency(item.quotedPrice) : '-'}
@@ -448,12 +432,7 @@ export function VendorSelectionApprovalPage() {
               <h3 className="mb-4 text-lg font-medium text-white">
                 상태
               </h3>
-              <Badge variant={statusConfig.color} dot>
-                {statusConfig.labelKo}
-              </Badge>
-              <p className="mt-2 text-sm text-steel-400">
-                {statusConfig.description}
-              </p>
+              <PurchaseRequestStatusBadge status={request.status} dot />
             </Card>
           )}
         </div>

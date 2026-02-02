@@ -68,7 +68,7 @@ export function AccountsPayableTable({
               )}
             </Table.Cell>
             <Table.Cell>
-              <AccountsPayableStatusBadge status={item.calculatedStatus} />
+              <AccountsPayableStatusBadge status={item.calculatedStatus} size="sm" />
             </Table.Cell>
             <Table.Cell>
               <AgingBucketBadge bucket={item.agingBucket} />

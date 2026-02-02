@@ -14,7 +14,7 @@ import {
   purchaseRequestQueries,
   purchaseRequestRules,
   PurchaseRequestStatus,
-  PurchaseRequestStatusConfig,
+  PurchaseRequestStatusBadge,
 } from '@/entities/purchase-request';
 import { Badge, Card, Icon, Pagination, Spinner, Table } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting';
@@ -25,19 +25,6 @@ import {
 } from '@/widgets/purchase-request-panel';
 
 const PAGE_SIZE = 20;
-
-/**
- * Status badge for RFQ-stage requests.
- */
-function RfqStatusBadge({ status }: { readonly status: PurchaseRequestStatus }) {
-  const { t } = useTranslation('purchasing');
-  const config = PurchaseRequestStatusConfig[status];
-  return (
-    <Badge variant={config.color} dot>
-      {t(`purchaseRequest.status.${status}`)}
-    </Badge>
-  );
-}
 
 /**
  * RFQ tab content.
@@ -261,7 +248,7 @@ export function RfqTab() {
                           {formatDate(request.requiredDate)}
                         </Table.Cell>
                         <Table.Cell>
-                          <RfqStatusBadge status={request.status} />
+                          <PurchaseRequestStatusBadge status={request.status} dot size="sm" />
                         </Table.Cell>
                         <Table.Cell className="text-steel-300">{request.createdByName}</Table.Cell>
                       </Table.Row>
@@ -336,7 +323,7 @@ export function RfqTab() {
                         {formatDate(request.requiredDate)}
                       </Table.Cell>
                       <Table.Cell>
-                        <RfqStatusBadge status={request.status} />
+                        <PurchaseRequestStatusBadge status={request.status} dot size="sm" />
                       </Table.Cell>
                     </Table.Row>
                   );
@@ -396,7 +383,7 @@ export function RfqTab() {
                         {formatDate(request.requiredDate)}
                       </Table.Cell>
                       <Table.Cell>
-                        <RfqStatusBadge status={request.status} />
+                        <PurchaseRequestStatusBadge status={request.status} dot size="sm" />
                       </Table.Cell>
                     </Table.Row>
                   );
@@ -456,7 +443,7 @@ export function RfqTab() {
                         {formatDate(request.requiredDate)}
                       </Table.Cell>
                       <Table.Cell>
-                        <RfqStatusBadge status={request.status} />
+                        <PurchaseRequestStatusBadge status={request.status} dot size="sm" />
                       </Table.Cell>
                     </Table.Row>
                   );

@@ -90,6 +90,7 @@ export function InvoiceTable({
               <InvoiceStatusBadge
                 status={invoice.status}
                 isOutdated={invoiceRules.isOutdated(invoice, latestAcceptedQuotationId ?? null)}
+                size="sm"
               />
             </Table.Cell>
             <Table.Cell className="text-right font-mono">

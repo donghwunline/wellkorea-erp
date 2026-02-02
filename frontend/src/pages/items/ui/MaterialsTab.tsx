@@ -15,20 +15,18 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   type Material,
   type MaterialListItem,
   materialQueries,
-  setPreferredVendorOffering,
-  type VendorMaterialOffering,
 } from '@/entities/material';
 import { useAuth } from '@/entities/auth';
 import { MaterialFormModal } from '@/features/items/material/form';
 import { DeleteMaterialModal } from '@/features/items/material/delete';
-import { VendorMaterialOfferingFormModal } from '@/features/items/vendor-material-offering/form';
-import { DeleteVendorMaterialOfferingModal } from '@/features/items/vendor-material-offering/delete';
-import { Button, Card, FilterBar, Icon, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
+import { MaterialDetailModal } from '@/widgets/material-detail-modal';
+import { VendorOfferingsModal } from '@/widgets/vendor-offerings-modal';
+import { Button, Card, FilterBar, Pagination, SearchBar, Spinner } from '@/shared/ui';
 import { formatCurrency } from '@/shared/lib/formatting';
 
 const PAGE_SIZE = 20;
@@ -40,44 +38,19 @@ export function MaterialsTab() {
   const { t } = useTranslation('items');
   const { hasAnyRole } = useAuth();
   const canManage = hasAnyRole(['ROLE_ADMIN', 'ROLE_FINANCE']);
-  const queryClient = useQueryClient();
 
   // Local state for filters and pagination
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
 
-  // Material detail modal state
+  // Modal states
   const [selectedMaterial, setSelectedMaterial] = useState<MaterialListItem | null>(null);
-
-  // Create/Edit modal state
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | undefined>(undefined);
-
-  // Delete modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingMaterial, setDeletingMaterial] = useState<MaterialListItem | null>(null);
-
-  // Vendor offerings modal state
   const [materialForOfferings, setMaterialForOfferings] = useState<MaterialListItem | null>(null);
-
-  // Vendor offering form modal state
-  const [isOfferingFormOpen, setIsOfferingFormOpen] = useState(false);
-  const [editingOffering, setEditingOffering] = useState<VendorMaterialOffering | undefined>(
-    undefined
-  );
-
-  // Vendor offering delete modal state
-  const [isOfferingDeleteOpen, setIsOfferingDeleteOpen] = useState(false);
-  const [deletingOffering, setDeletingOffering] = useState<VendorMaterialOffering | null>(null);
-
-  // Set preferred vendor mutation
-  const setPreferredMutation = useMutation({
-    mutationFn: setPreferredVendorOffering,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: materialQueries.offerings() });
-    },
-  });
 
   // Handle search change with pagination reset
   const handleSearchChange = useCallback((value: string) => {
@@ -109,21 +82,12 @@ export function MaterialsTab() {
     })
   );
 
-  // Server state for offerings (only when material selected)
-  const { data: offeringsData, isLoading: offeringsLoading } = useQuery({
-    ...materialQueries.offeringList(materialForOfferings?.id ?? 0),
-    enabled: !!materialForOfferings,
-  });
-
-  const offerings = offeringsData?.data ?? [];
   const materials = materialsData?.data ?? [];
   const pagination = materialsData?.pagination;
   const categories = categoriesData ?? [];
 
   // Close detail modal
-  const handleCloseDetail = () => {
-    setSelectedMaterial(null);
-  };
+  const handleCloseDetail = () => setSelectedMaterial(null);
 
   // Open create modal
   const handleOpenCreate = () => {
@@ -131,10 +95,9 @@ export function MaterialsTab() {
     setIsFormModalOpen(true);
   };
 
-  // Open edit modal (convert list item to full material type for the form)
+  // Open edit modal
   const handleOpenEdit = () => {
     if (!selectedMaterial) return;
-    // MaterialListItem has the same fields needed for editing
     setEditingMaterial({
       id: selectedMaterial.id,
       sku: selectedMaterial.sku,
@@ -172,7 +135,7 @@ export function MaterialsTab() {
     setDeletingMaterial(null);
   };
 
-  // Handle form success (close detail modal if we just edited)
+  // Handle form success
   const handleFormSuccess = () => {
     if (editingMaterial) {
       setSelectedMaterial(null);
@@ -182,50 +145,6 @@ export function MaterialsTab() {
   // Handle delete success
   const handleDeleteSuccess = () => {
     setSelectedMaterial(null);
-  };
-
-  // ========== Vendor Offerings Modal Handlers ==========
-  const handleOpenOfferingsModal = (material: MaterialListItem) => {
-    setMaterialForOfferings(material);
-  };
-
-  const handleCloseOfferingsModal = () => {
-    setMaterialForOfferings(null);
-  };
-
-  const handleOpenOfferingCreate = () => {
-    setEditingOffering(undefined);
-    setIsOfferingFormOpen(true);
-  };
-
-  const handleOpenOfferingEdit = (offering: VendorMaterialOffering) => {
-    setEditingOffering(offering);
-    setIsOfferingFormOpen(true);
-  };
-
-  const handleCloseOfferingForm = () => {
-    setIsOfferingFormOpen(false);
-    setEditingOffering(undefined);
-  };
-
-  const handleOpenOfferingDelete = (offering: VendorMaterialOffering) => {
-    setDeletingOffering(offering);
-    setIsOfferingDeleteOpen(true);
-  };
-
-  const handleCloseOfferingDelete = () => {
-    setIsOfferingDeleteOpen(false);
-    setDeletingOffering(null);
-  };
-
-  const handleSetPreferred = (offeringId: number) => {
-    setPreferredMutation.mutate(offeringId);
-  };
-
-  // Format price
-  const formatPrice = (price: number | null | undefined): string => {
-    if (price == null) return '-';
-    return formatCurrency(price);
   };
 
   return (
@@ -321,50 +240,13 @@ export function MaterialsTab() {
               </thead>
               <tbody className="divide-y divide-steel-700/30 bg-steel-900/40">
                 {materials.map(material => (
-                  <tr key={material.id} className="hover:bg-steel-800/30">
-                    <td className="whitespace-nowrap px-4 py-3 text-sm font-mono text-copper-400">
-                      {material.sku}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-white">{material.name}</td>
-                    <td className="px-4 py-3 text-sm text-steel-300">{material.categoryName}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
-                      {material.unit}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-white">
-                      {material.standardPrice ? formatCurrency(material.standardPrice) : '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-steel-300">
-                      {material.preferredVendorName ?? '-'}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-center">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                          material.isActive
-                            ? 'bg-emerald-500/10 text-emerald-400'
-                            : 'bg-red-500/10 text-red-400'
-                        }`}
-                      >
-                        {material.isActive ? t('status.ACTIVE') : t('status.INACTIVE')}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => setSelectedMaterial(material)}
-                          className="text-sm text-steel-400 hover:text-white"
-                        >
-                          {t('actions.viewDetails')}
-                        </button>
-                        <button
-                          onClick={() => handleOpenOfferingsModal(material)}
-                          className="flex items-center gap-1 text-sm text-copper-400 hover:text-copper-300"
-                        >
-                          <Icon name="building-office" className="h-4 w-4" />
-                          {t('actions.vendors')}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <MaterialTableRow
+                    key={material.id}
+                    material={material}
+                    onViewDetails={() => setSelectedMaterial(material)}
+                    onViewVendors={() => setMaterialForOfferings(material)}
+                    t={t}
+                  />
                 ))}
               </tbody>
             </table>
@@ -388,192 +270,22 @@ export function MaterialsTab() {
 
       {/* Material Detail Modal */}
       {selectedMaterial && (
-        <Modal
-          isOpen={true}
+        <MaterialDetailModal
+          material={selectedMaterial}
           onClose={handleCloseDetail}
-          title={t('materials.view.modalTitle', { name: selectedMaterial.name })}
-          size="md"
-        >
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs uppercase text-steel-500">{t('table.headers.sku')}</label>
-                <p className="font-mono text-copper-400">{selectedMaterial.sku}</p>
-              </div>
-              <div>
-                <label className="text-xs uppercase text-steel-500">
-                  {t('table.headers.category')}
-                </label>
-                <p className="text-white">{selectedMaterial.categoryName}</p>
-              </div>
-              <div>
-                <label className="text-xs uppercase text-steel-500">
-                  {t('table.headers.unit')}
-                </label>
-                <p className="text-white">{selectedMaterial.unit}</p>
-              </div>
-              <div>
-                <label className="text-xs uppercase text-steel-500">
-                  {t('table.headers.standardPrice')}
-                </label>
-                <p className="text-white">
-                  {selectedMaterial.standardPrice
-                    ? formatCurrency(selectedMaterial.standardPrice)
-                    : '-'}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <label className="text-xs uppercase text-steel-500">
-                  {t('materials.fields.description')}
-                </label>
-                <p className="text-steel-300">
-                  {selectedMaterial.description || t('materials.view.noDescription')}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <label className="text-xs uppercase text-steel-500">
-                  {t('table.headers.preferredVendor')}
-                </label>
-                <p className="text-white">
-                  {selectedMaterial.preferredVendorName ?? t('materials.view.preferredVendorNone')}
-                </p>
-              </div>
-            </div>
-
-            {canManage && (
-              <div className="flex justify-end gap-2 border-t border-steel-700/50 pt-4">
-                <Button variant="secondary" onClick={handleOpenEdit}>
-                  {t('actions.edit')}
-                </Button>
-                <Button variant="danger" onClick={handleOpenDelete}>
-                  {t('actions.deactivate')}
-                </Button>
-              </div>
-            )}
-          </div>
-        </Modal>
+          onEdit={handleOpenEdit}
+          onDelete={handleOpenDelete}
+          canManage={canManage}
+        />
       )}
 
       {/* Vendor Offerings Modal */}
       {materialForOfferings && (
-        <Modal
-          isOpen={true}
-          onClose={handleCloseOfferingsModal}
-          title={t('materials.offerings.modalTitle', { name: materialForOfferings.name })}
-          size="lg"
-        >
-          {offeringsLoading ? (
-            <div className="flex justify-center py-8">
-              <Spinner size="md" />
-            </div>
-          ) : offerings.length === 0 ? (
-            <div className="py-8 text-center text-steel-400">
-              <p>{t('materials.offerings.empty')}</p>
-              {canManage && (
-                <Button variant="primary" className="mt-4" onClick={handleOpenOfferingCreate}>
-                  {t('materials.offerings.addOffering')}
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="overflow-hidden rounded-lg border border-steel-700/50">
-                <table className="min-w-full divide-y divide-steel-700/50">
-                  <thead className="bg-steel-800/60">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-steel-400">
-                        {t('table.headers.vendor')}
-                      </th>
-                      <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                        {t('table.headers.unitPrice')}
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                        {t('table.headers.leadTime')}
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                        {t('table.headers.effectivePeriod')}
-                      </th>
-                      <th className="px-4 py-2 text-center text-xs font-medium uppercase tracking-wider text-steel-400">
-                        {t('table.headers.preferred')}
-                      </th>
-                      {canManage && (
-                        <th className="px-4 py-2 text-right text-xs font-medium uppercase tracking-wider text-steel-400">
-                          {t('table.headers.actions')}
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-steel-700/30 bg-steel-900/40">
-                    {offerings.map(offering => (
-                      <tr key={offering.id} className="hover:bg-steel-800/30">
-                        <td className="px-4 py-3 text-sm text-white">
-                          {offering.vendorName}
-                          {offering.vendorMaterialName && (
-                            <span className="ml-2 text-steel-400">
-                              ({offering.vendorMaterialName})
-                            </span>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-white">
-                          {formatPrice(offering.unitPrice)}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
-                          {offering.leadTimeDays
-                            ? t('common.days', { count: offering.leadTimeDays })
-                            : '-'}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
-                          {offering.effectiveFrom && offering.effectiveTo
-                            ? `${offering.effectiveFrom} ~ ${offering.effectiveTo}`
-                            : '-'}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-center">
-                          {offering.isPreferred ? (
-                            <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
-                              {t('table.headers.preferred')}
-                            </span>
-                          ) : canManage ? (
-                            <button
-                              onClick={() => handleSetPreferred(offering.id)}
-                              className="text-xs text-steel-400 hover:text-amber-400"
-                              disabled={setPreferredMutation.isPending}
-                            >
-                              {t('materials.offerings.setAsPreferred')}
-                            </button>
-                          ) : null}
-                        </td>
-                        {canManage && (
-                          <td className="whitespace-nowrap px-4 py-3 text-right">
-                            <button
-                              onClick={() => handleOpenOfferingEdit(offering)}
-                              className="text-sm text-steel-400 hover:text-white"
-                            >
-                              {t('actions.edit')}
-                            </button>
-                            <button
-                              onClick={() => handleOpenOfferingDelete(offering)}
-                              className="ml-3 text-sm text-red-400 hover:text-red-300"
-                            >
-                              {t('actions.delete')}
-                            </button>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {canManage && (
-                <div className="flex justify-end">
-                  <Button variant="secondary" onClick={handleOpenOfferingCreate}>
-                    {t('materials.offerings.addOffering')}
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </Modal>
+        <VendorOfferingsModal
+          material={materialForOfferings}
+          onClose={() => setMaterialForOfferings(null)}
+          canManage={canManage}
+        />
       )}
 
       {/* Create/Edit Material Modal */}
@@ -591,22 +303,60 @@ export function MaterialsTab() {
         material={deletingMaterial}
         onSuccess={handleDeleteSuccess}
       />
-
-      {/* Vendor Material Offering Form Modal */}
-      <VendorMaterialOfferingFormModal
-        isOpen={isOfferingFormOpen}
-        onClose={handleCloseOfferingForm}
-        offering={editingOffering}
-        materialId={materialForOfferings?.id}
-        materialName={materialForOfferings?.name}
-      />
-
-      {/* Vendor Material Offering Delete Modal */}
-      <DeleteVendorMaterialOfferingModal
-        isOpen={isOfferingDeleteOpen}
-        onClose={handleCloseOfferingDelete}
-        offering={deletingOffering}
-      />
     </div>
+  );
+}
+
+// =============================================================================
+// INTERNAL COMPONENTS
+// =============================================================================
+
+interface MaterialTableRowProps {
+  material: MaterialListItem;
+  onViewDetails: () => void;
+  onViewVendors: () => void;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}
+
+function MaterialTableRow({ material, onViewDetails, onViewVendors, t }: MaterialTableRowProps) {
+  return (
+    <tr className="hover:bg-steel-800/30">
+      <td className="whitespace-nowrap px-4 py-3 text-sm font-mono text-copper-400">
+        {material.sku}
+      </td>
+      <td className="px-4 py-3 text-sm text-white">{material.name}</td>
+      <td className="px-4 py-3 text-sm text-steel-300">{material.categoryName}</td>
+      <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-steel-300">
+        {material.unit}
+      </td>
+      <td className="whitespace-nowrap px-4 py-3 text-right text-sm text-white">
+        {material.standardPrice ? formatCurrency(material.standardPrice) : '-'}
+      </td>
+      <td className="px-4 py-3 text-sm text-steel-300">{material.preferredVendorName ?? '-'}</td>
+      <td className="whitespace-nowrap px-4 py-3 text-center">
+        <span
+          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+            material.isActive
+              ? 'bg-emerald-500/10 text-emerald-400'
+              : 'bg-red-500/10 text-red-400'
+          }`}
+        >
+          {material.isActive ? t('status.ACTIVE') : t('status.INACTIVE')}
+        </span>
+      </td>
+      <td className="whitespace-nowrap px-4 py-3 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <button onClick={onViewDetails} className="text-sm text-steel-400 hover:text-white">
+            {t('actions.viewDetails')}
+          </button>
+          <button
+            onClick={onViewVendors}
+            className="flex items-center gap-1 text-sm text-copper-400 hover:text-copper-300"
+          >
+            {t('actions.vendors')}
+          </button>
+        </div>
+      </td>
+    </tr>
   );
 }
