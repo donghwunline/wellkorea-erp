@@ -1,9 +1,9 @@
-package com.wellkorea.backend.report.application;
+package com.wellkorea.backend.core.report.application;
 
-import com.wellkorea.backend.report.api.dto.ARInvoiceView;
-import com.wellkorea.backend.report.api.dto.ARReportView;
-import com.wellkorea.backend.report.api.dto.CustomerARView;
-import com.wellkorea.backend.report.infrastructure.mapper.ARReportMapper;
+import com.wellkorea.backend.core.report.api.dto.ARInvoiceView;
+import com.wellkorea.backend.core.report.api.dto.ARReportView;
+import com.wellkorea.backend.core.report.api.dto.CustomerARView;
+import com.wellkorea.backend.core.report.infrastructure.mapper.ARReportMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

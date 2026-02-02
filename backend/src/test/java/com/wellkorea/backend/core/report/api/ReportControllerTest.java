@@ -1,10 +1,10 @@
-package com.wellkorea.backend.report.api;
+package com.wellkorea.backend.core.report.api;
 
 import com.wellkorea.backend.BaseIntegrationTest;
-import com.wellkorea.backend.auth.domain.vo.Role;
-import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
-import com.wellkorea.backend.shared.test.DatabaseTestHelper;
-import com.wellkorea.backend.shared.test.TestFixtures;
+import com.wellkorea.backend.core.auth.domain.vo.Role;
+import com.wellkorea.backend.core.auth.infrastructure.config.JwtTokenProvider;
+import com.wellkorea.backend.test.DatabaseTestHelper;
+import com.wellkorea.backend.test.TestFixtures;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

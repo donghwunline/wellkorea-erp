@@ -1,6 +1,6 @@
-package com.wellkorea.backend.report.api.dto;
+package com.wellkorea.backend.core.report.api.dto;
 
-import com.wellkorea.backend.invoice.domain.InvoiceStatus;
+import com.wellkorea.backend.core.invoice.domain.InvoiceStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

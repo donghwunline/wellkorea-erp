@@ -1,7 +1,7 @@
-package com.wellkorea.backend.report.api;
+package com.wellkorea.backend.core.report.api;
 
-import com.wellkorea.backend.report.api.dto.ARReportView;
-import com.wellkorea.backend.report.application.ARReportService;
+import com.wellkorea.backend.core.report.api.dto.ARReportView;
+import com.wellkorea.backend.core.report.application.ARReportService;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

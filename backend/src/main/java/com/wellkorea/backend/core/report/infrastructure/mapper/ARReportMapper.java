@@ -1,6 +1,6 @@
-package com.wellkorea.backend.report.infrastructure.mapper;
+package com.wellkorea.backend.core.report.infrastructure.mapper;
 
-import com.wellkorea.backend.report.api.dto.ARInvoiceView;
+import com.wellkorea.backend.core.report.api.dto.ARInvoiceView;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
