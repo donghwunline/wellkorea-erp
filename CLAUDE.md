@@ -43,10 +43,10 @@ WellKorea Integrated Work System (ERP) - A full-stack web application consolidat
 ./gradlew test
 
 # Run specific test class
-./gradlew test --tests "com.wellkorea.backend.auth.application.AuthenticationServiceTest"
+./gradlew test --tests "com.wellkorea.backend.core.auth.application.AuthenticationServiceTest"
 
 # Run specific test method
-./gradlew test --tests "com.wellkorea.backend.auth.application.AuthenticationServiceTest.testLogin"
+./gradlew test --tests "com.wellkorea.backend.core.auth.application.AuthenticationServiceTest.testLogin"
 
 # Run tests with coverage
 ./gradlew test jacocoTestReport
@@ -204,15 +204,37 @@ Backend follows a layered Domain-Driven Design approach with **CQRS (Command Que
 
 ```
 com/wellkorea/backend/
-├── shared/               # Cross-cutting concerns (Shared Kernel)
+├── core/                 # Core Domains (business logic)
+│   ├── auth/            # Authentication & authorization
+│   ├── catalog/         # Product catalog
+│   ├── company/         # Company management
+│   ├── delivery/        # Delivery tracking
+│   ├── finance/         # Financial management
+│   ├── invoice/         # Invoice generation
+│   ├── product/         # Product management
+│   ├── production/      # Production tracking
+│   ├── project/         # Project management
+│   ├── purchasing/      # Purchasing & vendor management
+│   ├── quotation/       # Quotation management
+│   └── report/          # Report generation
+│
+├── supporting/           # Supporting Domains (infrastructure concerns)
 │   ├── approval/        # Multi-level approval workflow (Approvable pattern)
+│   ├── storage/         # File storage abstraction (MinIO)
+│   └── mail/            # Mail OAuth2 configuration
+│
+├── shared/               # Shared Kernel (cross-cutting utilities)
 │   ├── audit/           # AuditLogger, AuditContextHolder
+│   ├── config/          # Common configuration
 │   ├── dto/             # ApiResponse, ErrorResponse
 │   ├── event/           # Domain events (ApprovalRequiredEvent, etc.)
 │   ├── exception/       # GlobalExceptionHandler, ErrorCode
-│   └── storage/         # File storage abstraction (MinIO)
+│   ├── lock/            # Distributed locking
+│   ├── mail/            # Mail utilities
+│   ├── pdf/             # PDF generation utilities
+│   └── ratelimit/       # Rate limiting
 │
-├── {domain}/            # Feature-specific packages (auth, project, quotation)
+├── core/{domain}/        # Each core domain follows this structure
 │   ├── api/            # REST controllers
 │   │   └── dto/
 │   │       ├── command/   # Request DTOs, CommandResult DTOs
@@ -226,7 +248,7 @@ com/wellkorea/backend/
 │   └── infrastructure/ # Persistence, external services
 ```
 
-**CQRS Pattern** (see `quotation/` package for reference implementation):
+**CQRS Pattern** (see `core/quotation/` package for reference implementation):
 - **Separate Command and Query Services**:
   - `{Domain}CommandService` - `@Transactional`, handles create/update/delete, returns **only entity IDs**
   - `{Domain}QueryService` - `@Transactional(readOnly = true)`, handles reads, returns **View DTOs**
@@ -256,7 +278,7 @@ GET /api/quotations/{id} → queryService.getQuotationDetail(id) → QuotationDe
 - **JWT Authentication**: Custom `JwtAuthenticationFilter` with token refresh support (temporary, will migrate to Keycloak OAuth2)
 - **Audit Logging**: `AuditLogger` with `AuditContextHolder` for request context tracking
 - **Domain Events**: Use `DomainEventPublisher` for cross-domain communication (e.g., approval workflow)
-- **Approvable Pattern** (extensible approval workflow): Entities implement `Approvable` interface and embed `ApprovalState`. Register resolver in `ApprovableRegistry` via `@PostConstruct` config class. `GenericApprovalCompletedHandler` invokes entity callbacks on completion. See `docs/architecture/domain/approval-domain-model.md` for full documentation. Reference implementations: `PurchaseRequest` (vendor selection), `Quotation`.
+- **Approvable Pattern** (extensible approval workflow): Entities implement `Approvable` interface and embed `ApprovalState`. Register resolver in `ApprovableRegistry` via `@PostConstruct` config class. `GenericApprovalCompletedHandler` invokes entity callbacks on completion. Located in `supporting/approval/`. See `docs/architecture/domain/approval-domain-model.md` for full documentation. Reference implementations: `PurchaseRequest` (vendor selection), `Quotation`.
 
 ### Frontend Architecture (FSD-Lite: Feature-Sliced Design)
 

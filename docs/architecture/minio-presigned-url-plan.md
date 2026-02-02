@@ -53,7 +53,7 @@ Refactor the blueprint attachment upload/download flow to use presigned URLs for
 
 ### 1. Fix MinioFileStorage.java (Use publicMinioClient for presigned URLs)
 
-**File:** `backend/src/main/java/com/wellkorea/backend/document/infrastructure/storage/MinioFileStorage.java`
+**File:** `backend/src/main/java/com/wellkorea/backend/supporting/storage/infrastructure/MinioFileStorage.java`
 
 **Change:** Replace `minioClient` with `publicMinioClient` in both presigned URL methods.
 
@@ -81,10 +81,10 @@ String url = publicMinioClient.getPresignedObjectUrl(  // was: minioClient
 
 ### 2. Create New DTOs
 
-**File:** `backend/src/main/java/com/wellkorea/backend/production/api/dto/command/UploadUrlRequest.java`
+**File:** `backend/src/main/java/com/wellkorea/backend/core/production/api/dto/command/UploadUrlRequest.java`
 
 ```java
-package com.wellkorea.backend.production.api.dto.command;
+package com.wellkorea.backend.core.production.api.dto.command;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -104,10 +104,10 @@ public record UploadUrlRequest(
 ) {}
 ```
 
-**File:** `backend/src/main/java/com/wellkorea/backend/production/api/dto/command/UploadUrlResponse.java`
+**File:** `backend/src/main/java/com/wellkorea/backend/core/production/api/dto/command/UploadUrlResponse.java`
 
 ```java
-package com.wellkorea.backend.production.api.dto.command;
+package com.wellkorea.backend.core.production.api.dto.command;
 
 /**
  * Response containing presigned upload URL and object key.
@@ -118,10 +118,10 @@ public record UploadUrlResponse(
 ) {}
 ```
 
-**File:** `backend/src/main/java/com/wellkorea/backend/production/api/dto/command/RegisterAttachmentRequest.java`
+**File:** `backend/src/main/java/com/wellkorea/backend/core/production/api/dto/command/RegisterAttachmentRequest.java`
 
 ```java
-package com.wellkorea.backend.production.api.dto.command;
+package com.wellkorea.backend.core.production.api.dto.command;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
