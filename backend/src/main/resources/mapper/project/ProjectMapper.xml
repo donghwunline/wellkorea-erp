@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.wellkorea.backend.project.infrastructure.mapper.ProjectMapper">
+<mapper namespace="com.wellkorea.backend.core.project.infrastructure.mapper.ProjectMapper">
 
     <!-- ProjectDetailView result map for record -->
-    <resultMap id="ProjectDetailViewResult" type="com.wellkorea.backend.project.api.dto.query.ProjectDetailView">
+    <resultMap id="ProjectDetailViewResult" type="com.wellkorea.backend.core.project.api.dto.query.ProjectDetailView">
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="job_code" javaType="String"/>
@@ -16,7 +16,7 @@
             <arg column="due_date" javaType="java.time.LocalDate"/>
             <arg column="internal_owner_id" javaType="Long"/>
             <arg column="internal_owner_name" javaType="String"/>
-            <arg column="status" javaType="com.wellkorea.backend.project.domain.ProjectStatus"/>
+            <arg column="status" javaType="com.wellkorea.backend.core.project.domain.ProjectStatus"/>
             <arg column="created_by_id" javaType="Long"/>
             <arg column="created_by_name" javaType="String"/>
             <arg column="created_at" javaType="java.time.Instant"/>
@@ -26,7 +26,7 @@
     </resultMap>
 
     <!-- ProjectSummaryView result map for record -->
-    <resultMap id="ProjectSummaryViewResult" type="com.wellkorea.backend.project.api.dto.query.ProjectSummaryView">
+    <resultMap id="ProjectSummaryViewResult" type="com.wellkorea.backend.core.project.api.dto.query.ProjectSummaryView">
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="job_code" javaType="String"/>
@@ -34,7 +34,7 @@
             <arg column="customer_name" javaType="String"/>
             <arg column="project_name" javaType="String"/>
             <arg column="due_date" javaType="java.time.LocalDate"/>
-            <arg column="status" javaType="com.wellkorea.backend.project.domain.ProjectStatus"/>
+            <arg column="status" javaType="com.wellkorea.backend.core.project.domain.ProjectStatus"/>
             <arg column="created_at" javaType="java.time.Instant"/>
             <arg column="updated_at" javaType="java.time.Instant"/>
         </constructor>
@@ -75,7 +75,7 @@
     <!-- Find project detail by ID -->
     <select id="findDetailById" resultMap="ProjectDetailViewResult">
         SELECT
-            <include refid="projectDetailColumns"/>
+        <include refid="projectDetailColumns"/>
         FROM projects p
         LEFT JOIN companies c ON p.customer_company_id = c.id
         LEFT JOIN users io ON p.internal_owner_id = io.id
@@ -86,7 +86,7 @@
     <!-- Find project detail by JobCode -->
     <select id="findDetailByJobCode" resultMap="ProjectDetailViewResult">
         SELECT
-            <include refid="projectDetailColumns"/>
+        <include refid="projectDetailColumns"/>
         FROM projects p
         LEFT JOIN companies c ON p.customer_company_id = c.id
         LEFT JOIN users io ON p.internal_owner_id = io.id
@@ -97,7 +97,7 @@
     <!-- Find projects with filters - eliminates N+1 on customer -->
     <select id="findWithFilters" resultMap="ProjectSummaryViewResult">
         SELECT
-            <include refid="projectSummaryColumns"/>
+        <include refid="projectSummaryColumns"/>
         FROM projects p
         LEFT JOIN companies c ON p.customer_company_id = c.id
         <where>
@@ -113,8 +113,8 @@
             </if>
             <if test="search != null and search != ''">
                 AND (
-                    LOWER(p.job_code) LIKE LOWER(CONCAT('%', #{search}, '%'))
-                    OR LOWER(p.project_name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                LOWER(p.job_code) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                OR LOWER(p.project_name) LIKE LOWER(CONCAT('%', #{search}, '%'))
                 )
             </if>
         </where>
@@ -139,8 +139,8 @@
             </if>
             <if test="search != null and search != ''">
                 AND (
-                    LOWER(p.job_code) LIKE LOWER(CONCAT('%', #{search}, '%'))
-                    OR LOWER(p.project_name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                LOWER(p.job_code) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                OR LOWER(p.project_name) LIKE LOWER(CONCAT('%', #{search}, '%'))
                 )
             </if>
         </where>
@@ -154,19 +154,19 @@
     <!-- Calculate project progress as average of task node progress values -->
     <select id="calculateProjectProgress" resultType="int">
         SELECT COALESCE(
-            (SELECT AVG(tn.progress)::int
-             FROM task_flows tf
-             JOIN task_nodes tn ON tf.id = tn.flow_id
-             WHERE tf.project_id = #{projectId}),
-            0
-        )
+                       (SELECT AVG(tn.progress)::int
+                        FROM task_flows tf
+                                 JOIN task_nodes tn ON tf.id = tn.flow_id
+                        WHERE tf.project_id = #{projectId}),
+                       0
+               )
     </select>
 
     <!-- Count pending approval requests for project's quotations -->
     <select id="countPendingApprovals" resultType="int">
         SELECT COUNT(DISTINCT ar.id)::int
         FROM approval_requests ar
-        JOIN quotations q ON ar.entity_type = 'QUOTATION' AND ar.entity_id = q.id
+                 JOIN quotations q ON ar.entity_type = 'QUOTATION' AND ar.entity_id = q.id
         WHERE q.project_id = #{projectId}
           AND ar.status = 'PENDING'
     </select>
@@ -174,28 +174,28 @@
     <!-- Calculate accounts receivable (outstanding balance) for project -->
     <select id="calculateAccountsReceivable" resultType="long">
         SELECT COALESCE(
-            (SELECT SUM(
-                i.total_amount - COALESCE(
-                    (SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = i.id),
-                    0
-                )
-            )
-            FROM tax_invoices i
-            WHERE i.project_id = #{projectId}
-              AND i.status IN ('ISSUED', 'PARTIALLY_PAID', 'OVERDUE')),
-            0
-        )
+                       (SELECT SUM(
+                                       i.total_amount - COALESCE(
+                                               (SELECT SUM(p.amount) FROM payments p WHERE p.invoice_id = i.id),
+                                               0
+                                                        )
+                               )
+                        FROM tax_invoices i
+                        WHERE i.project_id = #{projectId}
+                          AND i.status IN ('ISSUED', 'PARTIALLY_PAID', 'OVERDUE')),
+                       0
+               )
     </select>
 
     <!-- Calculate total invoiced amount for project -->
     <select id="calculateInvoicedAmount" resultType="long">
         SELECT COALESCE(
-            (SELECT SUM(i.total_amount)
-             FROM tax_invoices i
-             WHERE i.project_id = #{projectId}
-               AND i.status != 'CANCELLED'),
-            0
-        )
+                       (SELECT SUM(i.total_amount)
+                        FROM tax_invoices i
+                        WHERE i.project_id = #{projectId}
+                          AND i.status != 'CANCELLED'),
+                       0
+               )
     </select>
 
 </mapper>
