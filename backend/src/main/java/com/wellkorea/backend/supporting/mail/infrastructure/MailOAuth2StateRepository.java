@@ -1,6 +1,6 @@
-package com.wellkorea.backend.admin.mail.infrastructure;
+package com.wellkorea.backend.supporting.mail.infrastructure;
 
-import com.wellkorea.backend.admin.mail.domain.MailOAuth2State;
+import com.wellkorea.backend.supporting.mail.domain.MailOAuth2State;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

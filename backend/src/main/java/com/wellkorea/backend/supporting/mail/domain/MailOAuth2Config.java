@@ -1,7 +1,8 @@
-package com.wellkorea.backend.admin.mail.domain;
+package com.wellkorea.backend.supporting.mail.domain;
 
 import com.wellkorea.backend.shared.security.EncryptedStringConverter;
 import jakarta.persistence.*;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -97,7 +98,7 @@ public class MailOAuth2Config {
      * Update cached access token after successful refresh.
      *
      * @param accessToken The new access token
-     * @param expiresAt When the token expires
+     * @param expiresAt   When the token expires
      */
     public void updateAccessToken(String accessToken, Instant expiresAt) {
         this.accessToken = Objects.requireNonNull(accessToken, "accessToken must not be null");

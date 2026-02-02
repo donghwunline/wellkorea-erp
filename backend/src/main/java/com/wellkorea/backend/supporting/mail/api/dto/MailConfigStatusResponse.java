@@ -1,4 +1,4 @@
-package com.wellkorea.backend.admin.mail.api.dto;
+package com.wellkorea.backend.supporting.mail.api.dto;
 
 import java.time.Instant;
 
@@ -11,4 +11,5 @@ public record MailConfigStatusResponse(
         Instant connectedAt,
         Long connectedById,
         boolean microsoftConfigured
-) {}
+) {
+}

@@ -1,11 +1,11 @@
-package com.wellkorea.backend.admin.mail.application;
+package com.wellkorea.backend.supporting.mail.application;
 
-import com.wellkorea.backend.admin.mail.domain.MailOAuth2Config;
-import com.wellkorea.backend.admin.mail.domain.MailOAuth2State;
-import com.wellkorea.backend.admin.mail.infrastructure.MailOAuth2ConfigRepository;
-import com.wellkorea.backend.admin.mail.infrastructure.MailOAuth2StateRepository;
 import com.wellkorea.backend.shared.exception.ErrorCode;
 import com.wellkorea.backend.shared.exception.OAuth2Exception;
+import com.wellkorea.backend.supporting.mail.domain.MailOAuth2Config;
+import com.wellkorea.backend.supporting.mail.domain.MailOAuth2State;
+import com.wellkorea.backend.supporting.mail.infrastructure.MailOAuth2ConfigRepository;
+import com.wellkorea.backend.supporting.mail.infrastructure.MailOAuth2StateRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

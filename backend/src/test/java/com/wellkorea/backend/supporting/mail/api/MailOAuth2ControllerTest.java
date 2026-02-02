@@ -1,13 +1,13 @@
-package com.wellkorea.backend.admin.mail.api;
+package com.wellkorea.backend.supporting.mail.api;
 
 import com.wellkorea.backend.BaseIntegrationTest;
-import com.wellkorea.backend.admin.mail.application.MailOAuth2Service;
-import com.wellkorea.backend.auth.domain.vo.Role;
-import com.wellkorea.backend.auth.infrastructure.config.JwtTokenProvider;
+import com.wellkorea.backend.core.auth.domain.vo.Role;
+import com.wellkorea.backend.core.auth.infrastructure.config.JwtTokenProvider;
 import com.wellkorea.backend.shared.exception.ErrorCode;
 import com.wellkorea.backend.shared.exception.OAuth2Exception;
-import com.wellkorea.backend.shared.test.DatabaseTestHelper;
-import com.wellkorea.backend.shared.test.TestFixtures;
+import com.wellkorea.backend.supporting.mail.application.MailOAuth2Service;
+import com.wellkorea.backend.test.DatabaseTestHelper;
+import com.wellkorea.backend.test.TestFixtures;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

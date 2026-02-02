@@ -1,6 +1,6 @@
-package com.wellkorea.backend.admin.mail.infrastructure;
+package com.wellkorea.backend.supporting.mail.infrastructure;
 
-import com.wellkorea.backend.admin.mail.domain.MailOAuth2Config;
+import com.wellkorea.backend.supporting.mail.domain.MailOAuth2Config;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -23,6 +23,7 @@ public interface MailOAuth2ConfigRepository extends JpaRepository<MailOAuth2Conf
 
     /**
      * Find the most recently connected configuration.
+     *
      * @deprecated Use {@link #findSingletonConfig()} instead for singleton pattern.
      */
     @Deprecated

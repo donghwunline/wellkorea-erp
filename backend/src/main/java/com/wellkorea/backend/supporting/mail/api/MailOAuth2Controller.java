@@ -1,12 +1,12 @@
-package com.wellkorea.backend.admin.mail.api;
+package com.wellkorea.backend.supporting.mail.api;
 
-import com.wellkorea.backend.admin.mail.api.dto.AuthorizeUrlResponse;
-import com.wellkorea.backend.admin.mail.api.dto.MailConfigStatusResponse;
-import com.wellkorea.backend.admin.mail.application.MailOAuth2Service;
 import com.wellkorea.backend.shared.dto.ApiResponse;
 import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import com.wellkorea.backend.shared.exception.ErrorCode;
 import com.wellkorea.backend.shared.exception.OAuth2Exception;
+import com.wellkorea.backend.supporting.mail.api.dto.AuthorizeUrlResponse;
+import com.wellkorea.backend.supporting.mail.api.dto.MailConfigStatusResponse;
+import com.wellkorea.backend.supporting.mail.application.MailOAuth2Service;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
