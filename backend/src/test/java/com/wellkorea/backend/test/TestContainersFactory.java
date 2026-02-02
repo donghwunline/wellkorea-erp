@@ -1,4 +1,4 @@
-package com.wellkorea.backend.shared.test;
+package com.wellkorea.backend.test;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;

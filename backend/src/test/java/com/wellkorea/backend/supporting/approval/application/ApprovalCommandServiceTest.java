@@ -1,19 +1,17 @@
-package com.wellkorea.backend.shared.approval.application;
+package com.wellkorea.backend.supporting.approval.application;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.auth.domain.vo.Role;
-import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.supporting.approval.application.ApprovalCommandService;
-import com.wellkorea.backend.supporting.approval.application.ChainLevelCommand;
+import com.wellkorea.backend.core.auth.domain.User;
+import com.wellkorea.backend.core.auth.domain.vo.Role;
+import com.wellkorea.backend.core.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.shared.event.DomainEventPublisher;
+import com.wellkorea.backend.shared.exception.BusinessException;
+import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.supporting.approval.domain.ApprovalChainTemplate;
 import com.wellkorea.backend.supporting.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.supporting.approval.domain.event.ApprovalCompletedEvent;
 import com.wellkorea.backend.supporting.approval.domain.vo.*;
 import com.wellkorea.backend.supporting.approval.infrastructure.repository.ApprovalChainTemplateRepository;
 import com.wellkorea.backend.supporting.approval.infrastructure.repository.ApprovalRequestRepository;
-import com.wellkorea.backend.shared.event.DomainEventPublisher;
-import com.wellkorea.backend.shared.exception.BusinessException;
-import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

@@ -1,4 +1,4 @@
-package com.wellkorea.backend.shared.test;
+package com.wellkorea.backend.test;
 
 /**
  * Test fixtures providing sample data, tokens, and objects for tests.

@@ -1,4 +1,4 @@
-package com.wellkorea.backend.shared.storage;
+package com.wellkorea.backend.supporting.storage;
 
 import com.wellkorea.backend.BaseIntegrationTest;
 import com.wellkorea.backend.shared.exception.BusinessException;
