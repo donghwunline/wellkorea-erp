@@ -1,7 +1,7 @@
 package com.wellkorea.backend.shared.exception;
 
-import com.wellkorea.backend.finance.domain.exception.PaymentExceedsBalanceException;
-import com.wellkorea.backend.finance.domain.exception.PaymentNotAllowedException;
+import com.wellkorea.backend.core.finance.domain.exception.PaymentExceedsBalanceException;
+import com.wellkorea.backend.core.finance.domain.exception.PaymentNotAllowedException;
 import com.wellkorea.backend.shared.audit.AuditContextHolder;
 import com.wellkorea.backend.shared.audit.AuditLogger;
 import com.wellkorea.backend.shared.dto.ErrorResponse;

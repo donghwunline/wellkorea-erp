@@ -1,7 +1,7 @@
 package com.wellkorea.backend.supporting.storage.application;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.core.auth.domain.User;
+import com.wellkorea.backend.core.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.supporting.storage.api.dto.AttachmentView;

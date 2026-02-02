@@ -1,6 +1,6 @@
 package com.wellkorea.backend.supporting.storage.domain;
 
-import com.wellkorea.backend.auth.domain.User;
+import com.wellkorea.backend.core.auth.domain.User;
 import com.wellkorea.backend.supporting.storage.domain.constant.AttachmentLimits;
 import jakarta.persistence.*;
 

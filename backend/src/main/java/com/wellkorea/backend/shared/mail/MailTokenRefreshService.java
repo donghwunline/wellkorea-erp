@@ -1,8 +1,8 @@
 package com.wellkorea.backend.shared.mail;
 
-import com.wellkorea.backend.admin.mail.domain.MailOAuth2Config;
-import com.wellkorea.backend.admin.mail.infrastructure.MailOAuth2ConfigRepository;
 import com.wellkorea.backend.shared.mail.dto.MicrosoftTokenResponse;
+import com.wellkorea.backend.supporting.mail.domain.MailOAuth2Config;
+import com.wellkorea.backend.supporting.mail.infrastructure.MailOAuth2ConfigRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
@@ -41,8 +41,8 @@ public class MailTokenRefreshService {
      * Refreshes the access token and optionally rotates the refresh token.
      * This method is transactional to ensure atomic updates to the database.
      *
-     * @param config the OAuth2 config to refresh
-     * @param clientId Microsoft app client ID
+     * @param config       the OAuth2 config to refresh
+     * @param clientId     Microsoft app client ID
      * @param clientSecret Microsoft app client secret
      * @return the new access token
      * @throws MailSendException if token refresh fails

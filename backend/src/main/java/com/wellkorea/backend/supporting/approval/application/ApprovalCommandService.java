@@ -1,7 +1,7 @@
 package com.wellkorea.backend.supporting.approval.application;
 
-import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
+import com.wellkorea.backend.core.auth.domain.User;
+import com.wellkorea.backend.core.auth.infrastructure.persistence.UserRepository;
 import com.wellkorea.backend.supporting.approval.domain.ApprovalChainTemplate;
 import com.wellkorea.backend.supporting.approval.domain.ApprovalRequest;
 import com.wellkorea.backend.supporting.approval.domain.event.ApprovalCompletedEvent;
