@@ -1,6 +1,6 @@
 package com.wellkorea.backend.supporting.approval.application;
 
-import com.wellkorea.backend.shared.event.ApprovalRequiredEvent;
+import com.wellkorea.backend.supporting.approval.domain.event.ApprovalRequiredEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

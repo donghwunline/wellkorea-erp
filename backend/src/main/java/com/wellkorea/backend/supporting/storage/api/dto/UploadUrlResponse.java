@@ -11,8 +11,8 @@ public record UploadUrlResponse(
     /**
      * Factory method to create a new response.
      *
-     * @param uploadUrl  Presigned URL for file upload
-     * @param objectKey  Object key (storage path) in MinIO
+     * @param uploadUrl Presigned URL for file upload
+     * @param objectKey Object key (storage path) in MinIO
      * @return New UploadUrlResponse
      */
     public static UploadUrlResponse of(String uploadUrl, String objectKey) {

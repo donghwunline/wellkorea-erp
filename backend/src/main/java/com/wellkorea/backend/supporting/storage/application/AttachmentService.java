@@ -2,7 +2,6 @@ package com.wellkorea.backend.supporting.storage.application;
 
 import com.wellkorea.backend.auth.domain.User;
 import com.wellkorea.backend.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.shared.constant.AttachmentLimits;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.supporting.storage.api.dto.AttachmentView;
@@ -10,6 +9,7 @@ import com.wellkorea.backend.supporting.storage.api.dto.UploadUrlResponse;
 import com.wellkorea.backend.supporting.storage.domain.Attachment;
 import com.wellkorea.backend.supporting.storage.domain.AttachmentFileType;
 import com.wellkorea.backend.supporting.storage.domain.AttachmentOwnerType;
+import com.wellkorea.backend.supporting.storage.domain.constant.AttachmentLimits;
 import com.wellkorea.backend.supporting.storage.infrastructure.FilePathGenerator;
 import com.wellkorea.backend.supporting.storage.infrastructure.MinioFileStorage;
 import com.wellkorea.backend.supporting.storage.infrastructure.persistence.AttachmentRepository;
@@ -191,7 +191,7 @@ public class AttachmentService {
     /**
      * Generate a download URL for an attachment.
      *
-     * @param attachmentId Attachment ID
+     * @param attachmentId  Attachment ID
      * @param expiryMinutes URL expiry time in minutes
      * @return Presigned download URL
      */

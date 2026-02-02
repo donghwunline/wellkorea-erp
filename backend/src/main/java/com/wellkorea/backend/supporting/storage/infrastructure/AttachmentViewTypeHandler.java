@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 /**
  * MyBatis TypeHandler for AttachmentView.
- * 
+ * <p>
  * This handler always returns null because AttachmentView is enriched
  * in the service layer (e.g., DeliveryQueryService) after the mapper query.
  * The mapper selects NULL as a placeholder, and this handler converts it to null.

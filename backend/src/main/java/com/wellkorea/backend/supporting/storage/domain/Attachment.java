@@ -1,7 +1,7 @@
 package com.wellkorea.backend.supporting.storage.domain;
 
 import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.shared.constant.AttachmentLimits;
+import com.wellkorea.backend.supporting.storage.domain.constant.AttachmentLimits;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -83,8 +83,8 @@ public class Attachment {
      * @throws IllegalArgumentException if validation fails
      */
     public static Attachment create(AttachmentOwnerType ownerType, Long ownerId,
-                                     String fileName, long fileSize,
-                                     String storagePath, User uploadedBy) {
+                                    String fileName, long fileSize,
+                                    String storagePath, User uploadedBy) {
         // Validate inputs
         Objects.requireNonNull(ownerType, "Owner type is required");
         Objects.requireNonNull(ownerId, "Owner ID is required");

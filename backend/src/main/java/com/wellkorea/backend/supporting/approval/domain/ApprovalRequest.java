@@ -1,7 +1,6 @@
 package com.wellkorea.backend.supporting.approval.domain;
 
 import com.wellkorea.backend.auth.domain.User;
-import com.wellkorea.backend.shared.approval.domain.vo.*;
 import com.wellkorea.backend.supporting.approval.domain.vo.*;
 import jakarta.persistence.*;
 
