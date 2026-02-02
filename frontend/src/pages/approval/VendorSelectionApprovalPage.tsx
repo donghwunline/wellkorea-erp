@@ -309,7 +309,7 @@ export function VendorSelectionApprovalPage() {
           {pendingRfqItem && (
             <Card className="border-2 border-copper-500/50 bg-copper-500/10 p-6">
               <div className="flex items-center gap-3">
-                <Icon name="star" className="h-6 w-6 text-copper-400" />
+                <Icon name="check-circle" className="h-6 w-6 text-copper-400" />
                 <h3 className="text-lg font-medium text-white">
                   {t('vendorSelectionApproval.sections.selectedVendor')}
                 </h3>
@@ -370,7 +370,7 @@ export function VendorSelectionApprovalPage() {
                       <Table.Cell className="font-medium text-white">
                         <div className="flex items-center gap-2">
                           {isSelected && (
-                            <Icon name="star" className="h-4 w-4 text-copper-400" />
+                            <Icon name="check-circle" className="h-4 w-4 text-copper-400" />
                           )}
                           {item.vendorName}
                         </div>
