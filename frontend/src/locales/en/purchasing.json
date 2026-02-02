@@ -126,6 +126,13 @@
       "SELECTED": "Selected",
       "CANCELLED": "Cancelled"
     },
+    "itemStatus": {
+      "SENT": "Sent",
+      "REPLIED": "Replied",
+      "NO_RESPONSE": "No Response",
+      "SELECTED": "Selected",
+      "REJECTED": "Rejected"
+    },
     "actions": {
       "send": "Send",
       "receiveQuote": "Receive Quote",

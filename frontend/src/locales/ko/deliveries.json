@@ -138,5 +138,8 @@
     "noQuotationFound": "승인된 견적을 찾을 수 없습니다",
     "enterAtLeastOne": "최소 하나의 품목에 수량을 입력하세요",
     "exceedsRemaining": "{{product}}의 수량이 잔여 수량({{remaining}})을 초과합니다"
+  },
+  "warnings": {
+    "outdatedQuotation": "이전 버전의 견적을 참조하고 있습니다"
   }
 }

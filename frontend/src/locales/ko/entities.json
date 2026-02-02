@@ -119,9 +119,9 @@
       },
       "empty": "업체가 없습니다."
     },
-    "statusBadge": {
-      "active": "활성",
-      "inactive": "비활성"
+    "status": {
+      "ACTIVE": "활성",
+      "INACTIVE": "비활성"
     }
   },
   "invoice": {

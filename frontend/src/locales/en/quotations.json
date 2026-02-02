@@ -56,11 +56,13 @@
   },
   "status": {
     "DRAFT": "Draft",
+    "PENDING": "Pending",
     "PENDING_APPROVAL": "Pending Approval",
     "APPROVED": "Approved",
-    "REJECTED": "Rejected",
+    "SENDING": "Sending",
     "SENT": "Sent",
     "ACCEPTED": "Accepted",
+    "REJECTED": "Rejected",
     "DECLINED": "Declined",
     "EXPIRED": "Expired",
     "CANCELLED": "Cancelled"

@@ -55,12 +55,14 @@
     "createdBy": "작성자"
   },
   "status": {
-    "DRAFT": "초안",
+    "DRAFT": "작성중",
+    "PENDING": "결재중",
     "PENDING_APPROVAL": "결재 대기",
-    "APPROVED": "승인",
-    "REJECTED": "반려",
-    "SENT": "전송됨",
-    "ACCEPTED": "수락",
+    "APPROVED": "승인됨",
+    "SENDING": "발송중",
+    "SENT": "발송완료",
+    "ACCEPTED": "수락됨",
+    "REJECTED": "반려됨",
     "DECLINED": "거절",
     "EXPIRED": "만료",
     "CANCELLED": "취소"

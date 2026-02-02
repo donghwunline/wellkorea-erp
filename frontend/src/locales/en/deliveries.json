@@ -138,5 +138,8 @@
     "noQuotationFound": "No accepted quotation found",
     "enterAtLeastOne": "Please enter quantity for at least one item",
     "exceedsRemaining": "Quantity for {{product}} exceeds remaining deliverable quantity ({{remaining}})"
+  },
+  "warnings": {
+    "outdatedQuotation": "Delivery references an outdated quotation version"
   }
 }
