@@ -71,6 +71,12 @@ export type { ErrorAlertProps } from './feedback/ErrorAlert';
 export { LoadingState } from './feedback/LoadingState';
 export type { LoadingStateProps, LoadingStateVariant } from './feedback/LoadingState';
 
+export { StatusBadge } from './feedback/StatusBadge';
+export type {
+  StatusBadgeProps,
+  StatusConfig as StatusBadgeConfig,
+} from './feedback/StatusBadge';
+
 // ============================================================================
 // Data Display - Data presentation components
 // ============================================================================
