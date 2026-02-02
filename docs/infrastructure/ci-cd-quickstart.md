@@ -1,30 +1,31 @@
 # CI/CD 빠른 시작 가이드
 
-## 1단계: SonarCloud 설정 (5분)
+## 1단계: GitLab CI/CD Variables 설정 (5분)
 
-### 프로젝트 생성
+### Harbor Robot Account 생성 (이미 생성된 경우 건너뛰기)
 
-1. [SonarCloud](https://sonarcloud.io/)에 로그인
-2. 조직 선택: `donghwunline`
-3. 두 개의 프로젝트 생성:
-   - **Backend**: `wellkorea-erp-backend`
-   - **Frontend**: `wellkorea-erp-frontend`
+1. Harbor (harbor.mipllab.com)에 로그인
+2. `wellkorea` 프로젝트로 이동
+3. **Robot Accounts** > **New Robot Account** 클릭
+4. 이름: `wellkorea-ci`
+5. 권한: Push/Pull 허용
+6. 생성된 토큰 복사 (한 번만 표시됨!)
 
-### 토큰 생성
+### GitLab CI/CD Variables 추가
 
-1. My Account > Security > Generate Tokens
-2. 토큰 이름: `wellkorea-erp-github-actions`
-3. 생성된 토큰 복사
+1. GitLab 프로젝트 (gitlab.mipllab.com/wellkorea/erp) 접속
+2. **Settings** > **CI/CD** > **Variables** 클릭
+3. 다음 변수 추가:
 
-### GitHub 시크릿 추가
+| Key | Value | Protected | Masked |
+|-----|-------|-----------|--------|
+| `HARBOR_REGISTRY` | `harbor.mipllab.com` | No | No |
+| `HARBOR_USERNAME` | `robot$wellkorea-ci` | No | No |
+| `HARBOR_PASSWORD` | (복사한 robot token) | Yes | Yes |
 
-1. GitHub 저장소 > Settings > Secrets and variables > Actions
-2. **New repository secret** 클릭
-3. Name: `SONAR_TOKEN`
-4. Value: 복사한 토큰 붙여넣기
-5. **Add secret** 클릭
+> **참고**: `HARBOR_PASSWORD`는 반드시 **Protected**와 **Masked** 체크
 
-✅ **완료!** CI가 이제 SonarCloud 분석을 실행할 수 있습니다.
+✅ **완료!** CI가 이제 Harbor에 이미지를 푸시할 수 있습니다.
 
 ---
 
@@ -43,6 +44,9 @@ cd backend
 
 # 커버리지 확인 (웹 브라우저에서 열림)
 open build/reports/jacoco/test/html/index.html
+
+# 커버리지 검증 (70% 임계값)
+./gradlew jacocoTestCoverageVerification
 ```
 
 **예상 결과**: 모든 테스트 통과, 커버리지 70% 이상
@@ -58,6 +62,9 @@ npm install
 # Playwright 브라우저 설치
 npx playwright install
 
+# 린트 실행
+npm run lint
+
 # 유닛 테스트 실행
 npm test
 
@@ -69,9 +76,9 @@ npm run e2e
 
 ---
 
-## 3단계: 첫 번째 Pull Request (5분)
+## 3단계: 첫 번째 Merge Request (5분)
 
-### PR 생성
+### MR 생성
 
 ```bash
 # 새 브랜치 생성
@@ -86,23 +93,22 @@ git commit -m "test: CI/CD 파이프라인 테스트"
 git push origin feature/test-ci-pipeline
 ```
 
-### GitHub에서 PR 생성
+### GitLab에서 MR 생성
 
-1. GitHub 저장소로 이동
-2. "Compare & pull request" 클릭
-3. PR 제목: `test: CI/CD 파이프라인 테스트`
-4. **Create pull request** 클릭
+1. GitLab 프로젝트로 이동
+2. **Merge requests** > **New merge request** 클릭
+3. Source branch: `feature/test-ci-pipeline`
+4. Target branch: `main`
+5. **Compare branches and continue** 클릭
+6. MR 제목: `test: CI/CD 파이프라인 테스트`
+7. **Create merge request** 클릭
 
 ### CI 확인
 
-1. PR 페이지에서 "Checks" 탭 확인
-2. 다음 워크플로우가 실행되는지 확인:
-   - ✅ Backend CI
-   - ✅ Frontend CI
-   - ✅ Security Checks
-   - ✅ CodeQL
-
-**예상 시간**: 5-10분
+1. MR 페이지에서 **Pipelines** 탭 확인
+2. 다음 스테이지가 실행되는지 확인:
+   - ✅ Security (Trivy, Gitleaks, Semgrep)
+   - ✅ Test (Backend, Frontend)
 
 ---
 
@@ -110,11 +116,20 @@ git push origin feature/test-ci-pipeline
 
 ### 성공 시
 
-- 모든 체크가 녹색 ✅
-- SonarCloud 품질 게이트 통과
-- PR 병합 가능
+- 모든 job이 녹색 ✅
+- 커버리지 백분율이 MR에 표시됨
+- MR 병합 가능
 
 ### 실패 시
+
+**Security 실패:**
+```bash
+# Trivy 오류 - 취약점 확인
+trivy fs --severity CRITICAL,HIGH .
+
+# Gitleaks 오류 - 시크릿 확인
+gitleaks detect --source . --verbose
+```
 
 **Backend 실패:**
 ```bash
@@ -122,7 +137,9 @@ git push origin feature/test-ci-pipeline
 cd backend
 ./gradlew clean build
 
-# 오류 확인 및 수정
+# 커버리지 부족 시
+./gradlew test jacocoTestReport
+open build/reports/jacoco/test/html/index.html
 ```
 
 **Frontend 실패:**
@@ -135,10 +152,6 @@ npm test
 # 오류 확인 및 수정
 ```
 
-**보안 체크 실패:**
-- GitHub Security 탭에서 경고 확인
-- 취약점 해결 또는 억제
-
 ---
 
 ## 5단계: 로컬 Docker 테스트 (선택사항, 15분)
@@ -146,7 +159,7 @@ npm test
 ### 환경 파일 생성
 
 ```bash
-cp .env.example .env
+cp .env.local.example .env
 
 # .env 파일 편집 (필요시)
 vim .env
@@ -156,13 +169,13 @@ vim .env
 
 ```bash
 # 빌드 및 실행
-docker-compose up -d
+docker compose -f docker-compose.local.yml up -d
 
 # 로그 확인
-docker-compose logs -f
+docker compose -f docker-compose.local.yml logs -f
 
 # 상태 확인
-docker-compose ps
+docker compose -f docker-compose.local.yml ps
 ```
 
 **접속:**
@@ -174,42 +187,55 @@ docker-compose ps
 
 ```bash
 # 중지 및 삭제
-docker-compose down
+docker compose -f docker-compose.local.yml down
 
 # 볼륨까지 삭제
-docker-compose down -v
+docker compose -f docker-compose.local.yml down -v
 ```
 
 ---
 
 ## 다음 단계
 
-### CD 활성화 준비가 되었나요?
+### main 브랜치에 병합하면?
 
-**개발 환경 배포 활성화:**
+MR이 main에 병합되면 **Docker 스테이지**가 자동으로 실행됩니다:
+- Backend/Frontend 이미지가 Harbor로 푸시됨
+- 태그: commit SHA, `main`, `latest`
 
-1. 배포 서버 준비 (Docker 설치 필요)
-2. GitHub Secrets 추가:
-   - `DEV_SSH_HOST`
-   - `DEV_SSH_USER`
-   - `DEV_SSH_KEY`
-3. `.github/workflows/cd-dev.yml` 주석 해제
-4. `main` 브랜치에 푸시하여 배포 트리거
+### Harbor에서 이미지 확인
 
-자세한 내용은 [CI/CD 설정 문서](./ci-cd-setup.md)를 참조하세요.
+```bash
+# 이미지 Pull 테스트
+docker pull harbor.mipllab.com/wellkorea/erp-backend:latest
+docker pull harbor.mipllab.com/wellkorea/erp-frontend:latest
+```
+
+### CD (배포)는?
+
+CD 스테이지는 추후 추가 예정입니다. 자세한 내용은 [CI/CD 설정 문서](./ci-cd-setup.md)를 참조하세요.
 
 ---
 
 ## 문제 해결
 
-### "SONAR_TOKEN이 없습니다" 오류
+### "HARBOR_PASSWORD가 없습니다" 오류
 
 ```bash
-# GitHub Secrets 확인
-# Settings > Secrets and variables > Actions
+# GitLab CI/CD Variables 확인
+# Settings > CI/CD > Variables
 
-# SONAR_TOKEN이 있는지 확인
+# HARBOR_PASSWORD가 있는지 확인
 # 없으면 1단계로 돌아가서 추가
+```
+
+### Harbor 로그인 실패
+
+```bash
+# 로컬에서 테스트
+docker login harbor.mipllab.com -u robot\$wellkorea-ci
+
+# 주의: 터미널에서 $는 escape 필요 (\$)
 ```
 
 ### Gradle 권한 오류
@@ -254,9 +280,6 @@ docker system prune -a
 
 # 커버리지 검증
 ./gradlew jacocoTestCoverageVerification
-
-# SonarCloud 분석
-./gradlew sonar
 ```
 
 ### Frontend
@@ -265,7 +288,7 @@ docker system prune -a
 npm run lint
 
 # 테스트 (watch 모드)
-npm test
+npm test -- --watch
 
 # 커버리지
 npm run test:coverage
@@ -280,16 +303,28 @@ npm run e2e:ui
 ### Docker
 ```bash
 # 로그 확인
-docker-compose logs [service-name]
+docker compose -f docker-compose.local.yml logs [service-name]
 
 # 서비스 재시작
-docker-compose restart [service-name]
+docker compose -f docker-compose.local.yml restart [service-name]
 
 # 특정 서비스만 빌드
-docker-compose build backend
+docker compose -f docker-compose.local.yml build backend
+```
 
-# 스케일링
-docker-compose up -d --scale backend=2
+### Harbor
+```bash
+# 로그인
+docker login harbor.mipllab.com
+
+# 이미지 태그
+docker tag local-image:tag harbor.mipllab.com/wellkorea/image:tag
+
+# 이미지 푸시
+docker push harbor.mipllab.com/wellkorea/image:tag
+
+# 이미지 풀
+docker pull harbor.mipllab.com/wellkorea/erp-backend:latest
 ```
 
 ---
@@ -297,15 +332,16 @@ docker-compose up -d --scale backend=2
 ## 추가 리소스
 
 - 📚 [상세 CI/CD 문서](./ci-cd-setup.md)
-- 📄 [SonarQube 설정](./sonarqube.md)
-- 🐳 [Docker 설정](../docker-compose.yml)
-- 🔧 [Backend 설정](../backend/build.gradle)
-- ⚛️ [Frontend 설정](../frontend/package.json)
+- 🐳 [Docker Compose 설정](../../docker-compose.local.yml)
+- 🔧 [Backend 설정](../../backend/build.gradle)
+- ⚛️ [Frontend 설정](../../frontend/package.json)
+- 📦 [Harbor 문서](https://goharbor.io/docs/)
+- 🦊 [GitLab CI 문서](https://docs.gitlab.com/ee/ci/)
 
 ---
 
 ## 도움이 필요하신가요?
 
-1. GitHub Issues에 질문 등록
-2. CI 로그 확인: Actions 탭 > 실패한 워크플로우 클릭
+1. GitLab Issues에 질문 등록
+2. CI 로그 확인: CI/CD > Pipelines > 실패한 job 클릭
 3. 상세 문서 참조: [ci-cd-setup.md](./ci-cd-setup.md)
