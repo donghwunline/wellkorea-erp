@@ -19,20 +19,24 @@ public record GraphMailRequest(
             List<GraphRecipient> toRecipients,
             List<GraphRecipient> ccRecipients,
             List<GraphAttachment> attachments
-    ) {}
+    ) {
+    }
 
     public record GraphBody(
             String contentType,
             String content
-    ) {}
+    ) {
+    }
 
     public record GraphRecipient(
             GraphEmailAddress emailAddress
-    ) {}
+    ) {
+    }
 
     public record GraphEmailAddress(
             String address
-    ) {}
+    ) {
+    }
 
     public record GraphAttachment(
             @JsonProperty("@odata.type") String odataType,

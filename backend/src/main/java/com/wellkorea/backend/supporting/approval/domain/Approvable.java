@@ -1,9 +1,9 @@
 package com.wellkorea.backend.supporting.approval.domain;
 
-import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalState;
-import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import com.wellkorea.backend.supporting.approval.application.ApprovableRegistry;
 import com.wellkorea.backend.supporting.approval.application.GenericApprovalCompletedHandler;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalState;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 
 /**
  * Interface for entities that can be approved through the approval workflow.

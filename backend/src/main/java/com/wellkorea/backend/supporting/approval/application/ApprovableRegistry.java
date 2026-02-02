@@ -1,7 +1,7 @@
 package com.wellkorea.backend.supporting.approval.application;
 
-import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import com.wellkorea.backend.supporting.approval.domain.Approvable;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

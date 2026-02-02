@@ -1,9 +1,9 @@
 package com.wellkorea.backend.core.purchasing.infrastructure.config;
 
-import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import com.wellkorea.backend.core.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.supporting.approval.application.ApprovableRegistry;
 import com.wellkorea.backend.supporting.approval.domain.Approvable;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 

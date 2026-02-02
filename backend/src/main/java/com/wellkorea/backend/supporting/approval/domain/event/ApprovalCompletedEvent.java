@@ -1,8 +1,8 @@
 package com.wellkorea.backend.supporting.approval.domain.event;
 
+import com.wellkorea.backend.shared.event.DomainEvent;
 import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStatus;
 import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
-import com.wellkorea.backend.shared.event.DomainEvent;
 
 /**
  * Domain event published when an approval workflow is completed (approved or rejected).

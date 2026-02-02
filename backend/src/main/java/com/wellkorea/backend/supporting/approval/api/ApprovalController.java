@@ -1,7 +1,7 @@
 package com.wellkorea.backend.supporting.approval.api;
 
-import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStatus;
-import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
+import com.wellkorea.backend.shared.dto.ApiResponse;
+import com.wellkorea.backend.shared.dto.AuthenticatedUser;
 import com.wellkorea.backend.supporting.approval.api.dto.command.ApprovalCommandResult;
 import com.wellkorea.backend.supporting.approval.api.dto.command.ApproveRequest;
 import com.wellkorea.backend.supporting.approval.api.dto.command.RejectRequest;
@@ -10,8 +10,8 @@ import com.wellkorea.backend.supporting.approval.api.dto.query.ApprovalHistoryVi
 import com.wellkorea.backend.supporting.approval.api.dto.query.ApprovalSummaryView;
 import com.wellkorea.backend.supporting.approval.application.ApprovalCommandService;
 import com.wellkorea.backend.supporting.approval.application.ApprovalQueryService;
-import com.wellkorea.backend.shared.dto.ApiResponse;
-import com.wellkorea.backend.shared.dto.AuthenticatedUser;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStatus;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

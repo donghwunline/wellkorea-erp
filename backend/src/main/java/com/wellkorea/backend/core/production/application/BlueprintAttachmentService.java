@@ -2,8 +2,6 @@ package com.wellkorea.backend.core.production.application;
 
 import com.wellkorea.backend.core.auth.domain.User;
 import com.wellkorea.backend.core.auth.infrastructure.persistence.UserRepository;
-import com.wellkorea.backend.supporting.storage.infrastructure.MinioFileStorage;
-import com.wellkorea.backend.supporting.storage.api.dto.UploadUrlResponse;
 import com.wellkorea.backend.core.production.api.dto.query.BlueprintAttachmentView;
 import com.wellkorea.backend.core.production.domain.AllowedFileType;
 import com.wellkorea.backend.core.production.domain.BlueprintAttachment;
@@ -12,6 +10,8 @@ import com.wellkorea.backend.core.production.infrastructure.persistence.Blueprin
 import com.wellkorea.backend.core.production.infrastructure.persistence.TaskFlowRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import com.wellkorea.backend.supporting.storage.api.dto.UploadUrlResponse;
+import com.wellkorea.backend.supporting.storage.infrastructure.MinioFileStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -57,8 +57,7 @@ public class BlueprintAttachmentService {
      * @param contentType MIME type
      * @return UploadUrlResponse with presigned URL and object key
      */
-    public UploadUrlResponse generateUploadUrl(Long flowId, String nodeId,
-                                               String fileName, Long fileSize, String contentType) {
+    public UploadUrlResponse generateUploadUrl(Long flowId, String nodeId, String fileName, Long fileSize, String contentType) {
         // Validate TaskFlow exists
         TaskFlow taskFlow = taskFlowRepository.findById(flowId)
                 .orElseThrow(() -> new ResourceNotFoundException("TaskFlow", flowId));

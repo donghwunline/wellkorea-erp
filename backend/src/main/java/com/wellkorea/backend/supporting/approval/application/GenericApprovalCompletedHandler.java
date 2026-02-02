@@ -1,8 +1,8 @@
 package com.wellkorea.backend.supporting.approval.application;
 
+import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.supporting.approval.domain.Approvable;
 import com.wellkorea.backend.supporting.approval.domain.event.ApprovalCompletedEvent;
-import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

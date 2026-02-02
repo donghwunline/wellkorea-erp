@@ -14,4 +14,5 @@ public record MicrosoftTokenResponse(
         @JsonProperty("refresh_token") String refreshToken,
         @JsonProperty("token_type") String tokenType,
         @JsonProperty("scope") String scope
-) {}
+) {
+}

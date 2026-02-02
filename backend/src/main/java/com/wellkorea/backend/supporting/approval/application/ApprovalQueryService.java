@@ -1,5 +1,6 @@
 package com.wellkorea.backend.supporting.approval.application;
 
+import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.supporting.approval.api.dto.query.ApprovalDetailView;
 import com.wellkorea.backend.supporting.approval.api.dto.query.ApprovalHistoryView;
 import com.wellkorea.backend.supporting.approval.api.dto.query.ApprovalSummaryView;
@@ -7,7 +8,6 @@ import com.wellkorea.backend.supporting.approval.api.dto.query.ChainTemplateView
 import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStatus;
 import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import com.wellkorea.backend.supporting.approval.infrastructure.mapper.ApprovalMapper;
-import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

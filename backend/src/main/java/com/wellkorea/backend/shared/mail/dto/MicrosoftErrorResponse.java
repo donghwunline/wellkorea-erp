@@ -15,4 +15,5 @@ public record MicrosoftErrorResponse(
         String timestamp,
         @JsonProperty("trace_id") String traceId,
         @JsonProperty("correlation_id") String correlationId
-) {}
+) {
+}
