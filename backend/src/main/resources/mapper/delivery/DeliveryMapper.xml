@@ -2,10 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.wellkorea.backend.delivery.infrastructure.mapper.DeliveryMapper">
+<mapper namespace="com.wellkorea.backend.core.delivery.infrastructure.mapper.DeliveryMapper">
 
     <!-- DeliveryLineItemView result map for record -->
-    <resultMap id="DeliveryLineItemViewResult" type="com.wellkorea.backend.delivery.api.dto.query.DeliveryLineItemView">
+    <resultMap id="DeliveryLineItemViewResult"
+               type="com.wellkorea.backend.core.delivery.api.dto.query.DeliveryLineItemView">
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="product_id" javaType="Long"/>
@@ -17,7 +18,8 @@
 
     <!-- DeliveryDetailView result map with nested select for line items -->
     <!-- Note: photo field is set to null here and enriched by DeliveryQueryService -->
-    <resultMap id="DeliveryDetailViewResult" type="com.wellkorea.backend.delivery.api.dto.query.DeliveryDetailView">
+    <resultMap id="DeliveryDetailViewResult"
+               type="com.wellkorea.backend.core.delivery.api.dto.query.DeliveryDetailView">
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="project_id" javaType="Long"/>
@@ -71,7 +73,8 @@
     </select>
 
     <!-- DeliverySummaryView result map with nested select for line items -->
-    <resultMap id="DeliverySummaryViewResult" type="com.wellkorea.backend.delivery.api.dto.query.DeliverySummaryView">
+    <resultMap id="DeliverySummaryViewResult"
+               type="com.wellkorea.backend.core.delivery.api.dto.query.DeliverySummaryView">
         <constructor>
             <idArg column="id" javaType="Long"/>
             <arg column="project_id" javaType="Long"/>
