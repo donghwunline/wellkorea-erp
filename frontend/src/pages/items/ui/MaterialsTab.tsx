@@ -21,6 +21,7 @@ import {
   type MaterialListItem,
   materialQueries,
 } from '@/entities/material';
+import { ProductStatusBadge } from '@/entities/product';
 import { useAuth } from '@/entities/auth';
 import { MaterialFormModal } from '@/features/items/material/form';
 import { DeleteMaterialModal } from '@/features/items/material/delete';
@@ -334,15 +335,7 @@ function MaterialTableRow({ material, onViewDetails, onViewVendors, t }: Materia
       </td>
       <td className="px-4 py-3 text-sm text-steel-300">{material.preferredVendorName ?? '-'}</td>
       <td className="whitespace-nowrap px-4 py-3 text-center">
-        <span
-          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-            material.isActive
-              ? 'bg-emerald-500/10 text-emerald-400'
-              : 'bg-red-500/10 text-red-400'
-          }`}
-        >
-          {material.isActive ? t('status.ACTIVE') : t('status.INACTIVE')}
-        </span>
+        <ProductStatusBadge isActive={material.isActive} size="sm" />
       </td>
       <td className="whitespace-nowrap px-4 py-3 text-center">
         <div className="flex items-center justify-center gap-2">
