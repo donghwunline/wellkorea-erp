@@ -249,5 +249,35 @@
     "loadError": "매출채권 보고서 불러오기 실패",
     "noData": "보고서 데이터를 사용할 수 없습니다",
     "noPermission": "이 보고서를 볼 권한이 없습니다. 관리자에게 문의하세요."
+  },
+  "vendorSelectionApproval": {
+    "title": "업체선정 승인",
+    "backToApprovals": "승인 목록으로",
+    "loading": "업체선정 정보를 불러오는 중...",
+    "notFound": "업체선정 정보를 찾을 수 없습니다",
+    "sections": {
+      "requestInfo": "구매요청 정보",
+      "vendorComparison": "업체 견적 비교",
+      "selectedVendor": "선정된 업체"
+    },
+    "fields": {
+      "requestNumber": "요청번호",
+      "item": "품목",
+      "quantity": "수량",
+      "requiredDate": "납기일",
+      "project": "프로젝트",
+      "status": "상태"
+    },
+    "table": {
+      "vendor": "업체",
+      "status": "상태",
+      "quotedPrice": "견적가",
+      "leadTime": "납기",
+      "notes": "비고"
+    },
+    "messages": {
+      "approved": "업체선정이 승인되었습니다",
+      "rejected": "업체선정이 반려되었습니다"
+    }
   }
 }

@@ -249,5 +249,35 @@
     "loadError": "Failed to load AR report",
     "noData": "Report data not available",
     "noPermission": "You do not have permission to view this report. Contact your administrator."
+  },
+  "vendorSelectionApproval": {
+    "title": "Vendor Selection Approval",
+    "backToApprovals": "Back to Approvals",
+    "loading": "Loading vendor selection details...",
+    "notFound": "Vendor selection not found",
+    "sections": {
+      "requestInfo": "Purchase Request Info",
+      "vendorComparison": "Vendor Quote Comparison",
+      "selectedVendor": "Selected Vendor"
+    },
+    "fields": {
+      "requestNumber": "Request Number",
+      "item": "Item",
+      "quantity": "Quantity",
+      "requiredDate": "Required Date",
+      "project": "Project",
+      "status": "Status"
+    },
+    "table": {
+      "vendor": "Vendor",
+      "status": "Status",
+      "quotedPrice": "Quoted Price",
+      "leadTime": "Lead Time",
+      "notes": "Notes"
+    },
+    "messages": {
+      "approved": "Vendor selection approved",
+      "rejected": "Vendor selection rejected"
+    }
   }
 }

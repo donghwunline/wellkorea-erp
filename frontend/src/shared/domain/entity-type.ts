@@ -12,6 +12,7 @@
 export const EntityType = {
   QUOTATION: 'QUOTATION',
   PURCHASE_ORDER: 'PURCHASE_ORDER',
+  VENDOR_SELECTION: 'VENDOR_SELECTION',
 } as const;
 
 export type EntityType = (typeof EntityType)[keyof typeof EntityType];
@@ -30,6 +31,7 @@ export interface EntityTypeConfig {
 export const EntityTypeConfigs: Record<EntityType, EntityTypeConfig> = {
   QUOTATION: { label: 'Quotation', labelKo: '견적서' },
   PURCHASE_ORDER: { label: 'Purchase Order', labelKo: '발주서' },
+  VENDOR_SELECTION: { label: 'Vendor Selection', labelKo: '업체선정' },
 };
 
 /**

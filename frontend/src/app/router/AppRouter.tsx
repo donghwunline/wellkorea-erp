@@ -20,6 +20,7 @@ import { AuditLogPage } from '@/pages/admin/AuditLogPage';
 import { MailSettingsPage } from '@/pages/admin/MailSettingsPage';
 import { ApprovalChainConfigPage } from '@/pages/approval/ApprovalChainConfigPage';
 import { ApprovalListPage } from '@/pages/approval/ApprovalListPage';
+import { VendorSelectionApprovalPage } from '@/pages/approval/VendorSelectionApprovalPage';
 import { ProjectCreatePage, ProjectEditPage, ProjectListPage, ProjectViewPage, } from '@/pages/projects';
 import { QuotationCreatePage, QuotationDetailPage, QuotationEditPage, QuotationListPage, } from '@/pages/quotations';
 import { CompanyDetailPage, CompanyEditPage, CompanyListPage, CreateCompanyPage, } from '@/pages/companies';
@@ -77,6 +78,7 @@ export function AppRouter() {
         <Route path="/projects" element={<ProjectListPage />} />
         <Route path="/projects/:id" element={<ProjectViewPage />} />
         <Route path="/approvals" element={<ApprovalListPage />} />
+        <Route path="/approvals/vendor-selection/:id" element={<VendorSelectionApprovalPage />} />
         <Route path="/deliveries" element={<DeliveriesPage />} />
         <Route path="/deliveries/:id" element={<DeliveryDetailPage />} />
       </Route>
