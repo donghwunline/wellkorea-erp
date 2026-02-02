@@ -12,6 +12,8 @@ import { render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { AuditLogPage } from './AuditLogPage';
 import type { AuditLog } from '@/entities/audit';
+// Get mocked useQuery for test manipulation
+import { useQuery } from '@tanstack/react-query';
 
 // Sample audit log entry for testing
 const mockAuditLogEntry: AuditLog = {
@@ -89,8 +91,6 @@ vi.mock('@/entities/audit', () => ({
   AuditLogTableSkeleton: vi.fn(() => <div data-testid="audit-table-skeleton">Loading...</div>),
 }));
 
-// Get mocked useQuery for test manipulation
-import { useQuery } from '@tanstack/react-query';
 const mockUseQuery = vi.mocked(useQuery);
 
 describe('AuditLogPage', () => {

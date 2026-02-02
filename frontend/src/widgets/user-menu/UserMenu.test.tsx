@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactElement } from 'react';
@@ -46,12 +46,7 @@ describe('UserMenu', () => {
   describe('Basic Rendering', () => {
     it('renders user avatar with initial', () => {
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       expect(screen.getByText('J')).toBeInTheDocument();
@@ -59,12 +54,7 @@ describe('UserMenu', () => {
 
     it('renders user name when not collapsed', () => {
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       expect(screen.getByText('John Doe')).toBeInTheDocument();
@@ -72,12 +62,7 @@ describe('UserMenu', () => {
 
     it('renders user role when not collapsed', () => {
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin, Manager"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin, Manager" collapsed={false} />
       );
 
       expect(screen.getByText('Admin, Manager')).toBeInTheDocument();
@@ -85,12 +70,7 @@ describe('UserMenu', () => {
 
     it('hides user name and role when collapsed', () => {
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={true}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={true} />
       );
 
       expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
@@ -123,12 +103,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       const trigger = screen.getByRole('button');
@@ -142,12 +117,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       const trigger = screen.getByRole('button');
@@ -162,12 +132,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       const trigger = screen.getByRole('button');
@@ -179,12 +144,7 @@ describe('UserMenu', () => {
 
     it('has aria-haspopup attribute', () => {
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       const trigger = screen.getByRole('button');
@@ -203,12 +163,7 @@ describe('UserMenu', () => {
       renderWithRouter(
         <div>
           <div data-testid="outside">Outside</div>
-          <UserMenu
-            userName="John Doe"
-            userInitial="J"
-            userRole="Admin"
-            collapsed={false}
-          />
+          <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
         </div>
       );
 
@@ -236,12 +191,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       // Open menu
@@ -261,12 +211,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       const trigger = screen.getByRole('button');
@@ -458,12 +403,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       await user.click(screen.getByRole('button'));
@@ -475,12 +415,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       await user.click(screen.getByRole('button'));
@@ -494,12 +429,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       await user.click(screen.getByRole('button'));
@@ -520,12 +450,7 @@ describe('UserMenu', () => {
       const user = userEvent.setup();
 
       const { container } = renderWithRouter(
-        <UserMenu
-          userName="John Doe"
-          userInitial="J"
-          userRole="Admin"
-          collapsed={false}
-        />
+        <UserMenu userName="John Doe" userInitial="J" userRole="Admin" collapsed={false} />
       );
 
       await user.click(screen.getByRole('button'));

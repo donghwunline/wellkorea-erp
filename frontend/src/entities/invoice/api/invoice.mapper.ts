@@ -3,12 +3,7 @@
  * Response types are internal - not exported from entity barrel.
  */
 
-import type {
-  Invoice,
-  InvoiceLineItem,
-  InvoiceSummary,
-  Payment,
-} from '../model/invoice';
+import type { Invoice, InvoiceLineItem, InvoiceSummary, Payment, } from '../model/invoice';
 import type { InvoiceStatus } from '../model/invoice-status';
 import type { PaymentMethod } from '../model/payment-method';
 

@@ -13,7 +13,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
-import { httpClient, COMPANY_ENDPOINTS, type PagedResponse } from '@/shared/api';
+import { COMPANY_ENDPOINTS, httpClient, type PagedResponse } from '@/shared/api';
 import { transformPagedResponse } from '@/shared/lib/pagination';
 import type { RoleType } from '../model/role-type';
 import { ROLE_TYPE_LABELS } from '../model/role-type';

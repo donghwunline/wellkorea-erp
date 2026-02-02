@@ -10,8 +10,8 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  submitVendorSelectionForApproval,
   purchaseRequestQueries,
+  submitVendorSelectionForApproval,
 } from '@/entities/purchase-request';
 import { approvalQueries } from '@/entities/approval';
 import { ApiError } from '@/shared/api';

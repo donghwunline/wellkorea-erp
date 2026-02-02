@@ -2,13 +2,14 @@
  * useSubmitQuotation Hook Tests.
  */
 
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import {
+  createCommandResult,
   createQueryWrapper,
   createTestQueryClient,
-  createCommandResult,
 } from '@/test/entity-test-utils';
+import { useSubmitQuotation } from './use-submit-quotation';
 
 const httpClient = vi.hoisted(() => ({
   get: vi.fn(),
@@ -23,8 +24,6 @@ vi.mock('@/shared/api', async () => {
   return { ...actual, httpClient };
 });
 
-import { useSubmitQuotation } from './use-submit-quotation';
-
 function mockSuccess<T>(method: keyof typeof httpClient, data: T) {
   (httpClient[method] as Mock).mockResolvedValue(data);
 }
@@ -34,7 +33,7 @@ function mockError(method: keyof typeof httpClient, error: Error) {
 }
 
 function resetMocks() {
-  Object.values(httpClient).forEach((mock) => (mock as Mock).mockReset());
+  Object.values(httpClient).forEach(mock => (mock as Mock).mockReset());
 }
 
 describe('useSubmitQuotation', () => {

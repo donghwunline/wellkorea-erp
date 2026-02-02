@@ -41,27 +41,30 @@ export function CreateCompanyPage() {
     },
   });
 
-  const handleSubmit = useCallback(async (data: CompanyFormData) => {
-    setError(null);
+  const handleSubmit = useCallback(
+    async (data: CompanyFormData) => {
+      setError(null);
 
-    // Map form data to command input
-    const input: CreateCompanyInput = {
-      name: data.name.trim(),
-      roles: data.roles,
-      registrationNumber: data.registrationNumber.trim() || undefined,
-      representative: data.representative.trim() || undefined,
-      businessType: data.businessType.trim() || undefined,
-      businessCategory: data.businessCategory.trim() || undefined,
-      contactPerson: data.contactPerson.trim() || undefined,
-      phone: data.phone.trim() || undefined,
-      email: data.email.trim() || undefined,
-      address: data.address.trim() || undefined,
-      bankAccount: data.bankAccount.trim() || undefined,
-      paymentTerms: data.paymentTerms.trim() || undefined,
-    };
+      // Map form data to command input
+      const input: CreateCompanyInput = {
+        name: data.name.trim(),
+        roles: data.roles,
+        registrationNumber: data.registrationNumber.trim() || undefined,
+        representative: data.representative.trim() || undefined,
+        businessType: data.businessType.trim() || undefined,
+        businessCategory: data.businessCategory.trim() || undefined,
+        contactPerson: data.contactPerson.trim() || undefined,
+        phone: data.phone.trim() || undefined,
+        email: data.email.trim() || undefined,
+        address: data.address.trim() || undefined,
+        bankAccount: data.bankAccount.trim() || undefined,
+        paymentTerms: data.paymentTerms.trim() || undefined,
+      };
 
-    await createCompany(input);
-  }, [createCompany]);
+      await createCompany(input);
+    },
+    [createCompany]
+  );
 
   const handleCancel = useCallback(() => {
     navigate('/companies');
@@ -100,7 +103,9 @@ export function CreateCompanyPage() {
       {/* Form Card */}
       <Card className="mx-auto max-w-3xl">
         <div className="p-6">
-          <h2 className="mb-6 text-lg font-semibold text-white">{t('companyCreate.companyDetails')}</h2>
+          <h2 className="mb-6 text-lg font-semibold text-white">
+            {t('companyCreate.companyDetails')}
+          </h2>
           <CompanyForm
             mode="create"
             onSubmit={handleSubmit}

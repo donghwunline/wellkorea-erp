@@ -13,21 +13,13 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Alert,
-  Button,
-  Card,
-  Icon,
-  LoadingState,
-  PageHeader,
-  Table,
-} from '@/shared/ui';
+import { Alert, Button, Card, Icon, LoadingState, PageHeader, Table } from '@/shared/ui';
 import {
   deliveryQueries,
-  DeliveryStatusBadge,
   deliveryRules,
+  DeliveryStatusBadge,
   downloadDeliveryStatement,
 } from '@/entities/delivery';
 import { formatDate, formatDateTime } from '@/shared/lib/formatting';
@@ -77,11 +69,7 @@ export function DeliveryDetailPage() {
         <Alert variant="error">
           {t('view.loadError')}: {fetchError.message}
         </Alert>
-        <Button
-          variant="secondary"
-          className="mt-4"
-          onClick={() => navigate('/deliveries')}
-        >
+        <Button variant="secondary" className="mt-4" onClick={() => navigate('/deliveries')}>
           {t('actions.backToList')}
         </Button>
       </div>
@@ -92,11 +80,7 @@ export function DeliveryDetailPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <Alert variant="error">{t('view.notFound')}</Alert>
-        <Button
-          variant="secondary"
-          className="mt-4"
-          onClick={() => navigate('/deliveries')}
-        >
+        <Button variant="secondary" className="mt-4" onClick={() => navigate('/deliveries')}>
           {t('actions.backToList')}
         </Button>
       </div>
@@ -166,8 +150,8 @@ export function DeliveryDetailPage() {
         )}
 
         <div className="mt-6 border-t border-steel-700 pt-4 text-xs text-steel-500">
-          {tCommon('fields.createdAt')}: {formatDateTime(delivery.createdAt)} | {tCommon('fields.updatedAt')}:{' '}
-          {formatDateTime(delivery.updatedAt)}
+          {tCommon('fields.createdAt')}: {formatDateTime(delivery.createdAt)} |{' '}
+          {tCommon('fields.updatedAt')}: {formatDateTime(delivery.updatedAt)}
         </div>
       </Card>
 
@@ -185,18 +169,16 @@ export function DeliveryDetailPage() {
             <Table.Row>
               <Table.HeaderCell>{t('lineItems.product')}</Table.HeaderCell>
               <Table.HeaderCell>SKU</Table.HeaderCell>
-              <Table.HeaderCell className="text-right">{t('lineItems.shippedQuantity')}</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">
+                {t('lineItems.shippedQuantity')}
+              </Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {delivery.lineItems.map(item => (
               <Table.Row key={item.id}>
-                <Table.Cell className="font-medium text-white">
-                  {item.productName}
-                </Table.Cell>
-                <Table.Cell className="text-steel-400">
-                  {item.productSku || '-'}
-                </Table.Cell>
+                <Table.Cell className="font-medium text-white">{item.productName}</Table.Cell>
+                <Table.Cell className="text-steel-400">{item.productSku || '-'}</Table.Cell>
                 <Table.Cell className="text-right font-medium text-copper-400">
                   {item.quantityDelivered}
                 </Table.Cell>
@@ -208,9 +190,7 @@ export function DeliveryDetailPage() {
               <td colSpan={2} className="px-4 py-3 text-right font-medium text-white">
                 {t('view.total')}:
               </td>
-              <td className="px-4 py-3 text-right font-bold text-copper-400">
-                {totalQuantity}
-              </td>
+              <td className="px-4 py-3 text-right font-bold text-copper-400">{totalQuantity}</td>
             </tr>
           </tfoot>
         </Table>

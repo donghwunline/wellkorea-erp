@@ -12,7 +12,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Card, EmptyState, Table, Badge, type BadgeVariant } from '@/shared/ui';
+import { Badge, type BadgeVariant, Card, EmptyState, Table } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting';
 import type { ProjectListItem, ProjectStatus } from '../model/project';
 

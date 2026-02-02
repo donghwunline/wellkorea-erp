@@ -4,9 +4,13 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { chainTemplateQueries } from './chain-template.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
+// Import mocked modules
+import { getChainTemplate, getChainTemplates } from './get-chain-template';
+import type { ChainTemplateResponse } from './chain-template.mapper';
+import { chainTemplateMapper } from './chain-template.mapper';
 
 // Mock dependencies
 vi.mock('./get-chain-template', () => ({
@@ -19,11 +23,6 @@ vi.mock('./chain-template.mapper', () => ({
     toTemplate: vi.fn((response) => ({ ...response, _mapped: true })),
   },
 }));
-
-// Import mocked modules
-import { getChainTemplate, getChainTemplates } from './get-chain-template';
-import { chainTemplateMapper } from './chain-template.mapper';
-import type { ChainTemplateResponse } from './chain-template.mapper';
 
 // =============================================================================
 // Test Fixtures - Minimal Response objects to satisfy TypeScript

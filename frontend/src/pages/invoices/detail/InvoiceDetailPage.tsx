@@ -15,32 +15,32 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   Button,
   Card,
+  FormField,
   Icon,
+  Input,
   LoadingState,
+  Modal,
   PageHeader,
   Table,
-  Modal,
-  FormField,
-  Input,
 } from '@/shared/ui';
 import {
+  getPaymentMethodOptions,
   invoiceQueries,
+  invoiceRules,
   InvoiceStatusBadge,
   PaymentHistoryTable,
-  invoiceRules,
-  getPaymentMethodOptions,
   type PaymentMethod,
 } from '@/entities/invoice';
 import { IssueInvoiceModal } from '@/features/invoice/issue';
 import { useCancelInvoice } from '@/features/invoice/cancel';
 import { useRecordPayment } from '@/features/payment/record';
-import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatting';
+import { formatCurrency, formatDate, formatDateTime } from '@/shared/lib/formatting';
 import { useAuth } from '@/entities/auth';
 
 // Payment form state
@@ -92,7 +92,7 @@ export function InvoiceDetailPage() {
       setShowCancelConfirm(false);
       refetch();
     },
-    onError: (err) => {
+    onError: err => {
       setFormError(err.message);
     },
   });
@@ -103,7 +103,7 @@ export function InvoiceDetailPage() {
       setPaymentForm(defaultPaymentForm);
       refetch();
     },
-    onError: (err) => {
+    onError: err => {
       setFormError(err.message);
     },
   });
@@ -120,12 +120,9 @@ export function InvoiceDetailPage() {
   }, [invoiceId, cancelInvoice]);
 
   // Handle payment form change
-  const handlePaymentFormChange = useCallback(
-    (field: keyof PaymentFormState, value: string) => {
-      setPaymentForm((prev) => ({ ...prev, [field]: value }));
-    },
-    []
-  );
+  const handlePaymentFormChange = useCallback((field: keyof PaymentFormState, value: string) => {
+    setPaymentForm(prev => ({ ...prev, [field]: value }));
+  }, []);
 
   // Handle payment submit
   const handlePaymentSubmit = useCallback(
@@ -147,7 +144,10 @@ export function InvoiceDetailPage() {
       // Check if payment exceeds remaining balance
       if (invoice && amount > invoice.remainingBalance) {
         setFormError(
-          t('validation.exceedsBalance', { amount: formatCurrency(amount), balance: formatCurrency(invoice.remainingBalance) })
+          t('validation.exceedsBalance', {
+            amount: formatCurrency(amount),
+            balance: formatCurrency(invoice.remainingBalance),
+          })
         );
         return;
       }
@@ -177,7 +177,7 @@ export function InvoiceDetailPage() {
   }, [invoice]);
 
   // Payment method options
-  const paymentMethodOptions = getPaymentMethodOptions(true).map((opt) => ({
+  const paymentMethodOptions = getPaymentMethodOptions(true).map(opt => ({
     value: opt.value,
     label: opt.label,
   }));
@@ -195,7 +195,9 @@ export function InvoiceDetailPage() {
   if (fetchError) {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
-        <Alert variant="error">{t('view.loadError')}: {fetchError.message}</Alert>
+        <Alert variant="error">
+          {t('view.loadError')}: {fetchError.message}
+        </Alert>
         <Button variant="secondary" className="mt-4" onClick={() => navigate('/invoices')}>
           {t('actions.backToList')}
         </Button>
@@ -229,9 +231,7 @@ export function InvoiceDetailPage() {
             {t('actions.backToList')}
           </Button>
           {canManageInvoices && invoiceRules.canIssue(invoice) && (
-            <Button onClick={handleIssue}>
-              {t('actions.issue')}
-            </Button>
+            <Button onClick={handleIssue}>{t('actions.issue')}</Button>
           )}
           {canManageInvoices && invoiceRules.canReceivePayment(invoice) && (
             <Button onClick={openPaymentModal}>
@@ -272,7 +272,9 @@ export function InvoiceDetailPage() {
             <div className={`mt-1 ${invoice.isOverdue ? 'text-red-400' : 'text-white'}`}>
               {formatDate(invoice.dueDate)}
               {invoice.isOverdue && (
-                <span className="ml-2 text-xs">({t('view.daysOverdue', { days: invoice.daysOverdue })})</span>
+                <span className="ml-2 text-xs">
+                  ({t('view.daysOverdue', { days: invoice.daysOverdue })})
+                </span>
               )}
             </div>
           </div>
@@ -336,8 +338,8 @@ export function InvoiceDetailPage() {
 
         {/* Timestamps */}
         <div className="mt-4 border-t border-steel-700 pt-4 text-xs text-steel-500">
-          {tCommon('fields.createdBy')} {invoice.createdByName}, {formatDateTime(invoice.createdAt)} | {tCommon('fields.updatedAt')}:{' '}
-          {formatDateTime(invoice.updatedAt)}
+          {tCommon('fields.createdBy')} {invoice.createdByName}, {formatDateTime(invoice.createdAt)}{' '}
+          | {tCommon('fields.updatedAt')}: {formatDateTime(invoice.updatedAt)}
         </div>
       </Card>
 
@@ -352,7 +354,9 @@ export function InvoiceDetailPage() {
             </div>
           </div>
           <div>
-            <div className="text-sm text-steel-400">{t('fields.tax')} ({invoice.taxRate}%)</div>
+            <div className="text-sm text-steel-400">
+              {t('fields.tax')} ({invoice.taxRate}%)
+            </div>
             <div className="mt-1 font-mono text-lg text-white">
               {invoiceRules.formatAmount(invoice.totalTax)}
             </div>
@@ -380,7 +384,9 @@ export function InvoiceDetailPage() {
       <Card className="mb-6 p-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-white">{t('view.lineItems')}</h3>
-          <span className="text-steel-400">{t('view.items', { count: invoice.lineItems.length })}</span>
+          <span className="text-steel-400">
+            {t('view.items', { count: invoice.lineItems.length })}
+          </span>
         </div>
 
         <Table>
@@ -394,7 +400,7 @@ export function InvoiceDetailPage() {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {invoice.lineItems.map((item) => (
+            {invoice.lineItems.map(item => (
               <Table.Row key={item.id}>
                 <Table.Cell className="font-medium text-white">{item.productName}</Table.Cell>
                 <Table.Cell className="text-steel-400">{item.productSku || '-'}</Table.Cell>
@@ -425,13 +431,12 @@ export function InvoiceDetailPage() {
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-white">{t('view.paymentHistory')}</h3>
-          <span className="text-steel-400">{t('view.payments', { count: invoice.payments.length })}</span>
+          <span className="text-steel-400">
+            {t('view.payments', { count: invoice.payments.length })}
+          </span>
         </div>
 
-        <PaymentHistoryTable
-          payments={invoice.payments}
-          emptyMessage={t('view.noPayments')}
-        />
+        <PaymentHistoryTable payments={invoice.payments} emptyMessage={t('view.noPayments')} />
       </Card>
 
       {/* Payment Modal */}
@@ -446,7 +451,7 @@ export function InvoiceDetailPage() {
               <Input
                 type="date"
                 value={paymentForm.paymentDate}
-                onChange={(e) => handlePaymentFormChange('paymentDate', e.target.value)}
+                onChange={e => handlePaymentFormChange('paymentDate', e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
                 required
               />
@@ -456,7 +461,7 @@ export function InvoiceDetailPage() {
               <Input
                 type="number"
                 value={paymentForm.amount}
-                onChange={(e) => handlePaymentFormChange('amount', e.target.value)}
+                onChange={e => handlePaymentFormChange('amount', e.target.value)}
                 min={0}
                 max={invoice.remainingBalance}
                 step="1"
@@ -464,17 +469,19 @@ export function InvoiceDetailPage() {
                 required
               />
               <p className="mt-1 text-xs text-steel-500">
-                {t('payment.record.remainingBalance', { amount: invoiceRules.formatAmount(invoice.remainingBalance) })}
+                {t('payment.record.remainingBalance', {
+                  amount: invoiceRules.formatAmount(invoice.remainingBalance),
+                })}
               </p>
             </FormField>
 
             <FormField label={t('payment.record.method')} required>
               <select
                 value={paymentForm.paymentMethod}
-                onChange={(e) => handlePaymentFormChange('paymentMethod', e.target.value)}
+                onChange={e => handlePaymentFormChange('paymentMethod', e.target.value)}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
               >
-                {paymentMethodOptions.map((opt) => (
+                {paymentMethodOptions.map(opt => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -486,7 +493,7 @@ export function InvoiceDetailPage() {
               <Input
                 type="text"
                 value={paymentForm.referenceNumber}
-                onChange={(e) => handlePaymentFormChange('referenceNumber', e.target.value)}
+                onChange={e => handlePaymentFormChange('referenceNumber', e.target.value)}
                 placeholder={t('payment.record.referenceHint')}
               />
             </FormField>
@@ -494,7 +501,7 @@ export function InvoiceDetailPage() {
             <FormField label={t('payment.record.notes')}>
               <textarea
                 value={paymentForm.notes}
-                onChange={(e) => handlePaymentFormChange('notes', e.target.value)}
+                onChange={e => handlePaymentFormChange('notes', e.target.value)}
                 placeholder={t('payment.record.notesHint')}
                 rows={2}
                 className="w-full rounded-md border border-steel-600 bg-steel-800 px-3 py-2 text-sm text-white placeholder-steel-500 focus:border-copper-500 focus:outline-none focus:ring-1 focus:ring-copper-500"
@@ -520,9 +527,7 @@ export function InvoiceDetailPage() {
         title={t('cancel.title')}
       >
         <div className="mb-6">
-          <p className="text-steel-300">
-            {t('cancel.confirm', { number: invoice.invoiceNumber })}
-          </p>
+          <p className="text-steel-300">{t('cancel.confirm', { number: invoice.invoiceNumber })}</p>
           <p className="mt-2 text-sm text-steel-500">{t('cancel.warning')}</p>
         </div>
 

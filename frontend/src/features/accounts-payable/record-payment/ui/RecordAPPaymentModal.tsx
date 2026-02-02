@@ -6,17 +6,11 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  FormField,
-  Input,
-  Modal,
-  ModalActions,
-} from '@/shared/ui';
+import { Button, FormField, Input, Modal, ModalActions } from '@/shared/ui';
 import {
   type AccountsPayable,
-  type VendorPaymentMethod,
   accountsPayableRules,
+  type VendorPaymentMethod,
 } from '@/entities/accounts-payable';
 import { useRecordAPPayment } from '../model/use-record-ap-payment';
 
@@ -111,15 +105,21 @@ export function RecordAPPaymentModal({
         },
       });
     },
-    [ap.id, ap.remainingBalance, paymentDate, amount, paymentMethod, referenceNumber, notes, recordPayment, t]
+    [
+      ap.id,
+      ap.remainingBalance,
+      paymentDate,
+      amount,
+      paymentMethod,
+      referenceNumber,
+      notes,
+      recordPayment,
+      t,
+    ]
   );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={t('accountsPayable.paymentModal.title')}
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('accountsPayable.paymentModal.title')}>
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           {/* Summary section */}
@@ -127,13 +127,19 @@ export function RecordAPPaymentModal({
             <div className="grid grid-cols-2 gap-2">
               <span className="text-steel-400">{t('accountsPayable.paymentModal.vendor')}:</span>
               <span className="text-white">{ap.vendorName}</span>
-              <span className="text-steel-400">{t('accountsPayable.paymentModal.referenceNo')}:</span>
+              <span className="text-steel-400">
+                {t('accountsPayable.paymentModal.referenceNo')}:
+              </span>
               <span className="text-white">{ap.causeReferenceNumber}</span>
-              <span className="text-steel-400">{t('accountsPayable.paymentModal.totalAmount')}:</span>
+              <span className="text-steel-400">
+                {t('accountsPayable.paymentModal.totalAmount')}:
+              </span>
               <span className="text-white">{accountsPayableRules.formatTotalAmount(ap)}</span>
               <span className="text-steel-400">{t('accountsPayable.paymentModal.totalPaid')}:</span>
               <span className="text-white">{accountsPayableRules.formatTotalPaid(ap)}</span>
-              <span className="text-steel-400">{t('accountsPayable.paymentModal.remainingBalance')}:</span>
+              <span className="text-steel-400">
+                {t('accountsPayable.paymentModal.remainingBalance')}:
+              </span>
               <span className="font-semibold text-copper-400">
                 {accountsPayableRules.formatRemainingBalance(ap)}
               </span>
@@ -141,9 +147,7 @@ export function RecordAPPaymentModal({
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-900/50 p-3 text-sm text-red-300">
-              {error}
-            </div>
+            <div className="rounded-md bg-red-900/50 p-3 text-sm text-red-300">{error}</div>
           )}
 
           <FormField label={t('accountsPayable.paymentModal.paymentDate')} required>
@@ -168,7 +172,8 @@ export function RecordAPPaymentModal({
               disabled={isPending}
             />
             <p className="mt-1 text-xs text-steel-500">
-              {t('accountsPayable.paymentModal.remainingBalance')}: {accountsPayableRules.formatRemainingBalance(ap)}
+              {t('accountsPayable.paymentModal.remainingBalance')}:{' '}
+              {accountsPayableRules.formatRemainingBalance(ap)}
             </p>
           </FormField>
 

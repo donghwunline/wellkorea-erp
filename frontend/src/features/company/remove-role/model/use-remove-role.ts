@@ -10,11 +10,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  removeRole,
-  companyQueries,
-  type RemoveRoleInput,
-} from '@/entities/company';
+import { companyQueries, removeRole, type RemoveRoleInput } from '@/entities/company';
 
 export type RemoveRoleParams = RemoveRoleInput;
 

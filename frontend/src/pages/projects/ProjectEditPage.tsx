@@ -125,7 +125,10 @@ export function ProjectEditPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title title={t('projectEdit.title')} description={t('projectEdit.description', { jobCode: project.jobCode })} />
+        <PageHeader.Title
+          title={t('projectEdit.title')}
+          description={t('projectEdit.description', { jobCode: project.jobCode })}
+        />
         <PageHeader.Actions>
           <button
             onClick={handleCancel}

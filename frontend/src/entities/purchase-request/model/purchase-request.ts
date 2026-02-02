@@ -9,7 +9,7 @@
  * Dates are stored as ISO strings for React Query cache serialization.
  */
 
-import { isPast, getNow } from '@/shared/lib/formatting';
+import { getNow, isPast } from '@/shared/lib/formatting';
 import type { RfqItem } from './rfq-item';
 import type { StatusConfig } from './purchase-request-status';
 import { PurchaseRequestStatus, PurchaseRequestStatusConfig } from './purchase-request-status';

@@ -2,7 +2,7 @@
  * Reassign delivery to different quotation command function.
  */
 
-import { httpClient, DELIVERY_ENDPOINTS } from '@/shared/api';
+import { DELIVERY_ENDPOINTS, httpClient } from '@/shared/api';
 import type { CommandResult } from './delivery.mapper';
 
 /**

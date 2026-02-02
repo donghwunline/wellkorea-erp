@@ -22,10 +22,7 @@ export function ItemsPage() {
   return (
     <div className="min-h-screen bg-steel-950 p-6">
       <PageHeader>
-        <PageHeader.Title
-          title={t('title')}
-          description={t('description')}
-        />
+        <PageHeader.Title title={t('title')} description={t('description')} />
       </PageHeader>
 
       <div className="mt-6">

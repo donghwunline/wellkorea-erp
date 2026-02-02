@@ -5,7 +5,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { userMapper, type UserDetailsResponse } from './user.mapper';
+import { type UserDetailsResponse, userMapper } from './user.mapper';
 import { expectDomainShape, expectTrimmedStrings } from '@/test/entity-test-utils';
 
 // =============================================================================

@@ -4,7 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Table, Icon } from '@/shared/ui';
+import { Icon, Table } from '@/shared/ui';
 import type { Delivery } from '../model/delivery';
 import { DeliveryStatusBadge } from './DeliveryStatusBadge';
 import { formatDate } from '@/shared/lib/formatting';

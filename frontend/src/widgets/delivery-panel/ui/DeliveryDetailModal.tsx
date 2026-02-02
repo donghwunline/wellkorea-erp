@@ -8,23 +8,15 @@
  * Can import from: features, entities, shared
  */
 
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import {
-  Alert,
-  Button,
-  Icon,
-  LoadingState,
-  Modal,
-  ModalActions,
-  Table,
-} from '@/shared/ui';
+import { Alert, Button, Icon, LoadingState, Modal, ModalActions, Table } from '@/shared/ui';
 import {
   deliveryQueries,
-  DeliveryStatusBadge,
   deliveryRules,
+  DeliveryStatusBadge,
   downloadDeliveryStatement,
 } from '@/entities/delivery';
 import { useAuth } from '@/entities/auth';

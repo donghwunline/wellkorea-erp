@@ -4,11 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  issueInvoice,
-  invoiceQueries,
-  type IssueInvoiceInput,
-} from '@/entities/invoice';
+import { invoiceQueries, issueInvoice, type IssueInvoiceInput } from '@/entities/invoice';
 
 interface UseIssueInvoiceOptions {
   onSuccess?: (result: { id: number; message: string }) => void;

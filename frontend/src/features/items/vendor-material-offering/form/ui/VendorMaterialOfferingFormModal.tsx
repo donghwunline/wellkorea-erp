@@ -12,13 +12,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/ui';
 import type { VendorMaterialOffering } from '@/entities/material';
 import {
-  materialQueries,
   createVendorMaterialOffering,
-  updateVendorMaterialOffering,
   type CreateVendorMaterialOfferingInput,
+  materialQueries,
+  updateVendorMaterialOffering,
   type UpdateVendorMaterialOfferingInput,
 } from '@/entities/material';
-import { VendorMaterialOfferingForm, type VendorMaterialOfferingFormData } from './VendorMaterialOfferingForm';
+import {
+  VendorMaterialOfferingForm,
+  type VendorMaterialOfferingFormData,
+} from './VendorMaterialOfferingForm';
 
 // =============================================================================
 // TYPES

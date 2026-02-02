@@ -2,7 +2,7 @@
  * Unit tests for taskFlowRules business logic.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { taskFlowRules } from './task-flow';
 import type { TaskEdge } from './task-edge';
 

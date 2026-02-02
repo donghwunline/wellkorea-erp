@@ -5,16 +5,9 @@
  * Provides raw HTTP functions for fetching company data.
  */
 
-import { httpClient, COMPANY_ENDPOINTS, type PagedResponse } from '@/shared/api';
-import {
-  transformPagedResponse,
-  type Paginated,
-} from '@/shared/lib/pagination';
-import type {
-  CompanyDetailsResponse,
-  CompanySummaryResponse,
-  CompanyListParams,
-} from './company.mapper';
+import { COMPANY_ENDPOINTS, httpClient, type PagedResponse } from '@/shared/api';
+import { type Paginated, transformPagedResponse, } from '@/shared/lib/pagination';
+import type { CompanyDetailsResponse, CompanyListParams, CompanySummaryResponse, } from './company.mapper';
 
 /**
  * Get company by ID.

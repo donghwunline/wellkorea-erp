@@ -11,21 +11,14 @@
  * Can import from: features, entities, shared
  */
 
-import { useCallback, useMemo, useState, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { Alert, Button, Card, ConfirmationModal, Icon, LoadingState } from '@/shared/ui';
 import {
-  Alert,
-  Button,
-  Card,
-  ConfirmationModal,
-  Icon,
-  LoadingState,
-} from '@/shared/ui';
-import {
-  type InvoiceSummary,
   invoiceQueries,
   invoiceRules,
+  type InvoiceSummary,
   InvoiceTable,
 } from '@/entities/invoice';
 import { quotationQueries, QuotationStatus } from '@/entities/quotation';

@@ -14,8 +14,8 @@ import type { ServiceCategory } from '@/entities/catalog';
 import {
   catalogQueries,
   createServiceCategory,
-  updateServiceCategory,
   type CreateServiceCategoryInput,
+  updateServiceCategory,
   type UpdateServiceCategoryInput,
 } from '@/entities/catalog';
 import { ServiceCategoryForm, type ServiceCategoryFormData } from './ServiceCategoryForm';

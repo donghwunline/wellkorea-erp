@@ -3,7 +3,7 @@
  */
 
 import { httpClient, MAIL_OAUTH2_ENDPOINTS } from '@/shared/api';
-import type { MailConfigStatusResponse, AuthorizeUrlResponse } from './mail-config.mapper';
+import type { AuthorizeUrlResponse, MailConfigStatusResponse } from './mail-config.mapper';
 
 /**
  * Get mail OAuth2 connection status.

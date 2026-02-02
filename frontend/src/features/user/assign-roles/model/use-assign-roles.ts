@@ -3,7 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { assignRoles, userQueries, type AssignRolesInput } from '@/entities/user';
+import { assignRoles, type AssignRolesInput, userQueries } from '@/entities/user';
 
 /**
  * Options for useAssignRoles hook.

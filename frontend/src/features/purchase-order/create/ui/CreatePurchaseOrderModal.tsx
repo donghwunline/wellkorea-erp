@@ -80,7 +80,9 @@ export function CreatePurchaseOrderModal({
     expectedDeliveryDate: initialExpectedDelivery,
     notes: '',
   });
-  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof FormData, string>>>(
+    {}
+  );
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Calculate total amount
@@ -95,7 +97,7 @@ export function CreatePurchaseOrderModal({
       onSuccess?.();
       onClose();
     },
-    onError: (error) => {
+    onError: error => {
       setSubmitError(error.message);
     },
   });
@@ -109,9 +111,13 @@ export function CreatePurchaseOrderModal({
     }
 
     if (!formData.expectedDeliveryDate) {
-      errors.expectedDeliveryDate = t('purchasing:createPurchaseOrderModal.expectedDeliveryDateRequired');
+      errors.expectedDeliveryDate = t(
+        'purchasing:createPurchaseOrderModal.expectedDeliveryDateRequired'
+      );
     } else if (formData.expectedDeliveryDate < formData.orderDate) {
-      errors.expectedDeliveryDate = t('purchasing:createPurchaseOrderModal.expectedDeliveryDateInvalid');
+      errors.expectedDeliveryDate = t(
+        'purchasing:createPurchaseOrderModal.expectedDeliveryDateInvalid'
+      );
     }
 
     setValidationErrors(errors);
@@ -119,52 +125,61 @@ export function CreatePurchaseOrderModal({
   }, [formData, t]);
 
   // Handle order date change - auto-update expected delivery
-  const handleOrderDateChange = useCallback((value: string) => {
-    setFormData((prev) => {
-      const newExpectedDelivery = rfqItem.quotedLeadTime
-        ? addDaysToDate(value, rfqItem.quotedLeadTime)
-        : value;
-      return {
-        ...prev,
-        orderDate: value,
-        expectedDeliveryDate: newExpectedDelivery,
-      };
-    });
-    if (validationErrors.orderDate) {
-      setValidationErrors((prev) => ({ ...prev, orderDate: undefined }));
-    }
-    if (submitError) {
-      setSubmitError(null);
-    }
-  }, [rfqItem.quotedLeadTime, validationErrors.orderDate, submitError]);
+  const handleOrderDateChange = useCallback(
+    (value: string) => {
+      setFormData(prev => {
+        const newExpectedDelivery = rfqItem.quotedLeadTime
+          ? addDaysToDate(value, rfqItem.quotedLeadTime)
+          : value;
+        return {
+          ...prev,
+          orderDate: value,
+          expectedDeliveryDate: newExpectedDelivery,
+        };
+      });
+      if (validationErrors.orderDate) {
+        setValidationErrors(prev => ({ ...prev, orderDate: undefined }));
+      }
+      if (submitError) {
+        setSubmitError(null);
+      }
+    },
+    [rfqItem.quotedLeadTime, validationErrors.orderDate, submitError]
+  );
 
   // Handle field change
-  const handleFieldChange = useCallback((field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (validationErrors[field]) {
-      setValidationErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-    if (submitError) {
-      setSubmitError(null);
-    }
-  }, [validationErrors, submitError]);
+  const handleFieldChange = useCallback(
+    (field: keyof FormData, value: string) => {
+      setFormData(prev => ({ ...prev, [field]: value }));
+      if (validationErrors[field]) {
+        setValidationErrors(prev => ({ ...prev, [field]: undefined }));
+      }
+      if (submitError) {
+        setSubmitError(null);
+      }
+    },
+    [validationErrors, submitError]
+  );
 
   // Handle submit
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (!validate()) {
-      return;
-    }
+      if (!validate()) {
+        return;
+      }
 
-    createPurchaseOrder({
-      purchaseRequestId,
-      rfqItemId: rfqItem.itemId,
-      orderDate: formData.orderDate,
-      expectedDeliveryDate: formData.expectedDeliveryDate,
-      notes: formData.notes.trim() || null,
-    });
-  }, [formData, purchaseRequestId, rfqItem.itemId, validate, createPurchaseOrder]);
+      createPurchaseOrder({
+        purchaseRequestId,
+        rfqItemId: rfqItem.itemId,
+        orderDate: formData.orderDate,
+        expectedDeliveryDate: formData.expectedDeliveryDate,
+        notes: formData.notes.trim() || null,
+      });
+    },
+    [formData, purchaseRequestId, rfqItem.itemId, validate, createPurchaseOrder]
+  );
 
   // Handle close
   const handleClose = useCallback(() => {
@@ -184,28 +199,42 @@ export function CreatePurchaseOrderModal({
         {/* Vendor Context */}
         <div className="rounded-lg bg-steel-800/50 p-4 space-y-2">
           <div className="flex justify-between">
-            <span className="text-sm text-steel-400">{t('purchasing:createPurchaseOrderModal.vendor')}</span>
+            <span className="text-sm text-steel-400">
+              {t('purchasing:createPurchaseOrderModal.vendor')}
+            </span>
             <span className="font-medium text-white">{rfqItem.vendorName}</span>
           </div>
           {rfqItem.quotedPrice !== null && (
             <div className="flex justify-between">
-              <span className="text-sm text-steel-400">{t('purchasing:createPurchaseOrderModal.quotedPrice')}</span>
+              <span className="text-sm text-steel-400">
+                {t('purchasing:createPurchaseOrderModal.quotedPrice')}
+              </span>
               <span className="text-white">{formatCurrency(rfqItem.quotedPrice)}</span>
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-sm text-steel-400">{t('purchasing:createPurchaseOrderModal.quantity')}</span>
+            <span className="text-sm text-steel-400">
+              {t('purchasing:createPurchaseOrderModal.quantity')}
+            </span>
             <span className="text-white">{quantity}</span>
           </div>
           {rfqItem.quotedLeadTime !== null && (
             <div className="flex justify-between">
-              <span className="text-sm text-steel-400">{t('purchasing:createPurchaseOrderModal.leadTime')}</span>
-              <span className="text-white">{t('purchasing:createPurchaseOrderModal.leadTimeDays', { days: rfqItem.quotedLeadTime })}</span>
+              <span className="text-sm text-steel-400">
+                {t('purchasing:createPurchaseOrderModal.leadTime')}
+              </span>
+              <span className="text-white">
+                {t('purchasing:createPurchaseOrderModal.leadTimeDays', {
+                  days: rfqItem.quotedLeadTime,
+                })}
+              </span>
             </div>
           )}
           {totalAmount !== null && (
             <div className="flex justify-between border-t border-steel-700 pt-2 mt-2">
-              <span className="text-sm font-medium text-steel-300">{t('purchasing:createPurchaseOrderModal.totalAmount')}</span>
+              <span className="text-sm font-medium text-steel-300">
+                {t('purchasing:createPurchaseOrderModal.totalAmount')}
+              </span>
               <span className="font-semibold text-copper-400">{formatCurrency(totalAmount)}</span>
             </div>
           )}
@@ -227,7 +256,7 @@ export function CreatePurchaseOrderModal({
           <input
             type="date"
             value={formData.orderDate}
-            onChange={(e) => handleOrderDateChange(e.target.value)}
+            onChange={e => handleOrderDateChange(e.target.value)}
             disabled={isPending}
             className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white transition-all focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
@@ -238,13 +267,19 @@ export function CreatePurchaseOrderModal({
           label={t('purchasing:createPurchaseOrderModal.expectedDeliveryDate')}
           required
           error={validationErrors.expectedDeliveryDate}
-          hint={rfqItem.quotedLeadTime ? t('purchasing:createPurchaseOrderModal.expectedDeliveryDateHint', { days: rfqItem.quotedLeadTime }) : undefined}
+          hint={
+            rfqItem.quotedLeadTime
+              ? t('purchasing:createPurchaseOrderModal.expectedDeliveryDateHint', {
+                  days: rfqItem.quotedLeadTime,
+                })
+              : undefined
+          }
         >
           <input
             type="date"
             value={formData.expectedDeliveryDate}
             min={formData.orderDate}
-            onChange={(e) => handleFieldChange('expectedDeliveryDate', e.target.value)}
+            onChange={e => handleFieldChange('expectedDeliveryDate', e.target.value)}
             disabled={isPending}
             className="w-full rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 py-2 text-sm text-white transition-all focus:border-copper-500/50 focus:outline-none focus:ring-2 focus:ring-copper-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
@@ -257,7 +292,7 @@ export function CreatePurchaseOrderModal({
         >
           <textarea
             value={formData.notes}
-            onChange={(e) => handleFieldChange('notes', e.target.value)}
+            onChange={e => handleFieldChange('notes', e.target.value)}
             placeholder={t('purchasing:createPurchaseOrderModal.notesPlaceholder')}
             rows={3}
             disabled={isPending}
@@ -267,19 +302,10 @@ export function CreatePurchaseOrderModal({
 
         {/* Actions */}
         <ModalActions>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleClose}
-            disabled={isPending}
-          >
+          <Button type="button" variant="secondary" onClick={handleClose} disabled={isPending}>
             {t('common:buttons.cancel')}
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isPending}
-          >
+          <Button type="submit" variant="primary" disabled={isPending}>
             {isPending ? (
               <>
                 <Spinner className="mr-2 h-4 w-4" />

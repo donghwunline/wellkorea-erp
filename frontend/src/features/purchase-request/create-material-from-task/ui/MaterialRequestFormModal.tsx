@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Button, DatePicker, FormField, Modal, Spinner } from '@/shared/ui';
-import { materialQueries, type MaterialListItem } from '@/entities/material';
+import { type MaterialListItem, materialQueries } from '@/entities/material';
 import type { CreateMaterialPurchaseRequestInput } from '@/entities/purchase-request';
 import { useCreateMaterialRequest } from '../model/use-create-material-request';
 
@@ -159,7 +159,9 @@ export function MaterialRequestFormModal({
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Category Dropdown */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-steel-300">{t('purchaseRequest.materialCategory')}</label>
+          <label className="text-sm font-medium text-steel-300">
+            {t('purchaseRequest.materialCategory')}
+          </label>
           {categoriesLoading ? (
             <div className="flex h-10 items-center justify-center rounded-lg border border-steel-700/50 bg-steel-900/60">
               <Spinner size="sm" />

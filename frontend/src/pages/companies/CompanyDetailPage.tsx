@@ -27,12 +27,7 @@ export function CompanyDetailPage() {
   const navigate = useNavigate();
 
   // Server State - Company detail via TanStack Query
-  const {
-    data: company,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery(companyQueries.detail(companyId));
+  const { data: company, isLoading, error, refetch } = useQuery(companyQueries.detail(companyId));
 
   const handleBack = useCallback(() => {
     navigate('/companies');
@@ -47,7 +42,10 @@ export function CompanyDetailPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title={t('companyDetail.title')} description={t('companyDetail.loading')} />
+          <PageHeader.Title
+            title={t('companyDetail.title')}
+            description={t('companyDetail.loading')}
+          />
           <PageHeader.Actions>
             <Button variant="ghost" onClick={handleBack}>
               <Icon name="arrow-left" className="h-5 w-5" />
@@ -68,7 +66,10 @@ export function CompanyDetailPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title={t('companyDetail.title')} description={t('companyDetail.error')} />
+          <PageHeader.Title
+            title={t('companyDetail.title')}
+            description={t('companyDetail.error')}
+          />
           <PageHeader.Actions>
             <Button variant="ghost" onClick={handleBack}>
               <Icon name="arrow-left" className="h-5 w-5" />
@@ -78,12 +79,7 @@ export function CompanyDetailPage() {
         </PageHeader>
         <Alert variant="error" className="mb-6">
           {error?.message || t('companyDetail.notFound')}
-          <Button
-            variant="secondary"
-            size="sm"
-            className="ml-4"
-            onClick={() => void refetch()}
-          >
+          <Button variant="secondary" size="sm" className="ml-4" onClick={() => void refetch()}>
             {t('companyDetail.retry')}
           </Button>
         </Alert>

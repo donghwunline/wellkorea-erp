@@ -4,10 +4,15 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { userQueries, type UserListQueryParams } from './user.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type UserListQueryParams, userQueries } from './user.queries';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
 import type { Paginated } from '@/shared/lib/pagination';
+// Import mocked modules
+import { getUserList } from './get-user-list';
+import { getUserById } from './get-user-by-id';
+import { getCustomerAssignments } from './assign-customers';
+import { userMapper } from './user.mapper';
 
 // Mock dependencies
 vi.mock('./get-user-list', () => ({
@@ -27,12 +32,6 @@ vi.mock('./user.mapper', () => ({
     toDomain: vi.fn((response) => ({ ...response, _mapped: true })),
   },
 }));
-
-// Import mocked modules
-import { getUserList } from './get-user-list';
-import { getUserById } from './get-user-by-id';
-import { getCustomerAssignments } from './assign-customers';
-import { userMapper } from './user.mapper';
 
 describe('userQueries', () => {
   beforeEach(() => {

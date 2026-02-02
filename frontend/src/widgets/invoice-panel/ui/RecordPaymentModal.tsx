@@ -7,18 +7,12 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Button, FormField, Input, Modal, ModalActions } from '@/shared/ui';
 import {
-  Button,
-  FormField,
-  Input,
-  Modal,
-  ModalActions,
-} from '@/shared/ui';
-import {
+  getPaymentMethodOptions,
+  invoiceRules,
   type InvoiceSummary,
   type PaymentMethod,
-  invoiceRules,
-  getPaymentMethodOptions,
 } from '@/entities/invoice';
 import { useRecordPayment } from '@/features/payment/record';
 

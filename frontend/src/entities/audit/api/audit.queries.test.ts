@@ -4,9 +4,15 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { auditQueries, type AuditListQueryParams } from './audit.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type AuditListQueryParams, auditQueries } from './audit.queries';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
+// Import mocked modules
+import { getAuditList } from './get-audit-list';
+import { getAuditById } from './get-audit-by-id';
+import type { AuditLogResponse } from './audit.mapper';
+import { auditLogMapper } from './audit.mapper';
+import type { Paginated } from '@/shared/lib/pagination';
 
 // Mock dependencies
 vi.mock('./get-audit-list', () => ({
@@ -22,13 +28,6 @@ vi.mock('./audit.mapper', () => ({
     toDomain: vi.fn((response) => ({ ...response, _mapped: true })),
   },
 }));
-
-// Import mocked modules
-import { getAuditList } from './get-audit-list';
-import { getAuditById } from './get-audit-by-id';
-import { auditLogMapper } from './audit.mapper';
-import type { AuditLogResponse } from './audit.mapper';
-import type { Paginated } from '@/shared/lib/pagination';
 
 // =============================================================================
 // Test Fixtures - Minimal Response objects to satisfy TypeScript

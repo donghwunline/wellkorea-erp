@@ -3,7 +3,7 @@
  * Exported from entity barrel for use in features.
  */
 
-import { httpClient, TASK_FLOW_ENDPOINTS, DomainValidationError } from '@/shared/api';
+import { DomainValidationError, httpClient, TASK_FLOW_ENDPOINTS } from '@/shared/api';
 import type { CommandResult } from './task-flow.mapper';
 import type { TaskNode } from '../model/task-node';
 import type { TaskEdge } from '../model/task-edge';

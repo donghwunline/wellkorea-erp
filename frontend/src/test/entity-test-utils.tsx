@@ -17,7 +17,7 @@
  * ```
  */
 
-import { vi, expect, type Mock } from 'vitest';
+import { expect, type Mock, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DomainValidationError } from '@/shared/lib/errors/domain-validation-error';
 import type { ReactNode } from 'react';
@@ -72,12 +72,12 @@ export function createHttpClientMock() {
 
     /** Reset all mock functions */
     reset: () => {
-      Object.values(httpClient).forEach((mock) => mock.mockReset());
+      Object.values(httpClient).forEach(mock => mock.mockReset());
     },
 
     /** Clear all mock functions (keeps implementation) */
     clear: () => {
-      Object.values(httpClient).forEach((mock) => mock.mockClear());
+      Object.values(httpClient).forEach(mock => mock.mockClear());
     },
 
     /** Mock a successful response for a method */
@@ -225,10 +225,7 @@ export async function invokeQueryFn<T = unknown>(options: QueryOptionsLike): Pro
  * expectQueryKey(quotationQueries.detail(1), ['quotations', 'detail', 1]);
  * ```
  */
-export function expectQueryKey(
-  actual: readonly unknown[],
-  expected: readonly unknown[]
-): void {
+export function expectQueryKey(actual: readonly unknown[], expected: readonly unknown[]): void {
   expect(actual).toEqual(expected);
 }
 
@@ -356,11 +353,8 @@ export function createDeletedResult(id: number): { id: number; message: string }
  * expectDomainShape(quotation, ['id', 'projectId', 'status', 'lineItems']);
  * ```
  */
-export function expectDomainShape<T extends object>(
-  result: T,
-  expectedKeys: (keyof T)[]
-): void {
-  expectedKeys.forEach((key) => {
+export function expectDomainShape<T extends object>(result: T, expectedKeys: (keyof T)[]): void {
+  expectedKeys.forEach(key => {
     expect(result).toHaveProperty(key as string);
   });
 }
@@ -375,11 +369,8 @@ export function expectDomainShape<T extends object>(
  * expect(quotation.projectName).toBe('Test');
  * ```
  */
-export function expectTrimmedStrings<T extends object>(
-  result: T,
-  stringFields: (keyof T)[]
-): void {
-  stringFields.forEach((field) => {
+export function expectTrimmedStrings<T extends object>(result: T, stringFields: (keyof T)[]): void {
+  stringFields.forEach(field => {
     const value = result[field];
     if (typeof value === 'string') {
       expect(value).toBe(value.trim());
@@ -428,17 +419,14 @@ export function expectValidId(value: number): void {
  * expect(mockFn).toHaveBeenCalledWith(expectedArgs);
  * ```
  */
-export async function waitForMockCall(
-  mockFn: Mock,
-  timeout = 1000
-): Promise<void> {
+export async function waitForMockCall(mockFn: Mock, timeout = 1000): Promise<void> {
   const startTime = Date.now();
 
   while (!mockFn.mock.calls.length) {
     if (Date.now() - startTime > timeout) {
       throw new Error(`Mock function was not called within ${timeout}ms`);
     }
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise(resolve => setTimeout(resolve, 10));
   }
 }
 
@@ -447,11 +435,14 @@ export async function waitForMockCall(
  * Useful for testing async state updates.
  */
 export async function flushPromises(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise(resolve => setTimeout(resolve, 0));
 }
 
 // ============================================================================
 // Re-exports for convenience
 // ============================================================================
 
-export { DomainValidationError, isDomainValidationError } from '@/shared/lib/errors/domain-validation-error';
+export {
+  DomainValidationError,
+  isDomainValidationError,
+} from '@/shared/lib/errors/domain-validation-error';

@@ -20,16 +20,16 @@
  * ```
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { ServiceCategory, ServiceCategoryListItem } from '../model/service-category';
 import type { VendorOffering } from '../model/vendor-offering';
 import {
-  getServiceCategories,
   getAllServiceCategories,
-  getServiceCategory,
-  getOfferingsForCategory,
   getCurrentOfferingsForCategory,
+  getOfferingsForCategory,
+  getServiceCategories,
+  getServiceCategory,
   getVendorOffering,
 } from './get-catalog';
 

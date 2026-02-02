@@ -10,9 +10,9 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   type PurchaseOrderListItem,
-  type PurchaseOrderStatus,
   purchaseOrderQueries,
   purchaseOrderRules,
+  type PurchaseOrderStatus,
   PurchaseOrderStatusConfig,
 } from '@/entities/purchase-order';
 import { Badge, Card, Pagination, Spinner, Table } from '@/shared/ui';

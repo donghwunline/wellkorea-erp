@@ -12,7 +12,7 @@
  * @see https://feature-sliced.github.io/documentation/docs/guides/tech/with-react-query
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { Quotation, QuotationListItem } from '../model/quotation';
 import type { QuotationStatus } from '../model/quotation-status';
 import { quotationMapper } from './quotation.mapper';

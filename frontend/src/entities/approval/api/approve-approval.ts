@@ -5,7 +5,7 @@
  * Used by features layer via useMutation.
  */
 
-import { httpClient, APPROVAL_ENDPOINTS } from '@/shared/api';
+import { APPROVAL_ENDPOINTS, httpClient } from '@/shared/api';
 import type { CommandResult } from './approval.mapper';
 
 // =============================================================================

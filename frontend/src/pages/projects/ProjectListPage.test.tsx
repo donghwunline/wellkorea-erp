@@ -85,9 +85,7 @@ vi.mock('@/entities/project', () => ({
       <div data-testid="project-table">
         <button
           data-testid="trigger-row-click"
-          onClick={() =>
-            (props.onRowClick as (project: { id: number }) => void)({ id: 42 })
-          }
+          onClick={() => (props.onRowClick as (project: { id: number }) => void)({ id: 42 })}
         >
           Trigger Row Click
         </button>

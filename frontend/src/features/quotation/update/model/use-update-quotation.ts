@@ -11,10 +11,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  updateQuotation,
-  quotationQueries,
-  type UpdateQuotationInput,
   type CommandResult,
+  quotationQueries,
+  updateQuotation,
+  type UpdateQuotationInput,
 } from '@/entities/quotation';
 
 export interface UseUpdateQuotationOptions {
@@ -64,7 +64,7 @@ export function useUpdateQuotation(options: UseUpdateQuotationOptions = {}) {
   return useMutation({
     mutationFn: ({ id, input }: UpdateQuotationParams) => updateQuotation(id, input),
 
-    onSuccess: (result) => {
+    onSuccess: result => {
       // Invalidate both the detail and list queries
       queryClient.invalidateQueries({ queryKey: quotationQueries.details() });
       queryClient.invalidateQueries({ queryKey: quotationQueries.lists() });

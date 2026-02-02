@@ -4,10 +4,13 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { deliveryQueries } from './delivery.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
-import type { DeliverySummaryResponse, DeliveryDetailResponse } from './delivery.mapper';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
+import type { DeliveryDetailResponse, DeliverySummaryResponse } from './delivery.mapper';
+import { deliveryMapper } from './delivery.mapper';
+// Import mocked modules
+import { getDeliveries, getDeliveryById } from './get-delivery';
 
 // Mock dependencies
 vi.mock('./get-delivery', () => ({
@@ -43,10 +46,6 @@ vi.mock('./delivery.mapper', () => ({
     })),
   },
 }));
-
-// Import mocked modules
-import { getDeliveries, getDeliveryById } from './get-delivery';
-import { deliveryMapper } from './delivery.mapper';
 
 // =============================================================================
 // Test Fixtures

@@ -7,8 +7,8 @@
  */
 
 import { Icon } from '@/shared/ui';
-import { PurchaseOrderStatus, PurchaseOrderStatusConfig } from '../model/purchase-order-status';
 import type { PurchaseOrderStatus as PurchaseOrderStatusType } from '../model/purchase-order-status';
+import { PurchaseOrderStatus, PurchaseOrderStatusConfig } from '../model/purchase-order-status';
 
 interface PurchaseOrderTimelineProps {
   /** Current status of the purchase order */

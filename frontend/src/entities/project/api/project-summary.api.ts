@@ -6,7 +6,7 @@
  * FSD Layer: entities/project/api
  */
 
-import type { ProjectSectionsSummary, ProjectKPI } from '../model/project';
+import type { ProjectKPI, ProjectSectionsSummary } from '../model/project';
 import { httpClient, PROJECT_ENDPOINTS } from '@/shared/api';
 
 // ============================================================================

@@ -126,9 +126,7 @@ function RoleManagementSection({
           ))}
         </div>
         {!canRemoveRole && (
-          <p className="text-xs text-steel-500">
-            {t('companyEdit.cannotRemoveLastRole')}
-          </p>
+          <p className="text-xs text-steel-500">{t('companyEdit.cannotRemoveLastRole')}</p>
         )}
       </div>
 
@@ -156,9 +154,7 @@ function RoleManagementSection({
       )}
 
       {availableRoles.length === 0 && (
-        <p className="text-xs text-steel-500">
-          {t('companyEdit.allRolesAssigned')}
-        </p>
+        <p className="text-xs text-steel-500">{t('companyEdit.allRolesAssigned')}</p>
       )}
     </div>
   );
@@ -340,7 +336,9 @@ export function CompanyEditPage() {
         {/* Company Info Form */}
         <Card>
           <div className="p-6">
-            <h2 className="mb-6 text-lg font-semibold text-white">{t('companyEdit.companyDetails')}</h2>
+            <h2 className="mb-6 text-lg font-semibold text-white">
+              {t('companyEdit.companyDetails')}
+            </h2>
             <CompanyForm
               mode="edit"
               initialData={company}
@@ -356,7 +354,9 @@ export function CompanyEditPage() {
         {/* Role Management Section */}
         <Card>
           <div className="p-6">
-            <h2 className="mb-6 text-lg font-semibold text-white">{t('companyEdit.roleManagement')}</h2>
+            <h2 className="mb-6 text-lg font-semibold text-white">
+              {t('companyEdit.roleManagement')}
+            </h2>
             <RoleManagementSection
               companyId={companyId}
               roles={company.roles}

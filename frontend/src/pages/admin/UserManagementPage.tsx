@@ -18,12 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Button, Icon, PageHeader, Pagination, SearchBar } from '@/shared/ui';
 import { usePaginatedSearch } from '@/shared/lib/pagination';
-import {
-  userQueries,
-  UserTable,
-  UserTableSkeleton,
-  type UserDetails,
-} from '@/entities/user';
+import { type UserDetails, userQueries, UserTable, UserTableSkeleton } from '@/entities/user';
 import { UserCreateForm } from '@/features/user/create';
 import { UserEditForm } from '@/features/user/update';
 import { UserDeactivateModal } from '@/features/user/deactivate';
@@ -71,7 +66,7 @@ export function UserManagementPage() {
 
   // Activate user mutation
   const { mutate: activateUser } = useActivateUser({
-    onError: (err) => setError(err.message),
+    onError: err => setError(err.message),
   });
 
   // Modal handlers

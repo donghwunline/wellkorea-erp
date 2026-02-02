@@ -76,9 +76,7 @@ export function QuotationEditPage() {
   // Check if quotation is editable
   const canEdit = quotation ? quotationRules.canEdit(quotation) : false;
   const editError =
-    quotation && !canEdit
-      ? t('quotationEdit.cannotEdit', { status: quotation.status })
-      : null;
+    quotation && !canEdit ? t('quotationEdit.cannotEdit', { status: quotation.status }) : null;
 
   // Error message
   const error =
@@ -101,7 +99,10 @@ export function QuotationEditPage() {
     return (
       <div className="min-h-screen bg-steel-950 p-8">
         <PageHeader>
-          <PageHeader.Title title={t('quotationEdit.title')} description={t('quotationEdit.unableToEdit')} />
+          <PageHeader.Title
+            title={t('quotationEdit.title')}
+            description={t('quotationEdit.unableToEdit')}
+          />
           <PageHeader.Actions>
             <button
               onClick={handleCancel}
@@ -131,7 +132,10 @@ export function QuotationEditPage() {
       <PageHeader>
         <PageHeader.Title
           title={t('quotationEdit.title')}
-          description={t('quotationEdit.description', { jobCode: quotation?.jobCode, version: quotation?.version })}
+          description={t('quotationEdit.description', {
+            jobCode: quotation?.jobCode,
+            version: quotation?.version,
+          })}
         />
         <PageHeader.Actions>
           <button

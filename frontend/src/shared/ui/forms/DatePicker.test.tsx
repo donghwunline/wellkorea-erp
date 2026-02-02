@@ -212,7 +212,9 @@ describe('DatePicker', () => {
       vi.useRealTimers();
       const user = userEvent.setup();
       // Provide a value in January so calendar opens to January
-      render(<DatePicker value="2025-01-20" onChange={vi.fn()} min="2025-01-15" clearable={false} />);
+      render(
+        <DatePicker value="2025-01-20" onChange={vi.fn()} min="2025-01-15" clearable={false} />
+      );
 
       // Open calendar
       const buttons = screen.getAllByRole('button');
@@ -228,7 +230,9 @@ describe('DatePicker', () => {
       vi.useRealTimers();
       const user = userEvent.setup();
       // Provide a value in January so calendar opens to January
-      render(<DatePicker value="2025-01-15" onChange={vi.fn()} max="2025-01-20" clearable={false} />);
+      render(
+        <DatePicker value="2025-01-15" onChange={vi.fn()} max="2025-01-20" clearable={false} />
+      );
 
       // Open calendar
       const buttons = screen.getAllByRole('button');
@@ -244,7 +248,9 @@ describe('DatePicker', () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
       // Provide a value in January so calendar opens to January
-      render(<DatePicker value="2025-01-20" onChange={handleChange} min="2025-01-15" clearable={false} />);
+      render(
+        <DatePicker value="2025-01-20" onChange={handleChange} min="2025-01-15" clearable={false} />
+      );
 
       // Open calendar
       const buttons = screen.getAllByRole('button');
@@ -322,7 +328,9 @@ describe('DatePicker', () => {
       const handleChange = vi.fn();
       // Pass a start date so the calendar opens to January
       const rangeValue: DateRange = { start: '2025-01-01', end: null };
-      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />);
+      render(
+        <DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />
+      );
 
       // Open calendar and select a different start date (this will reset range)
       const buttons = screen.getAllByRole('button');
@@ -338,7 +346,9 @@ describe('DatePicker', () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
       const rangeValue: DateRange = { start: '2025-01-10', end: null };
-      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />);
+      render(
+        <DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />
+      );
 
       // Open calendar and select end date
       const buttons = screen.getAllByRole('button');
@@ -353,7 +363,9 @@ describe('DatePicker', () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
       const rangeValue: DateRange = { start: '2025-01-20', end: null };
-      render(<DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />);
+      render(
+        <DatePicker mode="range" value={rangeValue} onChange={handleChange} clearable={false} />
+      );
 
       // Open calendar and select date before start
       const buttons = screen.getAllByRole('button');

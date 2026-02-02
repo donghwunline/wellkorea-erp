@@ -6,10 +6,10 @@
  * FSD Layer: features
  */
 
-import { useCallback, useState, type FormEvent } from 'react';
+import { type FormEvent, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ServiceCategory } from '@/entities/catalog';
-import { Button, FormField, ModalActions, Alert } from '@/shared/ui';
+import { Alert, Button, FormField, ModalActions } from '@/shared/ui';
 
 // =============================================================================
 // TYPES

@@ -10,7 +10,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { selectVendor, purchaseRequestQueries } from '@/entities/purchase-request';
+import { purchaseRequestQueries, selectVendor } from '@/entities/purchase-request';
 import { ApiError } from '@/shared/api';
 
 export interface UseSelectVendorOptions {

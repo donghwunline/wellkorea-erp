@@ -11,10 +11,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  updateProduct,
-  productQueries,
-  type UpdateProductInput,
   type ProductCommandResult,
+  productQueries,
+  updateProduct,
+  type UpdateProductInput,
 } from '@/entities/product';
 
 export interface UseUpdateProductOptions {

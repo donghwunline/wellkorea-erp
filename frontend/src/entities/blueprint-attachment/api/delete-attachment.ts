@@ -2,7 +2,7 @@
  * Delete blueprint attachment command function.
  */
 
-import { httpClient, DomainValidationError, BLUEPRINT_ENDPOINTS } from '@/shared/api';
+import { BLUEPRINT_ENDPOINTS, DomainValidationError, httpClient } from '@/shared/api';
 import type { CommandResult } from './blueprint-attachment.mapper';
 
 /**

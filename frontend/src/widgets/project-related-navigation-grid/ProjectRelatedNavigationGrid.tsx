@@ -10,7 +10,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/entities/auth';
-import { projectQueries, ProjectSummaryCard, type ProjectSection } from '@/entities/project';
+import { projectQueries, type ProjectSection, ProjectSummaryCard } from '@/entities/project';
 import type { RoleName } from '@/entities/user';
 import { Alert, Button, Card, Icon, Spinner } from '@/shared/ui';
 

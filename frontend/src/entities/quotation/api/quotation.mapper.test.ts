@@ -6,9 +6,9 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  quotationMapper,
-  type QuotationDetailsResponse,
   type LineItemResponse,
+  type QuotationDetailsResponse,
+  quotationMapper,
 } from './quotation.mapper';
 import { expectDomainShape, expectTrimmedStrings } from '@/test/entity-test-utils';
 

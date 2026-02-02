@@ -11,10 +11,10 @@ import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ALL_ROLES,
+  type CreateUserInput,
   ROLE_DESCRIPTIONS,
   ROLE_LABELS,
   type RoleName,
-  type CreateUserInput,
 } from '@/entities/user';
 import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 import { useCreateUser } from '../model/use-create-user';

@@ -4,10 +4,13 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { taskFlowQueries } from './task-flow.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
 import type { TaskFlowResponse } from './task-flow.mapper';
+import { taskFlowMapper } from './task-flow.mapper';
+// Import mocked modules
+import { getTaskFlow, getTaskFlowById } from './get-task-flow';
 
 // Mock dependencies
 vi.mock('./get-task-flow', () => ({
@@ -28,10 +31,6 @@ vi.mock('./task-flow.mapper', () => ({
     })),
   },
 }));
-
-// Import mocked modules
-import { getTaskFlow, getTaskFlowById } from './get-task-flow';
-import { taskFlowMapper } from './task-flow.mapper';
 
 // =============================================================================
 // Test Fixtures - Minimal Response objects to satisfy TypeScript

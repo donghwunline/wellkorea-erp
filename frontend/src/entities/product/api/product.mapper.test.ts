@@ -6,10 +6,10 @@
 
 import { describe, expect, it } from 'vitest';
 import {
-  productMapper,
-  productTypeMapper,
   type ProductDetailResponse,
+  productMapper,
   type ProductSummaryResponse,
+  productTypeMapper,
   type ProductTypeResponse,
 } from './product.mapper';
 import { expectDomainShape } from '@/test/entity-test-utils';

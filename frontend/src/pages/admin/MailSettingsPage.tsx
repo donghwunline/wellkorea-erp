@@ -8,14 +8,7 @@ import { useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  Alert,
-  Button,
-  Card,
-  Icon,
-  PageHeader,
-  Spinner,
-} from '@/shared/ui';
+import { Alert, Button, Card, Icon, PageHeader, Spinner } from '@/shared/ui';
 import { mailConfigQueries } from '@/entities/mail-config';
 import { useConnectMail } from '@/features/mail/connect';
 import { useDisconnectMail } from '@/features/mail/disconnect';
@@ -43,9 +36,8 @@ function useOAuthCallbackResult() {
       const translationKey = `errors:codes.${errorCode}`;
       const translatedMessage = t(translationKey);
       // If translation exists, use it; otherwise use a generic message
-      const message = translatedMessage !== translationKey
-        ? translatedMessage
-        : t('errors:generic.unknown');
+      const message =
+        translatedMessage !== translationKey ? translatedMessage : t('errors:generic.unknown');
       return { type: 'error', text: message };
     }
     return null;
@@ -86,13 +78,13 @@ export function MailSettingsPage() {
 
   // Connect hook
   const { connect, isPending: isConnecting } = useConnectMail({
-    onError: (error) => setMessage({ type: 'error', text: error.message }),
+    onError: error => setMessage({ type: 'error', text: error.message }),
   });
 
   // Disconnect hook
   const { disconnect, isPending: isDisconnecting } = useDisconnectMail({
     onSuccess: () => setMessage({ type: 'success', text: 'Mail disconnected successfully' }),
-    onError: (error) => setMessage({ type: 'error', text: error.message }),
+    onError: error => setMessage({ type: 'error', text: error.message }),
   });
 
   const handleConnect = () => {
@@ -110,22 +102,19 @@ export function MailSettingsPage() {
       <PageHeader>
         <PageHeader.Title
           title={t('mailSettings.title', 'Mail Settings')}
-          description={t('mailSettings.description', 'Configure Microsoft Graph OAuth2 for sending emails')}
+          description={t(
+            'mailSettings.description',
+            'Configure Microsoft Graph OAuth2 for sending emails'
+          )}
         />
       </PageHeader>
 
       {/* Status messages */}
       {message && (
-        <Alert variant={message.type === 'success' ? 'success' : 'error'}>
-          {message.text}
-        </Alert>
+        <Alert variant={message.type === 'success' ? 'success' : 'error'}>{message.text}</Alert>
       )}
 
-      {queryError && (
-        <Alert variant="error">
-          Failed to load mail configuration status
-        </Alert>
-      )}
+      {queryError && <Alert variant="error">Failed to load mail configuration status</Alert>}
 
       {/* Loading state */}
       {isLoading && (
@@ -209,8 +198,8 @@ export function MailSettingsPage() {
               </div>
 
               <p className="text-sm text-steel-400">
-                Connect your Microsoft account to enable email sending via Microsoft Graph API.
-                You will be redirected to Microsoft to authorize the application.
+                Connect your Microsoft account to enable email sending via Microsoft Graph API. You
+                will be redirected to Microsoft to authorize the application.
               </p>
 
               <Button onClick={handleConnect} disabled={isConnecting}>
@@ -236,15 +225,15 @@ export function MailSettingsPage() {
         <h3 className="text-lg font-medium mb-4">About Mail Configuration</h3>
         <div className="space-y-2 text-sm text-steel-400">
           <p>
-            This application uses Microsoft Graph API to send emails on behalf of your Microsoft account.
+            This application uses Microsoft Graph API to send emails on behalf of your Microsoft
+            account.
           </p>
           <p>
-            When you click &quot;Connect&quot;, you will be redirected to Microsoft to authorize this application
-            to send emails. The authorization is stored securely and persists across application restarts.
+            When you click &quot;Connect&quot;, you will be redirected to Microsoft to authorize
+            this application to send emails. The authorization is stored securely and persists
+            across application restarts.
           </p>
-          <p>
-            You can disconnect at any time to revoke access.
-          </p>
+          <p>You can disconnect at any time to revoke access.</p>
         </div>
       </Card>
     </div>

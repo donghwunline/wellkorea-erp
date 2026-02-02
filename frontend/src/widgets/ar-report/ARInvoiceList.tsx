@@ -8,10 +8,10 @@
  * - Uses entities/invoice for AR report data
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Card, Icon, FilterBar, Badge } from '@/shared/ui';
+import { Badge, Card, FilterBar, Icon } from '@/shared/ui';
 import type { ARInvoice } from '@/entities/invoice';
 import { arReportRules, InvoiceStatusBadge } from '@/entities/invoice';
 import { formatDate } from '@/shared/lib/formatting';

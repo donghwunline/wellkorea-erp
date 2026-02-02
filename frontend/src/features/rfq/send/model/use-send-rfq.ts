@@ -9,7 +9,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { sendRfq, purchaseRequestQueries } from '@/entities/purchase-request';
+import { purchaseRequestQueries, sendRfq } from '@/entities/purchase-request';
 
 export interface UseSendRfqOptions {
   /** Called after successful RFQ send */

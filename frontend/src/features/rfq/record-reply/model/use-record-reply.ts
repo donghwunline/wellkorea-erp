@@ -8,7 +8,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { recordRfqReply, purchaseRequestQueries } from '@/entities/purchase-request';
+import { purchaseRequestQueries, recordRfqReply } from '@/entities/purchase-request';
 
 export interface UseRecordReplyOptions {
   /** Called after successfully recording vendor reply */

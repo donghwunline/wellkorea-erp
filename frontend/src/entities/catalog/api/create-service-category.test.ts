@@ -4,11 +4,11 @@
  * Tests for input validation, mapping, and API call.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createServiceCategory,
-  ServiceCategoryValidationError,
   type CreateServiceCategoryInput,
+  ServiceCategoryValidationError,
 } from './create-service-category';
 import { createCommandResult } from '@/test/entity-test-utils';
 

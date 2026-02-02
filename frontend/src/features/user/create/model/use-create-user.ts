@@ -8,7 +8,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createUser, userQueries, type CreateUserInput } from '@/entities/user';
+import { createUser, type CreateUserInput, userQueries } from '@/entities/user';
 
 /**
  * Options for useCreateUser hook.

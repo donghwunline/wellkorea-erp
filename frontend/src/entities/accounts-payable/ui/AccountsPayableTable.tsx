@@ -5,7 +5,7 @@
  * Action buttons should be added by parent (page/widget) via renderActions.
  */
 
-import { Table, Badge, type BadgeVariant } from '@/shared/ui';
+import { Badge, type BadgeVariant, Table } from '@/shared/ui';
 import { formatDate } from '@/shared/lib/formatting/date';
 import type { AccountsPayable } from '../model/accounts-payable';
 import { accountsPayableRules } from '../model/accounts-payable';

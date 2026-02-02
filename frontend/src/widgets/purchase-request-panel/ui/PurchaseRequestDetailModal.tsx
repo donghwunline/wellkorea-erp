@@ -13,32 +13,22 @@
  * Can import from: features, entities, shared
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Alert,
-  Badge,
-  LoadingState,
-  Modal,
-  ModalActions,
-  Button,
-  Icon,
-  Table,
-  ConfirmationModal,
-} from '@/shared/ui';
+import { Alert, Badge, Button, ConfirmationModal, Icon, LoadingState, Modal, ModalActions, Table, } from '@/shared/ui';
 import {
   purchaseRequestQueries,
   purchaseRequestRules,
-  rfqItemRules,
   PurchaseRequestStatus,
   PurchaseRequestStatusConfig,
+  type RfqItem,
+  rfqItemRules,
   RfqItemStatus,
   RfqItemStatusConfig,
-  type RfqItem,
 } from '@/entities/purchase-request';
 import { useAuth } from '@/entities/auth';
-import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatting';
+import { formatCurrency, formatDate, formatDateTime } from '@/shared/lib/formatting';
 import { useMarkNoResponse, useRejectRfq, useSubmitVendorSelection } from '@/features/rfq/manage';
 import { RecordReplyModal } from '@/features/rfq/record-reply';
 import { CreatePurchaseOrderModal } from '@/features/purchase-order/create';

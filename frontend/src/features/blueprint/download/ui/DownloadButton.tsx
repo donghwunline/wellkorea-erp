@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { httpClient, BLUEPRINT_ENDPOINTS } from '@/shared/api';
+import { BLUEPRINT_ENDPOINTS, httpClient } from '@/shared/api';
 import { triggerDownload } from '../model/use-download-attachment';
 import type { BlueprintAttachment } from '@/entities/blueprint-attachment';
 

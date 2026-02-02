@@ -14,7 +14,7 @@ import { Button, DatePicker, FormField, Modal, Spinner } from '@/shared/ui';
 import { ApiError } from '@/shared/api';
 import { ATTACHMENT_LIMITS } from '@/shared/lib/attachment-limits';
 import { catalogQueries, type ServiceCategoryListItem } from '@/entities/catalog';
-import { blueprintQueries, type BlueprintAttachment } from '@/entities/blueprint-attachment';
+import { type BlueprintAttachment, blueprintQueries } from '@/entities/blueprint-attachment';
 import type { CreateServicePurchaseRequestInput } from '@/entities/purchase-request';
 import { useCreateServiceRequest } from '../model/use-create-service-request';
 
@@ -168,7 +168,12 @@ export function ServiceRequestFormModal({
   const activeCategories = categories?.filter((c: ServiceCategoryListItem) => c.isActive) ?? [];
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={t('purchaseRequest.outsourceTitle')} size="md">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={t('purchaseRequest.outsourceTitle')}
+      size="md"
+    >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Service Category Dropdown */}
         <div className="flex flex-col gap-1">
@@ -182,7 +187,12 @@ export function ServiceRequestFormModal({
           ) : (
             <select
               value={formState.serviceCategoryId ?? ''}
-              onChange={e => setFormState(s => ({ ...s, serviceCategoryId: e.target.value ? Number(e.target.value) : null }))}
+              onChange={e =>
+                setFormState(s => ({
+                  ...s,
+                  serviceCategoryId: e.target.value ? Number(e.target.value) : null,
+                }))
+              }
               className="h-10 rounded-lg border border-steel-700/50 bg-steel-900/60 px-3 text-sm text-white focus:border-copper-500 focus:outline-none"
               required
             >
@@ -287,7 +297,8 @@ export function ServiceRequestFormModal({
               ))}
             </div>
             {/* Size warning for email limit */}
-            {selectedAttachments.reduce((sum, a) => sum + a.fileSize, 0) > ATTACHMENT_LIMITS.MAX_TOTAL_SIZE && (
+            {selectedAttachments.reduce((sum, a) => sum + a.fileSize, 0) >
+              ATTACHMENT_LIMITS.MAX_TOTAL_SIZE && (
               <p className="mt-2 text-xs text-amber-400">{t('purchaseRequest.sizeLimitWarning')}</p>
             )}
           </div>
@@ -305,11 +316,7 @@ export function ServiceRequestFormModal({
           <Button type="button" variant="secondary" onClick={handleClose}>
             {t('buttons.cancel')}
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            isLoading={createMutation.isPending}
-          >
+          <Button type="submit" variant="primary" isLoading={createMutation.isPending}>
             {t('purchaseRequest.outsourceTitle')}
           </Button>
         </div>

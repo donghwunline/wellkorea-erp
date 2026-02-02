@@ -11,7 +11,7 @@
 
 import { Badge } from '@/shared/ui';
 import type { RoleType } from '../model/role-type';
-import { ROLE_TYPE_LABELS, ROLE_TYPE_BADGE_VARIANTS } from '../model/role-type';
+import { ROLE_TYPE_BADGE_VARIANTS, ROLE_TYPE_LABELS } from '../model/role-type';
 
 export interface CompanyRoleBadgeProps {
   /**

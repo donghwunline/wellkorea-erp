@@ -13,10 +13,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal } from '@/shared/ui';
 import type { Material } from '@/entities/material';
 import {
-  materialQueries,
   createMaterial,
-  updateMaterial,
   type CreateMaterialInput,
+  materialQueries,
+  updateMaterial,
   type UpdateMaterialInput,
 } from '@/entities/material';
 import { MaterialForm, type MaterialFormData } from './MaterialForm';

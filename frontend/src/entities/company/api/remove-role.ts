@@ -5,7 +5,7 @@
  * Note: Cannot remove the last role from a company (enforced by backend).
  */
 
-import { httpClient, COMPANY_ENDPOINTS } from '@/shared/api';
+import { COMPANY_ENDPOINTS, httpClient } from '@/shared/api';
 import type { RoleType } from '../model/role-type';
 
 // =============================================================================

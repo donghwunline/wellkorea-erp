@@ -2,10 +2,11 @@
  * CompanyManagementPanel Widget Tests.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { CompanyManagementPanel } from './CompanyManagementPanel';
 
 const mockNavigate = vi.fn();
 
@@ -32,8 +33,6 @@ vi.mock('@/entities/company', async () => {
     },
   };
 });
-
-import { CompanyManagementPanel } from './CompanyManagementPanel';
 
 const mockCompaniesData = {
   data: [

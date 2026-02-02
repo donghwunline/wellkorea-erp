@@ -17,19 +17,19 @@
  * ```
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { Material, MaterialListItem } from '../model/material';
 import type { MaterialCategory, MaterialCategoryListItem } from '../model/material-category';
 import type { VendorMaterialOffering } from '../model/vendor-material-offering';
 import {
-  getMaterials,
+  getAllMaterialCategories,
   getAllMaterials,
+  getCurrentOfferingsForMaterial,
   getMaterial,
   getMaterialCategories,
-  getAllMaterialCategories,
   getMaterialCategory,
-  getCurrentOfferingsForMaterial,
+  getMaterials,
   getOfferingsForMaterial,
 } from './get-material';
 

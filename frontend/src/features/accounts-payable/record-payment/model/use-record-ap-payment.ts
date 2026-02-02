@@ -3,11 +3,8 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  recordPayment,
-  accountsPayableQueries,
-} from '@/entities/accounts-payable';
 import type { RecordPaymentInput, RecordPaymentResult } from '@/entities/accounts-payable';
+import { accountsPayableQueries, recordPayment } from '@/entities/accounts-payable';
 
 interface UseRecordAPPaymentOptions {
   onSuccess?: (result: RecordPaymentResult) => void;

@@ -4,11 +4,14 @@
  * Tests for query key structure, queryOptions configuration, and queryFn behavior.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { quotationQueries, type QuotationListQueryParams } from './quotation.queries';
-import { expectValidQueryOptions, expectQueryKey, invokeQueryFn } from '@/test/entity-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type QuotationListQueryParams, quotationQueries } from './quotation.queries';
+import { expectQueryKey, expectValidQueryOptions, invokeQueryFn } from '@/test/entity-test-utils';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { QuotationDetailsResponse } from './quotation.mapper';
+import { quotationMapper } from './quotation.mapper';
+// Import mocked modules
+import { getQuotation, getQuotations } from './get-quotation';
 
 // Mock dependencies
 vi.mock('./get-quotation', () => ({
@@ -22,10 +25,6 @@ vi.mock('./quotation.mapper', () => ({
     responseToListItem: vi.fn((response) => ({ id: response.id, status: response.status })),
   },
 }));
-
-// Import mocked modules
-import { getQuotation, getQuotations } from './get-quotation';
-import { quotationMapper } from './quotation.mapper';
 
 // =============================================================================
 // Test Fixtures - Minimal Response objects to satisfy TypeScript

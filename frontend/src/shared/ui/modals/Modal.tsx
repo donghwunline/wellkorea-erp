@@ -25,7 +25,7 @@
  * This will make the API cleaner and more predictable.
  */
 
-import { type ReactNode, useEffect, Children, isValidElement } from 'react';
+import { Children, isValidElement, type ReactNode, useEffect } from 'react';
 import { cn } from '@/shared/lib/cn';
 import { useFocusTrap } from '../lib/useFocusTrap';
 import { useBodyScrollLock } from '../lib/useBodyScrollLock';

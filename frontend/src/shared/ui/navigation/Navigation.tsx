@@ -25,10 +25,10 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { createContext, useContext, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/shared/lib/cn';
-import { Icon } from '../primitives/Icon';
 import type { IconName } from '../primitives/Icon';
-import { Badge } from '../primitives/Badge';
+import { Icon } from '../primitives/Icon';
 import type { BadgeVariant } from '../primitives/Badge';
+import { Badge } from '../primitives/Badge';
 
 // ============================================================================
 // Context

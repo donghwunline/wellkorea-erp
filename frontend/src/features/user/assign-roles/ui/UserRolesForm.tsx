@@ -7,7 +7,7 @@
  * FSD Layer: features/user/assign-roles/ui
  */
 
-import { type FormEvent, useState, useMemo } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ALL_ROLES,

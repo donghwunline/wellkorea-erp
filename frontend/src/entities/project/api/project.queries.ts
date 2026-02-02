@@ -20,8 +20,8 @@
  * ```
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
-import type { Project, ProjectListItem, ProjectStatus, ProjectSectionsSummary, ProjectKPI } from '../model/project';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
+import type { Project, ProjectKPI, ProjectListItem, ProjectSectionsSummary, ProjectStatus } from '../model/project';
 import { projectMapper } from './project.mapper';
 import { getProject, getProjectByJobCode, getProjects } from './get-project';
 import { projectSummaryApi } from './project-summary.api';

@@ -13,9 +13,9 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
   type AuditLog,
-  auditQueries,
   AuditLogTable,
   AuditLogTableSkeleton,
+  auditQueries,
 } from '@/entities/audit';
 import {
   Badge,
@@ -87,12 +87,14 @@ export function AuditLogPage() {
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
   // Translated action options
-  const actionOptions = useMemo(() =>
-    ALL_ACTIONS.map(action => ({
-      value: action,
-      label: t(`audit.actions.${action}`, { defaultValue: action })
-    })),
-  [t]);
+  const actionOptions = useMemo(
+    () =>
+      ALL_ACTIONS.map(action => ({
+        value: action,
+        label: t(`audit.actions.${action}`, { defaultValue: action }),
+      })),
+    [t]
+  );
 
   // Filter handlers
   const handleFilterChange = useCallback((key: keyof AuditFilters, value: string) => {
@@ -106,18 +108,15 @@ export function AuditLogPage() {
   }, []);
 
   // Server state via Query Factory
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery(auditQueries.list({
-    page,
-    size: 10,
-    sort: 'createdAt,desc',
-    entityType: filters.entityType || undefined,
-    action: filters.action || undefined,
-  }));
+  const { data, isLoading, error, refetch } = useQuery(
+    auditQueries.list({
+      page,
+      size: 10,
+      sort: 'createdAt,desc',
+      entityType: filters.entityType || undefined,
+      action: filters.action || undefined,
+    })
+  );
 
   // Utilities
   const formatTimestamp = (dateStr: string) => {
@@ -228,7 +227,8 @@ export function AuditLogPage() {
           size="lg"
         >
           <p className="mb-6 text-sm text-steel-400">
-            {t('audit.details.entry', { id: selectedLog.id })} - {formatTimestamp(selectedLog.createdAt)}
+            {t('audit.details.entry', { id: selectedLog.id })} -{' '}
+            {formatTimestamp(selectedLog.createdAt)}
           </p>
 
           <div className="space-y-4">

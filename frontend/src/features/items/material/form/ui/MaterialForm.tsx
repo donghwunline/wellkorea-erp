@@ -7,12 +7,12 @@
  * FSD Layer: features
  */
 
-import { useCallback, useState, type FormEvent } from 'react';
+import { type FormEvent, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import type { Material } from '@/entities/material';
 import { materialQueries } from '@/entities/material';
-import { Button, FormField, ModalActions, Alert } from '@/shared/ui';
+import { Alert, Button, FormField, ModalActions } from '@/shared/ui';
 
 // =============================================================================
 // TYPES

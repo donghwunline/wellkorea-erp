@@ -6,7 +6,7 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
-import { useAuth, type LoginCredentials } from '@/entities/auth';
+import { type LoginCredentials, useAuth } from '@/entities/auth';
 
 /**
  * Options for useLogin hook.

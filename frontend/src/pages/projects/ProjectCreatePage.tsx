@@ -14,7 +14,7 @@ import type {
   UpdateProjectInput,
 } from '@/entities/project';
 import { Card, Icon, PageHeader } from '@/shared/ui';
-import { useCreateProject, JobCodeSuccessModal } from '@/features/project/create';
+import { JobCodeSuccessModal, useCreateProject } from '@/features/project/create';
 import { ProjectForm } from '@/features/project/form';
 
 export function ProjectCreatePage() {
@@ -78,7 +78,9 @@ export function ProjectCreatePage() {
       {/* Form Card */}
       <Card className="mx-auto max-w-2xl">
         <div className="p-6">
-          <h2 className="mb-6 text-lg font-semibold text-white">{t('projectCreate.projectDetails')}</h2>
+          <h2 className="mb-6 text-lg font-semibold text-white">
+            {t('projectCreate.projectDetails')}
+          </h2>
           <ProjectForm
             mode="create"
             onSubmit={handleSubmit}

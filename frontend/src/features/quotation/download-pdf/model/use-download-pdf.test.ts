@@ -2,9 +2,10 @@
  * useDownloadPdf Hook Tests.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { createQueryWrapper } from '@/test/entity-test-utils';
+import { useDownloadPdf } from './use-download-pdf';
 
 // Mock the entity's downloadQuotationPdf function directly
 const mockDownloadQuotationPdf = vi.hoisted(() => vi.fn());
@@ -16,8 +17,6 @@ vi.mock('@/entities/quotation', async () => {
     downloadQuotationPdf: mockDownloadQuotationPdf,
   };
 });
-
-import { useDownloadPdf } from './use-download-pdf';
 
 describe('useDownloadPdf', () => {
   beforeEach(() => {
@@ -83,10 +82,7 @@ describe('useDownloadPdf', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockDownloadQuotationPdf).toHaveBeenCalledWith(
-        1,
-        'custom-quotation.pdf'
-      );
+      expect(mockDownloadQuotationPdf).toHaveBeenCalledWith(1, 'custom-quotation.pdf');
     });
 
     it('should set isError true on failure', async () => {

@@ -8,7 +8,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { receivePurchaseOrder, purchaseOrderQueries } from '@/entities/purchase-order';
+import { purchaseOrderQueries, receivePurchaseOrder } from '@/entities/purchase-order';
 import { purchaseRequestQueries } from '@/entities/purchase-request';
 
 export interface UseReceivePurchaseOrderOptions {

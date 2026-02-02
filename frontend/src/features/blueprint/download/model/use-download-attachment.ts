@@ -4,8 +4,8 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { blueprintQueries } from '@/entities/blueprint-attachment';
 import type { BlueprintAttachment } from '@/entities/blueprint-attachment';
+import { blueprintQueries } from '@/entities/blueprint-attachment';
 
 interface UseDownloadAttachmentOptions {
   enabled?: boolean;

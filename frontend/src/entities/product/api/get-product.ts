@@ -5,7 +5,7 @@
  * Used by query factory and command functions.
  */
 
-import { httpClient, PRODUCT_ENDPOINTS, type PagedResponse } from '@/shared/api';
+import { httpClient, type PagedResponse, PRODUCT_ENDPOINTS } from '@/shared/api';
 import type { PaginationMetadata } from '@/shared/lib/pagination';
 import type {
   ProductDetailResponse,

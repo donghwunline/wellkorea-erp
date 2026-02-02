@@ -17,7 +17,7 @@
  * ```
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { Paginated } from '@/shared/lib/pagination';
 import type { UserDetails } from '../model/user';
 import { getUserList } from './get-user-list';

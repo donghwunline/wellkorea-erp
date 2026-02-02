@@ -18,7 +18,7 @@
  * ```
  */
 
-import { useState, useCallback, type KeyboardEvent } from 'react';
+import { type KeyboardEvent, useCallback, useState } from 'react';
 import { cn } from '@/shared/lib/cn';
 import { Icon } from '../primitives/Icon';
 

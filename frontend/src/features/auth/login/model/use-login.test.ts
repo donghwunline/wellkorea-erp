@@ -2,9 +2,10 @@
  * useLogin Hook Tests.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { createQueryWrapper } from '@/test/entity-test-utils';
+import { useLogin } from './use-login';
 
 const mockLogin = vi.hoisted(() => vi.fn());
 
@@ -24,8 +25,6 @@ vi.mock('@/entities/auth', async () => {
     }),
   };
 });
-
-import { useLogin } from './use-login';
 
 describe('useLogin', () => {
   beforeEach(() => {

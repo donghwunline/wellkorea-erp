@@ -15,20 +15,16 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   Button,
+  Card,
   Icon,
   IconButton,
   LoadingState,
   PageHeader,
   Pagination,
   SearchBar,
-  Card,
   Table,
 } from '@/shared/ui';
-import {
-  projectQueries,
-  ProjectTable,
-  type ProjectListItem,
-} from '@/entities/project';
+import { type ProjectListItem, projectQueries, ProjectTable } from '@/entities/project';
 import { usePaginatedSearch } from '@/shared/lib/pagination';
 
 export function ProjectListPage() {
@@ -134,7 +130,9 @@ export function ProjectListPage() {
                 <Table.HeaderCell>{t('fields.contact')}</Table.HeaderCell>
                 <Table.HeaderCell>{t('table.headers.dueDate')}</Table.HeaderCell>
                 <Table.HeaderCell>{t('table.headers.status')}</Table.HeaderCell>
-                <Table.HeaderCell className="text-right">{t('table.headers.actions')}</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">
+                  {t('table.headers.actions')}
+                </Table.HeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>

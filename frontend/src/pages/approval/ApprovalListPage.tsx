@@ -19,8 +19,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Alert, Card, FilterBar, LoadingState, PageHeader, Pagination } from '@/shared/ui';
 import {
   type Approval,
-  ApprovalRequestCard,
   approvalQueries,
+  ApprovalRequestCard,
   type ApprovalStatus,
 } from '@/entities/approval';
 import { useApproveApproval } from '@/features/approval/approve';
@@ -31,12 +31,15 @@ export function ApprovalListPage() {
   const navigate = useNavigate();
 
   // Status filter options
-  const statusOptions = useMemo(() => [
-    { value: '', label: t('list.allStatuses') },
-    { value: 'PENDING', label: t('status.PENDING') },
-    { value: 'APPROVED', label: t('status.APPROVED') },
-    { value: 'REJECTED', label: t('status.REJECTED') },
-  ], [t]);
+  const statusOptions = useMemo(
+    () => [
+      { value: '', label: t('list.allStatuses') },
+      { value: 'PENDING', label: t('status.PENDING') },
+      { value: 'APPROVED', label: t('status.APPROVED') },
+      { value: 'REJECTED', label: t('status.REJECTED') },
+    ],
+    [t]
+  );
 
   // Page state
   const [page, setPage] = useState(0);
@@ -159,10 +162,7 @@ export function ApprovalListPage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title={t('list.title')}
-          description={t('description')}
-        />
+        <PageHeader.Title title={t('list.title')} description={t('description')} />
       </PageHeader>
 
       {/* Filters */}

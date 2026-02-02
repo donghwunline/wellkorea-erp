@@ -10,12 +10,12 @@
  * - Invalidation: queryClient.invalidateQueries({ queryKey: companyQueries.lists() })
  */
 
-import { queryOptions, keepPreviousData } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions } from '@tanstack/react-query';
 import type { Company, CompanyListItem } from '../model/company';
 import type { RoleType } from '../model/role-type';
 import type { Paginated } from '@/shared/lib/pagination';
 import { companyMapper } from './company.mapper';
-import { getCompany, getCompanies } from './get-company';
+import { getCompanies, getCompany } from './get-company';
 
 /**
  * Parameters for company list query.

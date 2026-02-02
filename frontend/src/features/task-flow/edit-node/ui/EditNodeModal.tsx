@@ -9,7 +9,7 @@
  * - Attachment panel is passed via render prop to avoid feature→widget import.
  */
 
-import { useEffect, type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, DatePicker, FormField, Modal } from '@/shared/ui';
 import { type TaskNode, taskNodeRules } from '@/entities/task-flow';
@@ -84,7 +84,12 @@ export function EditNodeModal({
   const progressBarClass = taskNodeRules.getProgressBarClass(formState.progress);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? t('taskFlow.editTask') : t('taskFlow.addTask')} size="md">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? t('taskFlow.editTask') : t('taskFlow.addTask')}
+      size="md"
+    >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Title Field */}
         <FormField

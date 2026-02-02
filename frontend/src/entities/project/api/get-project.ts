@@ -5,16 +5,9 @@
  * Returns raw responses - mapping to domain models happens in query factory.
  */
 
-import { httpClient, PROJECT_ENDPOINTS, type PagedResponse } from '@/shared/api';
-import {
-  transformPagedResponse,
-  type Paginated,
-} from '@/shared/lib/pagination';
-import type {
-  ProjectDetailsResponse,
-  ProjectListItemResponse,
-  ProjectListParams,
-} from './project.mapper';
+import { httpClient, type PagedResponse, PROJECT_ENDPOINTS } from '@/shared/api';
+import { type Paginated, transformPagedResponse, } from '@/shared/lib/pagination';
+import type { ProjectDetailsResponse, ProjectListItemResponse, ProjectListParams, } from './project.mapper';
 
 /**
  * Get a single project by ID.

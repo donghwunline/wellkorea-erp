@@ -101,9 +101,7 @@ vi.mock('@/features/project/form', () => ({
     return (
       <div data-testid="project-form">
         <span data-testid="form-mode">{props.mode as string}</span>
-        <span data-testid="form-initial-name">
-          {(props.initialData as Project)?.projectName}
-        </span>
+        <span data-testid="form-initial-name">{(props.initialData as Project)?.projectName}</span>
         <button
           data-testid="form-submit"
           onClick={() =>

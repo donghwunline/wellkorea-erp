@@ -13,22 +13,17 @@
  * - Uses features/delivery/create for mutation
  */
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { Alert, Button, Card, FormField, Icon, Input, LoadingState, PageHeader } from '@/shared/ui';
+import { type LineItem, quotationQueries, QuotationStatus } from '@/entities/quotation';
 import {
-  Alert,
-  Button,
-  Card,
-  FormField,
-  Icon,
-  Input,
-  LoadingState,
-  PageHeader,
-} from '@/shared/ui';
-import { quotationQueries, QuotationStatus, type LineItem } from '@/entities/quotation';
-import { deliveryQueries, deliveryRules, type CreateDeliveryLineItemInput } from '@/entities/delivery';
+  type CreateDeliveryLineItemInput,
+  deliveryQueries,
+  deliveryRules,
+} from '@/entities/delivery';
 import { useCreateDelivery } from '@/features/delivery/create';
 
 interface DeliveryLineItemFormData {
@@ -74,10 +69,7 @@ export function DeliveryCreatePage() {
   );
 
   // Fetch existing deliveries for the project
-  const {
-    data: deliveries = [],
-    isLoading: loadingDeliveries,
-  } = useQuery(
+  const { data: deliveries = [], isLoading: loadingDeliveries } = useQuery(
     deliveryQueries.list({ projectId: projectIdNum })
   );
 
@@ -88,10 +80,7 @@ export function DeliveryCreatePage() {
   }, [quotationsData]);
 
   // Fetch full quotation detail to get line items
-  const {
-    data: quotationDetail,
-    isLoading: loadingQuotationDetail,
-  } = useQuery({
+  const { data: quotationDetail, isLoading: loadingQuotationDetail } = useQuery({
     ...quotationQueries.detail(acceptedQuotation?.id ?? 0),
     enabled: !!acceptedQuotation?.id,
   });
@@ -129,16 +118,13 @@ export function DeliveryCreatePage() {
   });
 
   // Handle quantity change
-  const handleQuantityChange = useCallback(
-    (productId: number, value: string) => {
-      const numValue = parseFloat(value) || 0;
-      setQuantitiesToDeliver(prev => ({
-        ...prev,
-        [productId]: numValue,
-      }));
-    },
-    []
-  );
+  const handleQuantityChange = useCallback((productId: number, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setQuantitiesToDeliver(prev => ({
+      ...prev,
+      [productId]: numValue,
+    }));
+  }, []);
 
   // Handle form submit
   const handleSubmit = useCallback(
@@ -170,7 +156,10 @@ export function DeliveryCreatePage() {
         const qtyToDeliver = quantitiesToDeliver[item.productId] || 0;
         if (qtyToDeliver > item.remainingQuantity) {
           setError(
-            t('validation.exceedsRemaining', { product: item.productName, remaining: item.remainingQuantity })
+            t('validation.exceedsRemaining', {
+              product: item.productName,
+              remaining: item.remainingQuantity,
+            })
           );
           return;
         }
@@ -184,7 +173,16 @@ export function DeliveryCreatePage() {
         notes: notes || undefined,
       });
     },
-    [projectIdNum, acceptedQuotation, deliveryDate, lineItemsData, quantitiesToDeliver, notes, createDelivery, t]
+    [
+      projectIdNum,
+      acceptedQuotation,
+      deliveryDate,
+      lineItemsData,
+      quantitiesToDeliver,
+      notes,
+      createDelivery,
+      t,
+    ]
   );
 
   // Loading state
@@ -225,9 +223,7 @@ export function DeliveryCreatePage() {
         <Card className="p-12 text-center">
           <Icon name="document" className="mx-auto mb-4 h-12 w-12 text-steel-600" />
           <h3 className="text-lg font-semibold text-white">{t('create.noQuotation')}</h3>
-          <p className="mt-2 text-steel-400">
-            {t('create.noQuotationDesc')}
-          </p>
+          <p className="mt-2 text-steel-400">{t('create.noQuotationDesc')}</p>
           <Button
             variant="secondary"
             className="mt-6"
@@ -246,9 +242,7 @@ export function DeliveryCreatePage() {
         <Card className="p-12 text-center">
           <Icon name="check-circle" className="mx-auto mb-4 h-12 w-12 text-green-500" />
           <h3 className="text-lg font-semibold text-white">{t('create.allDelivered')}</h3>
-          <p className="mt-2 text-steel-400">
-            {t('create.allDeliveredDesc')}
-          </p>
+          <p className="mt-2 text-steel-400">{t('create.allDeliveredDesc')}</p>
           <Button
             variant="secondary"
             className="mt-6"
@@ -265,15 +259,9 @@ export function DeliveryCreatePage() {
     <div className="min-h-screen bg-steel-950 p-8">
       {/* Header */}
       <PageHeader>
-        <PageHeader.Title
-          title={t('create.title')}
-          description={t('create.description')}
-        />
+        <PageHeader.Title title={t('create.title')} description={t('create.description')} />
         <PageHeader.Actions>
-          <Button
-            variant="ghost"
-            onClick={() => navigate(`/projects/${projectId}`)}
-          >
+          <Button variant="ghost" onClick={() => navigate(`/projects/${projectId}`)}>
             {tCommon('buttons.cancel')}
           </Button>
         </PageHeader.Actions>
@@ -314,9 +302,7 @@ export function DeliveryCreatePage() {
 
         <Card className="p-6">
           <h3 className="mb-4 text-lg font-semibold text-white">{t('lineItems.title')}</h3>
-          <p className="mb-6 text-sm text-steel-400">
-            {t('lineItems.enterQuantityHint')}
-          </p>
+          <p className="mb-6 text-sm text-steel-400">{t('lineItems.enterQuantityHint')}</p>
 
           {/* Line items table */}
           <div className="overflow-x-auto">
@@ -400,10 +386,7 @@ export function DeliveryCreatePage() {
             >
               {tCommon('buttons.cancel')}
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || totalToDeliver === 0}
-            >
+            <Button type="submit" disabled={isSubmitting || totalToDeliver === 0}>
               {isSubmitting ? t('create.saving') : t('create.createButton')}
             </Button>
           </div>

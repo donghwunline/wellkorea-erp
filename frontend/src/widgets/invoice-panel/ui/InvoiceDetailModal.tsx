@@ -24,17 +24,17 @@ import {
   Table,
 } from '@/shared/ui';
 import {
+  getPaymentMethodOptions,
   invoiceQueries,
+  invoiceRules,
   InvoiceStatusBadge,
   PaymentHistoryTable,
-  invoiceRules,
-  getPaymentMethodOptions,
   type PaymentMethod,
 } from '@/entities/invoice';
 import { IssueInvoiceModal } from '@/features/invoice/issue';
 import { useCancelInvoice } from '@/features/invoice/cancel';
 import { useRecordPayment } from '@/features/payment/record';
-import { formatDate, formatDateTime, formatCurrency } from '@/shared/lib/formatting';
+import { formatCurrency, formatDate, formatDateTime } from '@/shared/lib/formatting';
 import { useAuth } from '@/entities/auth';
 import { httpClient } from '@/shared/api';
 import { INVOICE_ENDPOINTS } from '@/shared/config/endpoints';

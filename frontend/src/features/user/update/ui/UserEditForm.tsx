@@ -7,9 +7,9 @@
  * FSD Layer: features/user/update/ui
  */
 
-import { type FormEvent, useState, useMemo } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { UserDetails, UpdateUserInput } from '@/entities/user';
+import type { UpdateUserInput, UserDetails } from '@/entities/user';
 import { Button, ErrorAlert, FormField, Modal } from '@/shared/ui';
 import { useUpdateUser } from '../model/use-update-user';
 

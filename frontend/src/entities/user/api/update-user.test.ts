@@ -5,7 +5,7 @@
  * Note: User update validation is handled by the backend.
  */
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { updateUser, type UpdateUserInput } from './update-user';
 
 // =============================================================================

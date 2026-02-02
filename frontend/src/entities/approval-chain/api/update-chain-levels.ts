@@ -4,7 +4,7 @@
  * Encapsulates mapping and API call for updating approval chain levels.
  */
 
-import { httpClient, APPROVAL_CHAIN_ENDPOINTS } from '@/shared/api';
+import { APPROVAL_CHAIN_ENDPOINTS, httpClient } from '@/shared/api';
 import type { ChainLevelInput } from '../model/chain-template';
 import type { CommandResult } from './chain-template.mapper';
 
