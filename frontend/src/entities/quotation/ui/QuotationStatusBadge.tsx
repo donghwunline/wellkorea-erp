@@ -1,53 +1,30 @@
 /**
- * Quotation Status Badge.
- *
- * Pure display component for quotation status.
- * Uses domain model status and configuration.
- *
- * Entity UI rules:
- * - No router dependencies
- * - No mutation hooks
- * - Receives all data via props
+ * Quotation status badge component.
+ * Thin wrapper around generic StatusBadge with quotation-specific configuration.
  */
 
-import { Badge } from '@/shared/ui';
-import { type QuotationStatus, QuotationStatusConfig } from '../model/quotation-status';
+import { StatusBadge } from '@/shared/ui';
+import type { QuotationStatus } from '../model/quotation-status';
+import { QuotationStatusConfig } from '../model/quotation-status';
 
 export interface QuotationStatusBadgeProps {
-  /**
-   * Quotation status to display.
-   */
   status: QuotationStatus;
-
-  /**
-   * Optional size variant.
-   */
   size?: 'sm' | 'md';
-
-  /**
-   * Optional additional className.
-   */
   className?: string;
 }
 
-/**
- * Status badge component for quotations.
- *
- * @example
- * ```tsx
- * <QuotationStatusBadge status={quotation.status} />
- * ```
- */
 export function QuotationStatusBadge({
   status,
-  size = 'md',
+  size,
   className,
 }: Readonly<QuotationStatusBadgeProps>) {
-  const config = QuotationStatusConfig[status];
-
   return (
-    <Badge variant={config.color} size={size} className={className}>
-      {config.labelKo}
-    </Badge>
+    <StatusBadge
+      status={status}
+      config={QuotationStatusConfig}
+      i18nKey="quotations:status"
+      size={size}
+      className={className}
+    />
   );
 }

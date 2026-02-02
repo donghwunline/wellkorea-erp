@@ -1,6 +1,9 @@
 /**
  * Invoice status enum and display configuration.
+ * Labels are handled via i18n (invoices.json status section).
  */
+
+import type { BadgeVariant } from '@/shared/ui';
 
 export type InvoiceStatus =
   | 'DRAFT'
@@ -11,59 +14,22 @@ export type InvoiceStatus =
   | 'CANCELLED';
 
 export interface InvoiceStatusConfig {
-  label: string;
-  labelKo: string;
-  color: 'gray' | 'blue' | 'yellow' | 'green' | 'red' | 'orange';
-  description: string;
+  color: BadgeVariant;
 }
-
-export const invoiceStatusConfig: Record<InvoiceStatus, InvoiceStatusConfig> = {
-  DRAFT: {
-    label: 'Draft',
-    labelKo: '작성중',
-    color: 'gray',
-    description: 'Invoice is being prepared',
-  },
-  ISSUED: {
-    label: 'Issued',
-    labelKo: '발행됨',
-    color: 'blue',
-    description: 'Invoice has been issued to customer',
-  },
-  PARTIALLY_PAID: {
-    label: 'Partially Paid',
-    labelKo: '일부납부',
-    color: 'yellow',
-    description: 'Customer has made partial payment',
-  },
-  PAID: {
-    label: 'Paid',
-    labelKo: '완납',
-    color: 'green',
-    description: 'Invoice has been fully paid',
-  },
-  OVERDUE: {
-    label: 'Overdue',
-    labelKo: '연체',
-    color: 'red',
-    description: 'Payment is past due date',
-  },
-  CANCELLED: {
-    label: 'Cancelled',
-    labelKo: '취소됨',
-    color: 'orange',
-    description: 'Invoice has been cancelled',
-  },
-};
 
 /**
- * Get display label for status.
+ * Display configuration for each invoice status.
+ * Colors map to design system Badge variants.
+ * Labels are in locales/{lang}/invoices.json under "status" key.
  */
-export function getStatusLabel(status: InvoiceStatus, korean = false): string {
-  return korean
-    ? invoiceStatusConfig[status].labelKo
-    : invoiceStatusConfig[status].label;
-}
+export const InvoiceStatusConfigs: Record<InvoiceStatus, InvoiceStatusConfig> = {
+  DRAFT: { color: 'steel' },
+  ISSUED: { color: 'info' },
+  PARTIALLY_PAID: { color: 'warning' },
+  PAID: { color: 'success' },
+  OVERDUE: { color: 'danger' },
+  CANCELLED: { color: 'copper' },
+};
 
 /**
  * Get color for status badge.
@@ -71,7 +37,7 @@ export function getStatusLabel(status: InvoiceStatus, korean = false): string {
 export function getStatusColor(
   status: InvoiceStatus
 ): InvoiceStatusConfig['color'] {
-  return invoiceStatusConfig[status].color;
+  return InvoiceStatusConfigs[status].color;
 }
 
 /**

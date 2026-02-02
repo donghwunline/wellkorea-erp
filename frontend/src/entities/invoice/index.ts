@@ -14,8 +14,7 @@ export { invoiceRules } from './model/invoice';
 
 export type { InvoiceStatus } from './model/invoice-status';
 export {
-  invoiceStatusConfig,
-  getStatusLabel,
+  InvoiceStatusConfigs,
   getStatusColor,
   canTransitionTo,
   canReceivePayment,

@@ -5,36 +5,27 @@
  * - PENDING → DELIVERED (normal delivery flow)
  * - DELIVERED → RETURNED (product return)
  * - PENDING → RETURNED (cancelled before delivery)
+ *
+ * Labels are handled via i18n (deliveries.json status section).
  */
+
+import type { BadgeVariant } from '@/shared/ui';
 
 export type DeliveryStatus = 'PENDING' | 'DELIVERED' | 'RETURNED';
 
 export interface DeliveryStatusConfig {
-  label: string;
-  labelKo: string;
-  color: 'yellow' | 'green' | 'red';
-  description: string;
+  color: BadgeVariant;
 }
 
-export const DELIVERY_STATUS_CONFIG: Record<DeliveryStatus, DeliveryStatusConfig> = {
-  PENDING: {
-    label: 'Pending',
-    labelKo: '대기',
-    color: 'yellow',
-    description: 'Delivery is scheduled but not yet completed',
-  },
-  DELIVERED: {
-    label: 'Delivered',
-    labelKo: '출고완료',
-    color: 'green',
-    description: 'Products have been delivered to customer',
-  },
-  RETURNED: {
-    label: 'Returned',
-    labelKo: '반품',
-    color: 'red',
-    description: 'Products were returned (for tracking refunds/corrections)',
-  },
+/**
+ * Display configuration for each delivery status.
+ * Colors map to design system Badge variants.
+ * Labels are in locales/{lang}/deliveries.json under "status" key.
+ */
+export const DeliveryStatusConfig: Record<DeliveryStatus, DeliveryStatusConfig> = {
+  PENDING: { color: 'warning' },
+  DELIVERED: { color: 'success' },
+  RETURNED: { color: 'danger' },
 };
 
 /**

@@ -1,49 +1,38 @@
 /**
  * Invoice status badge component.
- * Displays invoice status with appropriate color coding.
- * Optionally shows warning overlay for outdated invoices.
+ * Thin wrapper around generic StatusBadge with invoice-specific configuration.
  */
 
-import { Badge, type BadgeVariant, Icon } from '@/shared/ui';
+import { useTranslation } from 'react-i18next';
+import { StatusBadge } from '@/shared/ui';
 import type { InvoiceStatus } from '../model/invoice-status';
-import { invoiceStatusConfig } from '../model/invoice-status';
+import { InvoiceStatusConfigs } from '../model/invoice-status';
 
 interface InvoiceStatusBadgeProps {
   status: InvoiceStatus;
-  showKorean?: boolean;
   /** Whether invoice is outdated (references old quotation version) */
   isOutdated?: boolean;
+  size?: 'sm' | 'md';
+  className?: string;
 }
 
 export function InvoiceStatusBadge({
   status,
-  showKorean = true,
   isOutdated = false,
-}: InvoiceStatusBadgeProps) {
-  const config = invoiceStatusConfig[status];
-
-  const variantMap: Record<typeof config.color, BadgeVariant> = {
-    gray: 'steel',
-    blue: 'info',
-    yellow: 'warning',
-    green: 'success',
-    red: 'danger',
-    orange: 'warning',
-  };
+  size,
+  className,
+}: Readonly<InvoiceStatusBadgeProps>) {
+  const { t } = useTranslation('invoices');
 
   return (
-    <span className="inline-flex items-center gap-1.5">
-      <Badge variant={variantMap[config.color]} dot>
-        {showKorean ? config.labelKo : config.label}
-      </Badge>
-      {isOutdated && (
-        <span
-          className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-xs text-amber-400"
-          title="Invoice references an outdated quotation version"
-        >
-          <Icon name="warning" className="h-3 w-3" />
-        </span>
-      )}
-    </span>
+    <StatusBadge
+      status={status}
+      config={InvoiceStatusConfigs}
+      i18nKey="invoices:status"
+      size={size}
+      dot
+      warning={isOutdated ? t('warnings.outdatedQuotation') : undefined}
+      className={className}
+    />
   );
 }

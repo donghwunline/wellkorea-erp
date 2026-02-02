@@ -1,5 +1,6 @@
 /**
  * Purchase request status constants and configuration.
+ * Labels are handled via i18n (purchasing.json purchaseRequest.status section).
  */
 
 export const PurchaseRequestStatus = {
@@ -15,53 +16,20 @@ export const PurchaseRequestStatus = {
 export type PurchaseRequestStatus = typeof PurchaseRequestStatus[keyof typeof PurchaseRequestStatus];
 
 export interface StatusConfig {
-  readonly label: string;
-  readonly labelKo: string;
   readonly color: 'steel' | 'info' | 'success' | 'warning' | 'danger';
-  readonly description: string;
 }
 
+/**
+ * Display configuration for each purchase request status.
+ * Colors map to design system Badge variants.
+ * Labels are in locales/{lang}/purchasing.json under "purchaseRequest.status" key.
+ */
 export const PurchaseRequestStatusConfig: Record<PurchaseRequestStatus, StatusConfig> = {
-  [PurchaseRequestStatus.DRAFT]: {
-    label: 'Draft',
-    labelKo: '초안',
-    color: 'steel',
-    description: 'Request created, not yet sent to vendors',
-  },
-  [PurchaseRequestStatus.RFQ_SENT]: {
-    label: 'RFQ Sent',
-    labelKo: 'RFQ 발송',
-    color: 'info',
-    description: 'RFQ sent to vendors, awaiting quotes',
-  },
-  [PurchaseRequestStatus.PENDING_VENDOR_APPROVAL]: {
-    label: 'Pending Approval',
-    labelKo: '업체선정 승인대기',
-    color: 'warning',
-    description: 'Vendor selection awaiting approval',
-  },
-  [PurchaseRequestStatus.VENDOR_SELECTED]: {
-    label: 'Vendor Selected',
-    labelKo: '업체 선정',
-    color: 'warning',
-    description: 'Vendor selected, awaiting PO creation',
-  },
-  [PurchaseRequestStatus.ORDERED]: {
-    label: 'Ordered',
-    labelKo: '발주 완료',
-    color: 'info',
-    description: 'PO created, awaiting delivery',
-  },
-  [PurchaseRequestStatus.CLOSED]: {
-    label: 'Closed',
-    labelKo: '완료',
-    color: 'success',
-    description: 'Purchase order received, request closed',
-  },
-  [PurchaseRequestStatus.CANCELED]: {
-    label: 'Canceled',
-    labelKo: '취소',
-    color: 'danger',
-    description: 'Request cancelled',
-  },
+  [PurchaseRequestStatus.DRAFT]: { color: 'steel' },
+  [PurchaseRequestStatus.RFQ_SENT]: { color: 'info' },
+  [PurchaseRequestStatus.PENDING_VENDOR_APPROVAL]: { color: 'warning' },
+  [PurchaseRequestStatus.VENDOR_SELECTED]: { color: 'warning' },
+  [PurchaseRequestStatus.ORDERED]: { color: 'info' },
+  [PurchaseRequestStatus.CLOSED]: { color: 'success' },
+  [PurchaseRequestStatus.CANCELED]: { color: 'danger' },
 };

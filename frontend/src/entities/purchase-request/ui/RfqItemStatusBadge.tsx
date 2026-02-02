@@ -1,29 +1,30 @@
 /**
- * RFQ Item Status Badge component.
- *
- * Displays the status of an RFQ item as a colored badge.
+ * RFQ item status badge component.
+ * Thin wrapper around generic StatusBadge with RFQ-item-specific configuration.
  */
 
-import { Badge } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui';
 import type { RfqItemStatus } from '../model/rfq-item-status';
 import { RfqItemStatusConfig } from '../model/rfq-item-status';
 
 interface RfqItemStatusBadgeProps {
-  /** Status to display */
   status: RfqItemStatus;
-  /** Show Korean label instead of English */
-  korean?: boolean;
+  size?: 'sm' | 'md';
+  className?: string;
 }
 
-/**
- * Badge showing RFQ item status with appropriate color.
- */
-export function RfqItemStatusBadge({ status, korean = false }: Readonly<RfqItemStatusBadgeProps>) {
-  const config = RfqItemStatusConfig[status];
-
+export function RfqItemStatusBadge({
+  status,
+  size,
+  className,
+}: Readonly<RfqItemStatusBadgeProps>) {
   return (
-    <Badge variant={config.color}>
-      {korean ? config.labelKo : config.label}
-    </Badge>
+    <StatusBadge
+      status={status}
+      config={RfqItemStatusConfig}
+      i18nKey="purchasing:rfq.itemStatus"
+      size={size}
+      className={className}
+    />
   );
 }

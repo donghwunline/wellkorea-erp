@@ -83,3 +83,10 @@ export { cancelPurchaseRequest } from './api/cancel-purchase-request';
 
 export { linkAttachment, unlinkAttachment } from './api/pr-attachments';
 export type { LinkAttachmentInput, UnlinkAttachmentInput } from './api/pr-attachments';
+
+// =============================================================================
+// UI COMPONENTS
+// =============================================================================
+
+export { PurchaseRequestStatusBadge } from './ui/PurchaseRequestStatusBadge';
+export { RfqItemStatusBadge } from './ui/RfqItemStatusBadge';

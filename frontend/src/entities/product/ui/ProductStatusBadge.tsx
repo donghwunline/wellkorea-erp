@@ -1,15 +1,11 @@
 /**
- * Product Status Badge.
- *
- * Visual indicator for product active/inactive status.
- *
- * Entity UI rules:
- * - Pure display component
- * - No data fetching or mutations
- * - All data via props
+ * Product status badge component.
+ * Thin wrapper around generic StatusBadge with product-specific configuration.
  */
 
-import { Badge } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui';
+import type { ProductActiveStatus } from '../model/product-status';
+import { ProductActiveStatusConfig } from '../model/product-status';
 
 export interface ProductStatusBadgeProps {
   /**
@@ -28,11 +24,6 @@ export interface ProductStatusBadgeProps {
   className?: string;
 }
 
-const STATUS_CONFIG = {
-  active: { label: 'Active', variant: 'success' as const },
-  inactive: { label: 'Inactive', variant: 'steel' as const },
-};
-
 /**
  * Badge displaying product status.
  *
@@ -43,14 +34,18 @@ const STATUS_CONFIG = {
  */
 export function ProductStatusBadge({
   isActive,
-  size = 'md',
+  size,
   className,
 }: Readonly<ProductStatusBadgeProps>) {
-  const config = isActive ? STATUS_CONFIG.active : STATUS_CONFIG.inactive;
+  const status: ProductActiveStatus = isActive ? 'ACTIVE' : 'INACTIVE';
 
   return (
-    <Badge variant={config.variant} size={size} className={className}>
-      {config.label}
-    </Badge>
+    <StatusBadge
+      status={status}
+      config={ProductActiveStatusConfig}
+      i18nKey="items:status"
+      size={size}
+      className={className}
+    />
   );
 }

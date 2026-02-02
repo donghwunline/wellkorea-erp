@@ -39,7 +39,7 @@ export { ApprovalHistoryAction } from './model/approval-history';
 export { approvalRules } from './model/approval';
 export { approvalLevelRules } from './model/approval-level';
 export { approvalHistoryRules } from './model/approval-history';
-export { ApprovalStatusConfig, getStatusLabel, getStatusColor } from './model/approval-status';
+export { ApprovalStatusConfig, getStatusColor } from './model/approval-status';
 export { EntityTypeConfigs, getEntityTypeLabel } from './model/entity-type';
 
 // =============================================================================
