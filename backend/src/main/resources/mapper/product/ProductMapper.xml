@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.wellkorea.backend.product.infrastructure.mapper.ProductMapper">
+<mapper namespace="com.wellkorea.backend.core.product.infrastructure.mapper.ProductMapper">
 
     <!-- ProductDetailView result map for record -->
-    <resultMap id="ProductDetailViewResult" type="com.wellkorea.backend.product.api.dto.query.ProductDetailView">
+    <resultMap id="ProductDetailViewResult" type="com.wellkorea.backend.core.product.api.dto.query.ProductDetailView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="sku" javaType="java.lang.String"/>
@@ -22,7 +22,7 @@
     </resultMap>
 
     <!-- ProductSummaryView result map for record -->
-    <resultMap id="ProductSummaryViewResult" type="com.wellkorea.backend.product.api.dto.query.ProductSummaryView">
+    <resultMap id="ProductSummaryViewResult" type="com.wellkorea.backend.core.product.api.dto.query.ProductSummaryView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
             <arg column="sku" javaType="java.lang.String"/>
@@ -37,7 +37,7 @@
     </resultMap>
 
     <!-- ProductTypeView result map for record -->
-    <resultMap id="ProductTypeViewResult" type="com.wellkorea.backend.product.api.dto.query.ProductTypeView">
+    <resultMap id="ProductTypeViewResult" type="com.wellkorea.backend.core.product.api.dto.query.ProductTypeView">
         <constructor>
             <arg column="id" javaType="Long"/>
             <arg column="name" javaType="String"/>
@@ -64,7 +64,7 @@
     <!-- Find product detail by ID -->
     <select id="findDetailById" resultMap="ProductDetailViewResult">
         SELECT
-            <include refid="productColumns"/>
+        <include refid="productColumns"/>
         FROM products p
         INNER JOIN product_types pt ON p.product_type_id = pt.id
         WHERE p.id = #{id}
@@ -73,15 +73,15 @@
     <!-- Find products with filters - eliminates N+1 on ProductType -->
     <select id="findWithFilters" resultMap="ProductSummaryViewResult">
         SELECT
-            p.id,
-            p.sku,
-            p.name,
-            p.description,
-            p.product_type_id,
-            pt.name AS product_type_name,
-            p.base_unit_price,
-            p.unit,
-            p.is_active
+        p.id,
+        p.sku,
+        p.name,
+        p.description,
+        p.product_type_id,
+        pt.name AS product_type_name,
+        p.base_unit_price,
+        p.unit,
+        p.is_active
         FROM products p
         INNER JOIN product_types pt ON p.product_type_id = pt.id
         <where>
@@ -91,8 +91,8 @@
             </if>
             <if test="search != null and search != ''">
                 AND (
-                    LOWER(p.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
-                    OR LOWER(p.sku) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                LOWER(p.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                OR LOWER(p.sku) LIKE LOWER(CONCAT('%', #{search}, '%'))
                 )
             </if>
         </where>
@@ -111,8 +111,8 @@
             </if>
             <if test="search != null and search != ''">
                 AND (
-                    LOWER(p.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
-                    OR LOWER(p.sku) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                LOWER(p.name) LIKE LOWER(CONCAT('%', #{search}, '%'))
+                OR LOWER(p.sku) LIKE LOWER(CONCAT('%', #{search}, '%'))
                 )
             </if>
         </where>
@@ -121,18 +121,18 @@
     <!-- Check if product exists and is active -->
     <select id="existsByIdAndActiveTrue" resultType="boolean">
         SELECT EXISTS(
-            SELECT 1 FROM products p
-            WHERE p.id = #{id} AND p.is_active = true
+        SELECT 1 FROM products p
+        WHERE p.id = #{id} AND p.is_active = true
         )
     </select>
 
     <!-- Find all product types -->
     <select id="findAllProductTypes" resultMap="ProductTypeViewResult">
         SELECT
-            id,
-            name,
-            description,
-            created_at
+        id,
+        name,
+        description,
+        created_at
         FROM product_types
         ORDER BY name
     </select>
@@ -140,10 +140,10 @@
     <!-- Find product type by ID -->
     <select id="findProductTypeById" resultMap="ProductTypeViewResult">
         SELECT
-            id,
-            name,
-            description,
-            created_at
+        id,
+        name,
+        description,
+        created_at
         FROM product_types
         WHERE id = #{id}
     </select>
