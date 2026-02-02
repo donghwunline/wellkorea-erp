@@ -1,11 +1,12 @@
 package com.wellkorea.backend.shared.approval.application;
 
-import com.wellkorea.backend.shared.approval.api.dto.query.*;
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalAction;
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalStatus;
-import com.wellkorea.backend.shared.approval.domain.vo.DecisionStatus;
-import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
-import com.wellkorea.backend.shared.approval.infrastructure.mapper.ApprovalMapper;
+import com.wellkorea.backend.supporting.approval.api.dto.query.*;
+import com.wellkorea.backend.supporting.approval.application.ApprovalQueryService;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalAction;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStatus;
+import com.wellkorea.backend.supporting.approval.domain.vo.DecisionStatus;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
+import com.wellkorea.backend.supporting.approval.infrastructure.mapper.ApprovalMapper;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;

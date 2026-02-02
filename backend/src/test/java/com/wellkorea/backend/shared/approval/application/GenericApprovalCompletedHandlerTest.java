@@ -1,9 +1,11 @@
 package com.wellkorea.backend.shared.approval.application;
 
-import com.wellkorea.backend.shared.approval.domain.Approvable;
-import com.wellkorea.backend.shared.approval.domain.event.ApprovalCompletedEvent;
-import com.wellkorea.backend.shared.approval.domain.vo.ApprovalState;
-import com.wellkorea.backend.shared.approval.domain.vo.EntityType;
+import com.wellkorea.backend.supporting.approval.application.ApprovableRegistry;
+import com.wellkorea.backend.supporting.approval.application.GenericApprovalCompletedHandler;
+import com.wellkorea.backend.supporting.approval.domain.Approvable;
+import com.wellkorea.backend.supporting.approval.domain.event.ApprovalCompletedEvent;
+import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalState;
+import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;

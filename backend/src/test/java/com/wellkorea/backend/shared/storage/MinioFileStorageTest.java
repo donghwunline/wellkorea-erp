@@ -2,7 +2,7 @@ package com.wellkorea.backend.shared.storage;
 
 import com.wellkorea.backend.BaseIntegrationTest;
 import com.wellkorea.backend.shared.exception.BusinessException;
-import com.wellkorea.backend.shared.storage.infrastructure.MinioFileStorage;
+import com.wellkorea.backend.supporting.storage.infrastructure.MinioFileStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
