@@ -317,12 +317,12 @@ describe('DeliveryPanel', () => {
         expect(screen.getByText('Total Deliveries')).toBeInTheDocument();
         expect(screen.getByText('3')).toBeInTheDocument();
 
-        // Pending count
-        expect(screen.getByText('Pending')).toBeInTheDocument();
+        // Pending label appears in summary card + 2 status badges in table = 3 total
+        expect(screen.getAllByText('Pending')).toHaveLength(3);
         expect(screen.getByText('2')).toBeInTheDocument();
 
-        // Delivered count
-        expect(screen.getByText('Delivered')).toBeInTheDocument();
+        // Delivered label appears in summary card + 1 status badge in table = 2 total
+        expect(screen.getAllByText('Delivered')).toHaveLength(2);
         expect(screen.getByText('1')).toBeInTheDocument();
       });
     });
