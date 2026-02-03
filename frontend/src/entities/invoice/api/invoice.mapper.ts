@@ -47,7 +47,6 @@ interface PaymentResponse {
   paymentDate: string;
   amount: number;
   paymentMethod: PaymentMethod;
-  paymentMethodLabel: string;
   referenceNumber: string | null;
   notes: string | null;
   recordedById: number;
@@ -138,7 +137,6 @@ export const invoiceMapper = {
       paymentDate: response.paymentDate,
       amount: response.amount,
       paymentMethod: response.paymentMethod,
-      paymentMethodLabel: response.paymentMethodLabel,
       referenceNumber: response.referenceNumber,
       notes: response.notes,
       recordedById: response.recordedById,

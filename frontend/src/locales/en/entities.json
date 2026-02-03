@@ -136,6 +136,13 @@
       },
       "empty": "No payments recorded."
     },
+    "paymentMethod": {
+      "BANK_TRANSFER": "Bank Transfer",
+      "CREDIT_CARD": "Credit Card",
+      "CHECK": "Check",
+      "CASH": "Cash",
+      "OTHER": "Other"
+    },
     "card": {
       "job": "Job",
       "beforeTax": "Before Tax",

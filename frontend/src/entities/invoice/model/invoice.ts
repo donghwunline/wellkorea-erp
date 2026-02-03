@@ -27,7 +27,6 @@ export interface Payment {
   readonly paymentDate: string; // ISO date string
   readonly amount: number;
   readonly paymentMethod: PaymentMethod;
-  readonly paymentMethodLabel: string;
   readonly referenceNumber: string | null;
   readonly notes: string | null;
   readonly recordedById: number;

@@ -19,7 +19,7 @@ export function PaymentHistoryTable({
   payments,
   loading = false,
   emptyMessage,
-}: PaymentHistoryTableProps) {
+}: Readonly<PaymentHistoryTableProps>) {
   const { t } = useTranslation('entities');
   const defaultEmptyMessage = t('invoice.paymentHistoryTable.empty');
 
@@ -46,7 +46,9 @@ export function PaymentHistoryTable({
         <Table.Row>
           <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.date')}</Table.HeaderCell>
           <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.method')}</Table.HeaderCell>
-          <Table.HeaderCell className="text-right">{t('invoice.paymentHistoryTable.headers.amount')}</Table.HeaderCell>
+          <Table.HeaderCell className="text-right">
+            {t('invoice.paymentHistoryTable.headers.amount')}
+          </Table.HeaderCell>
           <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.reference')}</Table.HeaderCell>
           <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.recordedBy')}</Table.HeaderCell>
           <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.notes')}</Table.HeaderCell>
@@ -56,7 +58,7 @@ export function PaymentHistoryTable({
         {payments.map(payment => (
           <Table.Row key={payment.id}>
             <Table.Cell>{formatDate(payment.paymentDate)}</Table.Cell>
-            <Table.Cell>{payment.paymentMethodLabel}</Table.Cell>
+            <Table.Cell>{t(`invoice.paymentMethod.${payment.paymentMethod}`)}</Table.Cell>
             <Table.Cell className="text-right font-mono text-green-400">
               {invoiceRules.formatAmount(payment.amount)}
             </Table.Cell>

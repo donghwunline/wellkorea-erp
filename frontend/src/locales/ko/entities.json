@@ -136,6 +136,13 @@
       },
       "empty": "결제 내역이 없습니다."
     },
+    "paymentMethod": {
+      "BANK_TRANSFER": "계좌이체",
+      "CREDIT_CARD": "신용카드",
+      "CHECK": "수표",
+      "CASH": "현금",
+      "OTHER": "기타"
+    },
     "card": {
       "job": "Job",
       "beforeTax": "공급가액",
