@@ -1,6 +1,8 @@
 package com.wellkorea.backend.core.finance.infrastructure.mapper;
 
+import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableDetailView;
 import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableSummaryView;
+import com.wellkorea.backend.core.finance.api.dto.query.VendorPaymentView;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -60,6 +62,23 @@ public interface AccountsPayableMapper {
      * Get AP aging summary (grouped by aging bucket).
      */
     List<APAgingSummary> getAgingSummary();
+
+    /**
+     * Find AP detail by ID with payment history.
+     *
+     * @param id AP ID
+     * @return AP detail with payments
+     */
+    Optional<AccountsPayableDetailView> findDetailWithPaymentsById(@Param("id") Long id);
+
+    /**
+     * Find payments by accounts payable ID.
+     * Used as nested select for detail view.
+     *
+     * @param accountsPayableId the AP ID
+     * @return list of vendor payment views
+     */
+    List<VendorPaymentView> findPaymentsByAccountsPayableId(@Param("accountsPayableId") Long accountsPayableId);
 
     /**
      * AP aging summary record.

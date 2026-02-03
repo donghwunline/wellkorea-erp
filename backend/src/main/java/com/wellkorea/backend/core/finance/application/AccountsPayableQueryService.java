@@ -1,5 +1,6 @@
 package com.wellkorea.backend.core.finance.application;
 
+import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableDetailView;
 import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableSummaryView;
 import com.wellkorea.backend.core.finance.infrastructure.mapper.AccountsPayableMapper;
 import com.wellkorea.backend.core.finance.infrastructure.mapper.AccountsPayableMapper.APAgingSummary;
@@ -27,10 +28,10 @@ public class AccountsPayableQueryService {
     }
 
     /**
-     * Get AP detail by ID with calculated status.
+     * Get AP detail by ID with calculated status and payment history.
      */
-    public AccountsPayableSummaryView getDetail(Long id) {
-        return accountsPayableMapper.findDetailById(id)
+    public AccountsPayableDetailView getDetail(Long id) {
+        return accountsPayableMapper.findDetailWithPaymentsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AccountsPayable", id));
     }
 

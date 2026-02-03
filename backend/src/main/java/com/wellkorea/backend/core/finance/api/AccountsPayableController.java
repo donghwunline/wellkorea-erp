@@ -2,6 +2,7 @@ package com.wellkorea.backend.core.finance.api;
 
 import com.wellkorea.backend.core.finance.api.dto.command.RecordVendorPaymentRequest;
 import com.wellkorea.backend.core.finance.api.dto.command.VendorPaymentCommandResult;
+import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableDetailView;
 import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableSummaryView;
 import com.wellkorea.backend.core.finance.application.AccountsPayableQueryService;
 import com.wellkorea.backend.core.finance.application.VendorPaymentCommandService;
@@ -78,15 +79,15 @@ public class AccountsPayableController {
     }
 
     /**
-     * Get accounts payable detail by ID.
+     * Get accounts payable detail by ID with payment history.
      * <p>
      * GET /api/accounts-payable/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<AccountsPayableSummaryView>> getAccountsPayable(
+    public ResponseEntity<ApiResponse<AccountsPayableDetailView>> getAccountsPayable(
             @PathVariable Long id) {
 
-        AccountsPayableSummaryView detail = queryService.getDetail(id);
+        AccountsPayableDetailView detail = queryService.getDetail(id);
         return ResponseEntity.ok(ApiResponse.success(detail));
     }
 
