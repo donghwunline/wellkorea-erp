@@ -119,7 +119,7 @@ export function AccountsPayableDetailModal({
   const handleStartEditDueDate = useCallback(() => {
     setEditDueDate(apDetail?.dueDate ?? null);
     setIsEditingDueDate(true);
-  }, [apDetail?.dueDate]);
+  }, [apDetail]);
 
   // Handle canceling due date edit
   const handleCancelEditDueDate = useCallback(() => {
@@ -146,28 +146,8 @@ export function AccountsPayableDetailModal({
     }
   }, []);
 
-  // Create a minimal AccountsPayable object for the payment modal
-  const apForPaymentModal: AccountsPayable | null = apDetail
-    ? {
-        id: apDetail.id,
-        causeType: apDetail.causeType,
-        causeId: apDetail.causeId,
-        causeReferenceNumber: apDetail.causeReferenceNumber,
-        vendorId: apDetail.vendorId,
-        vendorName: apDetail.vendorName,
-        totalAmount: apDetail.totalAmount,
-        currency: apDetail.currency,
-        dueDate: apDetail.dueDate,
-        notes: apDetail.notes,
-        createdAt: apDetail.createdAt,
-        totalPaid: apDetail.totalPaid,
-        remainingBalance: apDetail.remainingBalance,
-        isOverdue: apDetail.isOverdue,
-        daysOverdue: apDetail.daysOverdue,
-        agingBucket: apDetail.agingBucket,
-        calculatedStatus: apDetail.calculatedStatus,
-      }
-    : null;
+  // AccountsPayableDetail extends AccountsPayable, so direct assignment is type-safe
+  const apForPaymentModal: AccountsPayable | null = apDetail ?? null;
 
   if (isLoading) {
     return (
