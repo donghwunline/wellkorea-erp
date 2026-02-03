@@ -39,14 +39,18 @@ default:
 
 trivy-scan:
   stage: security
-  image: aquasec/trivy:latest
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
   script:
     - trivy fs --severity CRITICAL,HIGH --exit-code 1 .
   allow_failure: false
 
 gitleaks:
   stage: security
-  image: zricethezav/gitleaks:latest
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
   script:
     - gitleaks detect --source . --verbose
   allow_failure: false
