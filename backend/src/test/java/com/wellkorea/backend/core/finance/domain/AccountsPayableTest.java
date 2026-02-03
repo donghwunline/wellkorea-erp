@@ -459,28 +459,38 @@ class AccountsPayableTest {
         }
 
         @Test
-        @DisplayName("should return '30 Days' when 1-30 days overdue")
-        void shouldReturn30DaysWhen1To30DaysOverdue() {
+        @DisplayName("should return '1-30 Days' when 1-30 days overdue")
+        void shouldReturn1To30DaysWhen1To30DaysOverdue() {
             AccountsPayable ap = createApWithDueDate(
                     new BigDecimal("1000"),
                     LocalDate.now().minusDays(15)
             );
-            assertThat(ap.getAgingBucket()).isEqualTo("30 Days");
+            assertThat(ap.getAgingBucket()).isEqualTo("1-30 Days");
         }
 
         @Test
-        @DisplayName("should return '60 Days' when 31-60 days overdue")
-        void shouldReturn60DaysWhen31To60DaysOverdue() {
+        @DisplayName("should return '31-60 Days' when 31-60 days overdue")
+        void shouldReturn31To60DaysWhen31To60DaysOverdue() {
             AccountsPayable ap = createApWithDueDate(
                     new BigDecimal("1000"),
                     LocalDate.now().minusDays(45)
             );
-            assertThat(ap.getAgingBucket()).isEqualTo("60 Days");
+            assertThat(ap.getAgingBucket()).isEqualTo("31-60 Days");
         }
 
         @Test
-        @DisplayName("should return '90+ Days' when over 60 days overdue")
-        void shouldReturn90PlusDaysWhenOver60DaysOverdue() {
+        @DisplayName("should return '61-90 Days' when 61-90 days overdue")
+        void shouldReturn61To90DaysWhen61To90DaysOverdue() {
+            AccountsPayable ap = createApWithDueDate(
+                    new BigDecimal("1000"),
+                    LocalDate.now().minusDays(75)
+            );
+            assertThat(ap.getAgingBucket()).isEqualTo("61-90 Days");
+        }
+
+        @Test
+        @DisplayName("should return '90+ Days' when over 90 days overdue")
+        void shouldReturn90PlusDaysWhenOver90DaysOverdue() {
             AccountsPayable ap = createApWithDueDate(
                     new BigDecimal("1000"),
                     LocalDate.now().minusDays(91)
