@@ -248,5 +248,25 @@
       "CLOSED": "Closed",
       "CANCELED": "Canceled"
     }
+  },
+  "accountsPayable": {
+    "paymentHistoryTable": {
+      "headers": {
+        "date": "Date",
+        "method": "Method",
+        "amount": "Amount",
+        "reference": "Reference",
+        "recordedBy": "Recorded By",
+        "notes": "Notes"
+      },
+      "empty": "No payments recorded."
+    },
+    "paymentMethod": {
+      "BANK_TRANSFER": "Bank Transfer",
+      "CHECK": "Check",
+      "CASH": "Cash",
+      "PROMISSORY_NOTE": "Promissory Note",
+      "OTHER": "Other"
+    }
   }
 }

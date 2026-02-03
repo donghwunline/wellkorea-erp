@@ -744,5 +744,35 @@
     "retry": "다시 시도",
     "emptyTitle": "표시할 섹션이 없습니다",
     "emptyDescription": "이 프로젝트에 섹션이 아직 없거나 볼 수 있는 권한이 없습니다."
+  },
+  "accountsPayableDetailModal": {
+    "title": "미지급금 상세",
+    "loading": "상세 정보를 불러오는 중...",
+    "loadError": "미지급금 정보를 불러오지 못했습니다",
+    "notFound": "미지급금 기록을 찾을 수 없습니다",
+    "close": "닫기",
+    "fields": {
+      "status": "상태",
+      "vendor": "업체",
+      "reference": "참조번호",
+      "dueDate": "지급기한",
+      "createdAt": "생성일"
+    },
+    "daysOverdue": "{{days}}일 연체",
+    "sections": {
+      "amounts": "금액 정보",
+      "paymentHistory": "지급 내역"
+    },
+    "amounts": {
+      "total": "총 금액",
+      "paid": "지급 완료",
+      "remaining": "미지급 잔액"
+    },
+    "paymentProgress": "지급 진행률",
+    "paid": "지급: {{amount}}",
+    "remaining": "잔액: {{amount}}",
+    "paymentCount": "{{count}}건 지급",
+    "metadata": "생성일: {{createdAt}}",
+    "recordPayment": "지급 등록"
   }
 }
