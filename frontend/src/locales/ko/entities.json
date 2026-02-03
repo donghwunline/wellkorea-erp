@@ -136,6 +136,13 @@
       },
       "empty": "결제 내역이 없습니다."
     },
+    "paymentMethod": {
+      "BANK_TRANSFER": "계좌이체",
+      "CREDIT_CARD": "신용카드",
+      "CHECK": "수표",
+      "CASH": "현금",
+      "OTHER": "기타"
+    },
     "card": {
       "job": "Job",
       "beforeTax": "공급가액",
@@ -247,6 +254,26 @@
       "ORDERED": "발주 완료",
       "CLOSED": "완료",
       "CANCELED": "취소"
+    }
+  },
+  "accountsPayable": {
+    "paymentHistoryTable": {
+      "headers": {
+        "date": "결제일",
+        "method": "결제방법",
+        "amount": "금액",
+        "reference": "참조번호",
+        "recordedBy": "등록자",
+        "notes": "비고"
+      },
+      "empty": "결제 내역이 없습니다."
+    },
+    "paymentMethod": {
+      "BANK_TRANSFER": "계좌이체",
+      "CHECK": "수표",
+      "CASH": "현금",
+      "PROMISSORY_NOTE": "약속어음",
+      "OTHER": "기타"
     }
   }
 }

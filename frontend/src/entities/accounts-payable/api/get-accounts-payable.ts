@@ -5,9 +5,9 @@
 
 import { httpClient } from '@/shared/api';
 import type { CalculatedAPStatus } from '../model/accounts-payable-status';
-import type { AccountsPayable, APAgingSummary } from '../model/accounts-payable';
-import type { AccountsPayableResponse, APAgingSummaryResponse } from './accounts-payable.mapper';
-import { mapToAccountsPayable, mapToAPAgingSummary } from './accounts-payable.mapper';
+import type { AccountsPayable, AccountsPayableDetail, APAgingSummary } from '../model/accounts-payable';
+import type { AccountsPayableDetailResponse, AccountsPayableResponse, APAgingSummaryResponse } from './accounts-payable.mapper';
+import { mapToAccountsPayable, mapToAccountsPayableDetail, mapToAPAgingSummary } from './accounts-payable.mapper';
 
 const ENDPOINTS = {
   list: '/accounts-payable',
@@ -34,7 +34,9 @@ export async function getAccountsPayableList(
   size: number = 20,
   vendorId?: number,
   calculatedStatus?: CalculatedAPStatus,
-  overdueOnly?: boolean
+  overdueOnly?: boolean,
+  dueDateFrom?: string,
+  dueDateTo?: string
 ): Promise<AccountsPayable[]> {
   const params = new URLSearchParams();
   params.append('page', String(page));
@@ -42,6 +44,8 @@ export async function getAccountsPayableList(
   if (vendorId) params.append('vendorId', String(vendorId));
   if (calculatedStatus) params.append('calculatedStatus', calculatedStatus);
   if (overdueOnly !== undefined) params.append('overdueOnly', String(overdueOnly));
+  if (dueDateFrom) params.append('dueDateFrom', dueDateFrom);
+  if (dueDateTo) params.append('dueDateTo', dueDateTo);
 
   const response = await httpClient.get<PageResponse<AccountsPayableResponse>>(
     `${ENDPOINTS.list}?${params.toString()}`
@@ -50,11 +54,11 @@ export async function getAccountsPayableList(
 }
 
 /**
- * Get accounts payable detail by ID.
+ * Get accounts payable detail by ID with payment history.
  */
-export async function getAccountsPayableById(id: number): Promise<AccountsPayable> {
-  const response = await httpClient.get<AccountsPayableResponse>(ENDPOINTS.detail(id));
-  return mapToAccountsPayable(response);
+export async function getAccountsPayableById(id: number): Promise<AccountsPayableDetail> {
+  const response = await httpClient.get<AccountsPayableDetailResponse>(ENDPOINTS.detail(id));
+  return mapToAccountsPayableDetail(response);
 }
 
 /**

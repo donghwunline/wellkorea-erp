@@ -307,6 +307,10 @@
       "loading": "Loading accounts payable...",
       "loadError": "Failed to load accounts payable"
     },
+    "filters": {
+      "selectVendor": "Select Vendor",
+      "dueDateRange": "Due Date Range"
+    },
     "status": {
       "PENDING": "Pending",
       "PARTIALLY_PAID": "Partially Paid",

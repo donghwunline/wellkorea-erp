@@ -29,17 +29,17 @@ public interface CompanyMapper {
      * Find companies with filters for pagination.
      * Uses single JOIN query to include roles.
      *
-     * <p>When filtering by roleType, only companies with that role are returned,
+     * <p>When filtering by roleTypes, only companies with at least one of those roles are returned,
      * but ALL roles for those companies are included in the result.
      *
-     * @param roleType Optional role type filter
-     * @param search   Optional search term for name
-     * @param limit    Page size
-     * @param offset   Page offset
+     * @param roleTypes Optional list of role types to filter by (companies must have at least one)
+     * @param search    Optional search term for name
+     * @param limit     Page size
+     * @param offset    Page offset
      * @return List of company summaries with roles
      */
     List<CompanySummaryView> findWithFilters(
-            @Param("roleType") RoleType roleType,
+            @Param("roleTypes") List<RoleType> roleTypes,
             @Param("search") String search,
             @Param("limit") int limit,
             @Param("offset") long offset);
@@ -48,7 +48,7 @@ public interface CompanyMapper {
      * Count companies with filters for pagination.
      */
     long countWithFilters(
-            @Param("roleType") RoleType roleType,
+            @Param("roleTypes") List<RoleType> roleTypes,
             @Param("search") String search);
 
     /**

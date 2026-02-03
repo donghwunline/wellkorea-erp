@@ -8,6 +8,7 @@
 
 import { Money } from '@/shared/lib/formatting/money';
 import type { CalculatedAPStatus } from './accounts-payable-status';
+import type { VendorPayment } from './vendor-payment';
 
 /**
  * AccountsPayable domain model (plain interface).
@@ -40,6 +41,13 @@ export interface AccountsPayable {
  * AccountsPayable summary for list views (same as full model for now).
  */
 export type AccountsPayableSummary = AccountsPayable;
+
+/**
+ * AccountsPayable detail view with payment history.
+ */
+export interface AccountsPayableDetail extends AccountsPayable {
+  readonly payments: readonly VendorPayment[];
+}
 
 /**
  * AP Aging summary for reports.

@@ -729,5 +729,45 @@
     "retry": "Retry",
     "emptyTitle": "No sections available",
     "emptyDescription": "This project doesn't have any sections yet, or you don't have permission to view them."
+  },
+  "accountsPayableDetailModal": {
+    "title": "Accounts Payable Details",
+    "loading": "Loading details...",
+    "loadError": "Failed to load accounts payable details",
+    "notFound": "Accounts payable record not found",
+    "close": "Close",
+    "fields": {
+      "status": "Status",
+      "vendor": "Vendor",
+      "reference": "Reference",
+      "dueDate": "Due Date",
+      "createdAt": "Created"
+    },
+    "daysOverdue": "{{days}}d overdue",
+    "sections": {
+      "amounts": "Payment Amounts",
+      "paymentHistory": "Payment History"
+    },
+    "amounts": {
+      "total": "Total Amount",
+      "paid": "Total Paid",
+      "remaining": "Remaining Balance"
+    },
+    "paymentProgress": "Payment Progress",
+    "paid": "Paid: {{amount}}",
+    "remaining": "Remaining: {{amount}}",
+    "paymentCount": "{{count}} payments",
+    "metadata": "Created: {{createdAt}}",
+    "recordPayment": "Record Payment",
+    "noDueDate": "Not set",
+    "editDueDate": {
+      "button": "Edit",
+      "label": "Edit Due Date",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "success": "Due date updated successfully",
+      "error": "Failed to update due date"
+    }
   }
 }

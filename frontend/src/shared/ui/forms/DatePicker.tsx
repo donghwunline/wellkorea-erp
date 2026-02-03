@@ -605,7 +605,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
         {isOpen && (
           <div
             className={cn(
-              'absolute z-50 mt-1 w-72 rounded-lg border border-steel-700/50',
+              'absolute z-[100] mt-1 w-72 rounded-lg border border-steel-700/50',
               'bg-steel-800 p-3 shadow-xl shadow-black/20',
               'animate-in fade-in-0 zoom-in-95 duration-150'
             )}

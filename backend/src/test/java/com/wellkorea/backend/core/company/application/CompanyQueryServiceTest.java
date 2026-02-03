@@ -224,64 +224,77 @@ class CompanyQueryServiceTest {
     }
 
     @Nested
-    @DisplayName("findByRoleType - Filter companies by role type")
-    class FindByRoleTypeTests {
+    @DisplayName("findByRoleTypes - Filter companies by multiple role types")
+    class FindByRoleTypesTests {
 
         @Test
-        @DisplayName("should filter by role type")
-        void findByRoleType_WithRoleType_ReturnsFilteredPage() {
+        @DisplayName("should filter by single role type")
+        void findByRoleTypes_WithSingleRoleType_ReturnsFilteredPage() {
             // Given
             List<CompanySummaryView> summaries = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.CUSTOMER, null, 10, 0L)).willReturn(summaries);
-            given(companyMapper.countWithFilters(RoleType.CUSTOMER, null)).willReturn(1L);
+            given(companyMapper.findWithFilters(List.of(RoleType.CUSTOMER), null, 10, 0L)).willReturn(summaries);
+            given(companyMapper.countWithFilters(List.of(RoleType.CUSTOMER), null)).willReturn(1L);
 
             // When
-            Page<CompanySummaryView> result = queryService.findByRoleType(RoleType.CUSTOMER, pageable);
+            Page<CompanySummaryView> result = queryService.findByRoleTypes(List.of(RoleType.CUSTOMER), null, pageable);
 
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            verify(companyMapper).findWithFilters(RoleType.CUSTOMER, null, 10, 0L);
+            verify(companyMapper).findWithFilters(List.of(RoleType.CUSTOMER), null, 10, 0L);
         }
-    }
-
-    @Nested
-    @DisplayName("findByRoleTypeAndSearch - Filter by role type with search")
-    class FindByRoleTypeAndSearchTests {
 
         @Test
-        @DisplayName("should apply both filters")
-        void findByRoleTypeAndSearch_WithBothFilters_ReturnsFilteredPage() {
+        @DisplayName("should filter by multiple role types")
+        void findByRoleTypes_WithMultipleRoleTypes_ReturnsFilteredPage() {
             // Given
+            List<RoleType> roleTypes = List.of(RoleType.VENDOR, RoleType.OUTSOURCE);
             List<CompanySummaryView> summaries = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.VENDOR, "supplier", 10, 0L)).willReturn(summaries);
-            given(companyMapper.countWithFilters(RoleType.VENDOR, "supplier")).willReturn(1L);
+            given(companyMapper.findWithFilters(roleTypes, null, 10, 0L)).willReturn(summaries);
+            given(companyMapper.countWithFilters(roleTypes, null)).willReturn(1L);
 
             // When
-            Page<CompanySummaryView> result = queryService.findByRoleTypeAndSearch(
-                    RoleType.VENDOR, "  supplier  ", pageable);
+            Page<CompanySummaryView> result = queryService.findByRoleTypes(roleTypes, null, pageable);
 
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            verify(companyMapper).findWithFilters(RoleType.VENDOR, "supplier", 10, 0L);
+            verify(companyMapper).findWithFilters(roleTypes, null, 10, 0L);
         }
 
         @Test
-        @DisplayName("should handle blank search with role type")
-        void findByRoleTypeAndSearch_BlankSearch_PassesNullSearch() {
+        @DisplayName("should apply both role types and search filters")
+        void findByRoleTypes_WithRoleTypesAndSearch_ReturnsFilteredPage() {
             // Given
             List<CompanySummaryView> summaries = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.CUSTOMER, null, 10, 0L)).willReturn(summaries);
-            given(companyMapper.countWithFilters(RoleType.CUSTOMER, null)).willReturn(1L);
+            given(companyMapper.findWithFilters(List.of(RoleType.VENDOR), "supplier", 10, 0L)).willReturn(summaries);
+            given(companyMapper.countWithFilters(List.of(RoleType.VENDOR), "supplier")).willReturn(1L);
 
             // When
-            Page<CompanySummaryView> result = queryService.findByRoleTypeAndSearch(
-                    RoleType.CUSTOMER, "   ", pageable);
+            Page<CompanySummaryView> result = queryService.findByRoleTypes(
+                    List.of(RoleType.VENDOR), "  supplier  ", pageable);
 
             // Then
             assertThat(result).isNotNull();
-            verify(companyMapper).findWithFilters(RoleType.CUSTOMER, null, 10, 0L);
+            assertThat(result.getContent()).hasSize(1);
+            verify(companyMapper).findWithFilters(List.of(RoleType.VENDOR), "supplier", 10, 0L);
+        }
+
+        @Test
+        @DisplayName("should handle blank search with role types")
+        void findByRoleTypes_BlankSearch_PassesNullSearch() {
+            // Given
+            List<CompanySummaryView> summaries = List.of(testSummaryView);
+            given(companyMapper.findWithFilters(List.of(RoleType.CUSTOMER), null, 10, 0L)).willReturn(summaries);
+            given(companyMapper.countWithFilters(List.of(RoleType.CUSTOMER), null)).willReturn(1L);
+
+            // When
+            Page<CompanySummaryView> result = queryService.findByRoleTypes(
+                    List.of(RoleType.CUSTOMER), "   ", pageable);
+
+            // Then
+            assertThat(result).isNotNull();
+            verify(companyMapper).findWithFilters(List.of(RoleType.CUSTOMER), null, 10, 0L);
         }
     }
 

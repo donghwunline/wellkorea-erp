@@ -1,27 +1,30 @@
 /**
- * Payment history table component.
- * Displays list of payments for an invoice.
+ * Vendor payment history table component.
+ * Displays list of payments for an accounts payable record.
+ * Payment method labels are handled via i18n.
  */
 
 import { useTranslation } from 'react-i18next';
 import { Icon, Table } from '@/shared/ui';
-import type { Payment } from '../model/invoice';
-import { invoiceRules } from '../model/invoice';
+import { Money } from '@/shared/lib/formatting/money';
 import { formatDate } from '@/shared/lib/formatting';
+import type { VendorPayment } from '../model/vendor-payment';
 
-interface PaymentHistoryTableProps {
-  payments: Payment[];
+interface VendorPaymentHistoryTableProps {
+  payments: readonly VendorPayment[];
+  currency?: string;
   loading?: boolean;
   emptyMessage?: string;
 }
 
-export function PaymentHistoryTable({
+export function VendorPaymentHistoryTable({
   payments,
+  currency = 'KRW',
   loading = false,
   emptyMessage,
-}: Readonly<PaymentHistoryTableProps>) {
+}: Readonly<VendorPaymentHistoryTableProps>) {
   const { t } = useTranslation('entities');
-  const defaultEmptyMessage = t('invoice.paymentHistoryTable.empty');
+  const defaultEmptyMessage = t('accountsPayable.paymentHistoryTable.empty');
 
   if (loading) {
     return (
@@ -44,23 +47,23 @@ export function PaymentHistoryTable({
     <Table>
       <Table.Header>
         <Table.Row>
-          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.date')}</Table.HeaderCell>
-          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.method')}</Table.HeaderCell>
-          <Table.HeaderCell className="text-right">
-            {t('invoice.paymentHistoryTable.headers.amount')}
-          </Table.HeaderCell>
-          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.reference')}</Table.HeaderCell>
-          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.recordedBy')}</Table.HeaderCell>
-          <Table.HeaderCell>{t('invoice.paymentHistoryTable.headers.notes')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('accountsPayable.paymentHistoryTable.headers.date')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('accountsPayable.paymentHistoryTable.headers.method')}</Table.HeaderCell>
+          <Table.HeaderCell className="text-right">{t('accountsPayable.paymentHistoryTable.headers.amount')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('accountsPayable.paymentHistoryTable.headers.reference')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('accountsPayable.paymentHistoryTable.headers.recordedBy')}</Table.HeaderCell>
+          <Table.HeaderCell>{t('accountsPayable.paymentHistoryTable.headers.notes')}</Table.HeaderCell>
         </Table.Row>
       </Table.Header>
       <Table.Body>
         {payments.map(payment => (
           <Table.Row key={payment.id}>
             <Table.Cell>{formatDate(payment.paymentDate)}</Table.Cell>
-            <Table.Cell>{t(`invoice.paymentMethod.${payment.paymentMethod}`)}</Table.Cell>
+            <Table.Cell>
+              {t(`accountsPayable.paymentMethod.${payment.paymentMethod}`)}
+            </Table.Cell>
             <Table.Cell className="text-right font-mono text-green-400">
-              {invoiceRules.formatAmount(payment.amount)}
+              {Money.format(payment.amount, { currency })}
             </Table.Cell>
             <Table.Cell className="font-mono text-steel-400">
               {payment.referenceNumber || '-'}

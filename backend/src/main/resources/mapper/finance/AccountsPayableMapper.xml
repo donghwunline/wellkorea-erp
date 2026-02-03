@@ -3,6 +3,22 @@
 
 <mapper namespace="com.wellkorea.backend.core.finance.infrastructure.mapper.AccountsPayableMapper">
 
+    <!-- Result map for VendorPaymentView (Java record - uses constructor mapping) -->
+    <resultMap id="vendorPaymentViewMap" type="com.wellkorea.backend.core.finance.api.dto.query.VendorPaymentView">
+        <constructor>
+            <arg column="vp_id" javaType="java.lang.Long"/>
+            <arg column="vp_accounts_payable_id" javaType="java.lang.Long"/>
+            <arg column="vp_payment_date" javaType="java.time.LocalDate"/>
+            <arg column="vp_amount" javaType="java.math.BigDecimal"/>
+            <arg column="vp_payment_method" javaType="com.wellkorea.backend.core.finance.domain.vo.VendorPaymentMethod"/>
+            <arg column="vp_reference_number" javaType="java.lang.String"/>
+            <arg column="vp_notes" javaType="java.lang.String"/>
+            <arg column="vp_recorded_by_id" javaType="java.lang.Long"/>
+            <arg column="vp_recorded_by_name" javaType="java.lang.String"/>
+            <arg column="vp_created_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+
     <!-- Result map for AccountsPayableSummaryView (Java record - uses constructor mapping) -->
     <resultMap id="summaryViewMap" type="com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableSummaryView">
         <constructor>
@@ -41,6 +57,42 @@
             <arg column="total_amount" javaType="java.math.BigDecimal"/>
             <arg column="total_paid" javaType="java.math.BigDecimal"/>
             <arg column="remaining_balance" javaType="java.math.BigDecimal"/>
+        </constructor>
+    </resultMap>
+
+    <!--
+      WARNING: This resultMap uses nested select for payment history.
+      Only use for single-record queries (findDetailWithPaymentsById).
+      DO NOT use for list queries - will cause N+1 performance issue.
+      For list queries, use summaryViewMap instead.
+    -->
+    <resultMap id="detailViewMap" type="com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableDetailView">
+        <constructor>
+            <arg column="id" javaType="java.lang.Long"/>
+            <!-- Disbursement cause fields -->
+            <arg column="cause_type" javaType="java.lang.String"/>
+            <arg column="cause_id" javaType="java.lang.Long"/>
+            <arg column="cause_reference_number" javaType="java.lang.String"/>
+            <!-- Vendor info -->
+            <arg column="vendor_id" javaType="java.lang.Long"/>
+            <arg column="vendor_name" javaType="java.lang.String"/>
+            <!-- Amount info -->
+            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <arg column="currency" javaType="java.lang.String"/>
+            <!-- Dates -->
+            <arg column="due_date" javaType="java.time.LocalDate"/>
+            <arg column="created_at" javaType="java.time.Instant"/>
+            <!-- Notes -->
+            <arg column="notes" javaType="java.lang.String"/>
+            <!-- Calculated fields -->
+            <arg column="total_paid" javaType="java.math.BigDecimal"/>
+            <arg column="remaining_balance" javaType="java.math.BigDecimal"/>
+            <arg column="is_overdue" javaType="java.lang.Boolean"/>
+            <arg column="days_overdue" javaType="java.lang.Integer"/>
+            <arg column="aging_bucket" javaType="java.lang.String"/>
+            <arg column="calculated_status" javaType="java.lang.String"/>
+            <!-- Payment history - nested select -->
+            <arg column="id" javaType="java.util.List" select="findPaymentsByAccountsPayableId"/>
         </constructor>
     </resultMap>
 
@@ -128,6 +180,12 @@
         <if test="overdueOnly != null and overdueOnly">
             AND is_overdue = true
         </if>
+        <if test="dueDateFrom != null">
+            AND due_date >= #{dueDateFrom}
+        </if>
+        <if test="dueDateTo != null">
+            AND due_date &lt;= #{dueDateTo}
+        </if>
         ORDER BY
         CASE WHEN is_overdue THEN 0 ELSE 1 END,
         due_date ASC NULLS LAST,
@@ -154,6 +212,12 @@
         <if test="overdueOnly != null and overdueOnly">
             AND is_overdue = true
         </if>
+        <if test="dueDateFrom != null">
+            AND due_date >= #{dueDateFrom}
+        </if>
+        <if test="dueDateTo != null">
+            AND due_date &lt;= #{dueDateTo}
+        </if>
     </select>
 
     <!-- Get AP aging summary -->
@@ -178,6 +242,30 @@
         WHEN '61-90 Days' THEN 4
         WHEN '90+ Days' THEN 5
         END
+    </select>
+
+    <!-- Find AP detail by ID with payment history (uses nested select for payments) -->
+    <select id="findDetailWithPaymentsById" resultMap="detailViewMap">
+        <include refid="apWithCalculatedStatus"/>
+        WHERE ap.id = #{id}
+    </select>
+
+    <!-- Find payments by accounts payable ID (nested select for detail view) -->
+    <select id="findPaymentsByAccountsPayableId" resultMap="vendorPaymentViewMap">
+        SELECT vp.id                AS vp_id,
+               vp.accounts_payable_id AS vp_accounts_payable_id,
+               vp.payment_date      AS vp_payment_date,
+               vp.amount            AS vp_amount,
+               vp.payment_method    AS vp_payment_method,
+               vp.reference_number  AS vp_reference_number,
+               vp.notes             AS vp_notes,
+               vp.recorded_by_id    AS vp_recorded_by_id,
+               u.full_name          AS vp_recorded_by_name,
+               vp.created_at        AS vp_created_at
+        FROM vendor_payments vp
+                 LEFT JOIN users u ON vp.recorded_by_id = u.id
+        WHERE vp.accounts_payable_id = #{accountsPayableId}
+        ORDER BY vp.payment_date DESC, vp.created_at DESC
     </select>
 
 </mapper>

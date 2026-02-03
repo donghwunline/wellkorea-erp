@@ -10,7 +10,7 @@
  * - Receives value and delegates changes via props
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Combobox, type ComboboxOption } from '@/shared/ui';
 import { COMPANY_ENDPOINTS, httpClient, type PagedResponse } from '@/shared/api';
@@ -39,10 +39,18 @@ export interface CompanyComboboxProps {
   onChange: (companyId: number | null) => void;
 
   /**
-   * Optional role type filter.
+   * Optional role type filter (single role).
    * When provided, only companies with this role will be shown.
+   * Use roleTypes for multiple roles.
    */
   roleType?: RoleType;
+
+  /**
+   * Optional role types filter (multiple roles).
+   * When provided, companies with ANY of these roles will be shown.
+   * Takes precedence over roleType if both are provided.
+   */
+  roleTypes?: RoleType[];
 
   /**
    * Field label.
@@ -104,6 +112,7 @@ export function CompanyCombobox({
   value,
   onChange,
   roleType,
+  roleTypes,
   label,
   placeholder,
   initialLabel,
@@ -114,8 +123,17 @@ export function CompanyCombobox({
   className,
 }: Readonly<CompanyComboboxProps>) {
   const { t } = useTranslation('entities');
-  const defaultPlaceholder = roleType
-    ? `${ROLE_TYPE_LABELS[roleType]} 검색...`
+
+  // Determine effective role types (roleTypes takes precedence over roleType)
+  // Memoized to prevent unnecessary re-renders of loadOptions
+  const effectiveRoleTypes = useMemo(
+    () => roleTypes ?? (roleType ? [roleType] : undefined),
+    [roleTypes, roleType]
+  );
+
+  // Build placeholder based on role types
+  const defaultPlaceholder = effectiveRoleTypes && effectiveRoleTypes.length > 0
+    ? `${effectiveRoleTypes.map(r => ROLE_TYPE_LABELS[r]).join('/')} 검색...`
     : t('company.combobox.placeholder');
 
   /**
@@ -130,7 +148,8 @@ export function CompanyCombobox({
           page: 0,
           size: 20,
           search: query || undefined,
-          roleType: roleType ?? undefined,
+          // Send as comma-separated for Spring to parse as List
+          roleType: effectiveRoleTypes?.join(',') || undefined,
         },
       });
 
@@ -142,7 +161,7 @@ export function CompanyCombobox({
         description: company.email || company.contactPerson || undefined,
       }));
     },
-    [roleType]
+    [effectiveRoleTypes]
   );
 
   /**

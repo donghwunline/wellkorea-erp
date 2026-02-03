@@ -1,5 +1,6 @@
 package com.wellkorea.backend.core.finance.application;
 
+import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableDetailView;
 import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableSummaryView;
 import com.wellkorea.backend.core.finance.infrastructure.mapper.AccountsPayableMapper;
 import com.wellkorea.backend.core.finance.infrastructure.mapper.AccountsPayableMapper.APAgingSummary;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -27,10 +29,10 @@ public class AccountsPayableQueryService {
     }
 
     /**
-     * Get AP detail by ID with calculated status.
+     * Get AP detail by ID with calculated status and payment history.
      */
-    public AccountsPayableSummaryView getDetail(Long id) {
-        return accountsPayableMapper.findDetailById(id)
+    public AccountsPayableDetailView getDetail(Long id) {
+        return accountsPayableMapper.findDetailWithPaymentsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AccountsPayable", id));
     }
 
@@ -41,6 +43,8 @@ public class AccountsPayableQueryService {
      * @param causeType        filter by disbursement cause type (optional): PURCHASE_ORDER, EXPENSE_REPORT, etc.
      * @param calculatedStatus filter by status: PENDING, PARTIALLY_PAID, PAID (optional)
      * @param overdueOnly      filter for overdue only (optional)
+     * @param dueDateFrom      filter by due date range start (optional)
+     * @param dueDateTo        filter by due date range end (optional)
      * @param pageable         pagination info
      */
     public Page<AccountsPayableSummaryView> list(
@@ -48,6 +52,8 @@ public class AccountsPayableQueryService {
             String causeType,
             String calculatedStatus,
             Boolean overdueOnly,
+            LocalDate dueDateFrom,
+            LocalDate dueDateTo,
             Pageable pageable
     ) {
         List<AccountsPayableSummaryView> aps = accountsPayableMapper.findWithFilters(
@@ -55,11 +61,14 @@ public class AccountsPayableQueryService {
                 causeType,
                 calculatedStatus,
                 overdueOnly,
+                dueDateFrom,
+                dueDateTo,
                 pageable.getPageSize(),
                 pageable.getOffset()
         );
 
-        long total = accountsPayableMapper.countWithFilters(vendorId, causeType, calculatedStatus, overdueOnly);
+        long total = accountsPayableMapper.countWithFilters(
+                vendorId, causeType, calculatedStatus, overdueOnly, dueDateFrom, dueDateTo);
 
         return new PageImpl<>(aps, pageable, total);
     }

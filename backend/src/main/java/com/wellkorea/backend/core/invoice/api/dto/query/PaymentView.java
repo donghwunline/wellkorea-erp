@@ -15,7 +15,6 @@ public record PaymentView(
         LocalDate paymentDate,
         BigDecimal amount,
         PaymentMethod paymentMethod,
-        String paymentMethodLabelKo,
         String referenceNumber,
         String notes,
         Long recordedById,

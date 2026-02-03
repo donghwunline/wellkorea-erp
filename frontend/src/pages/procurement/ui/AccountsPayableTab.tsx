@@ -5,7 +5,7 @@
  * Click on a row to view AP details with payment actions.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -14,10 +14,21 @@ import {
   AccountsPayableTable,
   type CalculatedAPStatus,
 } from '@/entities/accounts-payable';
+import { CompanyCombobox, RoleTypeEnum } from '@/entities/company';
 import { RecordAPPaymentModal } from '@/features/accounts-payable/record-payment';
-import { Button, Card, Spinner } from '@/shared/ui';
+import { AccountsPayableDetailModal } from '@/widgets/accounts-payable-panel';
+import { Button, Card, DatePicker, Spinner, type DateRange } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
+
+/** Filter state for accounts payable list */
+interface APFilters {
+  status?: CalculatedAPStatus;
+  overdueOnly?: boolean;
+  vendorId?: number;
+  dueDateFrom?: string;
+  dueDateTo?: string;
+}
 
 /**
  * Accounts payable tab content.
@@ -25,22 +36,45 @@ const PAGE_SIZE = 20;
 export function AccountsPayableTab() {
   const { t } = useTranslation('purchasing');
 
-  // Local state for filters
+  // Consolidated filter state
   const [page] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<CalculatedAPStatus | undefined>(undefined);
-  const [overdueOnly, setOverdueOnly] = useState<boolean | undefined>(undefined);
+  const [filters, setFilters] = useState<APFilters>({});
 
-  // Modal state for recording payments
+  // Derive DateRange for DatePicker from flat filters
+  const dueDateRange = useMemo<DateRange>(
+    () => ({ start: filters.dueDateFrom ?? null, end: filters.dueDateTo ?? null }),
+    [filters.dueDateFrom, filters.dueDateTo]
+  );
+
+  // Modal state for detail view
+  const [selectedAPId, setSelectedAPId] = useState<number | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Modal state for recording payments (from table action button)
   const [selectedAP, setSelectedAP] = useState<AccountsPayable | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Handle filter changes
   const handleStatusChange = useCallback((status: CalculatedAPStatus | '') => {
-    setStatusFilter(status || undefined);
+    setFilters(prev => ({ ...prev, status: status || undefined }));
   }, []);
 
   const handleOverdueToggle = useCallback(() => {
-    setOverdueOnly(prev => (prev ? undefined : true));
+    setFilters(prev => ({ ...prev, overdueOnly: prev.overdueOnly ? undefined : true }));
+  }, []);
+
+  const handleVendorChange = useCallback((vendorId: number | null) => {
+    setFilters(prev => ({ ...prev, vendorId: vendorId ?? undefined }));
+  }, []);
+
+  const handleDueDateRangeChange = useCallback((range: string | DateRange) => {
+    if (typeof range === 'object') {
+      setFilters(prev => ({
+        ...prev,
+        dueDateFrom: range.start ?? undefined,
+        dueDateTo: range.end ?? undefined,
+      }));
+    }
   }, []);
 
   // Handle opening payment modal
@@ -66,12 +100,28 @@ export function AccountsPayableTab() {
     isLoading,
     error,
     refetch,
-  } = useQuery(accountsPayableQueries.list(page, PAGE_SIZE, undefined, statusFilter, overdueOnly));
+  } = useQuery(
+    accountsPayableQueries.list(
+      page,
+      PAGE_SIZE,
+      filters.vendorId,
+      filters.status,
+      filters.overdueOnly,
+      filters.dueDateFrom,
+      filters.dueDateTo
+    )
+  );
 
-  // Handle row click
+  // Handle row click - open detail modal
   const handleRowClick = useCallback((item: AccountsPayable) => {
-    // TODO: Open detail modal or navigate to detail page
-    console.log('Selected AP:', item);
+    setSelectedAPId(item.id);
+    setIsDetailModalOpen(true);
+  }, []);
+
+  // Handle closing detail modal
+  const handleDetailModalClose = useCallback(() => {
+    setIsDetailModalOpen(false);
+    setSelectedAPId(null);
   }, []);
 
   // Render actions for each row
@@ -99,10 +149,31 @@ export function AccountsPayableTab() {
   return (
     <div className="space-y-6">
       {/* Toolbar */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
+        {/* Vendor Filter - includes both VENDOR and OUTSOURCE companies */}
+        <div className="w-56">
+          <CompanyCombobox
+            value={filters.vendorId ?? null}
+            onChange={handleVendorChange}
+            roleTypes={[RoleTypeEnum.VENDOR, RoleTypeEnum.OUTSOURCE]}
+            placeholder={t('accountsPayable.filters.selectVendor')}
+          />
+        </div>
+
+        {/* Due Date Range Filter */}
+        <div className="w-64">
+          <DatePicker
+            mode="range"
+            value={dueDateRange}
+            onChange={handleDueDateRangeChange}
+            placeholder={t('accountsPayable.filters.dueDateRange')}
+            clearable
+          />
+        </div>
+
         {/* Status Filter */}
         <select
-          value={statusFilter || ''}
+          value={filters.status ?? ''}
           onChange={e => handleStatusChange(e.target.value as CalculatedAPStatus | '')}
           className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none"
         >
@@ -116,7 +187,7 @@ export function AccountsPayableTab() {
         <button
           onClick={handleOverdueToggle}
           className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
-            overdueOnly
+            filters.overdueOnly
               ? 'border-red-500/50 bg-red-500/20 text-red-400'
               : 'border-steel-700/50 bg-steel-800/60 text-white hover:border-copper-500'
           }`}
@@ -157,7 +228,16 @@ export function AccountsPayableTab() {
         </Card>
       )}
 
-      {/* Payment Modal */}
+      {/* Detail Modal */}
+      {selectedAPId !== null && (
+        <AccountsPayableDetailModal
+          apId={selectedAPId}
+          isOpen={isDetailModalOpen}
+          onClose={handleDetailModalClose}
+        />
+      )}
+
+      {/* Payment Modal (from table action button) */}
       {selectedAP && (
         <RecordAPPaymentModal
           ap={selectedAP}

@@ -268,7 +268,7 @@ public class AccountsPayable {
     /**
      * Get the aging bucket for this AP.
      *
-     * @return aging category: "Current", "30 Days", "60 Days", "90+ Days"
+     * @return aging category: "Current", "1-30 Days", "31-60 Days", "61-90 Days", "90+ Days"
      */
     public String getAgingBucket() {
         if (dueDate == null || !isOverdue()) {
@@ -278,9 +278,11 @@ public class AccountsPayable {
         long daysOverdue = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
 
         if (daysOverdue <= 30) {
-            return "30 Days";
+            return "1-30 Days";
         } else if (daysOverdue <= 60) {
-            return "60 Days";
+            return "31-60 Days";
+        } else if (daysOverdue <= 90) {
+            return "61-90 Days";
         } else {
             return "90+ Days";
         }

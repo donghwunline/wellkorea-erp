@@ -26,7 +26,6 @@
             <arg column="payment_date" javaType="java.time.LocalDate"/>
             <arg column="amount" javaType="java.math.BigDecimal"/>
             <arg column="payment_method" javaType="com.wellkorea.backend.core.invoice.domain.PaymentMethod"/>
-            <arg column="payment_method_label_ko" javaType="String"/>
             <arg column="reference_number" javaType="String"/>
             <arg column="notes" javaType="String"/>
             <arg column="recorded_by_id" javaType="Long"/>
@@ -139,13 +138,6 @@
                pay.payment_date,
                pay.amount,
                pay.payment_method,
-               CASE pay.payment_method
-                   WHEN 'BANK_TRANSFER' THEN '계좌이체'
-                   WHEN 'CARD' THEN '카드결제'
-                   WHEN 'CASH' THEN '현금'
-                   WHEN 'CHECK' THEN '수표'
-                   ELSE pay.payment_method
-                   END     AS payment_method_label_ko,
                pay.reference_number,
                pay.notes,
                pay.recorded_by_id,
