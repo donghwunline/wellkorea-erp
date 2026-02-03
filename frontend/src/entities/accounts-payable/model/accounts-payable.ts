@@ -8,7 +8,6 @@
 
 import { Money } from '@/shared/lib/formatting/money';
 import type { CalculatedAPStatus } from './accounts-payable-status';
-import { getAPStatusConfig } from './accounts-payable-status';
 
 /**
  * AccountsPayable domain model (plain interface).
@@ -112,20 +111,6 @@ export const accountsPayableRules = {
    */
   formatTotalPaid(ap: AccountsPayable): string {
     return Money.format(ap.totalPaid, { currency: ap.currency });
-  },
-
-  /**
-   * Get status label.
-   */
-  getStatusLabel(ap: AccountsPayable): string {
-    return getAPStatusConfig(ap.calculatedStatus).label;
-  },
-
-  /**
-   * Get status label in Korean.
-   */
-  getStatusLabelKo(ap: AccountsPayable): string {
-    return getAPStatusConfig(ap.calculatedStatus).labelKo;
   },
 
   /**
