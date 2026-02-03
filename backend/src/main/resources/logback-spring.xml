@@ -2,23 +2,31 @@
 <configuration>
     <!-- Include Spring Boot's default logback configuration -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
     <!-- Property for log file location -->
     <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}wellkorea-erp.log}"/>
 
-    <!-- Console Appender (all profiles) -->
+    <!-- ========== Appenders ========== -->
+
+    <!-- Console Appender: human-readable with correlation ID (dev/test/default) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{correlationId:-}] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- File Appender (prod profile) -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- JSON Console Appender: structured JSON for Docker log driver / Loki (prod) -->
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>correlationId</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <!-- JSON File Appender: rolling file backup (prod) -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_FILE}</file>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>correlationId</includeMdcKeyName>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- Daily rollover -->
@@ -59,15 +67,15 @@
 
     <!-- ========== PROD Profile Configuration ========== -->
     <springProfile name="prod">
-        <!-- Production: INFO level, console + file logging -->
+        <!-- Production: JSON structured logging for Loki/Promtail ingestion -->
         <logger name="com.wellkorea.backend" level="INFO"/>
         <logger name="org.springframework.security" level="WARN"/>
         <logger name="org.hibernate.SQL" level="WARN"/>
         <logger name="org.springframework.web" level="WARN"/>
 
         <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="FILE"/>
+            <appender-ref ref="JSON_CONSOLE"/>
+            <appender-ref ref="JSON_FILE"/>
         </root>
     </springProfile>
 

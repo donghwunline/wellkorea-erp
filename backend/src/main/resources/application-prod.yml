@@ -113,10 +113,13 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics  # Minimal endpoints exposed
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: when-authorized  # Only show details to authenticated users
+  metrics:
+    tags:
+      application: wellkorea-erp-backend
 
 # Logging Configuration - Production optimization
 logging:
@@ -126,6 +129,3 @@ logging:
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
     org.springframework.web: WARN
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

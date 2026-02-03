@@ -72,6 +72,12 @@ dependencies {
     // API Documentation (OpenAPI/Swagger)
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
 
+    // Structured Logging (JSON output via Logback)
+    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
+    // Prometheus Metrics (Micrometer registry for /actuator/prometheus)
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
     // Utilities
     implementation 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
