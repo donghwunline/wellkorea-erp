@@ -22,7 +22,7 @@ export function VendorPaymentHistoryTable({
   currency = 'KRW',
   loading = false,
   emptyMessage,
-}: VendorPaymentHistoryTableProps) {
+}: Readonly<VendorPaymentHistoryTableProps>) {
   const { t } = useTranslation('entities');
   const defaultEmptyMessage = t('accountsPayable.paymentHistoryTable.empty');
 
