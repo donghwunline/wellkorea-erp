@@ -26,6 +26,8 @@ variables:
   FRONTEND_IMAGE: ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/erp-frontend
 
 default:
+  tags:
+    - docker
   cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
