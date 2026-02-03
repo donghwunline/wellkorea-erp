@@ -6,17 +6,17 @@
 # Prerequisites:
 #   1. Copy .env.prod.example to .env and configure all required values
 #   2. Configure host Nginx for SSL termination (see docs/deployment.md)
-#   3. Build and deploy frontend separately (npm run build -> copy dist/)
+#   3. Ensure Harbor registry access (docker login harbor.mipllab.com)
 #
 # Architecture:
 #   - All services bind to 127.0.0.1 (localhost only)
 #   - Host Nginx handles SSL termination and proxies to these ports
-#   - Frontend served as static files by host Nginx (no container)
+#   - Images pulled from Harbor registry (built by GitLab CI)
 #
 # Subdomains:
-#   - https://wellkorea.mipllab.com -> Nginx serves /var/www/wellkorea-erp/dist
-#   - https://api.wellkorea.mipllab.com -> proxy to 127.0.0.1:8080
-#   - https://storage.wellkorea.mipllab.com -> proxy to 127.0.0.1:9000
+#   - https://wellkorea.mipllab.com -> proxy to 127.0.0.1:3000 (frontend)
+#   - https://api.wellkorea.mipllab.com -> proxy to 127.0.0.1:8080 (backend)
+#   - https://storage.wellkorea.mipllab.com -> proxy to 127.0.0.1:9000 (minio)
 # =============================================================================
 
 services:
@@ -42,10 +42,7 @@ services:
 
   # Backend Application
   backend:
-    image: ${BACKEND_IMAGE:-ghcr.io/wellkorea/erp-backend:latest}
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ${BACKEND_IMAGE:-harbor.mipllab.com/wellkorea/erp-backend:latest}
     container_name: wellkorea-erp-backend
     restart: unless-stopped
     environment:
@@ -112,6 +109,22 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
+      retries: 3
+    networks:
+      - wellkorea-internal
+
+  # Frontend Application
+  frontend:
+    image: ${FRONTEND_IMAGE:-harbor.mipllab.com/wellkorea/erp-frontend:latest}
+    container_name: wellkorea-erp-frontend
+    restart: unless-stopped
+    ports:
+      # Bind to localhost only - Nginx proxies external traffic
+      - "127.0.0.1:3000:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
       retries: 3
     networks:
       - wellkorea-internal
