@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -31,10 +32,18 @@ public class MailTokenRefreshService {
 
     private final MailOAuth2ConfigRepository configRepository;
     private final RestClient restClient;
+    private final String tokenUrl;
 
+    @Autowired
     public MailTokenRefreshService(MailOAuth2ConfigRepository configRepository) {
+        this(configRepository, RestClient.create(), TOKEN_URL);
+    }
+
+    // Package-private constructor for testing with custom RestClient and URL
+    MailTokenRefreshService(MailOAuth2ConfigRepository configRepository, RestClient restClient, String tokenUrl) {
         this.configRepository = configRepository;
-        this.restClient = RestClient.create();
+        this.restClient = restClient;
+        this.tokenUrl = tokenUrl;
     }
 
     /**
@@ -79,7 +88,7 @@ public class MailTokenRefreshService {
 
         try {
             MicrosoftTokenResponse response = restClient.post()
-                    .uri(TOKEN_URL)
+                    .uri(tokenUrl)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(formData)
                     .retrieve()

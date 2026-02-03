@@ -53,24 +53,40 @@ public class GraphClientCredentialsMailSender implements MailSender {
     private final String clientSecret;
     private final String senderEmail;
     private final RestClient restClient;
+    private final String graphApiBase;
+    private final String tokenUrlTemplate;
 
     // In-memory token cache (safe for client credentials - each instance can refresh independently)
     private String accessToken;
     private long tokenExpiryTime;
 
     public GraphClientCredentialsMailSender(String tenantId, String clientId, String clientSecret, String senderEmail) {
+        this(tenantId, clientId, clientSecret, senderEmail, RestClient.create(), GRAPH_API_BASE, TOKEN_URL_TEMPLATE);
+    }
+
+    // Package-private constructor for testing with custom RestClient and URLs
+    GraphClientCredentialsMailSender(
+            String tenantId,
+            String clientId,
+            String clientSecret,
+            String senderEmail,
+            RestClient restClient,
+            String graphApiBase,
+            String tokenUrlTemplate) {
         this.tenantId = tenantId;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.senderEmail = senderEmail;
-        this.restClient = RestClient.create();
+        this.restClient = restClient;
+        this.graphApiBase = graphApiBase;
+        this.tokenUrlTemplate = tokenUrlTemplate;
     }
 
     @Override
     public void send(MailMessage message) {
         ensureValidAccessToken();
 
-        String sendMailUrl = String.format("%s/users/%s/sendMail", GRAPH_API_BASE,
+        String sendMailUrl = String.format("%s/users/%s/sendMail", graphApiBase,
                 URLEncoder.encode(senderEmail, StandardCharsets.UTF_8));
 
         GraphMailRequest request = buildMailRequest(message);
@@ -104,7 +120,7 @@ public class GraphClientCredentialsMailSender implements MailSender {
     }
 
     private void obtainAccessToken() {
-        String tokenUrl = String.format(TOKEN_URL_TEMPLATE, tenantId);
+        String tokenUrl = String.format(tokenUrlTemplate, tenantId);
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("client_id", clientId);
