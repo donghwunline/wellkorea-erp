@@ -8,7 +8,6 @@
 import { useTranslation } from 'react-i18next';
 import type { ApprovalLevel } from '../model/approval-level';
 import { approvalLevelRules } from '../model/approval-level';
-import { ApprovalStatusConfig } from '../model/approval-status';
 
 /**
  * Props for ApprovalLevelList.
@@ -71,7 +70,6 @@ export function ApprovalLevelList({
         const isApproved = approvalLevelRules.isApproved(level);
         const isRejected = approvalLevelRules.isRejected(level);
         const isPending = approvalLevelRules.isPending(level);
-        const statusConfig = level.decision ? ApprovalStatusConfig[level.decision] : null;
 
         return (
           <div
@@ -100,7 +98,7 @@ export function ApprovalLevelList({
                 <span className="font-medium text-gray-900">
                   {level.levelName || level.expectedApproverName || t('approval.levelList.level', { level: level.levelOrder })}
                 </span>
-                {statusConfig && (
+                {level.decision && (
                   <span
                     className={`
                       px-2 py-0.5 text-xs rounded-full
@@ -109,7 +107,7 @@ export function ApprovalLevelList({
                       ${isPending ? 'bg-yellow-100 text-yellow-700' : ''}
                     `}
                   >
-                    {statusConfig.labelKo}
+                    {t(`approval.levelList.${level.decision.toLowerCase()}`)}
                   </span>
                 )}
               </div>

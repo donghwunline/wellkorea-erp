@@ -16,8 +16,8 @@ import { Badge, Button, Card, Icon, Spinner } from '@/shared/ui';
 import { formatDateTime } from '@/shared/lib/formatting';
 import type { Approval } from '../model/approval';
 import type { ApprovalLevel } from '../model/approval-level';
-import { ApprovalStatusConfig } from '../model/approval-status';
 import { EntityTypeConfigs } from '../model/entity-type';
+import { ApprovalStatusBadge } from './ApprovalStatusBadge';
 
 export interface ApprovalRequestCardProps {
   /**
@@ -97,9 +97,6 @@ export function ApprovalRequestCard({
   // Get entity type config
   const entityTypeConfig = EntityTypeConfigs[approval.entityType];
 
-  // Get status config
-  const statusConfig = ApprovalStatusConfig[approval.status];
-
   return (
     <Card className={`overflow-hidden ${className}`}>
       {/* Header */}
@@ -111,9 +108,7 @@ export function ApprovalRequestCard({
               {approval.entityDescription || `#${approval.entityId}`}
             </span>
           </div>
-          <Badge variant={getStatusBadgeVariant(approval.status)}>
-            {statusConfig?.labelKo ?? approval.status}
-          </Badge>
+          <ApprovalStatusBadge status={approval.status} />
         </div>
       </div>
 
@@ -137,7 +132,7 @@ export function ApprovalRequestCard({
           </div>
           <div>
             <span className="text-steel-500">{t('card.status')}</span>
-            <p className="text-steel-300">{statusConfig?.labelKo ?? approval.status}</p>
+            <p className="text-steel-300">{t(`status.${approval.status}`)}</p>
           </div>
         </div>
 
@@ -251,20 +246,4 @@ export function ApprovalRequestCard({
       </div>
     </Card>
   );
-}
-
-/**
- * Map approval status to badge variant.
- */
-function getStatusBadgeVariant(status: string): 'success' | 'danger' | 'warning' | 'info' {
-  switch (status) {
-    case 'APPROVED':
-      return 'success';
-    case 'REJECTED':
-      return 'danger';
-    case 'PENDING':
-      return 'warning';
-    default:
-      return 'info';
-  }
 }
