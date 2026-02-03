@@ -232,8 +232,8 @@ class CompanyQueryServiceTest {
         void findByRoleType_WithRoleType_ReturnsFilteredPage() {
             // Given
             List<CompanySummaryView> summaries = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.CUSTOMER, null, 10, 0L)).willReturn(summaries);
-            given(companyMapper.countWithFilters(RoleType.CUSTOMER, null)).willReturn(1L);
+            given(companyMapper.findWithFilters(List.of(RoleType.CUSTOMER), null, 10, 0L)).willReturn(summaries);
+            given(companyMapper.countWithFilters(List.of(RoleType.CUSTOMER), null)).willReturn(1L);
 
             // When
             Page<CompanySummaryView> result = queryService.findByRoleType(RoleType.CUSTOMER, pageable);
@@ -241,7 +241,7 @@ class CompanyQueryServiceTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            verify(companyMapper).findWithFilters(RoleType.CUSTOMER, null, 10, 0L);
+            verify(companyMapper).findWithFilters(List.of(RoleType.CUSTOMER), null, 10, 0L);
         }
     }
 
@@ -254,8 +254,8 @@ class CompanyQueryServiceTest {
         void findByRoleTypeAndSearch_WithBothFilters_ReturnsFilteredPage() {
             // Given
             List<CompanySummaryView> summaries = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.VENDOR, "supplier", 10, 0L)).willReturn(summaries);
-            given(companyMapper.countWithFilters(RoleType.VENDOR, "supplier")).willReturn(1L);
+            given(companyMapper.findWithFilters(List.of(RoleType.VENDOR), "supplier", 10, 0L)).willReturn(summaries);
+            given(companyMapper.countWithFilters(List.of(RoleType.VENDOR), "supplier")).willReturn(1L);
 
             // When
             Page<CompanySummaryView> result = queryService.findByRoleTypeAndSearch(
@@ -264,7 +264,7 @@ class CompanyQueryServiceTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            verify(companyMapper).findWithFilters(RoleType.VENDOR, "supplier", 10, 0L);
+            verify(companyMapper).findWithFilters(List.of(RoleType.VENDOR), "supplier", 10, 0L);
         }
 
         @Test
@@ -272,8 +272,8 @@ class CompanyQueryServiceTest {
         void findByRoleTypeAndSearch_BlankSearch_PassesNullSearch() {
             // Given
             List<CompanySummaryView> summaries = List.of(testSummaryView);
-            given(companyMapper.findWithFilters(RoleType.CUSTOMER, null, 10, 0L)).willReturn(summaries);
-            given(companyMapper.countWithFilters(RoleType.CUSTOMER, null)).willReturn(1L);
+            given(companyMapper.findWithFilters(List.of(RoleType.CUSTOMER), null, 10, 0L)).willReturn(summaries);
+            given(companyMapper.countWithFilters(List.of(RoleType.CUSTOMER), null)).willReturn(1L);
 
             // When
             Page<CompanySummaryView> result = queryService.findByRoleTypeAndSearch(
@@ -281,7 +281,7 @@ class CompanyQueryServiceTest {
 
             // Then
             assertThat(result).isNotNull();
-            verify(companyMapper).findWithFilters(RoleType.CUSTOMER, null, 10, 0L);
+            verify(companyMapper).findWithFilters(List.of(RoleType.CUSTOMER), null, 10, 0L);
         }
     }
 

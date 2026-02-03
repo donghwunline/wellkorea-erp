@@ -53,7 +53,7 @@ public class CompanyQueryService {
      * @return Page of company summary views
      */
     public Page<CompanySummaryView> listCompanies(Pageable pageable) {
-        return findCompanies(null, null, pageable);
+        return findCompanies((List<RoleType>) null, null, pageable);
     }
 
     /**
@@ -65,7 +65,7 @@ public class CompanyQueryService {
      */
     public Page<CompanySummaryView> findBySearch(String search, Pageable pageable) {
         String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
-        return findCompanies(null, searchTerm, pageable);
+        return findCompanies((List<RoleType>) null, searchTerm, pageable);
     }
 
     /**
@@ -76,7 +76,7 @@ public class CompanyQueryService {
      * @return Page of company summary views with the specified role
      */
     public Page<CompanySummaryView> findByRoleType(RoleType roleType, Pageable pageable) {
-        return findCompanies(roleType, null, pageable);
+        return findCompanies(roleType != null ? List.of(roleType) : null, null, pageable);
     }
 
     /**
@@ -89,7 +89,21 @@ public class CompanyQueryService {
      */
     public Page<CompanySummaryView> findByRoleTypeAndSearch(RoleType roleType, String search, Pageable pageable) {
         String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
-        return findCompanies(roleType, searchTerm, pageable);
+        return findCompanies(roleType != null ? List.of(roleType) : null, searchTerm, pageable);
+    }
+
+    /**
+     * Find companies by multiple role types.
+     * Returns companies that have at least one of the specified roles.
+     *
+     * @param roleTypes List of role types to filter by
+     * @param search    Optional search term
+     * @param pageable  Pagination parameters
+     * @return Page of company summary views with at least one of the specified roles
+     */
+    public Page<CompanySummaryView> findByRoleTypes(List<RoleType> roleTypes, String search, Pageable pageable) {
+        String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
+        return findCompanies(roleTypes, searchTerm, pageable);
     }
 
     /**
@@ -106,12 +120,12 @@ public class CompanyQueryService {
      * Find companies with filters using single JOIN query.
      * MyBatis handles the collection grouping automatically.
      */
-    private Page<CompanySummaryView> findCompanies(RoleType roleType, String search, Pageable pageable) {
+    private Page<CompanySummaryView> findCompanies(List<RoleType> roleTypes, String search, Pageable pageable) {
 
         List<CompanySummaryView> content = companyMapper.findWithFilters(
-                roleType, search, pageable.getPageSize(), pageable.getOffset());
+                roleTypes, search, pageable.getPageSize(), pageable.getOffset());
 
-        long total = companyMapper.countWithFilters(roleType, search);
+        long total = companyMapper.countWithFilters(roleTypes, search);
         return new PageImpl<>(content, pageable, total);
     }
 }

@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * REST API controller for company management.
  * Follows CQRS pattern - uses separate Command and Query services.
@@ -45,28 +47,29 @@ public class CompanyController {
      * List all companies (paginated).
      * <p>
      * GET /api/companies
+     * GET /api/companies?roleType=VENDOR
+     * GET /api/companies?roleType=VENDOR,OUTSOURCE
      * <p>
      * Access: All authenticated users
      *
-     * @param roleType Optional role type filter (CUSTOMER, VENDOR, OUTSOURCE)
+     * @param roleType Optional role type filter(s) - can be single value or comma-separated list (CUSTOMER, VENDOR, OUTSOURCE)
      * @param search   Optional search term (company name)
      * @param pageable Pagination parameters
      * @return Paginated list of companies
      */
     @GetMapping
     public ResponseEntity<ApiResponse<Page<CompanySummaryView>>> listCompanies(
-            @RequestParam(required = false) RoleType roleType,
+            @RequestParam(required = false) List<RoleType> roleType,
             @RequestParam(required = false) String search,
             Pageable pageable) {
 
         Page<CompanySummaryView> companiesPage;
 
-        if (roleType != null && search != null && !search.isBlank()) {
-            companiesPage = queryService.findByRoleTypeAndSearch(roleType, search, pageable);
-        } else if (roleType != null) {
-            companiesPage = queryService.findByRoleType(roleType, pageable);
-        } else if (search != null && !search.isBlank()) {
-            companiesPage = queryService.findBySearch(search, pageable);
+        boolean hasRoleTypes = roleType != null && !roleType.isEmpty();
+        boolean hasSearch = search != null && !search.isBlank();
+
+        if (hasRoleTypes || hasSearch) {
+            companiesPage = queryService.findByRoleTypes(roleType, search, pageable);
         } else {
             companiesPage = queryService.listCompanies(pageable);
         }

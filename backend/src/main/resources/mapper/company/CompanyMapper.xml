@@ -88,9 +88,12 @@
         c.email
         FROM companies c
         WHERE c.is_active = true
-        <if test="roleType != null">
+        <if test="roleTypes != null and roleTypes.size() > 0">
             AND c.id IN (
-            SELECT company_id FROM company_roles WHERE role_type = #{roleType}
+            SELECT company_id FROM company_roles WHERE role_type IN
+            <foreach item="role" collection="roleTypes" open="(" separator="," close=")">
+                #{role}
+            </foreach>
             )
         </if>
         <if test="search != null and search != ''">
@@ -104,8 +107,11 @@
     <select id="countWithFilters" resultType="long">
         SELECT COUNT(DISTINCT c.id)
         FROM companies c
-        <if test="roleType != null">
-            INNER JOIN company_roles cr ON c.id = cr.company_id AND cr.role_type = #{roleType}
+        <if test="roleTypes != null and roleTypes.size() > 0">
+            INNER JOIN company_roles cr ON c.id = cr.company_id AND cr.role_type IN
+            <foreach item="role" collection="roleTypes" open="(" separator="," close=")">
+                #{role}
+            </foreach>
         </if>
         <where>
             c.is_active = true
