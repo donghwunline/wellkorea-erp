@@ -14,9 +14,10 @@ import {
   AccountsPayableTable,
   type CalculatedAPStatus,
 } from '@/entities/accounts-payable';
+import { CompanyCombobox, RoleTypeEnum } from '@/entities/company';
 import { RecordAPPaymentModal } from '@/features/accounts-payable/record-payment';
 import { AccountsPayableDetailModal } from '@/widgets/accounts-payable-panel';
-import { Button, Card, Spinner } from '@/shared/ui';
+import { Button, Card, DatePicker, Spinner, type DateRange } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
 
@@ -30,6 +31,8 @@ export function AccountsPayableTab() {
   const [page] = useState(0);
   const [statusFilter, setStatusFilter] = useState<CalculatedAPStatus | undefined>(undefined);
   const [overdueOnly, setOverdueOnly] = useState<boolean | undefined>(undefined);
+  const [vendorId, setVendorId] = useState<number | null>(null);
+  const [dueDateRange, setDueDateRange] = useState<DateRange>({ start: null, end: null });
 
   // Modal state for detail view
   const [selectedAPId, setSelectedAPId] = useState<number | null>(null);
@@ -46,6 +49,12 @@ export function AccountsPayableTab() {
 
   const handleOverdueToggle = useCallback(() => {
     setOverdueOnly(prev => (prev ? undefined : true));
+  }, []);
+
+  const handleDueDateRangeChange = useCallback((range: string | DateRange) => {
+    if (typeof range === 'object') {
+      setDueDateRange(range);
+    }
   }, []);
 
   // Handle opening payment modal
@@ -71,7 +80,17 @@ export function AccountsPayableTab() {
     isLoading,
     error,
     refetch,
-  } = useQuery(accountsPayableQueries.list(page, PAGE_SIZE, undefined, statusFilter, overdueOnly));
+  } = useQuery(
+    accountsPayableQueries.list(
+      page,
+      PAGE_SIZE,
+      vendorId ?? undefined,
+      statusFilter,
+      overdueOnly,
+      dueDateRange.start ?? undefined,
+      dueDateRange.end ?? undefined
+    )
+  );
 
   // Handle row click - open detail modal
   const handleRowClick = useCallback((item: AccountsPayable) => {
@@ -110,7 +129,28 @@ export function AccountsPayableTab() {
   return (
     <div className="space-y-6">
       {/* Toolbar */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
+        {/* Vendor Filter - includes both VENDOR and OUTSOURCE companies */}
+        <div className="w-56">
+          <CompanyCombobox
+            value={vendorId}
+            onChange={setVendorId}
+            roleTypes={[RoleTypeEnum.VENDOR, RoleTypeEnum.OUTSOURCE]}
+            placeholder={t('accountsPayable.filters.selectVendor')}
+          />
+        </div>
+
+        {/* Due Date Range Filter */}
+        <div className="w-64">
+          <DatePicker
+            mode="range"
+            value={dueDateRange}
+            onChange={handleDueDateRangeChange}
+            placeholder={t('accountsPayable.filters.dueDateRange')}
+            clearable
+          />
+        </div>
+
         {/* Status Filter */}
         <select
           value={statusFilter || ''}

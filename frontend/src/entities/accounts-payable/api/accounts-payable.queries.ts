@@ -21,8 +21,10 @@ const keys = {
     size: number,
     vendorId: number | undefined,
     status: CalculatedAPStatus | undefined,
-    overdueOnly: boolean | undefined
-  ) => [...keys.lists(), page, size, vendorId, status, overdueOnly] as const,
+    overdueOnly: boolean | undefined,
+    dueDateFrom: string | undefined,
+    dueDateTo: string | undefined
+  ) => [...keys.lists(), page, size, vendorId, status, overdueOnly, dueDateFrom, dueDateTo] as const,
   details: () => [...keys.all, 'detail'] as const,
   detail: (id: number) => [...keys.details(), id] as const,
   aging: () => [...keys.all, 'aging'] as const,
@@ -50,11 +52,13 @@ export const accountsPayableQueries = {
     size: number = 20,
     vendorId?: number,
     calculatedStatus?: CalculatedAPStatus,
-    overdueOnly?: boolean
+    overdueOnly?: boolean,
+    dueDateFrom?: string,
+    dueDateTo?: string
   ) =>
     queryOptions<AccountsPayable[]>({
-      queryKey: keys.list(page, size, vendorId, calculatedStatus, overdueOnly),
-      queryFn: () => getAccountsPayableList(page, size, vendorId, calculatedStatus, overdueOnly),
+      queryKey: keys.list(page, size, vendorId, calculatedStatus, overdueOnly, dueDateFrom, dueDateTo),
+      queryFn: () => getAccountsPayableList(page, size, vendorId, calculatedStatus, overdueOnly, dueDateFrom, dueDateTo),
     }),
 
   /**

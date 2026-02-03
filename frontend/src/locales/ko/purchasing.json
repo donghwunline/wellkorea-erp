@@ -307,6 +307,10 @@
       "loading": "미지급금 로딩 중...",
       "loadError": "미지급금을 불러오지 못했습니다"
     },
+    "filters": {
+      "selectVendor": "업체 선택",
+      "dueDateRange": "납기일 범위"
+    },
     "status": {
       "PENDING": "미지급",
       "PARTIALLY_PAID": "일부지급",

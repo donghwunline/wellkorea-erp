@@ -175,6 +175,12 @@
         <if test="overdueOnly != null and overdueOnly">
             AND is_overdue = true
         </if>
+        <if test="dueDateFrom != null">
+            AND due_date >= #{dueDateFrom}
+        </if>
+        <if test="dueDateTo != null">
+            AND due_date &lt;= #{dueDateTo}
+        </if>
         ORDER BY
         CASE WHEN is_overdue THEN 0 ELSE 1 END,
         due_date ASC NULLS LAST,
@@ -200,6 +206,12 @@
         </if>
         <if test="overdueOnly != null and overdueOnly">
             AND is_overdue = true
+        </if>
+        <if test="dueDateFrom != null">
+            AND due_date >= #{dueDateFrom}
+        </if>
+        <if test="dueDateTo != null">
+            AND due_date &lt;= #{dueDateTo}
         </if>
     </select>
 

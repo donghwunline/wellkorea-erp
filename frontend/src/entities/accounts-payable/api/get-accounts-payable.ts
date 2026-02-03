@@ -34,7 +34,9 @@ export async function getAccountsPayableList(
   size: number = 20,
   vendorId?: number,
   calculatedStatus?: CalculatedAPStatus,
-  overdueOnly?: boolean
+  overdueOnly?: boolean,
+  dueDateFrom?: string,
+  dueDateTo?: string
 ): Promise<AccountsPayable[]> {
   const params = new URLSearchParams();
   params.append('page', String(page));
@@ -42,6 +44,8 @@ export async function getAccountsPayableList(
   if (vendorId) params.append('vendorId', String(vendorId));
   if (calculatedStatus) params.append('calculatedStatus', calculatedStatus);
   if (overdueOnly !== undefined) params.append('overdueOnly', String(overdueOnly));
+  if (dueDateFrom) params.append('dueDateFrom', dueDateFrom);
+  if (dueDateTo) params.append('dueDateTo', dueDateTo);
 
   const response = await httpClient.get<PageResponse<AccountsPayableResponse>>(
     `${ENDPOINTS.list}?${params.toString()}`
