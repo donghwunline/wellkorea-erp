@@ -71,13 +71,6 @@ backend-test:
   script:
     - cd backend
     - ./gradlew clean build jacocoTestReport jacocoTestCoverageVerification --no-daemon
-  artifacts:
-    when: always
-    reports:
-      junit: backend/build/test-results/test/*.xml
-    paths:
-      - backend/build/reports/
-    expire_in: 30 days
   # JaCoCo coverage parsing (matches "Total: XX%" format from console)
   coverage: '/Total[^%]*\s+(\d+(?:\.\d+)?)\s*%/'
 
@@ -90,12 +83,6 @@ frontend-test:
     - npm run lint
     - npm run test:coverage
     - npm run build
-  artifacts:
-    when: always
-    paths:
-      - frontend/dist/
-      - frontend/coverage/
-    expire_in: 7 days
   # Vitest coverage parsing (matches "All files | XX.XX |" format)
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
 
