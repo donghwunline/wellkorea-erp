@@ -6,9 +6,10 @@
  * With CANCELED shown as a branching path if applicable.
  */
 
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@/shared/ui';
 import type { PurchaseOrderStatus as PurchaseOrderStatusType } from '../model/purchase-order-status';
-import { PurchaseOrderStatus, PurchaseOrderStatusConfig } from '../model/purchase-order-status';
+import { PurchaseOrderStatus } from '../model/purchase-order-status';
 
 interface PurchaseOrderTimelineProps {
   /** Current status of the purchase order */
@@ -96,6 +97,7 @@ function getConnectorClasses(isCompleted: boolean): string {
  * Horizontal timeline showing PO status progression.
  */
 export function PurchaseOrderTimeline({ status }: Readonly<PurchaseOrderTimelineProps>) {
+  const { t } = useTranslation('purchasing');
   const isCanceled = status === PurchaseOrderStatus.CANCELED;
   const currentStepIndex = getStepIndex(status);
 
@@ -115,7 +117,6 @@ export function PurchaseOrderTimeline({ status }: Readonly<PurchaseOrderTimeline
       <div className="flex items-center justify-between">
         {STATUS_FLOW.map((stepStatus, index) => {
           const state = getStepState(stepStatus, status);
-          const config = PurchaseOrderStatusConfig[stepStatus];
           const isLastStep = index === STATUS_FLOW.length - 1;
           const isConnectorCompleted = index < currentStepIndex;
 
@@ -125,7 +126,6 @@ export function PurchaseOrderTimeline({ status }: Readonly<PurchaseOrderTimeline
               <div className="flex flex-col items-center gap-1.5">
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${getStepClasses(state)}`}
-                  title={config.description}
                 >
                   {state === 'completed' ? (
                     <Icon name="check" className="h-5 w-5" />
@@ -142,7 +142,7 @@ export function PurchaseOrderTimeline({ status }: Readonly<PurchaseOrderTimeline
                         : 'text-steel-500'
                   }`}
                 >
-                  {config.labelKo}
+                  {t(`purchaseOrder.status.${stepStatus}`)}
                 </span>
               </div>
 
