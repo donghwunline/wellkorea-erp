@@ -5,9 +5,9 @@
 
 import { httpClient } from '@/shared/api';
 import type { CalculatedAPStatus } from '../model/accounts-payable-status';
-import type { AccountsPayable, APAgingSummary } from '../model/accounts-payable';
-import type { AccountsPayableResponse, APAgingSummaryResponse } from './accounts-payable.mapper';
-import { mapToAccountsPayable, mapToAPAgingSummary } from './accounts-payable.mapper';
+import type { AccountsPayable, AccountsPayableDetail, APAgingSummary } from '../model/accounts-payable';
+import type { AccountsPayableDetailResponse, AccountsPayableResponse, APAgingSummaryResponse } from './accounts-payable.mapper';
+import { mapToAccountsPayable, mapToAccountsPayableDetail, mapToAPAgingSummary } from './accounts-payable.mapper';
 
 const ENDPOINTS = {
   list: '/accounts-payable',
@@ -50,11 +50,11 @@ export async function getAccountsPayableList(
 }
 
 /**
- * Get accounts payable detail by ID.
+ * Get accounts payable detail by ID with payment history.
  */
-export async function getAccountsPayableById(id: number): Promise<AccountsPayable> {
-  const response = await httpClient.get<AccountsPayableResponse>(ENDPOINTS.detail(id));
-  return mapToAccountsPayable(response);
+export async function getAccountsPayableById(id: number): Promise<AccountsPayableDetail> {
+  const response = await httpClient.get<AccountsPayableDetailResponse>(ENDPOINTS.detail(id));
+  return mapToAccountsPayableDetail(response);
 }
 
 /**

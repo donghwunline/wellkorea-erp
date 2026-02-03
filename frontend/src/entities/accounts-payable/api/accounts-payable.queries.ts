@@ -7,8 +7,8 @@
 
 import { queryOptions } from '@tanstack/react-query';
 import type { CalculatedAPStatus } from '../model/accounts-payable-status';
-import type { AccountsPayable, APAgingSummary } from '../model/accounts-payable';
-import { getAccountsPayableById, getAccountsPayableList, getAPAgingSummary, } from './get-accounts-payable';
+import type { AccountsPayable, AccountsPayableDetail, APAgingSummary } from '../model/accounts-payable';
+import { getAccountsPayableById, getAccountsPayableList, getAPAgingSummary } from './get-accounts-payable';
 
 /**
  * Query keys for accounts payable queries.
@@ -58,10 +58,10 @@ export const accountsPayableQueries = {
     }),
 
   /**
-   * Query options for accounts payable detail.
+   * Query options for accounts payable detail with payment history.
    */
   detail: (id: number) =>
-    queryOptions<AccountsPayable>({
+    queryOptions<AccountsPayableDetail>({
       queryKey: keys.detail(id),
       queryFn: () => getAccountsPayableById(id),
       enabled: id > 0,

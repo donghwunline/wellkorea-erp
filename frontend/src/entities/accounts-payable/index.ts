@@ -16,10 +16,13 @@ export { APStatusConfigs, getAPStatusConfig } from './model/accounts-payable-sta
 
 export type {
   AccountsPayable,
+  AccountsPayableDetail,
   AccountsPayableSummary,
   APAgingSummary,
 } from './model/accounts-payable';
 export { accountsPayableRules } from './model/accounts-payable';
+
+export type { VendorPayment } from './model/vendor-payment';
 
 // ============================================================================
 // API - Query factory
@@ -44,3 +47,4 @@ export { recordPayment } from './api/record-payment';
 
 export { AccountsPayableStatusBadge } from './ui/AccountsPayableStatusBadge';
 export { AccountsPayableTable } from './ui/AccountsPayableTable';
+export { VendorPaymentHistoryTable } from './ui/VendorPaymentHistoryTable';
