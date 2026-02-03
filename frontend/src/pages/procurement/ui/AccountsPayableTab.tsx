@@ -5,7 +5,7 @@
  * Click on a row to view AP details with payment actions.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -21,18 +21,30 @@ import { Button, Card, DatePicker, Spinner, type DateRange } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
 
+/** Filter state for accounts payable list */
+interface APFilters {
+  status?: CalculatedAPStatus;
+  overdueOnly?: boolean;
+  vendorId?: number;
+  dueDateFrom?: string;
+  dueDateTo?: string;
+}
+
 /**
  * Accounts payable tab content.
  */
 export function AccountsPayableTab() {
   const { t } = useTranslation('purchasing');
 
-  // Local state for filters
+  // Consolidated filter state
   const [page] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<CalculatedAPStatus | undefined>(undefined);
-  const [overdueOnly, setOverdueOnly] = useState<boolean | undefined>(undefined);
-  const [vendorId, setVendorId] = useState<number | null>(null);
-  const [dueDateRange, setDueDateRange] = useState<DateRange>({ start: null, end: null });
+  const [filters, setFilters] = useState<APFilters>({});
+
+  // Derive DateRange for DatePicker from flat filters
+  const dueDateRange = useMemo<DateRange>(
+    () => ({ start: filters.dueDateFrom ?? null, end: filters.dueDateTo ?? null }),
+    [filters.dueDateFrom, filters.dueDateTo]
+  );
 
   // Modal state for detail view
   const [selectedAPId, setSelectedAPId] = useState<number | null>(null);
@@ -44,16 +56,24 @@ export function AccountsPayableTab() {
 
   // Handle filter changes
   const handleStatusChange = useCallback((status: CalculatedAPStatus | '') => {
-    setStatusFilter(status || undefined);
+    setFilters(prev => ({ ...prev, status: status || undefined }));
   }, []);
 
   const handleOverdueToggle = useCallback(() => {
-    setOverdueOnly(prev => (prev ? undefined : true));
+    setFilters(prev => ({ ...prev, overdueOnly: prev.overdueOnly ? undefined : true }));
+  }, []);
+
+  const handleVendorChange = useCallback((vendorId: number | null) => {
+    setFilters(prev => ({ ...prev, vendorId: vendorId ?? undefined }));
   }, []);
 
   const handleDueDateRangeChange = useCallback((range: string | DateRange) => {
     if (typeof range === 'object') {
-      setDueDateRange(range);
+      setFilters(prev => ({
+        ...prev,
+        dueDateFrom: range.start ?? undefined,
+        dueDateTo: range.end ?? undefined,
+      }));
     }
   }, []);
 
@@ -84,11 +104,11 @@ export function AccountsPayableTab() {
     accountsPayableQueries.list(
       page,
       PAGE_SIZE,
-      vendorId ?? undefined,
-      statusFilter,
-      overdueOnly,
-      dueDateRange.start ?? undefined,
-      dueDateRange.end ?? undefined
+      filters.vendorId,
+      filters.status,
+      filters.overdueOnly,
+      filters.dueDateFrom,
+      filters.dueDateTo
     )
   );
 
@@ -133,8 +153,8 @@ export function AccountsPayableTab() {
         {/* Vendor Filter - includes both VENDOR and OUTSOURCE companies */}
         <div className="w-56">
           <CompanyCombobox
-            value={vendorId}
-            onChange={setVendorId}
+            value={filters.vendorId ?? null}
+            onChange={handleVendorChange}
             roleTypes={[RoleTypeEnum.VENDOR, RoleTypeEnum.OUTSOURCE]}
             placeholder={t('accountsPayable.filters.selectVendor')}
           />
@@ -153,7 +173,7 @@ export function AccountsPayableTab() {
 
         {/* Status Filter */}
         <select
-          value={statusFilter || ''}
+          value={filters.status ?? ''}
           onChange={e => handleStatusChange(e.target.value as CalculatedAPStatus | '')}
           className="rounded-lg border border-steel-700/50 bg-steel-800/60 px-3 py-2 text-sm text-white focus:border-copper-500 focus:outline-none"
         >
@@ -167,7 +187,7 @@ export function AccountsPayableTab() {
         <button
           onClick={handleOverdueToggle}
           className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
-            overdueOnly
+            filters.overdueOnly
               ? 'border-red-500/50 bg-red-500/20 text-red-400'
               : 'border-steel-700/50 bg-steel-800/60 text-white hover:border-copper-500'
           }`}
