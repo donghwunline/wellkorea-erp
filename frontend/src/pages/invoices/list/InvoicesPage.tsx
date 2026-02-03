@@ -19,7 +19,7 @@ import { Alert, Card, FilterBar, PageHeader, Pagination } from '@/shared/ui';
 import {
   invoiceQueries,
   type InvoiceStatus,
-  invoiceStatusConfig,
+  InvoiceStatusConfigs,
   type InvoiceSummary,
   InvoiceTable,
 } from '@/entities/invoice';
@@ -36,7 +36,7 @@ export function InvoicesPage() {
   // Status filter options using i18n
   const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
     { value: '', label: t('list.allStatuses') },
-    ...Object.keys(invoiceStatusConfig).map(status => ({
+    ...Object.keys(InvoiceStatusConfigs).map(status => ({
       value: status,
       label: t(`status.${status}`),
     })),

@@ -252,7 +252,7 @@ export function PurchaseOrderDetailModal({
                   </span>
                 </InfoField>
                 <InfoField label={t('purchaseOrderDetailModal.fields.status')}>
-                  <PurchaseOrderStatusBadge status={purchaseOrder.status} korean />
+                  <PurchaseOrderStatusBadge status={purchaseOrder.status} />
                 </InfoField>
                 <InfoField label={t('purchaseOrderDetailModal.fields.vendor')}>
                   <span className="font-medium">{purchaseOrder.vendorName}</span>

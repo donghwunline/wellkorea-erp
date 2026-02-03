@@ -23,33 +23,22 @@ export type BadgeColor = 'steel' | 'copper' | 'success' | 'warning' | 'danger' |
 
 /**
  * Status display configuration.
+ * Labels are handled via i18n (approval.json status section).
  */
 export interface StatusConfig {
-  readonly label: string;
-  readonly labelKo: string;
   readonly color: BadgeColor;
 }
 
 /**
  * Display configuration for each approval status.
  * Colors map to design system Badge variants.
+ * Labels are in locales/{lang}/approval.json under "status" key.
  */
 export const ApprovalStatusConfig: Record<ApprovalStatus, StatusConfig> = {
-  PENDING: { label: 'Pending', labelKo: '대기중', color: 'warning' },
-  APPROVED: { label: 'Approved', labelKo: '승인됨', color: 'success' },
-  REJECTED: { label: 'Rejected', labelKo: '반려됨', color: 'danger' },
+  PENDING: { color: 'warning' },
+  APPROVED: { color: 'success' },
+  REJECTED: { color: 'danger' },
 };
-
-/**
- * Get status label for display.
- *
- * @param status - Approval status
- * @param korean - Use Korean label (default: true for Korean-first app)
- */
-export function getStatusLabel(status: ApprovalStatus, korean = true): string {
-  const config = ApprovalStatusConfig[status];
-  return korean ? config.labelKo : config.label;
-}
 
 /**
  * Get status color for badge display.

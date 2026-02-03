@@ -13,13 +13,13 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Badge, Card, Icon, LoadingState, Table } from '@/shared/ui';
+import { Alert, Card, Icon, LoadingState, Table } from '@/shared/ui';
 import {
   type PurchaseRequestListItem,
   purchaseRequestQueries,
   purchaseRequestRules,
   PurchaseRequestStatus,
-  PurchaseRequestStatusConfig,
+  PurchaseRequestStatusBadge,
 } from '@/entities/purchase-request';
 import { formatDate } from '@/shared/lib/formatting';
 
@@ -77,39 +77,6 @@ function MaterialPurchaseRequestSummaryStats({
         <div className="mt-1 text-2xl font-bold text-green-400">{stats.closed}</div>
       </Card>
     </div>
-  );
-}
-
-/**
- * Status badge for purchase request
- */
-function PurchaseRequestStatusBadge({
-  status,
-  isOverdue,
-  t,
-}: {
-  readonly status: PurchaseRequestStatus;
-  readonly isOverdue: boolean;
-  readonly t: (key: string) => string;
-}) {
-  const statusLabel = t(`entities:purchaseRequest.status.${status}`);
-
-  const config = PurchaseRequestStatusConfig[status];
-
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <Badge variant={config.color} dot>
-        {statusLabel}
-      </Badge>
-      {isOverdue && (
-        <span
-          className="inline-flex items-center rounded-full bg-red-500/20 px-1.5 py-0.5 text-xs text-red-400"
-          title={t('widgets:purchasePanel.overdueWarning')}
-        >
-          <Icon name="warning" className="h-3 w-3" />
-        </span>
-      )}
-    </span>
   );
 }
 
@@ -215,7 +182,12 @@ export function PurchasePanel({ projectId }: PurchasePanelProps) {
                     {formatDate(request.requiredDate)}
                   </Table.Cell>
                   <Table.Cell>
-                    <PurchaseRequestStatusBadge status={request.status} isOverdue={isOverdue} t={t} />
+                    <PurchaseRequestStatusBadge
+                      status={request.status}
+                      dot
+                      size="sm"
+                      warning={isOverdue ? t('widgets:purchasePanel.overdueWarning') : undefined}
+                    />
                   </Table.Cell>
                   <Table.Cell className="text-steel-300">
                     {request.createdByName}

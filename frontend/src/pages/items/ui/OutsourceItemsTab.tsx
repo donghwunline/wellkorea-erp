@@ -22,12 +22,13 @@ import {
   updateServiceCategory,
   type VendorOffering,
 } from '@/entities/catalog';
+import { ProductStatusBadge } from '@/entities/product';
 import { useAuth } from '@/entities/auth';
 import { ServiceCategoryFormModal } from '@/features/items/service-category/form';
 import { DeleteServiceCategoryModal } from '@/features/items/service-category/delete';
 import { VendorOfferingFormModal } from '@/features/items/vendor-offering/form';
 import { DeleteVendorOfferingModal } from '@/features/items/vendor-offering/delete';
-import { Button, Card, Icon, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
+import { Badge, Button, Card, Icon, Modal, Pagination, SearchBar, Spinner } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
 
@@ -265,15 +266,7 @@ export function OutsourceItemsTab() {
                       </p>
                     )}
                   </div>
-                  <span
-                    className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                      category.isActive
-                        ? 'bg-emerald-500/10 text-emerald-400'
-                        : 'bg-red-500/10 text-red-400'
-                    }`}
-                  >
-                    {category.isActive ? t('status.ACTIVE') : t('status.INACTIVE')}
-                  </span>
+                  <ProductStatusBadge isActive={category.isActive} />
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-steel-700/30 pt-3">
@@ -409,9 +402,7 @@ export function OutsourceItemsTab() {
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-center">
                           {offering.isPreferred && (
-                            <span className="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
-                              {t('table.headers.preferred')}
-                            </span>
+                            <Badge variant="warning" size="sm">{t('table.headers.preferred')}</Badge>
                           )}
                         </td>
                         {canManage && (

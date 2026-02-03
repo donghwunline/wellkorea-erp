@@ -1,32 +1,36 @@
 /**
- * Purchase Request Status Badge component.
- *
- * Displays the status of a purchase request as a colored badge.
+ * Purchase request status badge component.
+ * Thin wrapper around generic StatusBadge with purchase-request-specific configuration.
  */
 
-import { Badge } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui';
 import type { PurchaseRequestStatus } from '../model/purchase-request-status';
 import { PurchaseRequestStatusConfig } from '../model/purchase-request-status';
 
 interface PurchaseRequestStatusBadgeProps {
-  /** Status to display */
   status: PurchaseRequestStatus;
-  /** Show Korean label instead of English */
-  korean?: boolean;
+  size?: 'sm' | 'md';
+  dot?: boolean;
+  warning?: string;
+  className?: string;
 }
 
-/**
- * Badge showing purchase request status with appropriate color.
- */
 export function PurchaseRequestStatusBadge({
   status,
-  korean = false,
+  size,
+  dot,
+  warning,
+  className,
 }: Readonly<PurchaseRequestStatusBadgeProps>) {
-  const config = PurchaseRequestStatusConfig[status];
-
   return (
-    <Badge variant={config.color}>
-      {korean ? config.labelKo : config.label}
-    </Badge>
+    <StatusBadge
+      status={status}
+      config={PurchaseRequestStatusConfig}
+      i18nKey="purchasing:purchaseRequest.status"
+      size={size}
+      dot={dot}
+      warning={warning}
+      className={className}
+    />
   );
 }

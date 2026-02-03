@@ -118,7 +118,7 @@ export function QuotationTable({
                   <span className="text-steel-300">v{quotation.version}</span>
                 </Table.Cell>
                 <Table.Cell>
-                  <QuotationStatusBadge status={quotation.status} />
+                  <QuotationStatusBadge status={quotation.status} size="sm" />
                 </Table.Cell>
                 <Table.Cell className="text-steel-300">
                   {Money.format(quotation.totalAmount)}

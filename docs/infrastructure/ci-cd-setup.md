@@ -2,50 +2,54 @@
 
 ## 개요
 
-이 문서는 Well Korea ERP 시스템의 CI/CD 파이프라인을 설명합니다. 파이프라인은 자동화된 테스트, 코드 품질 검사, 보안 스캐닝 및 여러 환경으로의 배포를 포함한 트렁크 기반 개발 워크플로우를 구현합니다.
+이 문서는 Well Korea ERP 시스템의 CI/CD 파이프라인을 설명합니다. 파이프라인은 자동화된 테스트, 코드 품질 검사, 보안 스캐닝 및 Harbor 레지스트리로의 이미지 푸시를 포함한 트렁크 기반 개발 워크플로우를 구현합니다.
 
 ## 아키텍처
 
 ```
-Pull Request → CI (품질 검사) → main 병합 → CD (배포)
+┌─────────────┐    push     ┌─────────────┐    push      ┌─────────────┐
+│   GitLab    │ ─────────▶  │  GitLab CI  │ ──────────▶  │   Harbor    │
+│ Repository  │             │ (Security/  │              │  Registry   │
+└─────────────┘             │  Test/Build)│              └─────────────┘
+                            └─────────────┘
 ```
 
 ### 파이프라인 단계
 
-1. **CI (지속적 통합)** - Pull Request 시 실행
-   - Backend: 빌드, JUnit 테스트, JaCoCo 커버리지 (70%), SonarCloud
-   - Frontend: 빌드, ESLint, Vitest 테스트, SonarCloud
-   - Security: Trivy 취약점 스캔, Gitleaks 시크릿 탐지
-   - CodeQL: 정적 분석 (주간 스케줄)
+1. **Security (보안 스캔)** - 모든 브랜치/MR에서 실행
+   - Trivy: 취약점 스캔 (CRITICAL/HIGH)
+   - Gitleaks: 시크릿 탐지
+   - Semgrep: 정적 분석 (경고만, 비차단)
 
-2. **CD (지속적 배포)** - main 푸시 또는 버전 태그 시 실행
-   - Dev: 자동 배포 (현재 주석 처리)
-   - Staging: 자동 배포 (현재 주석 처리)
-   - Production: 수동 승인 필요, 버전 태그로 트리거 (현재 주석 처리)
+2. **Test (테스트)** - 모든 브랜치/MR에서 실행
+   - Backend: JUnit 테스트, JaCoCo 커버리지 (70%)
+   - Frontend: ESLint, Vitest 테스트, 커버리지 (70%)
+
+3. **Docker (이미지 빌드/푸시)** - main 브랜치에서만 실행
+   - Harbor 레지스트리로 이미지 푸시
+   - 태그: commit SHA, branch slug, latest
+
+4. **CD (지속적 배포)** - 추후 추가 예정
+   - Dev: 자동 배포
+   - Staging: 수동 승인
+   - Production: 수동 승인 (protected environment)
 
 ## 워크플로우 구조
 
-### 활성 워크플로우
+### 메인 파이프라인 파일
 
-- **`ci.yml`** - 품질 검사를 위한 메인 CI 워크플로우
-- **`codeql.yml`** - CodeQL 보안 분석 (주간 + PR 시)
+- **`.gitlab-ci.yml`** - 전체 CI 파이프라인 정의
+  - security stage: trivy-scan, gitleaks, semgrep
+  - test stage: backend-test, frontend-test
+  - docker stage: docker-backend, docker-frontend
 
-### 재사용 가능한 워크플로우 컴포넌트
+### 파이프라인 실행 조건
 
-`.github/workflows/_shared/` 위치:
-
-- **`backend-quality.yml`** - Backend 빌드, 테스트, 커버리지
-- **`frontend-quality.yml`** - Frontend 빌드, 테스트, 린팅
-- **`docker-build.yml`** - Docker 이미지 빌드 및 푸시
-- **`e2e-tests.yml`** - Playwright E2E 테스트
-
-### CD 워크플로우 (주석 처리됨)
-
-배포 인프라 구성 시 활성화 가능:
-
-- **`cd-dev.yml`** - 개발 환경 배포
-- **`cd-staging.yml`** - 스테이징 환경 배포
-- **`cd-prod.yml`** - 프로덕션 환경 배포 (수동 승인 필요)
+| 스테이지 | 실행 조건 | 비고 |
+|---------|----------|------|
+| security | 모든 브랜치, MR | 항상 실행 |
+| test | 모든 브랜치, MR | 항상 실행 |
+| docker | main 브랜치만 | 테스트 통과 후 |
 
 ## 기술 스택
 
@@ -54,45 +58,67 @@ Pull Request → CI (품질 검사) → main 병합 → CD (배포)
 - Gradle 빌드 시스템
 - JUnit 5 테스팅
 - JaCoCo 코드 커버리지 (70% 임계값)
-- SonarCloud 코드 품질 분석
 
 ### Frontend
 - React 19 with TypeScript 5.9
 - Vite 7 빌드 도구
 - Vitest 유닛 테스트
-- Playwright E2E 테스트
 - ESLint 코드 린팅
-- SonarCloud 코드 품질 분석
 
 ### 인프라
 - Docker & Docker Compose
-- GitHub Container Registry (ghcr.io)
+- Harbor Registry (harbor.mipllab.com)
+- GitLab CI (gitlab.mipllab.com)
 - PostgreSQL 16
 
 ## 시작하기
 
 ### 사전 요구사항
 
-1. **SonarCloud 설정**
-   - SonarCloud에 프로젝트 생성:
-     - `wellkorea-erp-backend`
-     - `wellkorea-erp-frontend`
-   - SonarCloud 토큰 생성
-   - GitHub 저장소 시크릿에 `SONAR_TOKEN` 추가
+#### 1. GitLab CI/CD Variables 설정
 
-2. **로컬 개발 환경**
-   ```bash
-   # Backend 의존성 설치
-   cd backend
-   ./gradlew build
+GitLab 프로젝트에서 **Settings > CI/CD > Variables**로 이동하여 다음 변수를 추가합니다:
 
-   # Frontend 의존성 설치
-   cd frontend
-   npm install
+| Variable | Value | Protected | Masked |
+|----------|-------|-----------|--------|
+| `HARBOR_REGISTRY` | `harbor.mipllab.com` | No | No |
+| `HARBOR_USERNAME` | `robot$wellkorea-ci` | No | No |
+| `HARBOR_PASSWORD` | (robot token) | Yes | Yes |
 
-   # Playwright 브라우저 설치
-   npx playwright install
-   ```
+#### 2. Harbor 설정
+
+1. Harbor에서 프로젝트 생성: `wellkorea`
+2. Robot Account 생성: `robot$wellkorea-ci`
+3. Push/Pull 권한 부여
+4. Robot token을 GitLab CI 변수로 등록
+
+#### 3. GitLab Runner 설정
+
+Runner는 Docker executor와 Docker-in-Docker (dind) 기능이 필요합니다:
+
+```yaml
+# Runner configuration example
+[[runners]]
+  executor = "docker"
+  [runners.docker]
+    privileged = true  # Required for dind
+    volumes = ["/certs/client", "/cache"]
+```
+
+### 로컬 개발 환경
+
+```bash
+# Backend 의존성 설치
+cd backend
+./gradlew build
+
+# Frontend 의존성 설치
+cd frontend
+npm install
+
+# Playwright 브라우저 설치
+npx playwright install
+```
 
 ### 로컬에서 테스트 실행
 
@@ -106,8 +132,8 @@ cd backend
 # 커버리지 리포트 확인
 open build/reports/jacoco/test/html/index.html
 
-# SonarCloud 분석 실행 (SONAR_TOKEN 필요)
-./gradlew sonar
+# 커버리지 검증 (70% 임계값)
+./gradlew jacocoTestCoverageVerification
 ```
 
 #### Frontend
@@ -137,108 +163,65 @@ docker build -t wellkorea-erp-backend:local ./backend
 docker build -t wellkorea-erp-frontend:local ./frontend
 
 # docker-compose로 실행
-cp .env.example .env
-docker-compose up -d
+cp .env.local.example .env
+docker compose -f docker-compose.local.yml up -d
 ```
-
-## CD 워크플로우 활성화
-
-### 1. 개발 환경
-
-1. GitHub에 배포 시크릿 설정:
-   - `DEV_SSH_HOST`: 개발 서버 SSH 호스트
-   - `DEV_SSH_USER`: SSH 사용자
-   - `DEV_SSH_KEY`: SSH 개인 키
-
-2. `cd-dev.yml`에서 배포 URL 업데이트:
-   ```yaml
-   environment:
-     url: https://dev.wellkorea-erp.com  # 실제 개발 URL
-   ```
-
-3. `.github/workflows/cd-dev.yml`의 전체 워크플로우 주석 해제
-
-### 2. 스테이징 환경
-
-개발 환경과 동일한 단계 수행:
-- `STAGING_SSH_HOST`, `STAGING_SSH_USER`, `STAGING_SSH_KEY` 사용
-- `cd-staging.yml`에서 URL 업데이트
-- `.github/workflows/cd-staging.yml` 주석 해제
-
-### 3. 프로덕션 환경
-
-1. GitHub에 "production" 환경 생성:
-   - Settings > Environments > New environment
-   - 이름: `production`
-   - "Required reviewers" 활성화
-   - 배포 승인자 추가
-
-2. 시크릿 설정:
-   - `PROD_SSH_HOST`, `PROD_SSH_USER`, `PROD_SSH_KEY`
-
-3. `cd-prod.yml`에서 URL 업데이트
-
-4. `.github/workflows/cd-prod.yml` 주석 해제
-
-5. 버전 태그로 배포:
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
 
 ## 품질 게이트
 
 ### CI 품질 검사
 
-다음의 경우 CI 파이프라인이 **PR 병합을 차단**합니다:
+다음의 경우 CI 파이프라인이 **MR 병합을 차단**합니다:
 - Backend 테스트 실패
 - Frontend 테스트 실패
 - 코드 커버리지 70% 미만
 - ESLint 오류 존재
-- 높음/치명적 보안 취약점 탐지
-- SonarCloud 품질 게이트 실패
+- 높음/치명적 보안 취약점 탐지 (Trivy)
+- 시크릿 탐지 (Gitleaks)
 
 ### 코드 커버리지 요구사항
 
-- **Backend**: 최소 70% (라인, 브랜치, 함수, 구문)
-- **Frontend**: 최소 70% (라인, 브랜치, 함수, 구문)
+- **Backend**: 최소 70% (JaCoCo jacocoTestCoverageVerification으로 강제)
+- **Frontend**: 최소 70% (Vitest coverage로 강제)
 
 ## 보안 기능
 
 ### 자동화된 보안 스캔
 
-1. **Dependabot** - 의존성 업데이트
-   - 매주 월요일 오전 9시 실행
-   - 모니터링: Gradle, npm, GitHub Actions, Docker
-   - 오래된 의존성에 대한 PR 생성
+1. **Trivy** - 파일시스템 취약점 스캔
+   - 모든 브랜치/MR에서 실행
+   - CRITICAL 및 HIGH 취약점 탐지
+   - 취약점 발견 시 파이프라인 차단
 
-2. **CodeQL** - 정적 애플리케이션 보안 테스트
-   - 매주 월요일 오전 3시 실행
-   - 분석: Java backend, TypeScript frontend
-   - 탐지: SQL 인젝션, XSS, 코드 인젝션 등
+2. **Gitleaks** - 시크릿 탐지
+   - 모든 브랜치/MR에서 실행
+   - 코드 내 API 키, 토큰, 비밀번호 탐지
+   - 시크릿 발견 시 파이프라인 차단
 
-3. **Trivy** - 컨테이너 및 파일시스템 취약점 스캔
-   - 모든 PR에서 실행
-   - 스캔: CVE, 잘못된 구성, 시크릿
-   - 보고: 높음 및 치명적 취약점
+3. **Semgrep** - 정적 분석
+   - 모든 브랜치/MR에서 실행
+   - 코드 품질 및 보안 패턴 분석
+   - 경고만 (파이프라인 비차단)
 
-4. **Gitleaks** - 시크릿 탐지
-   - 모든 PR에서 실행
-   - 탐지: 코드 내 API 키, 토큰, 비밀번호
+## 이미지 태깅 전략
 
-### 보안 검사 결과 확인
+```
+harbor.mipllab.com/wellkorea/erp-backend:{tag}
+harbor.mipllab.com/wellkorea/erp-frontend:{tag}
+```
 
-1. GitHub 저장소의 **Security** 탭으로 이동
-2. **Code scanning alerts** 확인 (CodeQL + Trivy)
-3. 취약한 의존성에 대한 **Dependabot alerts** 확인
-4. **Secret scanning alerts** 확인 (활성화된 경우)
+| Tag | 생성 시점 | 예시 |
+|-----|----------|------|
+| `{commit-sha}` | main 브랜치 빌드마다 | `abc1234f` |
+| `{branch-slug}` | main 브랜치 빌드마다 | `main` |
+| `latest` | main 브랜치 빌드마다 | `latest` |
 
 ## 모니터링 및 관찰성
 
 ### CI/CD 메트릭
 
-워크플로우 실행 확인:
-- GitHub Actions 탭 > Workflows
+파이프라인 실행 확인:
+- GitLab CI/CD > Pipelines
 - 빌드 시간, 성공률, 불안정성 모니터링
 
 ### 아티팩트
@@ -247,10 +230,8 @@ docker-compose up -d
 
 - **Backend 테스트 결과** (30일 보관)
 - **Backend 커버리지 리포트** (30일 보관)
-- **Frontend 테스트 결과** (30일 보관)
 - **Frontend 빌드 아티팩트** (7일 보관)
-- **Playwright 리포트** (30일 보관)
-- **E2E 테스트 결과** (30일 보관)
+- **Frontend 커버리지** (7일 보관)
 
 ## 문제 해결
 
@@ -277,29 +258,7 @@ npm install
 npm run build
 ```
 
-#### 3. E2E 테스트 실패
-
-```bash
-# 디버깅을 위해 headed 모드로 실행
-npx playwright test --headed
-
-# 특정 테스트 실행
-npx playwright test smoke.spec.ts
-
-# 스냅샷 업데이트
-npx playwright test --update-snapshots
-```
-
-#### 4. SonarCloud 품질 게이트 실패
-
-- CI 로그의 SonarCloud 리포트 링크 확인
-- 일반적인 문제:
-  - 임계값 미만의 코드 커버리지
-  - 감지된 코드 스멜 또는 버그
-  - 보안 핫스팟
-  - 중복 코드
-
-#### 5. Docker 빌드 실패
+#### 3. Docker 빌드 실패
 
 ```bash
 # 로컬에서 빌드 테스트
@@ -309,6 +268,23 @@ docker build -t test:local ./backend
 docker system df
 docker system prune -a
 ```
+
+#### 4. Harbor 푸시 실패
+
+```bash
+# 로컬에서 로그인 테스트
+docker login harbor.mipllab.com -u robot$wellkorea-ci
+
+# 이미지 푸시 테스트
+docker tag test:local harbor.mipllab.com/wellkorea/test:local
+docker push harbor.mipllab.com/wellkorea/test:local
+```
+
+#### 5. GitLab CI Runner 문제
+
+- Runner가 privileged 모드인지 확인
+- dind 서비스가 활성화되어 있는지 확인
+- TLS 인증서 경로가 올바른지 확인
 
 ## 모범 사례
 
@@ -329,11 +305,11 @@ chore(ci): 의존성 업데이트
 docs(readme): 설정 지침 업데이트
 ```
 
-### Pull Request 워크플로우
+### Merge Request 워크플로우
 
 1. `main`에서 feature 브랜치 생성
 2. 변경 사항 작성 및 커밋
-3. GitHub에 푸시하고 PR 생성
+3. GitLab에 푸시하고 MR 생성
 4. CI 자동 실행
 5. 실패 사항 해결
 6. 리뷰 요청
@@ -355,30 +331,47 @@ Semantic Versioning (SemVer) 사용:
 - npm 의존성 캐싱
 - Docker 레이어 캐싱
 - 병렬 작업 실행
-- 선택적 테스트 실행
 
 ### 비용 최적화
 
-- 동시성을 사용하여 오래된 실행 취소
 - 아티팩트 보관 기간 제한
-- 필요할 때만 매트릭스 빌드 사용
+- 필요할 때만 Docker 빌드 실행 (main 브랜치만)
+
+## CD (배포) - 추후 추가 예정
+
+배포 인프라 구성 시 다음 스테이지를 추가할 예정입니다:
+
+```yaml
+stages:
+  - security
+  - test
+  - docker
+  - deploy-dev      # 자동 배포
+  - deploy-staging  # 수동 승인
+  - deploy-prod     # 수동 승인 (protected environment)
+```
+
+배포 설정에 필요한 정보:
+- SSH 접속 정보 (host, user, key)
+- 환경별 `.env` 파일
+- Docker Compose 배포 스크립트
 
 ## 로드맵
 
 향후 개선 사항:
-- [ ] PR용 미리보기 환경 배포
+- [ ] CD 스테이지 추가 (dev/staging/prod)
+- [ ] MR용 미리보기 환경 배포
 - [ ] 성능 테스트 추가
 - [ ] 카나리 배포 구현
 - [ ] Slack/Discord 알림 추가
 - [ ] 모니터링 대시보드 설정
 - [ ] 실패 시 자동 롤백 구현
-- [ ] 부하 테스트 추가
 
 ## 참고 자료
 
-- [GitHub Actions 문서](https://docs.github.com/en/actions)
-- [SonarCloud 문서](https://docs.sonarcloud.io/)
-- [Dependabot 문서](https://docs.github.com/en/code-security/dependabot)
-- [CodeQL 문서](https://codeql.github.com/docs/)
+- [GitLab CI 문서](https://docs.gitlab.com/ee/ci/)
+- [Harbor 문서](https://goharbor.io/docs/)
 - [Docker 문서](https://docs.docker.com/)
 - [Playwright 문서](https://playwright.dev/)
+- [Trivy 문서](https://aquasecurity.github.io/trivy/)
+- [Gitleaks 문서](https://github.com/gitleaks/gitleaks)

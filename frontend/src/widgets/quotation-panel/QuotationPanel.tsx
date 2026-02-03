@@ -401,14 +401,22 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
 
           {canSubmit && (
             <Button onClick={() => setSubmitConfirm(true)} disabled={isActing} size="sm">
-              <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
+              {submitMutation.isPending ? (
+                <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icon name="paper-airplane" className="mr-2 h-4 w-4" />
+              )}
               {t('panel.submit')}
             </Button>
           )}
 
           {canDownloadPdf && (
             <Button variant="secondary" onClick={handleDownloadPdf} disabled={isActing} size="sm">
-              <Icon name="document-arrow-down" className="mr-2 h-4 w-4" />
+              {pdfMutation.isPending ? (
+                <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icon name="document-arrow-down" className="mr-2 h-4 w-4" />
+              )}
               {t('panel.pdf')}
             </Button>
           )}
@@ -432,7 +440,11 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
               size="sm"
               className="bg-green-600 hover:bg-green-700"
             >
-              <Icon name="check-circle" className="mr-2 h-4 w-4" />
+              {acceptMutation.isPending ? (
+                <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icon name="check-circle" className="mr-2 h-4 w-4" />
+              )}
               {t('panel.accept')}
             </Button>
           )}
@@ -444,7 +456,11 @@ export function QuotationPanel({ projectId, onDataChange, onError }: QuotationPa
               disabled={isActing}
               size="sm"
             >
-              <Icon name="document-duplicate" className="mr-2 h-4 w-4" />
+              {versionMutation.isPending ? (
+                <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Icon name="document-duplicate" className="mr-2 h-4 w-4" />
+              )}
               {t('panel.newVersion')}
             </Button>
           )}

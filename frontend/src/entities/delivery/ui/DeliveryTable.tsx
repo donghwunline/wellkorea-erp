@@ -66,7 +66,7 @@ export function DeliveryTable({
           >
             <Table.Cell>{formatDate(delivery.deliveryDate)}</Table.Cell>
             <Table.Cell>
-              <DeliveryStatusBadge status={delivery.status} />
+              <DeliveryStatusBadge status={delivery.status} size="sm" />
             </Table.Cell>
             <Table.Cell>
               <span className="text-steel-300">{t('delivery.table.itemsCount', { count: delivery.lineItems.length })}</span>

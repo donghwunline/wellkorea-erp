@@ -29,37 +29,26 @@ export type BadgeColor = 'steel' | 'copper' | 'success' | 'warning' | 'danger' |
 
 /**
  * Status display configuration.
+ * Labels are handled via i18n (quotations.json status section).
  */
 export interface StatusConfig {
-  readonly label: string;
-  readonly labelKo: string;
   readonly color: BadgeColor;
 }
 
 /**
  * Display configuration for each quotation status.
  * Colors map to design system Badge variants.
+ * Labels are in locales/{lang}/quotations.json under "status" key.
  */
 export const QuotationStatusConfig: Record<QuotationStatus, StatusConfig> = {
-  DRAFT: { label: 'Draft', labelKo: '작성중', color: 'steel' },
-  PENDING: { label: 'Pending', labelKo: '결재중', color: 'warning' },
-  APPROVED: { label: 'Approved', labelKo: '승인됨', color: 'info' },
-  SENDING: { label: 'Sending', labelKo: '발송중', color: 'copper' },
-  SENT: { label: 'Sent', labelKo: '발송완료', color: 'purple' },
-  ACCEPTED: { label: 'Accepted', labelKo: '수락됨', color: 'success' },
-  REJECTED: { label: 'Rejected', labelKo: '반려됨', color: 'danger' },
+  DRAFT: { color: 'steel' },
+  PENDING: { color: 'warning' },
+  APPROVED: { color: 'info' },
+  SENDING: { color: 'copper' },
+  SENT: { color: 'purple' },
+  ACCEPTED: { color: 'success' },
+  REJECTED: { color: 'danger' },
 };
-
-/**
- * Get status label for display.
- *
- * @param status - Quotation status
- * @param korean - Use Korean label (default: false)
- */
-export function getStatusLabel(status: QuotationStatus, korean = false): string {
-  const config = QuotationStatusConfig[status];
-  return korean ? config.labelKo : config.label;
-}
 
 /**
  * Get status color for badge display.

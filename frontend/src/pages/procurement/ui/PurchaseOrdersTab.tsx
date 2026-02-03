@@ -14,25 +14,13 @@ import {
   purchaseOrderRules,
   type PurchaseOrderStatus,
   PurchaseOrderStatusConfig,
+  PurchaseOrderStatusBadge,
 } from '@/entities/purchase-order';
-import { Badge, Card, Pagination, Spinner, Table } from '@/shared/ui';
+import { Card, Pagination, Spinner, Table } from '@/shared/ui';
 import { formatDate, Money } from '@/shared/lib/formatting';
 import { PurchaseOrderDetailModal } from '@/widgets';
 
 const PAGE_SIZE = 20;
-
-/**
- * Status badge for purchase order.
- */
-function StatusBadge({ status }: { readonly status: PurchaseOrderStatus }) {
-  const { t } = useTranslation('purchasing');
-  const config = PurchaseOrderStatusConfig[status];
-  return (
-    <Badge variant={config.color} dot>
-      {t(`purchaseOrder.status.${status}`)}
-    </Badge>
-  );
-}
 
 /**
  * Purchase orders tab content.
@@ -167,7 +155,7 @@ export function PurchaseOrdersTab() {
                           {Money.format(order.totalAmount, { currency: order.currency })}
                         </Table.Cell>
                         <Table.Cell>
-                          <StatusBadge status={order.status} />
+                          <PurchaseOrderStatusBadge status={order.status} dot size="sm" />
                         </Table.Cell>
                         <Table.Cell className="text-steel-300">{order.createdByName}</Table.Cell>
                       </Table.Row>

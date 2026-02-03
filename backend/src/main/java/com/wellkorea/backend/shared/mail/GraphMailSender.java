@@ -41,6 +41,7 @@ public class GraphMailSender implements MailSender {
     private final MailTokenLockService lockService;
     private final MailTokenRefreshService tokenRefreshService;
     private final RestClient restClient;
+    private final String graphSendMailUrl;
 
     public GraphMailSender(
             String clientId,
@@ -48,12 +49,26 @@ public class GraphMailSender implements MailSender {
             MailOAuth2ConfigRepository configRepository,
             MailTokenLockService lockService,
             MailTokenRefreshService tokenRefreshService) {
+        this(clientId, clientSecret, configRepository, lockService, tokenRefreshService,
+             RestClient.create(), GRAPH_SEND_MAIL_URL);
+    }
+
+    // Package-private constructor for testing with custom RestClient and URL
+    GraphMailSender(
+            String clientId,
+            String clientSecret,
+            MailOAuth2ConfigRepository configRepository,
+            MailTokenLockService lockService,
+            MailTokenRefreshService tokenRefreshService,
+            RestClient restClient,
+            String graphSendMailUrl) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.configRepository = configRepository;
         this.lockService = lockService;
         this.tokenRefreshService = tokenRefreshService;
-        this.restClient = RestClient.create();
+        this.restClient = restClient;
+        this.graphSendMailUrl = graphSendMailUrl;
     }
 
     @Override
@@ -64,7 +79,7 @@ public class GraphMailSender implements MailSender {
 
         try {
             restClient.post()
-                    .uri(GRAPH_SEND_MAIL_URL)
+                    .uri(graphSendMailUrl)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)

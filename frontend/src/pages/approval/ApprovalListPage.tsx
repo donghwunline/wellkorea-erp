@@ -139,6 +139,8 @@ export function ApprovalListPage() {
     (approval: Approval) => {
       if (approval.entityType === 'QUOTATION') {
         navigate(`/quotations/${approval.entityId}`);
+      } else if (approval.entityType === 'VENDOR_SELECTION') {
+        navigate(`/approvals/vendor-selection/${approval.entityId}`);
       }
     },
     [navigate]

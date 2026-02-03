@@ -84,6 +84,7 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
     testImplementation 'org.testcontainers:minio:1.19.3'
+    testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

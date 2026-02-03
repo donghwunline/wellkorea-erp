@@ -126,6 +126,13 @@
       "SELECTED": "선정됨",
       "CANCELLED": "취소"
     },
+    "itemStatus": {
+      "SENT": "발송됨",
+      "REPLIED": "응답함",
+      "NO_RESPONSE": "무응답",
+      "SELECTED": "선정됨",
+      "REJECTED": "미선정"
+    },
     "actions": {
       "send": "전송",
       "receiveQuote": "견적 수령",

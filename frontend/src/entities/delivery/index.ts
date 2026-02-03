@@ -8,7 +8,7 @@ export type { Delivery, DeliveryLineItem } from './model/delivery';
 export { deliveryRules } from './model/delivery';
 export type { DeliveryStatus } from './model/delivery-status';
 export {
-  DELIVERY_STATUS_CONFIG,
+  DeliveryStatusConfig,
   DELIVERY_STATUSES,
   canTransitionTo,
 } from './model/delivery-status';

@@ -1,30 +1,25 @@
 /**
- * Company Status Badge.
- *
- * Pure display component for company active status.
- *
- * Entity UI rules:
- * - No router dependencies
- * - No mutation hooks
- * - Receives all data via props
+ * Company status badge component.
+ * Thin wrapper around generic StatusBadge with company-specific configuration.
  */
 
-import { useTranslation } from 'react-i18next';
-import { Badge } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui';
+import type { CompanyActiveStatus } from '../model/company-status';
+import { CompanyActiveStatusConfig } from '../model/company-status';
 
 export interface CompanyStatusBadgeProps {
   /**
-   * Company active status.
+   * Company active status (boolean).
    */
   isActive: boolean;
 
   /**
-   * Optional size variant.
+   * Badge size variant.
    */
   size?: 'sm' | 'md';
 
   /**
-   * Optional additional className.
+   * Additional className.
    */
   className?: string;
 }
@@ -39,19 +34,19 @@ export interface CompanyStatusBadgeProps {
  */
 export function CompanyStatusBadge({
   isActive,
-  size = 'md',
+  size,
   className,
 }: Readonly<CompanyStatusBadgeProps>) {
-  const { t } = useTranslation('entities');
+  const status: CompanyActiveStatus = isActive ? 'ACTIVE' : 'INACTIVE';
 
   return (
-    <Badge
-      variant={isActive ? 'success' : 'danger'}
+    <StatusBadge
+      status={status}
+      config={CompanyActiveStatusConfig}
+      i18nKey="entities:company.status"
       size={size}
       dot
       className={className}
-    >
-      {isActive ? t('company.statusBadge.active') : t('company.statusBadge.inactive')}
-    </Badge>
+    />
   );
 }

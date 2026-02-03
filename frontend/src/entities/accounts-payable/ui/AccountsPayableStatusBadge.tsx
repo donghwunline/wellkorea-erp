@@ -1,23 +1,30 @@
 /**
- * Badge component for displaying calculated AP status.
+ * Accounts payable status badge component.
+ * Thin wrapper around generic StatusBadge with AP-specific configuration.
  */
 
-import { Badge, type BadgeVariant } from '@/shared/ui';
+import { StatusBadge } from '@/shared/ui';
 import type { CalculatedAPStatus } from '../model/accounts-payable-status';
-import { getAPStatusConfig } from '../model/accounts-payable-status';
+import { APStatusConfigs } from '../model/accounts-payable-status';
 
 interface AccountsPayableStatusBadgeProps {
   status: CalculatedAPStatus;
+  size?: 'sm' | 'md';
+  className?: string;
 }
 
-const variantMap: Record<CalculatedAPStatus, BadgeVariant> = {
-  PENDING: 'warning',
-  PARTIALLY_PAID: 'copper',
-  PAID: 'success',
-};
-
-export function AccountsPayableStatusBadge({ status }: AccountsPayableStatusBadgeProps) {
-  const config = getAPStatusConfig(status);
-
-  return <Badge variant={variantMap[status]}>{config.label}</Badge>;
+export function AccountsPayableStatusBadge({
+  status,
+  size,
+  className,
+}: Readonly<AccountsPayableStatusBadgeProps>) {
+  return (
+    <StatusBadge
+      status={status}
+      config={APStatusConfigs}
+      i18nKey="purchasing:accountsPayable.status"
+      size={size}
+      className={className}
+    />
+  );
 }

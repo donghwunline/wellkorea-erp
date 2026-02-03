@@ -10,7 +10,7 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, EmailTagInput, FormField, Icon, Modal, ModalActions, Spinner } from '@/shared/ui';
+import { Button, EmailTagInput, FormField, Icon, Modal, ModalActions } from '@/shared/ui';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -197,14 +197,10 @@ function EmailNotificationModalContent({
           onClick={handleSend}
           disabled={isLoading || !!toError || hasInvalidCcEmails}
         >
-          {isLoading ? (
-            <>
-              <Spinner className="mr-2 h-4 w-4" />
-              {t('notify.sending')}
-            </>
-          ) : (
-            t('notify.sendEmail')
+          {isLoading && (
+            <Icon name="arrow-path" className="mr-2 h-4 w-4 animate-spin" />
           )}
+          {isLoading ? t('notify.sending') : t('notify.sendEmail')}
         </Button>
       </ModalActions>
     </div>
