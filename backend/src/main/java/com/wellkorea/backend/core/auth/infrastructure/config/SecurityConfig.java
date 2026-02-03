@@ -92,7 +92,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     // Public endpoints (no authentication required)
                     auth.requestMatchers("/api/auth/login", "/api/auth/register").permitAll();
-                    auth.requestMatchers("/actuator/health", "/actuator/info").permitAll();
+                    auth.requestMatchers("/actuator/health", "/actuator/info", "/actuator/prometheus").permitAll();
                     auth.requestMatchers("/error").permitAll();
 
                     // OAuth2 callback (Microsoft redirects here, state parameter provides security)
@@ -156,8 +156,8 @@ public class SecurityConfig {
         // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true);
 
-        // Expose Authorization header
-        configuration.setExposedHeaders(List.of("Authorization"));
+        // Expose headers readable by frontend JavaScript
+        configuration.setExposedHeaders(List.of("Authorization", "X-Request-ID"));
 
         // Max age for preflight requests
         configuration.setMaxAge(3600L);
@@ -193,8 +193,8 @@ public class SecurityConfig {
         // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true);
 
-        // Expose Authorization header
-        configuration.setExposedHeaders(List.of("Authorization"));
+        // Expose headers readable by frontend JavaScript
+        configuration.setExposedHeaders(List.of("Authorization", "X-Request-ID"));
 
         // Max age for preflight requests
         configuration.setMaxAge(3600L);
