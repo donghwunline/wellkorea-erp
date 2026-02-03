@@ -60,7 +60,12 @@
         </constructor>
     </resultMap>
 
-    <!-- Result map for AccountsPayableDetailView with nested payments (Java record) -->
+    <!--
+      WARNING: This resultMap uses nested select for payment history.
+      Only use for single-record queries (findDetailWithPaymentsById).
+      DO NOT use for list queries - will cause N+1 performance issue.
+      For list queries, use summaryViewMap instead.
+    -->
     <resultMap id="detailViewMap" type="com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableDetailView">
         <constructor>
             <arg column="id" javaType="java.lang.Long"/>
