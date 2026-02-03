@@ -773,6 +773,16 @@
     "remaining": "잔액: {{amount}}",
     "paymentCount": "{{count}}건 지급",
     "metadata": "생성일: {{createdAt}}",
-    "recordPayment": "지급 등록"
+    "recordPayment": "지급 등록",
+    "noDueDate": "미설정",
+    "editDueDate": {
+      "button": "수정",
+      "label": "지급기한 수정",
+      "save": "저장",
+      "cancel": "취소",
+      "saving": "저장 중...",
+      "success": "지급기한이 수정되었습니다",
+      "error": "지급기한 수정에 실패했습니다"
+    }
   }
 }

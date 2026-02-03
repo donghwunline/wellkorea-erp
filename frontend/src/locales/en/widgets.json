@@ -758,6 +758,16 @@
     "remaining": "Remaining: {{amount}}",
     "paymentCount": "{{count}} payments",
     "metadata": "Created: {{createdAt}}",
-    "recordPayment": "Record Payment"
+    "recordPayment": "Record Payment",
+    "noDueDate": "Not set",
+    "editDueDate": {
+      "button": "Edit",
+      "label": "Edit Due Date",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "success": "Due date updated successfully",
+      "error": "Failed to update due date"
+    }
   }
 }

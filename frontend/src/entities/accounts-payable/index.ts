@@ -41,6 +41,9 @@ export type {
 } from './api/record-payment';
 export { recordPayment } from './api/record-payment';
 
+export type { UpdateAPInput, UpdateAPResult } from './api/update-accounts-payable';
+export { updateAccountsPayable } from './api/update-accounts-payable';
+
 // ============================================================================
 // UI - Display components
 // ============================================================================

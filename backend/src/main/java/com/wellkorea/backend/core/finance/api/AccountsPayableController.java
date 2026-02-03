@@ -1,9 +1,12 @@
 package com.wellkorea.backend.core.finance.api;
 
+import com.wellkorea.backend.core.finance.api.dto.command.APCommandResult;
 import com.wellkorea.backend.core.finance.api.dto.command.RecordVendorPaymentRequest;
+import com.wellkorea.backend.core.finance.api.dto.command.UpdateAPMetadataRequest;
 import com.wellkorea.backend.core.finance.api.dto.command.VendorPaymentCommandResult;
 import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableDetailView;
 import com.wellkorea.backend.core.finance.api.dto.query.AccountsPayableSummaryView;
+import com.wellkorea.backend.core.finance.application.AccountsPayableCommandService;
 import com.wellkorea.backend.core.finance.application.AccountsPayableQueryService;
 import com.wellkorea.backend.core.finance.application.VendorPaymentCommandService;
 import com.wellkorea.backend.core.finance.infrastructure.mapper.AccountsPayableMapper.APAgingSummary;
@@ -13,11 +16,13 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -36,12 +41,15 @@ import java.util.List;
 public class AccountsPayableController {
 
     private final AccountsPayableQueryService queryService;
+    private final AccountsPayableCommandService commandService;
     private final VendorPaymentCommandService paymentCommandService;
 
     public AccountsPayableController(
             AccountsPayableQueryService queryService,
+            AccountsPayableCommandService commandService,
             VendorPaymentCommandService paymentCommandService) {
         this.queryService = queryService;
+        this.commandService = commandService;
         this.paymentCommandService = paymentCommandService;
     }
 
@@ -62,6 +70,8 @@ public class AccountsPayableController {
      * - causeType (String, optional): Filter by disbursement cause type (PURCHASE_ORDER, EXPENSE_REPORT, etc.)
      * - calculatedStatus (String, optional): PENDING, PARTIALLY_PAID, PAID
      * - overdueOnly (Boolean, optional): Filter for overdue items only
+     * - dueDateFrom (LocalDate, optional): Filter by due date range start (YYYY-MM-DD)
+     * - dueDateTo (LocalDate, optional): Filter by due date range end (YYYY-MM-DD)
      * - page (int, default 0): Page number
      * - size (int, default 20): Page size
      */
@@ -71,10 +81,12 @@ public class AccountsPayableController {
             @RequestParam(required = false) String causeType,
             @RequestParam(required = false) String calculatedStatus,
             @RequestParam(required = false) Boolean overdueOnly,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dueDateTo,
             Pageable pageable) {
 
         Page<AccountsPayableSummaryView> result = queryService.list(
-                vendorId, causeType, calculatedStatus, overdueOnly, pageable);
+                vendorId, causeType, calculatedStatus, overdueOnly, dueDateFrom, dueDateTo, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -105,6 +117,25 @@ public class AccountsPayableController {
     }
 
     // ========== COMMAND ENDPOINTS ==========
+
+    /**
+     * Update accounts payable metadata (due date, notes).
+     * <p>
+     * PATCH /api/accounts-payable/{id}
+     * <p>
+     * Allows finance personnel to set or update due date and notes.
+     */
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    public ResponseEntity<ApiResponse<APCommandResult>> updateMetadata(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateAPMetadataRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user) {
+
+        Long apId = commandService.updateMetadata(id, request.dueDate(), request.notes(), user.getUserId());
+        APCommandResult result = APCommandResult.updated(apId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
 
     /**
      * Record a payment against an accounts payable.
