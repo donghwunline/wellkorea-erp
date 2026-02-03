@@ -15,6 +15,7 @@ import {
   type CalculatedAPStatus,
 } from '@/entities/accounts-payable';
 import { RecordAPPaymentModal } from '@/features/accounts-payable/record-payment';
+import { AccountsPayableDetailModal } from '@/widgets/accounts-payable-panel';
 import { Button, Card, Spinner } from '@/shared/ui';
 
 const PAGE_SIZE = 20;
@@ -30,7 +31,11 @@ export function AccountsPayableTab() {
   const [statusFilter, setStatusFilter] = useState<CalculatedAPStatus | undefined>(undefined);
   const [overdueOnly, setOverdueOnly] = useState<boolean | undefined>(undefined);
 
-  // Modal state for recording payments
+  // Modal state for detail view
+  const [selectedAPId, setSelectedAPId] = useState<number | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Modal state for recording payments (from table action button)
   const [selectedAP, setSelectedAP] = useState<AccountsPayable | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
@@ -68,10 +73,16 @@ export function AccountsPayableTab() {
     refetch,
   } = useQuery(accountsPayableQueries.list(page, PAGE_SIZE, undefined, statusFilter, overdueOnly));
 
-  // Handle row click
+  // Handle row click - open detail modal
   const handleRowClick = useCallback((item: AccountsPayable) => {
-    // TODO: Open detail modal or navigate to detail page
-    console.log('Selected AP:', item);
+    setSelectedAPId(item.id);
+    setIsDetailModalOpen(true);
+  }, []);
+
+  // Handle closing detail modal
+  const handleDetailModalClose = useCallback(() => {
+    setIsDetailModalOpen(false);
+    setSelectedAPId(null);
   }, []);
 
   // Render actions for each row
@@ -157,7 +168,16 @@ export function AccountsPayableTab() {
         </Card>
       )}
 
-      {/* Payment Modal */}
+      {/* Detail Modal */}
+      {selectedAPId !== null && (
+        <AccountsPayableDetailModal
+          apId={selectedAPId}
+          isOpen={isDetailModalOpen}
+          onClose={handleDetailModalClose}
+        />
+      )}
+
+      {/* Payment Modal (from table action button) */}
       {selectedAP && (
         <RecordAPPaymentModal
           ap={selectedAP}
