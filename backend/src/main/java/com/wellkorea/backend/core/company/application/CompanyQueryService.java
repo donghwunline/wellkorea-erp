@@ -69,30 +69,6 @@ public class CompanyQueryService {
     }
 
     /**
-     * Find companies by role type.
-     *
-     * @param roleType The role type to filter by
-     * @param pageable Pagination parameters
-     * @return Page of company summary views with the specified role
-     */
-    public Page<CompanySummaryView> findByRoleType(RoleType roleType, Pageable pageable) {
-        return findCompanies(roleType != null ? List.of(roleType) : null, null, pageable);
-    }
-
-    /**
-     * Find companies by role type with search.
-     *
-     * @param roleType The role type to filter by
-     * @param search   Search term
-     * @param pageable Pagination parameters
-     * @return Page of matching company summary views
-     */
-    public Page<CompanySummaryView> findByRoleTypeAndSearch(RoleType roleType, String search, Pageable pageable) {
-        String searchTerm = (search == null || search.isBlank()) ? null : search.trim();
-        return findCompanies(roleType != null ? List.of(roleType) : null, searchTerm, pageable);
-    }
-
-    /**
      * Find companies by multiple role types.
      * Returns companies that have at least one of the specified roles.
      *
