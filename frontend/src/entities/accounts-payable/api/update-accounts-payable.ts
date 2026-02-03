@@ -81,7 +81,10 @@ export interface UpdateAPInput {
 function toUpdateAPRequest(input: UpdateAPInput): UpdateAPMetadataRequest {
   return {
     dueDate: input.dueDate ?? null,
-    notes: input.notes?.trim() || null,
+    // Distinguish: undefined = don't change, null/empty/whitespace = clear
+    notes: input.notes !== undefined
+      ? (input.notes?.trim() || null)  // Explicit clear (null or whitespace → null)
+      : undefined,                      // Don't change
   };
 }
 
