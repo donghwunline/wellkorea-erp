@@ -31,11 +31,10 @@ public class AccountsPayableCommandService {
      * @param apId    The AP ID to update
      * @param dueDate New due date (null to clear)
      * @param notes   New notes (null to clear)
-     * @param userId  The user making the update
      * @return The updated AP ID
      * @throws ResourceNotFoundException if AP not found
      */
-    public Long updateMetadata(Long apId, LocalDate dueDate, String notes, Long userId) {
+    public Long updateMetadata(Long apId, LocalDate dueDate, String notes) {
         AccountsPayable ap = repository.findById(apId)
                 .orElseThrow(() -> new ResourceNotFoundException("AccountsPayable", apId));
 

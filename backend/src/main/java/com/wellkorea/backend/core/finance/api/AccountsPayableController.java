@@ -26,13 +26,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * REST API controller for accounts payable queries.
+ * REST API controller for accounts payable operations.
  * <p>
- * This is a query-only controller - AP records are created automatically
- * when disbursement causes (e.g., Purchase Orders) are confirmed (handled by domain events).
+ * Provides query endpoints (list, detail, aging) and command endpoints
+ * (update metadata, record payments).
+ * <p>
+ * AP records are created automatically via domain events when disbursement causes
+ * (e.g., Purchase Orders) are confirmed.
  * <p>
  * RBAC Rules:
  * - Admin, Finance, Sales: Read access to AP data
+ * - Admin, Finance: Write access (metadata updates, payments)
  */
 @Slf4j
 @RestController
@@ -129,10 +133,9 @@ public class AccountsPayableController {
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
     public ResponseEntity<ApiResponse<APCommandResult>> updateMetadata(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateAPMetadataRequest request,
-            @AuthenticationPrincipal AuthenticatedUser user) {
+            @Valid @RequestBody UpdateAPMetadataRequest request) {
 
-        Long apId = commandService.updateMetadata(id, request.dueDate(), request.notes(), user.getUserId());
+        Long apId = commandService.updateMetadata(id, request.dueDate(), request.notes());
         APCommandResult result = APCommandResult.updated(apId);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
