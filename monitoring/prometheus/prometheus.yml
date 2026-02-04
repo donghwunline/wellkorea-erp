@@ -4,6 +4,7 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  scrape_timeout: 10s  # Must be <= scrape_interval; explicit for clarity
 
 scrape_configs:
   - job_name: "wellkorea-erp-backend"
