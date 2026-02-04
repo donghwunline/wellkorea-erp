@@ -29,7 +29,7 @@
         <logger name="org.springframework.web" level="DEBUG"/>
 
         <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="JSON_CONSOLE"/>
         </root>
     </springProfile>
 
