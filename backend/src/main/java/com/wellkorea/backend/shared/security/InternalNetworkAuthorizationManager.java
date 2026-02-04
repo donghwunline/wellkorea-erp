@@ -20,12 +20,14 @@ import java.util.function.Supplier;
  * be accessible from internal monitoring systems (Prometheus, Grafana, etc.)
  * running within the Docker network or on the same host.
  * <p>
- * Allowed IP ranges (determined by {@link InetAddress#isLoopbackAddress()} and
- * {@link InetAddress#isSiteLocalAddress()}):
+ * Allowed IP ranges (determined by {@link InetAddress#isLoopbackAddress()},
+ * {@link InetAddress#isSiteLocalAddress()}, and {@link InetAddress#isLinkLocalAddress()}):
  * <ul>
  *   <li>Loopback: 127.x.x.x (IPv4), ::1 (IPv6)</li>
  *   <li>Site-local IPv4: 10.x.x.x, 172.16-31.x.x, 192.168.x.x</li>
- *   <li>Site-local IPv6: fe80::/10 (link-local), fec0::/10 (deprecated site-local)</li>
+ *   <li>Site-local IPv6: fec0::/10 (deprecated)</li>
+ *   <li>Link-local IPv4: 169.254.x.x</li>
+ *   <li>Link-local IPv6: fe80::/10 (used by Docker containers)</li>
  *   <li>Docker default bridge: 172.17.x.x (covered by site-local range)</li>
  * </ul>
  * <p>
@@ -114,10 +116,11 @@ public class InternalNetworkAuthorizationManager implements AuthorizationManager
      * <ul>
      *   <li>{@link InetAddress#isLoopbackAddress()} - 127.x.x.x, ::1</li>
      *   <li>{@link InetAddress#isSiteLocalAddress()} - RFC 1918 private ranges</li>
+     *   <li>{@link InetAddress#isLinkLocalAddress()} - fe80::/10 (IPv6), 169.254.x.x (IPv4)</li>
      * </ul>
      *
      * @param ip the IP address to check
-     * @return true if the IP is internal (loopback or site-local), false otherwise
+     * @return true if the IP is internal (loopback, site-local, or link-local), false otherwise
      */
     boolean isInternalIp(String ip) {
         if (ip == null || ip.isBlank()) {
@@ -126,7 +129,7 @@ public class InternalNetworkAuthorizationManager implements AuthorizationManager
 
         try {
             InetAddress addr = InetAddress.getByName(ip.trim());
-            return addr.isLoopbackAddress() || addr.isSiteLocalAddress();
+            return addr.isLoopbackAddress() || addr.isSiteLocalAddress() || addr.isLinkLocalAddress();
         } catch (UnknownHostException e) {
             // Invalid IP format
             return false;

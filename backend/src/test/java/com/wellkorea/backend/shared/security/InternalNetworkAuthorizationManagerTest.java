@@ -248,6 +248,64 @@ class InternalNetworkAuthorizationManagerTest {
         }
     }
 
+    // ========== Link-Local Address Tests ==========
+
+    @Nested
+    class LinkLocalTests {
+
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "169.254.0.1",       // IPv4 link-local start
+                "169.254.1.1",
+                "169.254.100.100",
+                "169.254.255.254"    // IPv4 link-local end
+        })
+        void shouldAllowIpv4LinkLocal(String ip) {
+            // IPv4 link-local range: 169.254.x.x (used for APIPA/auto-configuration)
+            assertThat(authorizationManager.isInternalIp(ip)).isTrue();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "fe80::1",                              // IPv6 link-local short form
+                "fe80::1234:5678:abcd:ef01",           // IPv6 link-local typical format
+                "fe80:0000:0000:0000:0000:0000:0000:0001" // IPv6 link-local long form
+        })
+        void shouldAllowIpv6LinkLocal(String ip) {
+            // IPv6 link-local range: fe80::/10 (commonly used by Docker containers)
+            assertThat(authorizationManager.isInternalIp(ip)).isTrue();
+        }
+
+        @Test
+        void shouldGrantAccessFromIpv6LinkLocalDockerContainer() {
+            // Given: Request from Docker container using IPv6 link-local address
+            when(context.getRequest()).thenReturn(request);
+            when(request.getRemoteAddr()).thenReturn("fe80::1");
+            when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+            when(request.getHeader("X-Real-IP")).thenReturn(null);
+            when(request.getRequestURI()).thenReturn("/actuator/prometheus");
+
+            // When
+            AuthorizationDecision decision = authorizationManager.check(authenticationSupplier, context);
+
+            // Then
+            assertThat(decision.isGranted()).isTrue();
+        }
+
+        @Test
+        void shouldTrustHeadersFromIpv6LinkLocal() {
+            // Given: Request proxied through IPv6 link-local address
+            when(request.getRemoteAddr()).thenReturn("fe80::1234:5678:abcd:ef01");
+            when(request.getHeader("X-Forwarded-For")).thenReturn("192.168.1.100");
+
+            // When
+            String ip = authorizationManager.extractClientIp(request);
+
+            // Then: Header is trusted from link-local source
+            assertThat(ip).isEqualTo("192.168.1.100");
+        }
+    }
+
     // ========== Private IP Range Tests ==========
 
     @Nested
