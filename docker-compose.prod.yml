@@ -3,6 +3,9 @@
 # =============================================================================
 # Usage: docker compose -f docker-compose.prod.yml up -d
 #
+# With monitoring stack:
+#   docker compose -f docker-compose.prod.yml --profile monitoring up -d
+#
 # Prerequisites:
 #   1. Copy .env.prod.example to .env and configure all required values
 #   2. Configure host Nginx for SSL termination (see docs/deployment.md)
@@ -17,6 +20,10 @@
 #   - https://wellkorea.mipllab.com -> proxy to 127.0.0.1:3000 (frontend)
 #   - https://api.wellkorea.mipllab.com -> proxy to 127.0.0.1:8080 (backend)
 #   - https://storage.wellkorea.mipllab.com -> proxy to 127.0.0.1:9000 (minio)
+#
+# Monitoring (opt-in via --profile monitoring):
+#   - Grafana: 127.0.0.1:3001 (behind host Nginx)
+#   - Prometheus / Loki: internal only (not port-exposed)
 # =============================================================================
 
 services:
@@ -129,10 +136,109 @@ services:
     networks:
       - wellkorea-internal
 
+  # ===========================================================================
+  # Monitoring Stack (opt-in: --profile monitoring)
+  # ===========================================================================
+
+  # Prometheus — Metrics collection (internal only, no port exposed)
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: wellkorea-erp-prometheus
+    restart: unless-stopped
+    profiles: [monitoring]
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - wellkorea-internal
+
+  # Loki — Log aggregation (internal only, no port exposed)
+  loki:
+    image: grafana/loki:3.4.2
+    container_name: wellkorea-erp-loki
+    restart: unless-stopped
+    profiles: [monitoring]
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - wellkorea-internal
+
+  # Promtail — Ships container logs to Loki
+  promtail:
+    image: grafana/promtail:3.4.2
+    container_name: wellkorea-erp-promtail
+    restart: unless-stopped
+    profiles: [monitoring]
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo -e \"GET /ready HTTP/1.0\\r\\n\\r\\n\" > /dev/tcp/localhost/9080'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - wellkorea-internal
+
+  # Grafana — Dashboards (localhost-bound, behind host Nginx)
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: wellkorea-erp-grafana
+    restart: unless-stopped
+    profiles: [monitoring]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - wellkorea-internal
+
 volumes:
   postgres_data:
     driver: local
   minio_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  loki_data:
+    driver: local
+  grafana_data:
     driver: local
 
 networks:

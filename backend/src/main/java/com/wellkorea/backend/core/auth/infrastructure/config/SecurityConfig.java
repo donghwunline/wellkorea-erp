@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellkorea.backend.shared.dto.ErrorResponse;
 import com.wellkorea.backend.shared.exception.ErrorCode;
 import com.wellkorea.backend.shared.ratelimit.LoginRateLimitFilter;
+import com.wellkorea.backend.shared.security.InternalNetworkAuthorizationManager;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +55,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final LoginRateLimitFilter loginRateLimitFilter;
     private final ObjectMapper objectMapper;
+    private final InternalNetworkAuthorizationManager internalNetworkAuthManager;
 
     @Value("${security.cors.allowed-origins}")
     private String[] allowedOrigins;
@@ -66,10 +68,12 @@ public class SecurityConfig {
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           LoginRateLimitFilter loginRateLimitFilter,
-                          ObjectMapper objectMapper) {
+                          ObjectMapper objectMapper,
+                          InternalNetworkAuthorizationManager internalNetworkAuthManager) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.loginRateLimitFilter = loginRateLimitFilter;
         this.objectMapper = objectMapper;
+        this.internalNetworkAuthManager = internalNetworkAuthManager;
     }
 
     /**
@@ -93,6 +97,10 @@ public class SecurityConfig {
                     // Public endpoints (no authentication required)
                     auth.requestMatchers("/api/auth/login", "/api/auth/register").permitAll();
                     auth.requestMatchers("/actuator/health", "/actuator/info").permitAll();
+
+                    // Prometheus metrics - internal IPs only (Docker network, localhost)
+                    auth.requestMatchers("/actuator/prometheus").access(internalNetworkAuthManager);
+
                     auth.requestMatchers("/error").permitAll();
 
                     // OAuth2 callback (Microsoft redirects here, state parameter provides security)
@@ -156,8 +164,8 @@ public class SecurityConfig {
         // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true);
 
-        // Expose Authorization header
-        configuration.setExposedHeaders(List.of("Authorization"));
+        // Expose headers readable by frontend JavaScript
+        configuration.setExposedHeaders(List.of("Authorization", "X-Request-ID"));
 
         // Max age for preflight requests
         configuration.setMaxAge(3600L);
@@ -193,8 +201,8 @@ public class SecurityConfig {
         // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true);
 
-        // Expose Authorization header
-        configuration.setExposedHeaders(List.of("Authorization"));
+        // Expose headers readable by frontend JavaScript
+        configuration.setExposedHeaders(List.of("Authorization", "X-Request-ID"));
 
         // Max age for preflight requests
         configuration.setMaxAge(3600L);

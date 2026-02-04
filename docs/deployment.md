@@ -6,6 +6,7 @@ This document describes the deployment architecture and setup for WellKorea ERP 
 
 - [Architecture Overview](#architecture-overview)
 - [Local Development](#local-development)
+- [Monitoring Stack](#monitoring-stack)
 - [Production Deployment](#production-deployment)
 - [Nginx Configuration](#nginx-configuration)
 - [SSL/TLS Setup](#ssltls-setup)
@@ -183,6 +184,57 @@ docker compose -f docker-compose.local.yml down -v
 
 ---
 
+## Monitoring Stack
+
+The monitoring stack is opt-in and includes Prometheus (metrics), Loki (logs), Promtail (log collector), and Grafana (dashboards).
+
+### Starting Monitoring Services
+
+```bash
+# Start with monitoring profile
+docker compose -f docker-compose.local.yml --profile monitoring up -d
+
+# Verify all services are healthy
+docker compose -f docker-compose.local.yml ps
+```
+
+### Monitoring Service URLs
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Grafana | http://localhost:3000 | Dashboards (admin/admin) |
+| Prometheus | http://localhost:9090 | Metrics explorer |
+| Loki | http://localhost:3100 | Log aggregation API |
+
+### Healthchecks
+
+All monitoring services have Docker healthchecks configured:
+
+| Service | Endpoint | Tool |
+|---------|----------|------|
+| Prometheus | `/-/healthy` | wget |
+| Loki | `/ready` | wget |
+| Promtail | `/ready` | bash /dev/tcp |
+| Grafana | `/api/health` | wget |
+
+> **Note:** Promtail uses `/dev/tcp` for healthcheck because the container lacks wget/curl. This is a [community-recommended workaround](https://github.com/grafana/loki/issues/11590).
+
+### Verifying Log Collection
+
+```bash
+# Check if Prometheus can scrape backend metrics
+docker exec wellkorea-erp-prometheus wget -qO- http://backend:8080/actuator/prometheus | head -5
+
+# Query logs in Grafana
+# Navigate to Explore > Loki > {service="backend"}
+```
+
+### Future: Migration to Grafana Alloy
+
+Promtail is deprecated (EOL: March 2, 2026). See [promtail-to-alloy-migration.md](promtail-to-alloy-migration.md) for the planned migration to Grafana Alloy.
+
+---
+
 ## Production Deployment
 
 ### Prerequisites
@@ -193,6 +245,7 @@ docker compose -f docker-compose.local.yml down -v
    - `wellkorea.mipllab.com`
    - `api.wellkorea.mipllab.com`
    - `storage.wellkorea.mipllab.com`
+   - `grafana.wellkorea.mipllab.com` (optional, for monitoring)
 4. DNS records pointing all subdomains to server IP
 
 ### Deployment Steps
@@ -260,10 +313,13 @@ curl https://api.wellkorea.mipllab.com/actuator/health
 
 Create the following Nginx configuration files on the production server.
 
+> **Note:** These examples use `/etc/nginx/conf.d/*.conf` (Red Hat/CentOS style).
+> If your system uses `sites-available/sites-enabled` (Debian/Ubuntu style), adjust paths accordingly.
+
 ### Frontend (wellkorea.mipllab.com)
 
 ```nginx
-# /etc/nginx/sites-available/wellkorea-frontend
+# /etc/nginx/conf.d/wellkorea-frontend.conf
 
 server {
     listen 80;
@@ -321,7 +377,7 @@ server {
 ### Backend API (api.wellkorea.mipllab.com)
 
 ```nginx
-# /etc/nginx/sites-available/wellkorea-api
+# /etc/nginx/conf.d/wellkorea-api.conf
 
 server {
     listen 80;
@@ -372,7 +428,7 @@ server {
 ### MinIO Storage (storage.wellkorea.mipllab.com)
 
 ```nginx
-# /etc/nginx/sites-available/wellkorea-storage
+# /etc/nginx/conf.d/wellkorea-storage.conf
 
 server {
     listen 80;
@@ -418,20 +474,67 @@ server {
 }
 ```
 
-### Enable Sites
+### Grafana Monitoring (grafana.wellkorea.mipllab.com) - Optional
+
+> Only needed if you want external access to Grafana dashboards.
+
+```nginx
+# /etc/nginx/conf.d/wellkorea-grafana.conf
+
+server {
+    listen 80;
+    server_name grafana.wellkorea.mipllab.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name grafana.wellkorea.mipllab.com;
+
+    ssl_certificate /etc/letsencrypt/live/grafana.wellkorea.mipllab.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/grafana.wellkorea.mipllab.com/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers off;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket support for Grafana Live
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+}
+```
+
+### Apply Configuration
 
 ```bash
-# Create symlinks
-sudo ln -s /etc/nginx/sites-available/wellkorea-frontend /etc/nginx/sites-enabled/
-sudo ln -s /etc/nginx/sites-available/wellkorea-api /etc/nginx/sites-enabled/
-sudo ln -s /etc/nginx/sites-available/wellkorea-storage /etc/nginx/sites-enabled/
-
 # Test configuration
 sudo nginx -t
 
 # Reload Nginx
 sudo systemctl reload nginx
 ```
+
+Files in `/etc/nginx/conf.d/` are automatically loaded. No symlinks needed.
 
 ---
 
@@ -447,6 +550,9 @@ sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx -d wellkorea.mipllab.com
 sudo certbot --nginx -d api.wellkorea.mipllab.com
 sudo certbot --nginx -d storage.wellkorea.mipllab.com
+
+# Optional: Grafana subdomain (if using monitoring stack)
+# sudo certbot --nginx -d grafana.wellkorea.mipllab.com
 
 # Verify auto-renewal
 sudo certbot renew --dry-run
@@ -519,6 +625,22 @@ docker compose -f docker-compose.prod.yml ps postgres
 # Test connection from backend container
 docker compose -f docker-compose.prod.yml exec backend \
   wget -qO- http://localhost:8080/actuator/health
+```
+
+### Monitoring Stack Issues
+
+```bash
+# Check if all monitoring services are healthy
+docker compose -f docker-compose.local.yml ps
+
+# View Promtail logs (log collection issues)
+docker compose -f docker-compose.local.yml logs promtail
+
+# Test Loki readiness
+docker exec wellkorea-erp-loki wget -qO- http://localhost:3100/ready
+
+# Test Prometheus targets (should show backend as UP)
+curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[].health'
 ```
 
 ---

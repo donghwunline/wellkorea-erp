@@ -83,7 +83,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus  # Include prometheus for security tests
   health:
     mail:
       enabled: false  # Disable mail health check in tests
