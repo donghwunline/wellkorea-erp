@@ -49,8 +49,9 @@ class InternalNetworkAuthorizationManagerTest {
     class IpExtractionTests {
 
         @Test
-        void shouldExtractIpFromXForwardedFor() {
-            // Given: X-Forwarded-For header present
+        void shouldExtractIpFromXForwardedForWhenRemoteAddrIsInternal() {
+            // Given: X-Forwarded-For header present, request from internal proxy
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn("192.168.1.100");
 
             // When
@@ -63,6 +64,7 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldExtractFirstIpFromXForwardedForWithMultipleIps() {
             // Given: X-Forwarded-For with multiple IPs (client, proxy1, proxy2)
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1, 172.16.0.1, 192.168.1.1");
 
             // When
@@ -75,6 +77,7 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldTrimWhitespaceFromXForwardedFor() {
             // Given: X-Forwarded-For with whitespace
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn("  192.168.1.50  , 10.0.0.1");
 
             // When
@@ -87,6 +90,7 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldExtractIpFromXRealIpWhenXForwardedForMissing() {
             // Given: Only X-Real-IP header present
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn(null);
             when(request.getHeader("X-Real-IP")).thenReturn("10.0.0.50");
 
@@ -100,6 +104,7 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldExtractIpFromXRealIpWhenXForwardedForBlank() {
             // Given: X-Forwarded-For is blank
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn("   ");
             when(request.getHeader("X-Real-IP")).thenReturn("172.16.0.100");
 
@@ -113,6 +118,7 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldTrimWhitespaceFromXRealIp() {
             // Given: X-Real-IP with whitespace
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn(null);
             when(request.getHeader("X-Real-IP")).thenReturn("  192.168.0.1  ");
 
@@ -126,9 +132,9 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldFallbackToRemoteAddrWhenNoHeaders() {
             // Given: No proxy headers present
+            when(request.getRemoteAddr()).thenReturn("127.0.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn(null);
             when(request.getHeader("X-Real-IP")).thenReturn(null);
-            when(request.getRemoteAddr()).thenReturn("127.0.0.1");
 
             // When
             String ip = authorizationManager.extractClientIp(request);
@@ -139,7 +145,8 @@ class InternalNetworkAuthorizationManagerTest {
 
         @Test
         void shouldPreferXForwardedForOverXRealIp() {
-            // Given: Both headers present (X-Real-IP not stubbed since X-Forwarded-For takes precedence)
+            // Given: Both headers present, request from internal proxy
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1");
 
             // When
@@ -147,6 +154,64 @@ class InternalNetworkAuthorizationManagerTest {
 
             // Then: X-Forwarded-For takes precedence
             assertThat(ip).isEqualTo("10.0.0.1");
+        }
+    }
+
+    // ========== Header Spoofing Prevention Tests ==========
+
+    @Nested
+    class HeaderSpoofingPreventionTests {
+
+        @Test
+        void shouldIgnoreXForwardedForWhenRemoteAddrIsExternal() {
+            // Given: External client trying to spoof X-Forwarded-For
+            // Note: Header stubs not needed - headers are never read when remoteAddr is external
+            when(request.getRemoteAddr()).thenReturn("8.8.8.8");
+
+            // When
+            String ip = authorizationManager.extractClientIp(request);
+
+            // Then: Spoofed header is ignored, returns actual remote address
+            assertThat(ip).isEqualTo("8.8.8.8");
+        }
+
+        @Test
+        void shouldIgnoreXRealIpWhenRemoteAddrIsExternal() {
+            // Given: External client trying to spoof X-Real-IP
+            // Note: Header stubs not needed - headers are never read when remoteAddr is external
+            when(request.getRemoteAddr()).thenReturn("93.184.216.34");
+
+            // When
+            String ip = authorizationManager.extractClientIp(request);
+
+            // Then: Spoofed header is ignored
+            assertThat(ip).isEqualTo("93.184.216.34");
+        }
+
+        @Test
+        void shouldTrustXForwardedForWhenRemoteAddrIsInternal() {
+            // Given: Internal proxy forwarding request
+            when(request.getRemoteAddr()).thenReturn("172.17.0.3");
+            when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.5");
+
+            // When
+            String ip = authorizationManager.extractClientIp(request);
+
+            // Then: Header is trusted from internal source
+            assertThat(ip).isEqualTo("10.0.0.5");
+        }
+
+        @Test
+        void shouldTrustHeadersFromLoopback() {
+            // Given: Request proxied through localhost
+            when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+            when(request.getHeader("X-Forwarded-For")).thenReturn("192.168.1.100");
+
+            // When
+            String ip = authorizationManager.extractClientIp(request);
+
+            // Then: Header is trusted from loopback
+            assertThat(ip).isEqualTo("192.168.1.100");
         }
     }
 
@@ -170,11 +235,16 @@ class InternalNetworkAuthorizationManagerTest {
             assertThat(authorizationManager.isInternalIp("0:0:0:0:0:0:0:1")).isTrue();
         }
 
-        @Test
-        void shouldDenyOtherLoopbackAddresses() {
-            // Only 127.0.0.1 is allowed, not the entire 127.x.x.x range
-            assertThat(authorizationManager.isInternalIp("127.0.0.2")).isFalse();
-            assertThat(authorizationManager.isInternalIp("127.1.1.1")).isFalse();
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "127.0.0.1",
+                "127.0.0.2",
+                "127.1.1.1",
+                "127.255.255.255"
+        })
+        void shouldAllowFullLoopbackRange(String ip) {
+            // InetAddress.isLoopbackAddress() covers the entire 127.x.x.x range
+            assertThat(authorizationManager.isInternalIp(ip)).isTrue();
         }
     }
 
@@ -265,8 +335,22 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldDenyInvalidIpFormat() {
             assertThat(authorizationManager.isInternalIp("not-an-ip")).isFalse();
-            assertThat(authorizationManager.isInternalIp("192.168.1")).isFalse();
+            // Note: "192.168.1" is interpreted as "192.168.0.1" by InetAddress (valid)
+            // Testing truly invalid formats instead
             assertThat(authorizationManager.isInternalIp("192.168.1.1.1")).isFalse();
+            assertThat(authorizationManager.isInternalIp("abc.def.ghi.jkl")).isFalse();
+            assertThat(authorizationManager.isInternalIp("::invalid::ipv6")).isFalse();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {
+                "10.999.999.999",    // Invalid octet (>255)
+                "192.168.256.1",     // Invalid octet
+                "172.16.0.999"       // Invalid octet
+        })
+        void shouldDenyInvalidOctets(String ip) {
+            // InetAddress properly validates octet ranges
+            assertThat(authorizationManager.isInternalIp(ip)).isFalse();
         }
     }
 
@@ -279,9 +363,9 @@ class InternalNetworkAuthorizationManagerTest {
         void shouldGrantAccessFromLocalhost() {
             // Given
             when(context.getRequest()).thenReturn(request);
+            when(request.getRemoteAddr()).thenReturn("127.0.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn(null);
             when(request.getHeader("X-Real-IP")).thenReturn(null);
-            when(request.getRemoteAddr()).thenReturn("127.0.0.1");
             when(request.getRequestURI()).thenReturn("/actuator/prometheus");
 
             // When
@@ -295,9 +379,9 @@ class InternalNetworkAuthorizationManagerTest {
         void shouldGrantAccessFromDockerNetwork() {
             // Given: Request from Docker default bridge network
             when(context.getRequest()).thenReturn(request);
+            when(request.getRemoteAddr()).thenReturn("172.17.0.2");
             when(request.getHeader("X-Forwarded-For")).thenReturn(null);
             when(request.getHeader("X-Real-IP")).thenReturn(null);
-            when(request.getRemoteAddr()).thenReturn("172.17.0.2");
             when(request.getRequestURI()).thenReturn("/actuator/prometheus");
 
             // When
@@ -310,9 +394,8 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldDenyAccessFromExternalIp() {
             // Given: Request from external IP
+            // Note: Header stubs not needed - headers are never read when remoteAddr is external
             when(context.getRequest()).thenReturn(request);
-            when(request.getHeader("X-Forwarded-For")).thenReturn(null);
-            when(request.getHeader("X-Real-IP")).thenReturn(null);
             when(request.getRemoteAddr()).thenReturn("8.8.8.8");
             when(request.getRequestURI()).thenReturn("/actuator/prometheus");
 
@@ -325,15 +408,16 @@ class InternalNetworkAuthorizationManagerTest {
 
         @Test
         void shouldDenyAccessWhenProxiedFromExternalIp() {
-            // Given: Request proxied from external IP (X-Forwarded-For set)
+            // Given: Request proxied from external IP (X-Forwarded-For set by external attacker)
+            // Note: Header stubs not needed - headers are never read when remoteAddr is external
             when(context.getRequest()).thenReturn(request);
-            when(request.getHeader("X-Forwarded-For")).thenReturn("93.184.216.34");
+            when(request.getRemoteAddr()).thenReturn("93.184.216.34");
             when(request.getRequestURI()).thenReturn("/actuator/prometheus");
 
             // When
             AuthorizationDecision decision = authorizationManager.check(authenticationSupplier, context);
 
-            // Then
+            // Then: Access denied - spoofed header is ignored
             assertThat(decision.isGranted()).isFalse();
         }
 
@@ -341,6 +425,7 @@ class InternalNetworkAuthorizationManagerTest {
         void shouldGrantAccessWhenProxiedFromInternalIp() {
             // Given: Request proxied from internal IP
             when(context.getRequest()).thenReturn(request);
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn("192.168.1.100");
             when(request.getRequestURI()).thenReturn("/actuator/prometheus");
 
@@ -349,6 +434,21 @@ class InternalNetworkAuthorizationManagerTest {
 
             // Then
             assertThat(decision.isGranted()).isTrue();
+        }
+
+        @Test
+        void shouldDenyAccessWhenInternalProxyForwardsExternalIp() {
+            // Given: Internal proxy correctly forwards external client IP
+            when(context.getRequest()).thenReturn(request);
+            when(request.getRemoteAddr()).thenReturn("172.17.0.1");
+            when(request.getHeader("X-Forwarded-For")).thenReturn("8.8.8.8");
+            when(request.getRequestURI()).thenReturn("/actuator/prometheus");
+
+            // When
+            AuthorizationDecision decision = authorizationManager.check(authenticationSupplier, context);
+
+            // Then: Access denied - external client IP is correctly identified
+            assertThat(decision.isGranted()).isFalse();
         }
     }
 
@@ -366,9 +466,9 @@ class InternalNetworkAuthorizationManagerTest {
         @Test
         void shouldHandleEmptyXForwardedForWithValidRemoteAddr() {
             // Given
+            when(request.getRemoteAddr()).thenReturn("10.0.0.1");
             when(request.getHeader("X-Forwarded-For")).thenReturn(",");
             when(request.getHeader("X-Real-IP")).thenReturn(null);
-            when(request.getRemoteAddr()).thenReturn("10.0.0.1");
 
             // When
             String ip = authorizationManager.extractClientIp(request);
