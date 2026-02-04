@@ -52,33 +52,22 @@ services:
     image: ${BACKEND_IMAGE:-harbor.mipllab.com/wellkorea/erp-backend:latest}
     container_name: wellkorea-erp-backend
     restart: unless-stopped
+    env_file: .env
     environment:
+      # Only variables that need TRANSFORMATION go here (env_file loads the rest)
       SPRING_PROFILES_ACTIVE: prod
 
-      # Database Configuration
+      # Database Configuration (transforms POSTGRES_* to Spring format)
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
 
-      # MinIO Configuration (external URL for presigned URLs)
-      MINIO_URL: ${MINIO_URL}
+      # MinIO Configuration (maps env names to Spring property names)
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
-      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
 
-      # JWT Configuration (REQUIRED - must be strong secret)
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
-
-      # Email Configuration
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-
-      # Security Configuration
-      SECURITY_CORS_ALLOWED_ORIGINS: ${SECURITY_CORS_ALLOWED_ORIGINS}
+      # Security (disable swagger in prod)
       SECURITY_SWAGGER_ENABLED: "false"
     ports:
       # Bind to localhost only - Nginx proxies external traffic
