@@ -151,6 +151,7 @@ export const purchaseOrderRules = {
    */
   canCancel(order: PurchaseOrderBase): boolean {
     return (
+      order.status !== PurchaseOrderStatus.CONFIRMED &&
       order.status !== PurchaseOrderStatus.RECEIVED &&
       order.status !== PurchaseOrderStatus.CANCELED
     );
