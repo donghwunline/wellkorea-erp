@@ -10,6 +10,14 @@ export default defineConfig({
     tailwindcss(),
     tsconfigPaths(), // Reads paths from tsconfig.app.json - no manual alias needed
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       output: {

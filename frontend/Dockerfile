@@ -28,8 +28,8 @@ COPY --from=build /app/dist .
 RUN chmod -R 644 /usr/share/nginx/html/* && \
     find /usr/share/nginx/html -type d -exec chmod 755 {} \;
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx template for envsubst (nginx image auto-processes /etc/nginx/templates/*.template)
+COPY templates/default.conf.template /etc/nginx/templates/default.conf.template
 
 # Expose port
 EXPOSE 80
