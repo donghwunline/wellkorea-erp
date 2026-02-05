@@ -65,16 +65,15 @@ graph TB
 
     subgraph "Production Server"
         subgraph "Host Nginx (SSL Termination)"
-            FE_Nginx["wellkorea.mipllab.com:443<br/>Static File Server"]
+            FE_Nginx["wellkorea.mipllab.com:443<br/>Reverse Proxy"]
             API_Nginx["api.wellkorea.mipllab.com:443<br/>Reverse Proxy"]
             Storage_Nginx["storage.wellkorea.mipllab.com:443<br/>Reverse Proxy"]
         end
 
-        StaticFiles["/var/www/wellkorea-erp/dist<br/>(Built Frontend Assets)"]
-
         subgraph "Docker Network (Internal)"
-            Backend["Backend Container<br/>127.0.0.1:8080"]
-            MinIO["MinIO Container<br/>127.0.0.1:9000"]
+            Frontend["Frontend Container<br/>127.0.0.1:20030"]
+            Backend["Backend Container<br/>127.0.0.1:20080"]
+            MinIO["MinIO Container<br/>127.0.0.1:20090"]
             Postgres[(PostgreSQL<br/>Internal Only)]
         end
     end
@@ -83,23 +82,24 @@ graph TB
     Browser -->|"HTTPS"| API_Nginx
     Browser -->|"HTTPS<br/>(presigned URLs)"| Storage_Nginx
 
-    FE_Nginx -->|"serve files"| StaticFiles
+    FE_Nginx -->|"proxy_pass"| Frontend
     API_Nginx -->|"proxy_pass"| Backend
     Storage_Nginx -->|"proxy_pass"| MinIO
 
     Backend --> Postgres
     Backend -->|"generate presigned URLs<br/>verify files exist"| MinIO
 
-    style StaticFiles fill:#d4edda,stroke:#155724
+    style Frontend fill:#d4edda,stroke:#155724
     style FE_Nginx fill:#cce5ff,stroke:#004085
     style API_Nginx fill:#cce5ff,stroke:#004085
     style Storage_Nginx fill:#cce5ff,stroke:#004085
 ```
 
 **Key Points:**
-- Host Nginx handles SSL termination for all three subdomains
+- Host Nginx handles SSL termination for all subdomains
 - Docker containers bind to `127.0.0.1` only (not publicly accessible)
-- Frontend is NOT a container - Nginx serves static files directly
+- All services (including frontend) run as Docker containers
+- All subdomains use the same wildcard/SAN SSL certificate
 - MinIO console (port 9001) is not exposed externally
 
 ---
@@ -241,11 +241,11 @@ Promtail is deprecated (EOL: March 2, 2026). See [promtail-to-alloy-migration.md
 
 1. Server with Docker and Docker Compose
 2. Nginx installed on host
-3. SSL certificates for:
+3. SSL certificate (all subdomains can use the same wildcard/SAN cert):
    - `wellkorea.mipllab.com`
    - `api.wellkorea.mipllab.com`
    - `storage.wellkorea.mipllab.com`
-   - `grafana.wellkorea.mipllab.com` (optional, for monitoring)
+   - `dashboard.wellkorea.mipllab.com` (optional, for Grafana monitoring)
 4. DNS records pointing all subdomains to server IP
 
 ### Deployment Steps
@@ -264,44 +264,33 @@ cp .env.prod.example .env
 vim .env
 ```
 
-#### 2. Build and Deploy Frontend
-
-```bash
-# Build frontend assets
-cd frontend
-npm ci
-npm run build
-
-# Copy to Nginx serving directory
-sudo mkdir -p /var/www/wellkorea-erp
-sudo cp -r dist/* /var/www/wellkorea-erp/
-sudo chown -R www-data:www-data /var/www/wellkorea-erp
-```
-
-#### 3. Start Docker Services
+#### 2. Start Docker Services
 
 ```bash
 cd /opt/wellkorea-erp
 
-# Build and start services
+# Build and start services (includes frontend container)
 docker compose -f docker-compose.prod.yml up -d --build
 
 # Verify services are healthy
 docker compose -f docker-compose.prod.yml ps
 ```
 
-#### 4. Configure Nginx
+#### 3. Configure Nginx
 
 See [Nginx Configuration](#nginx-configuration) section below.
 
-#### 5. Verify Deployment
+#### 4. Verify Deployment
 
 ```bash
 # Check backend health
-curl http://127.0.0.1:8080/actuator/health
+curl http://127.0.0.1:20080/actuator/health
 
 # Check MinIO health
-curl http://127.0.0.1:9000/minio/health/live
+curl http://127.0.0.1:20090/minio/health/live
+
+# Check frontend
+curl http://127.0.0.1:20030/
 
 # Test external access (after Nginx setup)
 curl https://api.wellkorea.mipllab.com/actuator/health
@@ -313,22 +302,22 @@ curl https://api.wellkorea.mipllab.com/actuator/health
 
 Create the following Nginx configuration files on the production server.
 
-> **Note:** These examples use `/etc/nginx/conf.d/*.conf` (Red Hat/CentOS style).
+> **Note:** Actual production config files are maintained in `docs/operations/`:
+> - `wellkorea.conf` - Frontend
+> - `wellkorea-api.conf` - Backend API
+> - `wellkorea-dashboard.conf` - Grafana dashboard
+> - `wellkorea-storage.conf` - MinIO storage
+>
+> These examples use `/etc/nginx/conf.d/*.conf` (Red Hat/CentOS style).
 > If your system uses `sites-available/sites-enabled` (Debian/Ubuntu style), adjust paths accordingly.
 
 ### Frontend (wellkorea.mipllab.com)
 
 ```nginx
-# /etc/nginx/conf.d/wellkorea-frontend.conf
+# /etc/nginx/conf.d/wellkorea.conf
 
 server {
-    listen 80;
-    server_name wellkorea.mipllab.com;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
+    listen 443 ssl;
     server_name wellkorea.mipllab.com;
 
     ssl_certificate /etc/letsencrypt/live/wellkorea.mipllab.com/fullchain.pem;
@@ -354,23 +343,24 @@ server {
     gzip_min_length 1024;
     gzip_types text/plain text/css text/xml text/javascript application/javascript application/json;
 
-    # SPA routing - serve index.html for all routes
+    # Proxy to frontend container
     location / {
-        try_files $uri $uri/ /index.html;
+        proxy_pass http://127.0.0.1:20030;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+server {
+    if ($host = wellkorea.mipllab.com) {
+        return 301 https://$host$request_uri;
     }
 
-    # Cache static assets
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # Health check for monitoring
-    location /health {
-        access_log off;
-        return 200 "healthy\n";
-        add_header Content-Type text/plain;
-    }
+    listen 80;
+    server_name wellkorea.mipllab.com;
+    return 404;
 }
 ```
 
@@ -389,8 +379,8 @@ server {
     listen 443 ssl http2;
     server_name api.wellkorea.mipllab.com;
 
-    ssl_certificate /etc/letsencrypt/live/api.wellkorea.mipllab.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.wellkorea.mipllab.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/wellkorea.mipllab.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/wellkorea.mipllab.com/privkey.pem;
 
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
@@ -405,7 +395,7 @@ server {
     client_max_body_size 100M;
 
     location / {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:20080;
         proxy_http_version 1.1;
 
         proxy_set_header Host $host;
@@ -440,8 +430,8 @@ server {
     listen 443 ssl http2;
     server_name storage.wellkorea.mipllab.com;
 
-    ssl_certificate /etc/letsencrypt/live/storage.wellkorea.mipllab.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/storage.wellkorea.mipllab.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/wellkorea.mipllab.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/wellkorea.mipllab.com/privkey.pem;
 
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
@@ -455,7 +445,7 @@ server {
     proxy_request_buffering off;
 
     location / {
-        proxy_pass http://127.0.0.1:9000;
+        proxy_pass http://127.0.0.1:20090;
         proxy_http_version 1.1;
 
         proxy_set_header Host $host;
@@ -474,25 +464,25 @@ server {
 }
 ```
 
-### Grafana Monitoring (grafana.wellkorea.mipllab.com) - Optional
+### Grafana Dashboard (dashboard.wellkorea.mipllab.com) - Optional
 
 > Only needed if you want external access to Grafana dashboards.
 
 ```nginx
-# /etc/nginx/conf.d/wellkorea-grafana.conf
+# /etc/nginx/conf.d/wellkorea-dashboard.conf
 
 server {
     listen 80;
-    server_name grafana.wellkorea.mipllab.com;
+    server_name dashboard.wellkorea.mipllab.com;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name grafana.wellkorea.mipllab.com;
+    server_name dashboard.wellkorea.mipllab.com;
 
-    ssl_certificate /etc/letsencrypt/live/grafana.wellkorea.mipllab.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/grafana.wellkorea.mipllab.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/wellkorea.mipllab.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/wellkorea.mipllab.com/privkey.pem;
 
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
@@ -504,7 +494,7 @@ server {
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
     location / {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://127.0.0.1:20040;
         proxy_http_version 1.1;
 
         proxy_set_header Host $host;
@@ -540,22 +530,28 @@ Files in `/etc/nginx/conf.d/` are automatically loaded. No symlinks needed.
 
 ## SSL/TLS Setup
 
-### Using Let's Encrypt (Recommended)
+### Using Let's Encrypt with SAN Certificate (Recommended)
+
+All subdomains can share a single certificate with Subject Alternative Names (SAN):
 
 ```bash
 # Install Certbot
 sudo apt install certbot python3-certbot-nginx
 
-# Obtain certificates (run for each subdomain)
-sudo certbot --nginx -d wellkorea.mipllab.com
-sudo certbot --nginx -d api.wellkorea.mipllab.com
-sudo certbot --nginx -d storage.wellkorea.mipllab.com
-
-# Optional: Grafana subdomain (if using monitoring stack)
-# sudo certbot --nginx -d grafana.wellkorea.mipllab.com
+# Obtain a single certificate for all subdomains
+sudo certbot --nginx -d wellkorea.mipllab.com \
+    -d api.wellkorea.mipllab.com \
+    -d storage.wellkorea.mipllab.com \
+    -d dashboard.wellkorea.mipllab.com
 
 # Verify auto-renewal
 sudo certbot renew --dry-run
+```
+
+All Nginx configs then use the same certificate path:
+```nginx
+ssl_certificate /etc/letsencrypt/live/wellkorea.mipllab.com/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/wellkorea.mipllab.com/privkey.pem;
 ```
 
 ### Using Wildcard Certificate
@@ -599,14 +595,15 @@ docker compose -f docker-compose.prod.yml logs backend
 
 3. **Test MinIO directly**:
    ```bash
-   curl http://127.0.0.1:9000/minio/health/live
+   curl http://127.0.0.1:20090/minio/health/live
    ```
 
 ### Frontend Shows Blank Page
 
-1. Check if files exist:
+1. Check if frontend container is running:
    ```bash
-   ls -la /var/www/wellkorea-erp/
+   docker compose -f docker-compose.prod.yml ps frontend
+   docker compose -f docker-compose.prod.yml logs frontend
    ```
 
 2. Check Nginx error logs:
@@ -614,7 +611,10 @@ docker compose -f docker-compose.prod.yml logs backend
    sudo tail -f /var/log/nginx/error.log
    ```
 
-3. Verify SPA routing (should serve index.html for all routes)
+3. Test frontend container directly:
+   ```bash
+   curl http://127.0.0.1:20030/
+   ```
 
 ### Database Connection Issues
 
