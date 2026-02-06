@@ -171,9 +171,15 @@
     "jobCode": "Job Code",
     "validityPeriod": "Validity Period (Days)",
     "version": "Version",
+    "taxRate": "Tax Rate",
+    "discountAmount": "Discount Amount",
     "notes": "Notes",
     "notesPlaceholder": "Additional notes or remarks...",
     "products": "Products",
+    "subtotal": "Subtotal:",
+    "tax": "Tax ({{rate}}%):",
+    "discount": "Discount:",
+    "finalAmount": "Final Amount:",
     "total": "Total:",
     "itemCount": "{{count}} items",
     "itemCountSingle": "{{count}} item",
@@ -183,6 +189,8 @@
     "validation": {
       "projectRequired": "Project is required",
       "validityPositive": "Validity period must be positive",
+      "taxRateRange": "Tax rate must be between 0 and 100",
+      "discountNonNegative": "Discount cannot be negative",
       "productRequired": "At least one product is required"
     }
   },

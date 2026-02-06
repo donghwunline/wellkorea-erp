@@ -47,7 +47,12 @@ function createMockQuotationResponse(
     quotationDate: '2025-01-15',
     validityDays: 30,
     expiryDate: '2025-02-14',
-    totalAmount: 1000000,
+    subtotal: 1000000,
+    taxRate: 10,
+    taxAmount: 100000,
+    amountBeforeDiscount: 1100000,
+    discountAmount: 0,
+    finalAmount: 1100000,
     notes: null,
     createdById: 1,
     createdByName: 'Test User',
@@ -83,7 +88,12 @@ describe('quotationMapper', () => {
         'quotationDate',
         'validityDays',
         'expiryDate',
-        'totalAmount',
+        'subtotal',
+        'taxRate',
+        'taxAmount',
+        'amountBeforeDiscount',
+        'discountAmount',
+        'finalAmount',
         'notes',
         'createdById',
         'createdByName',
@@ -107,7 +117,10 @@ describe('quotationMapper', () => {
       expect(result.jobCode).toBe('WK22025-000001-20250101');
       expect(result.version).toBe(1);
       expect(result.validityDays).toBe(30);
-      expect(result.totalAmount).toBe(1000000);
+      expect(result.subtotal).toBe(1000000);
+      expect(result.taxRate).toBe(10);
+      expect(result.taxAmount).toBe(100000);
+      expect(result.finalAmount).toBe(1100000);
     });
 
     it('should cast status string to QuotationStatus', () => {
@@ -260,7 +273,7 @@ describe('quotationMapper', () => {
         'projectName',
         'version',
         'status',
-        'totalAmount',
+        'finalAmount',
         'createdAt',
         'createdByName',
       ]);
@@ -297,7 +310,7 @@ describe('quotationMapper', () => {
       expect(result.projectId).toBe(response.projectId);
       expect(result.version).toBe(response.version);
       expect(result.status).toBe(response.status);
-      expect(result.totalAmount).toBe(response.totalAmount);
+      expect(result.finalAmount).toBe(response.finalAmount);
       expect(result.createdAt).toBe(response.createdAt);
     });
 

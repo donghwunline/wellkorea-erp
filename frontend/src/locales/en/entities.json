@@ -37,7 +37,13 @@
         },
         "empty": "No line items"
       },
-      "totalAmount": "Total Amount"
+      "totalAmount": "Total Amount",
+      "amounts": {
+        "subtotal": "Subtotal",
+        "tax": "Tax ({{rate}}%)",
+        "discount": "Discount",
+        "finalAmount": "Final Amount"
+      }
     }
   },
   "project": {

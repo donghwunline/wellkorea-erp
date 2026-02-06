@@ -171,9 +171,15 @@
     "jobCode": "작업 코드",
     "validityPeriod": "유효 기간 (일)",
     "version": "버전",
+    "taxRate": "세율",
+    "discountAmount": "할인 금액",
     "notes": "비고",
     "notesPlaceholder": "추가 비고 또는 참고사항...",
     "products": "제품",
+    "subtotal": "공급가액:",
+    "tax": "세액 ({{rate}}%):",
+    "discount": "할인:",
+    "finalAmount": "최종 금액:",
     "total": "합계:",
     "itemCount": "{{count}}개 품목",
     "itemCountSingle": "{{count}}개 품목",
@@ -183,6 +189,8 @@
     "validation": {
       "projectRequired": "프로젝트가 필요합니다",
       "validityPositive": "유효 기간은 양수여야 합니다",
+      "taxRateRange": "세율은 0에서 100 사이여야 합니다",
+      "discountNonNegative": "할인 금액은 음수가 될 수 없습니다",
       "productRequired": "최소 하나의 제품이 필요합니다"
     }
   },
