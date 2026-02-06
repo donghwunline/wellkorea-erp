@@ -57,18 +57,25 @@ class QuotationTaxDiscountDomainTest {
      * Helper to create a Quotation with specified subtotal, tax rate, and discount.
      */
     private Quotation createDraftQuotation(BigDecimal subtotal, BigDecimal taxRate, BigDecimal discountAmount) {
-        Quotation quotation = new Quotation();
-        quotation.setId(1L);
-        quotation.setProject(testProject);
-        quotation.setStatus(QuotationStatus.DRAFT);
-        quotation.setTotalAmount(subtotal);  // totalAmount is the subtotal
-        quotation.setTaxRate(taxRate);
-        quotation.setDiscountAmount(discountAmount);
-        quotation.setVersion(1);
-        quotation.setValidityDays(30);
-        quotation.setQuotationDate(LocalDate.now());
-        quotation.setCreatedBy(testUser);
-        return quotation;
+        return createQuotation(subtotal, taxRate, discountAmount, QuotationStatus.DRAFT);
+    }
+
+    /**
+     * Helper to create a Quotation with specified status.
+     */
+    private Quotation createQuotation(BigDecimal subtotal, BigDecimal taxRate, BigDecimal discountAmount, QuotationStatus status) {
+        return Quotation.builder()
+                .id(1L)
+                .project(testProject)
+                .status(status)
+                .totalAmount(subtotal)  // totalAmount is the subtotal
+                .taxRate(taxRate)
+                .discountAmount(discountAmount)
+                .version(1)
+                .validityDays(30)
+                .quotationDate(LocalDate.now())
+                .createdBy(testUser)
+                .build();
     }
 
     @Nested
@@ -95,13 +102,13 @@ class QuotationTaxDiscountDomainTest {
         @Test
         @DisplayName("should throw BusinessException when not DRAFT")
         void shouldThrowBusinessException_WhenNotDraft() {
-            // Given
-            Quotation quotation = createDraftQuotation(
+            // Given: create quotation directly in PENDING status
+            Quotation quotation = createQuotation(
                     new BigDecimal("100000"),
                     new BigDecimal("10.0"),
-                    BigDecimal.ZERO
+                    BigDecimal.ZERO,
+                    QuotationStatus.PENDING
             );
-            quotation.setStatus(QuotationStatus.PENDING);
 
             // When/Then
             assertThatThrownBy(() -> quotation.updateTaxRate(new BigDecimal("15")))
@@ -185,13 +192,13 @@ class QuotationTaxDiscountDomainTest {
         @Test
         @DisplayName("should throw BusinessException when not DRAFT")
         void shouldThrowBusinessException_WhenNotDraft() {
-            // Given
-            Quotation quotation = createDraftQuotation(
+            // Given: create quotation directly in APPROVED status
+            Quotation quotation = createQuotation(
                     new BigDecimal("100000"),
                     new BigDecimal("10.0"),
-                    BigDecimal.ZERO
+                    BigDecimal.ZERO,
+                    QuotationStatus.APPROVED
             );
-            quotation.setStatus(QuotationStatus.APPROVED);
 
             // When/Then
             assertThatThrownBy(() -> quotation.updateDiscountAmount(new BigDecimal("1000")))

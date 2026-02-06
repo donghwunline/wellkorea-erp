@@ -75,18 +75,18 @@ class QuotationCreateInvoiceTest {
      * Helper to create an approved Quotation (SENT status).
      */
     private Quotation createApprovedQuotation(BigDecimal subtotal, BigDecimal taxRate, BigDecimal discountAmount) {
-        Quotation quotation = new Quotation();
-        quotation.setId(1L);
-        quotation.setProject(testProject);
-        quotation.setStatus(QuotationStatus.SENT);  // Approved state for invoicing
-        quotation.setTotalAmount(subtotal);
-        quotation.setTaxRate(taxRate);
-        quotation.setDiscountAmount(discountAmount);
-        quotation.setVersion(1);
-        quotation.setValidityDays(30);
-        quotation.setQuotationDate(LocalDate.now());
-        quotation.setCreatedBy(testUser);
-        return quotation;
+        return Quotation.builder()
+                .id(1L)
+                .project(testProject)
+                .status(QuotationStatus.SENT)  // Approved state for invoicing
+                .totalAmount(subtotal)
+                .taxRate(taxRate)
+                .discountAmount(discountAmount)
+                .version(1)
+                .validityDays(30)
+                .quotationDate(LocalDate.now())
+                .createdBy(testUser)
+                .build();
     }
 
     /**

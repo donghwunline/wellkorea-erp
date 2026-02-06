@@ -26,6 +26,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -107,16 +108,17 @@ class QuotationCommandServiceTest {
         testProduct.setName("Control Panel");
         testProduct.setBaseUnitPrice(BigDecimal.valueOf(50000.00));
 
-        // Set up test quotation
-        testQuotation = new Quotation();
-        testQuotation.setId(1L);
-        testQuotation.setProject(testProject);
-        testQuotation.setVersion(1);
-        testQuotation.setStatus(QuotationStatus.DRAFT);
-        testQuotation.setQuotationDate(LocalDate.now());
-        testQuotation.setValidityDays(30);
-        testQuotation.setTotalAmount(BigDecimal.ZERO);
-        testQuotation.setCreatedBy(testUser);
+        // Set up test quotation using Builder
+        testQuotation = Quotation.builder()
+                .id(1L)
+                .project(testProject)
+                .version(1)
+                .status(QuotationStatus.DRAFT)
+                .quotationDate(LocalDate.now())
+                .validityDays(30)
+                .totalAmount(BigDecimal.ZERO)
+                .createdBy(testUser)
+                .build();
     }
 
     @Nested
@@ -141,7 +143,7 @@ class QuotationCommandServiceTest {
             given(productRepository.findById(1L)).willReturn(Optional.of(testProduct));
             given(quotationRepository.save(any(Quotation.class))).willAnswer(invocation -> {
                 Quotation q = invocation.getArgument(0);
-                q.setId(1L);
+                ReflectionTestUtils.setField(q, "id", 1L);
                 return q;
             });
 
@@ -186,8 +188,7 @@ class QuotationCommandServiceTest {
         @Test
         @DisplayName("should update DRAFT quotation and return ID")
         void updateQuotation_DraftStatus_ReturnsId() {
-            // Given
-            testQuotation.setId(1L);
+            // Given: testQuotation already has id=1L from builder in setUp()
             UpdateQuotationCommand command = new UpdateQuotationCommand(
                     45, null, null, "Updated notes",
                     List.of(new LineItemCommand(1L, BigDecimal.valueOf(15), BigDecimal.valueOf(48000.00), "Discounted"))
@@ -211,14 +212,14 @@ class QuotationCommandServiceTest {
         @Test
         @DisplayName("should throw exception when updating non-DRAFT quotation")
         void updateQuotation_NonDraftStatus_ThrowsException() {
-            // Given
-            testQuotation.setStatus(QuotationStatus.PENDING);
+            // Given: create quotation in PENDING status
+            Quotation pendingQuotation = createTestQuotation(QuotationStatus.PENDING);
             UpdateQuotationCommand command = new UpdateQuotationCommand(
                     45, null, null, null,
                     List.of(new LineItemCommand(1L, BigDecimal.ONE, BigDecimal.TEN, null))
             );
 
-            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(pendingQuotation));
 
             // When/Then
             assertThatThrownBy(() -> commandService.updateQuotation(1L, command))
@@ -241,7 +242,7 @@ class QuotationCommandServiceTest {
             lineItem.setUnitPrice(BigDecimal.valueOf(50000));
             lineItem.setLineTotal(BigDecimal.valueOf(500000));
             testQuotation.addLineItem(lineItem);
-            testQuotation.setId(1L);
+            // testQuotation already has id=1L from builder in setUp()
 
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
             given(quotationRepository.save(any(Quotation.class))).willAnswer(invocation -> invocation.getArgument(0));
@@ -257,9 +258,9 @@ class QuotationCommandServiceTest {
         @Test
         @DisplayName("should throw exception when submitting non-DRAFT quotation")
         void submitForApproval_NonDraftStatus_ThrowsException() {
-            // Given
-            testQuotation.setStatus(QuotationStatus.APPROVED);
-            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            // Given: create quotation in APPROVED status
+            Quotation approvedQuotation = createTestQuotation(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(approvedQuotation));
 
             // When/Then
             assertThatThrownBy(() -> commandService.submitForApproval(1L, 100L))
@@ -275,23 +276,22 @@ class QuotationCommandServiceTest {
         @Test
         @DisplayName("should create new version from APPROVED quotation")
         void createNewVersion_FromApproved_ReturnsNewId() {
-            // Given
-            testQuotation.setStatus(QuotationStatus.APPROVED);
-            testQuotation.setVersion(1);
+            // Given: create approved quotation with line items
+            Quotation approvedQuotation = createTestQuotation(QuotationStatus.APPROVED);
 
             QuotationLineItem lineItem = new QuotationLineItem();
             lineItem.setProduct(testProduct);
             lineItem.setQuantity(BigDecimal.TEN);
             lineItem.setUnitPrice(BigDecimal.valueOf(50000));
             lineItem.setLineTotal(BigDecimal.valueOf(500000));
-            testQuotation.setLineItems(new ArrayList<>(List.of(lineItem)));
+            approvedQuotation.addLineItem(lineItem);
 
-            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(approvedQuotation));
             given(userRepository.findById(1L)).willReturn(Optional.of(testUser));
             given(quotationRepository.findLatestVersionByProjectId(anyLong())).willReturn(Optional.of(1));
             given(quotationRepository.save(any(Quotation.class))).willAnswer(invocation -> {
                 Quotation q = invocation.getArgument(0);
-                q.setId(2L);
+                ReflectionTestUtils.setField(q, "id", 2L);
                 return q;
             });
 
@@ -310,8 +310,7 @@ class QuotationCommandServiceTest {
         @Test
         @DisplayName("should throw exception when creating version from DRAFT quotation")
         void createNewVersion_FromDraft_ThrowsException() {
-            // Given
-            testQuotation.setStatus(QuotationStatus.DRAFT);
+            // Given: testQuotation is already DRAFT from setUp()
             given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
 
             // When/Then
@@ -324,4 +323,20 @@ class QuotationCommandServiceTest {
     // approveQuotation and rejectQuotation have been removed from the service.
     // Approval/rejection is now handled by Quotation.onApprovalGranted()/onApprovalRejected()
     // via the Approvable pattern and GenericApprovalCompletedHandler.
+
+    /**
+     * Helper to create a quotation with the specified status.
+     */
+    private Quotation createTestQuotation(QuotationStatus status) {
+        return Quotation.builder()
+                .id(1L)
+                .project(testProject)
+                .version(1)
+                .status(status)
+                .quotationDate(LocalDate.now())
+                .validityDays(30)
+                .totalAmount(BigDecimal.ZERO)
+                .createdBy(testUser)
+                .build();
+    }
 }
