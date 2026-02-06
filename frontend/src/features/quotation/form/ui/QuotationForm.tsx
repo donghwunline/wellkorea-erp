@@ -65,6 +65,8 @@ export interface QuotationFormProps {
 
 interface FormState {
   validityDays: number;
+  taxRate: number;
+  discountAmount: number;
   notes: string;
   lineItems: ProductLineItem[];
 }
@@ -110,6 +112,8 @@ export function QuotationForm({
     if (quotation) {
       return {
         validityDays: quotation.validityDays,
+        taxRate: quotation.taxRate,
+        discountAmount: quotation.discountAmount,
         notes: quotation.notes || '',
         lineItems:
           quotation.lineItems?.map(item => ({
@@ -124,6 +128,8 @@ export function QuotationForm({
     }
     return {
       validityDays: 30,
+      taxRate: 10,
+      discountAmount: 0,
       notes: '',
       lineItems: [],
     };
@@ -160,6 +166,14 @@ export function QuotationForm({
       errors.validityDays = t('form.validation.validityPositive');
     }
 
+    if (formState.taxRate < 0 || formState.taxRate > 100) {
+      errors.taxRate = t('form.validation.taxRateRange');
+    }
+
+    if (formState.discountAmount < 0) {
+      errors.discountAmount = t('form.validation.discountNonNegative');
+    }
+
     if (formState.lineItems.length === 0) {
       errors.lineItems = t('form.validation.productRequired');
     }
@@ -186,6 +200,8 @@ export function QuotationForm({
       if (isEditMode && onUpdateSubmit) {
         const updateData: UpdateQuotationInput = {
           validityDays: formState.validityDays,
+          taxRate: formState.taxRate,
+          discountAmount: formState.discountAmount,
           notes: formState.notes || undefined,
           lineItems: formState.lineItems.map(toLineItemInput),
         };
@@ -194,6 +210,8 @@ export function QuotationForm({
         const createData: CreateQuotationInput = {
           projectId,
           validityDays: formState.validityDays,
+          taxRate: formState.taxRate,
+          discountAmount: formState.discountAmount,
           notes: formState.notes || undefined,
           lineItems: formState.lineItems.map(toLineItemInput),
         };
@@ -203,11 +221,14 @@ export function QuotationForm({
     [isEditMode, projectId, formState, validate, onCreateSubmit, onUpdateSubmit]
   );
 
-  // Calculate total
-  const totalAmount = formState.lineItems.reduce(
+  // Calculate amounts
+  const subtotal = formState.lineItems.reduce(
     (sum, item) => sum + item.quantity * item.unitPrice,
     0
   );
+  const taxAmount = Math.round(subtotal * (formState.taxRate / 100));
+  const amountBeforeDiscount = subtotal + taxAmount;
+  const finalAmount = amountBeforeDiscount - formState.discountAmount;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -270,6 +291,50 @@ export function QuotationForm({
               </FormField>
             </div>
           )}
+
+          {/* Tax Rate */}
+          <div>
+            <FormField
+              label={t('form.taxRate')}
+              error={validationErrors.taxRate}
+            >
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.01}
+                  value={formState.taxRate}
+                  onChange={e => updateField('taxRate', parseFloat(e.target.value) || 0)}
+                  placeholder="10"
+                  disabled={isSubmitting}
+                  className="flex-1"
+                />
+                <span className="text-steel-400">%</span>
+              </div>
+            </FormField>
+          </div>
+
+          {/* Discount Amount */}
+          <div>
+            <FormField
+              label={t('form.discountAmount')}
+              error={validationErrors.discountAmount}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-steel-400">₩</span>
+                <Input
+                  type="number"
+                  min={0}
+                  value={formState.discountAmount}
+                  onChange={e => updateField('discountAmount', parseFloat(e.target.value) || 0)}
+                  placeholder="0"
+                  disabled={isSubmitting}
+                  className="flex-1"
+                />
+              </div>
+            </FormField>
+          </div>
         </div>
 
         {/* Notes */}
@@ -305,18 +370,52 @@ export function QuotationForm({
       {/* Form Actions */}
       <Card className="p-4">
         <div className="flex items-center justify-between">
-          <div className="text-steel-400">
-            <span>{t('form.total')} </span>
-            <span className="text-lg font-semibold text-copper-400">
-              {new Intl.NumberFormat('ko-KR', {
-                style: 'currency',
-                currency: 'KRW',
-                maximumFractionDigits: 0,
-              }).format(totalAmount)}
-            </span>
-            <span className="ml-2 text-sm">
-              ({t('form.itemCount', { count: formState.lineItems.length })})
-            </span>
+          <div className="space-y-1 text-sm">
+            <div className="flex items-center gap-4">
+              <span className="text-steel-400">{t('form.subtotal')}</span>
+              <span className="text-steel-300">
+                {new Intl.NumberFormat('ko-KR', {
+                  style: 'currency',
+                  currency: 'KRW',
+                  maximumFractionDigits: 0,
+                }).format(subtotal)}
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-steel-400">{t('form.tax', { rate: formState.taxRate })}</span>
+              <span className="text-steel-300">
+                {new Intl.NumberFormat('ko-KR', {
+                  style: 'currency',
+                  currency: 'KRW',
+                  maximumFractionDigits: 0,
+                }).format(taxAmount)}
+              </span>
+            </div>
+            {formState.discountAmount > 0 && (
+              <div className="flex items-center gap-4">
+                <span className="text-steel-400">{t('form.discount')}</span>
+                <span className="text-red-400">
+                  -{new Intl.NumberFormat('ko-KR', {
+                    style: 'currency',
+                    currency: 'KRW',
+                    maximumFractionDigits: 0,
+                  }).format(formState.discountAmount)}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center gap-4 border-t border-steel-700/50 pt-1">
+              <span className="font-medium text-white">{t('form.finalAmount')}</span>
+              <span className="text-lg font-semibold text-copper-400">
+                {new Intl.NumberFormat('ko-KR', {
+                  style: 'currency',
+                  currency: 'KRW',
+                  maximumFractionDigits: 0,
+                }).format(finalAmount)}
+              </span>
+              <span className="text-steel-500">
+                ({t('form.itemCount', { count: formState.lineItems.length })})
+              </span>
+            </div>
           </div>
 
           <div className="flex gap-3">

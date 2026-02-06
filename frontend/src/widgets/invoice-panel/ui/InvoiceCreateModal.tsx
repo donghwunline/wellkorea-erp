@@ -65,9 +65,6 @@ function getDueDateDefault(): string {
   return date.toISOString().split('T')[0];
 }
 
-// Default tax rate (10% VAT in Korea)
-const DEFAULT_TAX_RATE = 10;
-
 export function InvoiceCreateModal({
   projectId,
   isOpen,
@@ -80,7 +77,6 @@ export function InvoiceCreateModal({
   // Form state
   const [issueDate, setIssueDate] = useState(getTodayISO());
   const [dueDate, setDueDate] = useState(getDueDateDefault());
-  const [taxRate, setTaxRate] = useState(DEFAULT_TAX_RATE);
   const [notes, setNotes] = useState('');
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(
     preselectedDeliveryId ?? null
@@ -218,6 +214,9 @@ export function InvoiceCreateModal({
     [deliveries, lineItemsData]
   );
 
+  // Tax rate from quotation (inherited, not user-editable)
+  const taxRate = quotationDetail?.taxRate ?? 10;
+
   // Calculate totals
   const { subtotal, taxAmount, total } = useMemo(() => {
     let subtotal = 0;
@@ -297,7 +296,6 @@ export function InvoiceCreateModal({
         quotationId: acceptedQuotation!.id,
         issueDate,
         dueDate,
-        taxRate,
         notes: notes || undefined,
         lineItems,
       });
@@ -307,7 +305,6 @@ export function InvoiceCreateModal({
       acceptedQuotation,
       issueDate,
       dueDate,
-      taxRate,
       lineItemsData,
       quantitiesToInvoice,
       notes,
@@ -440,15 +437,12 @@ export function InvoiceCreateModal({
                 required
               />
             </FormField>
-            <FormField label={t('invoiceCreateModal.fields.taxRate')} required>
+            <FormField label={t('invoiceCreateModal.fields.taxRate')}>
               <Input
-                type="number"
-                value={taxRate}
-                onChange={(e) => setTaxRate(Number(e.target.value))}
-                min={0}
-                max={100}
-                step={0.1}
-                required
+                type="text"
+                value={`${taxRate}%`}
+                disabled
+                title={t('invoiceCreateModal.fields.taxRateInherited')}
               />
             </FormField>
             <FormField label={t('invoiceCreateModal.fields.relatedDelivery')}>

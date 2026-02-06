@@ -178,13 +178,29 @@ export function QuotationCard({
           </Table.Body>
         </Table>
 
-        {/* Total */}
+        {/* Amounts Breakdown */}
         <div className="border-t border-steel-700/50 bg-steel-800/30 px-4 py-3">
-          <div className="flex items-center justify-between">
-            <span className="font-medium text-white">{t('quotation.card.totalAmount')}</span>
-            <span className="text-xl font-bold text-copper-400">
-              {Money.format(quotation.totalAmount)}
-            </span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-steel-400">{t('quotation.card.amounts.subtotal')}</span>
+              <span className="text-steel-300">{Money.format(quotation.subtotal)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-steel-400">{t('quotation.card.amounts.tax', { rate: quotation.taxRate })}</span>
+              <span className="text-steel-300">{Money.format(quotation.taxAmount)}</span>
+            </div>
+            {quotation.discountAmount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-steel-400">{t('quotation.card.amounts.discount')}</span>
+                <span className="text-red-400">-{Money.format(quotation.discountAmount)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between border-t border-steel-700/50 pt-2">
+              <span className="font-medium text-white">{t('quotation.card.amounts.finalAmount')}</span>
+              <span className="text-xl font-bold text-copper-400">
+                {Money.format(quotation.finalAmount)}
+              </span>
+            </div>
           </div>
         </div>
       </Card>
