@@ -130,6 +130,8 @@ class QuotationCommandServiceTest {
             CreateQuotationCommand command = new CreateQuotationCommand(
                     1L, // projectId
                     30, // validityDays
+                    null, // taxRate (use default)
+                    null, // discountAmount
                     "Test notes",
                     List.of(new LineItemCommand(1L, BigDecimal.valueOf(10), BigDecimal.valueOf(50000.00), "Notes"))
             );
@@ -161,7 +163,7 @@ class QuotationCommandServiceTest {
         void createQuotation_ProjectNotFound_ThrowsException() {
             // Given
             CreateQuotationCommand command = new CreateQuotationCommand(
-                    999L, 30, null,
+                    999L, 30, null, null, null,
                     List.of(new LineItemCommand(1L, BigDecimal.ONE, BigDecimal.TEN, null))
             );
 
@@ -187,7 +189,7 @@ class QuotationCommandServiceTest {
             // Given
             testQuotation.setId(1L);
             UpdateQuotationCommand command = new UpdateQuotationCommand(
-                    45, "Updated notes",
+                    45, null, null, "Updated notes",
                     List.of(new LineItemCommand(1L, BigDecimal.valueOf(15), BigDecimal.valueOf(48000.00), "Discounted"))
             );
 
@@ -212,7 +214,7 @@ class QuotationCommandServiceTest {
             // Given
             testQuotation.setStatus(QuotationStatus.PENDING);
             UpdateQuotationCommand command = new UpdateQuotationCommand(
-                    45, null,
+                    45, null, null, null,
                     List.of(new LineItemCommand(1L, BigDecimal.ONE, BigDecimal.TEN, null))
             );
 

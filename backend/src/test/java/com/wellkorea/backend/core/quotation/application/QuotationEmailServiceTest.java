@@ -102,7 +102,12 @@ class QuotationEmailServiceTest {
                 LocalDate.now(),
                 30,
                 LocalDate.now().plusDays(30),
-                new BigDecimal("1000000"),
+                new BigDecimal("1000000"),     // subtotal
+                new BigDecimal("10"),          // taxRate
+                new BigDecimal("100000"),      // taxAmount
+                new BigDecimal("1100000"),     // amountBeforeDiscount
+                BigDecimal.ZERO,               // discountAmount
+                new BigDecimal("1100000"),     // finalAmount
                 "Test notes",
                 1L,
                 "테스트 사용자",
@@ -430,7 +435,7 @@ class QuotationEmailServiceTest {
             assertThat(body).contains("김철수 님");
             assertThat(body).contains("WK2K25-0001-1219-Q01");
             assertThat(body).contains("Test Project");
-            assertThat(body).contains("1,000,000");
+            assertThat(body).contains("1,100,000"); // finalAmount = subtotal + tax = 1,000,000 + 100,000
         }
 
         @Test
