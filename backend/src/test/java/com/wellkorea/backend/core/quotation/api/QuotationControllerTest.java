@@ -161,7 +161,7 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
                     .andExpect(jsonPath("$.data.projectId").value(projectId))
                     .andExpect(jsonPath("$.data.version").value(1))
                     .andExpect(jsonPath("$.data.status").value("DRAFT"))
-                    .andExpect(jsonPath("$.data.totalAmount").value(570000.00)) // 10*50000 + 20*3500
+                    .andExpect(jsonPath("$.data.subtotal").value(570000.00)) // 10*50000 + 20*3500
                     .andExpect(jsonPath("$.data.lineItems", hasSize(2)));
         }
 
@@ -381,7 +381,7 @@ class QuotationControllerTest extends BaseIntegrationTest implements TestFixture
             mockMvc.perform(get(QUOTATIONS_URL + "/" + createdId)
                             .header("Authorization", "Bearer " + adminToken))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.totalAmount").value(40000.00)) // 3*10000 + 5*2000
+                    .andExpect(jsonPath("$.data.subtotal").value(40000.00)) // 3*10000 + 5*2000
                     .andExpect(jsonPath("$.data.lineItems[0].lineTotal").value(30000.00))
                     .andExpect(jsonPath("$.data.lineItems[1].lineTotal").value(10000.00));
         }

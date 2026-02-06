@@ -450,6 +450,14 @@ export function InvoiceDetailModal({
               {invoiceRules.formatAmount(invoice.totalTax)}
             </div>
           </div>
+          {invoice.discountAmount > 0 && (
+            <div>
+              <div className="text-xs text-steel-400">{t('invoiceDetailModal.amounts.discount')}</div>
+              <div className="mt-1 font-mono text-sm text-red-400">
+                -{invoiceRules.formatAmount(invoice.discountAmount)}
+              </div>
+            </div>
+          )}
           <div>
             <div className="text-xs text-steel-400">{t('invoiceDetailModal.amounts.total')}</div>
             <div className="mt-1 font-mono text-sm font-bold text-copper-400">

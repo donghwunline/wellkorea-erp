@@ -69,6 +69,7 @@ export interface InvoiceDetailResponse {
   totalBeforeTax: number;
   taxRate: number;
   totalTax: number;
+  discountAmount: number;
   totalAmount: number;
   totalPaid: number;
   remainingBalance: number;
@@ -161,6 +162,7 @@ export const invoiceMapper = {
       totalBeforeTax: response.totalBeforeTax,
       taxRate: response.taxRate,
       totalTax: response.totalTax,
+      discountAmount: response.discountAmount,
       totalAmount: response.totalAmount,
       totalPaid: response.totalPaid,
       remainingBalance: response.remainingBalance,

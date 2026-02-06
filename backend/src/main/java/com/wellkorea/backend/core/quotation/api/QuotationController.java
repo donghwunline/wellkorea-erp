@@ -89,6 +89,8 @@ public class QuotationController {
         CreateQuotationCommand command = new CreateQuotationCommand(
                 request.projectId(),
                 request.validityDays(),
+                request.taxRate(),
+                request.discountAmount(),
                 request.notes(),
                 request.lineItems().stream()
                         .map(li -> new LineItemCommand(
@@ -118,6 +120,8 @@ public class QuotationController {
 
         UpdateQuotationCommand command = new UpdateQuotationCommand(
                 request.validityDays(),
+                request.taxRate(),
+                request.discountAmount(),
                 request.notes(),
                 request.lineItems().stream()
                         .map(li -> new LineItemCommand(

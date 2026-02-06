@@ -82,7 +82,8 @@ APP_FRONTEND_URL=http://localhost:5173      # Frontend URL
 MAIL_PROVIDER=graph
 MICROSOFT_GRAPH_CLIENT_ID=your-client-id
 MICROSOFT_GRAPH_CLIENT_SECRET=your-client-secret
-APP_BASE_URL=https://api.your-domain.com
+# With gateway architecture, all traffic (including /api/*) goes through nginx
+APP_BASE_URL=https://your-domain.com
 APP_FRONTEND_URL=https://your-domain.com
 ```
 

@@ -29,7 +29,12 @@ export interface Quotation {
   readonly quotationDate: string; // ISO date: "2025-01-15"
   readonly validityDays: number;
   readonly expiryDate: string; // ISO date: "2025-01-30"
-  readonly totalAmount: number;
+  readonly subtotal: number; // Sum of line item totals (before tax)
+  readonly taxRate: number; // 0-100 percentage
+  readonly taxAmount: number; // Computed: subtotal * taxRate / 100
+  readonly amountBeforeDiscount: number; // subtotal + taxAmount
+  readonly discountAmount: number; // Discount applied after tax
+  readonly finalAmount: number; // amountBeforeDiscount - discountAmount
   readonly notes: string | null;
   readonly createdById: number;
   readonly createdByName: string;
@@ -53,7 +58,7 @@ export interface QuotationListItem {
   readonly projectName: string;
   readonly version: number;
   readonly status: QuotationStatus;
-  readonly totalAmount: number;
+  readonly finalAmount: number; // Final amount after tax and discount
   readonly createdAt: string;
   readonly createdByName: string;
 }
@@ -69,7 +74,8 @@ type QuotationBase = Pick<Quotation, 'id' | 'status' | 'version'>;
  */
 type QuotationWithOptionalLineItems = QuotationBase & {
   readonly lineItems?: readonly LineItem[];
-  readonly totalAmount?: number;
+  readonly subtotal?: number;
+  readonly finalAmount?: number;
   readonly expiryDate?: string;
   readonly notes?: string | null;
 };
@@ -86,18 +92,42 @@ export const quotationRules = {
   // ==================== COMPUTED VALUES ====================
 
   /**
-   * Calculate total amount from line items.
+   * Calculate subtotal from line items.
    * Returns 0 if no line items.
    */
-  calculateTotal(quotation: Quotation): number {
+  calculateSubtotal(quotation: Quotation): number {
     return quotation.lineItems.reduce((sum, item) => sum + lineItemRules.getLineTotal(item), 0);
   },
 
   /**
-   * Format total amount as currency.
+   * Calculate tax amount from subtotal and tax rate.
+   */
+  calculateTaxAmount(subtotal: number, taxRate: number): number {
+    return Math.round(subtotal * (taxRate / 100));
+  },
+
+  /**
+   * Calculate final amount from subtotal, tax rate, and discount.
+   */
+  calculateFinalAmount(subtotal: number, taxRate: number, discountAmount: number): number {
+    const taxAmount = quotationRules.calculateTaxAmount(subtotal, taxRate);
+    return subtotal + taxAmount - discountAmount;
+  },
+
+  /**
+   * @deprecated Use calculateSubtotal instead
+   * Calculate total amount from line items.
+   * Returns 0 if no line items.
+   */
+  calculateTotal(quotation: Quotation): number {
+    return quotationRules.calculateSubtotal(quotation);
+  },
+
+  /**
+   * Format final amount as currency.
    */
   getFormattedTotal(quotation: Quotation): string {
-    return Money.format(quotationRules.calculateTotal(quotation));
+    return Money.format(quotation.finalAmount);
   },
 
   /**
@@ -162,7 +192,7 @@ export const quotationRules = {
     // If lineItems not available (list view), allow based on status only
     if (!quotation.lineItems) return true;
     return (
-      quotation.lineItems.length > 0 && quotationRules.calculateTotal(quotation as Quotation) > 0
+      quotation.lineItems.length > 0 && quotationRules.calculateSubtotal(quotation as Quotation) > 0
     );
   },
 

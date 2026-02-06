@@ -65,17 +65,24 @@ public class QuotationCommandService {
                 .map(v -> v + 1)
                 .orElse(1);
 
-        Quotation quotation = new Quotation();
-        quotation.setProject(project);
-        quotation.setVersion(version);
-        quotation.setStatus(QuotationStatus.DRAFT);
-        quotation.setValidityDays(command.validityDays() != null ? command.validityDays() : 30);
-        quotation.setNotes(command.notes());
-        quotation.setCreatedBy(createdBy);
+        Quotation quotation = Quotation.builder()
+                .project(project)
+                .version(version)
+                .status(QuotationStatus.DRAFT)
+                .validityDays(command.validityDays() != null ? command.validityDays() : 30)
+                .taxRate(command.taxRate())
+                .notes(command.notes())
+                .createdBy(createdBy)
+                .build();
 
         // Add line items
         addLineItemsFromCommands(quotation, command.lineItems());
         quotation.recalculateTotalAmount();
+
+        // Set discount amount after total is calculated (so validation can check against subtotal+tax)
+        if (command.discountAmount() != null) {
+            quotation.updateDiscountAmount(command.discountAmount());
+        }
 
         Quotation saved = quotationRepository.save(quotation);
         return saved.getId();
@@ -95,10 +102,13 @@ public class QuotationCommandService {
         }
 
         if (command.validityDays() != null) {
-            quotation.setValidityDays(command.validityDays());
+            quotation.updateValidityDays(command.validityDays());
         }
         if (command.notes() != null) {
-            quotation.setNotes(command.notes());
+            quotation.updateNotes(command.notes());
+        }
+        if (command.taxRate() != null) {
+            quotation.updateTaxRate(command.taxRate());
         }
 
         // Update line items if provided
@@ -111,6 +121,11 @@ public class QuotationCommandService {
 
             addLineItemsFromCommands(quotation, command.lineItems());
             quotation.recalculateTotalAmount();
+        }
+
+        // Update discount amount after total is recalculated
+        if (command.discountAmount() != null) {
+            quotation.updateDiscountAmount(command.discountAmount());
         }
 
         Quotation saved = quotationRepository.save(quotation);
@@ -132,7 +147,7 @@ public class QuotationCommandService {
             throw new BusinessException("Quotation must be in DRAFT status with line items to submit for approval");
         }
 
-        quotation.setStatus(QuotationStatus.PENDING);
+        quotation.markAsPending();
         quotation.getApprovalState().submitForApproval(submittedByUserId, "QUOTATION");
         Quotation savedQuotation = quotationRepository.save(quotation);
 
@@ -167,13 +182,16 @@ public class QuotationCommandService {
                 .map(v -> v + 1)
                 .orElse(1);
 
-        Quotation newQuotation = new Quotation();
-        newQuotation.setProject(original.getProject());
-        newQuotation.setVersion(newVersion);
-        newQuotation.setStatus(QuotationStatus.DRAFT);
-        newQuotation.setValidityDays(original.getValidityDays());
-        newQuotation.setNotes(original.getNotes());
-        newQuotation.setCreatedBy(createdBy);
+        Quotation newQuotation = Quotation.builder()
+                .project(original.getProject())
+                .version(newVersion)
+                .status(QuotationStatus.DRAFT)
+                .validityDays(original.getValidityDays())
+                .taxRate(original.getTaxRate())
+                .discountAmount(original.getDiscountAmount())
+                .notes(original.getNotes())
+                .createdBy(createdBy)
+                .build();
 
         // Copy line items
         int sequence = 1;
@@ -204,12 +222,7 @@ public class QuotationCommandService {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
-        QuotationStatus currentStatus = quotation.getStatus();
-        if (currentStatus != QuotationStatus.APPROVED && currentStatus != QuotationStatus.SENT) {
-            throw new BusinessException("Only APPROVED or SENT quotations can be marked as sending");
-        }
-
-        quotation.setStatus(QuotationStatus.SENDING);
+        quotation.markAsSending();
 
         Quotation saved = quotationRepository.save(quotation);
         return saved.getId();
@@ -225,11 +238,7 @@ public class QuotationCommandService {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
-        if (quotation.getStatus() != QuotationStatus.SENDING) {
-            throw new BusinessException("Only SENDING quotations can be marked as sent");
-        }
-
-        quotation.setStatus(QuotationStatus.SENT);
+        quotation.markAsSent();
 
         Quotation saved = quotationRepository.save(quotation);
         return saved.getId();
@@ -246,12 +255,7 @@ public class QuotationCommandService {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
-        QuotationStatus currentStatus = quotation.getStatus();
-        if (currentStatus != QuotationStatus.APPROVED && currentStatus != QuotationStatus.SENT) {
-            throw new BusinessException("Only APPROVED or SENT quotations can be accepted");
-        }
-
-        quotation.setStatus(QuotationStatus.ACCEPTED);
+        quotation.markAsAccepted();
 
         Quotation saved = quotationRepository.save(quotation);
 

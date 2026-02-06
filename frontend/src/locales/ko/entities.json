@@ -37,7 +37,13 @@
         },
         "empty": "품목이 없습니다"
       },
-      "totalAmount": "총 금액"
+      "totalAmount": "총 금액",
+      "amounts": {
+        "subtotal": "공급가액",
+        "tax": "세액 ({{rate}}%)",
+        "discount": "할인",
+        "finalAmount": "최종 금액"
+      }
     }
   },
   "project": {

@@ -11,6 +11,12 @@ import java.util.List;
 /**
  * Read model for quotation detail views.
  * Includes line items for full detail display.
+ * <p>
+ * Amount calculation:
+ *   subtotal = sum(line_items.line_total)
+ *   taxAmount = subtotal × taxRate / 100
+ *   amountBeforeDiscount = subtotal + taxAmount
+ *   finalAmount = amountBeforeDiscount - discountAmount
  */
 public record QuotationDetailView(
         Long id,
@@ -23,7 +29,13 @@ public record QuotationDetailView(
         LocalDate quotationDate,
         Integer validityDays,
         LocalDate expiryDate,
-        BigDecimal totalAmount,
+        // Amount fields
+        BigDecimal subtotal,              // Sum of line items (was totalAmount)
+        BigDecimal taxRate,               // Tax rate percentage (0-100)
+        BigDecimal taxAmount,             // Computed: subtotal × taxRate / 100
+        BigDecimal amountBeforeDiscount,  // Computed: subtotal + taxAmount
+        BigDecimal discountAmount,        // Fixed discount in KRW
+        BigDecimal finalAmount,           // Computed: amountBeforeDiscount - discountAmount
         String notes,
         Long createdById,
         String createdByName,

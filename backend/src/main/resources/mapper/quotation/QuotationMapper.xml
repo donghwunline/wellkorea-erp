@@ -35,7 +35,13 @@
             <arg column="quotation_date" javaType="java.time.LocalDate"/>
             <arg column="validity_days" javaType="Integer"/>
             <arg column="expiry_date" javaType="java.time.LocalDate"/>
-            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <!-- Amount fields -->
+            <arg column="subtotal" javaType="java.math.BigDecimal"/>
+            <arg column="tax_rate" javaType="java.math.BigDecimal"/>
+            <arg column="tax_amount" javaType="java.math.BigDecimal"/>
+            <arg column="amount_before_discount" javaType="java.math.BigDecimal"/>
+            <arg column="discount_amount" javaType="java.math.BigDecimal"/>
+            <arg column="final_amount" javaType="java.math.BigDecimal"/>
             <arg column="notes" javaType="String"/>
             <arg column="created_by_id" javaType="Long"/>
             <arg column="created_by_name" javaType="String"/>
@@ -67,7 +73,13 @@
         q.quotation_date,
         q.validity_days,
         q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
-        q.total_amount,
+        -- Amount fields with computed values
+        q.total_amount AS subtotal,
+        q.tax_rate,
+        ROUND(q.total_amount * q.tax_rate / 100, 2) AS tax_amount,
+        q.total_amount + ROUND(q.total_amount * q.tax_rate / 100, 2) AS amount_before_discount,
+        q.discount_amount,
+        (q.total_amount + ROUND(q.total_amount * q.tax_rate / 100, 2)) - q.discount_amount AS final_amount,
         q.notes,
         q.created_by_id,
         cu.full_name AS created_by_name,
@@ -122,7 +134,13 @@
             <arg column="quotation_date" javaType="java.time.LocalDate"/>
             <arg column="validity_days" javaType="Integer"/>
             <arg column="expiry_date" javaType="java.time.LocalDate"/>
-            <arg column="total_amount" javaType="java.math.BigDecimal"/>
+            <!-- Amount fields -->
+            <arg column="subtotal" javaType="java.math.BigDecimal"/>
+            <arg column="tax_rate" javaType="java.math.BigDecimal"/>
+            <arg column="tax_amount" javaType="java.math.BigDecimal"/>
+            <arg column="amount_before_discount" javaType="java.math.BigDecimal"/>
+            <arg column="discount_amount" javaType="java.math.BigDecimal"/>
+            <arg column="final_amount" javaType="java.math.BigDecimal"/>
             <arg column="notes" javaType="String"/>
             <arg column="created_by_id" javaType="Long"/>
             <arg column="created_by_name" javaType="String"/>
@@ -152,7 +170,13 @@
         q.quotation_date,
         q.validity_days,
         q.quotation_date + (q.validity_days || ' days')::INTERVAL AS expiry_date,
-        q.total_amount,
+        -- Amount fields with computed values
+        q.total_amount AS subtotal,
+        q.tax_rate,
+        ROUND(q.total_amount * q.tax_rate / 100, 2) AS tax_amount,
+        q.total_amount + ROUND(q.total_amount * q.tax_rate / 100, 2) AS amount_before_discount,
+        q.discount_amount,
+        (q.total_amount + ROUND(q.total_amount * q.tax_rate / 100, 2)) - q.discount_amount AS final_amount,
         q.notes,
         q.created_by_id,
         cu.full_name AS created_by_name,

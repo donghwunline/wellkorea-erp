@@ -48,9 +48,6 @@ function getDueDateDefault(): string {
   return date.toISOString().split('T')[0];
 }
 
-// Default tax rate (10% VAT in Korea)
-const DEFAULT_TAX_RATE = 10;
-
 export function InvoiceCreatePage() {
   const { t } = useTranslation('pages');
   const { projectId } = useParams<{ projectId: string }>();
@@ -66,7 +63,6 @@ export function InvoiceCreatePage() {
   // Form state
   const [issueDate, setIssueDate] = useState(getTodayISO());
   const [dueDate, setDueDate] = useState(getDueDateDefault());
-  const [taxRate, setTaxRate] = useState(DEFAULT_TAX_RATE);
   const [notes, setNotes] = useState('');
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(
     preselectedDeliveryId
@@ -225,6 +221,9 @@ export function InvoiceCreatePage() {
     queueMicrotask(() => setQuantitiesToInvoice(newQuantities));
   }, [preselectedDeliveryId, lineItemsData, deliveries]);
 
+  // Tax rate from quotation (inherited, not user-editable)
+  const taxRate = quotationDetail?.taxRate ?? 10;
+
   // Calculate totals
   const { subtotal, taxAmount, total } = useMemo(() => {
     let subtotal = 0;
@@ -303,7 +302,6 @@ export function InvoiceCreatePage() {
         quotationId: acceptedQuotation!.id,
         issueDate,
         dueDate,
-        taxRate,
         notes: notes || undefined,
         lineItems,
       });
@@ -313,7 +311,6 @@ export function InvoiceCreatePage() {
       acceptedQuotation,
       issueDate,
       dueDate,
-      taxRate,
       lineItemsData,
       quantitiesToInvoice,
       notes,
@@ -460,15 +457,12 @@ export function InvoiceCreatePage() {
                 required
               />
             </FormField>
-            <FormField label={t('invoiceCreate.taxRate')} required>
+            <FormField label={t('invoiceCreate.taxRate')}>
               <Input
-                type="number"
-                value={taxRate}
-                onChange={e => setTaxRate(Number(e.target.value))}
-                min={0}
-                max={100}
-                step={0.1}
-                required
+                type="text"
+                value={`${taxRate}%`}
+                disabled
+                title={t('invoiceCreate.taxRateInherited')}
               />
             </FormField>
             <FormField label={t('invoiceCreate.relatedDelivery')}>

@@ -77,7 +77,12 @@ class QuotationQueryServiceTest {
                 LocalDate.now(),
                 30,
                 LocalDate.now().plusDays(30),
-                BigDecimal.valueOf(500000.00),
+                BigDecimal.valueOf(500000.00),  // subtotal
+                BigDecimal.valueOf(10),         // taxRate
+                BigDecimal.valueOf(50000.00),   // taxAmount
+                BigDecimal.valueOf(550000.00),  // amountBeforeDiscount
+                BigDecimal.ZERO,                // discountAmount
+                BigDecimal.valueOf(550000.00),  // finalAmount
                 "Test quotation notes",
                 1L,
                 "Admin User",
@@ -104,7 +109,12 @@ class QuotationQueryServiceTest {
                 LocalDate.now(),
                 30,
                 LocalDate.now().plusDays(30),
-                BigDecimal.valueOf(500000.00),
+                BigDecimal.valueOf(500000.00),  // subtotal
+                BigDecimal.valueOf(10),         // taxRate
+                BigDecimal.valueOf(50000.00),   // taxAmount
+                BigDecimal.valueOf(550000.00),  // amountBeforeDiscount
+                BigDecimal.ZERO,                // discountAmount
+                BigDecimal.valueOf(550000.00),  // finalAmount
                 "Test quotation notes",
                 1L,
                 "Admin User",

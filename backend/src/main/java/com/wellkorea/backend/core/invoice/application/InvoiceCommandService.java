@@ -104,12 +104,12 @@ public class InvoiceCommandService {
                 .toList();
 
         // Delegate to Quotation's factory method (uses Double Dispatch pattern)
+        // Tax rate is inherited from quotation, discount is calculated proportionally
         TaxInvoice invoice = quotation.createInvoice(
                 quotationInvoiceGuard,
                 invoiceNumberGenerator,
                 request.issueDate(),
                 request.dueDate(),
-                request.taxRate(),
                 request.notes(),
                 lineItemInputs,
                 creatorId

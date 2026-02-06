@@ -228,7 +228,8 @@
     "fields": {
       "issueDate": "발행일",
       "dueDate": "납부기한",
-      "taxRate": "세율 (%)",
+      "taxRate": "세율",
+      "taxRateInherited": "세율은 견적서에서 상속됩니다",
       "relatedDelivery": "관련 출고",
       "notes": "비고"
     },
@@ -322,6 +323,7 @@
       "title": "금액 정보",
       "subtotal": "공급가액",
       "tax": "세액 ({{rate}}%)",
+      "discount": "할인",
       "total": "합계",
       "balanceDue": "미결제 금액"
     },

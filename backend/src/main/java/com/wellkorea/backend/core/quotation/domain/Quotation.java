@@ -16,6 +16,7 @@ import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,10 +25,22 @@ import java.util.List;
 /**
  * Quotation entity representing a sales quotation linked to a project.
  * Supports versioning, line items, and approval workflow via Approvable pattern.
+ *
+ * <p>Use the Builder pattern for construction:
+ * <pre>
+ * Quotation quotation = Quotation.builder()
+ *     .project(project)
+ *     .version(1)
+ *     .createdBy(user)
+ *     .build();
+ * </pre>
  */
 @Entity
 @Table(name = "quotations")
 public class Quotation implements Approvable {
+
+    private static final BigDecimal DEFAULT_TAX_RATE = new BigDecimal("10.0");
+    private static final int DEFAULT_VALIDITY_DAYS = 30;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,6 +66,12 @@ public class Quotation implements Approvable {
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    @Column(name = "tax_rate", nullable = false, precision = 5, scale = 2)
+    private BigDecimal taxRate = DEFAULT_TAX_RATE;
+
+    @Column(name = "discount_amount", nullable = false, precision = 15, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
@@ -77,6 +96,118 @@ public class Quotation implements Approvable {
     @OneToMany(mappedBy = "quotation", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sequence ASC")
     private List<QuotationLineItem> lineItems = new ArrayList<>();
+
+    /**
+     * Protected no-arg constructor for JPA.
+     * Use {@link #builder()} for application code.
+     */
+    protected Quotation() {
+        // Required by JPA
+    }
+
+    // ========== Builder ==========
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Private constructor for Builder pattern.
+     * Sets defaults for optional fields.
+     */
+    private Quotation(Builder builder) {
+        this.id = builder.id;
+        this.project = builder.project;
+        this.version = builder.version;
+        this.status = builder.status != null ? builder.status : QuotationStatus.DRAFT;
+        this.validityDays = builder.validityDays != null ? builder.validityDays : DEFAULT_VALIDITY_DAYS;
+        this.taxRate = builder.taxRate != null ? builder.taxRate : DEFAULT_TAX_RATE;
+        this.discountAmount = builder.discountAmount != null ? builder.discountAmount : BigDecimal.ZERO;
+        this.notes = builder.notes;
+        this.createdBy = builder.createdBy;
+        this.quotationDate = builder.quotationDate != null ? builder.quotationDate : LocalDate.now();
+        this.totalAmount = builder.totalAmount != null ? builder.totalAmount : BigDecimal.ZERO;
+    }
+
+    /**
+     * Builder for Quotation entity.
+     * Follows the pattern established by Project.Builder.
+     */
+    public static class Builder {
+        private Long id;
+        private Project project;
+        private Integer version;
+        private QuotationStatus status;
+        private Integer validityDays;
+        private BigDecimal taxRate;
+        private BigDecimal discountAmount;
+        private String notes;
+        private User createdBy;
+        private LocalDate quotationDate;
+        private BigDecimal totalAmount;
+
+        public Builder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder project(Project project) {
+            this.project = project;
+            return this;
+        }
+
+        public Builder version(Integer version) {
+            this.version = version;
+            return this;
+        }
+
+        public Builder status(QuotationStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder validityDays(Integer validityDays) {
+            this.validityDays = validityDays;
+            return this;
+        }
+
+        public Builder taxRate(BigDecimal taxRate) {
+            this.taxRate = taxRate;
+            return this;
+        }
+
+        public Builder discountAmount(BigDecimal discountAmount) {
+            this.discountAmount = discountAmount;
+            return this;
+        }
+
+        public Builder notes(String notes) {
+            this.notes = notes;
+            return this;
+        }
+
+        public Builder createdBy(User createdBy) {
+            this.createdBy = createdBy;
+            return this;
+        }
+
+        public Builder quotationDate(LocalDate quotationDate) {
+            this.quotationDate = quotationDate;
+            return this;
+        }
+
+        /**
+         * Set total amount directly. For tests only - normally calculated via addLineItem().
+         */
+        public Builder totalAmount(BigDecimal totalAmount) {
+            this.totalAmount = totalAmount;
+            return this;
+        }
+
+        public Quotation build() {
+            return new Quotation(this);
+        }
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -142,6 +273,161 @@ public class Quotation implements Approvable {
                 status == QuotationStatus.REJECTED ||
                 status == QuotationStatus.SENT ||
                 status == QuotationStatus.ACCEPTED;
+    }
+
+    // ========== State Transition Methods ==========
+
+    /**
+     * Mark quotation as pending approval. Only allowed from DRAFT status.
+     *
+     * @throws BusinessException if not in DRAFT status
+     */
+    public void markAsPending() {
+        if (this.status != QuotationStatus.DRAFT) {
+            throw new BusinessException("Can only submit DRAFT quotations for approval");
+        }
+        this.status = QuotationStatus.PENDING;
+    }
+
+    /**
+     * Mark quotation as sending (email in progress).
+     * Only allowed from APPROVED or SENT status.
+     *
+     * @throws BusinessException if not in APPROVED or SENT status
+     */
+    public void markAsSending() {
+        if (this.status != QuotationStatus.APPROVED && this.status != QuotationStatus.SENT) {
+            throw new BusinessException("Only APPROVED or SENT quotations can be marked as sending");
+        }
+        this.status = QuotationStatus.SENDING;
+    }
+
+    /**
+     * Mark quotation as sent to customer.
+     * Only allowed from SENDING status.
+     *
+     * @throws BusinessException if not in SENDING status
+     */
+    public void markAsSent() {
+        if (this.status != QuotationStatus.SENDING) {
+            throw new BusinessException("Only SENDING quotations can be marked as sent");
+        }
+        this.status = QuotationStatus.SENT;
+    }
+
+    /**
+     * Mark quotation as accepted by customer.
+     * Only allowed from APPROVED or SENT status.
+     *
+     * @throws BusinessException if not in APPROVED or SENT status
+     */
+    public void markAsAccepted() {
+        if (this.status != QuotationStatus.APPROVED && this.status != QuotationStatus.SENT) {
+            throw new BusinessException("Only APPROVED or SENT quotations can be accepted");
+        }
+        this.status = QuotationStatus.ACCEPTED;
+    }
+
+    // ========== Update Methods ==========
+
+    /**
+     * Update the validity days. Only allowed in DRAFT status.
+     *
+     * @param validityDays Number of days the quotation is valid
+     * @throws BusinessException        if not in DRAFT status
+     * @throws IllegalArgumentException if validityDays is null or not positive
+     */
+    public void updateValidityDays(Integer validityDays) {
+        if (!canBeEdited()) {
+            throw new BusinessException("Validity days can only be updated in DRAFT status");
+        }
+        if (validityDays == null || validityDays <= 0) {
+            throw new IllegalArgumentException("Validity days must be positive");
+        }
+        this.validityDays = validityDays;
+    }
+
+    /**
+     * Update the notes. Only allowed in DRAFT status.
+     *
+     * @param notes Notes for the quotation (can be null)
+     * @throws BusinessException if not in DRAFT status
+     */
+    public void updateNotes(String notes) {
+        if (!canBeEdited()) {
+            throw new BusinessException("Notes can only be updated in DRAFT status");
+        }
+        this.notes = notes;
+    }
+
+    /**
+     * Update the tax rate. Only allowed in DRAFT status.
+     *
+     * @param taxRate Tax rate percentage (0-100)
+     * @throws BusinessException        if not in DRAFT status
+     * @throws IllegalArgumentException if tax rate is out of range
+     */
+    public void updateTaxRate(BigDecimal taxRate) {
+        if (!canBeEdited()) {
+            throw new BusinessException("Tax rate can only be updated in DRAFT status");
+        }
+        if (taxRate.compareTo(BigDecimal.ZERO) < 0 || taxRate.compareTo(new BigDecimal("100")) > 0) {
+            throw new IllegalArgumentException("Tax rate must be between 0 and 100");
+        }
+        this.taxRate = taxRate;
+    }
+
+    /**
+     * Update the discount amount. Only allowed in DRAFT status.
+     * Discount cannot exceed (subtotal + tax).
+     *
+     * @param discountAmount Discount amount in KRW
+     * @throws BusinessException        if not in DRAFT status or discount exceeds limit
+     * @throws IllegalArgumentException if discount is negative
+     */
+    public void updateDiscountAmount(BigDecimal discountAmount) {
+        if (!canBeEdited()) {
+            throw new BusinessException("Discount can only be updated in DRAFT status");
+        }
+        if (discountAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Discount amount cannot be negative");
+        }
+        // Discount cannot exceed (subtotal + tax)
+        BigDecimal maxDiscount = calculateAmountBeforeDiscount();
+        if (discountAmount.compareTo(maxDiscount) > 0) {
+            throw new BusinessException("Discount cannot exceed amount before discount (" + maxDiscount + ")");
+        }
+        this.discountAmount = discountAmount;
+    }
+
+    /**
+     * Calculate the amount before discount (subtotal + tax).
+     *
+     * @return subtotal + taxAmount
+     */
+    public BigDecimal calculateAmountBeforeDiscount() {
+        BigDecimal taxAmount = totalAmount.multiply(taxRate)
+                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+        return totalAmount.add(taxAmount);
+    }
+
+    /**
+     * Calculate the tax amount.
+     *
+     * @return taxAmount = subtotal × taxRate / 100
+     */
+    public BigDecimal calculateTaxAmount() {
+        return totalAmount.multiply(taxRate)
+                .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Calculate the final amount after discount.
+     *
+     * @return finalAmount = amountBeforeDiscount - discountAmount
+     */
+    public BigDecimal calculateFinalAmount() {
+        return calculateAmountBeforeDiscount().subtract(discountAmount);
     }
 
     /**
@@ -220,13 +506,15 @@ public class Quotation implements Approvable {
      * are passed in as parameters, allowing the domain entity to delegate validation
      * and number generation to infrastructure without having direct dependencies.
      * <p>
+     * Tax rate is inherited from this quotation.
+     * Discount is calculated proportionally based on invoice subtotal vs quotation subtotal.
+     * <p>
      * Similar pattern: {@link #createDelivery}
      *
      * @param quotationInvoiceGuard  Guard that validates invoice against delivered/invoiced limits
      * @param invoiceNumberGenerator Generator for unique invoice numbers
      * @param issueDate              Invoice issue date
      * @param dueDate                Payment due date
-     * @param taxRate                Tax rate (nullable, defaults to 10%)
      * @param notes                  Optional notes for the invoice
      * @param lineItems              Line items to invoice
      * @param createdById            User ID of who is creating the invoice
@@ -238,7 +526,6 @@ public class Quotation implements Approvable {
                                     InvoiceNumberGenerator invoiceNumberGenerator,
                                     LocalDate issueDate,
                                     LocalDate dueDate,
-                                    BigDecimal taxRate,
                                     String notes,
                                     List<InvoiceLineItemInput> lineItems,
                                     Long createdById) {
@@ -259,14 +546,27 @@ public class Quotation implements Approvable {
         // Generate unique invoice number
         String invoiceNumber = invoiceNumberGenerator.generate();
 
-        // Build the invoice entity
+        // Calculate proportional discount based on invoice subtotal vs quotation subtotal
+        BigDecimal invoiceSubtotal = lineItems.stream()
+                .map(input -> input.unitPrice().multiply(input.quantityInvoiced()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal proportionalDiscount = BigDecimal.ZERO;
+        if (this.totalAmount.compareTo(BigDecimal.ZERO) > 0 && this.discountAmount.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discountRatio = invoiceSubtotal.divide(this.totalAmount, 4, RoundingMode.HALF_UP);
+            proportionalDiscount = this.discountAmount.multiply(discountRatio)
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        // Build the invoice entity - taxRate inherited from quotation, discount proportional
         TaxInvoice invoice = TaxInvoice.builder()
                 .projectId(project.getId())
                 .quotationId(this.id)
                 .invoiceNumber(invoiceNumber)
                 .issueDate(issueDate)
                 .dueDate(dueDate)
-                .taxRate(taxRate)
+                .taxRate(this.taxRate)
+                .discountAmount(proportionalDiscount)
                 .notes(notes)
                 .createdById(createdById)
                 .build();
@@ -321,79 +621,51 @@ public class Quotation implements Approvable {
         this.approvalState.markRejected(rejectorUserId, reason);
     }
 
-    // ========== Getters and Setters ==========
+    // ========== Getters ==========
 
     @Override
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public Project getProject() {
         return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
     }
 
     public Integer getVersion() {
         return version;
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
-
     public QuotationStatus getStatus() {
         return status;
-    }
-
-    public void setStatus(QuotationStatus status) {
-        this.status = status;
     }
 
     public LocalDate getQuotationDate() {
         return quotationDate;
     }
 
-    public void setQuotationDate(LocalDate quotationDate) {
-        this.quotationDate = quotationDate;
-    }
-
     public Integer getValidityDays() {
         return validityDays;
-    }
-
-    public void setValidityDays(Integer validityDays) {
-        this.validityDays = validityDays;
     }
 
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
+    public BigDecimal getTaxRate() {
+        return taxRate;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
     }
 
     public String getNotes() {
         return notes;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
     public User getCreatedBy() {
         return createdBy;
-    }
-
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
     }
 
     // ========== Convenience Getters (delegating to ApprovalState) ==========
@@ -456,13 +728,5 @@ public class Quotation implements Approvable {
             return List.of();
         }
         return new ArrayList<>(lineItems);
-    }
-
-    public void setLineItems(List<QuotationLineItem> lineItems) {
-        if (lineItems == null) {
-            this.lineItems = null;
-        } else {
-            this.lineItems = new ArrayList<>(lineItems);
-        }
     }
 }

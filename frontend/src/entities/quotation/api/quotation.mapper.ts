@@ -4,7 +4,7 @@
  * Transforms API responses to domain models.
  */
 
-import { type Quotation, type QuotationListItem, quotationRules } from '../model/quotation';
+import type { Quotation, QuotationListItem } from '../model/quotation';
 import type { LineItem } from '../model/line-item';
 import type { QuotationStatus } from '../model/quotation-status';
 
@@ -49,7 +49,12 @@ export interface QuotationDetailsResponse {
   quotationDate: string;
   validityDays: number;
   expiryDate: string;
-  totalAmount: number;
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  amountBeforeDiscount: number;
+  discountAmount: number;
+  finalAmount: number;
   notes: string | null;
   createdById: number;
   createdByName: string;
@@ -122,7 +127,12 @@ export const quotationMapper = {
       quotationDate: response.quotationDate,
       validityDays: response.validityDays,
       expiryDate: response.expiryDate,
-      totalAmount: response.totalAmount,
+      subtotal: response.subtotal,
+      taxRate: response.taxRate,
+      taxAmount: response.taxAmount,
+      amountBeforeDiscount: response.amountBeforeDiscount,
+      discountAmount: response.discountAmount,
+      finalAmount: response.finalAmount,
       notes: response.notes?.trim() ?? null,
       createdById: response.createdById,
       createdByName: response.createdByName.trim(),
@@ -148,7 +158,7 @@ export const quotationMapper = {
       projectName: quotation.projectName,
       version: quotation.version,
       status: quotation.status,
-      totalAmount: quotationRules.calculateTotal(quotation),
+      finalAmount: quotation.finalAmount,
       createdAt: quotation.createdAt,
       createdByName: quotation.createdByName,
     };
@@ -166,7 +176,7 @@ export const quotationMapper = {
       projectName: response.projectName.trim(),
       version: response.version,
       status: response.status as QuotationStatus,
-      totalAmount: response.totalAmount,
+      finalAmount: response.finalAmount,
       createdAt: response.createdAt,
       createdByName: response.createdByName.trim(),
     };

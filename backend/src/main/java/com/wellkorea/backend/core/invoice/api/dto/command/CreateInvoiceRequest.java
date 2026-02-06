@@ -1,12 +1,9 @@
 package com.wellkorea.backend.core.invoice.api.dto.command;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,6 +13,10 @@ import java.util.List;
  * The quotationId field explicitly binds the invoice to a specific quotation version,
  * preventing race conditions where the "latest approved" quotation might change
  * between when the user views the data and when they submit the invoice.
+ * <p>
+ * Note: Tax rate and discount are inherited from the quotation.
+ * - taxRate: Inherited from quotation's taxRate
+ * - discountAmount: Calculated proportionally based on invoice subtotal vs quotation subtotal
  */
 public record CreateInvoiceRequest(
         @NotNull(message = "Project ID is required")
@@ -30,22 +31,10 @@ public record CreateInvoiceRequest(
         @NotNull(message = "Due date is required")
         LocalDate dueDate,
 
-        @DecimalMin(value = "0.0", message = "Tax rate must be non-negative")
-        @DecimalMax(value = "100.0", message = "Tax rate cannot exceed 100%")
-        BigDecimal taxRate, // Optional: defaults to 10% if null
-
         String notes,
 
         @NotEmpty(message = "At least one line item is required")
         @Valid
         List<InvoiceLineItemRequest> lineItems
 ) {
-    /**
-     * Create a request with default tax rate.
-     */
-    public CreateInvoiceRequest {
-        if (taxRate == null) {
-            taxRate = new BigDecimal("10.0");
-        }
-    }
 }

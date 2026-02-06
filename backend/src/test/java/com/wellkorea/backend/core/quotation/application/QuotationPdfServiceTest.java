@@ -94,14 +94,15 @@ class QuotationPdfServiceTest {
         testProduct.setDescription("Product Description");
         testProduct.setUnit("EA");
 
-        // Use Quotation setter pattern (no builder on Quotation)
-        testQuotation = new Quotation();
-        testQuotation.setId(1L);
-        testQuotation.setProject(testProject);
-        testQuotation.setQuotationDate(LocalDate.now());
-        testQuotation.setValidityDays(30);
-        testQuotation.setStatus(QuotationStatus.APPROVED);
-        testQuotation.setVersion(1);
+        // Use Quotation builder pattern
+        testQuotation = Quotation.builder()
+                .id(1L)
+                .project(testProject)
+                .quotationDate(LocalDate.now())
+                .validityDays(30)
+                .status(QuotationStatus.APPROVED)
+                .version(1)
+                .build();
 
         // Use QuotationLineItem setter pattern (no builder on QuotationLineItem)
         QuotationLineItem lineItem = new QuotationLineItem();
@@ -127,6 +128,31 @@ class QuotationPdfServiceTest {
         lenient().when(companyProperties.getEmail()).thenReturn("info@wellkorea.com");
     }
 
+    /**
+     * Helper to create a quotation with specific status for PDF tests.
+     */
+    private Quotation createQuotationWithStatus(QuotationStatus status) {
+        Quotation quotation = Quotation.builder()
+                .id(1L)
+                .project(testProject)
+                .quotationDate(LocalDate.now())
+                .validityDays(30)
+                .status(status)
+                .version(1)
+                .build();
+
+        // Add line item
+        QuotationLineItem lineItem = new QuotationLineItem();
+        lineItem.setId(1L);
+        lineItem.setProduct(testProduct);
+        lineItem.setQuantity(BigDecimal.TEN);
+        lineItem.setUnitPrice(new BigDecimal("100000"));
+        lineItem.setLineTotal(new BigDecimal("1000000"));
+        quotation.addLineItem(lineItem);
+
+        return quotation;
+    }
+
     @Nested
     @DisplayName("generatePdf(Long quotationId)")
     class GeneratePdfByIdTests {
@@ -144,8 +170,8 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should throw BusinessException when quotation is DRAFT")
         void generatePdfById_DraftQuotation_ThrowsException() {
-            testQuotation.setStatus(QuotationStatus.DRAFT);
-            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            Quotation draftQuotation = createQuotationWithStatus(QuotationStatus.DRAFT);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(draftQuotation));
 
             assertThatThrownBy(() -> quotationPdfService.generatePdf(1L))
                     .isInstanceOf(BusinessException.class)
@@ -155,8 +181,8 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should generate PDF for APPROVED quotation")
         void generatePdfById_ApprovedQuotation_GeneratesPdf() {
-            testQuotation.setStatus(QuotationStatus.APPROVED);
-            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            Quotation approvedQuotation = createQuotationWithStatus(QuotationStatus.APPROVED);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(approvedQuotation));
             given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willReturn("<html><body>Test PDF</body></html>");
@@ -174,8 +200,8 @@ class QuotationPdfServiceTest {
         @Test
         @DisplayName("should generate PDF for PENDING quotation")
         void generatePdfById_PendingQuotation_GeneratesPdf() {
-            testQuotation.setStatus(QuotationStatus.PENDING);
-            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(testQuotation));
+            Quotation pendingQuotation = createQuotationWithStatus(QuotationStatus.PENDING);
+            given(quotationRepository.findByIdWithLineItems(1L)).willReturn(Optional.of(pendingQuotation));
             given(companyRepository.findById(100L)).willReturn(Optional.of(testCustomer));
             given(templateEngine.process(eq("quotation-pdf"), any(Context.class)))
                     .willReturn("<html><body>Test PDF</body></html>");

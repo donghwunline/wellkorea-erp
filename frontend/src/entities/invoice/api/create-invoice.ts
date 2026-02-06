@@ -22,17 +22,18 @@ export interface CreateInvoiceLineItemInput {
 
 /**
  * Input for creating an invoice.
- * 
+ *
  * The quotationId explicitly binds the invoice to a specific quotation version,
  * preventing race conditions where the "latest approved" quotation might change
  * between when the user views the data and when they submit the invoice.
+ *
+ * Note: taxRate is inherited from the quotation (no longer user-editable).
  */
 export interface CreateInvoiceInput {
   projectId: number;
   quotationId: number; // Explicit binding to prevent race conditions
   issueDate: string; // ISO date string
   dueDate: string; // ISO date string
-  taxRate: number;
   notes?: string | null;
   lineItems: CreateInvoiceLineItemInput[];
 }
@@ -40,13 +41,14 @@ export interface CreateInvoiceInput {
 /**
  * Request DTO for creating an invoice.
  * (Private - matches backend CreateInvoiceRequest)
+ *
+ * Note: taxRate is inherited from the quotation (no longer included in request).
  */
 interface CreateInvoiceRequest {
   projectId: number;
   quotationId: number;
   issueDate: string;
   dueDate: string;
-  taxRate: number;
   notes: string | null;
   lineItems: Array<{
     productId: number;
@@ -81,10 +83,6 @@ function validateCreateInput(input: CreateInvoiceInput): void {
 
   if (new Date(input.dueDate) < new Date(input.issueDate)) {
     throw new DomainValidationError('INVALID', 'dueDate', 'Due date must be on or after issue date');
-  }
-
-  if (input.taxRate < 0 || input.taxRate > 100) {
-    throw new DomainValidationError('OUT_OF_RANGE', 'taxRate', 'Tax rate must be between 0 and 100');
   }
 
   if (!input.lineItems || input.lineItems.length === 0) {
@@ -126,7 +124,6 @@ function toCreateRequest(input: CreateInvoiceInput): CreateInvoiceRequest {
     quotationId: input.quotationId,
     issueDate: input.issueDate,
     dueDate: input.dueDate,
-    taxRate: input.taxRate,
     notes: input.notes ?? null,
     lineItems: input.lineItems.map((item) => ({
       productId: item.productId,
