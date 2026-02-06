@@ -73,12 +73,34 @@ public class QuotationCommandService {
         quotation.setNotes(command.notes());
         quotation.setCreatedBy(createdBy);
 
+        // Set tax rate if provided
+        if (command.taxRate() != null) {
+            quotation.setTaxRate(command.taxRate());
+        }
+
         // Add line items
         addLineItemsFromCommands(quotation, command.lineItems());
         quotation.recalculateTotalAmount();
 
+        // Set discount amount after total is calculated (so validation can check against subtotal+tax)
+        if (command.discountAmount() != null) {
+            quotation.setDiscountAmount(command.discountAmount());
+            // Validate discount doesn't exceed (subtotal + tax)
+            validateDiscountAmount(quotation);
+        }
+
         Quotation saved = quotationRepository.save(quotation);
         return saved.getId();
+    }
+
+    /**
+     * Validate that discount amount doesn't exceed amount before discount.
+     */
+    private void validateDiscountAmount(Quotation quotation) {
+        if (quotation.getDiscountAmount().compareTo(quotation.calculateAmountBeforeDiscount()) > 0) {
+            throw new BusinessException("Discount amount cannot exceed amount before discount (" +
+                    quotation.calculateAmountBeforeDiscount() + ")");
+        }
     }
 
     /**
@@ -100,6 +122,9 @@ public class QuotationCommandService {
         if (command.notes() != null) {
             quotation.setNotes(command.notes());
         }
+        if (command.taxRate() != null) {
+            quotation.updateTaxRate(command.taxRate());
+        }
 
         // Update line items if provided
         if (command.lineItems() != null && !command.lineItems().isEmpty()) {
@@ -111,6 +136,11 @@ public class QuotationCommandService {
 
             addLineItemsFromCommands(quotation, command.lineItems());
             quotation.recalculateTotalAmount();
+        }
+
+        // Update discount amount after total is recalculated
+        if (command.discountAmount() != null) {
+            quotation.updateDiscountAmount(command.discountAmount());
         }
 
         Quotation saved = quotationRepository.save(quotation);
@@ -172,6 +202,8 @@ public class QuotationCommandService {
         newQuotation.setVersion(newVersion);
         newQuotation.setStatus(QuotationStatus.DRAFT);
         newQuotation.setValidityDays(original.getValidityDays());
+        newQuotation.setTaxRate(original.getTaxRate());
+        newQuotation.setDiscountAmount(original.getDiscountAmount());
         newQuotation.setNotes(original.getNotes());
         newQuotation.setCreatedBy(createdBy);
 

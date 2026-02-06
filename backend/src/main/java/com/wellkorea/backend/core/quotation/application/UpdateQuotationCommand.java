@@ -1,5 +1,6 @@
 package com.wellkorea.backend.core.quotation.application;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -7,6 +8,8 @@ import java.util.List;
  */
 public record UpdateQuotationCommand(
         Integer validityDays,
+        BigDecimal taxRate,
+        BigDecimal discountAmount,
         String notes,
         List<LineItemCommand> lineItems
 ) {
