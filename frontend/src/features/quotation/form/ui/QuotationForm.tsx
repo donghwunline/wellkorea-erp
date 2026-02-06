@@ -13,6 +13,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateQuotationInput, LineItemInput, Quotation, UpdateQuotationInput } from '@/entities/quotation';
+import { quotationRules } from '@/entities/quotation';
 import { type ProductLineItem, ProductSelector } from '../../line-items';
 import { Alert, Button, Card, FormField, Input, Spinner } from '@/shared/ui';
 
@@ -174,6 +175,18 @@ export function QuotationForm({
       errors.discountAmount = t('form.validation.discountNonNegative');
     }
 
+    // Calculate amount before discount to validate upper bound
+    const validationSubtotal = formState.lineItems.reduce(
+      (sum, item) => sum + item.quantity * item.unitPrice,
+      0
+    );
+    const validationTaxAmount = quotationRules.calculateTaxAmount(validationSubtotal, formState.taxRate);
+    const validationAmountBeforeDiscount = validationSubtotal + validationTaxAmount;
+
+    if (formState.discountAmount > validationAmountBeforeDiscount) {
+      errors.discountAmount = t('form.validation.discountExceedsTotal');
+    }
+
     if (formState.lineItems.length === 0) {
       errors.lineItems = t('form.validation.productRequired');
     }
@@ -221,12 +234,12 @@ export function QuotationForm({
     [isEditMode, projectId, formState, validate, onCreateSubmit, onUpdateSubmit]
   );
 
-  // Calculate amounts
+  // Calculate amounts using quotationRules for consistency with domain logic
   const subtotal = formState.lineItems.reduce(
     (sum, item) => sum + item.quantity * item.unitPrice,
     0
   );
-  const taxAmount = Math.round(subtotal * (formState.taxRate / 100));
+  const taxAmount = quotationRules.calculateTaxAmount(subtotal, formState.taxRate);
   const amountBeforeDiscount = subtotal + taxAmount;
   const finalAmount = amountBeforeDiscount - formState.discountAmount;
 

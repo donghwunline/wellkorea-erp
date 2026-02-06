@@ -191,6 +191,7 @@
       "validityPositive": "유효 기간은 양수여야 합니다",
       "taxRateRange": "세율은 0에서 100 사이여야 합니다",
       "discountNonNegative": "할인 금액은 음수가 될 수 없습니다",
+      "discountExceedsTotal": "할인 금액이 총액을 초과할 수 없습니다",
       "productRequired": "최소 하나의 제품이 필요합니다"
     }
   },

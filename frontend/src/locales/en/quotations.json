@@ -191,6 +191,7 @@
       "validityPositive": "Validity period must be positive",
       "taxRateRange": "Tax rate must be between 0 and 100",
       "discountNonNegative": "Discount cannot be negative",
+      "discountExceedsTotal": "Discount cannot exceed the total amount",
       "productRequired": "At least one product is required"
     }
   },
