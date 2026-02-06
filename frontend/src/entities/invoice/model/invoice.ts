@@ -71,6 +71,7 @@ export interface Invoice {
   readonly totalBeforeTax: number;
   readonly taxRate: number;
   readonly totalTax: number;
+  readonly discountAmount: number;
   readonly totalAmount: number;
   readonly totalPaid: number;
   readonly remainingBalance: number;
