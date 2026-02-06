@@ -28,6 +28,8 @@ interface LineItemRequest {
  */
 interface UpdateQuotationRequest {
   validityDays?: number;
+  taxRate?: number;
+  discountAmount?: number;
   notes?: string;
   lineItems: LineItemRequest[];
 }
@@ -43,6 +45,8 @@ interface UpdateQuotationRequest {
  */
 export interface UpdateQuotationInput {
   validityDays?: number;
+  taxRate?: number | string; // 0-100 percentage
+  discountAmount?: number | string; // ≥0
   notes?: string;
   lineItems: LineItemInput[];
 }
@@ -98,6 +102,30 @@ function validateUpdateInput(input: UpdateQuotationInput): void {
     throw new DomainValidationError('REQUIRED', 'lineItems', 'At least one line item is required');
   }
 
+  // Validate taxRate if provided
+  if (input.taxRate !== undefined) {
+    const taxRate = Number(input.taxRate);
+    if (isNaN(taxRate) || taxRate < 0 || taxRate > 100) {
+      throw new DomainValidationError(
+        'OUT_OF_RANGE',
+        'taxRate',
+        'Tax rate must be between 0 and 100'
+      );
+    }
+  }
+
+  // Validate discountAmount if provided
+  if (input.discountAmount !== undefined) {
+    const discountAmount = Number(input.discountAmount);
+    if (isNaN(discountAmount) || discountAmount < 0) {
+      throw new DomainValidationError(
+        'OUT_OF_RANGE',
+        'discountAmount',
+        'Discount amount cannot be negative'
+      );
+    }
+  }
+
   validateLineItems(input.lineItems);
 }
 
@@ -123,6 +151,8 @@ function toLineItemRequest(input: LineItemInput): LineItemRequest {
 function toUpdateRequest(input: UpdateQuotationInput): UpdateQuotationRequest {
   return {
     validityDays: input.validityDays,
+    taxRate: input.taxRate !== undefined ? Number(input.taxRate) : undefined,
+    discountAmount: input.discountAmount !== undefined ? Number(input.discountAmount) : undefined,
     notes: input.notes?.trim() || undefined,
     lineItems: input.lineItems.map(toLineItemRequest),
   };
