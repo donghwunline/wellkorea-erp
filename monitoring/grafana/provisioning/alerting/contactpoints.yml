@@ -1,0 +1,19 @@
+# =============================================================================
+# Grafana Contact Points for WellKorea ERP
+# =============================================================================
+# Webhook contact point for n8n workflow automation.
+# n8n receives alerts and creates GitHub issues with correlated log context.
+# =============================================================================
+
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: n8n-webhook
+    receivers:
+      - uid: n8n-webhook-receiver
+        type: webhook
+        settings:
+          url: "${N8N_WEBHOOK_URL}"
+          httpMethod: POST
+        disableResolveMessage: false

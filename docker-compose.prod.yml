@@ -23,6 +23,7 @@
 #
 # Monitoring (opt-in via --profile monitoring):
 #   - Grafana: 192.168.0.16:20040 (behind gateway Nginx)
+#   - n8n: 192.168.0.16:20050 (workflow automation for alerts)
 #   - Prometheus / Loki: internal only (not port-exposed)
 # =============================================================================
 
@@ -203,6 +204,8 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      # Alerting webhook URL (used in contact point provisioning)
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://n8n:5678/webhook/grafana-alerts}
     ports:
       # Bind to server IP for gateway access - Gateway Nginx proxies external traffic
       - "192.168.0.16:20040:3000"
@@ -221,6 +224,39 @@ services:
     networks:
       - wellkorea-internal
 
+  # n8n — Workflow automation for alerting (creates GitHub issues from alerts)
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: wellkorea-erp-n8n
+    restart: unless-stopped
+    profiles: [monitoring]
+    environment:
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-https}
+      WEBHOOK_URL: ${N8N_WEBHOOK_BASE_URL:-http://localhost:5678}
+      GENERIC_TIMEZONE: Asia/Seoul
+      # Loki URL for fetching correlated logs
+      LOKI_URL: http://loki:3100
+      # GitHub integration (used in workflow)
+      GITHUB_PAT: ${GITHUB_PAT}
+      GITHUB_OWNER: ${GITHUB_OWNER:-donghwunline}
+      GITHUB_REPO: ${GITHUB_REPO:-wellkorea-erp}
+    ports:
+      # Bind to server IP for gateway access - Gateway Nginx proxies external traffic
+      - "192.168.0.16:20050:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - loki
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - wellkorea-internal
+
 volumes:
   postgres_data:
     driver: local
@@ -231,6 +267,8 @@ volumes:
   loki_data:
     driver: local
   grafana_data:
+    driver: local
+  n8n_data:
     driver: local
 
 networks:
