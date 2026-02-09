@@ -7,22 +7,23 @@
 -- =====================================================================
 
 -- accounts_payable - FINAL STATE (no purchase_order_id, uses cause abstraction)
-CREATE TABLE accounts_payable (
-    id                      BIGSERIAL PRIMARY KEY,
-    vendor_company_id       BIGINT NOT NULL REFERENCES companies(id),
-    total_amount            DECIMAL(15, 2) NOT NULL,
-    currency                VARCHAR(3) NOT NULL DEFAULT 'KRW',
-    status                  VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-    due_date                DATE,
-    notes                   TEXT,
+CREATE TABLE accounts_payable
+(
+    id                     BIGSERIAL PRIMARY KEY,
+    vendor_company_id      BIGINT                   NOT NULL REFERENCES companies (id),
+    total_amount           DECIMAL(15, 2)           NOT NULL,
+    currency               VARCHAR(3)               NOT NULL DEFAULT 'KRW',
+    status                 VARCHAR(20)              NOT NULL DEFAULT 'PENDING',
+    due_date               DATE,
+    notes                  TEXT,
     -- Cause abstraction (from V16, without purchase_order_id)
-    cause_type              VARCHAR(30) DEFAULT 'PURCHASE_ORDER' NOT NULL,
-    cause_id                BIGINT,
-    cause_reference_number  VARCHAR(50),
+    cause_type             VARCHAR(30)                       DEFAULT 'PURCHASE_ORDER' NOT NULL,
+    cause_id               BIGINT,
+    cause_reference_number VARCHAR(50),
     -- Version for optimistic locking (from V19)
-    version                 BIGINT NOT NULL DEFAULT 0,
-    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    version                BIGINT                   NOT NULL DEFAULT 0,
+    created_at             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     -- Unique constraint (from V22)
     CONSTRAINT uq_accounts_payable_cause UNIQUE (cause_type, cause_id)
 );
@@ -31,29 +32,30 @@ CREATE TABLE accounts_payable (
 -- VENDOR PAYMENTS TABLE
 -- =====================================================================
 
-CREATE TABLE vendor_payments (
-    id BIGSERIAL PRIMARY KEY,
-    accounts_payable_id BIGINT NOT NULL REFERENCES accounts_payable(id),
-    payment_date DATE NOT NULL,
-    amount DECIMAL(15, 2) NOT NULL,
-    payment_method VARCHAR(50) NOT NULL,
-    reference_number VARCHAR(100),
-    notes TEXT,
-    recorded_by_id BIGINT NOT NULL REFERENCES users(id),
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+CREATE TABLE vendor_payments
+(
+    id                  BIGSERIAL PRIMARY KEY,
+    accounts_payable_id BIGINT                   NOT NULL REFERENCES accounts_payable (id),
+    payment_date        DATE                     NOT NULL,
+    amount              DECIMAL(15, 2)           NOT NULL,
+    payment_method      VARCHAR(50)              NOT NULL,
+    reference_number    VARCHAR(100),
+    notes               TEXT,
+    recorded_by_id      BIGINT                   NOT NULL REFERENCES users (id),
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 -- =====================================================================
 -- INDEXES
 -- =====================================================================
 
-CREATE INDEX idx_accounts_payable_status ON accounts_payable(status);
-CREATE INDEX idx_accounts_payable_vendor ON accounts_payable(vendor_company_id);
-CREATE INDEX idx_accounts_payable_due_date ON accounts_payable(due_date);
+CREATE INDEX idx_accounts_payable_status ON accounts_payable (status);
+CREATE INDEX idx_accounts_payable_vendor ON accounts_payable (vendor_company_id);
+CREATE INDEX idx_accounts_payable_due_date ON accounts_payable (due_date);
 -- Composite index for vendor payment status queries (from V21)
-CREATE INDEX idx_accounts_payable_vendor_status ON accounts_payable(vendor_company_id, status);
+CREATE INDEX idx_accounts_payable_vendor_status ON accounts_payable (vendor_company_id, status);
 
-CREATE INDEX idx_vendor_payments_ap_id ON vendor_payments(accounts_payable_id);
+CREATE INDEX idx_vendor_payments_ap_id ON vendor_payments (accounts_payable_id);
 
 -- =====================================================================
 -- COMMENTS

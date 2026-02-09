@@ -8,19 +8,19 @@
 
 CREATE TABLE quotations
 (
-    id                        BIGSERIAL PRIMARY KEY,
-    project_id                BIGINT         NOT NULL REFERENCES projects (id),
-    version                   INT            NOT NULL DEFAULT 1,
-    status                    VARCHAR(20)    NOT NULL DEFAULT 'DRAFT',
-    quotation_date            DATE           NOT NULL DEFAULT CURRENT_DATE,
-    validity_days             INT            NOT NULL DEFAULT 30,
-    total_amount              DECIMAL(15, 2) NOT NULL DEFAULT 0,
-    notes                     TEXT,
-    created_by_id             BIGINT         NOT NULL REFERENCES users (id),
+    id             BIGSERIAL PRIMARY KEY,
+    project_id     BIGINT         NOT NULL REFERENCES projects (id),
+    version        INT            NOT NULL DEFAULT 1,
+    status         VARCHAR(20)    NOT NULL DEFAULT 'DRAFT',
+    quotation_date DATE           NOT NULL DEFAULT CURRENT_DATE,
+    validity_days  INT            NOT NULL DEFAULT 30,
+    total_amount   DECIMAL(15, 2) NOT NULL DEFAULT 0,
+    notes          TEXT,
+    created_by_id  BIGINT         NOT NULL REFERENCES users (id),
     -- Timestamps
-    created_at                TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at                TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    is_deleted                BOOLEAN        NOT NULL DEFAULT false,
+    created_at     TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_deleted     BOOLEAN        NOT NULL DEFAULT false,
     CONSTRAINT chk_quotation_status CHECK (status IN
                                            ('DRAFT', 'PENDING', 'APPROVED', 'SENDING', 'SENT', 'REJECTED', 'ACCEPTED')),
     CONSTRAINT chk_quotation_version_positive CHECK (version > 0),
