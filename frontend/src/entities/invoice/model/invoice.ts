@@ -46,6 +46,7 @@ export interface InvoiceSummary {
   readonly issueDate: string;
   readonly status: InvoiceStatus;
   readonly statusLabel: string;
+  readonly discountAmount: number;
   readonly totalAmount: number;
   readonly totalPaid: number;
   readonly remainingBalance: number;
@@ -198,6 +199,7 @@ export const invoiceRules = {
       totalPaid: activeInvoices.reduce((sum, inv) => sum + inv.totalPaid, 0),
       outstanding: activeInvoices.reduce((sum, inv) => sum + inv.remainingBalance, 0),
       overdueCount: activeInvoices.filter((inv) => inv.isOverdue).length,
+      totalDiscount: activeInvoices.reduce((sum, inv) => sum + inv.discountAmount, 0),
     };
   },
 

@@ -99,6 +99,7 @@ export interface InvoiceSummaryResponse {
   issueDate: string;
   status: InvoiceStatus;
   statusLabelKo: string;
+  discountAmount: number;
   totalAmount: number;
   totalPaid: number;
   remainingBalance: number;
@@ -194,6 +195,7 @@ export const invoiceMapper = {
       issueDate: response.issueDate,
       status: response.status,
       statusLabel: response.statusLabelKo,
+      discountAmount: response.discountAmount,
       totalAmount: response.totalAmount,
       totalPaid: response.totalPaid,
       remainingBalance: response.remainingBalance,

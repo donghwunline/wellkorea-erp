@@ -74,6 +74,12 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
     return null;
   }, [quotationsData]);
 
+  // Fetch accepted quotation detail for discount budget
+  const { data: acceptedQuotation } = useQuery({
+    ...quotationQueries.detail(latestAcceptedQuotationId!),
+    enabled: latestAcceptedQuotationId != null,
+  });
+
   // Modal states
   const [issueConfirm, setIssueConfirm] = useState<InvoiceSummary | null>(null);
   const [cancelConfirm, setCancelConfirm] = useState<InvoiceSummary | null>(null);
@@ -275,7 +281,7 @@ export function InvoicePanel({ projectId, onDataChange }: InvoicePanelProps) {
       )}
 
       {/* Summary Stats */}
-      <InvoiceSummaryStats invoices={invoices} />
+      <InvoiceSummaryStats invoices={invoices} discountBudget={acceptedQuotation?.discountAmount} />
 
       {/* Actions */}
       {canManageInvoices && (

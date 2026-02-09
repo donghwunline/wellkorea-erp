@@ -48,6 +48,7 @@
             <arg column="total_before_tax" javaType="java.math.BigDecimal"/>
             <arg column="tax_rate" javaType="java.math.BigDecimal"/>
             <arg column="total_tax" javaType="java.math.BigDecimal"/>
+            <arg column="discount_amount" javaType="java.math.BigDecimal"/>
             <arg column="total_amount" javaType="java.math.BigDecimal"/>
             <arg column="total_paid" javaType="java.math.BigDecimal"/>
             <arg column="remaining_balance" javaType="java.math.BigDecimal"/>
@@ -87,6 +88,7 @@
                i.total_before_tax,
                i.tax_rate,
                i.total_tax,
+               i.discount_amount,
                i.total_amount,
                COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id),
                         0)                                                                                            AS total_paid,
@@ -160,6 +162,7 @@
             <arg column="issue_date" javaType="java.time.LocalDate"/>
             <arg column="status" javaType="com.wellkorea.backend.core.invoice.domain.InvoiceStatus"/>
             <arg column="status_label_ko" javaType="String"/>
+            <arg column="discount_amount" javaType="java.math.BigDecimal"/>
             <arg column="total_amount" javaType="java.math.BigDecimal"/>
             <arg column="total_paid" javaType="java.math.BigDecimal"/>
             <arg column="remaining_balance" javaType="java.math.BigDecimal"/>
@@ -190,6 +193,7 @@
         WHEN 'CANCELLED' THEN '취소됨'
         ELSE i.status
         END AS status_label_ko,
+        i.discount_amount,
         i.total_amount,
         COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0) AS total_paid,
         (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0)) AS
@@ -273,6 +277,18 @@
         WHERE i.quotation_id = #{quotationId}
           AND i.status != 'CANCELLED'
         GROUP BY ili.product_id
+    </select>
+
+    <!--
+        Get total discount amount allocated across non-CANCELLED invoices for a quotation.
+        Optionally excludes a specific invoice (for update operations to avoid double-counting).
+    -->
+    <select id="getTotalDiscountByQuotation" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(i.discount_amount), 0)
+        FROM tax_invoices i
+        WHERE i.quotation_id = #{quotationId}
+          AND i.status != 'CANCELLED'
+          <if test="excludeInvoiceId != null">AND i.id != #{excludeInvoiceId}</if>
     </select>
 
     <!-- Check if invoice exists -->

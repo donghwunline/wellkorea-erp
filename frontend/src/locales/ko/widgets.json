@@ -726,7 +726,8 @@
     "overdue": "{{count}}건 연체",
     "totalAmount": "총 금액",
     "totalPaid": "결제 완료",
-    "outstanding": "미결제"
+    "outstanding": "미결제",
+    "discountRemaining": "할인 잔여"
   },
   "deliverySummaryStats": {
     "totalDeliveries": "총 출고",

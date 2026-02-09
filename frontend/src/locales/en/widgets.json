@@ -711,7 +711,8 @@
     "overdue": "{{count}} overdue",
     "totalAmount": "Total Amount",
     "totalPaid": "Total Paid",
-    "outstanding": "Outstanding"
+    "outstanding": "Outstanding",
+    "discountRemaining": "Discount Remaining"
   },
   "deliverySummaryStats": {
     "totalDeliveries": "Total Deliveries",
