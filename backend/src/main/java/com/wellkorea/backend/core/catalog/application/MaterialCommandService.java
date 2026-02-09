@@ -11,6 +11,8 @@ import com.wellkorea.backend.core.company.domain.vo.RoleType;
 import com.wellkorea.backend.core.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class MaterialCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(MaterialCommandService.class);
 
     private final MaterialRepository materialRepository;
     private final MaterialCategoryRepository categoryRepository;
@@ -47,6 +51,8 @@ public class MaterialCommandService {
      * @return Created material ID
      */
     public Long createMaterial(CreateMaterialCommand command) {
+        log.info("Creating material: sku={}", command.sku());
+
         // Validate unique SKU
         if (materialRepository.existsBySku(command.sku())) {
             throw new BusinessException("Material with SKU '" + command.sku() + "' already exists");
@@ -78,6 +84,7 @@ public class MaterialCommandService {
         material.setPreferredVendor(preferredVendor);
 
         material = materialRepository.save(material);
+        log.info("Created material: id={}", material.getId());
         return material.getId();
     }
 
@@ -89,6 +96,8 @@ public class MaterialCommandService {
      * @return Updated material ID
      */
     public Long updateMaterial(Long id, UpdateMaterialCommand command) {
+        log.info("Updating material id={}", id);
+
         Material material = materialRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Material not found with ID: " + id));
 
@@ -128,6 +137,8 @@ public class MaterialCommandService {
      * @param id Material ID
      */
     public void deactivateMaterial(Long id) {
+        log.info("Deactivating material id={}", id);
+
         Material material = materialRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Material not found with ID: " + id));
 
@@ -146,6 +157,8 @@ public class MaterialCommandService {
      * @throws BusinessException         if vendor doesn't have VENDOR role or duplicate offering exists
      */
     public Long createVendorMaterialOffering(CreateVendorMaterialOfferingCommand command) {
+        log.info("Creating vendor material offering: vendorId={}, materialId={}", command.vendorId(), command.materialId());
+
         // Validate vendor exists and has proper role
         Company vendor = companyRepository.findById(command.vendorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company", command.vendorId()));
@@ -190,7 +203,9 @@ public class MaterialCommandService {
             vendorMaterialOfferingRepository.clearPreferredForMaterial(command.materialId());
         }
 
-        return vendorMaterialOfferingRepository.save(offering).getId();
+        Long offeringId = vendorMaterialOfferingRepository.save(offering).getId();
+        log.info("Created vendor material offering: id={}", offeringId);
+        return offeringId;
     }
 
     /**
@@ -203,6 +218,8 @@ public class MaterialCommandService {
      * @throws BusinessException         if update would create duplicate
      */
     public Long updateVendorMaterialOffering(Long offeringId, UpdateVendorMaterialOfferingCommand command) {
+        log.info("Updating vendor material offering id={}", offeringId);
+
         VendorMaterialOffering offering = vendorMaterialOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("VendorMaterialOffering", offeringId));
 
@@ -263,6 +280,8 @@ public class MaterialCommandService {
      * @throws ResourceNotFoundException if offering not found
      */
     public void deleteVendorMaterialOffering(Long offeringId) {
+        log.info("Deleting vendor material offering id={}", offeringId);
+
         VendorMaterialOffering offering = vendorMaterialOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("VendorMaterialOffering", offeringId));
 
@@ -278,6 +297,8 @@ public class MaterialCommandService {
      * @throws ResourceNotFoundException if offering not found
      */
     public Long setPreferredVendorOffering(Long offeringId) {
+        log.info("Setting preferred vendor offering id={}", offeringId);
+
         VendorMaterialOffering offering = vendorMaterialOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("VendorMaterialOffering", offeringId));
 

@@ -243,6 +243,43 @@ class CorrelationIdFilterTest {
         assertThat(MDC.get(MDC_KEY)).isNull();
     }
 
+    @Test
+    void shouldClearUserMdcKeysAfterRequest() throws ServletException, IOException {
+        // Given: Request with X-Request-ID header; downstream filter enriches MDC with user context
+        when(request.getHeader(REQUEST_HEADER)).thenReturn("user-mdc-test-id");
+        doAnswer(invocation -> {
+            MDC.put("userId", "42");
+            MDC.put("username", "testuser");
+            return null;
+        }).when(filterChain).doFilter(request, response);
+
+        // When: Filter processes request
+        correlationIdFilter.doFilterInternal(request, response, filterChain);
+
+        // Then: User MDC keys are cleaned up after request completes
+        assertThat(MDC.get("userId")).isNull();
+        assertThat(MDC.get("username")).isNull();
+    }
+
+    @Test
+    void shouldClearUserMdcKeysEvenWhenFilterChainThrows() throws ServletException, IOException {
+        // Given: Request with X-Request-ID header; downstream filter enriches MDC then throws
+        when(request.getHeader(REQUEST_HEADER)).thenReturn("user-mdc-exception-test-id");
+        doAnswer(invocation -> {
+            MDC.put("userId", "42");
+            MDC.put("username", "testuser");
+            throw new ServletException("Simulated error");
+        }).when(filterChain).doFilter(request, response);
+
+        // When/Then: Filter propagates exception but still clears user MDC keys
+        assertThatThrownBy(() ->
+                correlationIdFilter.doFilterInternal(request, response, filterChain)
+        ).isInstanceOf(ServletException.class);
+
+        assertThat(MDC.get("userId")).isNull();
+        assertThat(MDC.get("username")).isNull();
+    }
+
     // ========== Filter Chain Execution Tests ==========
 
     @Test

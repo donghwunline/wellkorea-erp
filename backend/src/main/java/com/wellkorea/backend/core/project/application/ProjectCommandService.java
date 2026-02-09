@@ -10,6 +10,8 @@ import com.wellkorea.backend.core.project.domain.ProjectStatus;
 import com.wellkorea.backend.core.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class ProjectCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProjectCommandService.class);
 
     /**
      * Result of project creation containing both ID and generated JobCode.
@@ -56,6 +60,9 @@ public class ProjectCommandService {
      * @throws BusinessException if customer or internal owner doesn't exist
      */
     public CreateProjectResult createProject(CreateProjectRequest request, Long createdById) {
+        log.info("Creating project: customerId={}, internalOwnerId={}, createdById={}",
+                request.customerId(), request.internalOwnerId(), createdById);
+
         // Validate customer exists
         if (!customerExists(request.customerId())) {
             throw new BusinessException("Customer with ID " + request.customerId() + " does not exist");
@@ -82,6 +89,7 @@ public class ProjectCommandService {
                 .build();
 
         Project saved = projectRepository.save(project);
+        log.info("Created project: id={}, jobCode={}", saved.getId(), saved.getJobCode());
         return new CreateProjectResult(saved.getId(), saved.getJobCode());
     }
 
@@ -95,6 +103,7 @@ public class ProjectCommandService {
      * @throws BusinessException         if project is not editable or status is invalid
      */
     public Long updateProject(Long id, UpdateProjectRequest request) {
+        log.info("Updating project id={}", id);
         Project project = projectRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", id));
 
@@ -131,6 +140,7 @@ public class ProjectCommandService {
      * @throws ResourceNotFoundException if project not found
      */
     public Long deleteProject(Long id) {
+        log.info("Deleting project id={}", id);
         Project project = projectRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", id));
 
@@ -149,17 +159,20 @@ public class ProjectCommandService {
      * @throws IllegalStateException     if transition is not allowed
      */
     public Long activateProject(Long id) {
+        log.info("Activating project id={}", id);
         Project project = projectRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project", id));
 
         // Only activate if currently in DRAFT status
         if (project.getStatus() != ProjectStatus.DRAFT) {
             // Already active or in another state - skip silently (idempotent)
+            log.info("Project id={} already in status={}, skipping activation", id, project.getStatus());
             return id;
         }
 
         Project activatedProject = project.withStatus(ProjectStatus.ACTIVE);
         projectRepository.save(activatedProject);
+        log.info("Project id={} status changed: DRAFT -> ACTIVE", id);
         return id;
     }
 

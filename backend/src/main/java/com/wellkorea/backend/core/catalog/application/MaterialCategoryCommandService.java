@@ -4,6 +4,8 @@ import com.wellkorea.backend.core.catalog.domain.MaterialCategory;
 import com.wellkorea.backend.core.catalog.infrastructure.persistence.MaterialCategoryRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class MaterialCategoryCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(MaterialCategoryCommandService.class);
 
     private final MaterialCategoryRepository categoryRepository;
 
@@ -27,6 +31,8 @@ public class MaterialCategoryCommandService {
      * @return Created category ID
      */
     public Long createMaterialCategory(CreateMaterialCategoryCommand command) {
+        log.info("Creating material category: name={}", command.name());
+
         // Validate unique name
         if (categoryRepository.existsByName(command.name())) {
             throw new BusinessException("Material category with name '" + command.name() + "' already exists");
@@ -37,6 +43,7 @@ public class MaterialCategoryCommandService {
         category.setDescription(command.description());
 
         category = categoryRepository.save(category);
+        log.info("Created material category: id={}", category.getId());
         return category.getId();
     }
 
@@ -48,6 +55,8 @@ public class MaterialCategoryCommandService {
      * @return Updated category ID
      */
     public Long updateMaterialCategory(Long id, UpdateMaterialCategoryCommand command) {
+        log.info("Updating material category id={}", id);
+
         MaterialCategory category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Material category not found with ID: " + id));
 
@@ -75,6 +84,8 @@ public class MaterialCategoryCommandService {
      * @param id Category ID
      */
     public void deactivateMaterialCategory(Long id) {
+        log.info("Deactivating material category id={}", id);
+
         MaterialCategory category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Material category not found with ID: " + id));
 

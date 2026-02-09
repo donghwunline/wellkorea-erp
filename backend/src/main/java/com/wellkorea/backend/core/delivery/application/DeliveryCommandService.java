@@ -15,6 +15,8 @@ import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.lock.QuotationLock;
 import com.wellkorea.backend.supporting.storage.application.AttachmentService;
 import com.wellkorea.backend.supporting.storage.domain.AttachmentOwnerType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,8 @@ import java.util.List;
 @Service
 @Transactional
 public class DeliveryCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(DeliveryCommandService.class);
 
     private final DeliveryRepository deliveryRepository;
     private final ProjectRepository projectRepository;
@@ -86,6 +90,8 @@ public class DeliveryCommandService {
      */
     @QuotationLock
     public Long createDelivery(Long quotationId, CreateDeliveryRequest request, Long deliveredById) {
+        log.info("Creating delivery: quotationId={}, lineItems={}, userId={}", quotationId, request.lineItems().size(), deliveredById);
+
         // Fetch the specific quotation by ID (explicit binding prevents race conditions)
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
@@ -115,6 +121,7 @@ public class DeliveryCommandService {
         );
 
         Delivery saved = deliveryRepository.save(delivery);
+        log.info("Created delivery: id={}, quotationId={}", saved.getId(), quotationId);
         return saved.getId();
     }
 
@@ -137,6 +144,7 @@ public class DeliveryCommandService {
      */
     @Deprecated
     public Long markAsDelivered(Long deliveryId) {
+        log.info("Marking delivery id={} as delivered", deliveryId);
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery", deliveryId));
 
@@ -169,6 +177,7 @@ public class DeliveryCommandService {
             Long fileSize,
             String objectKey,
             Long uploaderId) {
+        log.info("Marking delivery id={} as delivered with photo: userId={}", deliveryId, uploaderId);
 
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery", deliveryId));
@@ -220,6 +229,7 @@ public class DeliveryCommandService {
      * @return ID of the updated delivery
      */
     public Long markAsReturned(Long deliveryId) {
+        log.info("Marking delivery id={} as returned", deliveryId);
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery", deliveryId));
 
@@ -254,6 +264,7 @@ public class DeliveryCommandService {
      */
     @QuotationLock
     public Long reassignToQuotation(Long deliveryId, Long quotationId) {
+        log.info("Reassigning delivery id={} to quotation id={}", deliveryId, quotationId);
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery", deliveryId));
 

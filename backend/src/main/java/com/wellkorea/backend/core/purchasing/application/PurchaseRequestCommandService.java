@@ -16,6 +16,8 @@ import com.wellkorea.backend.core.purchasing.infrastructure.persistence.Purchase
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.supporting.storage.infrastructure.MinioFileStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,8 @@ import java.util.List;
 @Service
 @Transactional
 public class PurchaseRequestCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(PurchaseRequestCommandService.class);
 
     private final PurchaseRequestRepository purchaseRequestRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
@@ -54,6 +58,9 @@ public class PurchaseRequestCommandService {
      * @return the created purchase request ID
      */
     public Long createServicePurchaseRequest(CreateServicePurchaseRequestCommand command, Long userId) {
+        log.info("Creating service purchase request: projectId={}, serviceCategoryId={}, userId={}",
+                command.projectId(), command.serviceCategoryId(), userId);
+
         // Validate service category
         ServiceCategory serviceCategory = serviceCategoryRepository.findById(command.serviceCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Service category not found with ID: " + command.serviceCategoryId()));
@@ -91,6 +98,7 @@ public class PurchaseRequestCommandService {
         }
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
+        log.info("Created service purchase request: id={}, requestNumber={}", purchaseRequest.getId(), requestNumber);
         return purchaseRequest.getId();
     }
 
@@ -100,6 +108,9 @@ public class PurchaseRequestCommandService {
      * @return the created purchase request ID
      */
     public Long createMaterialPurchaseRequest(CreateMaterialPurchaseRequestCommand command, Long userId) {
+        log.info("Creating material purchase request: projectId={}, materialId={}, userId={}",
+                command.projectId(), command.materialId(), userId);
+
         // Validate material
         Material material = materialRepository.findById(command.materialId())
                 .orElseThrow(() -> new ResourceNotFoundException("Material not found with ID: " + command.materialId()));
@@ -127,6 +138,7 @@ public class PurchaseRequestCommandService {
         );
 
         purchaseRequest = purchaseRequestRepository.save(purchaseRequest);
+        log.info("Created material purchase request: id={}, requestNumber={}", purchaseRequest.getId(), requestNumber);
         return purchaseRequest.getId();
     }
 
@@ -136,6 +148,8 @@ public class PurchaseRequestCommandService {
      * @return the updated purchase request ID
      */
     public Long updatePurchaseRequest(Long id, UpdatePurchaseRequestCommand command) {
+        log.info("Updating purchase request id={}", id);
+
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + id));
 
@@ -158,12 +172,15 @@ public class PurchaseRequestCommandService {
      * @return list of created RFQ item IDs for correlation with email sending
      */
     public List<String> sendRfq(Long purchaseRequestId, List<Long> vendorIds) {
+        log.info("Sending RFQ for purchase request id={}: vendorCount={}", purchaseRequestId, vendorIds.size());
+
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(purchaseRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + purchaseRequestId));
 
         // Delegate entirely to aggregate - pass domain service for item creation
         List<String> itemIds = purchaseRequest.sendRfq(vendorIds, rfqItemFactory);
         purchaseRequestRepository.save(purchaseRequest);
+        log.info("RFQ sent for purchase request id={}: itemIds={}", purchaseRequestId, itemIds);
 
         return itemIds;
     }
@@ -172,6 +189,8 @@ public class PurchaseRequestCommandService {
      * Cancel a purchase request.
      */
     public void cancelPurchaseRequest(Long id) {
+        log.info("Cancelling purchase request id={}", id);
+
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + id));
 

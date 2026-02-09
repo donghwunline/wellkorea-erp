@@ -1,0 +1,61 @@
+# =============================================================================
+# Grafana Alert Rules for WellKorea ERP
+# =============================================================================
+# Alert on ERROR level logs from the backend service.
+# Triggered when any ERROR logs are detected in a 5-minute window.
+#
+# Query Explanation:
+#   sum(count_over_time(...)) aggregates all log streams into a single value.
+#   This is required because Grafana alerting needs a scalar/instant vector,
+#   not a range vector (time series). The sum() ensures we get one value
+#   even if there are multiple container instances.
+# =============================================================================
+
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Log Level Alerts
+    folder: WellKorea ERP
+    interval: 1m
+    rules:
+      - uid: error-log-alert
+        title: ERROR Level Logs Detected
+        condition: B  # Condition references the threshold expression
+        data:
+          # A: Loki query with sum() - returns instant vector (single value)
+          - refId: A
+            relativeTimeRange:
+              from: 300  # 5 minutes
+              to: 0
+            datasourceUid: loki
+            model:
+              expr: 'sum(count_over_time({service="backend", level="ERROR"}[5m]))'
+              queryType: instant
+              refId: A
+          # B: Threshold - fire when count > 0
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params:
+                      - 0
+                  operator:
+                    type: and
+              refId: B
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "ERROR logs detected in backend service"
+          description: "{{ $values.A.Value }} ERROR level log(s) detected in the last 5 minutes"

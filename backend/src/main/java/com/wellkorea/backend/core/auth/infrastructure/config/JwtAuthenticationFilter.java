@@ -8,6 +8,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -99,6 +100,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Set authentication in SecurityContext
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                // Enrich MDC with user context for all downstream log statements
+                MDC.put("userId", String.valueOf(userId));
+                MDC.put("username", username);
             }
 
         } catch (JwtAuthenticationException ex) {

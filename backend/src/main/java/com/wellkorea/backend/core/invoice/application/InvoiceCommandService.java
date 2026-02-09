@@ -13,6 +13,8 @@ import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
 import com.wellkorea.backend.shared.lock.QuotationLock;
 import com.wellkorea.backend.supporting.storage.application.AttachmentService;
 import com.wellkorea.backend.supporting.storage.domain.AttachmentOwnerType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,8 @@ import java.util.List;
 @Service
 @Transactional
 public class InvoiceCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(InvoiceCommandService.class);
 
     private final TaxInvoiceRepository invoiceRepository;
     private final QuotationRepository quotationRepository;
@@ -84,6 +88,8 @@ public class InvoiceCommandService {
      */
     @QuotationLock
     public Long createInvoice(Long quotationId, CreateInvoiceRequest request, Long creatorId) {
+        log.info("Creating invoice: quotationId={}, lineItems={}, userId={}", quotationId, request.lineItems().size(), creatorId);
+
         // Fetch the specific quotation by ID (explicit binding prevents race conditions)
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
@@ -116,6 +122,7 @@ public class InvoiceCommandService {
         );
 
         TaxInvoice saved = invoiceRepository.save(invoice);
+        log.info("Created invoice: id={}, quotationId={}", saved.getId(), quotationId);
         return saved.getId();
     }
 
@@ -145,6 +152,7 @@ public class InvoiceCommandService {
      * @return Invoice ID
      */
     public Long issueInvoice(Long invoiceId, IssueInvoiceRequest request, Long uploaderId) {
+        log.info("Issuing invoice id={}: userId={}", invoiceId, uploaderId);
         TaxInvoice invoice = findInvoiceById(invoiceId);
 
         // 1. Register document attachment
@@ -160,6 +168,7 @@ public class InvoiceCommandService {
         // 2. Issue invoice (DRAFT -> ISSUED)
         invoice.issue();
         invoiceRepository.save(invoice);
+        log.info("Invoice id={} status changed: DRAFT -> ISSUED", invoiceId);
 
         return invoiceId;
     }
@@ -171,6 +180,7 @@ public class InvoiceCommandService {
      * @return Invoice ID
      */
     public Long cancelInvoice(Long invoiceId) {
+        log.info("Cancelling invoice id={}", invoiceId);
         TaxInvoice invoice = findInvoiceById(invoiceId);
         invoice.cancel();
         invoiceRepository.save(invoice);
@@ -186,6 +196,7 @@ public class InvoiceCommandService {
      * @return Payment ID
      */
     public Long recordPayment(Long invoiceId, RecordPaymentRequest request, Long recorderId) {
+        log.info("Recording payment for invoice id={}: amount={}, userId={}", invoiceId, request.amount(), recorderId);
         TaxInvoice invoice = findInvoiceById(invoiceId);
 
         // Validate invoice status allows payments
@@ -214,6 +225,7 @@ public class InvoiceCommandService {
 
         invoice.addPayment(payment);
         invoiceRepository.save(invoice);
+        log.info("Payment recorded: id={}, invoiceId={}", payment.getId(), invoiceId);
 
         return payment.getId();
     }
@@ -226,6 +238,7 @@ public class InvoiceCommandService {
      * @return Invoice ID
      */
     public Long updateNotes(Long invoiceId, String notes) {
+        log.info("Updating notes for invoice id={}", invoiceId);
         TaxInvoice invoice = findInvoiceById(invoiceId);
         invoice.updateNotes(notes);
         invoiceRepository.save(invoice);
@@ -239,6 +252,7 @@ public class InvoiceCommandService {
      * @return Number of invoices marked as overdue
      */
     public int markOverdueInvoices() {
+        log.info("Marking overdue invoices");
         LocalDate today = LocalDate.now();
         List<InvoiceStatus> overdueEligible = List.of(
                 InvoiceStatus.ISSUED,
@@ -256,6 +270,7 @@ public class InvoiceCommandService {
             }
         }
 
+        log.info("Marked {} invoices as overdue", count);
         return count;
     }
 

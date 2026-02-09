@@ -3,6 +3,8 @@ package com.wellkorea.backend.core.finance.application;
 import com.wellkorea.backend.core.finance.domain.AccountsPayable;
 import com.wellkorea.backend.core.finance.infrastructure.persistence.AccountsPayableRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,8 @@ import java.time.LocalDate;
 @Service
 @Transactional
 public class AccountsPayableCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(AccountsPayableCommandService.class);
 
     private final AccountsPayableRepository repository;
 
@@ -35,6 +39,7 @@ public class AccountsPayableCommandService {
      * @throws ResourceNotFoundException if AP not found
      */
     public Long updateMetadata(Long apId, LocalDate dueDate, String notes) {
+        log.info("Updating AP metadata: id={}", apId);
         AccountsPayable ap = repository.findById(apId)
                 .orElseThrow(() -> new ResourceNotFoundException("AccountsPayable", apId));
 

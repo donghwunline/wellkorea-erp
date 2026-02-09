@@ -8,6 +8,8 @@ import com.wellkorea.backend.core.production.infrastructure.persistence.TaskFlow
 import com.wellkorea.backend.core.project.domain.Project;
 import com.wellkorea.backend.core.project.infrastructure.repository.ProjectRepository;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,8 @@ import java.util.Set;
 @Service
 @Transactional
 public class TaskFlowCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(TaskFlowCommandService.class);
 
     private final TaskFlowRepository taskFlowRepository;
     private final ProjectRepository projectRepository;
@@ -40,6 +44,10 @@ public class TaskFlowCommandService {
      * @return The saved task flow ID
      */
     public Long saveTaskFlow(Long id, SaveTaskFlowRequest request) {
+        log.info("Saving task flow id={}: nodes={}, edges={}", id,
+                request.nodes() != null ? request.nodes().size() : 0,
+                request.edges() != null ? request.edges().size() : 0);
+
         TaskFlow flow = taskFlowRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TaskFlow", id));
 
@@ -89,6 +97,8 @@ public class TaskFlowCommandService {
      * @return The created task flow ID
      */
     public Long createTaskFlow(Long projectId) {
+        log.info("Creating task flow for project id={}", projectId);
+
         // Check if flow already exists
         if (taskFlowRepository.existsByProjectId(projectId)) {
             return taskFlowRepository.findByProjectId(projectId)
@@ -105,6 +115,7 @@ public class TaskFlowCommandService {
         flow.setProject(project);
 
         taskFlowRepository.save(flow);
+        log.info("Created task flow: id={}, projectId={}", flow.getId(), projectId);
         return flow.getId();
     }
 }
