@@ -28,6 +28,11 @@ WellKorea Integrated Work System (ERP) - A full-stack web application consolidat
 - GitHub Container Registry (ghcr.io)
 - GitHub Actions CI/CD
 
+**Observability**
+- Structured logging: MDC context (`correlationId`, `userId`, `username`), Console + JSON (Loki) formats
+- Monitoring: Promtail → Loki → Grafana → n8n → GitHub Issues
+- See `docs/monitoring/alerting.md`
+
 ## Development Commands
 
 ### Backend (from `/backend`)
