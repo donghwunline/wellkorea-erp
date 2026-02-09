@@ -50,7 +50,7 @@ public class GraphMailSender implements MailSender {
             MailTokenLockService lockService,
             MailTokenRefreshService tokenRefreshService) {
         this(clientId, clientSecret, configRepository, lockService, tokenRefreshService,
-             RestClient.create(), GRAPH_SEND_MAIL_URL);
+                RestClient.create(), GRAPH_SEND_MAIL_URL);
     }
 
     // Package-private constructor for testing with custom RestClient and URL

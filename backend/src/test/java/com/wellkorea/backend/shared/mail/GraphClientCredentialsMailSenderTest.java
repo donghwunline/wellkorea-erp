@@ -14,7 +14,8 @@ import java.net.http.HttpClient;
 import java.util.Base64;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link GraphClientCredentialsMailSender} with WireMock for HTTP mocking.

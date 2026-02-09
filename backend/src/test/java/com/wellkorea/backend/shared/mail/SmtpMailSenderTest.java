@@ -2,11 +2,7 @@ package com.wellkorea.backend.shared.mail;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -17,7 +13,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -172,7 +169,8 @@ class SmtpMailSenderTest {
         @Test
         @DisplayName("wraps JavaMailSender MailException in MailSendException")
         void wrapsMailExceptionInMailSendException() {
-            MailException mailException = new MailException("SMTP connection failed") {};
+            MailException mailException = new MailException("SMTP connection failed") {
+            };
 
             doThrow(mailException).when(javaMailSender).send(any(SimpleMailMessage.class));
 

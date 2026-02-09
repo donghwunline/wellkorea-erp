@@ -13,10 +13,10 @@ import java.util.List;
  * Includes line items for full detail display.
  * <p>
  * Amount calculation:
- *   subtotal = sum(line_items.line_total)
- *   taxAmount = subtotal × taxRate / 100
- *   amountBeforeDiscount = subtotal + taxAmount
- *   finalAmount = amountBeforeDiscount - discountAmount
+ * subtotal = sum(line_items.line_total)
+ * taxAmount = subtotal × taxRate / 100
+ * amountBeforeDiscount = subtotal + taxAmount
+ * finalAmount = amountBeforeDiscount - discountAmount
  */
 public record QuotationDetailView(
         Long id,

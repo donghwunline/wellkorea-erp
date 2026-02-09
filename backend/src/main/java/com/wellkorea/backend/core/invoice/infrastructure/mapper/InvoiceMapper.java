@@ -54,12 +54,12 @@ public interface InvoiceMapper {
      * Get total DISCOUNT payments across non-CANCELLED invoices for a quotation.
      * Optionally excludes a specific invoice (for recording new DISCOUNT payments).
      *
-     * @param quotationId    Quotation ID
+     * @param quotationId      Quotation ID
      * @param excludeInvoiceId Invoice ID to exclude (null to include all)
      * @return Total DISCOUNT payment amount
      */
     BigDecimal getTotalDiscountPaymentsByQuotation(@Param("quotationId") Long quotationId,
-                                                    @Param("excludeInvoiceId") Long excludeInvoiceId);
+                                                   @Param("excludeInvoiceId") Long excludeInvoiceId);
 
     /**
      * Check if an invoice exists by ID.

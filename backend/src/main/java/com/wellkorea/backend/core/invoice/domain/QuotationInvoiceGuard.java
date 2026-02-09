@@ -43,7 +43,7 @@ public interface QuotationInvoiceGuard {
      * The sum of DISCOUNT payments across all non-CANCELLED invoices for a quotation
      * must not exceed the quotation's discountAmount.
      *
-     * @param quotation        Quotation to validate against
+     * @param quotation         Quotation to validate against
      * @param requestedDiscount Discount amount requested for the invoice
      * @param excludeInvoiceId  Invoice ID to exclude from sum (null for creates, invoice ID for updates)
      * @throws BusinessException if discount exceeds remaining quota
