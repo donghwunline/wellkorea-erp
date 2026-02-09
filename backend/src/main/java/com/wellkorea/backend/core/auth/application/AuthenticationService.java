@@ -76,6 +76,7 @@ public class AuthenticationService {
         // Update last login (fire-and-forget, don't block login)
         updateLastLogin(user);
 
+        logger.info("User '{}' logged in successfully", username);
         return LoginResponse.of(token, toUserInfo(user));
     }
 
@@ -96,6 +97,9 @@ public class AuthenticationService {
 
         // Add to blacklist (token will be rejected by JwtAuthenticationFilter)
         tokenBlacklistService.blacklistToken(token);
+
+        String username = jwtTokenProvider.getUsername(token);
+        logger.info("User '{}' logged out", username);
     }
 
     /**
@@ -136,6 +140,7 @@ public class AuthenticationService {
         String roles = user.getRolesAsString();
         String newToken = jwtTokenProvider.generateToken(username, roles, user.getId());
 
+        logger.info("Token refreshed for user '{}'", username);
         return LoginResponse.of(newToken, toUserInfo(user));
     }
 

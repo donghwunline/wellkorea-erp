@@ -15,6 +15,8 @@ import com.wellkorea.backend.core.quotation.infrastructure.repository.QuotationR
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,8 @@ import java.util.List;
 @Service
 @Transactional
 public class QuotationCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(QuotationCommandService.class);
 
     private final QuotationRepository quotationRepository;
     private final ProjectRepository projectRepository;
@@ -54,6 +58,7 @@ public class QuotationCommandService {
      * @return ID of the created quotation
      */
     public Long createQuotation(CreateQuotationCommand command, Long createdByUserId) {
+        log.info("Creating quotation: projectId={}, lineItems={}, userId={}", command.projectId(), command.lineItems().size(), createdByUserId);
         Project project = projectRepository.findById(command.projectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Project", command.projectId()));
 
@@ -85,6 +90,7 @@ public class QuotationCommandService {
         }
 
         Quotation saved = quotationRepository.save(quotation);
+        log.info("Created quotation: id={}, version={}, projectId={}", saved.getId(), saved.getVersion(), command.projectId());
         return saved.getId();
     }
 
@@ -94,6 +100,7 @@ public class QuotationCommandService {
      * @return ID of the updated quotation
      */
     public Long updateQuotation(Long quotationId, UpdateQuotationCommand command) {
+        log.info("Updating quotation id={}", quotationId);
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
@@ -140,6 +147,7 @@ public class QuotationCommandService {
      * @return ID of the submitted quotation
      */
     public Long submitForApproval(Long quotationId, Long submittedByUserId) {
+        log.info("Submitting quotation id={} for approval: userId={}", quotationId, submittedByUserId);
         Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
@@ -150,8 +158,10 @@ public class QuotationCommandService {
         quotation.markAsPending();
         quotation.getApprovalState().submitForApproval(submittedByUserId, "QUOTATION");
         Quotation savedQuotation = quotationRepository.save(quotation);
+        log.info("Quotation id={} status changed: DRAFT -> PENDING", quotationId);
 
         // Publish event - handled by ApprovalEventHandler within same transaction
+        log.info("Publishing QuotationSubmittedEvent for quotation id={}", savedQuotation.getId());
         eventPublisher.publish(new QuotationSubmittedEvent(
                 savedQuotation.getId(),
                 savedQuotation.getVersion(),
@@ -168,6 +178,7 @@ public class QuotationCommandService {
      * @return ID of the new quotation version
      */
     public Long createNewVersion(Long quotationId, Long createdByUserId) {
+        log.info("Creating new version from quotation id={}: userId={}", quotationId, createdByUserId);
         Quotation original = quotationRepository.findByIdWithLineItems(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
@@ -209,6 +220,7 @@ public class QuotationCommandService {
 
         newQuotation.recalculateTotalAmount();
         Quotation saved = quotationRepository.save(newQuotation);
+        log.info("Created new quotation version: id={}, version={}, fromQuotationId={}", saved.getId(), saved.getVersion(), quotationId);
         return saved.getId();
     }
 
@@ -219,6 +231,7 @@ public class QuotationCommandService {
      * @return ID of the quotation being sent
      */
     public Long markAsSending(Long quotationId) {
+        log.info("Marking quotation id={} as sending", quotationId);
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
@@ -235,6 +248,7 @@ public class QuotationCommandService {
      * @return ID of the sent quotation
      */
     public Long markAsSent(Long quotationId) {
+        log.info("Marking quotation id={} as sent", quotationId);
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
@@ -252,6 +266,7 @@ public class QuotationCommandService {
      * @return ID of the accepted quotation
      */
     public Long markAsAccepted(Long quotationId, Long acceptedByUserId) {
+        log.info("Marking quotation id={} as accepted: userId={}", quotationId, acceptedByUserId);
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
 
@@ -260,6 +275,7 @@ public class QuotationCommandService {
         Quotation saved = quotationRepository.save(quotation);
 
         // Publish event for project status update
+        log.info("Publishing QuotationAcceptedEvent for quotation id={}, projectId={}", saved.getId(), saved.getProject().getId());
         eventPublisher.publish(new QuotationAcceptedEvent(
                 saved.getId(),
                 saved.getProject().getId(),

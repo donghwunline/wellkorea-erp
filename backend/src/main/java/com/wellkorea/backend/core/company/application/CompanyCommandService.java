@@ -6,6 +6,8 @@ import com.wellkorea.backend.core.company.domain.vo.RoleType;
 import com.wellkorea.backend.core.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class CompanyCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(CompanyCommandService.class);
 
     private final CompanyRepository companyRepository;
 
@@ -33,6 +37,8 @@ public class CompanyCommandService {
      * @throws BusinessException if registration number is duplicate
      */
     public Long createCompany(CreateCompanyCommand command) {
+        log.info("Creating company: name={}", command.name());
+
         // Validate unique registration number
         if (command.registrationNumber() != null && !command.registrationNumber().isBlank()) {
             if (companyRepository.existsByRegistrationNumber(command.registrationNumber())) {
@@ -63,7 +69,9 @@ public class CompanyCommandService {
             company.addRole(role);
         }
 
-        return companyRepository.save(company).getId();
+        Long companyId = companyRepository.save(company).getId();
+        log.info("Created company: id={}", companyId);
+        return companyId;
     }
 
     /**
@@ -76,6 +84,8 @@ public class CompanyCommandService {
      * @throws BusinessException         if new registration number is duplicate
      */
     public Long updateCompany(Long companyId, UpdateCompanyCommand command) {
+        log.info("Updating company id={}", companyId);
+
         Company company = companyRepository.findByIdAndIsActiveTrue(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
@@ -112,6 +122,8 @@ public class CompanyCommandService {
      * @throws BusinessException         if company already has this role or max roles reached
      */
     public void addRole(Long companyId, AddRoleCommand command) {
+        log.info("Adding role {} to company id={}", command.roleType(), companyId);
+
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
@@ -136,6 +148,8 @@ public class CompanyCommandService {
      * @throws BusinessException         if this is the last role or role not found
      */
     public void removeRole(Long companyId, RoleType roleType) {
+        log.info("Removing role {} from company id={}", roleType, companyId);
+
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 
@@ -154,6 +168,8 @@ public class CompanyCommandService {
      * @throws ResourceNotFoundException if company not found
      */
     public void deactivateCompany(Long companyId) {
+        log.info("Deactivating company id={}", companyId);
+
         Company company = companyRepository.findByIdAndIsActiveTrue(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", companyId));
 

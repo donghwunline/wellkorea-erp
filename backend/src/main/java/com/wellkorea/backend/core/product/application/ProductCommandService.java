@@ -6,6 +6,8 @@ import com.wellkorea.backend.core.product.infrastructure.repository.ProductRepos
 import com.wellkorea.backend.core.product.infrastructure.repository.ProductTypeRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class ProductCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductCommandService.class);
 
     private final ProductRepository productRepository;
     private final ProductTypeRepository productTypeRepository;
@@ -35,6 +39,8 @@ public class ProductCommandService {
      * @throws ResourceNotFoundException if product type not found
      */
     public Long createProduct(CreateProductCommand command) {
+        log.info("Creating product: sku={}", command.sku());
+
         // Validate unique SKU
         if (productRepository.existsBySku(command.sku())) {
             throw new BusinessException("Product with SKU '" + command.sku() + "' already exists");
@@ -54,7 +60,9 @@ public class ProductCommandService {
         product.setUnit(command.unit());
         product.setActive(true);
 
-        return productRepository.save(product).getId();
+        Long productId = productRepository.save(product).getId();
+        log.info("Created product: id={}, sku={}", productId, command.sku());
+        return productId;
     }
 
     /**
@@ -67,6 +75,8 @@ public class ProductCommandService {
      * @throws BusinessException         if new SKU is duplicate
      */
     public Long updateProduct(Long productId, UpdateProductCommand command) {
+        log.info("Updating product id={}", productId);
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", productId));
 
@@ -110,6 +120,8 @@ public class ProductCommandService {
      * @throws ResourceNotFoundException if product not found
      */
     public void deactivateProduct(Long productId) {
+        log.info("Deactivating product id={}", productId);
+
         Product product = productRepository.findById(productId)
                 .filter(Product::isActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", productId));

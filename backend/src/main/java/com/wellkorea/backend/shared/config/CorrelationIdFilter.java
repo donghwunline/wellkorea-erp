@@ -14,7 +14,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * Servlet filter that establishes a correlation ID for each request.
+ * Servlet filter that establishes a correlation ID for each request and owns
+ * the full MDC lifecycle.
  * <p>
  * Reads the {@code X-Request-ID} header if present, otherwise generates a UUID.
  * The correlation ID is placed into SLF4J MDC as {@code correlationId} so it appears
@@ -22,6 +23,11 @@ import java.util.UUID;
  * <p>
  * Runs at highest precedence to ensure the correlation ID is available to all
  * downstream filters (including JWT authentication) and controllers.
+ * <p>
+ * The {@code finally} block cleans up all MDC keys ({@code correlationId},
+ * {@code userId}, {@code username}) to prevent leaks. Downstream filters
+ * (e.g. {@code JwtAuthenticationFilter}) only <em>enrich</em> MDC; this filter
+ * is the single owner of cleanup.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -47,6 +53,8 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } finally {
             MDC.remove(MDC_KEY);
+            MDC.remove("userId");
+            MDC.remove("username");
         }
     }
 }

@@ -14,6 +14,8 @@ import com.wellkorea.backend.core.purchasing.infrastructure.persistence.Purchase
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,8 @@ import java.time.Year;
 @Service
 @Transactional
 public class PurchaseOrderCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(PurchaseOrderCommandService.class);
 
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PurchaseRequestRepository purchaseRequestRepository;
@@ -51,6 +55,7 @@ public class PurchaseOrderCommandService {
      * @return the created purchase order ID
      */
     public Long createPurchaseOrder(CreatePurchaseOrderCommand command, Long userId) {
+        log.info("Creating purchase order: purchaseRequestId={}, rfqItemId={}, userId={}", command.purchaseRequestId(), command.rfqItemId(), userId);
         PurchaseRequest purchaseRequest = purchaseRequestRepository.findById(command.purchaseRequestId())
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase request not found with ID: " + command.purchaseRequestId()));
 
@@ -76,8 +81,10 @@ public class PurchaseOrderCommandService {
         // Save both - PR may have status change (VENDOR_SELECTED)
         purchaseRequestRepository.save(purchaseRequest);
         purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
+        log.info("Created purchase order: id={}, poNumber={}", purchaseOrder.getId(), purchaseOrder.getPoNumber());
 
         // Publish event to transition PurchaseRequest to ORDERED
+        log.info("Publishing PurchaseOrderCreatedEvent for PO id={}", purchaseOrder.getId());
         eventPublisher.publish(new PurchaseOrderCreatedEvent(
                 purchaseOrder.getId(),
                 purchaseRequest.getId(),
@@ -93,6 +100,7 @@ public class PurchaseOrderCommandService {
      * @return the updated purchase order ID
      */
     public Long updatePurchaseOrder(Long id, UpdatePurchaseOrderCommand command) {
+        log.info("Updating purchase order id={}", id);
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with ID: " + id));
 
@@ -114,6 +122,7 @@ public class PurchaseOrderCommandService {
      * Send a purchase order to the vendor.
      */
     public Long sendPurchaseOrder(Long id) {
+        log.info("Sending purchase order id={}", id);
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with ID: " + id));
 
@@ -127,6 +136,7 @@ public class PurchaseOrderCommandService {
      * Publishes PurchaseOrderConfirmedEvent to create AccountsPayable.
      */
     public Long confirmPurchaseOrder(Long id) {
+        log.info("Confirming purchase order id={}", id);
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with ID: " + id));
 
@@ -134,6 +144,7 @@ public class PurchaseOrderCommandService {
         purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
 
         // Publish event to create AccountsPayable
+        log.info("Publishing PurchaseOrderConfirmedEvent for PO id={}", purchaseOrder.getId());
         eventPublisher.publish(new PurchaseOrderConfirmedEvent(
                 purchaseOrder.getId(),
                 purchaseOrder.getVendorCompanyId(),
@@ -150,6 +161,7 @@ public class PurchaseOrderCommandService {
      * Publishes a PurchaseOrderReceivedEvent to close the PurchaseRequest.
      */
     public Long receivePurchaseOrder(Long id) {
+        log.info("Receiving purchase order id={}", id);
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with ID: " + id));
 
@@ -162,6 +174,7 @@ public class PurchaseOrderCommandService {
         purchaseOrderRepository.save(purchaseOrder);
 
         // Publish event to close the PurchaseRequest
+        log.info("Publishing PurchaseOrderReceivedEvent for PO id={}", purchaseOrder.getId());
         eventPublisher.publish(new PurchaseOrderReceivedEvent(
                 purchaseOrder.getId(),
                 purchaseRequest.getId(),
@@ -176,6 +189,7 @@ public class PurchaseOrderCommandService {
      * Publishes a PurchaseOrderCanceledEvent to revert the PurchaseRequest status.
      */
     public void cancelPurchaseOrder(Long id) {
+        log.info("Cancelling purchase order id={}", id);
         PurchaseOrder purchaseOrder = purchaseOrderRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase order not found with ID: " + id));
 
@@ -188,6 +202,7 @@ public class PurchaseOrderCommandService {
         purchaseOrderRepository.save(purchaseOrder);
 
         // Publish event to revert PurchaseRequest status
+        log.info("Publishing PurchaseOrderCanceledEvent for PO id={}", purchaseOrder.getId());
         eventPublisher.publish(new PurchaseOrderCanceledEvent(
                 purchaseOrder.getId(),
                 purchaseRequest.getId(),

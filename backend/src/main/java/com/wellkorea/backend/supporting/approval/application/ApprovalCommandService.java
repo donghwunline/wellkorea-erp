@@ -13,6 +13,8 @@ import com.wellkorea.backend.supporting.approval.domain.vo.ApprovalStatus;
 import com.wellkorea.backend.supporting.approval.domain.vo.EntityType;
 import com.wellkorea.backend.supporting.approval.infrastructure.repository.ApprovalChainTemplateRepository;
 import com.wellkorea.backend.supporting.approval.infrastructure.repository.ApprovalRequestRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,8 @@ import java.util.List;
 @Service
 @Transactional
 public class ApprovalCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(ApprovalCommandService.class);
 
     private final ApprovalRequestRepository approvalRequestRepository;
     private final ApprovalChainTemplateRepository chainTemplateRepository;
@@ -61,6 +65,7 @@ public class ApprovalCommandService {
                                       Long entityId,
                                       String entityDescription,
                                       Long submittedByUserId) {
+        log.info("Creating approval request: entityType={}, entityId={}, userId={}", entityType, entityId, submittedByUserId);
 
         ApprovalChainTemplate chainTemplate = chainTemplateRepository.findByEntityTypeWithLevels(entityType)
                 .orElseThrow(() -> new ResourceNotFoundException("ApprovalChainTemplate", entityType));
@@ -89,6 +94,7 @@ public class ApprovalCommandService {
         );
 
         ApprovalRequest savedRequest = approvalRequestRepository.save(request);
+        log.info("Created approval request: id={}", savedRequest.getId());
         return savedRequest.getId();
     }
 
@@ -103,6 +109,8 @@ public class ApprovalCommandService {
      * @return ID of the approval request
      */
     public Long approve(Long approvalRequestId, Long approverUserId, String comments) {
+        log.info("Approving: approvalRequestId={}, userId={}", approvalRequestId, approverUserId);
+
         ApprovalRequest request = approvalRequestRepository.findByIdWithLevelDecisions(approvalRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException("ApprovalRequest", approvalRequestId));
 
@@ -127,6 +135,7 @@ public class ApprovalCommandService {
 
         // Publish event after final approval (handled by entity-specific handlers)
         if (savedRequest.isCompleted() && savedRequest.getStatus() == ApprovalStatus.APPROVED) {
+            log.info("Publishing ApprovalCompletedEvent (APPROVED) for request id={}", savedRequest.getId());
             eventPublisher.publish(
                     ApprovalCompletedEvent.approved(
                             savedRequest.getId(),
@@ -152,6 +161,8 @@ public class ApprovalCommandService {
      * @return ID of the approval request
      */
     public Long reject(Long approvalRequestId, Long approverUserId, String reason, String comments) {
+        log.info("Rejecting: approvalRequestId={}, userId={}", approvalRequestId, approverUserId);
+
         ApprovalRequest request = approvalRequestRepository.findByIdWithLevelDecisions(approvalRequestId)
                 .orElseThrow(() -> new ResourceNotFoundException("ApprovalRequest", approvalRequestId));
 
@@ -175,6 +186,7 @@ public class ApprovalCommandService {
         ApprovalRequest savedRequest = approvalRequestRepository.save(request);
 
         // Publish event for rejection (handled by entity-specific handlers)
+        log.info("Publishing ApprovalCompletedEvent (REJECTED) for request id={}", savedRequest.getId());
         eventPublisher.publish(
                 ApprovalCompletedEvent.rejected(
                         savedRequest.getId(),
@@ -195,6 +207,8 @@ public class ApprovalCommandService {
      * @return ID of the updated chain template
      */
     public Long updateChainLevels(Long chainTemplateId, List<ChainLevelCommand> commands) {
+        log.info("Updating chain levels: chainTemplateId={}, levelCount={}", chainTemplateId, commands.size());
+
         ApprovalChainTemplate template = chainTemplateRepository.findById(chainTemplateId)
                 .orElseThrow(() -> new ResourceNotFoundException("ApprovalChainTemplate", chainTemplateId));
 

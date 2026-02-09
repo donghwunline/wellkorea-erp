@@ -6,6 +6,8 @@ import com.wellkorea.backend.core.purchasing.domain.vo.RfqItem;
 import com.wellkorea.backend.core.purchasing.infrastructure.persistence.PurchaseRequestRepository;
 import com.wellkorea.backend.shared.event.DomainEventPublisher;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,8 @@ import java.math.BigDecimal;
 @Service
 @Transactional
 public class RfqCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(RfqCommandService.class);
 
     private final PurchaseRequestRepository purchaseRequestRepository;
     private final DomainEventPublisher eventPublisher;
@@ -38,6 +42,7 @@ public class RfqCommandService {
      * @param command           the record reply command
      */
     public void recordReply(Long purchaseRequestId, RecordRfqReplyCommand command) {
+        log.info("Recording RFQ reply: purchaseRequestId={}, itemId={}", purchaseRequestId, command.itemId());
         PurchaseRequest purchaseRequest = getPurchaseRequest(purchaseRequestId);
 
         purchaseRequest.recordRfqReply(
@@ -57,6 +62,7 @@ public class RfqCommandService {
      * @param itemId            the RFQ item ID
      */
     public void markNoResponse(Long purchaseRequestId, String itemId) {
+        log.info("Marking RFQ no response: purchaseRequestId={}, itemId={}", purchaseRequestId, itemId);
         PurchaseRequest purchaseRequest = getPurchaseRequest(purchaseRequestId);
 
         purchaseRequest.markRfqNoResponse(itemId);
@@ -72,6 +78,7 @@ public class RfqCommandService {
      * @param itemId            the RFQ item ID to select
      */
     public void selectVendor(Long purchaseRequestId, String itemId) {
+        log.info("Selecting vendor: purchaseRequestId={}, itemId={}", purchaseRequestId, itemId);
         PurchaseRequest purchaseRequest = getPurchaseRequest(purchaseRequestId);
 
         purchaseRequest.selectVendor(itemId);
@@ -86,6 +93,7 @@ public class RfqCommandService {
      * @param itemId            the RFQ item ID to reject
      */
     public void rejectRfq(Long purchaseRequestId, String itemId) {
+        log.info("Rejecting RFQ: purchaseRequestId={}, itemId={}", purchaseRequestId, itemId);
         PurchaseRequest purchaseRequest = getPurchaseRequest(purchaseRequestId);
 
         purchaseRequest.rejectRfq(itemId);
@@ -103,6 +111,7 @@ public class RfqCommandService {
      * @return the purchase request ID
      */
     public Long submitVendorSelectionForApproval(Long purchaseRequestId, String itemId, Long userId) {
+        log.info("Submitting vendor selection for approval: purchaseRequestId={}, itemId={}, userId={}", purchaseRequestId, itemId, userId);
         PurchaseRequest purchaseRequest = getPurchaseRequest(purchaseRequestId);
 
         // Domain validates state and stores pending selection
@@ -114,6 +123,7 @@ public class RfqCommandService {
         purchaseRequestRepository.save(purchaseRequest);
 
         // Publish event - ApprovalEventHandler creates ApprovalRequest
+        log.info("Publishing VendorSelectionSubmittedEvent for purchase request id={}", purchaseRequest.getId());
         eventPublisher.publish(new VendorSelectionSubmittedEvent(
                 purchaseRequest.getId(),
                 itemId,

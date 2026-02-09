@@ -9,6 +9,8 @@ import com.wellkorea.backend.core.company.domain.vo.RoleType;
 import com.wellkorea.backend.core.company.infrastructure.persistence.CompanyRepository;
 import com.wellkorea.backend.shared.exception.BusinessException;
 import com.wellkorea.backend.shared.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class ServiceCategoryCommandService {
+
+    private static final Logger log = LoggerFactory.getLogger(ServiceCategoryCommandService.class);
 
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final VendorServiceOfferingRepository vendorOfferingRepository;
@@ -43,6 +47,8 @@ public class ServiceCategoryCommandService {
      * @throws BusinessException if name is duplicate
      */
     public Long createServiceCategory(CreateServiceCategoryCommand command) {
+        log.info("Creating service category: name={}", command.name());
+
         // Validate unique name
         if (serviceCategoryRepository.existsByName(command.name())) {
             throw new BusinessException("Service category with name '" + command.name() + "' already exists");
@@ -53,7 +59,9 @@ public class ServiceCategoryCommandService {
         category.setDescription(command.description());
         category.setActive(true);
 
-        return serviceCategoryRepository.save(category).getId();
+        Long id = serviceCategoryRepository.save(category).getId();
+        log.info("Created service category: id={}", id);
+        return id;
     }
 
     /**
@@ -66,6 +74,8 @@ public class ServiceCategoryCommandService {
      * @throws BusinessException         if new name is duplicate
      */
     public Long updateServiceCategory(Long categoryId, UpdateServiceCategoryCommand command) {
+        log.info("Updating service category id={}", categoryId);
+
         ServiceCategory category = serviceCategoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("ServiceCategory", categoryId));
 
@@ -94,6 +104,8 @@ public class ServiceCategoryCommandService {
      * @throws ResourceNotFoundException if category not found
      */
     public void deactivateServiceCategory(Long categoryId) {
+        log.info("Deactivating service category id={}", categoryId);
+
         ServiceCategory category = serviceCategoryRepository.findById(categoryId)
                 .filter(ServiceCategory::isActive)
                 .orElseThrow(() -> new ResourceNotFoundException("ServiceCategory", categoryId));
@@ -113,6 +125,8 @@ public class ServiceCategoryCommandService {
      * @throws BusinessException         if vendor doesn't have VENDOR/OUTSOURCE role or duplicate offering exists
      */
     public Long createVendorOffering(CreateVendorOfferingCommand command) {
+        log.info("Creating vendor service offering: vendorId={}, serviceCategoryId={}", command.vendorId(), command.serviceCategoryId());
+
         // Validate vendor exists and has proper role
         Company vendor = companyRepository.findById(command.vendorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company", command.vendorId()));
@@ -153,7 +167,9 @@ public class ServiceCategoryCommandService {
         offering.setPreferred(command.isPreferred());
         offering.setNotes(command.notes());
 
-        return vendorOfferingRepository.save(offering).getId();
+        Long id = vendorOfferingRepository.save(offering).getId();
+        log.info("Created vendor service offering: id={}", id);
+        return id;
     }
 
     /**
@@ -166,6 +182,8 @@ public class ServiceCategoryCommandService {
      * @throws BusinessException         if update would create duplicate
      */
     public Long updateVendorOffering(Long offeringId, UpdateVendorOfferingCommand command) {
+        log.info("Updating vendor service offering id={}", offeringId);
+
         VendorServiceOffering offering = vendorOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("VendorServiceOffering", offeringId));
 
@@ -222,6 +240,8 @@ public class ServiceCategoryCommandService {
      * @throws ResourceNotFoundException if offering not found
      */
     public void deleteVendorOffering(Long offeringId) {
+        log.info("Deleting vendor service offering id={}", offeringId);
+
         VendorServiceOffering offering = vendorOfferingRepository.findById(offeringId)
                 .orElseThrow(() -> new ResourceNotFoundException("VendorServiceOffering", offeringId));
 
