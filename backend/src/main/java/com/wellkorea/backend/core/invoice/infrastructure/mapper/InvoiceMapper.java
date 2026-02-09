@@ -51,15 +51,15 @@ public interface InvoiceMapper {
     List<ProductQuantitySum> getInvoicedQuantitiesByQuotation(@Param("quotationId") Long quotationId);
 
     /**
-     * Get total discount amount allocated across non-CANCELLED invoices for a quotation.
-     * Optionally excludes a specific invoice (for update operations).
+     * Get total DISCOUNT payments across non-CANCELLED invoices for a quotation.
+     * Optionally excludes a specific invoice (for recording new DISCOUNT payments).
      *
      * @param quotationId    Quotation ID
      * @param excludeInvoiceId Invoice ID to exclude (null to include all)
-     * @return Total allocated discount amount
+     * @return Total DISCOUNT payment amount
      */
-    BigDecimal getTotalDiscountByQuotation(@Param("quotationId") Long quotationId,
-                                           @Param("excludeInvoiceId") Long excludeInvoiceId);
+    BigDecimal getTotalDiscountPaymentsByQuotation(@Param("quotationId") Long quotationId,
+                                                    @Param("excludeInvoiceId") Long excludeInvoiceId);
 
     /**
      * Check if an invoice exists by ID.

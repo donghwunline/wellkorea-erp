@@ -88,7 +88,8 @@
                i.total_before_tax,
                i.tax_rate,
                i.total_tax,
-               i.discount_amount,
+               COALESCE((SELECT SUM(p.amount) FROM payments p
+                         WHERE p.invoice_id = i.id AND p.payment_method = 'DISCOUNT'), 0)                            AS discount_amount,
                i.total_amount,
                COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id),
                         0)                                                                                            AS total_paid,
@@ -193,7 +194,8 @@
         WHEN 'CANCELLED' THEN '취소됨'
         ELSE i.status
         END AS status_label_ko,
-        i.discount_amount,
+        COALESCE((SELECT SUM(p.amount) FROM payments p
+                  WHERE p.invoice_id = i.id AND p.payment_method = 'DISCOUNT'), 0) AS discount_amount,
         i.total_amount,
         COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0) AS total_paid,
         (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0)) AS
@@ -280,14 +282,16 @@
     </select>
 
     <!--
-        Get total discount amount allocated across non-CANCELLED invoices for a quotation.
-        Optionally excludes a specific invoice (for update operations to avoid double-counting).
+        Get total DISCOUNT payments across non-CANCELLED invoices for a quotation.
+        Optionally excludes a specific invoice (for recording new DISCOUNT payments).
     -->
-    <select id="getTotalDiscountByQuotation" resultType="java.math.BigDecimal">
-        SELECT COALESCE(SUM(i.discount_amount), 0)
-        FROM tax_invoices i
+    <select id="getTotalDiscountPaymentsByQuotation" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(p.amount), 0)
+        FROM payments p
+                 JOIN tax_invoices i ON p.invoice_id = i.id
         WHERE i.quotation_id = #{quotationId}
           AND i.status != 'CANCELLED'
+          AND p.payment_method = 'DISCOUNT'
           <if test="excludeInvoiceId != null">AND i.id != #{excludeInvoiceId}</if>
     </select>
 

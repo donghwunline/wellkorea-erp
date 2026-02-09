@@ -54,7 +54,7 @@ public class DatabaseQuotationInvoiceGuard implements QuotationInvoiceGuard {
             return;
         }
 
-        BigDecimal allocatedDiscount = invoiceMapper.getTotalDiscountByQuotation(
+        BigDecimal allocatedDiscount = invoiceMapper.getTotalDiscountPaymentsByQuotation(
                 quotation.getId(), excludeInvoiceId);
         BigDecimal remainingQuota = quotationDiscount.subtract(allocatedDiscount);
 

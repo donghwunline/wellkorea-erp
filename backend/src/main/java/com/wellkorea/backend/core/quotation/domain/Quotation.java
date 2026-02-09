@@ -507,7 +507,7 @@ public class Quotation implements Approvable {
      * and number generation to infrastructure without having direct dependencies.
      * <p>
      * Tax rate is inherited from this quotation.
-     * Discount amount is set manually by the caller (financial personnel).
+     * Discount is tracked as a DISCOUNT payment, not on the invoice itself.
      * <p>
      * Similar pattern: {@link #createDelivery}
      *
@@ -516,19 +516,17 @@ public class Quotation implements Approvable {
      * @param issueDate              Invoice issue date
      * @param dueDate                Payment due date
      * @param notes                  Optional notes for the invoice
-     * @param discountAmount         Manual discount amount (null defaults to ZERO, must be non-negative)
      * @param lineItems              Line items to invoice
      * @param createdById            User ID of who is creating the invoice
      * @return New TaxInvoice entity with all line items added
      * @throws BusinessException        if quotation is not approved or validation fails
-     * @throws IllegalArgumentException if due date is before issue date or discount is negative
+     * @throws IllegalArgumentException if due date is before issue date
      */
     public TaxInvoice createInvoice(QuotationInvoiceGuard quotationInvoiceGuard,
                                     InvoiceNumberGenerator invoiceNumberGenerator,
                                     LocalDate issueDate,
                                     LocalDate dueDate,
                                     String notes,
-                                    BigDecimal discountAmount,
                                     List<InvoiceLineItemInput> lineItems,
                                     Long createdById) {
         // Quotation must be approved to create invoices
@@ -545,16 +543,10 @@ public class Quotation implements Approvable {
             throw new IllegalArgumentException("Due date must be on or after issue date");
         }
 
-        // Validate discount amount
-        BigDecimal invoiceDiscount = discountAmount != null ? discountAmount : BigDecimal.ZERO;
-        if (invoiceDiscount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Discount amount must not be negative");
-        }
-
         // Generate unique invoice number
         String invoiceNumber = invoiceNumberGenerator.generate();
 
-        // Build the invoice entity - taxRate inherited from quotation, discount set manually
+        // Build the invoice entity - taxRate inherited from quotation
         TaxInvoice invoice = TaxInvoice.builder()
                 .projectId(project.getId())
                 .quotationId(this.id)
@@ -562,7 +554,6 @@ public class Quotation implements Approvable {
                 .issueDate(issueDate)
                 .dueDate(dueDate)
                 .taxRate(this.taxRate)
-                .discountAmount(invoiceDiscount)
                 .notes(notes)
                 .createdById(createdById)
                 .build();
