@@ -62,8 +62,7 @@
 
     <!-- Main query: Find quotation detail by ID -->
     <select id="findDetailById" resultMap="QuotationDetailViewResult">
-        SELECT
-        q.id,
+        SELECT q.id,
         q.project_id,
         p.customer_company_id AS customer_id,
         p.project_name,
@@ -79,7 +78,8 @@
         ROUND(q.total_amount * q.tax_rate / 100, 2) AS tax_amount,
         q.total_amount + ROUND(q.total_amount * q.tax_rate / 100, 2) AS amount_before_discount,
         q.discount_amount,
-        (q.total_amount + ROUND(q.total_amount * q.tax_rate / 100, 2)) - q.discount_amount AS final_amount,
+        (q.total_amount + ROUND(q.total_amount * q.tax_rate / 100, 2)) -
+        q.discount_amount AS final_amount,
         q.notes,
         q.created_by_id,
         cu.full_name AS created_by_name,
@@ -88,7 +88,9 @@
         su.full_name AS submitted_by_name,
         q.approval_submitted_at AS submitted_at,
         CASE WHEN q.approval_status = 'APPROVED' THEN q.approval_completed_at END AS approved_at,
-        CASE WHEN q.approval_status IN ('APPROVED', 'REJECTED') THEN q.approval_completed_by_id END AS approved_by_id,
+        CASE
+        WHEN q.approval_status IN ('APPROVED', 'REJECTED')
+        THEN q.approval_completed_by_id END AS approved_by_id,
         au.full_name AS approved_by_name,
         q.approval_rejection_reason AS rejection_reason,
         q.created_at,
@@ -98,13 +100,13 @@
         INNER JOIN users cu ON q.created_by_id = cu.id
         LEFT JOIN users su ON q.approval_submitted_by_id = su.id
         LEFT JOIN users au ON q.approval_completed_by_id = au.id
-        WHERE q.id = #{id} AND q.is_deleted = false
+        WHERE q.id = #{id}
+        AND q.is_deleted = false
     </select>
 
     <!-- Nested select: Find line items for a quotation (called once per quotation, not N times) -->
     <select id="findLineItemsByQuotationId" resultMap="LineItemViewResult">
-        SELECT
-        li.id,
+        SELECT li.id,
         li.product_id,
         prod.sku AS product_sku,
         prod.name AS product_name,

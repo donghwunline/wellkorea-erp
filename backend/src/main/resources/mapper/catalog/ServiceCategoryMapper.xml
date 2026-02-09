@@ -59,12 +59,13 @@
 
     <!-- Find service category detail by ID with vendor count using subquery -->
     <select id="findDetailById" resultMap="ServiceCategoryDetailViewResult">
-        SELECT
-        sc.id,
+        SELECT sc.id,
         sc.name,
         sc.description,
         sc.is_active,
-        (SELECT COUNT(*) FROM vendor_service_offerings vso WHERE vso.service_category_id = sc.id) AS vendor_count,
+        (SELECT COUNT(*)
+        FROM vendor_service_offerings vso
+        WHERE vso.service_category_id = sc.id) AS vendor_count,
         sc.created_at,
         sc.updated_at
         FROM service_categories sc
@@ -108,8 +109,7 @@
 
     <!-- Find all active service categories -->
     <select id="findAllActive" resultMap="ServiceCategorySummaryViewResult">
-        SELECT
-        sc.id,
+        SELECT sc.id,
         sc.name,
         sc.description,
         sc.is_active,

@@ -104,8 +104,7 @@
 
     <!-- Find detail by ID -->
     <select id="findDetailById" resultMap="PurchaseOrderDetailViewResult">
-        SELECT
-        po.id,
+        SELECT po.id,
         po.po_number AS poNumber,
         po.purchase_request_id AS purchaseRequestId,
         pr.request_number AS purchaseRequestNumber,

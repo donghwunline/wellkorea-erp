@@ -142,8 +142,7 @@
 
     <!-- Find detail by ID -->
     <select id="findDetailById" resultMap="PurchaseRequestDetailViewResult">
-        SELECT
-        pr.id,
+        SELECT pr.id,
         pr.request_number AS requestNumber,
         pr.dtype,
         pr.project_id AS projectId,
@@ -179,8 +178,7 @@
 
     <!-- Nested select: Find RFQ items for a purchase request -->
     <select id="findRfqItemsByPurchaseRequestId" resultMap="RfqItemViewResult">
-        SELECT
-        ri.item_id AS itemId,
+        SELECT ri.item_id AS itemId,
         ri.purchase_request_id AS purchaseRequestId,
         ri.vendor_company_id AS vendorId,
         c.name AS vendorName,

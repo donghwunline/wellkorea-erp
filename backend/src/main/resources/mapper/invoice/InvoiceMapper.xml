@@ -70,65 +70,67 @@
     <!-- Main query: Find invoice detail by ID -->
     <select id="findDetailById" resultMap="InvoiceDetailViewResult">
         SELECT i.id,
-               i.project_id,
-               i.quotation_id,
-               p.job_code,
-               i.invoice_number,
-               i.issue_date,
-               i.status,
-               CASE i.status
-                   WHEN 'DRAFT' THEN '임시저장'
-                   WHEN 'ISSUED' THEN '발행됨'
-                   WHEN 'PARTIALLY_PAID' THEN '부분결제'
-                   WHEN 'PAID' THEN '결제완료'
-                   WHEN 'OVERDUE' THEN '연체'
-                   WHEN 'CANCELLED' THEN '취소됨'
-                   ELSE i.status
-                   END                                                                                                AS status_label_ko,
-               i.total_before_tax,
-               i.tax_rate,
-               i.total_tax,
-               COALESCE((SELECT SUM(p.amount) FROM payments p
-                         WHERE p.invoice_id = i.id AND p.payment_method = 'DISCOUNT'), 0)                            AS discount_amount,
-               i.total_amount,
-               COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id),
-                        0)                                                                                            AS total_paid,
-               (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id),
-                                          0))                                                                         AS remaining_balance,
-               i.due_date,
-               i.notes,
-               i.created_by_id,
-               u.full_name                                                                                            AS created_by_name,
-               i.created_at,
-               i.updated_at,
-               i.issued_to_customer_date,
-               CASE
-                   WHEN i.due_date &lt; CURRENT_DATE AND i.status IN ('ISSUED', 'PARTIALLY_PAID') THEN true
-                   ELSE false END                                                                                     AS is_overdue,
-               CASE
-                   WHEN i.due_date &lt; CURRENT_DATE THEN CURRENT_DATE - i.due_date
-                   ELSE 0 END                                                                                         AS days_overdue,
-               CASE
-                   WHEN i.due_date >= CURRENT_DATE THEN 'Current'
-                   WHEN CURRENT_DATE - i.due_date &lt;= 30 THEN '30 Days'
-                   WHEN CURRENT_DATE - i.due_date &lt;= 60 THEN '60 Days'
-                   ELSE '90+ Days'
-                   END                                                                                                AS aging_bucket
+        i.project_id,
+        i.quotation_id,
+        p.job_code,
+        i.invoice_number,
+        i.issue_date,
+        i.status,
+        CASE i.status
+        WHEN 'DRAFT' THEN '임시저장'
+        WHEN 'ISSUED' THEN '발행됨'
+        WHEN 'PARTIALLY_PAID' THEN '부분결제'
+        WHEN 'PAID' THEN '결제완료'
+        WHEN 'OVERDUE' THEN '연체'
+        WHEN 'CANCELLED' THEN '취소됨'
+        ELSE i.status
+        END AS status_label_ko,
+        i.total_before_tax,
+        i.tax_rate,
+        i.total_tax,
+        COALESCE((SELECT SUM(p.amount)
+        FROM payments p
+        WHERE p.invoice_id = i.id
+        AND p.payment_method = 'DISCOUNT'), 0) AS discount_amount,
+        i.total_amount,
+        COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id),
+        0) AS total_paid,
+        (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id),
+        0)) AS remaining_balance,
+        i.due_date,
+        i.notes,
+        i.created_by_id,
+        u.full_name AS created_by_name,
+        i.created_at,
+        i.updated_at,
+        i.issued_to_customer_date,
+        CASE
+        WHEN i.due_date &lt; CURRENT_DATE AND i.status IN ('ISSUED', 'PARTIALLY_PAID') THEN true
+        ELSE false END AS is_overdue,
+        CASE
+        WHEN i.due_date &lt; CURRENT_DATE THEN CURRENT_DATE - i.due_date
+        ELSE 0 END AS days_overdue,
+        CASE
+        WHEN i.due_date >= CURRENT_DATE THEN 'Current'
+        WHEN CURRENT_DATE - i.due_date &lt;= 30 THEN '30 Days'
+        WHEN CURRENT_DATE - i.due_date &lt;= 60 THEN '60 Days'
+        ELSE '90+ Days'
+        END AS aging_bucket
         FROM tax_invoices i
-                 INNER JOIN projects p ON i.project_id = p.id
-                 INNER JOIN users u ON i.created_by_id = u.id
+        INNER JOIN projects p ON i.project_id = p.id
+        INNER JOIN users u ON i.created_by_id = u.id
         WHERE i.id = #{id}
     </select>
 
     <!-- Nested select: Find line items for an invoice -->
     <select id="findLineItemsByInvoiceId" resultMap="InvoiceLineItemViewResult">
         SELECT li.id,
-               li.product_id,
-               li.product_name,
-               li.product_sku,
-               li.quantity_invoiced,
-               li.unit_price,
-               li.line_total
+        li.product_id,
+        li.product_name,
+        li.product_sku,
+        li.quantity_invoiced,
+        li.unit_price,
+        li.line_total
         FROM invoice_line_items li
         WHERE li.invoice_id = #{invoiceId}
         ORDER BY li.id
@@ -137,17 +139,17 @@
     <!-- Nested select: Find payments for an invoice -->
     <select id="findPaymentsByInvoiceId" resultMap="PaymentViewResult">
         SELECT pay.id,
-               pay.invoice_id,
-               pay.payment_date,
-               pay.amount,
-               pay.payment_method,
-               pay.reference_number,
-               pay.notes,
-               pay.recorded_by_id,
-               u.full_name AS recorded_by_name,
-               pay.created_at
+        pay.invoice_id,
+        pay.payment_date,
+        pay.amount,
+        pay.payment_method,
+        pay.reference_number,
+        pay.notes,
+        pay.recorded_by_id,
+        u.full_name AS recorded_by_name,
+        pay.created_at
         FROM payments pay
-                 INNER JOIN users u ON pay.recorded_by_id = u.id
+        INNER JOIN users u ON pay.recorded_by_id = u.id
         WHERE pay.invoice_id = #{invoiceId}
         ORDER BY pay.payment_date DESC, pay.created_at DESC
     </select>
@@ -195,7 +197,7 @@
         ELSE i.status
         END AS status_label_ko,
         COALESCE((SELECT SUM(p.amount) FROM payments p
-                  WHERE p.invoice_id = i.id AND p.payment_method = 'DISCOUNT'), 0) AS discount_amount,
+        WHERE p.invoice_id = i.id AND p.payment_method = 'DISCOUNT'), 0) AS discount_amount,
         i.total_amount,
         COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0) AS total_paid,
         (i.total_amount - COALESCE((SELECT SUM(pay.amount) FROM payments pay WHERE pay.invoice_id = i.id), 0)) AS
@@ -256,11 +258,11 @@
     -->
     <select id="getInvoicedQuantitiesByProject" resultMap="ProductQuantitySumResult">
         SELECT ili.product_id,
-               COALESCE(SUM(ili.quantity_invoiced), 0) AS quantity
+        COALESCE(SUM(ili.quantity_invoiced), 0) AS quantity
         FROM invoice_line_items ili
-                 INNER JOIN tax_invoices i ON ili.invoice_id = i.id
+        INNER JOIN tax_invoices i ON ili.invoice_id = i.id
         WHERE i.project_id = #{projectId}
-          AND i.status != 'CANCELLED'
+        AND i.status != 'CANCELLED'
         GROUP BY ili.product_id
     </select>
 
@@ -273,11 +275,11 @@
     -->
     <select id="getInvoicedQuantitiesByQuotation" resultMap="ProductQuantitySumResult">
         SELECT ili.product_id,
-               COALESCE(SUM(ili.quantity_invoiced), 0) AS quantity
+        COALESCE(SUM(ili.quantity_invoiced), 0) AS quantity
         FROM invoice_line_items ili
-                 INNER JOIN tax_invoices i ON ili.invoice_id = i.id
+        INNER JOIN tax_invoices i ON ili.invoice_id = i.id
         WHERE i.quotation_id = #{quotationId}
-          AND i.status != 'CANCELLED'
+        AND i.status != 'CANCELLED'
         GROUP BY ili.product_id
     </select>
 
@@ -288,11 +290,11 @@
     <select id="getTotalDiscountPaymentsByQuotation" resultType="java.math.BigDecimal">
         SELECT COALESCE(SUM(p.amount), 0)
         FROM payments p
-                 JOIN tax_invoices i ON p.invoice_id = i.id
+        JOIN tax_invoices i ON p.invoice_id = i.id
         WHERE i.quotation_id = #{quotationId}
-          AND i.status != 'CANCELLED'
-          AND p.payment_method = 'DISCOUNT'
-          <if test="excludeInvoiceId != null">AND i.id != #{excludeInvoiceId}</if>
+        AND i.status != 'CANCELLED'
+        AND p.payment_method = 'DISCOUNT'
+        <if test="excludeInvoiceId != null">AND i.id != #{excludeInvoiceId}</if>
     </select>
 
     <!-- Check if invoice exists -->

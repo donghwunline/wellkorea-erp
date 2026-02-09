@@ -96,8 +96,7 @@
 
     <!-- Find all active materials -->
     <select id="findAllActive" resultMap="MaterialSummaryViewResult">
-        SELECT
-        m.id,
+        SELECT m.id,
         m.sku,
         m.name,
         m.description,
@@ -119,8 +118,7 @@
 
     <!-- Find material by ID -->
     <select id="findById" resultMap="MaterialDetailViewResult">
-        SELECT
-        m.id,
+        SELECT m.id,
         m.sku,
         m.name,
         m.description,
