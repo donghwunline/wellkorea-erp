@@ -236,11 +236,11 @@ public class TaxInvoice {
      * Recalculate totals from line items.
      * <p>
      * Calculation:
-     *   totalBeforeTax = sum(line_items.line_total)
-     *   totalTax = totalBeforeTax × taxRate / 100 (tax on full subtotal, before discount)
-     *   totalAmount = (totalBeforeTax + totalTax) - discountAmount (discount applied last)
+     * totalBeforeTax = sum(line_items.line_total)
+     * totalTax = totalBeforeTax × taxRate / 100 (tax on full subtotal, before discount)
+     * totalAmount = (totalBeforeTax + totalTax) - discountAmount (discount applied last)
      */
-    public void recalculateTotals() {
+    private void recalculateTotals() {
         // Subtotal (sum of line items)
         this.totalBeforeTax = lineItems.stream()
                 .map(InvoiceLineItem::getLineTotal)
@@ -365,6 +365,25 @@ public class TaxInvoice {
         if (daysOverdue <= 30) return "30 Days";
         if (daysOverdue <= 60) return "60 Days";
         return "90+ Days";
+    }
+
+    /**
+     * Update the discount amount on this invoice.
+     * Only allowed when the invoice is in DRAFT status.
+     *
+     * @param newDiscountAmount New discount amount (must be non-negative)
+     * @throws IllegalStateException    if invoice is not in DRAFT status
+     * @throws IllegalArgumentException if discount amount is negative
+     */
+    public void updateDiscountAmount(BigDecimal newDiscountAmount) {
+        if (status != InvoiceStatus.DRAFT) {
+            throw new IllegalStateException("Cannot update discount: invoice status is " + status);
+        }
+        if (newDiscountAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Discount amount must not be negative");
+        }
+        this.discountAmount = newDiscountAmount;
+        recalculateTotals();
     }
 
     /**

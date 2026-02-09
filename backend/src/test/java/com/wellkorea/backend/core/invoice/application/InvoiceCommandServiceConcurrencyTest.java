@@ -153,6 +153,7 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
                                     LocalDate.now(),
                                     LocalDate.now().plusDays(30),
                                     null,
+                                    null,
                                     List.of(new InvoiceLineItemRequest(
                                             TEST_PRODUCT_ID,
                                             "Concurrency Test Product",
@@ -231,6 +232,7 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
                 null,
+                null,
                 List.of(new InvoiceLineItemRequest(
                         TEST_PRODUCT_ID,
                         "Concurrency Test Product",
@@ -248,6 +250,7 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
                 TEST_QUOTATION_ID,
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
+                null,
                 null,
                 List.of(new InvoiceLineItemRequest(
                         TEST_PRODUCT_ID,
@@ -304,6 +307,7 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
                 null,
+                null,
                 List.of(new InvoiceLineItemRequest(
                         TEST_PRODUCT_ID,
                         "Concurrency Test Product",
@@ -335,6 +339,7 @@ class InvoiceCommandServiceConcurrencyTest extends BaseIntegrationTest {
                 TEST_QUOTATION_ID,
                 LocalDate.now(),
                 LocalDate.now().plusDays(30),
+                null,
                 null,
                 List.of(new InvoiceLineItemRequest(
                         TEST_PRODUCT_ID,

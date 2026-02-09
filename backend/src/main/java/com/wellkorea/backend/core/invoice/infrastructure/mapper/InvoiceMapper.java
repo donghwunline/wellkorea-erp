@@ -7,6 +7,7 @@ import com.wellkorea.backend.shared.dto.ProductQuantitySum;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +49,17 @@ public interface InvoiceMapper {
      * @return List of product quantity summaries
      */
     List<ProductQuantitySum> getInvoicedQuantitiesByQuotation(@Param("quotationId") Long quotationId);
+
+    /**
+     * Get total discount amount allocated across non-CANCELLED invoices for a quotation.
+     * Optionally excludes a specific invoice (for update operations).
+     *
+     * @param quotationId    Quotation ID
+     * @param excludeInvoiceId Invoice ID to exclude (null to include all)
+     * @return Total allocated discount amount
+     */
+    BigDecimal getTotalDiscountByQuotation(@Param("quotationId") Long quotationId,
+                                           @Param("excludeInvoiceId") Long excludeInvoiceId);
 
     /**
      * Check if an invoice exists by ID.

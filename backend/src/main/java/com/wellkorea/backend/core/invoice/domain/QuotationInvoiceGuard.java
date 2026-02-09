@@ -5,6 +5,7 @@ import com.wellkorea.backend.core.invoice.infrastructure.validation.DatabaseQuot
 import com.wellkorea.backend.core.quotation.domain.Quotation;
 import com.wellkorea.backend.shared.exception.BusinessException;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -35,4 +36,17 @@ public interface QuotationInvoiceGuard {
      * @throws BusinessException if any validation fails
      */
     void validateAndThrow(Quotation quotation, List<InvoiceLineItemInput> lineItems);
+
+    /**
+     * Validate that the requested discount does not exceed the quotation's remaining discount quota.
+     * <p>
+     * The sum of discountAmount across all non-CANCELLED invoices for a quotation
+     * must not exceed the quotation's discountAmount.
+     *
+     * @param quotation        Quotation to validate against
+     * @param requestedDiscount Discount amount requested for the invoice
+     * @param excludeInvoiceId  Invoice ID to exclude from sum (null for creates, invoice ID for updates)
+     * @throws BusinessException if discount exceeds remaining quota
+     */
+    void validateDiscountQuota(Quotation quotation, BigDecimal requestedDiscount, Long excludeInvoiceId);
 }
