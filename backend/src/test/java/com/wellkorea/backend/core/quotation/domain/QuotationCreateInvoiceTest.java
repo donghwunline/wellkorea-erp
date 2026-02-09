@@ -23,15 +23,14 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for Quotation.createInvoice() factory method.
- * Tests tax rate inheritance and manual discount handling.
+ * Tests tax rate inheritance and invoice total calculation.
  */
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Quotation.createInvoice() Tax and Discount Tests")
+@DisplayName("Quotation.createInvoice() Tax and Total Tests")
 class QuotationCreateInvoiceTest {
 
     private Project testProject;
@@ -117,7 +116,6 @@ class QuotationCreateInvoiceTest {
         @Test
         @DisplayName("should inherit 15% tax rate from quotation")
         void shouldInheritTaxRate_15Percent() {
-            // Given: quotation with 15% tax rate
             Quotation quotation = createApprovedQuotation(
                     new BigDecimal("100000"),
                     new BigDecimal("15.0"),
@@ -128,26 +126,22 @@ class QuotationCreateInvoiceTest {
                     createLineItemInput(1L, new BigDecimal("10"), new BigDecimal("10000"))
             );
 
-            // When
             TaxInvoice invoice = quotation.createInvoice(
                     passGuard,
                     mockGenerator,
                     LocalDate.now(),
                     LocalDate.now().plusDays(30),
                     "Test notes",
-                    BigDecimal.ZERO,
                     lineItems,
                     1L
             );
 
-            // Then
             assertThat(invoice.getTaxRate()).isEqualByComparingTo(new BigDecimal("15.0"));
         }
 
         @Test
         @DisplayName("should inherit 0% tax rate from quotation")
         void shouldInheritTaxRate_ZeroPercent() {
-            // Given: quotation with 0% tax rate
             Quotation quotation = createApprovedQuotation(
                     new BigDecimal("100000"),
                     BigDecimal.ZERO,
@@ -158,19 +152,16 @@ class QuotationCreateInvoiceTest {
                     createLineItemInput(1L, new BigDecimal("10"), new BigDecimal("10000"))
             );
 
-            // When
             TaxInvoice invoice = quotation.createInvoice(
                     passGuard,
                     mockGenerator,
                     LocalDate.now(),
                     LocalDate.now().plusDays(30),
                     null,
-                    BigDecimal.ZERO,
                     lineItems,
                     1L
             );
 
-            // Then
             assertThat(invoice.getTaxRate()).isEqualByComparingTo(BigDecimal.ZERO);
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(BigDecimal.ZERO);
         }
@@ -178,7 +169,6 @@ class QuotationCreateInvoiceTest {
         @Test
         @DisplayName("should inherit 100% tax rate from quotation")
         void shouldInheritTaxRate_100Percent() {
-            // Given: quotation with 100% tax rate
             Quotation quotation = createApprovedQuotation(
                     new BigDecimal("100000"),
                     new BigDecimal("100"),
@@ -189,162 +179,18 @@ class QuotationCreateInvoiceTest {
                     createLineItemInput(1L, new BigDecimal("10"), new BigDecimal("10000"))
             );
 
-            // When
             TaxInvoice invoice = quotation.createInvoice(
                     passGuard,
                     mockGenerator,
                     LocalDate.now(),
                     LocalDate.now().plusDays(30),
                     null,
-                    BigDecimal.ZERO,
                     lineItems,
                     1L
             );
 
-            // Then
             assertThat(invoice.getTaxRate()).isEqualByComparingTo(new BigDecimal("100"));
-            // Invoice subtotal = 10 * 10000 = 100000
-            // Invoice tax = 100000 * 100% = 100000
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(new BigDecimal("100000.00"));
-        }
-    }
-
-    @Nested
-    @DisplayName("Manual Discount")
-    class ManualDiscountTests {
-
-        @Test
-        @DisplayName("should apply manual discount amount to invoice")
-        void shouldApplyManualDiscount() {
-            Quotation quotation = createApprovedQuotation(
-                    new BigDecimal("100000"),
-                    new BigDecimal("10.0"),
-                    new BigDecimal("10000")
-            );
-
-            List<InvoiceLineItemInput> lineItems = List.of(
-                    createLineItemInput(1L, new BigDecimal("100"), new BigDecimal("1000"))
-            );
-
-            TaxInvoice invoice = quotation.createInvoice(
-                    passGuard,
-                    mockGenerator,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(30),
-                    null,
-                    new BigDecimal("7500"),
-                    lineItems,
-                    1L
-            );
-
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("7500"));
-        }
-
-        @Test
-        @DisplayName("should default to zero discount when null is passed")
-        void shouldDefaultToZeroDiscount_WhenNullPassed() {
-            Quotation quotation = createApprovedQuotation(
-                    new BigDecimal("100000"),
-                    new BigDecimal("10.0"),
-                    new BigDecimal("10000")
-            );
-
-            List<InvoiceLineItemInput> lineItems = List.of(
-                    createLineItemInput(1L, new BigDecimal("50"), new BigDecimal("1000"))
-            );
-
-            TaxInvoice invoice = quotation.createInvoice(
-                    passGuard,
-                    mockGenerator,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(30),
-                    null,
-                    null, // null discount
-                    lineItems,
-                    1L
-            );
-
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(BigDecimal.ZERO);
-        }
-
-        @Test
-        @DisplayName("should accept zero discount explicitly")
-        void shouldAcceptZeroDiscount() {
-            Quotation quotation = createApprovedQuotation(
-                    new BigDecimal("100000"),
-                    new BigDecimal("10.0"),
-                    new BigDecimal("10000")
-            );
-
-            List<InvoiceLineItemInput> lineItems = List.of(
-                    createLineItemInput(1L, new BigDecimal("50"), new BigDecimal("1000"))
-            );
-
-            TaxInvoice invoice = quotation.createInvoice(
-                    passGuard,
-                    mockGenerator,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(30),
-                    null,
-                    BigDecimal.ZERO,
-                    lineItems,
-                    1L
-            );
-
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(BigDecimal.ZERO);
-        }
-
-        @Test
-        @DisplayName("should reject negative discount amount")
-        void shouldRejectNegativeDiscount() {
-            Quotation quotation = createApprovedQuotation(
-                    new BigDecimal("100000"),
-                    new BigDecimal("10.0"),
-                    BigDecimal.ZERO
-            );
-
-            List<InvoiceLineItemInput> lineItems = List.of(
-                    createLineItemInput(1L, new BigDecimal("50"), new BigDecimal("1000"))
-            );
-
-            assertThatThrownBy(() -> quotation.createInvoice(
-                    passGuard,
-                    mockGenerator,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(30),
-                    null,
-                    new BigDecimal("-100"),
-                    lineItems,
-                    1L
-            )).isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("negative");
-        }
-
-        @Test
-        @DisplayName("should apply discount with fractional amount")
-        void shouldApplyFractionalDiscount() {
-            Quotation quotation = createApprovedQuotation(
-                    new BigDecimal("99999"),
-                    new BigDecimal("10.0"),
-                    new BigDecimal("9999")
-            );
-
-            List<InvoiceLineItemInput> lineItems = List.of(
-                    createLineItemInput(1L, new BigDecimal("33"), new BigDecimal("999.99"))
-            );
-
-            TaxInvoice invoice = quotation.createInvoice(
-                    passGuard,
-                    mockGenerator,
-                    LocalDate.now(),
-                    LocalDate.now().plusDays(30),
-                    null,
-                    new BigDecimal("3333.33"),
-                    lineItems,
-                    1L
-            );
-
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("3333.33"));
         }
     }
 
@@ -353,9 +199,8 @@ class QuotationCreateInvoiceTest {
     class InvoiceTotalsTests {
 
         @Test
-        @DisplayName("should compute correct total amount: (subtotal + tax) - discount")
-        void shouldComputeCorrectTotalAmount() {
-            // Given: quotation subtotal=100000, taxRate=10%, discount=5000
+        @DisplayName("should compute correct gross total: subtotal + tax")
+        void shouldComputeCorrectGrossTotal() {
             Quotation quotation = createApprovedQuotation(
                     new BigDecimal("100000"),
                     new BigDecimal("10.0"),
@@ -365,7 +210,6 @@ class QuotationCreateInvoiceTest {
             List<InvoiceLineItemInput> lineItems = List.of(
                     createLineItemInput(1L, new BigDecimal("100"), new BigDecimal("1000"))
             );
-            // Invoice subtotal = 100000
 
             TaxInvoice invoice = quotation.createInvoice(
                     passGuard,
@@ -373,26 +217,19 @@ class QuotationCreateInvoiceTest {
                     LocalDate.now(),
                     LocalDate.now().plusDays(30),
                     null,
-                    new BigDecimal("5000"),
                     lineItems,
                     1L
             );
 
-            // Then:
-            // - Invoice subtotal = 100000
-            // - Invoice tax = 100000 * 10% = 10000
-            // - Invoice discount = 5000 (manual)
-            // - Invoice total = (100000 + 10000) - 5000 = 105000
+            // Invoice subtotal = 100000, tax = 10000, total = 110000 (gross)
             assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(new BigDecimal("100000.00"));
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(new BigDecimal("10000.00"));
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("5000.00"));
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("105000.00"));
+            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("110000.00"));
         }
 
         @Test
-        @DisplayName("tax should be calculated on full subtotal, not after discount")
-        void taxShouldBeOnSubtotal_NotAfterDiscount() {
-            // Given: quotation subtotal=100000, taxRate=10%, discount=10000
+        @DisplayName("should have zero discount amount (no DISCOUNT payments yet)")
+        void shouldHaveZeroDiscountAmount() {
             Quotation quotation = createApprovedQuotation(
                     new BigDecimal("100000"),
                     new BigDecimal("10.0"),
@@ -402,7 +239,6 @@ class QuotationCreateInvoiceTest {
             List<InvoiceLineItemInput> lineItems = List.of(
                     createLineItemInput(1L, new BigDecimal("50"), new BigDecimal("1000"))
             );
-            // Invoice subtotal = 50000
 
             TaxInvoice invoice = quotation.createInvoice(
                     passGuard,
@@ -410,26 +246,17 @@ class QuotationCreateInvoiceTest {
                     LocalDate.now(),
                     LocalDate.now().plusDays(30),
                     null,
-                    new BigDecimal("5000"),
                     lineItems,
                     1L
             );
 
-            // Then:
-            // - Invoice subtotal = 50000
-            // - Invoice tax = 50000 * 10% = 5000 (tax on subtotal, not after discount)
-            // - Invoice discount = 5000 (manual)
-            // - Invoice total = (50000 + 5000) - 5000 = 50000
-            assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(new BigDecimal("50000.00"));
-            assertThat(invoice.getTotalTax()).isEqualByComparingTo(new BigDecimal("5000.00"));
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("5000.00"));
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("50000.00"));
+            // No DISCOUNT payments have been recorded yet
+            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(BigDecimal.ZERO);
         }
 
         @Test
-        @DisplayName("should handle partial invoice with zero discount")
-        void shouldHandlePartialInvoice_WithZeroDiscount() {
-            // Given: quotation subtotal=99999, taxRate=10%
+        @DisplayName("should handle partial invoice correctly")
+        void shouldHandlePartialInvoice() {
             Quotation quotation = createApprovedQuotation(
                     new BigDecimal("99999"),
                     new BigDecimal("10.0"),
@@ -446,21 +273,17 @@ class QuotationCreateInvoiceTest {
                     LocalDate.now(),
                     LocalDate.now().plusDays(30),
                     null,
-                    BigDecimal.ZERO,
                     lineItems,
                     1L
             );
 
-            // Then: verify rounding is applied correctly
+            // Verify rounding is applied correctly
             assertThat(invoice.getTotalBeforeTax()).isNotNull();
             assertThat(invoice.getTotalTax()).isNotNull();
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(BigDecimal.ZERO);
             assertThat(invoice.getTotalAmount()).isNotNull();
 
-            // Verify the formula: totalAmount = (subtotal + tax) - discount
-            BigDecimal expectedTotal = invoice.getTotalBeforeTax()
-                    .add(invoice.getTotalTax())
-                    .subtract(invoice.getDiscountAmount());
+            // Verify the formula: totalAmount = subtotal + tax
+            BigDecimal expectedTotal = invoice.getTotalBeforeTax().add(invoice.getTotalTax());
             assertThat(invoice.getTotalAmount()).isEqualByComparingTo(expectedTotal);
         }
     }
