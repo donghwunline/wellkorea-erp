@@ -35,7 +35,6 @@ export interface CreateInvoiceInput {
   issueDate: string; // ISO date string
   dueDate: string; // ISO date string
   notes?: string | null;
-  discountAmount?: number | null; // Manual discount, defaults to 0
   lineItems: CreateInvoiceLineItemInput[];
 }
 
@@ -51,7 +50,6 @@ interface CreateInvoiceRequest {
   issueDate: string;
   dueDate: string;
   notes: string | null;
-  discountAmount: number | null;
   lineItems: Array<{
     productId: number;
     productName: string;
@@ -85,14 +83,6 @@ function validateCreateInput(input: CreateInvoiceInput): void {
 
   if (new Date(input.dueDate) < new Date(input.issueDate)) {
     throw new DomainValidationError('INVALID', 'dueDate', 'Due date must be on or after issue date');
-  }
-
-  if (input.discountAmount != null && input.discountAmount < 0) {
-    throw new DomainValidationError(
-      'OUT_OF_RANGE',
-      'discountAmount',
-      'Discount amount must be non-negative'
-    );
   }
 
   if (!input.lineItems || input.lineItems.length === 0) {
@@ -135,7 +125,6 @@ function toCreateRequest(input: CreateInvoiceInput): CreateInvoiceRequest {
     issueDate: input.issueDate,
     dueDate: input.dueDate,
     notes: input.notes ?? null,
-    discountAmount: input.discountAmount ?? null,
     lineItems: input.lineItems.map((item) => ({
       productId: item.productId,
       productName: item.productName,
