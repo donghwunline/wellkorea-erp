@@ -38,6 +38,9 @@ export { arReportQueries, arReportRules } from './api/ar-report';
 export { createInvoice } from './api/create-invoice';
 export type { CreateInvoiceInput, CreateInvoiceLineItemInput } from './api/create-invoice';
 
+export { updateInvoiceDiscount } from './api/update-invoice-discount';
+export type { UpdateInvoiceDiscountInput } from './api/update-invoice-discount';
+
 export {
   issueInvoice,
   cancelInvoice,

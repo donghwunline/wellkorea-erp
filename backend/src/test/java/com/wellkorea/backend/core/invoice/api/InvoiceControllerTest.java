@@ -17,8 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -81,12 +80,12 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
         );
         testProjectId = 2000L;
 
-        // Create test quotation with APPROVED status (required for invoice creation validation)
+        // Create test quotation with APPROVED status and discount (required for invoice creation validation)
         jdbcTemplate.update(
-                "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                "INSERT INTO quotations (id, project_id, version, status, total_amount, discount_amount, quotation_date, validity_days, created_by_id) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                2000L, testProjectId, 1, "ACCEPTED", 100000.00, LocalDate.now(), 30, 1L
+                2000L, testProjectId, 1, "ACCEPTED", 100000.00, 20000.00, LocalDate.now(), 30, 1L
         );
 
         // Create quotation line items (products and quantities that can be delivered/invoiced)
@@ -461,6 +460,71 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(paymentRequest))
                     .andExpect(status().isConflict());
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /api/invoices/{id}/discount - Update Invoice Discount")
+    class UpdateDiscountTests {
+
+        @Test
+        @DisplayName("should return 200 when updating discount on DRAFT invoice")
+        void updateDiscount_OnDraft_Returns200() throws Exception {
+            Long invoiceId = createTestInvoice();
+
+            String updateRequest = """
+                    {
+                        "quotationId": 2000,
+                        "discountAmount": 5000.00
+                    }
+                    """;
+
+            mockMvc.perform(patch(INVOICES_BASE_URL + "/" + invoiceId + "/discount")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(updateRequest))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.id").value(invoiceId))
+                    .andExpect(jsonPath("$.data.message").value("Invoice updated successfully"));
+        }
+
+        @Test
+        @DisplayName("should return 403 when Sales tries to update discount")
+        void updateDiscount_AsSales_Returns403() throws Exception {
+            Long invoiceId = createTestInvoice();
+
+            String updateRequest = """
+                    {
+                        "quotationId": 2000,
+                        "discountAmount": 5000.00
+                    }
+                    """;
+
+            mockMvc.perform(patch(INVOICES_BASE_URL + "/" + invoiceId + "/discount")
+                            .header("Authorization", "Bearer " + salesToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(updateRequest))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("should return 400 when discount is negative")
+        void updateDiscount_NegativeAmount_Returns400() throws Exception {
+            Long invoiceId = createTestInvoice();
+
+            String updateRequest = """
+                    {
+                        "quotationId": 2000,
+                        "discountAmount": -100.00
+                    }
+                    """;
+
+            mockMvc.perform(patch(INVOICES_BASE_URL + "/" + invoiceId + "/discount")
+                            .header("Authorization", "Bearer " + adminToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(updateRequest))
+                    .andExpect(status().isBadRequest());
         }
     }
 
