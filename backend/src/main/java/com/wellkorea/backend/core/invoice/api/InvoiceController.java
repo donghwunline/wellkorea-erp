@@ -37,7 +37,7 @@ import java.util.Optional;
  * - POST   /api/invoices            - Create invoice
  * - POST   /api/invoices/{id}/issue - Issue invoice (with document attachment)
  * - POST   /api/invoices/{id}/cancel - Cancel invoice
- * - POST   /api/invoices/{id}/payments - Record payment
+ * - POST   /api/invoices/{id}/payments - Record payment (supports DISCOUNT method)
  * - PATCH  /api/invoices/{id}/notes - Update notes
  * - POST   /api/invoices/{id}/document/upload-url - Get presigned URL for document upload
  * - GET    /api/invoices/{id}/document - Get invoice document

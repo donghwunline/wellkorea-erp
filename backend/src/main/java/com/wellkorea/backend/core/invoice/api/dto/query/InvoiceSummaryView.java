@@ -17,6 +17,7 @@ public record InvoiceSummaryView(
         LocalDate issueDate,
         InvoiceStatus status,
         String statusLabelKo,
+        BigDecimal discountAmount,
         BigDecimal totalAmount,
         BigDecimal totalPaid,
         BigDecimal remainingBalance,

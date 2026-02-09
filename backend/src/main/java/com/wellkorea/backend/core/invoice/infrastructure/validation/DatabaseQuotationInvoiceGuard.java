@@ -41,6 +41,35 @@ public class DatabaseQuotationInvoiceGuard implements QuotationInvoiceGuard {
     }
 
     @Override
+    public void validateDiscountQuota(Quotation quotation, BigDecimal requestedDiscount, Long excludeInvoiceId) {
+        BigDecimal quotationDiscount = quotation.getDiscountAmount();
+        if (quotationDiscount == null || quotationDiscount.compareTo(BigDecimal.ZERO) == 0) {
+            // Quotation has no discount; any positive discount on invoice is over-quota
+            if (requestedDiscount.compareTo(BigDecimal.ZERO) > 0) {
+                throw new BusinessException(
+                        String.format("Discount amount (%s) exceeds quotation discount quota (0). " +
+                                        "This quotation has no discount.",
+                                requestedDiscount.toPlainString()));
+            }
+            return;
+        }
+
+        BigDecimal allocatedDiscount = invoiceMapper.getTotalDiscountPaymentsByQuotation(
+                quotation.getId(), excludeInvoiceId);
+        BigDecimal remainingQuota = quotationDiscount.subtract(allocatedDiscount);
+
+        if (requestedDiscount.compareTo(remainingQuota) > 0) {
+            throw new BusinessException(
+                    String.format("Discount amount (%s) exceeds remaining discount quota (%s). " +
+                                    "Quotation discount: %s, Already allocated: %s",
+                            requestedDiscount.toPlainString(),
+                            remainingQuota.toPlainString(),
+                            quotationDiscount.toPlainString(),
+                            allocatedDiscount.toPlainString()));
+        }
+    }
+
+    @Override
     public void validateAndThrow(Quotation quotation, List<InvoiceLineItemInput> lineItems) {
         validateNotEmpty(lineItems);
         validateNoDuplicateProducts(lineItems);

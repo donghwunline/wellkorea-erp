@@ -20,9 +20,9 @@ CREATE TABLE audit_logs
     metadata    JSONB,
     created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_audit_action CHECK (action IN (
-        'CREATE', 'UPDATE', 'DELETE', 'VIEW', 'DOWNLOAD',
-        'APPROVE', 'REJECT', 'LOGIN', 'LOGOUT', 'ACCESS_DENIED'
-    ))
+                                                  'CREATE', 'UPDATE', 'DELETE', 'VIEW', 'DOWNLOAD',
+                                                  'APPROVE', 'REJECT', 'LOGIN', 'LOGOUT', 'ACCESS_DENIED'
+        ))
 );
 
 CREATE INDEX idx_audit_logs_entity ON audit_logs (entity_type, entity_id);
@@ -35,7 +35,8 @@ CREATE INDEX idx_audit_logs_metadata ON audit_logs USING GIN (metadata);
 
 -- Prevent modifications to audit log
 CREATE OR REPLACE FUNCTION prevent_audit_log_modification()
-RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 BEGIN
     RAISE EXCEPTION 'Audit log is immutable. Cannot modify or delete audit records.';
     RETURN NULL;
@@ -43,23 +44,26 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_prevent_audit_log_update
-    BEFORE UPDATE ON audit_logs
+    BEFORE UPDATE
+    ON audit_logs
     FOR EACH ROW
-    EXECUTE FUNCTION prevent_audit_log_modification();
+EXECUTE FUNCTION prevent_audit_log_modification();
 
 CREATE TRIGGER trg_prevent_audit_log_delete
-    BEFORE DELETE ON audit_logs
+    BEFORE DELETE
+    ON audit_logs
     FOR EACH ROW
-    EXECUTE FUNCTION prevent_audit_log_modification();
+EXECUTE FUNCTION prevent_audit_log_modification();
 
 -- Generic audit trigger function
 CREATE OR REPLACE FUNCTION audit_trigger_function()
-RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 DECLARE
     changes_json JSONB;
-    old_data JSONB;
-    new_data JSONB;
-    action_type VARCHAR(50);
+    old_data     JSONB;
+    new_data     JSONB;
+    action_type  VARCHAR(50);
 BEGIN
     IF TG_OP = 'INSERT' THEN
         action_type := 'CREATE';
@@ -85,22 +89,29 @@ $$ LANGUAGE plpgsql;
 
 -- Apply audit triggers to sensitive tables
 CREATE TRIGGER trg_audit_projects
-    AFTER INSERT OR UPDATE OR DELETE ON projects
-    FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+    AFTER INSERT OR UPDATE OR DELETE
+    ON projects
+    FOR EACH ROW
+EXECUTE FUNCTION audit_trigger_function();
 
 CREATE TRIGGER trg_audit_users
-    AFTER INSERT OR UPDATE OR DELETE ON users
-    FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+    AFTER INSERT OR UPDATE OR DELETE
+    ON users
+    FOR EACH ROW
+EXECUTE FUNCTION audit_trigger_function();
 
 CREATE TRIGGER trg_audit_companies
-    AFTER INSERT OR UPDATE OR DELETE ON companies
-    FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+    AFTER INSERT OR UPDATE OR DELETE
+    ON companies
+    FOR EACH ROW
+EXECUTE FUNCTION audit_trigger_function();
 
 -- =====================================================================
 -- DISTRIBUTED LOCK TABLE (Spring Integration)
 -- =====================================================================
 
-CREATE TABLE INT_LOCK (
+CREATE TABLE INT_LOCK
+(
     LOCK_KEY     VARCHAR(255) NOT NULL,
     REGION       VARCHAR(100) NOT NULL,
     CLIENT_ID    VARCHAR(255) NOT NULL,
@@ -114,38 +125,40 @@ CREATE INDEX idx_int_lock_region ON INT_LOCK (REGION);
 -- BLUEPRINT ATTACHMENTS
 -- =====================================================================
 
-CREATE TABLE blueprint_attachments (
-    id                  BIGSERIAL PRIMARY KEY,
-    task_flow_id        BIGINT NOT NULL REFERENCES task_flows(id) ON DELETE CASCADE,
-    node_id             VARCHAR(36) NOT NULL,
-    file_name           VARCHAR(255) NOT NULL,
-    file_type           VARCHAR(10) NOT NULL,
-    file_size           BIGINT NOT NULL,
-    storage_path        VARCHAR(500) NOT NULL,
-    uploaded_by_id      BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    uploaded_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE blueprint_attachments
+(
+    id             BIGSERIAL PRIMARY KEY,
+    task_flow_id   BIGINT       NOT NULL REFERENCES task_flows (id) ON DELETE CASCADE,
+    node_id        VARCHAR(36)  NOT NULL,
+    file_name      VARCHAR(255) NOT NULL,
+    file_type      VARCHAR(10)  NOT NULL,
+    file_size      BIGINT       NOT NULL,
+    storage_path   VARCHAR(500) NOT NULL,
+    uploaded_by_id BIGINT       NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
+    uploaded_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_blueprint_per_node UNIQUE (task_flow_id, node_id, file_name),
     CONSTRAINT chk_file_type CHECK (file_type IN ('PDF', 'DXF', 'DWG', 'JPG', 'PNG')),
     CONSTRAINT chk_file_size CHECK (file_size > 0 AND file_size <= 52428800)
 );
 
-CREATE INDEX idx_blueprint_flow_node ON blueprint_attachments(task_flow_id, node_id);
-CREATE INDEX idx_blueprint_uploaded_by ON blueprint_attachments(uploaded_by_id);
+CREATE INDEX idx_blueprint_flow_node ON blueprint_attachments (task_flow_id, node_id);
+CREATE INDEX idx_blueprint_uploaded_by ON blueprint_attachments (uploaded_by_id);
 
 -- =====================================================================
 -- GENERIC ATTACHMENTS TABLE (from V18)
 -- =====================================================================
 
-CREATE TABLE attachments (
-    id              BIGSERIAL PRIMARY KEY,
-    owner_type      VARCHAR(20) NOT NULL,
-    owner_id        BIGINT NOT NULL,
-    file_name       VARCHAR(255) NOT NULL,
-    file_type       VARCHAR(10) NOT NULL,
-    file_size       BIGINT NOT NULL,
-    storage_path    VARCHAR(500) NOT NULL,
-    uploaded_by_id  BIGINT NOT NULL REFERENCES users(id),
-    uploaded_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE attachments
+(
+    id             BIGSERIAL PRIMARY KEY,
+    owner_type     VARCHAR(20)  NOT NULL,
+    owner_id       BIGINT       NOT NULL,
+    file_name      VARCHAR(255) NOT NULL,
+    file_type      VARCHAR(10)  NOT NULL,
+    file_size      BIGINT       NOT NULL,
+    storage_path   VARCHAR(500) NOT NULL,
+    uploaded_by_id BIGINT       NOT NULL REFERENCES users (id),
+    uploaded_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     -- Constrain owner_type to known entity types
     CONSTRAINT chk_attachment_owner_type
@@ -161,10 +174,10 @@ CREATE TABLE attachments (
 );
 
 -- Index for querying attachments by owner (most common query pattern)
-CREATE INDEX idx_attachments_owner ON attachments(owner_type, owner_id);
+CREATE INDEX idx_attachments_owner ON attachments (owner_type, owner_id);
 
 -- Index for finding attachments by uploader (for audit/admin queries)
-CREATE INDEX idx_attachments_uploaded_by ON attachments(uploaded_by_id);
+CREATE INDEX idx_attachments_uploaded_by ON attachments (uploaded_by_id);
 
 -- =====================================================================
 -- COMMENTS

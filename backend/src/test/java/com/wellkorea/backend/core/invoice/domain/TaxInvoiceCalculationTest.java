@@ -12,7 +12,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for TaxInvoice calculation methods.
- * Tests: recalculateTotals() formula: totalAmount = (totalBeforeTax + totalTax) - discountAmount
+ * Tests: recalculateTotals() formula: totalAmount = totalBeforeTax + totalTax
+ * Discount is tracked as DISCOUNT payments, not on the invoice itself.
  */
 @Tag("unit")
 @DisplayName("TaxInvoice Calculation Tests")
@@ -32,9 +33,9 @@ class TaxInvoiceCalculationTest {
     }
 
     /**
-     * Helper to create a TaxInvoice with specified tax rate and discount.
+     * Helper to create a TaxInvoice with specified tax rate.
      */
-    private TaxInvoice createInvoice(BigDecimal taxRate, BigDecimal discountAmount) {
+    private TaxInvoice createInvoice(BigDecimal taxRate) {
         return TaxInvoice.builder()
                 .projectId(1L)
                 .quotationId(1L)
@@ -42,7 +43,6 @@ class TaxInvoiceCalculationTest {
                 .issueDate(LocalDate.now())
                 .dueDate(LocalDate.now().plusDays(30))
                 .taxRate(taxRate)
-                .discountAmount(discountAmount)
                 .createdById(1L)
                 .build();
     }
@@ -55,7 +55,7 @@ class TaxInvoiceCalculationTest {
         @DisplayName("should compute tax on full subtotal")
         void shouldComputeTaxOnFullSubtotal() {
             // Given: line items totaling 100000, taxRate=10%
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"), BigDecimal.ZERO);
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
             invoice.addLineItem(createLineItem(1L, new BigDecimal("50"), new BigDecimal("1000")));  // 50000
             invoice.addLineItem(createLineItem(2L, new BigDecimal("50"), new BigDecimal("1000")));  // 50000
 
@@ -67,104 +67,72 @@ class TaxInvoiceCalculationTest {
         }
 
         @Test
-        @DisplayName("should compute final amount: subtotal + tax - discount")
-        void shouldComputeFinalAmount_SubtotalPlusTaxMinusDiscount() {
-            // Given: subtotal=100000, taxRate=10%, discount=5000
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"), new BigDecimal("5000"));
+        @DisplayName("should compute total as subtotal + tax (gross amount)")
+        void shouldComputeTotalAsGrossAmount() {
+            // Given: subtotal=100000, taxRate=10%
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
             invoice.addLineItem(createLineItem(1L, new BigDecimal("100"), new BigDecimal("1000")));
 
-            // Then:
-            // - Subtotal = 100000
-            // - Tax = 10000
-            // - Discount = 5000
-            // - Total = (100000 + 10000) - 5000 = 105000
+            // Then: totalAmount = 100000 + 10000 = 110000 (gross, no discount subtracted)
             assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(new BigDecimal("100000.00"));
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(new BigDecimal("10000.00"));
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("5000.00"));
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("105000.00"));
-        }
-
-        @Test
-        @DisplayName("should handle zero discount")
-        void shouldHandleZeroDiscount() {
-            // Given: subtotal=100000, taxRate=10%, discount=0
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"), BigDecimal.ZERO);
-            invoice.addLineItem(createLineItem(1L, new BigDecimal("100"), new BigDecimal("1000")));
-
-            // Then:
-            // - Total = (100000 + 10000) - 0 = 110000
             assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("110000.00"));
-            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(BigDecimal.ZERO);
         }
 
         @Test
         @DisplayName("should handle zero tax rate")
         void shouldHandleZeroTaxRate() {
-            // Given: subtotal=100000, taxRate=0%, discount=5000
-            TaxInvoice invoice = createInvoice(BigDecimal.ZERO, new BigDecimal("5000"));
+            // Given: subtotal=100000, taxRate=0%
+            TaxInvoice invoice = createInvoice(BigDecimal.ZERO);
             invoice.addLineItem(createLineItem(1L, new BigDecimal("100"), new BigDecimal("1000")));
 
-            // Then:
-            // - Tax = 0
-            // - Total = (100000 + 0) - 5000 = 95000
+            // Then: totalAmount = 100000 + 0 = 100000
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(BigDecimal.ZERO);
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("95000.00"));
-        }
-
-        @Test
-        @DisplayName("should handle max discount equal to amount before discount")
-        void shouldHandleMaxDiscount_EqualToAmountBeforeDiscount() {
-            // Given: subtotal=100000, taxRate=10%, discount=110000 (= subtotal + tax)
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"), new BigDecimal("110000"));
-            invoice.addLineItem(createLineItem(1L, new BigDecimal("100"), new BigDecimal("1000")));
-
-            // Then:
-            // - Total = (100000 + 10000) - 110000 = 0
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("100000.00"));
         }
 
         @Test
         @DisplayName("should recalculate when line item is added")
         void shouldRecalculate_WhenLineItemAdded() {
             // Given: invoice with one line item
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"), new BigDecimal("1000"));
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
             invoice.addLineItem(createLineItem(1L, new BigDecimal("10"), new BigDecimal("1000")));
-            // Initial: subtotal=10000, tax=1000, total = (10000+1000)-1000 = 10000
+            // Initial: subtotal=10000, tax=1000, total = 11000
 
             assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(new BigDecimal("10000.00"));
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("10000.00"));
+            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("11000.00"));
 
             // When: add another line item
             invoice.addLineItem(createLineItem(2L, new BigDecimal("10"), new BigDecimal("1000")));
-            // After: subtotal=20000, tax=2000, total = (20000+2000)-1000 = 21000
+            // After: subtotal=20000, tax=2000, total = 22000
 
             // Then
             assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(new BigDecimal("20000.00"));
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(new BigDecimal("2000.00"));
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("21000.00"));
+            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("22000.00"));
         }
 
         @Test
         @DisplayName("should recalculate when line item is removed")
         void shouldRecalculate_WhenLineItemRemoved() {
             // Given: invoice with two line items
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"), new BigDecimal("1000"));
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
             InvoiceLineItem item1 = createLineItem(1L, new BigDecimal("10"), new BigDecimal("1000"));
             InvoiceLineItem item2 = createLineItem(2L, new BigDecimal("10"), new BigDecimal("1000"));
             invoice.addLineItem(item1);
             invoice.addLineItem(item2);
-            // Initial: subtotal=20000, tax=2000, total = (20000+2000)-1000 = 21000
+            // Initial: subtotal=20000, tax=2000, total = 22000
 
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("21000.00"));
+            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("22000.00"));
 
             // When: remove one line item
             invoice.removeLineItem(item2);
-            // After: subtotal=10000, tax=1000, total = (10000+1000)-1000 = 10000
+            // After: subtotal=10000, tax=1000, total = 11000
 
             // Then
             assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(new BigDecimal("10000.00"));
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(new BigDecimal("1000.00"));
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("10000.00"));
+            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("11000.00"));
         }
 
         @Test
@@ -172,7 +140,7 @@ class TaxInvoiceCalculationTest {
         void shouldRoundTaxAmount_HalfUp() {
             // Given: subtotal that produces fractional tax
             // 33333.35 * 10% = 3333.335 → rounds to 3333.34
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"), BigDecimal.ZERO);
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
             invoice.addLineItem(createLineItem(1L, new BigDecimal("33.33335"), new BigDecimal("1000")));
             // Subtotal = 33333.35
 
@@ -185,20 +153,19 @@ class TaxInvoiceCalculationTest {
         @DisplayName("should handle empty line items")
         void shouldHandleEmptyLineItems() {
             // Given: invoice with no line items
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"), new BigDecimal("1000"));
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
 
-            // Then: all amounts should be zero (except discount which is explicitly set)
+            // Then: all amounts should be zero
             assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(BigDecimal.ZERO);
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(BigDecimal.ZERO);
-            // Total = (0 + 0) - 1000 = -1000 (technically possible, guard should prevent)
-            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("-1000.00"));
+            assertThat(invoice.getTotalAmount()).isEqualByComparingTo(BigDecimal.ZERO);
         }
 
         @Test
         @DisplayName("should handle high precision calculations correctly")
         void shouldHandleHighPrecisionCalculations() {
             // Given: values that test precision
-            TaxInvoice invoice = createInvoice(new BigDecimal("10.5"), new BigDecimal("1234.56"));
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.5"));
             invoice.addLineItem(createLineItem(1L, new BigDecimal("7.777"), new BigDecimal("9999.99")));
             // Subtotal = 7.777 * 9999.99 = 77779.92223
 
@@ -206,11 +173,8 @@ class TaxInvoiceCalculationTest {
             BigDecimal expectedSubtotal = new BigDecimal("7.777").multiply(new BigDecimal("9999.99"));
             assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(expectedSubtotal);
 
-            // Tax = subtotal * 10.5 / 100
-            // Total = (subtotal + tax) - 1234.56
-            BigDecimal expectedTotal = invoice.getTotalBeforeTax()
-                    .add(invoice.getTotalTax())
-                    .subtract(invoice.getDiscountAmount());
+            // Total = subtotal + tax
+            BigDecimal expectedTotal = invoice.getTotalBeforeTax().add(invoice.getTotalTax());
             assertThat(invoice.getTotalAmount()).isEqualByComparingTo(expectedTotal);
         }
 
@@ -218,7 +182,7 @@ class TaxInvoiceCalculationTest {
         @DisplayName("should handle 100% tax rate")
         void shouldHandle100PercentTaxRate() {
             // Given: 100% tax rate
-            TaxInvoice invoice = createInvoice(new BigDecimal("100"), BigDecimal.ZERO);
+            TaxInvoice invoice = createInvoice(new BigDecimal("100"));
             invoice.addLineItem(createLineItem(1L, new BigDecimal("10"), new BigDecimal("1000")));
             // Subtotal = 10000, Tax = 10000
 
@@ -226,6 +190,69 @@ class TaxInvoiceCalculationTest {
             assertThat(invoice.getTotalBeforeTax()).isEqualByComparingTo(new BigDecimal("10000.00"));
             assertThat(invoice.getTotalTax()).isEqualByComparingTo(new BigDecimal("10000.00"));
             assertThat(invoice.getTotalAmount()).isEqualByComparingTo(new BigDecimal("20000.00"));
+        }
+    }
+
+    @Nested
+    @DisplayName("getDiscountAmount (computed from DISCOUNT payments)")
+    class DiscountAmountTests {
+
+        @Test
+        @DisplayName("should return zero when no DISCOUNT payments")
+        void shouldReturnZero_WhenNoDiscountPayments() {
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
+            invoice.addLineItem(createLineItem(1L, new BigDecimal("10"), new BigDecimal("1000")));
+
+            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+        }
+
+        @Test
+        @DisplayName("should sum DISCOUNT payments")
+        void shouldSumDiscountPayments() {
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
+            invoice.addLineItem(createLineItem(1L, new BigDecimal("10"), new BigDecimal("1000")));
+            // Issue invoice to allow payments
+            invoice.issue();
+
+            // Add a DISCOUNT payment
+            Payment discountPayment = Payment.builder()
+                    .paymentDate(LocalDate.now())
+                    .amount(new BigDecimal("2000"))
+                    .paymentMethod(PaymentMethod.DISCOUNT)
+                    .recordedById(1L)
+                    .build();
+            invoice.addPayment(discountPayment);
+
+            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("2000"));
+        }
+
+        @Test
+        @DisplayName("should not include non-DISCOUNT payments in discount amount")
+        void shouldNotIncludeNonDiscountPayments() {
+            TaxInvoice invoice = createInvoice(new BigDecimal("10.0"));
+            invoice.addLineItem(createLineItem(1L, new BigDecimal("10"), new BigDecimal("1000")));
+            invoice.issue();
+
+            // Add a BANK_TRANSFER payment
+            Payment bankPayment = Payment.builder()
+                    .paymentDate(LocalDate.now())
+                    .amount(new BigDecimal("5000"))
+                    .paymentMethod(PaymentMethod.BANK_TRANSFER)
+                    .recordedById(1L)
+                    .build();
+            invoice.addPayment(bankPayment);
+
+            // Add a DISCOUNT payment
+            Payment discountPayment = Payment.builder()
+                    .paymentDate(LocalDate.now())
+                    .amount(new BigDecimal("1000"))
+                    .paymentMethod(PaymentMethod.DISCOUNT)
+                    .recordedById(1L)
+                    .build();
+            invoice.addPayment(discountPayment);
+
+            // Only DISCOUNT payments count
+            assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("1000"));
         }
     }
 }

@@ -14,9 +14,8 @@ import java.util.List;
  * preventing race conditions where the "latest approved" quotation might change
  * between when the user views the data and when they submit the invoice.
  * <p>
- * Note: Tax rate and discount are inherited from the quotation.
- * - taxRate: Inherited from quotation's taxRate
- * - discountAmount: Calculated proportionally based on invoice subtotal vs quotation subtotal
+ * Note: Tax rate is inherited from the quotation.
+ * Discount is tracked as a DISCOUNT payment, not on the invoice itself.
  */
 public record CreateInvoiceRequest(
         @NotNull(message = "Project ID is required")

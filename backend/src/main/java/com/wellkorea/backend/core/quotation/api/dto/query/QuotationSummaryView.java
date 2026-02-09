@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
  * Optimized for summary display - excludes line items for performance.
  * <p>
  * Amount calculation:
- *   subtotal = sum(line_items.line_total)
- *   taxAmount = subtotal × taxRate / 100
- *   amountBeforeDiscount = subtotal + taxAmount
- *   finalAmount = amountBeforeDiscount - discountAmount
+ * subtotal = sum(line_items.line_total)
+ * taxAmount = subtotal × taxRate / 100
+ * amountBeforeDiscount = subtotal + taxAmount
+ * finalAmount = amountBeforeDiscount - discountAmount
  */
 public record QuotationSummaryView(
         Long id,

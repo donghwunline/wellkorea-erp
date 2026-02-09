@@ -23,6 +23,7 @@ public record InvoiceDetailView(
         BigDecimal totalBeforeTax,
         BigDecimal taxRate,
         BigDecimal totalTax,
+        BigDecimal discountAmount,
         BigDecimal totalAmount,
         BigDecimal totalPaid,
         BigDecimal remainingBalance,

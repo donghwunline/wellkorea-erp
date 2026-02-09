@@ -110,7 +110,7 @@ public class InvoiceCommandService {
                 .toList();
 
         // Delegate to Quotation's factory method (uses Double Dispatch pattern)
-        // Tax rate is inherited from quotation, discount is calculated proportionally
+        // Tax rate is inherited from quotation
         TaxInvoice invoice = quotation.createInvoice(
                 quotationInvoiceGuard,
                 invoiceNumberGenerator,
@@ -211,6 +211,13 @@ public class InvoiceCommandService {
             throw new IllegalArgumentException(
                     "Payment amount " + request.amount() +
                             " exceeds remaining balance " + remainingBalance);
+        }
+
+        // DISCOUNT payment: validate against quotation's discount quota
+        if (request.paymentMethod() == PaymentMethod.DISCOUNT) {
+            Quotation quotation = quotationRepository.findByIdWithLineItems(invoice.getQuotationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Quotation", invoice.getQuotationId()));
+            quotationInvoiceGuard.validateDiscountQuota(quotation, request.amount(), invoiceId);
         }
 
         // Create and save payment

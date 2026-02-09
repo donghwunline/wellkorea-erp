@@ -8,7 +8,8 @@ public enum PaymentMethod {
     CREDIT_CARD("카드결제", "Credit Card"),
     CHECK("수표", "Check"),
     CASH("현금", "Cash"),
-    OTHER("기타", "Other");
+    OTHER("기타", "Other"),
+    DISCOUNT("할인", "Discount");
 
     private final String labelKo;
     private final String labelEn;

@@ -62,9 +62,6 @@ public class TaxInvoice {
     @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
-    @Column(name = "discount_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal discountAmount = BigDecimal.ZERO;
-
     @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
 
@@ -101,7 +98,6 @@ public class TaxInvoice {
         this.issueDate = builder.issueDate;
         this.status = builder.status != null ? builder.status : InvoiceStatus.DRAFT;
         this.taxRate = builder.taxRate != null ? builder.taxRate : DEFAULT_TAX_RATE;
-        this.discountAmount = builder.discountAmount != null ? builder.discountAmount : BigDecimal.ZERO;
         this.dueDate = builder.dueDate;
         this.notes = builder.notes;
         this.createdById = builder.createdById;
@@ -160,8 +156,16 @@ public class TaxInvoice {
         return totalAmount;
     }
 
+    /**
+     * Compute discount amount from DISCOUNT payments.
+     *
+     * @return Sum of all DISCOUNT payment amounts
+     */
     public BigDecimal getDiscountAmount() {
-        return discountAmount;
+        return payments.stream()
+                .filter(p -> p.getPaymentMethod() == PaymentMethod.DISCOUNT)
+                .map(Payment::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public LocalDate getDueDate() {
@@ -236,24 +240,23 @@ public class TaxInvoice {
      * Recalculate totals from line items.
      * <p>
      * Calculation:
-     *   totalBeforeTax = sum(line_items.line_total)
-     *   totalTax = totalBeforeTax × taxRate / 100 (tax on full subtotal, before discount)
-     *   totalAmount = (totalBeforeTax + totalTax) - discountAmount (discount applied last)
+     * totalBeforeTax = sum(line_items.line_total)
+     * totalTax = totalBeforeTax × taxRate / 100
+     * totalAmount = totalBeforeTax + totalTax (gross amount, discount tracked via DISCOUNT payments)
      */
-    public void recalculateTotals() {
+    private void recalculateTotals() {
         // Subtotal (sum of line items)
         this.totalBeforeTax = lineItems.stream()
                 .map(InvoiceLineItem::getLineTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Tax on full subtotal (before discount)
+        // Tax on full subtotal
         this.totalTax = totalBeforeTax
                 .multiply(taxRate)
                 .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
 
-        // Final amount = (subtotal + tax) - discount
-        BigDecimal amountBeforeDiscount = totalBeforeTax.add(totalTax);
-        this.totalAmount = amountBeforeDiscount.subtract(discountAmount);
+        // Gross amount (discount is a DISCOUNT payment, not subtracted here)
+        this.totalAmount = totalBeforeTax.add(totalTax);
         this.updatedAt = Instant.now();
     }
 
@@ -412,7 +415,6 @@ public class TaxInvoice {
         private LocalDate issueDate;
         private InvoiceStatus status;
         private BigDecimal taxRate;
-        private BigDecimal discountAmount;
         private LocalDate dueDate;
         private String notes;
         private Long createdById;
@@ -453,11 +455,6 @@ public class TaxInvoice {
 
         public Builder taxRate(BigDecimal taxRate) {
             this.taxRate = taxRate;
-            return this;
-        }
-
-        public Builder discountAmount(BigDecimal discountAmount) {
-            this.discountAmount = discountAmount;
             return this;
         }
 

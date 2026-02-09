@@ -59,8 +59,7 @@
 
     <!-- Find all active categories -->
     <select id="findAllActive" resultMap="MaterialCategorySummaryViewResult">
-        SELECT
-        mc.id,
+        SELECT mc.id,
         mc.name,
         mc.description,
         mc.is_active AS active,
@@ -76,8 +75,7 @@
 
     <!-- Find category by ID -->
     <select id="findById" resultMap="MaterialCategorySummaryViewResult">
-        SELECT
-        mc.id,
+        SELECT mc.id,
         mc.name,
         mc.description,
         mc.is_active AS active,

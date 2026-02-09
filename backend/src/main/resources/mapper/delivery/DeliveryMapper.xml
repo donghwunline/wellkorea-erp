@@ -39,8 +39,7 @@
 
     <!-- Main query: Find delivery detail by ID -->
     <select id="findDetailById" resultMap="DeliveryDetailViewResult">
-        SELECT
-        d.id,
+        SELECT d.id,
         d.project_id,
         d.quotation_id,
         p.job_code,
@@ -60,8 +59,7 @@
 
     <!-- Nested select: Find line items for a delivery -->
     <select id="findLineItemsByDeliveryId" resultMap="DeliveryLineItemViewResult">
-        SELECT
-        li.id,
+        SELECT li.id,
         li.product_id,
         prod.name AS product_name,
         prod.sku AS product_sku,
@@ -146,8 +144,7 @@
         @deprecated Use getDeliveredQuantitiesByQuotation instead.
     -->
     <select id="getDeliveredQuantitiesByProject" resultMap="ProductQuantitySumResult">
-        SELECT
-        dli.product_id,
+        SELECT dli.product_id,
         COALESCE(SUM(dli.quantity_delivered), 0) AS quantity
         FROM delivery_line_items dli
         INNER JOIN deliveries d ON dli.delivery_id = d.id

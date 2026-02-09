@@ -26,17 +26,17 @@ CREATE INDEX idx_material_categories_active ON material_categories (is_active);
 
 CREATE TABLE materials
 (
-    id                    BIGSERIAL PRIMARY KEY,
-    sku                   VARCHAR(50)  NOT NULL UNIQUE,
-    name                  VARCHAR(200) NOT NULL,
-    description           TEXT,
-    category_id           BIGINT       NOT NULL REFERENCES material_categories (id) ON DELETE RESTRICT,
-    unit                  VARCHAR(20)  NOT NULL DEFAULT 'EA',
-    standard_price        DECIMAL(15, 2),
-    preferred_vendor_id   BIGINT REFERENCES companies (id) ON DELETE SET NULL,
-    is_active             BOOLEAN      NOT NULL DEFAULT true,
-    created_at            TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at            TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id                  BIGSERIAL PRIMARY KEY,
+    sku                 VARCHAR(50)  NOT NULL UNIQUE,
+    name                VARCHAR(200) NOT NULL,
+    description         TEXT,
+    category_id         BIGINT       NOT NULL REFERENCES material_categories (id) ON DELETE RESTRICT,
+    unit                VARCHAR(20)  NOT NULL DEFAULT 'EA',
+    standard_price      DECIMAL(15, 2),
+    preferred_vendor_id BIGINT       REFERENCES companies (id) ON DELETE SET NULL,
+    is_active           BOOLEAN      NOT NULL DEFAULT true,
+    created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_materials_standard_price CHECK (standard_price IS NULL OR standard_price >= 0)
 );
 
@@ -50,33 +50,35 @@ CREATE INDEX idx_materials_active ON materials (is_active);
 -- VENDOR MATERIAL OFFERINGS (from V11)
 -- =====================================================================
 
-CREATE TABLE vendor_material_offerings (
-    id BIGSERIAL PRIMARY KEY,
-    vendor_company_id BIGINT NOT NULL REFERENCES companies(id),
-    material_id BIGINT NOT NULL REFERENCES materials(id),
+CREATE TABLE vendor_material_offerings
+(
+    id                   BIGSERIAL PRIMARY KEY,
+    vendor_company_id    BIGINT    NOT NULL REFERENCES companies (id),
+    material_id          BIGINT    NOT NULL REFERENCES materials (id),
     vendor_material_code VARCHAR(50),
     vendor_material_name VARCHAR(200),
-    unit_price DECIMAL(15,2),
-    currency VARCHAR(3) DEFAULT 'KRW',
-    lead_time_days INTEGER,
-    min_order_quantity INTEGER,
-    effective_from DATE,
-    effective_to DATE,
-    is_preferred BOOLEAN NOT NULL DEFAULT false,
-    notes TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    unit_price           DECIMAL(15, 2),
+    currency             VARCHAR(3)         DEFAULT 'KRW',
+    lead_time_days       INTEGER,
+    min_order_quantity   INTEGER,
+    effective_from       DATE,
+    effective_to         DATE,
+    is_preferred         BOOLEAN   NOT NULL DEFAULT false,
+    notes                TEXT,
+    created_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- Business rule constraints (matching vendor_service_offerings pattern)
     CONSTRAINT chk_vmo_price_positive CHECK (unit_price IS NULL OR unit_price >= 0),
     CONSTRAINT chk_vmo_lead_time_positive CHECK (lead_time_days IS NULL OR lead_time_days >= 0),
     CONSTRAINT chk_vmo_min_order_positive CHECK (min_order_quantity IS NULL OR min_order_quantity >= 1),
-    CONSTRAINT chk_vmo_effective_dates CHECK (effective_to IS NULL OR effective_from IS NULL OR effective_to >= effective_from)
+    CONSTRAINT chk_vmo_effective_dates CHECK (effective_to IS NULL OR effective_from IS NULL OR
+                                              effective_to >= effective_from)
 );
 
 -- Indexes for efficient queries
-CREATE INDEX idx_vendor_material_offerings_material_id ON vendor_material_offerings(material_id);
-CREATE INDEX idx_vendor_material_offerings_vendor_id ON vendor_material_offerings(vendor_company_id);
-CREATE INDEX idx_vendor_material_offerings_effective ON vendor_material_offerings(effective_from, effective_to);
+CREATE INDEX idx_vendor_material_offerings_material_id ON vendor_material_offerings (material_id);
+CREATE INDEX idx_vendor_material_offerings_vendor_id ON vendor_material_offerings (vendor_company_id);
+CREATE INDEX idx_vendor_material_offerings_effective ON vendor_material_offerings (effective_from, effective_to);
 
 -- Conditional unique indexes: one offering per vendor-material-effective_from combination
 -- Uses partial indexes to properly handle NULL effective_from values
@@ -99,7 +101,7 @@ CREATE TABLE purchase_requests
     id                  BIGSERIAL PRIMARY KEY,
     version             BIGINT         NOT NULL DEFAULT 0,
     dtype               VARCHAR(31)    NOT NULL DEFAULT 'SERVICE',
-    project_id          BIGINT REFERENCES projects (id) ON DELETE SET NULL,
+    project_id          BIGINT         REFERENCES projects (id) ON DELETE SET NULL,
     service_category_id BIGINT REFERENCES service_categories (id) ON DELETE RESTRICT,
     material_id         BIGINT REFERENCES materials (id) ON DELETE RESTRICT,
     request_number      VARCHAR(50)    NOT NULL UNIQUE,
@@ -112,11 +114,12 @@ CREATE TABLE purchase_requests
     created_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_pr_quantity_positive CHECK (quantity > 0),
-    CONSTRAINT chk_pr_status CHECK (status IN ('DRAFT', 'RFQ_SENT', 'VENDOR_SELECTED', 'ORDERED', 'CLOSED', 'CANCELED')),
+    CONSTRAINT chk_pr_status CHECK (status IN
+                                    ('DRAFT', 'RFQ_SENT', 'VENDOR_SELECTED', 'ORDERED', 'CLOSED', 'CANCELED')),
     CONSTRAINT chk_purchase_request_item_type CHECK (
         (dtype = 'SERVICE' AND service_category_id IS NOT NULL AND material_id IS NULL) OR
         (dtype = 'MATERIAL' AND service_category_id IS NULL AND material_id IS NOT NULL)
-    )
+        )
 );
 
 CREATE INDEX idx_purchase_requests_dtype ON purchase_requests (dtype);
@@ -133,11 +136,11 @@ CREATE INDEX idx_purchase_requests_required_date ON purchase_requests (required_
 
 CREATE TABLE rfq_items
 (
-    purchase_request_id BIGINT         NOT NULL REFERENCES purchase_requests (id) ON DELETE CASCADE,
-    item_id             VARCHAR(36)    NOT NULL,
-    vendor_company_id   BIGINT         NOT NULL,
+    purchase_request_id BIGINT      NOT NULL REFERENCES purchase_requests (id) ON DELETE CASCADE,
+    item_id             VARCHAR(36) NOT NULL,
+    vendor_company_id   BIGINT      NOT NULL,
     vendor_offering_id  BIGINT,
-    status              VARCHAR(20)    NOT NULL DEFAULT 'SENT',
+    status              VARCHAR(20) NOT NULL DEFAULT 'SENT',
     quoted_price        DECIMAL(15, 2),
     quoted_lead_time    INTEGER,
     notes               TEXT,
@@ -165,7 +168,7 @@ CREATE TABLE purchase_orders
     id                     BIGSERIAL PRIMARY KEY,
     purchase_request_id    BIGINT         NOT NULL REFERENCES purchase_requests (id) ON DELETE RESTRICT,
     rfq_item_id            VARCHAR(36)    NOT NULL,
-    project_id             BIGINT REFERENCES projects (id) ON DELETE SET NULL,
+    project_id             BIGINT         REFERENCES projects (id) ON DELETE SET NULL,
     vendor_company_id      BIGINT         NOT NULL REFERENCES companies (id) ON DELETE RESTRICT,
     po_number              VARCHAR(50)    NOT NULL UNIQUE,
     order_date             DATE           NOT NULL,
@@ -194,15 +197,16 @@ CREATE INDEX idx_purchase_orders_order_date ON purchase_orders (order_date);
 -- SERVICE PURCHASE REQUEST ATTACHMENTS (from V26 + V27)
 -- =====================================================================
 
-CREATE TABLE service_pr_attachments (
-    purchase_request_id     BIGINT NOT NULL REFERENCES purchase_requests(id) ON DELETE CASCADE,
-    reference_id            VARCHAR(36) NOT NULL,
-    file_name               VARCHAR(255) NOT NULL,
-    file_type               VARCHAR(10) NOT NULL,
-    file_size               BIGINT NOT NULL,
-    storage_path            VARCHAR(500) NOT NULL,
-    linked_by_id            BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    linked_at               TIMESTAMP NOT NULL,
+CREATE TABLE service_pr_attachments
+(
+    purchase_request_id BIGINT       NOT NULL REFERENCES purchase_requests (id) ON DELETE CASCADE,
+    reference_id        VARCHAR(36)  NOT NULL,
+    file_name           VARCHAR(255) NOT NULL,
+    file_type           VARCHAR(10)  NOT NULL,
+    file_size           BIGINT       NOT NULL,
+    storage_path        VARCHAR(500) NOT NULL,
+    linked_by_id        BIGINT       NOT NULL REFERENCES users (id) ON DELETE RESTRICT,
+    linked_at           TIMESTAMP    NOT NULL,
 
     PRIMARY KEY (purchase_request_id, reference_id),
     -- Prevent linking same file twice to same PR
@@ -212,7 +216,7 @@ CREATE TABLE service_pr_attachments (
 );
 
 -- Index for looking up attachments by purchase request
-CREATE INDEX idx_service_pr_attachments_pr ON service_pr_attachments(purchase_request_id);
+CREATE INDEX idx_service_pr_attachments_pr ON service_pr_attachments (purchase_request_id);
 
 -- =====================================================================
 -- COMMENTS

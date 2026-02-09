@@ -12,9 +12,10 @@ import { invoiceRules } from '@/entities/invoice';
 
 export interface InvoiceSummaryStatsProps {
   readonly invoices: readonly InvoiceSummary[];
+  readonly discountBudget?: number;
 }
 
-export function InvoiceSummaryStats({ invoices }: InvoiceSummaryStatsProps) {
+export function InvoiceSummaryStats({ invoices, discountBudget }: InvoiceSummaryStatsProps) {
   const { t } = useTranslation('widgets');
   const stats = useMemo(() => invoiceRules.calculateStats(invoices), [invoices]);
 
@@ -51,6 +52,14 @@ export function InvoiceSummaryStats({ invoices }: InvoiceSummaryStatsProps) {
           {invoiceRules.formatAmount(stats.outstanding)}
         </div>
       </Card>
+      {discountBudget != null && discountBudget > 0 && (
+        <Card className="p-4">
+          <div className="text-sm text-steel-400">{t('invoiceSummaryStats.discountRemaining')}</div>
+          <div className="mt-1 text-2xl font-bold text-copper-400">
+            {invoiceRules.formatAmount(discountBudget - stats.totalDiscount)}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

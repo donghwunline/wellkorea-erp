@@ -33,8 +33,7 @@
     -->
     <select id="findDocumentsByProjectId" resultMap="ProjectDocumentViewResult">
         -- Blueprint Attachments (from TaskFlow nodes)
-        SELECT
-        ba.id,
+        SELECT ba.id,
         'BLUEPRINT' AS document_type,
         ba.file_name,
         ba.file_type,
@@ -53,8 +52,7 @@
         UNION ALL
 
         -- Delivery Photos
-        SELECT
-        a.id,
+        SELECT a.id,
         'DELIVERY_PHOTO' AS document_type,
         a.file_name,
         a.file_type,
@@ -74,8 +72,7 @@
         UNION ALL
 
         -- Invoice Documents
-        SELECT
-        a.id,
+        SELECT a.id,
         'INVOICE' AS document_type,
         a.file_name,
         a.file_type,
@@ -100,7 +97,8 @@
         Uses same UNION logic as findDocumentsByProjectId.
     -->
     <select id="countDocumentsByProjectId" resultType="long">
-        SELECT COUNT(*) FROM (
+        SELECT COUNT(*)
+        FROM (
         -- Blueprint Attachments
         SELECT ba.id
         FROM blueprint_attachments ba
@@ -123,8 +121,7 @@
         FROM attachments a
         INNER JOIN tax_invoices i ON a.owner_type = 'INVOICE' AND a.owner_id = i.id
         WHERE i.project_id = #{projectId}
-        AND i.status != 'CANCELLED'
-        ) AS all_documents
+        AND i.status != 'CANCELLED') AS all_documents
     </select>
 
 </mapper>

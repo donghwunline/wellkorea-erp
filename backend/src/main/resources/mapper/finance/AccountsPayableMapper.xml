@@ -10,7 +10,8 @@
             <arg column="vp_accounts_payable_id" javaType="java.lang.Long"/>
             <arg column="vp_payment_date" javaType="java.time.LocalDate"/>
             <arg column="vp_amount" javaType="java.math.BigDecimal"/>
-            <arg column="vp_payment_method" javaType="com.wellkorea.backend.core.finance.domain.vo.VendorPaymentMethod"/>
+            <arg column="vp_payment_method"
+                 javaType="com.wellkorea.backend.core.finance.domain.vo.VendorPaymentMethod"/>
             <arg column="vp_reference_number" javaType="java.lang.String"/>
             <arg column="vp_notes" javaType="java.lang.String"/>
             <arg column="vp_recorded_by_id" javaType="java.lang.Long"/>
@@ -99,60 +100,60 @@
     <!-- Common SQL fragment for calculating status from payments -->
     <sql id="apWithCalculatedStatus">
         SELECT ap.id,
-               -- Disbursement cause fields
-               ap.cause_type,
-               ap.cause_id,
-               ap.cause_reference_number,
-               -- Vendor info
-               v.id                                           AS vendor_id,
-               v.name                                         AS vendor_name,
-               -- Amount info
-               ap.total_amount,
-               ap.currency,
-               -- Dates
-               ap.due_date,
-               ap.created_at,
-               -- Notes
-               ap.notes,
-               -- Calculated fields
-               COALESCE(paid.total_paid, 0)                   AS total_paid,
-               ap.total_amount - COALESCE(paid.total_paid, 0) AS remaining_balance,
-               CASE
-                   WHEN ap.due_date IS NOT NULL
-                       AND ap.due_date &lt; CURRENT_DATE
-                       AND ap.total_amount > COALESCE(paid.total_paid, 0)
-                       THEN true
-                   ELSE false
-                   END                                        AS is_overdue,
-               CASE
-                   WHEN ap.due_date IS NOT NULL AND ap.due_date &lt; CURRENT_DATE
-                       THEN GREATEST(0, CURRENT_DATE - ap.due_date)
-                   ELSE 0
-                   END                                        AS days_overdue,
-               CASE
-                   WHEN ap.due_date IS NULL OR ap.due_date >= CURRENT_DATE
-                       OR ap.total_amount &lt;= COALESCE(paid.total_paid, 0)
-                       THEN 'Current'
-                   WHEN CURRENT_DATE - ap.due_date &lt;= 30
-                       THEN '1-30 Days'
-                   WHEN CURRENT_DATE - ap.due_date &lt;= 60
-                       THEN '31-60 Days'
-                   WHEN CURRENT_DATE - ap.due_date &lt;= 90
-                       THEN '61-90 Days'
-                   ELSE '90+ Days'
-                   END                                        AS aging_bucket,
-               CASE
-                   WHEN COALESCE(paid.total_paid, 0) >= ap.total_amount THEN 'PAID'
-                   WHEN COALESCE(paid.total_paid, 0) > 0 THEN 'PARTIALLY_PAID'
-                   ELSE 'PENDING'
-                   END                                        AS calculated_status
+        -- Disbursement cause fields
+        ap.cause_type,
+        ap.cause_id,
+        ap.cause_reference_number,
+        -- Vendor info
+        v.id AS vendor_id,
+        v.name AS vendor_name,
+        -- Amount info
+        ap.total_amount,
+        ap.currency,
+        -- Dates
+        ap.due_date,
+        ap.created_at,
+        -- Notes
+        ap.notes,
+        -- Calculated fields
+        COALESCE(paid.total_paid, 0) AS total_paid,
+        ap.total_amount - COALESCE(paid.total_paid, 0) AS remaining_balance,
+        CASE
+        WHEN ap.due_date IS NOT NULL
+        AND ap.due_date &lt; CURRENT_DATE
+        AND ap.total_amount > COALESCE(paid.total_paid, 0)
+        THEN true
+        ELSE false
+        END AS is_overdue,
+        CASE
+        WHEN ap.due_date IS NOT NULL AND ap.due_date &lt; CURRENT_DATE
+        THEN GREATEST(0, CURRENT_DATE - ap.due_date)
+        ELSE 0
+        END AS days_overdue,
+        CASE
+        WHEN ap.due_date IS NULL OR ap.due_date >= CURRENT_DATE
+        OR ap.total_amount &lt;= COALESCE(paid.total_paid, 0)
+        THEN 'Current'
+        WHEN CURRENT_DATE - ap.due_date &lt;= 30
+        THEN '1-30 Days'
+        WHEN CURRENT_DATE - ap.due_date &lt;= 60
+        THEN '31-60 Days'
+        WHEN CURRENT_DATE - ap.due_date &lt;= 90
+        THEN '61-90 Days'
+        ELSE '90+ Days'
+        END AS aging_bucket,
+        CASE
+        WHEN COALESCE(paid.total_paid, 0) >= ap.total_amount THEN 'PAID'
+        WHEN COALESCE(paid.total_paid, 0) > 0 THEN 'PARTIALLY_PAID'
+        ELSE 'PENDING'
+        END AS calculated_status
         FROM accounts_payable ap
-                 JOIN companies v ON ap.vendor_company_id = v.id
-                 LEFT JOIN (SELECT accounts_payable_id,
-                                   SUM(amount) AS total_paid
-                            FROM vendor_payments
-                            WHERE accounts_payable_id IS NOT NULL
-                            GROUP BY accounts_payable_id) paid ON paid.accounts_payable_id = ap.id
+        JOIN companies v ON ap.vendor_company_id = v.id
+        LEFT JOIN (SELECT accounts_payable_id,
+        SUM(amount) AS total_paid
+        FROM vendor_payments
+        WHERE accounts_payable_id IS NOT NULL
+        GROUP BY accounts_payable_id) paid ON paid.accounts_payable_id = ap.id
     </sql>
 
     <!-- Find AP detail by ID -->
@@ -252,18 +253,18 @@
 
     <!-- Find payments by accounts payable ID (nested select for detail view) -->
     <select id="findPaymentsByAccountsPayableId" resultMap="vendorPaymentViewMap">
-        SELECT vp.id                AS vp_id,
-               vp.accounts_payable_id AS vp_accounts_payable_id,
-               vp.payment_date      AS vp_payment_date,
-               vp.amount            AS vp_amount,
-               vp.payment_method    AS vp_payment_method,
-               vp.reference_number  AS vp_reference_number,
-               vp.notes             AS vp_notes,
-               vp.recorded_by_id    AS vp_recorded_by_id,
-               u.full_name          AS vp_recorded_by_name,
-               vp.created_at        AS vp_created_at
+        SELECT vp.id AS vp_id,
+        vp.accounts_payable_id AS vp_accounts_payable_id,
+        vp.payment_date AS vp_payment_date,
+        vp.amount AS vp_amount,
+        vp.payment_method AS vp_payment_method,
+        vp.reference_number AS vp_reference_number,
+        vp.notes AS vp_notes,
+        vp.recorded_by_id AS vp_recorded_by_id,
+        u.full_name AS vp_recorded_by_name,
+        vp.created_at AS vp_created_at
         FROM vendor_payments vp
-                 LEFT JOIN users u ON vp.recorded_by_id = u.id
+        LEFT JOIN users u ON vp.recorded_by_id = u.id
         WHERE vp.accounts_payable_id = #{accountsPayableId}
         ORDER BY vp.payment_date DESC, vp.created_at DESC
     </select>

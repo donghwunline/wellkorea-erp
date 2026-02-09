@@ -7,7 +7,8 @@ export type PaymentMethod =
   | 'CREDIT_CARD'
   | 'CHECK'
   | 'CASH'
-  | 'OTHER';
+  | 'OTHER'
+  | 'DISCOUNT';
 
 export interface PaymentMethodConfig {
   label: string;
@@ -40,6 +41,11 @@ export const paymentMethodConfig: Record<PaymentMethod, PaymentMethodConfig> = {
     label: 'Other',
     labelKo: '기타',
     icon: '📋',
+  },
+  DISCOUNT: {
+    label: 'Discount',
+    labelKo: '할인',
+    icon: '🏷️',
   },
 };
 

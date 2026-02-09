@@ -5,30 +5,33 @@
 -- TASKFLOW AGGREGATE
 -- =====================================================================
 
-CREATE TABLE task_flows (
-    id          BIGSERIAL PRIMARY KEY,
-    project_id  BIGINT NOT NULL UNIQUE REFERENCES projects(id) ON DELETE CASCADE,
-    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE task_flows
+(
+    id         BIGSERIAL PRIMARY KEY,
+    project_id BIGINT    NOT NULL UNIQUE REFERENCES projects (id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE task_nodes (
-    flow_id         BIGINT NOT NULL REFERENCES task_flows(id) ON DELETE CASCADE,
-    node_id         VARCHAR(36) NOT NULL,
-    title           VARCHAR(255) NOT NULL,
-    assignee        VARCHAR(100),
-    deadline        DATE,
-    progress        INTEGER DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
-    position_x      DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-    position_y      DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+CREATE TABLE task_nodes
+(
+    flow_id    BIGINT           NOT NULL REFERENCES task_flows (id) ON DELETE CASCADE,
+    node_id    VARCHAR(36)      NOT NULL,
+    title      VARCHAR(255)     NOT NULL,
+    assignee   VARCHAR(100),
+    deadline   DATE,
+    progress   INTEGER                   DEFAULT 0 CHECK (progress >= 0 AND progress <= 100),
+    position_x DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    position_y DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     PRIMARY KEY (flow_id, node_id)
 );
 
-CREATE TABLE task_edges (
-    flow_id         BIGINT NOT NULL REFERENCES task_flows(id) ON DELETE CASCADE,
-    edge_id         VARCHAR(36) NOT NULL,
-    source_node_id  VARCHAR(36) NOT NULL,
-    target_node_id  VARCHAR(36) NOT NULL,
+CREATE TABLE task_edges
+(
+    flow_id        BIGINT      NOT NULL REFERENCES task_flows (id) ON DELETE CASCADE,
+    edge_id        VARCHAR(36) NOT NULL,
+    source_node_id VARCHAR(36) NOT NULL,
+    target_node_id VARCHAR(36) NOT NULL,
     PRIMARY KEY (flow_id, edge_id)
 );
 
@@ -36,10 +39,10 @@ CREATE TABLE task_edges (
 -- INDEXES
 -- =====================================================================
 
-CREATE INDEX idx_task_nodes_flow ON task_nodes(flow_id);
-CREATE INDEX idx_task_edges_flow ON task_edges(flow_id);
-CREATE INDEX idx_task_edges_source ON task_edges(source_node_id);
-CREATE INDEX idx_task_edges_target ON task_edges(target_node_id);
+CREATE INDEX idx_task_nodes_flow ON task_nodes (flow_id);
+CREATE INDEX idx_task_edges_flow ON task_edges (flow_id);
+CREATE INDEX idx_task_edges_source ON task_edges (source_node_id);
+CREATE INDEX idx_task_edges_target ON task_edges (target_node_id);
 
 -- =====================================================================
 -- COMMENTS

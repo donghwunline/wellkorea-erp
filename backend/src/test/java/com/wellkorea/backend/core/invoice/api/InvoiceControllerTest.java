@@ -81,12 +81,12 @@ class InvoiceControllerTest extends BaseIntegrationTest implements TestFixtures 
         );
         testProjectId = 2000L;
 
-        // Create test quotation with APPROVED status (required for invoice creation validation)
+        // Create test quotation with APPROVED status and discount (required for invoice creation validation)
         jdbcTemplate.update(
-                "INSERT INTO quotations (id, project_id, version, status, total_amount, quotation_date, validity_days, created_by_id) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                "INSERT INTO quotations (id, project_id, version, status, total_amount, discount_amount, quotation_date, validity_days, created_by_id) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                         "ON CONFLICT (id) DO NOTHING",
-                2000L, testProjectId, 1, "ACCEPTED", 100000.00, LocalDate.now(), 30, 1L
+                2000L, testProjectId, 1, "ACCEPTED", 100000.00, 20000.00, LocalDate.now(), 30, 1L
         );
 
         // Create quotation line items (products and quantities that can be delivered/invoiced)

@@ -22,7 +22,7 @@
 
 -- Quotation: Add tax and discount fields
 ALTER TABLE quotations
-    ADD COLUMN tax_rate DECIMAL(5, 2) NOT NULL DEFAULT 10.0,
+    ADD COLUMN tax_rate        DECIMAL(5, 2)  NOT NULL DEFAULT 10.0,
     ADD COLUMN discount_amount DECIMAL(15, 2) NOT NULL DEFAULT 0.0;
 
 ALTER TABLE quotations

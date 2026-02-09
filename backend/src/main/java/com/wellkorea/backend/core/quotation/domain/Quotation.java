@@ -507,7 +507,7 @@ public class Quotation implements Approvable {
      * and number generation to infrastructure without having direct dependencies.
      * <p>
      * Tax rate is inherited from this quotation.
-     * Discount is calculated proportionally based on invoice subtotal vs quotation subtotal.
+     * Discount is tracked as a DISCOUNT payment, not on the invoice itself.
      * <p>
      * Similar pattern: {@link #createDelivery}
      *
@@ -546,19 +546,7 @@ public class Quotation implements Approvable {
         // Generate unique invoice number
         String invoiceNumber = invoiceNumberGenerator.generate();
 
-        // Calculate proportional discount based on invoice subtotal vs quotation subtotal
-        BigDecimal invoiceSubtotal = lineItems.stream()
-                .map(input -> input.unitPrice().multiply(input.quantityInvoiced()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal proportionalDiscount = BigDecimal.ZERO;
-        if (this.totalAmount.compareTo(BigDecimal.ZERO) > 0 && this.discountAmount.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal discountRatio = invoiceSubtotal.divide(this.totalAmount, 4, RoundingMode.HALF_UP);
-            proportionalDiscount = this.discountAmount.multiply(discountRatio)
-                    .setScale(2, RoundingMode.HALF_UP);
-        }
-
-        // Build the invoice entity - taxRate inherited from quotation, discount proportional
+        // Build the invoice entity - taxRate inherited from quotation
         TaxInvoice invoice = TaxInvoice.builder()
                 .projectId(project.getId())
                 .quotationId(this.id)
@@ -566,7 +554,6 @@ public class Quotation implements Approvable {
                 .issueDate(issueDate)
                 .dueDate(dueDate)
                 .taxRate(this.taxRate)
-                .discountAmount(proportionalDiscount)
                 .notes(notes)
                 .createdById(createdById)
                 .build();

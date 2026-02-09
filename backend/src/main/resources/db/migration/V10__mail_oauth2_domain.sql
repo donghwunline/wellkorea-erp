@@ -6,32 +6,34 @@
 -- OAUTH2 STATE TABLE (CSRF Protection)
 -- =====================================================================
 
-CREATE TABLE mail_oauth2_state (
-    state           VARCHAR(64) PRIMARY KEY,
-    user_id         BIGINT NOT NULL,
-    expires_at      TIMESTAMP WITH TIME ZONE NOT NULL
+CREATE TABLE mail_oauth2_state
+(
+    state      VARCHAR(64) PRIMARY KEY,
+    user_id    BIGINT                   NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 -- Index for state cleanup
-CREATE INDEX idx_mail_oauth2_state_expires_at ON mail_oauth2_state(expires_at);
+CREATE INDEX idx_mail_oauth2_state_expires_at ON mail_oauth2_state (expires_at);
 
 -- =====================================================================
 -- MAIL OAUTH2 CONFIG TABLE (Final State)
 -- =====================================================================
 
-CREATE TABLE mail_oauth2_config (
-    id                          BIGSERIAL PRIMARY KEY,
-    refresh_token               TEXT NOT NULL,
-    sender_email                VARCHAR(255),
-    connected_by_id             BIGINT NOT NULL REFERENCES users(id),
-    connected_at                TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE mail_oauth2_config
+(
+    id                       BIGSERIAL PRIMARY KEY,
+    refresh_token            TEXT                     NOT NULL,
+    sender_email             VARCHAR(255),
+    connected_by_id          BIGINT                   NOT NULL REFERENCES users (id),
+    connected_at             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- Scale-out columns (from V24)
-    access_token                TEXT,
-    token_expires_at            TIMESTAMP WITH TIME ZONE,
-    last_refresh_at             TIMESTAMP WITH TIME ZONE,
-    config_key                  VARCHAR(20) DEFAULT 'SINGLETON' NOT NULL,
+    access_token             TEXT,
+    token_expires_at         TIMESTAMP WITH TIME ZONE,
+    last_refresh_at          TIMESTAMP WITH TIME ZONE,
+    config_key               VARCHAR(20)                       DEFAULT 'SINGLETON' NOT NULL,
     -- Token rotation tracking (from V25)
-    refresh_token_rotated_at    TIMESTAMP WITH TIME ZONE,
+    refresh_token_rotated_at TIMESTAMP WITH TIME ZONE,
     -- Singleton constraint
     CONSTRAINT uq_mail_oauth2_config_singleton UNIQUE (config_key)
 );
@@ -40,8 +42,8 @@ CREATE TABLE mail_oauth2_config (
 -- INDEXES
 -- =====================================================================
 
-CREATE INDEX idx_mail_oauth2_config_connected_at ON mail_oauth2_config(connected_at DESC);
-CREATE INDEX idx_mail_oauth2_config_token_expires_at ON mail_oauth2_config(token_expires_at);
+CREATE INDEX idx_mail_oauth2_config_connected_at ON mail_oauth2_config (connected_at DESC);
+CREATE INDEX idx_mail_oauth2_config_token_expires_at ON mail_oauth2_config (token_expires_at);
 
 -- =====================================================================
 -- COMMENTS

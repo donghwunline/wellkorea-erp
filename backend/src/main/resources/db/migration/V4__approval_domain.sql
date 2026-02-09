@@ -72,7 +72,7 @@ CREATE TABLE approval_level_decisions
 CREATE TABLE approval_history
 (
     approval_request_id BIGINT      NOT NULL REFERENCES approval_requests (id) ON DELETE CASCADE,
-    entry_index         INT         NOT NULL,  -- JPA @OrderColumn manages this
+    entry_index         INT         NOT NULL, -- JPA @OrderColumn manages this
     level_order         INT,
     action              VARCHAR(20) NOT NULL,
     actor_id            BIGINT      NOT NULL REFERENCES users (id),
@@ -85,7 +85,7 @@ CREATE TABLE approval_history
 CREATE TABLE approval_comments
 (
     approval_request_id BIGINT    NOT NULL REFERENCES approval_requests (id) ON DELETE CASCADE,
-    entry_index         INT       NOT NULL,  -- JPA @OrderColumn manages this
+    entry_index         INT       NOT NULL, -- JPA @OrderColumn manages this
     commenter_id        BIGINT    NOT NULL REFERENCES users (id),
     comment_text        TEXT      NOT NULL,
     is_rejection_reason BOOLEAN   NOT NULL DEFAULT false,
@@ -110,8 +110,8 @@ CREATE INDEX idx_approval_requests_submitted_at ON approval_requests (submitted_
 -- Partial unique index: only one PENDING approval per entity allowed
 -- Completed (APPROVED/REJECTED) requests preserved for audit trail
 CREATE UNIQUE INDEX uq_approval_entity_pending
-ON approval_requests (entity_type, entity_id)
-WHERE status = 'PENDING';
+    ON approval_requests (entity_type, entity_id)
+    WHERE status = 'PENDING';
 
 CREATE INDEX idx_approval_level_decisions_expected_approver ON approval_level_decisions (expected_approver_id);
 CREATE INDEX idx_approval_level_decisions_decided_by ON approval_level_decisions (decided_by_id) WHERE decided_by_id IS NOT NULL;
