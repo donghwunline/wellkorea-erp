@@ -106,19 +106,14 @@ public class InvoiceCommandService {
                 .map(this::toLineItemInput)
                 .toList();
 
-        // Validate discount quota before creating invoice
-        BigDecimal discountAmount = request.discountAmount() != null ? request.discountAmount() : BigDecimal.ZERO;
-        quotationInvoiceGuard.validateDiscountQuota(quotation, discountAmount, null);
-
         // Delegate to Quotation's factory method (uses Double Dispatch pattern)
-        // Tax rate is inherited from quotation, discount is set manually
+        // Tax rate is inherited from quotation
         TaxInvoice invoice = quotation.createInvoice(
                 quotationInvoiceGuard,
                 invoiceNumberGenerator,
                 request.issueDate(),
                 request.dueDate(),
                 request.notes(),
-                discountAmount,
                 lineItemInputs,
                 creatorId
         );
@@ -215,6 +210,13 @@ public class InvoiceCommandService {
                             " exceeds remaining balance " + remainingBalance);
         }
 
+        // DISCOUNT payment: validate against quotation's discount quota
+        if (request.paymentMethod() == PaymentMethod.DISCOUNT) {
+            Quotation quotation = quotationRepository.findByIdWithLineItems(invoice.getQuotationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Quotation", invoice.getQuotationId()));
+            quotationInvoiceGuard.validateDiscountQuota(quotation, request.amount(), invoiceId);
+        }
+
         // Create and save payment
         Payment payment = Payment.builder()
                 .paymentDate(request.paymentDate())
@@ -230,45 +232,6 @@ public class InvoiceCommandService {
         log.info("Payment recorded: id={}, invoiceId={}", payment.getId(), invoiceId);
 
         return payment.getId();
-    }
-
-    /**
-     * Update the discount amount on a DRAFT invoice.
-     * <p>
-     * Acquires a distributed lock on the quotation to prevent race conditions
-     * during concurrent discount updates.
-     *
-     * @param quotationId Quotation ID (for distributed lock)
-     * @param invoiceId   Invoice ID
-     * @param request     Update discount request
-     * @return Invoice ID
-     * @throws ResourceNotFoundException if invoice doesn't exist
-     * @throws BusinessException         if discount exceeds quota
-     * @throws IllegalStateException     if invoice is not in DRAFT status
-     */
-    @QuotationLock
-    public Long updateDiscountAmount(Long quotationId, Long invoiceId, UpdateDiscountRequest request) {
-        log.info("Updating discount for invoice id={}: discountAmount={}", invoiceId, request.discountAmount());
-
-        TaxInvoice invoice = findInvoiceById(invoiceId);
-
-        // Defense in depth: verify invoice belongs to the quotation
-        if (!quotationId.equals(invoice.getQuotationId())) {
-            throw new BusinessException("Invoice does not belong to quotation " + quotationId);
-        }
-
-        Quotation quotation = quotationRepository.findByIdWithLineItems(quotationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Quotation", quotationId));
-
-        // Validate discount quota (exclude current invoice to avoid double-counting)
-        quotationInvoiceGuard.validateDiscountQuota(quotation, request.discountAmount(), invoiceId);
-
-        // Update discount on the invoice (validates DRAFT status internally)
-        invoice.updateDiscountAmount(request.discountAmount());
-        invoiceRepository.save(invoice);
-
-        log.info("Updated discount for invoice id={}: discountAmount={}", invoiceId, request.discountAmount());
-        return invoiceId;
     }
 
     /**

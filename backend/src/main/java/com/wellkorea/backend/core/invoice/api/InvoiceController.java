@@ -37,8 +37,7 @@ import java.util.Optional;
  * - POST   /api/invoices            - Create invoice
  * - POST   /api/invoices/{id}/issue - Issue invoice (with document attachment)
  * - POST   /api/invoices/{id}/cancel - Cancel invoice
- * - POST   /api/invoices/{id}/payments - Record payment
- * - PATCH  /api/invoices/{id}/discount - Update discount amount
+ * - POST   /api/invoices/{id}/payments - Record payment (supports DISCOUNT method)
  * - PATCH  /api/invoices/{id}/notes - Update notes
  * - POST   /api/invoices/{id}/document/upload-url - Get presigned URL for document upload
  * - GET    /api/invoices/{id}/document - Get invoice document
@@ -162,20 +161,6 @@ public class InvoiceController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(PaymentCommandResult.recorded(
                         paymentId, id, invoice.remainingBalance())));
-    }
-
-    /**
-     * Update discount amount on a DRAFT invoice.
-     * Validates that the sum of discounts across all non-CANCELLED invoices
-     * for the quotation does not exceed the quotation's discount.
-     */
-    @PatchMapping("/invoices/{id}/discount")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
-    public ResponseEntity<ApiResponse<InvoiceCommandResult>> updateDiscount(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateDiscountRequest request) {
-        commandService.updateDiscountAmount(request.quotationId(), id, request);
-        return ResponseEntity.ok(ApiResponse.success(InvoiceCommandResult.updated(id)));
     }
 
     /**
