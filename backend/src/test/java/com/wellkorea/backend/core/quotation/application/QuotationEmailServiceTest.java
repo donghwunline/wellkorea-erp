@@ -435,7 +435,7 @@ class QuotationEmailServiceTest {
             assertThat(body).contains("김철수 님");
             assertThat(body).contains("WK2K25-0001-1219-Q01");
             assertThat(body).contains("Test Project");
-            assertThat(body).contains("1,100,000"); // finalAmount = subtotal + tax = 1,000,000 + 100,000
+            assertThat(body).contains("1,000,000"); // subtotal (부가세 별도)
         }
 
         @Test

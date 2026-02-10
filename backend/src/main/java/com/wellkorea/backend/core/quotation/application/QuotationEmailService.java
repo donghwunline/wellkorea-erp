@@ -231,7 +231,7 @@ public class QuotationEmailService {
         context.setVariable("projectName", quotation.projectName());
         context.setVariable("quotationDate", quotation.quotationDate().format(DATE_FORMATTER));
         context.setVariable("expiryDate", quotation.expiryDate().format(DATE_FORMATTER));
-        context.setVariable("totalAmount", CURRENCY_FORMAT.format(quotation.finalAmount()));
+        context.setVariable("totalAmount", CURRENCY_FORMAT.format(quotation.subtotal()));
         context.setVariable("version", quotation.version());
         context.setVariable("notes", quotation.notes());
 
@@ -266,7 +266,7 @@ public class QuotationEmailService {
         text.append("프로젝트명: ").append(quotation.projectName()).append("\n");
         text.append("견적일자: ").append(quotation.quotationDate().format(DATE_FORMATTER)).append("\n");
         text.append("유효기간: ").append(quotation.expiryDate().format(DATE_FORMATTER)).append("\n");
-        text.append("견적금액: ").append(CURRENCY_FORMAT.format(quotation.finalAmount())).append(" 원 (부가세 포함)\n");
+        text.append("견적금액: ").append(CURRENCY_FORMAT.format(quotation.subtotal())).append(" 원 (부가세 별도)\n");
 
         if (quotation.version() > 1) {
             text.append("견적버전: V").append(quotation.version()).append(" (수정 견적)\n");
