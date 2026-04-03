@@ -40,7 +40,7 @@ default:
 trivy-scan:
   stage: security
   image:
-    name: aquasecurity/trivy:latest
+    name: ghcr.io/aquasecurity/trivy:latest
     entrypoint: [""]
   script:
     - trivy fs --severity CRITICAL,HIGH --exit-code 1 .
